@@ -1,41 +1,39 @@
-# Quasar App (quasar)
+# 要件を考える会
 
-A Quasar Project
+## サーバー起動
+- Vanilla
+- Spigot
+- PaperMC
+- Forge
+- MohistMC
+- (統合版)
 
-## Install the dependencies
-```bash
-yarn
-# or
-npm install
-```
+## ワ－ルドの保存先
+- ローカル
+- Github
+- (gdrive)
+- (onedrive)
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
+git/javaのサイレントインストール
 
+ローカルへのバックアップファイル生成
 
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
+データパック/プラグインの保管
 
+自動ポート開放
 
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
+自動シャットダウン
 
+ServerPropertiesの編集
 
+Player/PlayerGroupの保存
 
-### Build the app for production
-```bash
-quasar build
-```
+Datapack/Pliugin/配布ワールドの導入
 
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+ワールドのバージョン変更
+
+旧ServerStarterからの移行スクリプト
+
+git操作の安定化
+
+メモリサイズの指定
