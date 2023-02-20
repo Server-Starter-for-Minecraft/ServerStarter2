@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "start Minecraft server only ONE click !",
   "productName": "ServerStarter2",
-  "author": "txkodo",
+  "author": "CivilTT, txkodo",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
