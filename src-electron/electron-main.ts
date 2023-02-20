@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme } from 'electron';
+import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
 
@@ -46,6 +46,12 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = undefined;
   });
+
+  ipcMain.handle( "TEST", async () => {
+      const result = "TEST RESULT"
+      return result
+    }
+  )
 }
 
 app.whenReady().then(createWindow);
