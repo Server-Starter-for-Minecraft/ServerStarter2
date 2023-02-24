@@ -1,6 +1,7 @@
 import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
+import { runDummy } from './core/server/dummyServer';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -52,6 +53,7 @@ function createWindow() {
       return result
     }
   )
+  ipcMain.on('RunServer', runDummy)
 }
 
 app.whenReady().then(createWindow);

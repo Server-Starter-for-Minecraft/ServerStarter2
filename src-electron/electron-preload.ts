@@ -32,4 +32,5 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('API', {
     test: () => ipcRenderer.invoke('TEST'),
+    runServer: () => ipcRenderer.send('RunServer'),
 });

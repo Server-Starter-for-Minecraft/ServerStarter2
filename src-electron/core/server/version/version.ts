@@ -1,5 +1,5 @@
 type VersionType = 
-    | 'vanilla'
+    | 'Vanilla'
     | 'Spigot'
     | 'PaperMC'
     | 'Forge'

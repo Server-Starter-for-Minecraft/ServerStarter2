@@ -1,11 +1,15 @@
 import { Version } from '../version/version'
 
 export class World {
-    name: String
+    name: string
     version: Version
 
-    constructor(name:String, version:Version) {
+    constructor(name: string, version: Version) {
         this.name = name
         this.version = version
+    }
+
+    run() {
+        return `Server version is ${this.version.verType}`;
     }
 }

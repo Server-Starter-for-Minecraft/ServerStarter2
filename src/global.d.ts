@@ -6,4 +6,5 @@ declare global {
 
 export interface IMainProcess {
   test: () => Promise<string>;
+  runServer: () => null;
 }
