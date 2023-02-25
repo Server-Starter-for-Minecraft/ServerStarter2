@@ -9,3 +9,7 @@ const progressStore = defineStore('progressStore', {
 export function setStatus(title:string) {
   progressStore().message = title
 }
+
+export function getStore() {
+  return progressStore()
+}

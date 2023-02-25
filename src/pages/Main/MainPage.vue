@@ -8,7 +8,5 @@ const world = new World('testWorld', new Version('Vanilla', '1.0.0'))
 </script>
 
 <template>
-  <q-page>
-    <q-btn to="progress" @click="runServer(world)">Run Server</q-btn>
-  </q-page>
+  <q-btn to="progress" @click="runServer(world)">Run Server</q-btn>
 </template>
