@@ -1,9 +1,9 @@
-import { worldStore } from './ServerStore';
+import { World } from './world/world';
 
 
-export function runDummy(event: Electron.IpcMainEvent) {
+export function runDummy(event: Electron.IpcMainEvent, world:World) {
     // サーバーJARの起動（入出力のチェックができること）
-    runServer()
+    runServer(world)
 
     // リモート関連のプログレスバー
 
@@ -16,11 +16,11 @@ export function runDummy(event: Electron.IpcMainEvent) {
 
 }
 
-function runServer() {
+function runServer(world:World) {
     // サーバーの起動
     // TODO: 「Piniaがインストールされていない」と言われるエラーの解決
     // const world = worldStore().world
-    // console.log(world?.run())
+    console.log(world.version.verType)
 
     // 画面遷移
 

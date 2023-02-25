@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { worldStore } from 'app/src-electron/core/server/ServerStore';
 import { Version } from 'app/src-electron/core/server/version/version';
 import { World } from 'app/src-electron/core/server/world/world';
-import { progressStore } from './ProgressPage/ProgressStore';
+import { progressStore } from './Progress/ProgressStore';
 
-const demoVersion = new Version('Vanilla')
-worldStore().world = new World('testWorld', demoVersion)
 const run = async () => {
   progressStore().message = '1.0.0 / testWorldを起動中'
-  window.API.runServer()
+  const demoVersion = new Version('Vanilla')
+  const world = new World('testWorld', demoVersion)
+  window.API.runServer(world)
 }
 </script>
 

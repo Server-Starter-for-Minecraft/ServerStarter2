@@ -1,3 +1,5 @@
+import { World } from "app/src-electron/core/server/world/world";
+
 declare global {
   interface Window {
       API: IMainProcess;
@@ -6,5 +8,5 @@ declare global {
 
 export interface IMainProcess {
   test: () => Promise<string>;
-  runServer: () => null;
+  runServer: (world:World) => null;
 }
