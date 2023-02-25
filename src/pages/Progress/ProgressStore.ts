@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia';
 
-export const progressStore = defineStore('progressStore', {
+const progressStore = defineStore('progressStore', {
   state: () => {
     return {message: ''}
   }
 })
+
+export function setStatus(title:string) {
+  progressStore().message = title
+}

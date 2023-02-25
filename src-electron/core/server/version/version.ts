@@ -7,8 +7,10 @@ type VersionType =
 
 export class Version {
     verType: VersionType
+    name: string
 
-    constructor(verType:VersionType) {
+    constructor(verType:VersionType, name:string) {
         this.verType = verType
+        this.name = name
     }
 }
