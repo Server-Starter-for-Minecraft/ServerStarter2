@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { getStore } from './ProgressStore';
+import { getStore, setStatus } from './ProgressStore';
 const store = getStore()
+
+window.ProgressAPI.onUpdateStatus((_event, value) => {
+  setStatus(value[0])
+})
 </script>
 
 <template>
@@ -14,5 +18,5 @@ const store = getStore()
     class="q-ma-md"
   />
 
-  <q>{{ store.message }}</q>
+  <h1>{{ store.message }}</h1>
 </template>

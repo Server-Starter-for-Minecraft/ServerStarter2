@@ -29,9 +29,12 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { World } from './core/server/world/world';
 
 contextBridge.exposeInMainWorld('API', {
     test: () => ipcRenderer.invoke('TEST'),
-    runServer: (world:World) => ipcRenderer.send('RunServer', world),
+    runServer: (world) => ipcRenderer.invoke('RunServer', world),
 });
+
+contextBridge.exposeInMainWorld('ProgressAPI', {
+    onUpdateStatus: (callback) => ipcRenderer.on('update-status', callback)
+})

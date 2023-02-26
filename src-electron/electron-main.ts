@@ -53,7 +53,11 @@ function createWindow() {
       return result
     }
   )
-  ipcMain.on('RunServer', runDummy)
+  ipcMain.handle('RunServer', runDummy)
+}
+
+export function sendMainWindow(channel:string, ...args:any[]) {
+  mainWindow?.webContents.send(channel, args);
 }
 
 app.whenReady().then(createWindow);
