@@ -5,6 +5,11 @@ const consoleStore = defineStore('consoleStore', {
     return {
         console: new Array<string>()
     }
+  },
+  getters: {
+    brConsole(state) {
+      return state.console.concat(['　'])
+    }
   }
 })
 

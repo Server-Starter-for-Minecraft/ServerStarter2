@@ -1,7 +1,7 @@
 import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
-import { readyDummy, runDummy } from './core/server/dummyServer';
+import { readyDummy, runDummy, runCommand } from './core/server/dummyServer';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -12,7 +12,7 @@ try {
       path.join(app.getPath('userData'), 'DevTools Extensions')
     );
   }
-} catch (_) {}
+} catch (_) { }
 
 let mainWindow: BrowserWindow | undefined;
 
@@ -48,16 +48,17 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  ipcMain.handle( "TEST", async () => {
-      const result = "TEST RESULT"
-      return result
-    }
+  ipcMain.handle("TEST", async () => {
+    const result = "TEST RESULT"
+    return result
+  }
   )
   ipcMain.handle('ReadyServer', readyDummy)
   ipcMain.handle('RunServer', runDummy)
+  ipcMain.on('send-command', runCommand)
 }
 
-export function sendMainWindow(channel:string, ...args:any[]) {
+export function sendMainWindow(channel: string, ...args: any[]) {
   mainWindow?.webContents.send(channel, args);
 }
 

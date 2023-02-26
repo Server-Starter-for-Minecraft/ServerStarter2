@@ -21,4 +21,5 @@ export interface IProgressProcess {
 
 export interface IConsoleProcess {
   onAddConsole: (callback: (event: IpcMainInvokeEvent, args: string[]) => void) => void;
+  sendCommand: (command:string) => void;
 }

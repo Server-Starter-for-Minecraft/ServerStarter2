@@ -41,5 +41,6 @@ contextBridge.exposeInMainWorld('ProgressAPI', {
 })
 
 contextBridge.exposeInMainWorld('ConsoleAPI', {
-    onAddConsole: (callback) => ipcRenderer.on('add-console', callback)
+    onAddConsole: (callback) => ipcRenderer.on('add-console', callback),
+    sendCommand: (command:string) =>ipcRenderer.send('send-command', command)
 })
