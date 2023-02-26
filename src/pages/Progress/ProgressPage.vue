@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { getStore, setStatus } from './ProgressStore';
+import { getStore, setStatus, setProgress } from './ProgressStore';
 const store = getStore()
 
 window.ProgressAPI.onUpdateStatus((_event, value) => {
   setStatus(value[0])
+  setProgress(value[1])
 })
 </script>
 
@@ -19,4 +20,8 @@ window.ProgressAPI.onUpdateStatus((_event, value) => {
   />
 
   <h1>{{ store.message }}</h1>
+
+  <div v-if="store.progressRatio != -1">
+    <q-linear-progress :value="store.progressRatio/100" rounded size="20px" color="$primary" class="q-pa-md"/>
+  </div>
 </template>

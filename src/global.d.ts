@@ -16,7 +16,7 @@ export interface IMainProcess {
 }
 
 export interface IProgressProcess {
-  onUpdateStatus: (callback: (event: IpcMainInvokeEvent, args: string[]) => void) => void;
+  onUpdateStatus: (callback: (event: IpcMainInvokeEvent, args: any[]) => void) => void;
 }
 
 export interface IConsoleProcess {

@@ -14,14 +14,20 @@ export async function readyDummy(event: Electron.IpcMainInvokeEvent, world:World
     await sleep(0.5)
 
     setProgressStatus(`${world.version.name} / ${world.name}を起動中`)
+    await sleep(5)
 
     // リモート関連のプログレスバー
+    const array = [...Array(101)].map((_, i) => i)
+    for (let i = 0; i < array.length; i++) {
+        setProgressStatus('データをダウンロード中', i)
+        await sleep(0.1)
+    }
 
     // Eulaの同意（失敗した場合などのエラー処理も）
 
     // 二，三個の適当なプロセスもどき
-    await sleep(5)
-    setProgressStatus('5秒経ったよ')
+    await sleep(2)
+    setProgressStatus('適当なプロセス')
     await sleep(2)
     setProgressStatus('サーバーを起動するよ')
     await sleep(1)
