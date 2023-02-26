@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { getStore } from './ConsoleStore';
+import { addConsole, getStore } from './ConsoleStore';
 
 const items = getStore()
+window.ConsoleAPI.onAddConsole((_event, value) => {
+  addConsole(value[0])
+})
 </script>
 
 <template>

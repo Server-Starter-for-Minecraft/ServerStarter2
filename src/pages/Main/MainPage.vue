@@ -18,8 +18,9 @@ const goProgress = async () => {
 
 async function runServer(world:World) {
   goProgress()
-  const isSuccess = await window.API.runServer(world)
+  await window.API.readyServer(world)
   goConsole()
+  await window.API.runServer(world)
 }
 </script>
 
