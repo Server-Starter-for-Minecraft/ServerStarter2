@@ -13,6 +13,7 @@ function autoScroll() {
 
 // コマンドの送信
 function sendCommand(command:string) {
+  console.log('send_command:'+command)
   window.ConsoleAPI.sendCommand(command)
 }
 

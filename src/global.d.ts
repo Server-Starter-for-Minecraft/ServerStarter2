@@ -10,9 +10,11 @@ declare global {
 }
 
 export interface IMainProcess {
-  test: () => Promise<string>;
   readyServer: (world: World) => Promise<void>;
   runServer: (world: World) => Promise<void>;
+  handleEula: (
+    handler: (event: Electron.IpcRendererEvent) => Promise<boolean>
+  ) => void;
 }
 
 export interface IProgressProcess {

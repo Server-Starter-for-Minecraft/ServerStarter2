@@ -2,6 +2,8 @@ import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
 import { readyDummy, runDummy, runCommand } from './core/server/dummyServer';
+import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from './ipc_util';
+import { InvokeChannel, SendChannel } from './core/api/channels';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -12,7 +14,7 @@ try {
       path.join(app.getPath('userData'), 'DevTools Extensions')
     );
   }
-} catch (_) { }
+} catch (_) {}
 
 let mainWindow: BrowserWindow | undefined;
 
@@ -48,18 +50,28 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  ipcMain.handle("TEST", async () => {
-    const result = "TEST RESULT"
-    return result
-  }
-  )
-  ipcMain.handle('ReadyServer', readyDummy)
-  ipcMain.handle('RunServer', runDummy)
-  ipcMain.on('send-command', runCommand)
+  ipcHandle('ReadyServer', readyDummy);
+  ipcHandle('RunServer', runDummy);
+  ipcOn('send-command', runCommand);
 }
 
-export function sendMainWindow(channel: string, ...args: any[]) {
-  mainWindow?.webContents.send(channel, args);
+export async function invokeMainWindow<T>(
+  channel: InvokeChannel,
+  ...args: any[]
+) {
+  if (mainWindow) {
+    return await ipcInvoke<T>(mainWindow, channel, ...args);
+  } else {
+    throw new Error('MainWindow not exists.');
+  }
+}
+
+export function sendMainWindow(channel: SendChannel, ...args: any[]) {
+  if (mainWindow) {
+    ipcSend(mainWindow, channel, args);
+  } else {
+    throw new Error('MainWindow not exists.');
+  }
 }
 
 app.whenReady().then(createWindow);

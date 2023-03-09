@@ -17,7 +17,6 @@
         Your selection is: <strong>{{ shape }}</strong> result:{{ result }}
       </div>
     </div>
-    <q-btn @click="test()">RUN TEST METHOD</q-btn>
   </q-page>
 </template>
 
@@ -29,10 +28,6 @@ import { ref } from 'vue';
 const result = ref();
 
 const shape = ref();
-
-const test = async () => {
-  result.value = await window.API.test();
-};
 
 const todos = ref<Todo[]>([
   {

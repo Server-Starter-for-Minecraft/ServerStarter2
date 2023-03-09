@@ -29,21 +29,65 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { IMainProcess, IConsoleProcess, IProgressProcess } from '../src/global';
+
+import type {
+  IMainProcess,
+  IConsoleProcess,
+  IProgressProcess,
+} from '../src/global';
+
+import type {
+  SendChannel,
+  OnChannel,
+  InvokeChannel,
+  HandleChannel,
+} from './core/api/channels';
+
+// WindowからMainのイベントを発火
+const send =
+  (channel: OnChannel) =>
+  (...args: any[]) =>
+    ipcRenderer.send(channel, ...args);
+
+// MianからWindowのイベントを発火
+const on =
+  (channel: SendChannel) =>
+  (listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) =>
+    ipcRenderer.on(channel, listener);
+
+// WindowでMainの処理を非同期で待機
+const invoke =
+  (channel: HandleChannel) =>
+  (...args: any[]) =>
+    ipcRenderer.invoke(channel, ...args);
+
+// MainでWindowの処理を非同期で待機
+const handle =
+  (channel: InvokeChannel) =>
+  (
+    handler: (event: Electron.IpcRendererEvent, ...args: any[]) => Promise<any>
+  ) => {
+    const listener = (event: Electron.IpcRendererEvent, ...args: any[]) => {
+      handler(event, ...args).then((result) =>
+        ipcRenderer.send('__handle_' + channel, result)
+      );
+    };
+    ipcRenderer.on(channel, listener);
+  };
 
 const API: IMainProcess = {
-  test: () => ipcRenderer.invoke('TEST'),
-  readyServer: (world) => ipcRenderer.invoke('ReadyServer', world),
-  runServer: (world) => ipcRenderer.invoke('RunServer', world),
+  readyServer: invoke('ReadyServer'),
+  runServer: invoke('RunServer'),
+  handleEula: handle('InvokeEula'),
 };
 
 const ProgressAPI: IProgressProcess = {
-  onUpdateStatus: (callback) => ipcRenderer.on('update-status', callback),
+  onUpdateStatus: on('update-status'),
 };
 
 const ConsoleAPI: IConsoleProcess = {
-  onAddConsole: (callback) => ipcRenderer.on('add-console', callback),
-  sendCommand: (command: string) => ipcRenderer.send('send-command', command),
+  onAddConsole: on('add-console'),
+  sendCommand: send('send-command'),
 };
 
 contextBridge.exposeInMainWorld('API', API);

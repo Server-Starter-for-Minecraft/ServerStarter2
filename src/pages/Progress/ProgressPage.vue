@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { getStore, setStatus, setProgress } from './ProgressStore';
-const store = getStore()
+const store = getStore();
+
+// Eulaの同意処理
+// TODO:Eula確認画面の表示 (現状問答無用でtrueを返すようになっている)
+window.API.handleEula(async (event: Electron.IpcRendererEvent) => {
+  return true;
+});
 
 window.ProgressAPI.onUpdateStatus((_event, value) => {
-  setStatus(value[0])
-  setProgress(value[1])
-})
+  setStatus(value[0]);
+  setProgress(value[1]);
+});
 </script>
 
 <template>
@@ -22,6 +28,12 @@ window.ProgressAPI.onUpdateStatus((_event, value) => {
   <h1>{{ store.message }}</h1>
 
   <div v-if="store.progressRatio != -1">
-    <q-linear-progress :value="store.progressRatio/100" rounded size="20px" color="$primary" class="q-pa-md"/>
+    <q-linear-progress
+      :value="store.progressRatio / 100"
+      rounded
+      size="20px"
+      color="$primary"
+      class="q-pa-md"
+    />
   </div>
 </template>
