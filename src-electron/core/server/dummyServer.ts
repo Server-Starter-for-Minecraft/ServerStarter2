@@ -1,5 +1,5 @@
 import { dialog } from 'electron';
-import { addConsole, setProgressStatus } from '../utils/senders';
+import { addConsole, setProgressStatus } from '../api/senders';
 import { sleep } from '../utils/testTools';
 import { World } from './world/world';
 
@@ -24,17 +24,17 @@ export async function readyDummy(event: Electron.IpcMainInvokeEvent, world: Worl
         await sleep(0.1)
     }
 
-    // Eulaの同意（失敗した場合などのエラー処理も）
-    const options: Electron.MessageBoxOptions = {
-        type: 'question',
-        title: 'Server Starter 2',
-        message: 'Eulaに同意しますか',
-        buttons: ['はい', 'いいえ'],
-        cancelId: -1,
-        defaultId: 0
-    }
-    const res = dialog.showMessageBoxSync(options)
-    console.log(res)
+    // // Eulaの同意（失敗した場合などのエラー処理も）
+    // const options: Electron.MessageBoxOptions = {
+    //     type: 'question',
+    //     title: 'Server Starter 2',
+    //     message: 'Eulaに同意しますか',
+    //     buttons: ['はい', 'いいえ'],
+    //     cancelId: -1,
+    //     defaultId: 0
+    // }
+    // const res = dialog.showMessageBoxSync(options)
+    // console.log(res)
 
     // 二，三個の適当なプロセスもどき
     await sleep(2)

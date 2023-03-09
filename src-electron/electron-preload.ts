@@ -29,18 +29,23 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
+import { IMainProcess, IConsoleProcess, IProgressProcess } from '../src/global';
 
-contextBridge.exposeInMainWorld('API', {
-    test: () => ipcRenderer.invoke('TEST'),
-    readyServer: (world) => ipcRenderer.invoke('ReadyServer', world),
-    runServer: (world) => ipcRenderer.invoke('RunServer', world),
-});
+const API: IMainProcess = {
+  test: () => ipcRenderer.invoke('TEST'),
+  readyServer: (world) => ipcRenderer.invoke('ReadyServer', world),
+  runServer: (world) => ipcRenderer.invoke('RunServer', world),
+};
 
-contextBridge.exposeInMainWorld('ProgressAPI', {
-    onUpdateStatus: (callback) => ipcRenderer.on('update-status', callback)
-})
+const ProgressAPI: IProgressProcess = {
+  onUpdateStatus: (callback) => ipcRenderer.on('update-status', callback),
+};
 
-contextBridge.exposeInMainWorld('ConsoleAPI', {
-    onAddConsole: (callback) => ipcRenderer.on('add-console', callback),
-    sendCommand: (command:string) =>ipcRenderer.send('send-command', command)
-})
+const ConsoleAPI: IConsoleProcess = {
+  onAddConsole: (callback) => ipcRenderer.on('add-console', callback),
+  sendCommand: (command: string) => ipcRenderer.send('send-command', command),
+};
+
+contextBridge.exposeInMainWorld('API', API);
+contextBridge.exposeInMainWorld('ProgressAPI', ProgressAPI);
+contextBridge.exposeInMainWorld('ConsoleAPI', ConsoleAPI);
