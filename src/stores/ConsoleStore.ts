@@ -7,8 +7,8 @@ const consoleStore = defineStore('consoleStore', {
     }
   },
   getters: {
-    brConsole(state) {
-      return state.console.concat(['　'])
+    Console(state) {
+      return state.console
     }
   }
 })

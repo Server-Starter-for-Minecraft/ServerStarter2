@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { addConsole, getStore } from './ConsoleStore';
+import { addConsole, getStore } from '../../stores/ConsoleStore';
 
 // 自動スクロール
 function autoScroll() {
@@ -23,7 +23,6 @@ const command = ref('')
 
 // コンソール表示
 window.ConsoleAPI.onAddConsole((_event, value) => {
-  addConsole(value[0])
   autoScroll()
 })
 </script>
@@ -31,9 +30,10 @@ window.ConsoleAPI.onAddConsole((_event, value) => {
 <template>
   <div class="q-pa-md">
     <div id="scroll" class="q-pl-sm q-pt-sm console">
-      <div v-for="item in items.brConsole" :key="item" style="width: max-content;">
-        <p>{{ item }}</p>
-      </div>
+      <p v-for="item in items.Console" :key="item" style="width: max-content;">
+        {{ item }}<br>
+      </p>
+      <br>
     </div>
     <div class="row q-pt-md">
       <q-btn @click="sendCommand('stop')" color="red" label="stop"/>

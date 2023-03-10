@@ -96,7 +96,7 @@ export async function runDummy(
   world: World
 ) {
   // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
-  await sleep(0.5);
+  // await sleep(0.5);
 
   // サーバーの起動
   // TODO: 「world.run()は関数でない」と言われるエラーの解決
