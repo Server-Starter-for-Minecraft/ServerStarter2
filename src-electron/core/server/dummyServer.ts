@@ -6,7 +6,7 @@ import { World } from './world/world';
 // 処理フロー
 // １．フロントがProgressPageに遷移
 // ２．フロントからバックのrunServer()を呼び出し
-// ３．runServer()の終了をフロントに通知
+// ３．startServer()でサーバー起動をフロントに通知
 // ４．通知を受けてフロントがConsolePageに遷移
 // ５．バックよりConsolePageの内容を更新
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
