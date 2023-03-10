@@ -43,7 +43,7 @@ import type {
   OnChannel,
   InvokeChannel,
   HandleChannel,
-} from './core/api/channels';
+} from './api/channels';
 
 // WindowからMainのイベントを発火
 const send =

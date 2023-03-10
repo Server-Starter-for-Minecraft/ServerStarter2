@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 import { runDummy, runCommand } from './core/server/dummyServer';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from './ipc_util';
-import { InvokeChannel, SendChannel } from './core/api/channels';
+import { InvokeChannel, SendChannel } from './api/channels';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();

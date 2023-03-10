@@ -1,5 +1,5 @@
-import { invokeEula } from '../api/invokers';
-import { addConsole, setProgressStatus, startServer } from '../api/senders';
+import { invokeEula } from '../../api/invokers';
+import { addConsole, setProgressStatus, startServer } from '../../api/senders';
 import { sleep } from '../utils/testTools';
 import { World } from './world/world';
 

@@ -6,7 +6,7 @@ import {
   InvokeChannel,
   OnChannel,
   SendChannel,
-} from './core/api/channels';
+} from './api/channels';
 
 export const ipcHandle: (
   channel: HandleChannel,
@@ -32,7 +32,7 @@ export async function ipcInvoke<T>(
   return await new Promise<T>((resolve) => {
     ipcMain.on(
       '__handle_' + channel,
-      (event: Electron.IpcMainEvent, result:any) => {
+      (event: Electron.IpcMainEvent, result: any) => {
         resolve(result);
       }
     );
