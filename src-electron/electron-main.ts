@@ -56,6 +56,7 @@ function createWindow() {
   ipcOn('send-command', runCommand);
 }
 
+/** MainからMainWindowの処理を呼び出し非同期で待機する */
 export async function invokeMainWindow<T>(
   channel: InvokeChannel,
   ...args: any[]
@@ -67,6 +68,7 @@ export async function invokeMainWindow<T>(
   }
 }
 
+/** MainからMainWindowの処理を同期で発火する */
 export function sendMainWindow(channel: SendChannel, ...args: any[]) {
   if (mainWindow) {
     ipcSend(mainWindow, channel, args);
