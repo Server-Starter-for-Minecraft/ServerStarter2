@@ -10,7 +10,7 @@ import { World } from './world/world';
 // ４．通知を受けてフロントがConsolePageに遷移
 // ５．バックよりConsolePageの内容を更新
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
-export async function runDummy(
+export async function runServer(
   event: Electron.IpcMainInvokeEvent,
   world: World
 ) {

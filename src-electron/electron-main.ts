@@ -3,7 +3,7 @@
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import path from 'path';
 import os from 'os';
-import { runDummy, runCommand } from './core/server/dummyServer';
+import { runServer, runCommand } from './core/server/dummyServer';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from './ipc_util';
 import { InvokeChannel, SendChannel } from './api/channels';
 
@@ -52,7 +52,7 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  ipcHandle('RunServer', runDummy);
+  ipcHandle('RunServer', runServer);
   ipcOn('send-command', runCommand);
 }
 
