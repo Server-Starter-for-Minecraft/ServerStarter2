@@ -10,7 +10,7 @@ declare global {
 }
 
 export interface IMainProcess {
-  readyServer: (world: World) => Promise<void>;
+  onStartServer: (callback: (event: IpcRendererEvent) => void) => void;
   runServer: (world: World) => Promise<void>;
   handleEula: (
     handler: (event: Electron.IpcRendererEvent) => Promise<boolean>

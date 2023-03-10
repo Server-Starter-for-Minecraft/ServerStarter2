@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { addConsole, getStore } from '../../stores/ConsoleStore';
+import { getStore } from '../../stores/ConsoleStore';
 
 // 自動スクロール
 function autoScroll() {
@@ -22,7 +22,7 @@ const items = getStore()
 const command = ref('')
 
 // コンソール表示
-window.ConsoleAPI.onAddConsole((_event, value) => {
+window.ConsoleAPI.onAddConsole(() => {
   autoScroll()
 })
 </script>

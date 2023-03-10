@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/no-explicit-any: 0 */
+
 /**
  * This file is used specifically for security reasons.
  * Here you can access Nodejs stuff and inject functionality into
@@ -76,7 +78,7 @@ const handle =
   };
 
 const API: IMainProcess = {
-  readyServer: invoke('ReadyServer'),
+  onStartServer: on('startServer'),
   runServer: invoke('RunServer'),
   handleEula: handle('InvokeEula'),
 };

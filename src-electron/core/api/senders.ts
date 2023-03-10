@@ -7,3 +7,7 @@ export function setProgressStatus(title: string, progressRatio = -1) {
 export function addConsole(text: string) {
   sendMainWindow('add-console', text);
 }
+
+export function startServer() {
+  sendMainWindow('startServer');
+}

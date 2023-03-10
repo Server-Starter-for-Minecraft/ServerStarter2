@@ -1,6 +1,5 @@
-import { dialog } from 'electron';
 import { invokeEula } from '../api/invokers';
-import { addConsole, setProgressStatus } from '../api/senders';
+import { addConsole, setProgressStatus, startServer } from '../api/senders';
 import { sleep } from '../utils/testTools';
 import { World } from './world/world';
 
@@ -11,7 +10,7 @@ import { World } from './world/world';
 // ４．通知を受けてフロントがConsolePageに遷移
 // ５．バックよりConsolePageの内容を更新
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
-export async function readyDummy(
+export async function runDummy(
   event: Electron.IpcMainInvokeEvent,
   world: World
 ) {
@@ -39,7 +38,7 @@ export async function readyDummy(
   // }
   // const res = dialog.showMessageBoxSync(options)
   // console.log(res)
-  
+
   // Eulaの同意
   const result = await invokeEula();
   console.log('eula:', result);
@@ -50,6 +49,36 @@ export async function readyDummy(
   await sleep(2);
   setProgressStatus('サーバーを起動するよ');
   await sleep(1);
+
+  // サーバー起動をWindowに知らせる
+  startServer();
+
+  // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
+  // await sleep(0.5);
+
+  // サーバーの起動
+  // TODO: 「world.run()は関数でない」と言われるエラーの解決
+  console.log(world.version.verType);
+  // world.run()
+
+  // 表示画面にコンソールの中身を順次転送
+  for (let i = 0; i < demoConsoles.length; i++) {
+    addConsole(demoConsoles[i]);
+    await sleep(0.25);
+  }
+}
+
+export function runCommand(
+  event: Electron.IpcMainInvokeEvent,
+  command: string
+) {
+  console.log(command);
+  if (command == 'reboot') {
+    // TODO: 再起動に関する実装を行う
+    addConsole('Reboot Server');
+  } else {
+    addConsole(`/${command}`);
+  }
 }
 
 const demoConsoles = [
@@ -90,35 +119,3 @@ const demoConsoles = [
   '[02:05:43] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved',
   '[02:05:43] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved',
 ];
-
-export async function runDummy(
-  event: Electron.IpcMainInvokeEvent,
-  world: World
-) {
-  // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
-  // await sleep(0.5);
-
-  // サーバーの起動
-  // TODO: 「world.run()は関数でない」と言われるエラーの解決
-  console.log(world.version.verType);
-  // world.run()
-
-  // 表示画面にコンソールの中身を順次転送
-  for (let i = 0; i < demoConsoles.length; i++) {
-    addConsole(demoConsoles[i]);
-    await sleep(0.25);
-  }
-}
-
-export function runCommand(
-  event: Electron.IpcMainInvokeEvent,
-  command: string
-) {
-  console.log(command)
-  if (command == 'reboot') {
-    // TODO: 再起動に関する実装を行う
-    addConsole('Reboot Server');
-  } else {
-    addConsole(`/${command}`);
-  }
-}

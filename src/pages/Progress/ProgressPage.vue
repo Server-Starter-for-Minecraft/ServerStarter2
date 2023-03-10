@@ -4,7 +4,7 @@ const store = getStore();
 
 // Eulaの同意処理
 // TODO:Eula確認画面の表示 (現状問答無用でtrueを返すようになっている)
-window.API.handleEula(async (event: Electron.IpcRendererEvent) => {
+window.API.handleEula(async (_: Electron.IpcRendererEvent) => {
   return true;
 });
 

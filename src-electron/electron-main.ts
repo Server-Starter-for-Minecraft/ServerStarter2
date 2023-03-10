@@ -1,7 +1,9 @@
-import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
+/* eslint @typescript-eslint/no-explicit-any: 0 */
+
+import { app, BrowserWindow, nativeTheme } from 'electron';
 import path from 'path';
 import os from 'os';
-import { readyDummy, runDummy, runCommand } from './core/server/dummyServer';
+import { runDummy, runCommand } from './core/server/dummyServer';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from './ipc_util';
 import { InvokeChannel, SendChannel } from './core/api/channels';
 
@@ -50,7 +52,6 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  ipcHandle('ReadyServer', readyDummy);
   ipcHandle('RunServer', runDummy);
   ipcOn('send-command', runCommand);
 }
