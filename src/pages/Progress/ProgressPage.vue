@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getStore, setStatus, setProgress } from './ProgressStore';
+import { getStore, setStatus, setProgress } from '../../stores/ProgressStore';
 const store = getStore();
 
 // Eulaの同意処理
