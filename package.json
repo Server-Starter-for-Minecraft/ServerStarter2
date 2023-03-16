@@ -5,6 +5,7 @@
   "productName": "ServerStarter2",
   "author": "CivilTT, txkodo",
   "private": true,
+  "type":"module",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
