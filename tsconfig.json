@@ -1,8 +1,13 @@
 {
   "extends": "@quasar/app-vite/tsconfig-preset",
   "compilerOptions": {
-    "baseUrl": "./",
+    "baseUrl": ".",
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "src-electron/**/*.ts"]
+  "include": ["src/**/*.ts", "src-electron/**/*.ts", "src/**/*.vue"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "ESNext"
+    }
+  }
 }
