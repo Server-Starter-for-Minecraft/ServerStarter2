@@ -1,10 +1,13 @@
 import { createHash } from 'crypto';
-import { createReadStream, promises } from 'fs';
-import fetch from 'node-fetch';
+import { promises } from 'fs';
+import { utilLoggers } from '../logger.js';
 import { Path } from '../path/path.js';
 import { isSuccess, Failable, isFailure } from '../result.js';
+import fetch from 'node-fetch';
 
 export class BytesDataError extends Error {}
+
+const loggers = utilLoggers.child('BytesData');
 
 /** BlobやFile等のBytesデータのクラス */
 export class BytesData {
@@ -17,22 +20,36 @@ export class BytesData {
     url: string,
     hash: string | undefined = undefined
   ): Promise<Failable<BytesData>> {
+    const logger = loggers.operation('READ_FROM_URL', { url, hash });
+
+    logger.start();
+
     try {
       const res = await fetch(url);
       if (!res.ok) {
+        logger.fail({ status: res.status, statusText: res.statusText });
         return new BytesDataError(
           `failed to fetch ${url} status: ${res.status} ${res.statusText}`
         );
       }
       const buffer = await res.arrayBuffer();
       const result = new BytesData(buffer);
-      if (hash === undefined) return result;
+
+      if (hash === undefined) {
+        logger.success();
+        return result;
+      }
       const calcHash = await result.sha1();
-      if (hash === calcHash) return result;
-      return new BytesDataError(
-        `hash value unmatch expected: ${hash} calculated: ${calcHash}`
-      );
+      if (hash === calcHash) {
+        logger.success();
+        return result;
+      }
+
+      const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
+      logger.fail(`${msg}`);
+      return new BytesDataError(msg);
     } catch (e) {
+      logger.fail();
       return e as Error;
     }
   }
@@ -41,17 +58,26 @@ export class BytesData {
     path: string,
     hash: string | undefined = undefined
   ): Promise<Failable<BytesData>> {
+    const logger = loggers.operation('READ_FROM_PATH', { path, hash });
+    logger.start();
+
     try {
       const buffer = await promises.readFile(path);
       const data = new BytesData(buffer);
-      if (hash === undefined) return data;
+      if (hash === undefined) {
+        logger.success();
+        return data;
+      }
       const calcHash = await data.sha1();
-      if (hash === calcHash) return data;
-      console.log(`hash value unmatch expected: ${hash} calculated: ${calcHash}`);
-      return new BytesDataError(
-        `hash value unmatch expected: ${hash} calculated: ${calcHash}`
-      );
+      if (hash === calcHash) {
+        logger.success();
+        return data;
+      }
+      const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
+      logger.fail(msg);
+      return new BytesDataError(msg);
     } catch (e) {
+      logger.fail();
       // TODO:黒魔術の解消
       return e as unknown as Error;
     }
@@ -69,11 +95,17 @@ export class BytesData {
    * TODO: ファイルに出力
    */
   async write(path: string) {
-    await promises.writeFile(path, Buffer.from(this.data));
+    const logger = loggers.operation('WRITE_TO_PATH', { path });
+    logger.start();
+    try {
+      await promises.writeFile(path, Buffer.from(this.data));
+      logger.success();
+    } catch (e) {
+      logger.fail(e);
+    }
   }
 
   /**
-   *
    * @param path
    * @param url
    * @param hash ローカル保存にのみ参照するデータの整合性チェックのためのsha1ハッシュ値
@@ -88,6 +120,14 @@ export class BytesData {
     prioritizeUrl: boolean = true,
     updateLocal: boolean = true
   ): Promise<Failable<BytesData>> {
+    const logger = loggers.operation('READ_FROM_URL_OR_PATH', {
+      path,
+      url,
+      hash,
+      prioritizeUrl,
+      updateLocal,
+    });
+    logger.start();
     if (prioritizeUrl) {
       const data = await BytesData.fromURL(url);
       if (isSuccess(data)) {
@@ -95,20 +135,34 @@ export class BytesData {
           await new Path(path).parent().mkdir(true);
           await data.write(path);
         }
+        logger.success();
         return data;
       }
-      return await BytesData.fromPath(path, hash);
+      const result = await BytesData.fromPath(path, hash);
+      if (isSuccess(result)) {
+        logger.fail();
+      } else {
+        logger.success();
+      }
+      return result;
     } else {
       let data = await BytesData.fromPath(path, hash);
-      if (isSuccess(data)) return data;
+      if (isSuccess(data)) {
+        logger.success();
+        return data;
+      }
 
       data = await BytesData.fromURL(url);
-      if (isFailure(data)) return data;
+      if (isFailure(data)) {
+        logger.fail();
+        return data;
+      }
 
       if (updateLocal) {
         await new Path(path).parent().mkdir(true);
         await data.write(path);
       }
+      logger.success();
       return data;
     }
   }

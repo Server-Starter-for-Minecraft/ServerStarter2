@@ -20,6 +20,7 @@ const bipath = new Path('bin/runtime');
  */
 export async function readyJava(component: component): Promise<Failable<Path>> {
   const json = await getAllJson();
+
   if (isFailure(json)) return json;
 
   const manifest = json[osPlatform][component][0].manifest;
