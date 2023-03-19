@@ -15,3 +15,13 @@ html {
     background-color: rgba($color: black, $alpha: 0.5);
     border-radius: 100px;
 }
+
+
+// dark mode or light mode
+body.body--light {
+  background-color: whitesmoke;
+}
+
+body.body--dark {
+  background-color: gray;
+}
