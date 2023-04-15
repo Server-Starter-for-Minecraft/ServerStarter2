@@ -68,10 +68,10 @@ function cursorClicked() {
     style="max-height: 85%;"
     :items="showWorldList"
     separator
-    v-slot="{ item }"
+    v-slot="{ item, index }"
     class="q-pa-sm list"
   >
-    <world-vue :world="item"/>
+    <world-vue :world="item" :idx="index"/>
   </q-virtual-scroll>
 
   <div v-show="showWorldList.length==0" class="notFound">

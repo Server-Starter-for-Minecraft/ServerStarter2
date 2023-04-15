@@ -1,7 +1,7 @@
+import { World } from 'app/src-electron/api/scheme';
 import { invokeEula } from '../../api/invokers';
 import { addConsole, setProgressStatus, startServer } from '../../api/senders';
 import { sleep } from '../utils/testTools';
-import { World } from './world/world';
 
 // 処理フロー
 // １．フロントがProgressPageに遷移
@@ -12,12 +12,14 @@ import { World } from './world/world';
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
 export async function runServer(
   event: Electron.IpcMainInvokeEvent,
-  world: World
+  world: string
 ) {
+  // TODO: 自作インスタンスについては文字列化して通信する
+  const deserializeWorld = JSON.parse(world) as World
   // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
   await sleep(0.5);
 
-  setProgressStatus(`${world.version.name} / ${world.name}を起動中`);
+  setProgressStatus(`${deserializeWorld.settings.version.id} / ${deserializeWorld.name}を起動中`);
   await sleep(5);
 
   // リモート関連のプログレスバー
@@ -53,13 +55,8 @@ export async function runServer(
   // サーバー起動をWindowに知らせる
   startServer();
 
-  // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
-  // await sleep(0.5);
-
   // サーバーの起動
-  // TODO: 「world.run()は関数でない」と言われるエラーの解決
-  console.log(world.version.verType);
-  // world.run()
+  // startServer(world)
 
   // 表示画面にコンソールの中身を順次転送
   for (let i = 0; i < demoConsoles.length; i++) {

@@ -1,4 +1,3 @@
-import { World } from 'app/src-electron/core/server/world/world';
 import { IpcRendererEvent } from 'electron';
 
 declare global {
@@ -11,7 +10,7 @@ declare global {
 
 export interface IMainProcess {
   onStartServer: (callback: (event: IpcRendererEvent) => void) => void;
-  runServer: (world: World) => Promise<void>;
+  runServer: (world: string) => Promise<void>;
   handleEula: (
     handler: (event: Electron.IpcRendererEvent) => Promise<boolean>
   ) => void;
