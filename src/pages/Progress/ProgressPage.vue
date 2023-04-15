@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
-import { getStore, setStatus, setProgress } from '../../stores/ProgressStore';
-const store = getStore();
-
+import { progressStore } from '../../stores/ProgressStore';
 let agree: Ref<((value: boolean) => void) | null> = ref(null);
 
 // Eulaの同意処理
@@ -18,8 +16,8 @@ window.API.handleEula(async (_: Electron.IpcRendererEvent) => {
 });
 
 window.ProgressAPI.onUpdateStatus((_event, value) => {
-  setStatus(value[0]);
-  setProgress(value[1]);
+  progressStore().message = value[0];
+  progressStore().progressRatio = value[1];
 });
 </script>
 
@@ -34,11 +32,11 @@ window.ProgressAPI.onUpdateStatus((_event, value) => {
     class="q-ma-md"
   />
 
-  <h1>{{ store.message }}</h1>
+  <h1>{{ progressStore().message }}</h1>
 
-  <div v-if="store.progressRatio != -1">
+  <div v-if="progressStore().progressRatio != -1">
     <q-linear-progress
-      :value="store.progressRatio / 100"
+      :value="progressStore().progressRatio / 100"
       rounded
       size="20px"
       color="$primary"

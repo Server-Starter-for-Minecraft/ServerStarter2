@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import iconBtn from 'app/src/components/util/iconButton.vue'
+import { systemStore } from 'src/stores/SystemStore';
 const autoShutdown = ref(true)
 </script>
 
@@ -11,12 +12,12 @@ const autoShutdown = ref(true)
         <span class="title">Server Starter for Minecraft</span>
       </q-toolbar-title>
 
-      <div>ver 2.α.0.0</div>
+      <div>ver {{ systemStore().systemVersion }}</div>
     </q-toolbar>
 
     <q-item class="q-pa-md row">
       <q-item-section>
-        <p class="q-pl-md q-pt-lg">IP. 000.111.222.333</p>
+        <p class="q-pl-md q-pt-lg">IP. {{ systemStore().publicIP }}</p>
         <q-checkbox v-model="autoShutdown">サーバー終了後にPCを自動シャットダウンする</q-checkbox>
       </q-item-section>
       <q-item-section side>

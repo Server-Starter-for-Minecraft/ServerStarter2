@@ -64,6 +64,7 @@ const runBtnHovered = ref(false)
   </q-item-section>
   <q-item-section side v-show="clicked || itemHovered">
     <div class="row">
+      <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
       <icon-btn icon="edit" text="ワールド編集"/>
       <icon-btn icon="folder_open" text="データを開く"/>
       <icon-btn icon="delete" text="削除"/>
