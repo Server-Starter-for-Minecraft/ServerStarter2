@@ -1,4 +1,7 @@
 // app global css in SCSS form
+p {
+  font-size: 14pt;
+}
 
 // スクロールバー
 html {
@@ -12,16 +15,16 @@ html {
     background: transparent;
 } 
 ::-webkit-scrollbar-thumb {
-    background-color: rgba($color: black, $alpha: 0.5);
+    background-color: rgba($color: $primary, $alpha: 0.8);
     border-radius: 100px;
 }
 
 
 // dark mode or light mode
 body.body--light {
-  background-color: whitesmoke;
+  background-color: lightgray;
 }
 
 body.body--dark {
-  background-color: gray;
+  background-color: #3B3B3B;
 }

@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import iconBtn from '../util/iconButton.vue'
+import { World } from 'app/src-electron/api/scheme';
+import { useRouter } from 'vue-router';
 
-defineProps(['avater', 'version', 'worldName'])
+interface Props {
+  world: World
+}
+const prop = defineProps<Props>()
 
 const showRunBtn = ref(false)
 const showEditBtns = ref(false)
@@ -21,29 +26,29 @@ const showEditBtns = ref(false)
     @mouseleave="showRunBtn = false"
   >
     <q-avatar square size="60px">
-      <q-img :src="avater" :ratio="1"/>
+      <q-img :src="world.settings.avater_path" :ratio="1"/>
       <q-btn
         v-show="showRunBtn"
         flat
         dense
         size="30px"
         icon="play_arrow"
-        text-color="red"
+        text-color="white"
         class="absolute-center hantoumei"
       />
     </q-avatar>
   </q-item-section>
   <q-item-section>
     <div>
-      <p class="worldName">{{ worldName }}</p>
-      <p class="versionName">{{ version }}</p>
+      <p class="worldName">{{ world.name }}</p>
+      <p class="versionName">{{ world.settings.version.id }}</p>
     </div>
   </q-item-section>
   <q-item-section side v-show="showEditBtns">
     <div class="row">
-      <icon-btn icon="edit" text="ワールド編集" color="red"/>
-      <icon-btn icon="folder_open" text="データを開く" color="red"/>
-      <icon-btn icon="delete" text="削除" color="red"/>
+      <icon-btn icon="edit" text="ワールド編集"/>
+      <icon-btn icon="folder_open" text="データを開く"/>
+      <icon-btn icon="delete" text="削除"/>
     </div>
   </q-item-section>
 </q-item>
@@ -65,6 +70,6 @@ const showEditBtns = ref(false)
 }
 
 .hantoumei {
-  background-color: rgba($color: white, $alpha: 0.7);
+  background-color: rgba($color: $primary, $alpha: 0.7);
 }
 </style>

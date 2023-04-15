@@ -1,11 +1,10 @@
 {
-  "name": "serverstarter2",
+  "name": "ServerStarter2",
   "version": "2.0.0.0",
   "description": "start Minecraft server only ONE click !",
   "productName": "ServerStarter2",
   "author": "CivilTT, txkodo",
   "private": true,
-  "type": "module",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
