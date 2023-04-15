@@ -12,9 +12,9 @@ function autoScroll() {
 }
 
 // コマンドの送信
-function sendCommand(command:string) {
-  console.log('send_command:'+command)
-  window.ConsoleAPI.sendCommand(command)
+function sendCommand(sendCommand:string) {
+  window.ConsoleAPI.sendCommand(sendCommand)
+  command.value = ''
 }
 
 
@@ -37,7 +37,7 @@ window.ConsoleAPI.onAddConsole(() => {
     </div>
     <div class="row q-pt-md">
       <q-btn @click="sendCommand('stop')" color="red" label="stop"/>
-      <q-btn @click="sendCommand('reboot')" color="green" label="reboot"/>
+      <q-btn @click="sendCommand('reboot')" color="blue" label="reboot"/>
       <q-input filled clearable v-model="command" v-on:keydown.enter="sendCommand(command)" label="Command"/>
       <q-btn @click="sendCommand(command)" color="primary" label="send"/>
     </div>
@@ -53,7 +53,6 @@ p {
 }
 
 .console {
-  background-color: lightgray;
   overflow: scroll;
   height: calc(90vh - 100px);
 }

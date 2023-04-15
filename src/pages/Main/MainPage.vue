@@ -31,6 +31,6 @@ const goProgress = async () => {
   <!-- 230はHeader-vueの高さ -->
   <div style="height: calc(100vh - 230pt)">
     <world-list-vue/>
-    <!-- <q-btn @click="runServer(world)">Run Server</q-btn> -->
+    <q-btn @click="runServer(world)">Run Server</q-btn>
   </div>
 </template>
