@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { progressStore } from '../stores/ProgressStore';
+import headerVue from 'app/src/components/util/HeaderVue.vue'
+import { systemStore } from 'src/stores/SystemStore';
 let agree: Ref<((value: boolean) => void) | null> = ref(null);
 
 // Eulaの同意処理
-// TODO:Eula確認画面の表示 (現状問答無用でtrueを返すようになっている)
 window.API.handleEula(async (_: Electron.IpcRendererEvent) => {
   const promise = new Promise<boolean>((resolve) => {
     agree.value = (value: boolean) => {
@@ -22,27 +23,45 @@ window.ProgressAPI.onUpdateStatus((_event, value) => {
 </script>
 
 <template>
-  <q-circular-progress
-    indeterminate
-    size="50px"
-    :thickness="0.22"
-    rounded
-    color="primary"
-    track-color="grey-3"
-    class="q-ma-md"
+  <header-vue
+    main-title="(world name)"
+    sub-title="(world version)"
+    :side-text="`IP. ${systemStore().publicIP}`"
   />
 
-  <h1>{{ progressStore().message }}</h1>
-
-  <div v-if="progressStore().progressRatio != -1">
-    <q-linear-progress
-      :value="progressStore().progressRatio / 100"
+  <div class="absolute-center circle">
+    <q-circular-progress
+      indeterminate
+      size="50px"
+      :thickness="0.22"
       rounded
-      size="20px"
-      color="$primary"
-      class="q-pa-md"
+      color="primary"
+      track-color="grey-3"
+      class="q-ma-md"
     />
+  
+    <p class="message">{{ progressStore().message }}</p>
+    <div v-show="progressStore().progressRatio != -1">
+      <q-linear-progress
+        :value="progressStore().progressRatio / 100"
+        rounded
+        color="$primary"
+        class="q-pa-md"
+        style="max-height: 1pt;"
+      />
+    </div>
+    <q-btn v-show="agree" @click="agree?.(true)">AGREE EULA!!</q-btn>
+    <q-btn v-show="agree" @click="agree?.(false)">DISAGREE EULA!!</q-btn>
   </div>
-  <q-btn v-if="agree" @click="agree?.(true)">AGREE EULA!!</q-btn>
-  <q-btn v-if="agree" @click="agree?.(false)">DISAGREE EULA!!</q-btn>
+
 </template>
+
+<style scoped lang="scss">
+.circle {
+  text-align: center;
+}
+
+.message {
+  font-size: 20pt;
+}
+</style>

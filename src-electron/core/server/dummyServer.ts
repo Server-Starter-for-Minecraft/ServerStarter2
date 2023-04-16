@@ -18,10 +18,10 @@ export async function runServer(
   const deserializeWorld = JSON.parse(world) as World
   // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
   await sleep(0.5);
-
+  
   setProgressStatus(`${deserializeWorld.settings.version.id} / ${deserializeWorld.name}を起動中`);
   await sleep(5);
-
+  
   // リモート関連のプログレスバー
   const array = [...Array(101)].map((_, i) => i);
   for (let i = 0; i < array.length; i++) {
