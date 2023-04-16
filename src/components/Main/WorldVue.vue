@@ -14,7 +14,7 @@ const prop = defineProps<Props>()
 
 const router = useRouter();
 const goProgress = async () => {
-  await router.push('progress');
+  await router.replace('progress');
 };
 async function runServer() {
   goProgress();

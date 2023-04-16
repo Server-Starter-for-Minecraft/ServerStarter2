@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router';
 // コードからRouterへアクセス
 const router = useRouter();
 const goConsole = async () => {
-  await router.push('console');
+  await router.replace('console');
 };
 
 window.API.onStartServer((_: Electron.IpcRendererEvent) => goConsole());
