@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { consoleStore } from '../../stores/ConsoleStore';
+import { consoleStore } from '../stores/ConsoleStore';
 
 // 自動スクロール
 function autoScroll() {

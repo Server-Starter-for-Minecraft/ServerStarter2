@@ -21,7 +21,7 @@ const autoShutdown = ref(true)
         <q-checkbox v-model="autoShutdown">サーバー終了後にPCを自動シャットダウンする</q-checkbox>
       </q-item-section>
       <q-item-section side>
-        <icon-btn icon="tune" size="16pt" text="詳細設定"/>
+        <icon-btn icon="tune" size="16pt" text="詳細設定" to="settings"/>
       </q-item-section>
     </q-item>
   </q-header>

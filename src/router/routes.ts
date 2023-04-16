@@ -5,9 +5,11 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('src/pages/Main/MainPage.vue') },
-      { path: 'progress', component: () => import('src/pages/Progress/ProgressPage.vue') },
-      { path: 'console', component: () => import('src/pages/Console/ConsolePage.vue') }
+      { path: '', component: () => import('src/pages/MainPage.vue') },
+      { path: 'progress', component: () => import('src/pages/ProgressPage.vue') },
+      { path: 'console', component: () => import('src/pages/ConsolePage.vue') },
+      { path: 'new-world', component: () => import('src/pages/NewWorldPage.vue') },
+      { path: 'settings', component: () => import('src/pages/SettingsPage.vue') },
     ],
   },
 

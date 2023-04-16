@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
-import { progressStore } from '../../stores/ProgressStore';
+import { progressStore } from '../stores/ProgressStore';
 let agree: Ref<((value: boolean) => void) | null> = ref(null);
 
 // Eulaの同意処理

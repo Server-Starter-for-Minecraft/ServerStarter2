@@ -34,7 +34,7 @@ function cursorClicked() {
   <q-item class="q-pa-md list">
     <q-item-section>
       <div class="row">
-        <q-btn color="primary">新規作成</q-btn>
+        <q-btn color="primary" to="new-world">新規作成</q-btn>
 
         <q-input
           v-model="text"
