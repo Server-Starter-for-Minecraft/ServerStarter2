@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { progressStore } from '../stores/ProgressStore';
-import headerVue from 'app/src/components/util/HeaderVue.vue'
-import { systemStore } from 'src/stores/SystemStore';
 let agree: Ref<((value: boolean) => void) | null> = ref(null);
 
 // Eulaの同意処理
@@ -23,12 +21,6 @@ window.ProgressAPI.onUpdateStatus((_event, value) => {
 </script>
 
 <template>
-  <header-vue
-    main-title="(world name)"
-    sub-title="(world version)"
-    :side-text="`IP. ${systemStore().publicIP}`"
-  />
-
   <div class="absolute-center circle">
     <q-circular-progress
       indeterminate

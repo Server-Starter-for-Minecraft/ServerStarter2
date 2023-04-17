@@ -14,10 +14,8 @@ export async function runServer(
   event: Electron.IpcMainInvokeEvent,
   world: string
 ) {
-  // TODO: 自作インスタンスについては文字列化して通信する
+  // 自作インスタンスについては文字列化して通信する
   const deserializeWorld = JSON.parse(world) as World
-  // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
-  await sleep(0.5);
   
   setProgressStatus(`${deserializeWorld.settings.version.id} / ${deserializeWorld.name}を起動中`);
   await sleep(5);

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import iconBtn from '../util/iconButton.vue'
-import { World } from 'app/src-electron/api/scheme';
 import { useRouter } from 'vue-router';
 import { mainStore } from 'src/stores/MainStore';
+import { World } from 'app/src-electron/api/scheme';
+import iconBtn from '../util/iconButton.vue'
 
 interface Props {
   world: World
@@ -17,7 +17,8 @@ const goProgress = async () => {
   await router.replace('progress');
 };
 async function runServer() {
-  goProgress();
+  await goProgress();
+  mainStore().setHeader(prop.world.name, { subTitle: prop.world.settings.version.id })
   await window.API.runServer(JSON.stringify(prop.world));
 }
 
@@ -27,50 +28,50 @@ const runBtnHovered = ref(false)
 </script>
 
 <template>
-<q-item
-  clickable
-  :active="clicked = mainStore().selectedIdx == prop.idx"
-  :focused="clicked = mainStore().selectedIdx == prop.idx"
-  @click="mainStore().selectedIdx = idx"
-  v-on:dblclick="runServer"
-  @mouseover="itemHovered = true"
-  @mouseleave="itemHovered = false"
-  class="worldBlock"
->
-  <q-item-section
-    avatar
-    @mouseover="runBtnHovered = true"
-    @mouseleave="runBtnHovered = false"
+  <q-item
+    clickable
+    :active="clicked = mainStore().selectedIdx == prop.idx"
+    :focused="clicked = mainStore().selectedIdx == prop.idx"
+    @click="mainStore().selectedIdx = idx"
+    v-on:dblclick="runServer"
+    @mouseover="itemHovered = true"
+    @mouseleave="itemHovered = false"
+    class="worldBlock"
   >
-    <q-avatar square size="60px">
-      <q-img :src="world.settings.avater_path" :ratio="1"/>
-      <q-btn
-        v-show="clicked || runBtnHovered"
-        @click="runServer"
-        flat
-        dense
-        size="30px"
-        icon="play_arrow"
-        text-color="white"
-        class="absolute-center hantoumei"
-      />
-    </q-avatar>
-  </q-item-section>
-  <q-item-section>
-    <div>
-      <p class="worldName">{{ world.name }}</p>
-      <p class="versionName">{{ world.settings.version.id }}</p>
-    </div>
-  </q-item-section>
-  <q-item-section side v-show="clicked || itemHovered">
-    <div class="row">
-      <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
-      <icon-btn icon="edit" text="ワールド編集"/>
-      <icon-btn icon="folder_open" text="データを開く"/>
-      <icon-btn icon="delete" text="削除"/>
-    </div>
-  </q-item-section>
-</q-item>
+    <q-item-section
+      avatar
+      @mouseover="runBtnHovered = true"
+      @mouseleave="runBtnHovered = false"
+    >
+      <q-avatar square size="60px">
+        <q-img :src="world.settings.avater_path" :ratio="1"/>
+        <q-btn
+          v-show="clicked || runBtnHovered"
+          @click="runServer"
+          flat
+          dense
+          size="30px"
+          icon="play_arrow"
+          text-color="white"
+          class="absolute-center hantoumei"
+        />
+      </q-avatar>
+    </q-item-section>
+    <q-item-section>
+      <div>
+        <p class="worldName">{{ world.name }}</p>
+        <p class="versionName">{{ world.settings.version.id }}</p>
+      </div>
+    </q-item-section>
+    <q-item-section side v-show="clicked || itemHovered">
+      <div class="row">
+        <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
+        <icon-btn icon="edit" text="ワールド編集"/>
+        <icon-btn icon="folder_open" text="データを開く"/>
+        <icon-btn icon="delete" text="削除"/>
+      </div>
+    </q-item-section>
+  </q-item>
 </template>
 
 <style scoped lang="scss">
