@@ -16,7 +16,7 @@ mainStore().setHeader(
   <q-item class="q-pa-md row expandHeader">
     <q-item-section>
       <p class="q-pl-md q-pt-lg">IP. {{ systemStore().publicIP }}</p>
-      <q-checkbox v-model="autoShutdown">サーバー終了後にPCを自動シャットダウンする</q-checkbox>
+      <q-checkbox v-model="autoShutdown" class="checkbox">サーバー終了後にPCを自動シャットダウンする</q-checkbox>
     </q-item-section>
     <q-item-section side>
       <icon-btn icon="tune" size="16pt" text="詳細設定" to="settings"/>
@@ -27,5 +27,9 @@ mainStore().setHeader(
 <style scoped lang="scss">
 .expandHeader {
   background-color: #1a1a1a;
+}
+
+.checkbox {
+  width: max-content;
 }
 </style>

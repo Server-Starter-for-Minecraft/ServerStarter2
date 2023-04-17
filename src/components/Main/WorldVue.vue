@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { mainStore } from 'src/stores/MainStore';
 import { World } from 'app/src-electron/api/scheme';
 import iconBtn from '../util/iconButton.vue'
+import { systemStore } from 'src/stores/SystemStore';
 
 interface Props {
   world: World
@@ -18,7 +19,13 @@ const goProgress = async () => {
 };
 async function runServer() {
   await goProgress();
-  mainStore().setHeader(prop.world.name, { subTitle: prop.world.settings.version.id })
+  mainStore().setHeader(
+    prop.world.name,
+    {
+      subTitle: prop.world.settings.version.id,
+      sideText: `IP. ${systemStore().publicIP}`
+    }
+  )
   await window.API.runServer(JSON.stringify(prop.world));
 }
 
