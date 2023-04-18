@@ -1,7 +1,7 @@
 import { invokeEula } from '../../api/invokers';
 import { addConsole, setProgressStatus, startServer } from '../../api/senders';
 import { sleep } from '../utils/testTools';
-import { World } from './world/world';
+import { World } from '../../api/scheme';
 
 // 処理フロー
 // １．フロントがProgressPageに遷移
@@ -17,7 +17,7 @@ export async function runServer(
   // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
   await sleep(0.5);
 
-  setProgressStatus(`${world.version.name} / ${world.name}を起動中`);
+  setProgressStatus(`${world?.settings?.version?.id} / ${world.name}を起動中`);
   await sleep(5);
 
   // リモート関連のプログレスバー

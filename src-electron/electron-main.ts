@@ -5,7 +5,6 @@ import path from 'path';
 import os from 'os';
 import { runServer, runCommand } from './core/server/dummyServer';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from './ipc_util';
-import { InvokeChannel, SendChannel } from './api/channels';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -52,8 +51,24 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  ipcHandle('RunServer', runServer);
-  ipcOn('send-command', runCommand);
+  link({
+    back: {
+      handle: {
+        RunServer: runServer,
+      },
+      on: {
+        SendCommand: runCommand,
+      },
+    },
+    front: {
+      handle: {
+        Eula: invokeMainWindow('Eula'),
+      },
+      on: {
+        AddConsole: sendMainWindow('AddConsole'),
+      },
+    },
+  });
 }
 
 /** MainからMainWindowの処理を呼び出し非同期で待機する */

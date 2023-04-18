@@ -1,12 +1,6 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 
 import { BrowserWindow, ipcMain } from 'electron';
-import {
-  HandleChannel,
-  InvokeChannel,
-  OnChannel,
-  SendChannel,
-} from './api/channels';
 
 export const ipcHandle: (
   channel: HandleChannel,

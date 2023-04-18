@@ -78,13 +78,12 @@ export type WorldSettings = {
   properties?: ServerProperties;
   remote?: Remote;
   memory?: number;
-  datapacks?: string[];
-  plugins?: string[];
-  mods?: string[];
-  custom_world?: string;
 };
 
 export type World = {
   name: string;
   settings: WorldSettings;
+  datapacks?: string[];
+  plugins?: string[];
+  mods?: string[];
 };

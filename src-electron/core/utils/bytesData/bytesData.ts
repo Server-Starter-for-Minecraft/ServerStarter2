@@ -20,8 +20,7 @@ export class BytesData {
     url: string,
     hash: string | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('READ_FROM_URL', { url, hash });
-
+    const logger = loggers.operation('fromURL', { url, hash });
     logger.start();
 
     try {
@@ -58,7 +57,7 @@ export class BytesData {
     path: string,
     hash: string | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('READ_FROM_PATH', { path, hash });
+    const logger = loggers.operation('fromPath', { path, hash });
     logger.start();
 
     try {
@@ -95,7 +94,7 @@ export class BytesData {
    * TODO: ファイルに出力
    */
   async write(path: string) {
-    const logger = loggers.operation('WRITE_TO_PATH', { path });
+    const logger = loggers.operation('write', { path });
     logger.start();
     try {
       await promises.writeFile(path, Buffer.from(this.data));
@@ -113,6 +112,7 @@ export class BytesData {
    * @param updateLocal Urlにアクセス出来た場合ローカルのデータを更新する
    * @returns
    */
+
   static async fromPathOrUrl(
     path: string,
     url: string,
@@ -120,7 +120,7 @@ export class BytesData {
     prioritizeUrl: boolean = true,
     updateLocal: boolean = true
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('READ_FROM_URL_OR_PATH', {
+    const logger = loggers.operation('fromPathOrUrl', {
       path,
       url,
       hash,

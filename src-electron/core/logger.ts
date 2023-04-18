@@ -2,21 +2,23 @@ import log4js from 'log4js';
 
 log4js.configure({
   appenders: {
-    out: {
+    _out: {
       type: 'stdout',
       // layout: {
       //   type: 'pattern',
       //   pattern: '[%p: %d] #%c [%m{0,1}] %m{1,2} %m{2}%n',
       // },
     },
-    log: { type: 'file', filename: 'logs/serverstarter.log' },
+    _file: { type: 'file', filename: 'logs/serverstarter.log' },
+    out: { type: 'logLevelFilter', appender: '_out', level: 'info' },
+    file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
   },
   categories: {
-    default: { appenders: ['out', 'log'], level: 'debug' },
+    default: { appenders: ['out', 'file'], level: 'trace' },
   },
 });
 
-// export type loglevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+// export type loglevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
 
 export function getLoggers(category: string | undefined) {
   const logger = log4js.getLogger(category);
@@ -36,15 +38,15 @@ export function getLoggers(category: string | undefined) {
         ')';
       return {
         start(...message: any[]) {
-          logger.debug(operation, 'start', args, ...message);
+          logger.trace(operation, 'start', args, ...message);
         },
 
         success(...message: any[]) {
-          logger.debug(operation, 'success', args, ...message);
+          logger.info(operation, 'success', args, ...message);
         },
 
         fail(...message: any[]) {
-          logger.debug(operation, 'fail', args, ...message);
+          logger.info(operation, 'fail', args, ...message);
         },
 
         trace(...message: any[]) {

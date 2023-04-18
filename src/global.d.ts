@@ -1,31 +1,13 @@
-import { World } from 'app/src-electron/core/server/world/world';
-import { IpcRendererEvent } from 'electron';
+import {
+  FrontAPI,
+  FrontConsoleAPI,
+  FrontProgressAPI,
+} from 'app/src-electron/api/frontend';
 
 declare global {
   interface Window {
-    API: IMainProcess;
-    ProgressAPI: IProgressProcess;
-    ConsoleAPI: IConsoleProcess;
+    API: FrontAPI;
+    ProgressAPI: FrontProgressAPI;
+    ConsoleAPI: FrontConsoleAPI;
   }
-}
-
-export interface IMainProcess {
-  onStartServer: (callback: (event: IpcRendererEvent) => void) => void;
-  runServer: (world: World) => Promise<void>;
-  handleEula: (
-    handler: (event: Electron.IpcRendererEvent) => Promise<boolean>
-  ) => void;
-}
-
-export interface IProgressProcess {
-  onUpdateStatus: (
-    callback: (event: IpcRendererEvent, args: any[]) => void
-  ) => void;
-}
-
-export interface IConsoleProcess {
-  onAddConsole: (
-    callback: (event: IpcRendererEvent, args: string[]) => void
-  ) => void;
-  sendCommand: (command: string) => void;
 }
