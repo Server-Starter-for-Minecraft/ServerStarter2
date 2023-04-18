@@ -11,14 +11,14 @@ import { api } from 'app/src-electron/core/api';
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
 export async function runServer(world: World) {
   api.send.UpdateStatus(`${world.settings.version.id} / ${world.name}を起動中`);
-  await sleep(5);
+  await sleep(2);
 
   // リモート関連のプログレスバー
-  const array = [...Array(101)].map((_, i) => i);
-  for (let i = 0; i < array.length; i++) {
-    api.send.UpdateStatus('データをダウンロード中', i);
-    await sleep(0.1);
-  }
+  // const array = [...Array(101)].map((_, i) => i);
+  // for (let i = 0; i < array.length; i++) {
+  //   api.send.UpdateStatus('データをダウンロード中', i);
+  //   await sleep(0.1);
+  // }
 
   // LEGACY: Eulaの同意（失敗した場合などのエラー処理も）
   // const options: Electron.MessageBoxOptions = {
@@ -33,8 +33,8 @@ export async function runServer(world: World) {
   // console.log(res)
 
   // Eulaの同意
-  const result = await api.invoke.AgreeEula();
-  console.log('eula:', result);
+  // const result = await api.invoke.AgreeEula();
+  // console.log('eula:', result);
 
   // 二，三個の適当なプロセスもどき
   await sleep(2);
