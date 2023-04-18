@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 
-export const progressStore = defineStore('progressStore', {
+export const useProgressStore = defineStore('progressStore', {
   state: () => {
     return {
       message: '',
-      progressRatio: -1
-    }
-  }
-})
+      progressRatio: undefined as undefined | number,
+    };
+  },
+});

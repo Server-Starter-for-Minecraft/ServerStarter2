@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { mainStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 import { World } from 'app/src-electron/api/scheme';
-import iconBtn from '../util/iconButton.vue'
-import { systemStore } from 'src/stores/SystemStore';
+import iconBtn from '../util/iconButton.vue';
+import { useSystemStore } from 'src/stores/SystemStore';
 
 interface Props {
-  world: World
-  idx: number
+  world: World;
+  idx: number;
 }
-const prop = defineProps<Props>()
+const prop = defineProps<Props>();
 
+const mainStore = useMainStore();
+const systemStore = useSystemStore();
 
 const router = useRouter();
 const goProgress = async () => {
@@ -19,27 +21,24 @@ const goProgress = async () => {
 };
 async function runServer() {
   await goProgress();
-  mainStore().setHeader(
-    prop.world.name,
-    {
-      subTitle: prop.world.settings.version.id,
-      sideText: `IP. ${systemStore().publicIP}`
-    }
-  )
-  await window.API.runServer(JSON.stringify(prop.world));
+  mainStore.setHeader(prop.world.name, {
+    subTitle: prop.world.settings.version.id,
+    sideText: `IP. ${systemStore.publicIP}`,
+  });
+  await window.API.invokeRunServer(JSON.parse(JSON.stringify(prop.world)));
 }
 
-const clicked = ref(false)
-const itemHovered = ref(false)
-const runBtnHovered = ref(false)
+const clicked = ref(false);
+const itemHovered = ref(false);
+const runBtnHovered = ref(false);
 </script>
 
 <template>
   <q-item
     clickable
-    :active="clicked = mainStore().selectedIdx == prop.idx"
-    :focused="clicked = mainStore().selectedIdx == prop.idx"
-    @click="mainStore().selectedIdx = idx"
+    :active="(clicked = mainStore.selectedIdx == prop.idx)"
+    :focused="(clicked = mainStore.selectedIdx == prop.idx)"
+    @click="mainStore.selectedIdx = idx"
     v-on:dblclick="runServer"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
@@ -51,7 +50,7 @@ const runBtnHovered = ref(false)
       @mouseleave="runBtnHovered = false"
     >
       <q-avatar square size="60px">
-        <q-img :src="world.settings.avater_path" :ratio="1"/>
+        <q-img :src="world.settings.avater_path" :ratio="1" />
         <q-btn
           v-show="clicked || runBtnHovered"
           @click="runServer"
@@ -73,9 +72,9 @@ const runBtnHovered = ref(false)
     <q-item-section side v-show="clicked || itemHovered">
       <div class="row">
         <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
-        <icon-btn icon="edit" text="ワールド編集"/>
-        <icon-btn icon="folder_open" text="データを開く"/>
-        <icon-btn icon="delete" text="削除"/>
+        <icon-btn icon="edit" text="ワールド編集" />
+        <icon-btn icon="folder_open" text="データを開く" />
+        <icon-btn icon="delete" text="削除" />
       </div>
     </q-item-section>
   </q-item>

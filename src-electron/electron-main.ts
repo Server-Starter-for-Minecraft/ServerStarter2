@@ -3,8 +3,11 @@
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import path from 'path';
 import os from 'os';
-import { runServer, runCommand } from './core/server/dummyServer';
-import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from './ipc_util';
+import { Back, linkIPC } from './core/ipc/link';
+import { API } from './api/api';
+import { backListener } from './core/ipc/back';
+import { getFrontAPIListener, setFrontAPI } from './core/ipc/front';
+import { setBackAPI } from './core/api';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -51,45 +54,13 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  link({
-    back: {
-      handle: {
-        RunServer: runServer,
-      },
-      on: {
-        SendCommand: runCommand,
-      },
-    },
-    front: {
-      handle: {
-        Eula: invokeMainWindow('Eula'),
-      },
-      on: {
-        AddConsole: sendMainWindow('AddConsole'),
-      },
-    },
-  });
-}
-
-/** MainからMainWindowの処理を呼び出し非同期で待機する */
-export async function invokeMainWindow<T>(
-  channel: InvokeChannel,
-  ...args: any[]
-) {
-  if (mainWindow) {
-    return await ipcInvoke<T>(mainWindow, channel, ...args);
-  } else {
-    throw new Error('MainWindow not exists.');
-  }
-}
-
-/** MainからMainWindowの処理を同期で発火する */
-export function sendMainWindow(channel: SendChannel, ...args: any[]) {
-  if (mainWindow) {
-    ipcSend(mainWindow, channel, args);
-  } else {
-    throw new Error('MainWindow not exists.');
-  }
+  
+  const { back, front } = linkIPC<API>(
+    backListener,
+    getFrontAPIListener(mainWindow)
+  );
+  setFrontAPI(front);
+  setBackAPI(back);
 }
 
 app.whenReady().then(createWindow);

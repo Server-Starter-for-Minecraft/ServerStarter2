@@ -1,24 +1,10 @@
 import { World } from './scheme';
-
-export interface IAPI {
-  sendMainToWindow: {
-    [key in string]: (...args: any[]) => void;
-  };
-  invokeMainToWindow: {
-    [key in string]: (...args: any[]) => Promise<any>;
-  };
-  sendWindowToMain: {
-    [key in string]: (...args: any[]) => void;
-  };
-  invokeWindowToMain: {
-    [key in string]: (...args: any[]) => Promise<any>;
-  };
-}
+import { IAPI, Back, Front } from './types';
 
 export interface API extends IAPI {
   sendMainToWindow: {
     StartServer: () => void;
-    UpdateStatus: () => void;
+    UpdateStatus: (message: string, ratio?: number) => void;
     AddConsole: (chunk: string) => void;
   };
   invokeMainToWindow: {
@@ -31,3 +17,6 @@ export interface API extends IAPI {
     RunServer: (world: World) => Promise<void>;
   };
 }
+
+export type BackAPI = Back<API>;
+export type FrontAPI = Front<API>;

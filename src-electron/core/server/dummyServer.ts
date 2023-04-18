@@ -1,8 +1,6 @@
 import { World } from 'app/src-electron/api/scheme';
-import { invokeEula } from '../../api/invokers';
-import { addConsole, setProgressStatus, startServer } from '../../api/senders';
 import { sleep } from '../utils/testTools';
-import { World } from '../../api/scheme';
+import { api } from 'app/src-electron/core/api';
 
 // 処理フロー
 // １．フロントがProgressPageに遷移
@@ -11,25 +9,17 @@ import { World } from '../../api/scheme';
 // ４．通知を受けてフロントがConsolePageに遷移
 // ５．バックよりConsolePageの内容を更新
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
-export async function runServer(
-  event: Electron.IpcMainInvokeEvent,
-  world: string
-) {
+export async function runServer(world: World) {
   // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
   await sleep(0.5);
 
-  // 自作インスタンスについては文字列化して通信する
-  const deserializeWorld = JSON.parse(world) as World;
-
-  setProgressStatus(
-    `${deserializeWorld?.settings?.version?.id} / ${deserializeWorld.name}を起動中`
-  );
+  api.send.UpdateStatus(`${world.settings.version.id} / ${world.name}を起動中`);
   await sleep(5);
-  
+
   // リモート関連のプログレスバー
   const array = [...Array(101)].map((_, i) => i);
   for (let i = 0; i < array.length; i++) {
-    setProgressStatus('データをダウンロード中', i);
+    api.send.UpdateStatus('データをダウンロード中', i);
     await sleep(0.1);
   }
 
@@ -46,39 +36,36 @@ export async function runServer(
   // console.log(res)
 
   // Eulaの同意
-  const result = await invokeEula();
+  const result = await api.invoke.AgreeEula();
   console.log('eula:', result);
 
   // 二，三個の適当なプロセスもどき
   await sleep(2);
-  setProgressStatus('適当なプロセス');
+  api.send.UpdateStatus('適当なプロセス');
   await sleep(2);
-  setProgressStatus('サーバーを起動するよ');
+  api.send.UpdateStatus('サーバーを起動するよ');
   await sleep(1);
 
   // サーバー起動をWindowに知らせる
-  startServer();
+  api.send.StartServer();
 
   // サーバーの起動
   // startServer(world)
 
   // 表示画面にコンソールの中身を順次転送
   for (let i = 0; i < demoConsoles.length; i++) {
-    addConsole(demoConsoles[i]);
+    api.send.AddConsole(demoConsoles[i]);
     await sleep(0.25);
   }
 }
 
-export function runCommand(
-  event: Electron.IpcMainInvokeEvent,
-  command: string
-) {
+export function runCommand(command: string) {
   console.log(command);
   if (command == 'reboot') {
     // TODO: 再起動に関する実装を行う
-    addConsole('Reboot Server');
+    api.send.AddConsole('Reboot Server');
   } else {
-    addConsole(`/${command}`);
+    api.send.AddConsole(`/${command}`);
   }
 }
 

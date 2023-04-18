@@ -31,16 +31,10 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import type {
-  FrontAPI,
-  FrontConsoleAPI,
-  FrontHandle,
-  FrontInvoke,
-  FrontOn,
-  FrontProgressAPI,
-  FrontSend,
-} from './api/frontend';
-import type { Func } from './api/ipc';
+import { FrontHandle, FrontInvoke, FrontOn, FrontSend } from './api/types';
+import { FrontAPI } from './api/api';
+
+type Func<A extends any[], R> = (..._: A) => R;
 
 // WindowからMainのイベントを発火
 function send<C extends string>(channel: C): FrontSend<C, Func<any[], void>> {
@@ -50,7 +44,7 @@ function send<C extends string>(channel: C): FrontSend<C, Func<any[], void>> {
   >;
 }
 
-// MianからWindowのイベントを発火
+// MainからWindowのイベントを発火
 function on<C extends string>(channel: C): FrontOn<C, Func<any[], void>> {
   return ((
     listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
@@ -88,19 +82,11 @@ function handle<C extends string>(
 
 const api: FrontAPI = {
   onStartServer: on('StartServer'),
-  invokeRunServer: invoke('RunServer'),
-  handleEula: handle('Eula'),
-};
-
-const progressApi: FrontProgressAPI = {
   onUpdateStatus: on('UpdateStatus'),
-};
-
-const consoleAPI: FrontConsoleAPI = {
   onAddConsole: on('AddConsole'),
   sendCommand: send('Command'),
+  handleAgreeEula: handle('AgreeEula'),
+  invokeRunServer: invoke('RunServer'),
 };
 
 contextBridge.exposeInMainWorld('API', api);
-contextBridge.exposeInMainWorld('ProgressAPI', progressApi);
-contextBridge.exposeInMainWorld('ConsoleAPI', consoleAPI);
