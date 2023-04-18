@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-const progressStore = defineStore('progressStore', {
+export const progressStore = defineStore('progressStore', {
   state: () => {
     return {
       message: '',
@@ -8,15 +8,3 @@ const progressStore = defineStore('progressStore', {
     }
   }
 })
-
-export function setStatus(title:string) {
-  progressStore().message = title
-}
-
-export function setProgress(ratio:number) {
-  progressStore().progressRatio = ratio
-}
-
-export function getStore() {
-  return progressStore()
-}

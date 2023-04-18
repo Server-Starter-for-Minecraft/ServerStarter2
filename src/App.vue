@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { addConsole } from './stores/ConsoleStore';
+import { consoleStore } from './stores/ConsoleStore';
 import { useQuasar } from 'quasar'
 
 // ダークモードを有効にする
@@ -12,6 +12,6 @@ $q.dark.set('auto')
 
 // メッセージをコンソールに追加
 window.ConsoleAPI.onAddConsole((_event, value) => {
-  addConsole(value[0]);
+  consoleStore().console.push(value[0]);
 });
 </script>

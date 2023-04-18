@@ -1,12 +1,14 @@
 // フロントエンドとバックエンドでやり取りするデータスキーマ
 
-export type VersionType = 'vanilla' | 'spigot' | 'papermc';
+export type VersionType = 'vanilla' | 'spigot' | 'papermc' | 'forge' | 'mohistmc';
 
 export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
 export type SpigotVerison = { id: string; type: 'spigot'; release: boolean };
 export type PapermcVerison = { id: string; type: 'papermc'; release: boolean };
+export type ForgeVerison = { id: string; type: 'forge'; release: boolean };
+export type MohistmcVerison = { id: string; type: 'mohistmc'; release: boolean };
 
-export type Version = VanillaVersion | SpigotVerison | PapermcVerison;
+export type Version = VanillaVersion | SpigotVerison | PapermcVerison | ForgeVerison | MohistmcVerison;
 
 export type GitRemote = {
   type: 'git';
@@ -72,9 +74,11 @@ export type ServerProperties = {
 };
 
 export type WorldSettings = {
+  version: Version;
+  last_date?: Date;
+  avater_path?: string;
   using?: boolean;
   last_user?: string;
-  version?: Version;
   properties?: ServerProperties;
   remote?: Remote;
   memory?: number;
