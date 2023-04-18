@@ -31,42 +31,44 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
+import { FrontHandle, FrontInvoke, FrontOn, FrontSend } from './api/types';
+import { FrontAPI } from './api/api';
 
-import type {
-  IMainProcess,
-  IConsoleProcess,
-  IProgressProcess,
-} from '../src/global';
-
-import type {
-  SendChannel,
-  OnChannel,
-  InvokeChannel,
-  HandleChannel,
-} from './api/channels';
+type Func<A extends any[], R> = (..._: A) => R;
 
 // WindowからMainのイベントを発火
-const send =
-  (channel: OnChannel) =>
-  (...args: any[]) =>
-    ipcRenderer.send(channel, ...args);
+function send<C extends string>(channel: C): FrontSend<C, Func<any[], void>> {
+  return ((...args: any[]) => ipcRenderer.send(channel, ...args)) as FrontSend<
+    C,
+    Func<any[], void>
+  >;
+}
 
-// MianからWindowのイベントを発火
-const on =
-  (channel: SendChannel) =>
-  (listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) =>
+// MainからWindowのイベントを発火
+function on<C extends string>(channel: C): FrontOn<C, Func<any[], void>> {
+  return ((
+    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+  ) => {
     ipcRenderer.on(channel, listener);
+  }) as FrontOn<C, Func<any[], void>>;
+}
 
 // WindowでMainの処理を非同期で待機
-const invoke =
-  (channel: HandleChannel) =>
-  (...args: any[]) =>
-    ipcRenderer.invoke(channel, ...args);
+function invoke<C extends string>(
+  channel: C
+): FrontInvoke<C, Func<any[], Promise<any>>> {
+  return ((...args: any[]) =>
+    ipcRenderer.invoke(channel, ...args)) as FrontInvoke<
+    C,
+    Func<any[], Promise<any>>
+  >;
+}
 
 // MainでWindowの処理を非同期で待機
-const handle =
-  (channel: InvokeChannel) =>
-  (
+function handle<C extends string>(
+  channel: C
+): FrontHandle<C, Func<any[], Promise<any>>> {
+  return ((
     handler: (event: Electron.IpcRendererEvent, ...args: any[]) => Promise<any>
   ) => {
     const listener = (event: Electron.IpcRendererEvent, ...args: any[]) => {
@@ -75,23 +77,16 @@ const handle =
       );
     };
     ipcRenderer.on(channel, listener);
-  };
+  }) as FrontHandle<C, Func<any[], Promise<any>>>;
+}
 
-const API: IMainProcess = {
-  onStartServer: on('startServer'),
-  runServer: invoke('RunServer'),
-  handleEula: handle('InvokeEula'),
+const api: FrontAPI = {
+  onStartServer: on('StartServer'),
+  onUpdateStatus: on('UpdateStatus'),
+  onAddConsole: on('AddConsole'),
+  sendCommand: send('Command'),
+  handleAgreeEula: handle('AgreeEula'),
+  invokeRunServer: invoke('RunServer'),
 };
 
-const ProgressAPI: IProgressProcess = {
-  onUpdateStatus: on('update-status'),
-};
-
-const ConsoleAPI: IConsoleProcess = {
-  onAddConsole: on('add-console'),
-  sendCommand: send('send-command'),
-};
-
-contextBridge.exposeInMainWorld('API', API);
-contextBridge.exposeInMainWorld('ProgressAPI', ProgressAPI);
-contextBridge.exposeInMainWorld('ConsoleAPI', ConsoleAPI);
+contextBridge.exposeInMainWorld('API', api);

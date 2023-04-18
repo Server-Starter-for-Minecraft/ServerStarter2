@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { version } from '../../package.json';
 
-export const systemStore = defineStore('systemStore', {
+export const useSystemStore = defineStore('systemStore', {
   state: () => {
     return {
       systemVersion: version,

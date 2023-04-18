@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { mainStore } from 'src/stores/MainStore'
+import { useMainStore } from 'src/stores/MainStore';
 
-const store = mainStore()
+const mainStore = useMainStore();
 </script>
 
 <template>
@@ -9,11 +9,11 @@ const store = mainStore()
     <q-header class="header">
       <q-toolbar class="q-pa-lg">
         <q-toolbar-title>
-          <span class="title">{{ store.mainTitle }}</span>
-          <span>{{ store.subTitle }}</span>
+          <span class="title">{{ mainStore.mainTitle }}</span>
+          <span>{{ mainStore.subTitle }}</span>
         </q-toolbar-title>
 
-        <div>{{ store.sideText }}</div>
+        <div>{{ mainStore.sideText }}</div>
       </q-toolbar>
     </q-header>
 
