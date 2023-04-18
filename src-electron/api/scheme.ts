@@ -1,6 +1,7 @@
 // フロントエンドとバックエンドでやり取りするデータスキーマ
 
-export type VersionType = 'vanilla' | 'spigot' | 'papermc' | 'forge' | 'mohistmc';
+export const versionTypes = ['vanilla' , 'spigot' , 'papermc' , 'forge' , 'mohistmc'] as const
+export type VersionType = typeof versionTypes[number];
 
 export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
 export type SpigotVerison = { id: string; type: 'spigot'; release: boolean };
