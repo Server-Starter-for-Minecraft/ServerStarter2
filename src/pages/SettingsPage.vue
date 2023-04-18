@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { mainStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 
-mainStore().setHeader('システム設定', {})
+useMainStore().setHeader('システム設定', {})
 </script>
 
 <template>

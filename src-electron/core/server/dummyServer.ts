@@ -10,9 +10,6 @@ import { api } from 'app/src-electron/core/api';
 // ５．バックよりConsolePageの内容を更新
 // （６．フロントよりコマンド入力を受けた場合，バックにコマンドを渡して処理）
 export async function runServer(world: World) {
-  // TODO: Windowがsend()を受けられる状態になったことを検知する手法があればsleep(0.5)は不要
-  await sleep(0.5);
-
   api.send.UpdateStatus(`${world.settings.version.id} / ${world.name}を起動中`);
   await sleep(5);
 

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { versionTypes } from 'app/src-electron/api/scheme.js'
-import { mainStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 import { ref } from 'vue';
 
 const server = ref(versionTypes[0])
 const versionList = ['1.19.1', '1.19.0']
 const version = ref(versionList[0])
 
-mainStore().setHeader('新規ワールド', {})
+useMainStore().setHeader('新規ワールド', {})
 </script>
 
 <template>
