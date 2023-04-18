@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMainStore } from 'src/stores/MainStore';
 import { World } from 'app/src-electron/api/scheme';
@@ -25,7 +25,9 @@ async function runServer() {
     subTitle: prop.world.settings.version.id,
     sideText: `IP. ${systemStore.publicIP}`,
   });
-  await window.API.invokeRunServer(JSON.parse(JSON.stringify(prop.world)));
+
+  // toRaw(proxy)とすることでvue上のProxyオブジェクトのtargetを抜き出せる
+  await window.API.invokeRunServer(toRaw(prop.world));
 }
 
 const clicked = ref(false);
