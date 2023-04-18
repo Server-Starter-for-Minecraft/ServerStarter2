@@ -19,15 +19,6 @@ const showWorldList = ref(worldList)
 const text  = ref('')
 const sortType = ref('名前')
 const sortTypes = ['名前', '最終プレイ']
-
-function search(searchName:string) {
-  showWorldList.value = worldList.filter(world => world.name.match(`${searchName}`))
-}
-
-function cursorClicked() {
-  text.value = ''
-  showWorldList.value = worldList
-}
 </script>
 
 <template>
@@ -38,12 +29,13 @@ function cursorClicked() {
 
         <q-input
           v-model="text"
+          clearable
           label="検索"
-          v-on:keyup="search(text)"
+          @keyup="showWorldList = worldList.filter(world => world.name.match(text))"
+          @clear="showWorldList = worldList"
           class="q-px-md"
         >
           <template v-slot:append>
-            <q-icon v-if="text !== ''" name="close" @click="cursorClicked" class="cursor-pointer" />
             <q-icon name="search"/>
           </template>
         </q-input>
