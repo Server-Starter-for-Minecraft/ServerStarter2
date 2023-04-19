@@ -6,14 +6,17 @@ export const useMainStore = defineStore('mainStore', {
       selectedIdx: -1,
       mainTitle: '',
       subTitle: '',
-      sideText: ''
+      sideText: '',
+      showMenuBtn: false,
+      rightDrawerOpen: false,
     }
   },
   actions: {
-    setHeader(title: string, {subTitle = '', sideText = ''}) {
+    setHeader(title: string, { subTitle = '', sideText = '', showMenuBtn = false }) {
       this.mainTitle = title
       this.subTitle = subTitle
       this.sideText = sideText
+      this.showMenuBtn = showMenuBtn
     }
   }
 })

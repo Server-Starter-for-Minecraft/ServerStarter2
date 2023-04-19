@@ -1,17 +1,28 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
+import { ref } from 'vue';
 
 const mainStore = useMainStore();
 </script>
 
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="hHh Lpr rff">
     <q-header class="header">
       <q-toolbar class="q-pa-lg">
         <q-toolbar-title>
           <span class="title">{{ mainStore.mainTitle }}</span>
           <span>{{ mainStore.subTitle }}</span>
         </q-toolbar-title>
+
+        <q-btn
+          v-show="mainStore.showMenuBtn"
+          flat
+          dense
+          round
+          @click="mainStore.rightDrawerOpen = !mainStore.rightDrawerOpen"
+          aria-label="Menu"
+          icon="menu"
+        />
 
         <div>{{ mainStore.sideText }}</div>
       </q-toolbar>
@@ -26,6 +37,7 @@ const mainStore = useMainStore();
 <style scoped lang="scss">
 .header {
   background-color: #1a1a1a;
+  height: 80px;
 }
 
 .title {
