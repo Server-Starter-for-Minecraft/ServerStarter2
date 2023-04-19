@@ -8,6 +8,7 @@ import { readyJava } from '../utils/java/java';
 import { unrollSettings } from './settings';
 import { interactiveProcess } from '../utils/subprocess';
 import { api } from '../api';
+import { checkEula } from './eula';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
@@ -17,6 +18,10 @@ export async function runServer(world: World) {
   const settings = world.settings;
 
   const memory = settings.memory ?? 5;
+
+  // java実行時引数(ここから増える)
+  // stdin,stdout,stderrの文字コードをutf-8に
+  // 確保メモリ量を設定
   const args = ['"-Dfile.encoding=UTF-8"', `-Xmx${memory}G`, `-Xms${memory}G`];
 
   // ワールドが存在しない場合エラー
@@ -32,7 +37,7 @@ export async function runServer(world: World) {
   // サーバーデータを用意
   const version = await readyVersion(settings.version);
 
-  // versionの用意ができなかった場合エラー
+  // サーバーデータの用意ができなかった場合エラー
   if (isFailure(version)) return version;
 
   const { jarpath, component } = version;
@@ -71,21 +76,28 @@ export async function runServer(world: World) {
   // 設定ファイルをサーバーCWD直下に書き出す
   await unrollSettings(settings, levelName);
 
+  api.send.UpdateStatus(`Eulaの同意状況を確認中`);
+
   // Eulaチェック
+  const eulaAgreement = await checkEula(javaPath, jarpath);
 
-  console.log(javaPath.absolute().str(), args);
+  // Eulaチェックに失敗した場合
+  if (isFailure(eulaAgreement)) return eulaAgreement;
 
-  const addconsole = (cmd: string) => {
-    console.log(cmd, typeof cmd), api.send.AddConsole(cmd);
-  };
+  // Eulaに同意しなかった場合エラー
+  if (!eulaAgreement) {
+    return new Error(
+      'To start server, you need to agree to Minecraft EULA (https://aka.ms/MinecraftEULA)'
+    );
+  }
 
   // javaのサブプロセスを起動
   // TODO: エラー出力先のハンドル
   const [stdinfunc, process] = interactiveProcess(
     javaPath.absolute().str(),
     args,
-    addconsole,
-    addconsole,
+    api.send.AddConsole,
+    api.send.AddConsole,
     serverCwdPath.absolute().str(),
     true
   );
