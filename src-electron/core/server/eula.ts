@@ -27,7 +27,9 @@ export async function checkEula(
   const content = await eulaPath.read();
   if (isFailure(content)) return content;
 
-  let [agree, comments] = parseEula(await content.text());
+  const eulaParsed = parseEula(await content.text());
+  let agree = eulaParsed[0];
+  const comments = eulaParsed[1];
 
   if (!agree) {
     agree = await api.invoke.AgreeEula();
@@ -46,7 +48,7 @@ function stringifyEula(agree: boolean, comments: string[]): string {
 }
 
 function parseEula(txt: string): [boolean, string[]] {
-  let comments: string[] = [];
+  const comments: string[] = [];
   let eula = false;
   txt.split('\n').forEach((line) => {
     if (line[0] === '#') {

@@ -7,3 +7,5 @@ export const runtimePath = mainPath.child('bin/runtime');
 export const versionsPath = mainPath.child('versions');
 
 export const versionManifestPath = mainPath.child('version_manifest_v2.json');
+
+export const spigotBuildPath = mainPath.child('spigotBuild');

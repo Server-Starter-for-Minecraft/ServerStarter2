@@ -25,4 +25,3 @@ describe('vanillaVersion', async () => {
     { timeout: 2 ** 31 - 1 }
   );
 });
-

@@ -1,3 +1,4 @@
+import { runtimePath } from '../../server/const.js';
 import { config } from '../../store.js';
 import { BytesData } from '../bytesData/bytesData.js';
 import { osPlatform } from '../os/os.js';
@@ -17,17 +18,14 @@ export class JavaInstallError extends Error {}
  * 適切なjavaw.exeの実行パスを返す
  * 必要に応じてバイナリをダウンロードする
  */
-export async function readyJava(
-  runtimepath: Path,
-  component: component
-): Promise<Failable<Path>> {
+export async function readyJava(component: component): Promise<Failable<Path>> {
   const json = await getAllJson();
 
   if (isFailure(json)) return json;
 
   const manifest = json[osPlatform][component][0].manifest;
 
-  const path = runtimepath.child(`${component}/${osPlatform}`);
+  const path = runtimePath.child(`${component}/${osPlatform}`);
   const data = await getManifestJson(
     manifest,
     path.child('manifest.json').path

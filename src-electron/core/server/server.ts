@@ -1,7 +1,7 @@
 import { Version, World } from 'app/src-electron/api/scheme';
 import { Path } from '../utils/path/path';
 import { getLog4jArg } from './log4j';
-import { runtimePath, serverCwdPath, worldsPath } from './const';
+import { serverCwdPath, worldsPath } from './const';
 import { isFailure } from '../utils/result';
 import { readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
@@ -45,12 +45,12 @@ export async function runServer(world: World) {
   api.send.UpdateStatus(`javaランタイムを準備中 (${component})`);
 
   // 実行javaを用意
-  const javaPath = await readyJava(runtimePath, component);
+  const javaPath = await readyJava(component);
 
   // 実行javaが用意できなかった場合エラー
   if (isFailure(javaPath)) return javaPath;
 
-  api.send.UpdateStatus(`log4jの引数を設定中`);
+  api.send.UpdateStatus('log4jの引数を設定中');
 
   const log4jarg = await getLog4jArg(serverCwdPath, settings.version);
 
@@ -71,12 +71,12 @@ export async function runServer(world: World) {
   // ワールドディレクトリ指定用の引数を実行時引数に追加
   if (arg) args.push(arg);
 
-  api.send.UpdateStatus(`設定ファイルの書き出し中`);
+  api.send.UpdateStatus('設定ファイルの書き出し中');
 
   // 設定ファイルをサーバーCWD直下に書き出す
   await unrollSettings(settings, levelName);
 
-  api.send.UpdateStatus(`Eulaの同意状況を確認中`);
+  api.send.UpdateStatus('Eulaの同意状況を確認中');
 
   // Eulaチェック
   const eulaAgreement = await checkEula(javaPath, jarpath);

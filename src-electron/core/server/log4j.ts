@@ -541,14 +541,14 @@ export async function getLog4jArg(
 
   // 1.12-1.16.5
   if (version.id in ver_12_16) {
-    api.send.UpdateStatus(`log4jの設定ファイルをダウウンロード中`);
+    api.send.UpdateStatus('log4jの設定ファイルをダウウンロード中');
     await download_xml_12_16(serverPath);
     return '-Dlog4j.configurationFile=log4j2_112-116.xml';
   }
 
   // 1.7-1.11.2
   if (version.id in ver_7_11) {
-    api.send.UpdateStatus(`log4jの設定ファイルをダウウンロード中`);
+    api.send.UpdateStatus('log4jの設定ファイルをダウウンロード中');
     await download_xml_7_11(serverPath);
     return '-Dlog4j.configurationFile=log4j2_17-111.xml';
   }

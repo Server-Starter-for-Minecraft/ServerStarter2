@@ -71,8 +71,6 @@ export async function readyVanillaVersion(
   // serverデータをファイルに書き出し
   await jarpath.write(serverData);
 
-  console.log(serverData);
-
   return {
     jarpath,
     component: json.javaVersion.component,

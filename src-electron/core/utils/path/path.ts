@@ -83,4 +83,14 @@ export class Path {
   async iter() {
     return (await fs.promises.readdir(this.path)).map((p) => this.child(p));
   }
+
+  async remove(recursive= false) {
+    if (this.exists()) {
+      if (await this.isDirectory()) {
+        await fs.promises.rmdir(this.path, { recursive });
+      } else {
+        await fs.promises.unlink(this.path);
+      }
+    }
+  }
 }

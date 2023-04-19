@@ -2,6 +2,7 @@ import Store from 'electron-store';
 
 export type Config = {
   version_manifest_v2_sha1?: string;
+  spigot_buildtool_sha1?: string;
   sha1?: {
     runtime?: string;
   };

@@ -3,7 +3,7 @@
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import path from 'path';
 import os from 'os';
-import { Back, linkIPC } from './core/ipc/link';
+import { linkIPC } from './core/ipc/link';
 import { API } from './api/api';
 import { backListener } from './core/ipc/back';
 import { getFrontAPIListener, setFrontAPI } from './core/ipc/front';
@@ -54,7 +54,6 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  
   const { back, front } = linkIPC<API>(
     backListener,
     getFrontAPIListener(mainWindow)
