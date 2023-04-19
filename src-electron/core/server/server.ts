@@ -37,7 +37,7 @@ export async function runServer(world: World) {
   // サーバーデータを用意
   const version = await readyVersion(settings.version);
 
-  // versionの用意ができなかった場合エラー
+  // サーバーデータの用意ができなかった場合エラー
   if (isFailure(version)) return version;
 
   const { jarpath, component } = version;
@@ -84,7 +84,7 @@ export async function runServer(world: World) {
   // Eulaチェックに失敗した場合
   if (isFailure(eulaAgreement)) return eulaAgreement;
 
-  // Eulaに同意しなかった場合
+  // Eulaに同意しなかった場合エラー
   if (!eulaAgreement) {
     return new Error(
       'To start server, you need to agree to Minecraft EULA (https://aka.ms/MinecraftEULA)'
