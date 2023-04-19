@@ -1,3 +1,4 @@
+import { Failable } from '../core/utils/result';
 import { World } from './scheme';
 import { IAPI, Back, Front } from './types';
 
@@ -14,7 +15,7 @@ export interface API extends IAPI {
     Command: (command: string) => void;
   };
   invokeWindowToMain: {
-    RunServer: (world: World) => Promise<void>;
+    RunServer: (world: World) => Promise<Failable<undefined>>;
   };
 }
 

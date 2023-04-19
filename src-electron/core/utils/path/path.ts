@@ -24,7 +24,7 @@ export class Path {
     return new Path(child);
   }
 
-  parent(times: number = 1) {
+  parent(times = 1) {
     if (this.path) {
       return new Path(this.path + '/..'.repeat(times));
     }
@@ -59,7 +59,7 @@ export class Path {
     await fs.promises.rename(this.path, newpath.absolute().str());
   }
 
-  async mkdir(recursive: boolean = false) {
+  async mkdir(recursive = false) {
     if (!this.exists()) await fs.promises.mkdir(this.path, { recursive });
   }
 
@@ -68,7 +68,12 @@ export class Path {
   }
 
   async write(content: BytesData) {
+    this.parent().mkdir(true);
     await content.write(this.path);
+  }
+
+  async writeText(content: string) {
+    await fs.promises.writeFile(this.path, content);
   }
 
   async read(): Promise<Failable<BytesData, Error>> {

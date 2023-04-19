@@ -10,8 +10,8 @@ log4js.configure({
       // },
     },
     _file: { type: 'file', filename: 'logs/serverstarter.log' },
-    out: { type: 'logLevelFilter', appender: '_out', level: 'info' },
-    file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
+    out: { type: 'logLevelFilter', appender: '_out', level: 'error' },
+    file: { type: 'logLevelFilter', appender: '_file', level: 'error' },
   },
   categories: {
     default: { appenders: ['out', 'file'], level: 'trace' },
@@ -29,7 +29,7 @@ export function getLoggers(category: string | undefined) {
       }
       return getLoggers(category + '.' + subcategory);
     },
-    operation(operation: string, kwargs: Object) {
+    operation(operation: string, kwargs: object) {
       const args =
         '(' +
         Object.entries(kwargs)

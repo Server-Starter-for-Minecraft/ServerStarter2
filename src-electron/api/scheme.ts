@@ -1,15 +1,30 @@
 // フロントエンドとバックエンドでやり取りするデータスキーマ
 
-export const versionTypes = ['vanilla' , 'spigot' , 'papermc' , 'forge' , 'mohistmc'] as const
-export type VersionType = typeof versionTypes[number];
+export const versionTypes = [
+  'vanilla',
+  'spigot',
+  'papermc',
+  'forge',
+  'mohistmc',
+] as const;
+export type VersionType = (typeof versionTypes)[number];
 
 export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
 export type SpigotVerison = { id: string; type: 'spigot'; release: boolean };
 export type PapermcVerison = { id: string; type: 'papermc'; release: boolean };
 export type ForgeVerison = { id: string; type: 'forge'; release: boolean };
-export type MohistmcVerison = { id: string; type: 'mohistmc'; release: boolean };
+export type MohistmcVerison = {
+  id: string;
+  type: 'mohistmc';
+  release: boolean;
+};
 
-export type Version = VanillaVersion | SpigotVerison | PapermcVerison | ForgeVerison | MohistmcVerison;
+export type Version =
+  | VanillaVersion
+  | SpigotVerison
+  | PapermcVerison
+  | ForgeVerison
+  | MohistmcVerison;
 
 export type GitRemote = {
   type: 'git';
@@ -21,57 +36,75 @@ export type GitRemote = {
 export type Remote = GitRemote;
 
 export type ServerProperties = {
-  'view-distance'?: number;
-  'resource-pack-prompt'?: string;
-  'server-ip'?: string;
-  'rcon.port'?: number;
-  gamemode?: string;
-  'server-port'?: number;
-  'op-permission-level'?: number;
-  'resource-pack'?: string;
+  'allow-flight'?: boolean;
+  'allow-nether'?: boolean;
+  'broadcast-console-to-ops'?: boolean;
+  'broadcast-rcon-to-ops'?: boolean;
+  difficulty?: 'peaceful' | 'easy' | 'normal' | 'hard';
+  'enable-command-block'?: boolean;
+  'enable-jmx-monitoring'?: boolean;
+  'enable-rcon'?: boolean;
+  'enable-status'?: boolean;
+  'enable-query'?: boolean;
+  'enforce-secure-profile'?: boolean;
+  'enforce-whitelist'?: boolean;
+  // 10-1000
   'entity-broadcast-range-percentage'?: number;
+  'force-gamemode'?: boolean;
+  'function-permission-level'?: 1 | 2 | 3 | 4;
+  gamemode?: 'survival' | 'creative' | 'adventure' | 'spectator';
+  'generate-structures'?: boolean;
+  'generator-settings'?: string;
+  hardcore?: boolean;
+  'hide-online-players'?: boolean;
+  'initial-disabled-packs'?: string;
+  'initial-enabled-packs'?: string;
   'level-name'?: string;
+  'level-seed'?: string;
   'level-type'?: string;
-  'player-idle-timeout'?: number;
-  'rcon.password'?: string;
+  'max-chained-neighbor-updates'?: number;
+  // 0...2^31-1
+  'max-players'?: number;
+  // 0...2^63-1
+  'max-tick-time'?: number;
+  // 1...29999984
+  'max-world-size'?: number;
+  // len < 59
   motd?: string;
+  'network-compression-threshold'?: number;
+  'online-mode'?: boolean;
+  'op-permission-level'?: 0 | 1 | 2 | 3 | 4;
+  'player-idle-timeout'?: number;
+  'prevent-proxy-connections'?: boolean;
+  'previews-chat'?: boolean;
+  pvp?: boolean;
+  // 1...2^16-2
   'query.port'?: number;
   'rate-limit'?: number;
-  'function-permission-level'?: number;
-  difficulty?: string;
-  'network-compression-threshold'?: number;
-  'text-filtering-config'?: string;
-  'max-tick-time'?: number;
-  'max-players'?: number;
+  'rcon.password'?: string;
+  // 1...2^16-2
+  'rcon.port'?: number;
+  'resource-pack'?: string;
+  'resource-pack-prompt'?: string;
   'resource-pack-sha1'?: string;
-  'spawn-protection'?: number;
-  'max-world-size'?: number;
-  'level-seed'?: string;
-  'broadcast-rcon-to-ops'?: boolean;
-  'enable-jmx-monitoring'?: boolean;
-  'allow-nether'?: boolean;
-  'enable-command-block'?: boolean;
-  'enable-rcon'?: boolean;
-  'sync-chunk-writes'?: boolean;
-  'enable-query'?: boolean;
-  'prevent-proxy-connections'?: boolean;
-  'force-gamemode'?: boolean;
-  hardcore?: boolean;
-  'white-list'?: boolean;
-  'broadcast-console-to-ops'?: boolean;
-  pvp?: boolean;
-  'spawn-npcs'?: boolean;
-  'spawn-animals'?: boolean;
-  'snooper-enabled'?: boolean;
   'require-resource-pack'?: boolean;
-  'spawn-monsters'?: boolean;
-  'enforce-whitelist'?: boolean;
-  'use-native-transport'?: boolean;
-  'enable-status'?: boolean;
-  'online-mode'?: boolean;
-  'allow-flight'?: boolean;
-  'max-chained-neighbor-updates'?: number;
+  'server-ip'?: string;
+  // 1...2^16-2
+  'server-port'?: number;
+  // 3...32
   'simulation-distance'?: number;
+  'snooper-enabled'?: boolean;
+  'spawn-animals'?: boolean;
+  'spawn-monsters'?: boolean;
+  'spawn-npcs'?: boolean;
+  'spawn-protection'?: number;
+  'sync-chunk-writes'?: boolean;
+  // enigma
+  'text-filtering-config'?: string;
+  'use-native-transport'?: boolean;
+  // 3...32
+  'view-distance'?: number;
+  'white-list'?: boolean;
 };
 
 export type WorldSettings = {
@@ -88,7 +121,7 @@ export type WorldSettings = {
 export type World = {
   name: string;
   settings: WorldSettings;
-  datapacks?: string[];
-  plugins?: string[];
-  mods?: string[];
+  datapacks: string[];
+  plugins: string[];
+  mods: string[];
 };

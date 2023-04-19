@@ -33,7 +33,5 @@ yarn-error.log*
 *.sln
 
 # World data
-world
-data
-bin
-logs
+/server
+/logs

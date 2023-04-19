@@ -3,7 +3,8 @@ import { promises } from 'fs';
 import { utilLoggers } from '../logger.js';
 import { Path } from '../path/path.js';
 import { isSuccess, Failable, isFailure } from '../result.js';
-import fetch from 'node-fetch';
+
+const fetch = import('node-fetch');
 
 export class BytesDataError extends Error {}
 
@@ -24,7 +25,7 @@ export class BytesData {
     logger.start();
 
     try {
-      const res = await fetch(url);
+      const res = await (await fetch).default(url);
       if (!res.ok) {
         logger.fail({ status: res.status, statusText: res.statusText });
         return new BytesDataError(
@@ -83,10 +84,7 @@ export class BytesData {
   }
 
   // TODO:encodingの対応
-  static async fromText(
-    text: string,
-    encoding = 'utf-8'
-  ): Promise<Failable<BytesData>> {
+  static async fromText(text: string): Promise<Failable<BytesData>> {
     return new BytesData(new TextEncoder().encode(text));
   }
 
@@ -107,9 +105,10 @@ export class BytesData {
   /**
    * @param path
    * @param url
-   * @param hash ローカル保存にのみ参照するデータの整合性チェックのためのsha1ハッシュ値
+   * @param hash データの整合性チェックのためのsha1ハッシュ値
    * @param prioritizeUrl Urlにアクセスできなかった場合のみローカルのデータを参照する
    * @param updateLocal Urlにアクセス出来た場合ローカルのデータを更新する
+   * @param compareHashOnFetch URLアクセス時にhash値を比較するかどうか
    * @returns
    */
 
@@ -117,8 +116,9 @@ export class BytesData {
     path: string,
     url: string,
     hash: string | undefined = undefined,
-    prioritizeUrl: boolean = true,
-    updateLocal: boolean = true
+    prioritizeUrl = true,
+    updateLocal = true,
+    compareHashOnFetch = true
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromPathOrUrl', {
       path,
@@ -128,8 +128,9 @@ export class BytesData {
       updateLocal,
     });
     logger.start();
+    const remoteHash = compareHashOnFetch ? hash : undefined;
     if (prioritizeUrl) {
-      const data = await BytesData.fromURL(url);
+      const data = await BytesData.fromURL(url, remoteHash);
       if (isSuccess(data)) {
         if (updateLocal) {
           await new Path(path).parent().mkdir(true);
@@ -152,7 +153,7 @@ export class BytesData {
         return data;
       }
 
-      data = await BytesData.fromURL(url);
+      data = await BytesData.fromURL(url, remoteHash);
       if (isFailure(data)) {
         logger.fail();
         return data;
