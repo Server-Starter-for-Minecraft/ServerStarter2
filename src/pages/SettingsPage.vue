@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 
 useMainStore().setHeader('システム設定', {});
 </script>

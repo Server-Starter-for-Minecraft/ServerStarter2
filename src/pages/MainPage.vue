@@ -13,10 +13,17 @@ window.API.onStartServer((_: Electron.IpcRendererEvent) => goConsole());
 </script>
 
 <template>
-  <header-vue/>
-
+  
   <!-- 230はHeader-vueの高さ -->
-  <div style="height: calc(100vh - 230pt)">
-    <world-list-vue/>
-  </div>
+  <q-page class="column">
+    <header-vue/>
+    <!-- <world-list-vue/> -->
+    <div class="col">
+      <div class="bg-red" style="height: inherit; overflow: scroll; ">
+        <template v-for="text in Array(100)" :key="text">
+          a<br/>
+        </template>
+      </div>
+    </div>
+  </q-page>
 </template>

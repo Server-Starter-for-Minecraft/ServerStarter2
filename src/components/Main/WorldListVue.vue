@@ -43,8 +43,10 @@ function cursorClicked() {
 
         <q-input
           v-model="text"
+          clearable
           label="検索"
-          v-on:keyup="search(text)"
+          @keyup="showWorldList = worldList.filter(world => world.name.match(text))"
+          @clear="showWorldList = worldList"
           class="q-px-md"
         >
           <template v-slot:append>
