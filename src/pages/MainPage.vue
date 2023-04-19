@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import headerVue from 'app/src/components/Main/HeaderVue.vue'
-import worldListVue from 'app/src/components/Main/WorldListVue.vue'
+import worldOperation from 'app/src/components/Main/WorldOperationVue.vue'
+import worldList from 'app/src/components/Main/WorldListVue.vue'
 import { useRouter } from 'vue-router';
 
 // コードからRouterへアクセス
@@ -13,17 +14,20 @@ window.API.onStartServer((_: Electron.IpcRendererEvent) => goConsole());
 </script>
 
 <template>
-  
-  <!-- 230はHeader-vueの高さ -->
   <q-page class="column">
     <header-vue/>
-    <!-- <world-list-vue/> -->
-    <div class="col">
-      <div class="bg-red" style="height: inherit; overflow: scroll; ">
-        <template v-for="text in Array(100)" :key="text">
-          a<br/>
-        </template>
-      </div>
-    </div>
+    <worldOperation/>
+    <worldList/>
+    
+    <!-- <div class="bg-red q-pa-md">BAR-1</div>
+    <div class="bg-green q-pa-md">BAR-2</div>
+    <q-virtual-scroll
+        class="bg-yellow"
+        :items="[0,0,0,0,0,0,0,0,0,0]"
+        v-slot="{ item, index }"
+        style="flex: 1 1 0"
+    >
+      <div class="text-h1">{{item}}{{ index }}</div>
+    </q-virtual-scroll> -->
   </q-page>
 </template>
