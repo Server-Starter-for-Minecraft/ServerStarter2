@@ -31,3 +31,22 @@ export const interactiveProcess = (
     promise,
   ];
 };
+
+export function execProcess(
+  process: string,
+  args: string[],
+  cwd: string | undefined = undefined,
+  shell = false
+) {
+  const child = child_process.spawn(process, args, {
+    cwd,
+    shell,
+  });
+
+  const promise = new Promise<number | null>((resolve, reject) => {
+    child.on('exit', resolve);
+    child.on('error', reject);
+  });
+
+  return promise;
+}
