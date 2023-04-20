@@ -51,14 +51,14 @@ const runBtnHovered = ref(false);
       @mouseover="runBtnHovered = true"
       @mouseleave="runBtnHovered = false"
     >
-      <q-avatar square size="60px">
+      <q-avatar square size="9vmin">
         <q-img :src="world.settings.avater_path" :ratio="1" />
         <q-btn
           v-show="clicked || runBtnHovered"
           @click="runServer"
           flat
           dense
-          size="30px"
+          size="4.5vmin"
           icon="play_arrow"
           text-color="white"
           class="absolute-center hantoumei"
@@ -74,9 +74,9 @@ const runBtnHovered = ref(false);
     <q-item-section side v-show="clicked || itemHovered">
       <div class="row">
         <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
-        <icon-btn icon="edit" text="ワールド編集" />
-        <icon-btn icon="folder_open" text="データを開く" />
-        <icon-btn icon="delete" text="削除" />
+        <icon-btn icon="edit" text="ワールド編集" size="2vmin"/>
+        <icon-btn icon="folder_open" text="データを開く" size="2vmin"/>
+        <icon-btn icon="delete" text="削除" size="2vmin"/>
       </div>
     </q-item-section>
   </q-item>
@@ -84,16 +84,17 @@ const runBtnHovered = ref(false);
 
 <style scoped lang="scss">
 .worldBlock {
-  height: 80px;
+  height: 12vmin;
 }
 
 .worldName {
-  font-size: 20pt;
+  font-size: 4vmin;
   font-weight: bold;
   margin: 0;
 }
 
 .versionName {
+  font-size: 2.5vmin;
   margin-bottom: 4px;
 }
 

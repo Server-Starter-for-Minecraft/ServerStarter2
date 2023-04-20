@@ -1,20 +1,4 @@
 import { defineStore } from 'pinia';
-import { World, WorldSettings } from 'app/src-electron/api/scheme';
-
-/////////////////// demoデータ ///////////////////
-const demoWorldSettings: WorldSettings = {
-  avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
-  version: { id: '1.19.2', type: 'vanilla', release: true },
-};
-const demoWorld: World = {
-  name: 'testWorld',
-  settings: demoWorldSettings,
-  datapacks: [],
-  plugins: [],
-  mods: [],
-};
-export const demoWorldList = [...Array(10)].map((_) => demoWorld)
-/////////////////////////////////////////////////
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -25,7 +9,6 @@ export const useMainStore = defineStore('mainStore', {
       sideText: '',
       showMenuBtn: false,
       rightDrawerOpen: false,
-      showWorldList: demoWorldList,
     }
   },
   actions: {

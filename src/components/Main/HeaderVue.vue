@@ -16,8 +16,8 @@ useMainStore().setHeader('Server Starter for Minecraft', {
 <template>
   <q-item class="q-pa-md row expandHeader">
     <q-item-section>
-      <p class="q-pl-md q-pt-lg">IP. {{ systemStore.publicIP }}</p>
-      <q-checkbox v-model="autoShutdown" class="checkbox"
+      <p class="q-pl-md q-pt-lg" style="font-size: 2.5vmin;">IP. {{ systemStore.publicIP }}</p>
+      <q-checkbox v-model="autoShutdown" class="checkbox" style="font-size: 2vmin;"
         >サーバー終了後にPCを自動シャットダウンする</q-checkbox
       >
     </q-item-section>

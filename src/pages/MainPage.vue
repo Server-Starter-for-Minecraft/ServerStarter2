@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import headerVue from 'app/src/components/Main/HeaderVue.vue'
-import worldOperation from 'app/src/components/Main/WorldOperationVue.vue'
-import worldList from 'app/src/components/Main/WorldListVue.vue'
+import worldList from 'src/components/Main/WorldListVue.vue'
 import { useRouter } from 'vue-router';
 
 // コードからRouterへアクセス
@@ -16,7 +15,6 @@ window.API.onStartServer((_: Electron.IpcRendererEvent) => goConsole());
 <template>
   <q-page class="column">
     <header-vue/>
-    <worldOperation/>
     <worldList/>
   </q-page>
 </template>
