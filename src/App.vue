@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import { InitWindow } from './init';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { useQuasar } from 'quasar';
 
@@ -14,4 +15,7 @@ $q.dark.set('auto');
 window.API.onAddConsole((_event, value) => {
   useConsoleStore().console.push(value);
 });
+
+// Windowの起動時処理
+InitWindow()
 </script>
