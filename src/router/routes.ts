@@ -9,6 +9,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'progress', component: () => import('src/pages/ProgressPage.vue') },
       { path: 'console', component: () => import('src/pages/ConsolePage.vue') },
       { path: 'new-world', component: () => import('src/pages/NewWorldPage.vue') },
+      { path: 'world-edit', component: () => import('src/pages/WorldEditPage.vue') },
       { path: 'settings', component: () => import('src/pages/SettingsPage.vue') },
     ],
   },

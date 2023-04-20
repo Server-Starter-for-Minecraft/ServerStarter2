@@ -4,9 +4,22 @@ import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import WorldEditPage from '../components/WorldEdit/WorldEditVue.vue';
 
 useMainStore().setHeader('新規ワールド', {showMenuBtn: true});
+useWorldEditStore().world = {
+  name: '',
+  settings: {
+    version: {
+      id: '1.19.2',
+      type: 'vanilla',
+      release: true
+    }
+  },
+  datapacks: [],
+  plugins: [],
+  mods: []
+}
 
 async function saveFunc() {
-  useMainStore().worldList[useWorldEditStore().worldIndex] = useWorldEditStore().world
+  useMainStore().worldList.push(useWorldEditStore().world)
 }
 </script>
 

@@ -81,7 +81,7 @@ function worldEdit() {
     <q-item-section side v-show="clicked || itemHovered">
       <div class="row">
         <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
-        <icon-btn icon="edit" text="ワールド編集" size="2vmin" to="new-world" @click="worldEdit"/>
+        <icon-btn icon="edit" text="ワールド編集" size="2vmin" to="world-edit" @click="worldEdit"/>
         <icon-btn icon="folder_open" text="データを開く" size="2vmin"/>
         <icon-btn icon="delete" text="削除" size="2vmin"/>
       </div>
