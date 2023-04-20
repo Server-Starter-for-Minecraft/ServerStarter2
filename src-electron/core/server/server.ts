@@ -2,7 +2,7 @@ import { Version, World } from 'app/src-electron/api/scheme';
 import { Path } from '../utils/path/path';
 import { getLog4jArg } from './log4j';
 import { worldsPath } from './const';
-import { isFailure } from '../utils/result';
+import { isFailure } from '../utils/failable';
 import { readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
 import { unrollSettings } from './settings';

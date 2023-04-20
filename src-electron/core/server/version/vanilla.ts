@@ -1,6 +1,6 @@
 import { VanillaVersion } from 'app/src-electron/api/scheme';
 import { getVersionMainfest } from './mainfest';
-import { Failable, isFailure } from '../../utils/result';
+import { Failable, isFailure } from '../../utils/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { versionsPath } from '../const';
 import { VersionLoader } from './interface';

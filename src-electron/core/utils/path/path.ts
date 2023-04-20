@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BytesData } from '../bytesData/bytesData.js';
-import { Failable } from '../result.js';
+import { Failable } from '../failable.js';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
@@ -85,7 +85,7 @@ export class Path {
     return (await fs.promises.readdir(this.path)).map((p) => this.child(p));
   }
 
-  async remove(recursive= false) {
+  async remove(recursive = false) {
     if (this.exists()) {
       if (await this.isDirectory()) {
         await fs.promises.rmdir(this.path, { recursive });

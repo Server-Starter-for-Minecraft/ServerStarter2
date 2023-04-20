@@ -1,6 +1,6 @@
 import { api } from '../api';
 import { Path } from '../utils/path/path';
-import { Failable, isFailure } from '../utils/result';
+import { Failable, isFailure } from '../utils/failable';
 import { execProcess } from '../utils/subprocess';
 
 /**
