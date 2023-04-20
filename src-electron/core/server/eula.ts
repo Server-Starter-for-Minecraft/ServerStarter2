@@ -2,9 +2,6 @@ import { api } from '../api';
 import { Path } from '../utils/path/path';
 import { Failable, isFailure } from '../utils/result';
 import { execProcess } from '../utils/subprocess';
-import { serverCwdPath } from './const';
-
-const eulaPath = serverCwdPath.child('eula.txt');
 
 /**
  * Eulaに同意したかどうかを返す
@@ -14,18 +11,23 @@ const eulaPath = serverCwdPath.child('eula.txt');
  */
 export async function checkEula(
   javaPath: Path,
-  jarpath: Path
+  jarpath: Path,
+  serverCwdPath: Path
 ): Promise<Failable<boolean>> {
+  const eulaPath = serverCwdPath.child('eula.txt');
+
   // eula.txtが存在しない場合生成
   if (!eulaPath.exists()) {
-    const result = await generateEula(javaPath, jarpath);
+    console.log("GENERATE EULA")
+    const result = await generateEula(javaPath, jarpath, serverCwdPath);
     // 生成に失敗した場合エラー
     if (isFailure(result)) return result;
   }
-
   // eulaの内容を読み取る
   const content = await eulaPath.read();
   if (isFailure(content)) return content;
+
+  console.log("EULAAAAAA", eulaPath.str() ,await content.text())
 
   const eulaParsed = parseEula(await content.text());
   let agree = eulaParsed[0];
@@ -57,7 +59,7 @@ function parseEula(txt: string): [boolean, string[]] {
     }
     const match = line.toLowerCase().match(/\s*eula\s*=\s*(\w+)\s*/);
     if (match) {
-      eula = match[0] === 'true';
+      eula = match[1] === 'true';
     }
   });
   return [eula, comments];
@@ -65,8 +67,11 @@ function parseEula(txt: string): [boolean, string[]] {
 
 async function generateEula(
   javaPath: Path,
-  jarpath: Path
+  jarpath: Path,
+  serverCwdPath: Path
 ): Promise<Failable<undefined>> {
+  const eulaPath = serverCwdPath.child('eula.txt');
+
   // サーバーを仮起動
   await execProcess(
     javaPath.absolute().str(),
