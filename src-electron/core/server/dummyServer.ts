@@ -54,6 +54,8 @@ export async function runServer(world: World) {
     api.send.AddConsole(demoConsoles[i]);
     await sleep(0.25);
   }
+
+  return undefined;
 }
 
 export function runCommand(command: string) {

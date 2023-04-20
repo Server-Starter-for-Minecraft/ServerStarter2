@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 import { linkIPC } from './core/ipc/link';
 import { API } from './api/api';
-import { backListener } from './core/ipc/back';
+import { backListener } from './core/ipc/dummy_back';
 import { getFrontAPIListener, setFrontAPI } from './core/ipc/front';
 import { setBackAPI } from './core/api';
 
