@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import { promises } from 'fs';
 import { utilLoggers } from '../logger.js';
 import { Path } from '../path/path.js';
-import { isSuccess, Failable, isFailure } from '../failable.js';
+import { isSuccess, Failable, isFailure } from '../../../api/failable.js';
 
 const fetch = import('node-fetch');
 

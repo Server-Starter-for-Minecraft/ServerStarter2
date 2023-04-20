@@ -1,4 +1,4 @@
-import { Failable } from '../core/utils/failable';
+import { Failable } from './failable';
 import { Version, VersionType, World } from './scheme';
 import { IAPI, Back, Front } from './types';
 

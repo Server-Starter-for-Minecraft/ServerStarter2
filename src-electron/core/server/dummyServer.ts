@@ -6,7 +6,7 @@ import {
 } from 'app/src-electron/api/scheme';
 import { sleep } from '../utils/testTools';
 import { api } from 'app/src-electron/core/api';
-import { Failable } from '../utils/failable';
+import { Failable } from '../../api/failable';
 
 // 処理フロー
 // １．フロントがProgressPageに遷移

@@ -1,6 +1,6 @@
 import { config } from '../../store';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { Failable, isFailure, isSuccess } from '../../utils/failable';
+import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { versionManifestPath } from '../const';
 
 export type ManifestRecord = {

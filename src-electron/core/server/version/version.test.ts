@@ -1,5 +1,5 @@
 import { Path } from '../../utils/path/path';
-import { Failable, isSuccess } from '../../utils/failable';
+import { Failable, isSuccess } from '../../../api/failable';
 import { forgeVersionLoader } from './forge';
 import { JavaComponent, vanillaVersionLoader } from './vanilla';
 

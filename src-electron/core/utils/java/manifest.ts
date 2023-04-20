@@ -1,6 +1,6 @@
 import { BytesData } from '../bytesData/bytesData.js';
 import { Path } from '../path/path.js';
-import { isFailure } from '../failable.js';
+import { isFailure } from '../../../api/failable.js';
 
 export type Manifest = {
   files: {

@@ -3,7 +3,7 @@ import { config } from '../../store.js';
 import { BytesData } from '../bytesData/bytesData.js';
 import { osPlatform } from '../os/os.js';
 import { Path } from '../path/path.js';
-import { isFailure, Failable } from '../failable.js';
+import { isFailure, Failable } from '../../../api/failable.js';
 import { installManifest, Manifest } from './manifest.js';
 
 export type component =

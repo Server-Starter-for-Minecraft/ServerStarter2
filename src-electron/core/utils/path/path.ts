@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BytesData } from '../bytesData/bytesData.js';
-import { Failable } from '../failable.js';
+import { Failable } from '../../../api/failable.js';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
