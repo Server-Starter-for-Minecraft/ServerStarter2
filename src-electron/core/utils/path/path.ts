@@ -73,6 +73,7 @@ export class Path {
   }
 
   async writeText(content: string) {
+    this.parent().mkdir(true);
     await fs.promises.writeFile(this.path, content);
   }
 

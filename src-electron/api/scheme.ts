@@ -10,10 +10,10 @@ export const versionTypes = [
 export type VersionType = (typeof versionTypes)[number];
 
 export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
-export type SpigotVerison = { id: string; type: 'spigot'; release: boolean };
-export type PapermcVerison = { id: string; type: 'papermc'; release: boolean };
-export type ForgeVerison = { id: string; type: 'forge'; release: boolean };
-export type MohistmcVerison = {
+export type SpigotVersion = { id: string; type: 'spigot'; release: boolean };
+export type PapermcVersion = { id: string; type: 'papermc'; release: boolean };
+export type ForgeVersion = { id: string; type: 'forge'; release: boolean };
+export type MohistmcVersion = {
   id: string;
   type: 'mohistmc';
   release: boolean;
@@ -21,10 +21,10 @@ export type MohistmcVerison = {
 
 export type Version =
   | VanillaVersion
-  | SpigotVerison
-  | PapermcVerison
-  | ForgeVerison
-  | MohistmcVerison;
+  | SpigotVersion
+  | PapermcVersion
+  | ForgeVersion
+  | MohistmcVersion;
 
 export type GitRemote = {
   type: 'git';

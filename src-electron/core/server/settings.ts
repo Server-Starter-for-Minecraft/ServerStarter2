@@ -1,14 +1,15 @@
 import { WorldSettings } from 'app/src-electron/api/scheme';
-import { serverCwdPath } from './const';
 import {
   defaultServerProperties,
   stringifyServerProperties,
 } from './settings/properties';
+import { Path } from '../utils/path/path';
 
 /** サーバー設定系ファイルをサーバーCWD直下に書き出す */
 export async function unrollSettings(
   settings: WorldSettings,
-  levelName: string
+  levelName: string,
+  serverCwdPath: Path
 ) {
   // server.properties を書き出し
   const strprop = stringifyServerProperties({

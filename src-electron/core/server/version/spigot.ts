@@ -1,70 +1,45 @@
-import { SpigotVerison } from 'app/src-electron/api/scheme';
+import { SpigotVersion } from 'app/src-electron/api/scheme';
 import { Path } from '../../utils/path/path';
-import { getVersionMainfest } from './mainfest';
 import { Failable, isFailure } from '../../utils/result';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { VanillaVersionJson } from './vanilla';
+import { JavaComponent, getVanillaVersionJson } from './vanilla';
 import { config } from '../../store';
-import { spigotBuildPath } from '../const';
+import { spigotBuildPath, versionsPath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../utils/subprocess';
 import { readyJava } from '../../utils/java/java';
+import { VersionLoader } from './interface';
+
+const spigotVersionsPath = versionsPath.child('spigot');
+
+export const spigotVersionLoader: VersionLoader = {
+  /** spigotのサーバーデータをダウンロード */
+  async readyVersion(
+    version: SpigotVersion
+  ): Promise<Failable<{ jarpath: Path; component: JavaComponent }>> {
+    const json = await getVanillaVersionJson(version.id);
+
+    // jsonデータに変換できなかった場合
+    if (isFailure(json)) return json;
+
+    // ビルドツールのダウンロード
+    const buildTool = await readySpigotBuildTool();
+    if (isFailure(buildTool)) return buildTool;
+
+    const jarpath = spigotVersionsPath.child(`${version.id}/${version.id}.jar`);
+
+    // ビルドの実行
+    const buildResult = await buildSpigotVersion(version, jarpath);
+    if (isFailure(buildResult)) return buildResult;
+
+    return {
+      jarpath,
+      component: json.javaVersion.component,
+    };
+  },
+};
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
-
-/** spigotのサーバーデータをダウンロード */
-export async function readySpigotVersion(
-  vanillaVersionsPath: Path,
-  spigotVersionsPath: Path,
-  version: SpigotVerison
-) {
-  const vanillaJsonPath = vanillaVersionsPath.child(
-    `${version.id}/${version.id}.json`
-  );
-
-  const manifest = await getVersionMainfest();
-
-  // version manifestが取得できなかった場合
-  if (isFailure(manifest)) return manifest;
-
-  const record = manifest.versions.find((version) => version.id === version.id);
-
-  // 該当idのバージョンが存在しない場合エラー
-  // TODO:spigotの場合vanillaとは違う名前のバージョンが存在するので対応
-  if (record === undefined)
-    return new Error(`Vanilla version ${version.id} is not exists`);
-
-  // jsonデータを取得
-  const jsonData = await BytesData.fromPathOrUrl(
-    vanillaJsonPath.path,
-    record.url,
-    record.sha1
-  );
-
-  // jsonデータが取得できなかった場合
-  if (isFailure(jsonData)) return jsonData;
-
-  const json = await jsonData.json<VanillaVersionJson>();
-
-  // jsonデータに変換できなかった場合
-  if (isFailure(json)) return json;
-
-  // ビルドツールのダウンロード
-  const buildTool = await readySpigotBuildTool();
-  if (isFailure(buildTool)) return buildTool;
-
-  const jarpath = spigotVersionsPath.child(`${version.id}/${version.id}.jar`);
-
-  // ビルドの実行
-  const buildResult = await buildSpigotVersion(version, jarpath);
-  if (isFailure(buildResult)) return buildResult;
-
-  return {
-    jarpath,
-    component: json.javaVersion.component,
-  };
-}
-
 // /** バージョン一覧の取得 */
 // export async function getSpigotVersions(): Promise<Failable<undefined>> {
 //   const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
@@ -123,7 +98,7 @@ export async function readySpigotBuildTool(): Promise<Failable<undefined>> {
 }
 
 async function buildSpigotVersion(
-  version: SpigotVerison,
+  version: SpigotVersion,
   targetpath: Path
 ): Promise<Failable<undefined>> {
   // TODO: ほんとにjava-runtime-gammaで大丈夫?
@@ -146,15 +121,12 @@ async function buildSpigotVersion(
   );
   await process;
 
-  // // 不要なファイルの削除
-  // for (let d of await spigotBuildPath.iter()) {
-  //   console.log(d.basename());
-  //   if (d.basename() === 'BuildTools.jar') continue;
-  //   if (d.basename() === 'BuildTools.log.txt') continue;
-  //   if (d.basename() === `spigot-${version.id}.jar`) continue;
-  //   await d.remove(true);
-  // }
+  // 移動先のディレクトリを作成
+  targetpath.parent().mkdir(true);
 
   // jarファイルを移動
   await spigotBuildPath.child(`spigot-${version.id}.jar`).rename(targetpath);
+
+  // 不要なファイルの削除
+  await spigotBuildPath.child('work').remove(true);
 }

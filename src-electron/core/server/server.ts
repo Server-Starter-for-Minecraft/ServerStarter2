@@ -1,7 +1,7 @@
 import { Version, World } from 'app/src-electron/api/scheme';
 import { Path } from '../utils/path/path';
 import { getLog4jArg } from './log4j';
-import { serverCwdPath, worldsPath } from './const';
+import { worldsPath } from './const';
 import { isFailure } from '../utils/result';
 import { readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
@@ -24,8 +24,8 @@ export async function runServer(world: World) {
   // 確保メモリ量を設定
   const args = ['"-Dfile.encoding=UTF-8"', `-Xmx${memory}G`, `-Xms${memory}G`];
 
-  // ワールドが存在しない場合エラー
-  if (!worldPath.exists()) return Error(`world ${world.name} not exists`);
+  // // ワールドが存在しない場合エラー
+  // if (!worldPath.exists()) return Error(`world ${world.name} not exists`);
 
   // ワールドが起動中の場合エラー
   if (settings.using) return Error(`world ${world.name} is already activated`);
@@ -41,6 +41,9 @@ export async function runServer(world: World) {
   if (isFailure(version)) return version;
 
   const { jarpath, component } = version;
+
+  // サーバーの実行CWDパスを設定
+  const serverCwdPath = jarpath.parent().child('server');
 
   api.send.UpdateStatus(`javaランタイムを準備中 (${component})`);
 
@@ -74,12 +77,12 @@ export async function runServer(world: World) {
   api.send.UpdateStatus('設定ファイルの書き出し中');
 
   // 設定ファイルをサーバーCWD直下に書き出す
-  await unrollSettings(settings, levelName);
+  await unrollSettings(settings, levelName, serverCwdPath);
 
   api.send.UpdateStatus('Eulaの同意状況を確認中');
 
   // Eulaチェック
-  const eulaAgreement = await checkEula(javaPath, jarpath);
+  const eulaAgreement = await checkEula(javaPath, jarpath, serverCwdPath);
 
   // Eulaチェックに失敗した場合
   if (isFailure(eulaAgreement)) return eulaAgreement;

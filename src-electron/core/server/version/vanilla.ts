@@ -1,8 +1,11 @@
 import { VanillaVersion } from 'app/src-electron/api/scheme';
 import { getVersionMainfest } from './mainfest';
-import { isFailure } from '../../utils/result';
+import { Failable, isFailure } from '../../utils/result';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { Path } from '../../utils/path/path';
+import { versionsPath } from '../const';
+import { VersionLoader } from './interface';
+
+const vanillaVersionsPath = versionsPath.child('vanilla');
 
 export type JavaComponent =
   | 'java-runtime-alpha'
@@ -24,24 +27,51 @@ export type VanillaVersionJson = {
   };
 };
 
-/** vanillaのサーバーデータをダウンロード */
-export async function readyVanillaVersion(
-  vanillaVersionsPath: Path,
-  version: VanillaVersion
-) {
-  const path = vanillaVersionsPath.child(version.id);
-  const jsonpath = path.child(version.id + '.json');
-  const jarpath = path.child(version.id + '.jar');
+export const vanillaVersionLoader: VersionLoader = {
+  /** vanillaのサーバーデータをダウンロード */
+  async readyVersion(version: VanillaVersion) {
+    const path = vanillaVersionsPath.child(version.id);
+    const jarpath = path.child(version.id + '.jar');
+
+    // versionのjsonを取得
+    const json = await getVanillaVersionJson(version.id);
+    if (isFailure(json)) return json;
+
+    // jarデータを取得
+    const serverData = await BytesData.fromPathOrUrl(
+      jarpath.path,
+      json.downloads.server.url,
+      json.downloads.server.sha1
+    );
+
+    // serverデータがダウロードできなかった場合
+    if (isFailure(serverData)) return serverData;
+
+    // serverデータをファイルに書き出し
+    await jarpath.write(serverData);
+
+    return {
+      jarpath,
+      component: json.javaVersion.component,
+    };
+  },
+};
+
+export async function getVanillaVersionJson(
+  id: string
+): Promise<Failable<VanillaVersionJson>> {
+  const path = vanillaVersionsPath.child(id);
+  const jsonpath = path.child(id + '.json');
   const manifest = await getVersionMainfest();
 
   // version manifestが取得できなかった場合
   if (isFailure(manifest)) return manifest;
 
-  const record = manifest.versions.find((version) => version.id === version.id);
+  const record = manifest.versions.find((version) => version.id === id);
 
   // 該当idのバージョンが存在しない場合
   if (record === undefined)
-    return new Error(`Vanilla version ${version.id} is not exists`);
+    return new Error(`Vanilla version ${id} is not exists`);
 
   // jsonデータを取得
   const jsonData = await BytesData.fromPathOrUrl(
@@ -55,24 +85,5 @@ export async function readyVanillaVersion(
 
   const json = await jsonData.json<VanillaVersionJson>();
 
-  // jsonデータに変換できなかった場合
-  if (isFailure(json)) return json;
-
-  // jarデータを取得
-  const serverData = await BytesData.fromPathOrUrl(
-    jarpath.path,
-    json.downloads.server.url,
-    json.downloads.server.sha1
-  );
-
-  // serverデータがダウロードできなかった場合
-  if (isFailure(serverData)) return serverData;
-
-  // serverデータをファイルに書き出し
-  await jarpath.write(serverData);
-
-  return {
-    jarpath,
-    component: json.javaVersion.component,
-  };
+  return json;
 }

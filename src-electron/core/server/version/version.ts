@@ -1,13 +1,24 @@
-import { Version } from 'app/src-electron/api/scheme';
-import { readyVanillaVersion } from './vanilla';
-import { versionsPath } from '../const';
+import { Version, VersionType } from 'app/src-electron/api/scheme';
+import { vanillaVersionLoader } from './vanilla';
+import { VersionLoader } from './interface';
+import { spigotVersionLoader } from './spigot';
+import { papermcVersionLoader } from './papermc';
+
+const loaders: {
+  [key in VersionType]: VersionLoader | undefined;
+} = {
+  vanilla: vanillaVersionLoader,
+  spigot: spigotVersionLoader,
+  papermc: papermcVersionLoader,
+  forge: undefined,
+  mohistmc: undefined,
+};
 
 // 指定されたバージョンを準備する
 export async function readyVersion(version: Version) {
-  switch (version.type) {
-    case 'vanilla':
-      return await readyVanillaVersion(versionsPath.child('vanilla'), version);
-    default:
-      throw new Error(`unknown version ${version.id}(${version.type})`);
+  const loader = loaders[version.type];
+  if (!loader) {
+    throw new Error(`unknown version type ${version.type}`);
   }
+  return await loader.readyVersion(version);
 }
