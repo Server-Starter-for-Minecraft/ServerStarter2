@@ -1,5 +1,5 @@
 import { PapermcVersion } from 'app/src-electron/api/scheme';
-import { isFailure } from '../../utils/result';
+import { isFailure } from '../../utils/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent } from './vanilla';
 import { versionsPath } from '../const';

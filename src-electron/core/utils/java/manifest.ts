@@ -1,6 +1,6 @@
 import { BytesData } from '../bytesData/bytesData.js';
 import { Path } from '../path/path.js';
-import { isFailure } from '../result.js';
+import { isFailure } from '../failable.js';
 
 export type Manifest = {
   files: {
@@ -45,7 +45,7 @@ export async function installManifest(manifest: Manifest, path: Path) {
             false,
             true
           );
-          if (isFailure(result)) console.log(p.path)
+          if (isFailure(result)) console.log(p.path);
         };
         promises.push(filePromise());
         break;

@@ -1,6 +1,6 @@
 import { ForgeVersion } from 'app/src-electron/api/scheme';
 import { VersionLoader } from './interface';
-import { Failable, isFailure } from '../../utils/result';
+import { Failable, isFailure } from '../../utils/failable';
 import { Path } from '../../utils/path/path';
 import { getJavaComponent } from './vanilla';
 import { BytesData } from '../../utils/bytesData/bytesData';

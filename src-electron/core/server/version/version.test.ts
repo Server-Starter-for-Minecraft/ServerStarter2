@@ -1,7 +1,7 @@
 import { Path } from '../../utils/path/path';
-import { Failable } from '../../utils/result';
+import { Failable, isSuccess } from '../../utils/failable';
 import { forgeVersionLoader } from './forge';
-import { JavaComponent } from './vanilla';
+import { JavaComponent, vanillaVersionLoader } from './vanilla';
 
 const ids = [
   '1.19.4',
@@ -61,7 +61,6 @@ const ids = [
   '1.1',
 ];
 
-
 describe('vanillaVersion', async () => {
   test(
     '',
@@ -72,20 +71,26 @@ describe('vanillaVersion', async () => {
       //   release: true,
       // });
       // console.log(result, 100);
-      const promisses: Promise<
-        Failable<{
-          programArguments: string[];
-          serverCwdPath: Path;
-          component: JavaComponent;
-        }>
-      >[] = [];
-      ids.forEach((id) =>
-        promisses.push(
-          forgeVersionLoader.readyVersion({ release: true, type: 'forge', id })
-        )
-      );
+      // const promisses: Promise<
+      //   Failable<{
+      //     programArguments: string[];
+      //     serverCwdPath: Path;
+      //     component: JavaComponent;
+      //   }>
+      // >[] = [];
+      // ids.forEach((id) =>
+      //   promisses.push(
+      //     forgeVersionLoader.readyVersion({ release: true, type: 'forge', id })
+      //   )
+      // );
 
-      (await Promise.all(promisses)).forEach(x => console.log(x));
+      // (await Promise.all(promisses)).forEach((x) => console.log(x));
+      const versions = await vanillaVersionLoader.getAllVersions();
+
+      const path = new Path('test.txt');
+      if (isSuccess(versions)) {
+        path.writeText(JSON.stringify(versions));
+      }
       expect(1).toBe(1);
     },
     { timeout: 2 ** 31 - 1 }

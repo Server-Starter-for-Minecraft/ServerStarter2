@@ -1,7 +1,7 @@
 import { Version } from 'app/src-electron/api/scheme';
 import { Path } from '../utils/path/path';
 import { BytesData } from '../utils/bytesData/bytesData';
-import { Failable, isFailure } from '../utils/result';
+import { Failable, isFailure } from '../utils/failable';
 import { api } from '../api';
 
 const ver_17_18 = [

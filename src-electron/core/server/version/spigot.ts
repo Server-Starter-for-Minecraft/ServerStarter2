@@ -1,6 +1,6 @@
 import { SpigotVersion } from 'app/src-electron/api/scheme';
 import { Path } from '../../utils/path/path';
-import { Failable, isFailure } from '../../utils/result';
+import { Failable, isFailure } from '../../utils/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent } from './vanilla';
 import { config } from '../../store';
@@ -9,6 +9,7 @@ import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../utils/subprocess';
 import { readyJava } from '../../utils/java/java';
 import { VersionLoader } from './interface';
+import { getVersionMainfest } from './mainfest';
 
 const spigotVersionsPath = versionsPath.child('spigot');
 
@@ -37,34 +38,41 @@ export const spigotVersionLoader: VersionLoader = {
       component,
     };
   },
+
+  /** spigotのバージョンの一覧返す */
+  async getAllVersions() {},
 };
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
-// /** バージョン一覧の取得 */
-// export async function getSpigotVersions(): Promise<Failable<undefined>> {
-//   const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
-//   if (isFailure(result)) return result;
 
-//   const ids = cheerio
-//     .load(await result.text())('body > pre > a')
-//     .map((_, elem) => elem.attribs['href'].slice(0, -5));
+/** バージョン一覧の取得 */
+export async function getSpigotVersions(): Promise<Failable<undefined>> {
+  const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
+  if (isFailure(result)) return result;
 
-//   const vanillaMap = await _VanillaVersion.getVersionMap();
-//   const versions = [];
-//   const idset = new Set(ids.slice(1));
+  const ids: string[] = [];
 
-//   for (let record of Object.values(vanillaMap)) {
-//     if (idset.has(record.id)) {
-//       const v: SpigotVerison = {
-//         id: record.id,
-//         type: 'spigot',
-//         release: record.type === 'release',
-//       };
-//       versions.push(v);
-//     }
-//   }
-//   return versions;
-// }
+  cheerio
+    .load(await result.text())('body > pre > a')
+    .each((_, elem) => {
+      const href = elem.attribs['href'];
+      const match = href.match(/^(\d+\.\d+(?:\.\d+)?)\.json$/);
+      if (match) {
+        ids.push(match[1]);
+      }
+    });
+
+  const manifest = await getVersionMainfest();
+
+  if (isFailure(manifest)) return manifest;
+
+  const entries = manifest.versions.map((version, index) => [
+    version.id,
+    index,
+  ]);
+
+  const versionIndexMap = Object.fromEntries(entries);
+}
 
 const buildToolPath = spigotBuildPath.child('BuildTools.jar');
 
