@@ -40,13 +40,13 @@ export const spigotVersionLoader: VersionLoader = {
   },
 
   /** spigotのバージョンの一覧返す */
-  async getAllVersions() {},
+  getAllVersions: getSpigotVersions,
 };
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 
 /** バージョン一覧の取得 */
-export async function getSpigotVersions(): Promise<Failable<undefined>> {
+export async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
   const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
   if (isFailure(result)) return result;
 
@@ -66,12 +66,19 @@ export async function getSpigotVersions(): Promise<Failable<undefined>> {
 
   if (isFailure(manifest)) return manifest;
 
-  const entries = manifest.versions.map((version, index) => [
-    version.id,
-    index,
-  ]);
+  const entries: [string, number][] = manifest.versions.map(
+    (version, index) => [version.id, index]
+  );
 
   const versionIndexMap = Object.fromEntries(entries);
+
+  ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
+
+  return ids.map((id) => ({
+    type: 'spigot',
+    id,
+    release: true,
+  }));
 }
 
 const buildToolPath = spigotBuildPath.child('BuildTools.jar');

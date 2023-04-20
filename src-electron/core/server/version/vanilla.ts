@@ -73,6 +73,7 @@ export const vanillaVersionLoader: VersionLoader = {
 /** バージョンのIDに適したjavaのコンポーネントを返す */
 export async function getJavaComponent(id: string) {
   // versionのjsonを取得
+  // TODO: serverがないバージョンまで選択されていると思うのでそれの排除
   const json = await getVanillaVersionJson(id);
   if (isFailure(json)) return json;
 
