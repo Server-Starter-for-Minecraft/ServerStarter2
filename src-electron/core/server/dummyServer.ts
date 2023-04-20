@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/api/scheme';
+import { World, WorldSettings } from 'app/src-electron/api/scheme';
 import { sleep } from '../utils/testTools';
 import { api } from 'app/src-electron/core/api';
 
@@ -106,3 +106,21 @@ const demoConsoles = [
   '[02:05:43] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved',
   '[02:05:43] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved',
 ];
+
+export async function getAllWorlds() {
+  function getDemoWorld() {
+    const demoWorldSettings: WorldSettings = {
+      avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
+      version: { id: '1.19.2', type: 'vanilla', release: true },
+    };
+    const demoWorld: World = {
+      name: 'testWorld',
+      settings: demoWorldSettings,
+      datapacks: [],
+      plugins: [],
+      mods: [],
+    };
+    return demoWorld;
+  }
+  return [...Array(10)].map((_) => getDemoWorld());
+}

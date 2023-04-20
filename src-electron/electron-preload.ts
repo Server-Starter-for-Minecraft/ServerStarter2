@@ -87,6 +87,7 @@ const api: FrontAPI = {
   sendCommand: send('Command'),
   handleAgreeEula: handle('AgreeEula'),
   invokeRunServer: invoke('RunServer'),
+  invokeGetAllWorlds: invoke('GetAllWorlds'),
 };
 
 contextBridge.exposeInMainWorld('API', api);
