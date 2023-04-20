@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
-import { useMainStore } from 'src/stores/MainStore';
 import { World } from 'app/src-electron/api/scheme';
-import iconBtn from '../util/iconButton.vue';
+import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useWorldEditStore } from 'src/stores/WorldEditStore';
+import iconBtn from '../util/iconButton.vue';
 
 interface Props {
   world: World;
@@ -33,6 +34,12 @@ async function runServer() {
 const clicked = ref(false);
 const itemHovered = ref(false);
 const runBtnHovered = ref(false);
+
+function worldEdit() {
+  useWorldEditStore().worldIndex = prop.idx
+  // TODO: deep copy のモジュールを作成？
+  useWorldEditStore().world = JSON.parse(JSON.stringify(prop.world)) as World
+}
 </script>
 
 <template>
@@ -74,7 +81,7 @@ const runBtnHovered = ref(false);
     <q-item-section side v-show="clicked || itemHovered">
       <div class="row">
         <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
-        <icon-btn icon="edit" text="ワールド編集" size="2vmin"/>
+        <icon-btn icon="edit" text="ワールド編集" size="2vmin" to="world-edit" @click="worldEdit"/>
         <icon-btn icon="folder_open" text="データを開く" size="2vmin"/>
         <icon-btn icon="delete" text="削除" size="2vmin"/>
       </div>

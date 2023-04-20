@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
-import { ref } from 'vue';
 
 const mainStore = useMainStore();
 </script>
@@ -37,7 +36,7 @@ const mainStore = useMainStore();
 <style scoped lang="scss">
 .header {
   background-color: #1a1a1a;
-  height: 80px;
+  height: 6rem;
 }
 
 .title {
