@@ -40,15 +40,12 @@ export async function runServer(world: World) {
   // サーバーデータの用意ができなかった場合エラー
   if (isFailure(version)) return version;
 
-  const { jarpath, component } = version;
-
-  // サーバーの実行CWDパスを設定
-  const serverCwdPath = jarpath.parent().child('server');
+  const { programArguments, serverCwdPath, component } = version;
 
   api.send.UpdateStatus(`javaランタイムを準備中 (${component})`);
 
   // 実行javaを用意
-  const javaPath = await readyJava(component);
+  const javaPath = await readyJava(component, true);
 
   // 実行javaが用意できなかった場合エラー
   if (isFailure(javaPath)) return javaPath;
@@ -64,7 +61,7 @@ export async function runServer(world: World) {
   if (log4jarg) args.push(log4jarg);
 
   // サーバーのjarファイル参照を実行時引数に追加
-  args.push('-jar', `"${jarpath.absolute().str()}"`, '--nogui');
+  args.push(...programArguments, '--nogui');
 
   // ワールドデータをダウンロード
 
@@ -82,7 +79,11 @@ export async function runServer(world: World) {
   api.send.UpdateStatus('Eulaの同意状況を確認中');
 
   // Eulaチェック
-  const eulaAgreement = await checkEula(javaPath, jarpath, serverCwdPath);
+  const eulaAgreement = await checkEula(
+    javaPath,
+    programArguments,
+    serverCwdPath
+  );
 
   // Eulaチェックに失敗した場合
   if (isFailure(eulaAgreement)) return eulaAgreement;

@@ -1,8 +1,7 @@
 import { PapermcVersion } from 'app/src-electron/api/scheme';
-import { Failable, isFailure } from '../../utils/result';
+import { isFailure } from '../../utils/result';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { Path } from '../../utils/path/path';
-import { JavaComponent, getVanillaVersionJson } from './vanilla';
+import { getJavaComponent } from './vanilla';
 import { versionsPath } from '../const';
 import { VersionLoader } from './interface';
 
@@ -31,18 +30,14 @@ type PapermcBuilds = {
 
 export const papermcVersionLoader: VersionLoader = {
   /** papermcのサーバーデータをダウンロード */
-  async readyVersion(
-    version: PapermcVersion
-  ): Promise<Failable<{ jarpath: Path; component: JavaComponent }>> {
-    // javaの実行パスを取得
-    const json = await getVanillaVersionJson(version.id);
+  async readyVersion(version: PapermcVersion) {
+    const versionPath = papermcVersionsPath.child(version.id);
+    const serverCwdPath = versionPath;
+    const jarpath = versionPath.child(`${version.id}.jar`);
 
-    // javaの実行パスを取得出来なかった場合
-    if (isFailure(json)) return json;
-
-    const jarpath = papermcVersionsPath.child(
-      `${version.id}/${version.id}.jar`
-    );
+    // 適切なjavaのバージョンを取得
+    const component = await getJavaComponent(version.id);
+    if (isFailure(component)) return component;
 
     const buildsURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds`;
 
@@ -67,8 +62,21 @@ export const papermcVersionLoader: VersionLoader = {
     jarpath.write(server);
 
     return {
-      jarpath,
-      component: json.javaVersion.component,
+      programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+      serverCwdPath,
+      component,
     };
+  },
+
+  /** papermcのバージョンの一覧返す */
+  async getAllVersions() {
+    const VERSION_LIST_URL = 'https://api.papermc.io/v2/projects/paper';
+    const data = await BytesData.fromURL(VERSION_LIST_URL);
+    if (isFailure(data)) return data;
+
+    const json = await data.json<PapermcVersions>();
+    if (isFailure(json)) return json;
+
+    return json.versions.map((id) => ({ id, release: true, type: 'papermc' }));
   },
 };

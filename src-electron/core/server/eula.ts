@@ -11,23 +11,20 @@ import { execProcess } from '../utils/subprocess';
  */
 export async function checkEula(
   javaPath: Path,
-  jarpath: Path,
+  programArgunets: string[],
   serverCwdPath: Path
 ): Promise<Failable<boolean>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // eula.txtが存在しない場合生成
   if (!eulaPath.exists()) {
-    console.log("GENERATE EULA")
-    const result = await generateEula(javaPath, jarpath, serverCwdPath);
+    const result = await generateEula(javaPath, programArgunets, serverCwdPath);
     // 生成に失敗した場合エラー
     if (isFailure(result)) return result;
   }
   // eulaの内容を読み取る
   const content = await eulaPath.read();
   if (isFailure(content)) return content;
-
-  console.log("EULAAAAAA", eulaPath.str() ,await content.text())
 
   const eulaParsed = parseEula(await content.text());
   let agree = eulaParsed[0];
@@ -67,7 +64,7 @@ function parseEula(txt: string): [boolean, string[]] {
 
 async function generateEula(
   javaPath: Path,
-  jarpath: Path,
+  programArgunets: string[],
   serverCwdPath: Path
 ): Promise<Failable<undefined>> {
   const eulaPath = serverCwdPath.child('eula.txt');
@@ -75,7 +72,7 @@ async function generateEula(
   // サーバーを仮起動
   await execProcess(
     javaPath.absolute().str(),
-    ['-jar', `"${jarpath.absolute().str()}"`, '--nogui'],
+    [...programArgunets, '--nogui'],
     serverCwdPath.absolute().str(),
     true
   );

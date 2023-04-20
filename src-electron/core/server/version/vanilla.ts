@@ -21,7 +21,7 @@ export type VanillaVersionJson = {
       url: string;
     };
   };
-  javaVersion: {
+  javaVersion?: {
     component: JavaComponent;
     majorVersion: number;
   };
@@ -30,8 +30,9 @@ export type VanillaVersionJson = {
 export const vanillaVersionLoader: VersionLoader = {
   /** vanillaのサーバーデータをダウンロード */
   async readyVersion(version: VanillaVersion) {
-    const path = vanillaVersionsPath.child(version.id);
-    const jarpath = path.child(version.id + '.jar');
+    const versionPath = vanillaVersionsPath.child(version.id);
+    const serverCwdPath = versionPath;
+    const jarpath = versionPath.child(version.id + '.jar');
 
     // versionのjsonを取得
     const json = await getVanillaVersionJson(version.id);
@@ -51,11 +52,32 @@ export const vanillaVersionLoader: VersionLoader = {
     await jarpath.write(serverData);
 
     return {
-      jarpath,
-      component: json.javaVersion.component,
+      programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+      serverCwdPath,
+      component: json.javaVersion?.component ?? 'jre-legacy',
     };
   },
+
+  /** バニラのバージョンの一覧返す */
+  async getAllVersions() {
+    const manifest = await getVersionMainfest();
+    if (isFailure(manifest)) return manifest;
+    return manifest.versions.map((x) => ({
+      type: 'vanilla',
+      release: x.type === 'release',
+      id: x.id,
+    }));
+  },
 };
+
+/** バージョンのIDに適したjavaのコンポーネントを返す */
+export async function getJavaComponent(id: string) {
+  // versionのjsonを取得
+  const json = await getVanillaVersionJson(id);
+  if (isFailure(json)) return json;
+
+  return json.javaVersion?.component ?? 'jre-legacy';
+}
 
 export async function getVanillaVersionJson(
   id: string

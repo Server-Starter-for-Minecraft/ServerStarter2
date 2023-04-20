@@ -1,5 +1,7 @@
-import { versionsPath } from '../const';
-import { getForgeDownloadUrl, getVersionIds } from './forge';
+import { Path } from '../../utils/path/path';
+import { Failable } from '../../utils/result';
+import { forgeVersionLoader } from './forge';
+import { JavaComponent } from './vanilla';
 
 const ids = [
   '1.19.4',
@@ -59,6 +61,7 @@ const ids = [
   '1.1',
 ];
 
+
 describe('vanillaVersion', async () => {
   test(
     '',
@@ -69,16 +72,22 @@ describe('vanillaVersion', async () => {
       //   release: true,
       // });
       // console.log(result, 100);
-      const promisses: Promise<string | Error>[] = [];
+      const promisses: Promise<
+        Failable<{
+          programArguments: string[];
+          serverCwdPath: Path;
+          component: JavaComponent;
+        }>
+      >[] = [];
       ids.forEach((id) =>
         promisses.push(
-          getForgeDownloadUrl({ release: true, type: 'forge', id })
+          forgeVersionLoader.readyVersion({ release: true, type: 'forge', id })
         )
       );
 
-      (await Promise.all(promisses));
+      (await Promise.all(promisses)).forEach(x => console.log(x));
       expect(1).toBe(1);
     },
-    { timeout: 10000 }
+    { timeout: 2 ** 31 - 1 }
   );
 });

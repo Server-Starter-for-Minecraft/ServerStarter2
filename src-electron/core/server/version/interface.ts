@@ -4,7 +4,12 @@ import { JavaComponent } from './vanilla';
 import { Failable } from '../../utils/result';
 
 export type VersionLoader = {
-  readyVersion(
-    version: Version
-  ): Promise<Failable<{ jarpath: Path; component: JavaComponent }>>;
+  readyVersion(version: Version): Promise<
+    Failable<{
+      programArguments: string[];
+      serverCwdPath: Path;
+      component: JavaComponent;
+    }>
+  >;
+  getAllVersions(): Promise<Failable<Version[]>>;
 };

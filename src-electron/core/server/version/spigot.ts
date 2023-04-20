@@ -2,7 +2,7 @@ import { SpigotVersion } from 'app/src-electron/api/scheme';
 import { Path } from '../../utils/path/path';
 import { Failable, isFailure } from '../../utils/result';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { JavaComponent, getVanillaVersionJson } from './vanilla';
+import { getJavaComponent } from './vanilla';
 import { config } from '../../store';
 import { spigotBuildPath, versionsPath } from '../const';
 import * as cheerio from 'cheerio';
@@ -14,27 +14,27 @@ const spigotVersionsPath = versionsPath.child('spigot');
 
 export const spigotVersionLoader: VersionLoader = {
   /** spigotのサーバーデータをダウンロード */
-  async readyVersion(
-    version: SpigotVersion
-  ): Promise<Failable<{ jarpath: Path; component: JavaComponent }>> {
-    const json = await getVanillaVersionJson(version.id);
+  async readyVersion(version: SpigotVersion) {
+    const versionPath = spigotVersionsPath.child(version.id);
+    const serverCwdPath = versionPath;
+    const jarpath = versionPath.child(`${version.id}.jar`);
 
-    // jsonデータに変換できなかった場合
-    if (isFailure(json)) return json;
+    // 適切なjavaのバージョンを取得
+    const component = await getJavaComponent(version.id);
+    if (isFailure(component)) return component;
 
     // ビルドツールのダウンロード
     const buildTool = await readySpigotBuildTool();
     if (isFailure(buildTool)) return buildTool;
-
-    const jarpath = spigotVersionsPath.child(`${version.id}/${version.id}.jar`);
 
     // ビルドの実行
     const buildResult = await buildSpigotVersion(version, jarpath);
     if (isFailure(buildResult)) return buildResult;
 
     return {
-      jarpath,
-      component: json.javaVersion.component,
+      programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+      serverCwdPath,
+      component,
     };
   },
 };
@@ -102,7 +102,7 @@ async function buildSpigotVersion(
   targetpath: Path
 ): Promise<Failable<undefined>> {
   // TODO: ほんとにjava-runtime-gammaで大丈夫?
-  const javapath = await readyJava('java-runtime-gamma');
+  const javapath = await readyJava('java-runtime-gamma', false);
   if (isFailure(javapath)) return javapath;
 
   function handler(msg: string) {

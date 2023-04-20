@@ -18,7 +18,10 @@ export class JavaInstallError extends Error {}
  * 適切なjavaw.exeの実行パスを返す
  * 必要に応じてバイナリをダウンロードする
  */
-export async function readyJava(component: component): Promise<Failable<Path>> {
+export async function readyJava(
+  component: component,
+  javaw: boolean
+): Promise<Failable<Path>> {
   const json = await getAllJson();
 
   if (isFailure(json)) return json;
@@ -31,7 +34,7 @@ export async function readyJava(component: component): Promise<Failable<Path>> {
     path.child('manifest.json').path
   );
   await installManifest(data, path);
-  return path.child('bin/javaw.exe');
+  return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
 }
 
 type RuntimeManifest = {
