@@ -90,7 +90,7 @@ export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
   const path = vanillaVersionsPath.child(id);
-  const jsonpath = path.child(id + '.json');
+  const jsonpath = path.child('vanilla-' + id + '.json');
   const manifest = await getVersionMainfest();
 
   // version manifestが取得できなかった場合
