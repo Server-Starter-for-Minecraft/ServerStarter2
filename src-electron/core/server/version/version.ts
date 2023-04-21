@@ -24,3 +24,12 @@ export async function readyVersion(version: Version) {
   }
   return await loader.readyVersion(version);
 }
+
+// 指定されたバージョンを準備する
+export async function getVersions(type: VersionType) {
+  const loader = versionLoaders[type];
+  if (!loader) {
+    throw new Error(`unknown version type ${type}`);
+  }
+  return await loader.getAllVersions();
+}

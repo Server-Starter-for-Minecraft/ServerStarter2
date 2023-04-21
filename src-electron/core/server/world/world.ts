@@ -1,15 +1,21 @@
-import { Version } from '../version/version';
+import { Failable } from 'app/src-electron/api/failable';
+import { World, WorldSettings } from 'app/src-electron/api/scheme';
 
-export class World {
-  name: string;
-  version: Version;
+export async function getAllWorlds(): Promise<Failable<World[]>> {
+  return [getDemoWorld()];
+}
 
-  constructor(name: string, version: Version) {
-    this.name = name;
-    this.version = version;
-  }
-
-  run() {
-    return `Server version is ${this.version.verType}`;
-  }
+function getDemoWorld() {
+  const demoWorldSettings: WorldSettings = {
+    avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
+    version: { id: '1.19.2', type: 'vanilla', release: true },
+  };
+  const demoWorld: World = {
+    name: 'testWorld',
+    settings: demoWorldSettings,
+    datapacks: [],
+    plugins: [],
+    mods: [],
+  };
+  return demoWorld;
 }

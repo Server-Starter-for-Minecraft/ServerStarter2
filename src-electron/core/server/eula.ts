@@ -67,6 +67,8 @@ async function generateEula(
   programArgunets: string[],
   serverCwdPath: Path
 ): Promise<Failable<undefined>> {
+  api.send.UpdateStatus('eula.txtを生成中');
+
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // サーバーを仮起動

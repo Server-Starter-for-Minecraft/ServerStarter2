@@ -54,8 +54,8 @@ function prommisifyChildprocess(
     );
   }
 
-  const promise = new Promise<Failable<undefined>>((resolve, reject) => {
-    child.on('exit', onExit);
+  const promise = new Promise<Failable<undefined>>((resolve) => {
+    child.on('exit', (code) => resolve(onExit(code)));
     child.on('error', (err) => resolve(err));
   });
 
