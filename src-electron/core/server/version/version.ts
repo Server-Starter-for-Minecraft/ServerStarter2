@@ -6,7 +6,7 @@ import { papermcVersionLoader } from './papermc';
 import { forgeVersionLoader } from './forge';
 import { mohistmcVersionLoader } from './mohistmc';
 
-const loaders: {
+export const versionLoaders: {
   [key in VersionType]: VersionLoader | undefined;
 } = {
   vanilla: vanillaVersionLoader,
@@ -18,7 +18,7 @@ const loaders: {
 
 // 指定されたバージョンを準備する
 export async function readyVersion(version: Version) {
-  const loader = loaders[version.type];
+  const loader = versionLoaders[version.type];
   if (!loader) {
     throw new Error(`unknown version type ${version.type}`);
   }

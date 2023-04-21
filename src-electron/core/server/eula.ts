@@ -70,12 +70,14 @@ async function generateEula(
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // サーバーを仮起動
-  await execProcess(
+  const result = await execProcess(
     javaPath.absolute().str(),
     [...programArgunets, '--nogui'],
     serverCwdPath.absolute().str(),
     true
   );
+
+  console.log('EULA', result);
 
   if (!eulaPath.exists()) {
     return new Error('failed to generate eula.txt.');

@@ -85,7 +85,7 @@ async function installForgeVersion(
   const installResult = await installForge(installerPath);
   if (isFailure(installResult)) return installResult;
 
-  for (let file of await versionPath.iter()) {
+  for (const file of await versionPath.iter()) {
     const filename = file.basename();
 
     // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
@@ -132,7 +132,7 @@ async function getProgramArgumentsFromBat(batPath: Path) {
   // バッチフィルの中身を取得
   const txt = await data.text();
 
-  for (let line of txt.split('\n')) {
+  for (const line of txt.split('\n')) {
     const pattern = /^\s*java @user_jvm_args\.txt ([^ ]+) %\*\s*$/;
     const match = line.match(pattern);
     if (match) {
@@ -150,7 +150,7 @@ async function getProgramArgumentsFromSh(shPath: Path) {
   // シェルスクリプトの中身を取得
   const txt = await data.text();
 
-  for (let line of txt.split('\n')) {
+  for (const line of txt.split('\n')) {
     const pattern = /^\s*java @user_jvm_args\.txt ([^ ]+) "\$@"\s*$/;
     const match = line.match(pattern);
     if (match) {
@@ -161,9 +161,7 @@ async function getProgramArgumentsFromSh(shPath: Path) {
   return new Error('missing java command in run.sh file');
 }
 
-async function installForge(
-  installerPath: Path
-): Promise<Failable<number | null>> {
+async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   // TODO: forgeのインストール時に使用するjavaのバージョン17で大丈夫？
   // jre-legacyだとエラー出たのでとりあえずこれを使っている
   const javaPath = await readyJava('java-runtime-gamma', false);
@@ -183,7 +181,7 @@ async function installForge(
 
   // インストール開始
   // -jar forge-*-installer.jar --installServer server
-  const [_, process] = interactiveProcess(
+  const [, process] = interactiveProcess(
     javaPath.absolute().str(),
     args,
     console.log,

@@ -2,7 +2,7 @@ import { SpigotVersion } from 'app/src-electron/api/scheme';
 import { Path } from '../../utils/path/path';
 import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { getJavaComponent } from './vanilla';
+import { JavaComponent, getJavaComponent } from './vanilla';
 import { config } from '../../store';
 import { spigotBuildPath, versionsPath } from '../const';
 import * as cheerio from 'cheerio';
@@ -40,7 +40,7 @@ async function readySpigotVersion(
     if (isFailure(buildTool)) return buildTool;
 
     // ビルドの実行
-    const buildResult = await buildSpigotVersion(version, jarpath);
+    const buildResult = await buildSpigotVersion(version, jarpath, component);
     if (isFailure(buildResult)) return buildResult;
   }
 
@@ -120,12 +120,53 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   await buildToolPath.write(buildtool);
 }
 
+type SpigotVersionData = {
+  name: string;
+  description: string;
+  refs: {
+    BuildData: string;
+    Bukkit: string;
+    CraftBukkit: string;
+    Spigot: string;
+  };
+  toolsVersion: number;
+  javaVersions?: [number, number];
+};
+
 async function buildSpigotVersion(
   version: SpigotVersion,
-  targetpath: Path
+  targetpath: Path,
+  javaComponent: JavaComponent
 ): Promise<Failable<undefined>> {
   // TODO: ほんとにjava-runtime-gammaで大丈夫?
-  const javapath = await readyJava('java-runtime-gamma', false);
+  // if (javaComponent == 'jre-legacy') {
+  //   javaComponent = 'java-runtime-alpha';
+  // }
+
+  const VERSION_URL = `https://hub.spigotmc.org/versions/${version.id}.json`;
+
+  // spigotのデータを取得する(実行javaバージョンの確認するため)
+  const data = await BytesData.fromURL(VERSION_URL);
+  if (isFailure(data)) return data;
+  const json = await data.json<SpigotVersionData>();
+
+  if (isFailure(json)) return json;
+
+  const versionTuple = json.javaVersions;
+  if (versionTuple) {
+    const [min, max] = versionTuple;
+    if (min <= 51 && 51 <= max) javaComponent = 'jre-legacy';
+    else if (min <= 60 && 60 <= max) javaComponent = 'java-runtime-alpha';
+    else if (min <= 61 && 61 <= max) javaComponent = 'java-runtime-gamma';
+    else
+      return new Error(
+        `to build spigot-${version.id} java-${min - 44} ~ java-${
+          max - 44
+        } is needed`
+      );
+  }
+
+  const javapath = await readyJava(javaComponent, false);
   if (isFailure(javapath)) return javapath;
 
   function handler(msg: string) {
@@ -142,7 +183,11 @@ async function buildSpigotVersion(
     spigotBuildPath.absolute().str(),
     true
   );
-  await process;
+
+  const result = await process;
+
+  // ビルド失敗した場合エラー
+  if (isFailure(result)) return result;
 
   // 移動先のディレクトリを作成
   targetpath.parent().mkdir(true);

@@ -7,10 +7,10 @@ import { BrowserWindow } from 'electron';
 import { getFrontAPIListener, setFrontAPI } from './front';
 
 // バックエンド
-// import { backListener } from './back';
+import { backListener } from './back';
 
 // テスト用バックエンド
-import { backListener } from './dummy_back';
+// import { backListener } from './dummy_back';
 
 export function setupIPC(mainwindow: BrowserWindow) {
   const { back, front } = linkIPC<API>(

@@ -112,10 +112,13 @@ export async function runServer(world: World) {
   api.send.StartServer();
 
   // サーバー終了まで待機
-  await process;
+  const result = await process;
 
   // フロントエンドからの入力を無視
   stdin = undefined;
+
+  // サーバーの実行に失敗した場合はエラー
+  if (isFailure(result)) return result;
 }
 
 function defineLevelName(worldPath: Path, version: Version) {

@@ -56,6 +56,7 @@ export class Path {
   }
 
   async rename(newpath: Path) {
+    newpath.parent().mkdir(true);
     await fs.promises.rename(this.path, newpath.absolute().str());
   }
 

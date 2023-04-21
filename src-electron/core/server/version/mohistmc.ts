@@ -1,4 +1,4 @@
-import { Failable, isFailure } from 'app/src-electron/api/failable';
+import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { VersionComponent, VersionLoader } from './interface';
 import { MohistmcVersion } from 'app/src-electron/api/scheme';
