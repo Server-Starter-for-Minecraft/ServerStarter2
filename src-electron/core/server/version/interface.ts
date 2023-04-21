@@ -3,13 +3,13 @@ import { Path } from '../../utils/path/path';
 import { JavaComponent } from './vanilla';
 import { Failable } from '../../../api/failable';
 
+export type VersionComponent = {
+  programArguments: string[];
+  serverCwdPath: Path;
+  component: JavaComponent;
+};
+
 export type VersionLoader = {
-  readyVersion(version: Version): Promise<
-    Failable<{
-      programArguments: string[];
-      serverCwdPath: Path;
-      component: JavaComponent;
-    }>
-  >;
+  readyVersion(version: Version): Promise<Failable<VersionComponent>>;
   getAllVersions(): Promise<Failable<Version[]>>;
 };

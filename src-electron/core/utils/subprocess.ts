@@ -1,5 +1,7 @@
 import * as child_process from 'child_process';
 
+// TODO: exitcodeに応じてFailableを返す
+
 export const interactiveProcess = (
   process: string,
   args: string[],

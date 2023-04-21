@@ -8,22 +8,33 @@ import { spigotBuildPath, versionsPath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../utils/subprocess';
 import { readyJava } from '../../utils/java/java';
-import { VersionLoader } from './interface';
+import { VersionComponent, VersionLoader } from './interface';
 import { getVersionMainfest } from './mainfest';
 
 const spigotVersionsPath = versionsPath.child('spigot');
 
 export const spigotVersionLoader: VersionLoader = {
   /** spigotのサーバーデータをダウンロード */
-  async readyVersion(version: SpigotVersion) {
-    const versionPath = spigotVersionsPath.child(version.id);
-    const serverCwdPath = versionPath;
-    const jarpath = versionPath.child(`${version.id}.jar`);
+  readyVersion: readySpigotVersion,
 
-    // 適切なjavaのバージョンを取得
-    const component = await getJavaComponent(version.id);
-    if (isFailure(component)) return component;
+  /** spigotのバージョンの一覧返す */
+  getAllVersions: getSpigotVersions,
+};
 
+/** spigotのバージョンを準備 */
+async function readySpigotVersion(
+  version: SpigotVersion
+): Promise<Failable<VersionComponent>> {
+  const versionPath = spigotVersionsPath.child(version.id);
+  const serverCwdPath = versionPath;
+  const jarpath = versionPath.child(`${version.id}.jar`);
+
+  // 適切なjavaのバージョンを取得
+  const component = await getJavaComponent(version.id);
+  if (isFailure(component)) return component;
+
+  // server.jarが存在しなかった場合の処理
+  if (!jarpath.exists()) {
     // ビルドツールのダウンロード
     const buildTool = await readySpigotBuildTool();
     if (isFailure(buildTool)) return buildTool;
@@ -31,22 +42,19 @@ export const spigotVersionLoader: VersionLoader = {
     // ビルドの実行
     const buildResult = await buildSpigotVersion(version, jarpath);
     if (isFailure(buildResult)) return buildResult;
+  }
 
-    return {
-      programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
-      serverCwdPath,
-      component,
-    };
-  },
-
-  /** spigotのバージョンの一覧返す */
-  getAllVersions: getSpigotVersions,
-};
+  return {
+    programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+    serverCwdPath,
+    component,
+  };
+}
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 
 /** バージョン一覧の取得 */
-export async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
+async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
   const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
   if (isFailure(result)) return result;
 
@@ -87,7 +95,7 @@ const SPIGOT_BUILDTOOL_URL =
   'https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar';
 
 /** ビルドツールのダウンロード */
-export async function readySpigotBuildTool(): Promise<Failable<undefined>> {
+async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   // ビルドツールをダウンロード
   let buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 
