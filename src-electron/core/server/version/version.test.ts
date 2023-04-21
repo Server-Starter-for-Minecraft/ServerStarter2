@@ -3,6 +3,7 @@ import { Failable, isSuccess } from '../../../api/failable';
 import { forgeVersionLoader } from './forge';
 import { JavaComponent, vanillaVersionLoader } from './vanilla';
 import { spigotVersionLoader } from './spigot';
+import { mohistmcVersionLoader } from './mohistmc';
 
 const ids = [
   '1.19.4',
@@ -86,7 +87,7 @@ describe('vanillaVersion', async () => {
       // );
 
       // (await Promise.all(promisses)).forEach((x) => console.log(x));
-      const versions = await vanillaVersionLoader.getAllVersions();
+      const versions = await mohistmcVersionLoader.getAllVersions();
 
       const path = new Path('vanillaversions.json');
       if (isSuccess(versions)) {

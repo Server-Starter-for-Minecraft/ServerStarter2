@@ -32,7 +32,7 @@ export const vanillaVersionLoader: VersionLoader = {
   async readyVersion(version: VanillaVersion) {
     const versionPath = vanillaVersionsPath.child(version.id);
     const serverCwdPath = versionPath;
-    const jarpath = versionPath.child(version.id + '.jar');
+    const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
 
     // versionのjsonを取得
     const json = await getVanillaVersionJson(version.id);

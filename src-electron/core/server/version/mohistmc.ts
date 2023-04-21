@@ -17,7 +17,7 @@ async function readyMohistmcVersion(
 ): Promise<Failable<VersionComponent>> {
   const versionPath = papermcVersionsPath.child(version.id);
   const serverCwdPath = versionPath;
-  const jarpath = versionPath.child(`${version.id}.jar`);
+  const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
 
   // 適切なjavaのバージョンを取得
   const component = await getJavaComponent(version.id);

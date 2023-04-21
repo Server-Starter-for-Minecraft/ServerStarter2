@@ -27,7 +27,7 @@ async function readySpigotVersion(
 ): Promise<Failable<VersionComponent>> {
   const versionPath = spigotVersionsPath.child(version.id);
   const serverCwdPath = versionPath;
-  const jarpath = versionPath.child(`${version.id}.jar`);
+  const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
 
   // 適切なjavaのバージョンを取得
   const component = await getJavaComponent(version.id);

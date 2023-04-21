@@ -23,20 +23,21 @@ export const forgeVersionLoader: VersionLoader = {
 
     const versionPath = forgeVersionsPath.child(version.id);
     const serverCwdPath = versionPath;
+    const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
 
     // 実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
-    let programArguments = await getProgramArguments(serverCwdPath);
+    let programArguments = await getProgramArguments(serverCwdPath, jarpath);
 
     // 実行可能なファイルが存在しなかった場合
     if (isFailure(programArguments)) {
       // インストール
-      const install = await installForgeVersion(version, versionPath);
+      const install = await installForgeVersion(version, versionPath, jarpath);
 
       // インストールに失敗した場合エラー
       if (isFailure(install)) return install;
 
       // 再び実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
-      programArguments = await getProgramArguments(serverCwdPath);
+      programArguments = await getProgramArguments(serverCwdPath, jarpath);
 
       // 実行可能なファイルが存在しなかった場合インストールに失敗したとみなしエラー
       if (isFailure(programArguments)) return programArguments;
@@ -57,7 +58,11 @@ export const forgeVersionLoader: VersionLoader = {
   },
 };
 
-async function installForgeVersion(version: ForgeVersion, versionPath: Path) {
+async function installForgeVersion(
+  version: ForgeVersion,
+  versionPath: Path,
+  jarpath: Path
+) {
   // versionフォルダを削除
   await versionPath.remove(true);
 
@@ -79,9 +84,22 @@ async function installForgeVersion(version: ForgeVersion, versionPath: Path) {
   // インストーラーを実行
   const installResult = await installForge(installerPath);
   if (isFailure(installResult)) return installResult;
+
+  for (let file of await versionPath.iter()) {
+    const filename = file.basename();
+
+    // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
+    const match = filename.match(
+      /(minecraft)?forge-[0-9\.-]+(-universal)?.jar/
+    );
+    if (match) {
+      await file.rename(jarpath);
+      return;
+    }
+  }
 }
 
-async function getProgramArguments(serverCwdPath: Path) {
+async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
   // TODO: osに応じてrun.shに対応
   if (osPlatform == 'windows-x64') {
@@ -100,16 +118,7 @@ async function getProgramArguments(serverCwdPath: Path) {
     }
   }
 
-  for (let file of await serverCwdPath.iter()) {
-    const filename = file.basename();
-
-    const match = filename.match(
-      /(minecraft)?forge-[0-9\.-]+(-universal)?.jar/
-    );
-    if (match) {
-      return ['-jar', file.str()];
-    }
-  }
+  if (jarpath.exists()) return ['-jar', jarpath.str()];
 
   return new Error(
     `run.bat or run.sh or server jar file is needed in ${serverCwdPath.str()}`
