@@ -74,6 +74,17 @@ export const vanillaVersionLoader: VersionLoader = {
       id: x.id,
     }));
   },
+  async defineLevelName(worldPath) {
+    const levelName = worldPath
+      .child('world')
+      .absolute()
+      .str()
+      .replaceAll('\\', '\\\\');
+    return {
+      levelName,
+      args: [],
+    };
+  },
 };
 
 /** バージョンのIDに適したjavaのコンポーネントを返す */

@@ -12,4 +12,7 @@ export type VersionComponent = {
 export type VersionLoader = {
   readyVersion(version: Version): Promise<Failable<VersionComponent>>;
   getAllVersions(): Promise<Failable<Version[]>>;
+  defineLevelName(
+    worldPath: Path
+  ): Promise<Failable<{ levelName: string; args: string[] }>>;
 };

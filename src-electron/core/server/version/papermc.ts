@@ -62,6 +62,18 @@ export const papermcVersionLoader: VersionLoader = {
 
     return json.versions.map((id) => ({ id, release: true, type: 'papermc' }));
   },
+
+  async defineLevelName(worldPath) {
+    const levelName = worldPath
+      .child('world')
+      .absolute()
+      .str()
+      .replaceAll('\\', '\\\\');
+    return {
+      levelName,
+      args: [],
+    };
+  },
 };
 
 async function downloadPapermcVersion(version: PapermcVersion, jarpath: Path) {

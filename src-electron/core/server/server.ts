@@ -3,7 +3,7 @@ import { Path } from '../utils/path/path';
 import { getLog4jArg } from './log4j';
 import { worldsPath } from './const';
 import { isFailure } from '../../api/failable';
-import { readyVersion } from './version/version';
+import { defineLevelName, readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
 import { unrollSettings } from './settings';
 import { interactiveProcess } from '../utils/subprocess';
@@ -66,10 +66,15 @@ export async function runServer(world: World) {
   // ワールドデータをダウンロード
 
   // level-nameと実行時引数の決定
-  const { levelName, arg } = defineLevelName(worldPath, settings.version);
+  const levelnameResult = await defineLevelName(
+    settings.version.type,
+    worldPath
+  );
+  if (isFailure(levelnameResult)) return levelnameResult;
+  const { levelName, args: levelNameArgs } = levelnameResult;
 
   // ワールドディレクトリ指定用の引数を実行時引数に追加
-  if (arg) args.push(arg);
+  if (args) args.push(...levelNameArgs);
 
   api.send.UpdateStatus('設定ファイルの書き出し中');
 
@@ -119,23 +124,6 @@ export async function runServer(world: World) {
 
   // サーバーの実行に失敗した場合はエラー
   if (isFailure(result)) return result;
-}
-
-function defineLevelName(worldPath: Path, version: Version) {
-  let levelName: string;
-  let arg: undefined | string;
-  switch (version.type) {
-    case 'vanilla':
-      levelName = worldPath
-        .child('world')
-        .absolute()
-        .str()
-        .replaceAll('\\', '\\\\');
-      break;
-    default:
-      throw new Error(`unknown version ${version.id}(${version.type})`);
-  }
-  return { levelName, arg };
 }
 
 export function runCommand(command: string): void {

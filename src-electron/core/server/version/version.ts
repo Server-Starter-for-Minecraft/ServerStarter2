@@ -5,6 +5,7 @@ import { spigotVersionLoader } from './spigot';
 import { papermcVersionLoader } from './papermc';
 import { forgeVersionLoader } from './forge';
 import { mohistmcVersionLoader } from './mohistmc';
+import { Path } from '../../utils/path/path';
 
 export const versionLoaders: {
   [key in VersionType]: VersionLoader | undefined;
@@ -32,4 +33,13 @@ export async function getVersions(type: VersionType) {
     throw new Error(`unknown version type ${type}`);
   }
   return await loader.getAllVersions();
+}
+
+// LevelNameを取得する
+export async function defineLevelName(type: VersionType, worldPath: Path) {
+  const loader = versionLoaders[type];
+  if (!loader) {
+    throw new Error(`unknown version type ${type}`);
+  }
+  return await loader.defineLevelName(worldPath);
 }
