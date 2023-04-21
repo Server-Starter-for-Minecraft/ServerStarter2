@@ -130,7 +130,7 @@ async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
     }
   }
 
-  if (jarpath.exists()) return ['-jar', jarpath.str()];
+  if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"' ];
 
   return new Error(
     `run.bat or run.sh or server jar file is needed in ${serverCwdPath.str()}`
