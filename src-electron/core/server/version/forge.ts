@@ -90,7 +90,7 @@ async function installForgeVersion(
 
     // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
     const match = filename.match(
-      /(minecraft)?forge-[0-9\.-]+(-universal)?.jar/
+      /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal)?.jar/
     );
     if (match) {
       await file.rename(jarpath);

@@ -32,10 +32,9 @@ describe('vanillaVersion', async () => {
 
       // (await Promise.all(promisses)).forEach((x) => console.log(x));
 
-      // for (let loader of Object.values(versionLoaders)) {
-      // }
-
-      await loadversion(versionLoaders.spigot);
+      for (let loader of Object.values(versionLoaders)) {
+        await loadversion(loader);
+      }
 
       // await versionLoaders.spigot?.readyVersion({
       //   type: 'spigot',
@@ -49,7 +48,7 @@ describe('vanillaVersion', async () => {
   );
 });
 
-async function loadversion(loader: VersionLoader) {
+async function loadversion(loader: VersionLoader | undefined) {
   if (loader === undefined) return;
 
   const versions = await loader.getAllVersions();
