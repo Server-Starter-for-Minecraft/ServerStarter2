@@ -23,27 +23,24 @@ export const forgeVersionLoader: VersionLoader = {
 
     const versionPath = forgeVersionsPath.child(version.id);
     const serverCwdPath = versionPath;
-    const installerPath = versionPath.child(
-      'forge-' + version.id + '-installer.jar'
-    );
 
-    // インストーラーのダウンロードURLを取得
-    const serverURL = await getForgeDownloadUrl(version);
-    if (isFailure(serverURL)) return serverURL;
+    // 実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
+    let programArguments = await getProgramArguments(serverCwdPath);
 
-    // インストーラーを取得
-    const serverData = await BytesData.fromURL(serverURL);
-    if (isFailure(serverData)) return serverData;
+    // 実行可能なファイルが存在しなかった場合
+    if (isFailure(programArguments)) {
+      // インストール
+      const install = await installForgeVersion(version, versionPath);
 
-    // インストーラーを保存
-    await installerPath.write(serverData);
+      // インストールに失敗した場合エラー
+      if (isFailure(install)) return install;
 
-    // インストーラーを実行
-    const installResult = await installForge(installerPath);
-    if (isFailure(installResult)) return installResult;
+      // 再び実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
+      programArguments = await getProgramArguments(serverCwdPath);
 
-    const programArguments = await getProgramArguments(serverCwdPath);
-    if (isFailure(programArguments)) return programArguments;
+      // 実行可能なファイルが存在しなかった場合インストールに失敗したとみなしエラー
+      if (isFailure(programArguments)) return programArguments;
+    }
 
     return {
       programArguments,
@@ -59,6 +56,30 @@ export const forgeVersionLoader: VersionLoader = {
     return ids.map((id) => ({ id, release: true, type: 'forge' }));
   },
 };
+
+async function installForgeVersion(version: ForgeVersion, versionPath: Path) {
+  // versionフォルダを削除
+  await versionPath.remove(true);
+
+  const installerPath = versionPath.child(
+    'forge-' + version.id + '-installer.jar'
+  );
+
+  // インストーラーのダウンロードURLを取得
+  const serverURL = await getForgeDownloadUrl(version);
+  if (isFailure(serverURL)) return serverURL;
+
+  // インストーラーを取得
+  const serverData = await BytesData.fromURL(serverURL);
+  if (isFailure(serverData)) return serverData;
+
+  // インストーラーを保存
+  await installerPath.write(serverData);
+
+  // インストーラーを実行
+  const installResult = await installForge(installerPath);
+  if (isFailure(installResult)) return installResult;
+}
 
 async function getProgramArguments(serverCwdPath: Path) {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
