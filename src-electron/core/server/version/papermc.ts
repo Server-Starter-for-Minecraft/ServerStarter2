@@ -4,6 +4,7 @@ import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent } from './vanilla';
 import { versionsPath } from '../const';
 import { VersionLoader } from './interface';
+import { Path } from '../../utils/path/path';
 
 const papermcVersionsPath = versionsPath.child('papermc');
 
@@ -39,27 +40,9 @@ export const papermcVersionLoader: VersionLoader = {
     const component = await getJavaComponent(version.id);
     if (isFailure(component)) return component;
 
-    const buildsURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds`;
-
-    const response = await BytesData.fromURL(buildsURL);
-    if (isFailure(response)) return response;
-
-    const buildsJson = await response.json<PapermcBuilds>();
-    if (isFailure(buildsJson)) return buildsJson;
-
-    const build = buildsJson.builds[buildsJson.builds.length - 1];
-
-    const build_id = build.build;
-
-    const build_file = build.downloads.application.name;
-
-    const serverURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds/${build_id}/downloads/${build_file}`;
-
-    const server = await BytesData.fromURL(serverURL);
-    if (isFailure(server)) return server;
-
-    // jarファイルを保存
-    jarpath.write(server);
+    if (!jarpath.exists()) {
+      downloadPapermcVersion(version, jarpath);
+    }
 
     return {
       programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
@@ -80,3 +63,27 @@ export const papermcVersionLoader: VersionLoader = {
     return json.versions.map((id) => ({ id, release: true, type: 'papermc' }));
   },
 };
+
+async function downloadPapermcVersion(version: PapermcVersion, jarpath: Path) {
+  const buildsURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds`;
+
+  const response = await BytesData.fromURL(buildsURL);
+  if (isFailure(response)) return response;
+
+  const buildsJson = await response.json<PapermcBuilds>();
+  if (isFailure(buildsJson)) return buildsJson;
+
+  const build = buildsJson.builds[buildsJson.builds.length - 1];
+
+  const build_id = build.build;
+
+  const build_file = build.downloads.application.name;
+
+  const serverURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds/${build_id}/downloads/${build_file}`;
+
+  const server = await BytesData.fromURL(serverURL);
+  if (isFailure(server)) return server;
+
+  // jarファイルを保存
+  jarpath.write(server);
+}
