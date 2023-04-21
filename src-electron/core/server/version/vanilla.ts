@@ -42,7 +42,8 @@ export const vanillaVersionLoader: VersionLoader = {
     const serverData = await BytesData.fromPathOrUrl(
       jarpath.path,
       json.downloads.server.url,
-      json.downloads.server.sha1
+      json.downloads.server.sha1,
+      false
     );
 
     // serverデータがダウロードできなかった場合
