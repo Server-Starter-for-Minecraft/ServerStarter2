@@ -62,7 +62,12 @@ export const vanillaVersionLoader: VersionLoader = {
   async getAllVersions() {
     const manifest = await getVersionMainfest();
     if (isFailure(manifest)) return manifest;
-    return manifest.versions.map((x) => ({
+
+    // 1.2.5以前はマルチサーバーが存在しない
+    const lastindex = manifest.versions.findIndex((x) => x.id === '1.2.5');
+    const multiPlayableVersions = manifest.versions.slice(0, lastindex);
+
+    return multiPlayableVersions.map((x) => ({
       type: 'vanilla',
       release: x.type === 'release',
       id: x.id,

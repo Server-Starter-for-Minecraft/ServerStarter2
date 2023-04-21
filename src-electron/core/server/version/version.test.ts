@@ -86,9 +86,9 @@ describe('vanillaVersion', async () => {
       // );
 
       // (await Promise.all(promisses)).forEach((x) => console.log(x));
-      const versions = await spigotVersionLoader.getAllVersions();
+      const versions = await vanillaVersionLoader.getAllVersions();
 
-      const path = new Path('test.txt');
+      const path = new Path('vanillaversions.json');
       if (isSuccess(versions)) {
         path.writeText(JSON.stringify(versions));
       }
