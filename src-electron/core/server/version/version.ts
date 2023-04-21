@@ -36,10 +36,14 @@ export async function getVersions(type: VersionType) {
 }
 
 // LevelNameを取得する
-export async function defineLevelName(type: VersionType, worldPath: Path) {
+export async function defineLevelName(
+  type: VersionType,
+  worldPath: Path,
+  serverCwdPath: Path
+) {
   const loader = versionLoaders[type];
   if (!loader) {
     throw new Error(`unknown version type ${type}`);
   }
-  return await loader.defineLevelName(worldPath);
+  return await loader.defineLevelName(worldPath, serverCwdPath);
 }

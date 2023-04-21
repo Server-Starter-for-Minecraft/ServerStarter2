@@ -56,6 +56,18 @@ export const forgeVersionLoader: VersionLoader = {
     if (isFailure(ids)) return ids;
     return ids.map((id) => ({ id, release: true, type: 'forge' }));
   },
+
+  async defineLevelName(worldPath, serverCwdPath) {
+    // サーバーのCWDからの相対パスでないと動かない
+    const levelName = serverCwdPath
+      .relativeto(worldPath.child('world'))
+      .str()
+      .replaceAll('\\', '/');
+    return {
+      levelName,
+      args: [],
+    };
+  },
 };
 
 async function installForgeVersion(

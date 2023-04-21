@@ -35,6 +35,11 @@ export class Path {
     return new Path(path.resolve(this.path));
   }
 
+  /** このpathを起点にしたtargetの相対パスを返す */
+  relativeto(target: Path) {
+    return new Path(path.relative(this.path, target.path));
+  }
+
   str() {
     return this.path;
   }

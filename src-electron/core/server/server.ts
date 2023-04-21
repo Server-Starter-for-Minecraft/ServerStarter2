@@ -68,7 +68,8 @@ export async function runServer(world: World) {
   // level-nameと実行時引数の決定
   const levelnameResult = await defineLevelName(
     settings.version.type,
-    worldPath
+    worldPath,
+    serverCwdPath
   );
   if (isFailure(levelnameResult)) return levelnameResult;
   const { levelName, args: levelNameArgs } = levelnameResult;
