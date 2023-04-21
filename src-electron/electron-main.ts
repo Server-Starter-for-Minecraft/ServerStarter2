@@ -3,11 +3,7 @@
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import path from 'path';
 import os from 'os';
-import { linkIPC } from './core/ipc/link';
-import { API } from './api/api';
-import { backListener } from './core/ipc/dummy_back';
-import { getFrontAPIListener, setFrontAPI } from './core/ipc/front';
-import { setBackAPI } from './core/api';
+import { setupIPC } from './core/ipc/setup';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -54,12 +50,8 @@ function createWindow() {
     mainWindow = undefined;
   });
 
-  const { back, front } = linkIPC<API>(
-    backListener,
-    getFrontAPIListener(mainWindow)
-  );
-  setFrontAPI(front);
-  setBackAPI(back);
+  // フロントエンドとバックエンドの呼び出し処理をリンク
+  setupIPC(mainWindow);
 }
 
 app.whenReady().then(createWindow);

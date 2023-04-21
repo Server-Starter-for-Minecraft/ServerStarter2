@@ -1,6 +1,6 @@
-import { API } from 'app/src-electron/api/api';
+import { IAPI } from 'app/src-electron/api/types';
 
-export type Back<A extends API> = {
+export type BackCaller<A extends IAPI> = {
   send: {
     [key in keyof A['sendMainToWindow']]: A['sendMainToWindow'][key];
   };
@@ -9,7 +9,7 @@ export type Back<A extends API> = {
   };
 };
 
-export type BackListener<A extends API> = {
+export type BackListener<A extends IAPI> = {
   on: {
     [key in keyof A['sendWindowToMain']]: A['sendWindowToMain'][key];
   };
@@ -18,7 +18,7 @@ export type BackListener<A extends API> = {
   };
 };
 
-export type Front<A extends API> = {
+export type FrontCaller<A extends IAPI> = {
   send: {
     [key in keyof A['sendWindowToMain']]: A['sendWindowToMain'][key];
   };
@@ -27,7 +27,7 @@ export type Front<A extends API> = {
   };
 };
 
-export type FrontListener<A extends API> = {
+export type FrontListener<A extends IAPI> = {
   on: {
     [key in keyof A['sendMainToWindow']]: A['sendMainToWindow'][key];
   };
@@ -36,10 +36,10 @@ export type FrontListener<A extends API> = {
   };
 };
 
-export function linkIPC<A extends API>(
+export function linkIPC<A extends IAPI>(
   backapi: BackListener<A>,
   frontapi: FrontListener<A>
-): { front: Front<A>; back: Back<A> } {
+): { front: FrontCaller<A>; back: BackCaller<A> } {
   return {
     front: { send: backapi.on, invoke: backapi.handle },
     back: { send: frontapi.on, invoke: frontapi.handle },

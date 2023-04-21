@@ -42,7 +42,7 @@ export type FrontHandle<C extends string, F extends Func<any, void>> = ((
   __channel__: C;
 };
 
-export type Front<T extends IAPI> = Merge<
+export type IFrontAPI<T extends IAPI> = Merge<
   {
     [K in keyof T['sendMainToWindow'] as `on${K & string}`]: FrontOn<
       K & string,
@@ -92,7 +92,7 @@ export type BackHandle<C extends string, F extends Func<any, void>> = ((
   __channel__: C;
 };
 
-export type Back<T extends IAPI> = Merge<
+export type IBackAPI<T extends IAPI> = Merge<
   {
     [K in keyof T['sendWindowToMain'] as `on${K & string}`]: BackOn<
       K & string,
