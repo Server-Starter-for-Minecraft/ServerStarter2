@@ -3,6 +3,8 @@ import { vanillaVersionLoader } from './vanilla';
 import { VersionLoader } from './interface';
 import { spigotVersionLoader } from './spigot';
 import { papermcVersionLoader } from './papermc';
+import { forgeVersionLoader } from './forge';
+import { mohistmcVersionLoader } from './mohistmc';
 
 const loaders: {
   [key in VersionType]: VersionLoader | undefined;
@@ -10,8 +12,8 @@ const loaders: {
   vanilla: vanillaVersionLoader,
   spigot: spigotVersionLoader,
   papermc: papermcVersionLoader,
-  forge: undefined,
-  mohistmc: undefined,
+  forge: forgeVersionLoader,
+  mohistmc: mohistmcVersionLoader,
 };
 
 // 指定されたバージョンを準備する
