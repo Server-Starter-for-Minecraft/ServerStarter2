@@ -9,7 +9,7 @@ function getDemoWorld() {
   const demoWorldSettings: WorldSettings = {
     avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
     version: {
-      id: '1.19.5',
+      id: '1.19.2',
       type: 'vanilla',
       release: true 
     },

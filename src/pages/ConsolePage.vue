@@ -6,10 +6,8 @@ import OperationVue from 'src/components/Console/OperationVue.vue';
 
 <template>
   <q-page class="column">
-    <!-- <div class="bg-red col">aaaaa</div>
-    <div class="bg-blue col">aaaaa</div> -->
-    <HeaderVue class="col"/>
-    <ConsoleVue class="col-auto"/>
-    <OperationVue class="col"/>
+    <HeaderVue/>
+    <ConsoleVue/>
+    <OperationVue/>
   </q-page>
 </template>

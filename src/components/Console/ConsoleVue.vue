@@ -16,38 +16,22 @@ window.API.onAddConsole(() => {
 </script>
 
 <template>
-  <div>
-    <q-virtual-scroll
-      :items="useConsoleStore().console"
-      v-slot="{ item }"
-      class="q-py-md console"
-      style="width: 100vw"
-    >
-      <span style="width: max-content">{{ item }}</span><br/>
-      <!-- <p
-        v-for="item in useConsoleStore().console"
-        :key="item"
-        style="width: max-content"
-      >
-        {{ item }}
-      </p> -->
-    </q-virtual-scroll>
-    <!-- <div id="scroll" class="q-pl-sm q-pt-sm console">
-      <br />
-    </div> -->
-  </div>
+  <q-virtual-scroll
+    id="scroll"
+    :items="useConsoleStore().console"
+    v-slot="{ item }"
+    class="q-pa-md fit"
+    style="width: 100vw; flex: 1 1 0;"
+  >
+    <p style="word-break:break-all;">{{ item }}</p>
+  </q-virtual-scroll>
 </template>
 
 <style lang="scss" scoped>
-span {
+p {
   font-size: 16pt;
   line-height: 1.2;
   margin: 0;
   font-family: 'Courier New', Courier, monospace;
-}
-
-.console {
-  white-space: pre;
-  overflow: scroll;
 }
 </style>

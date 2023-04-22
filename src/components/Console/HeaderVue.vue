@@ -20,5 +20,7 @@
 <style scoped lang="scss">
 .expandHeader {
   background-color: #1a1a1a;
+  width: 100vw;
+  height: 7rem;
 }
 </style>
