@@ -11,7 +11,11 @@ const routes: RouteRecordRaw[] = [
       { path: 'new-world', component: () => import('src/pages/NewWorldPage.vue') },
       { path: 'world-edit', component: () => import('src/pages/WorldEditPage.vue') },
       { path: 'settings', component: () => import('src/pages/SettingsPage.vue') },
-    ],
+    ]
+  },
+  {
+    path: '/error',
+    component: () => import('pages/ErrorPage.vue'),
   },
 
   // Always leave this as last one,
