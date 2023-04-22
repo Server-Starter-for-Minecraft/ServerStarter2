@@ -25,7 +25,7 @@ export const defaultServerProperties: ServerProperties = {
   'initial-enabled-packs': 'vanilla',
   'level-name': '',
   'level-seed': '',
-  'level-type': 'minecraft:normal',
+  'level-type': 'normal',
   'max-chained-neighbor-updates': 1000000,
   'max-players': 20,
   'max-tick-time': 60000,

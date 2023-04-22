@@ -32,7 +32,7 @@ export type GitRemote = {
 export type Remote = GitRemote;
 
 export const worldTypes = [
-  'default',
+  'normal',
   'flat',
   'largeBiomes',
   'amplified'
