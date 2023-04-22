@@ -6,21 +6,34 @@ export const versionTypes = [
   'papermc',
   'forge',
   'mohistmc',
+  'fabric',
 ] as const;
 export type VersionType = (typeof versionTypes)[number];
 
 export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
-export type SpigotVersion = { id: string; type: 'spigot'; release: boolean };
-export type PapermcVersion = { id: string; type: 'papermc'; release: boolean };
-export type ForgeVersion = { id: string; type: 'forge'; release: boolean };
-export type MohistmcVersion = { id: string; type: 'mohistmc'; release: boolean };
+export type SpigotVersion = { id: string; type: 'spigot' };
+export type PapermcVersion = { id: string; type: 'papermc' };
+export type ForgeVersion = { id: string; type: 'forge' };
+export type MohistmcVersion = {
+  id: string;
+  type: 'mohistmc';
+  forge_version: string;
+  number:Number
+};
+export type FabricVersion = {
+  id: string;
+  type: 'fabric';
+  release: boolean;
+  stable: boolean;
+};
 
 export type Version =
   | VanillaVersion
   | SpigotVersion
   | PapermcVersion
   | ForgeVersion
-  | MohistmcVersion;
+  | MohistmcVersion
+  | FabricVersion;
 
 export type GitRemote = {
   type: 'git';
@@ -35,30 +48,26 @@ export const worldTypes = [
   'normal',
   'flat',
   'largeBiomes',
-  'amplified'
-] as const
+  'amplified',
+] as const;
 export type WorldType = (typeof worldTypes)[number];
 
-export const difficulty = [
-  'peaceful',
-  'easy',
-  'normal',
-  'hard'
-] as const
+export const difficulty = ['peaceful', 'easy', 'normal', 'hard'] as const;
 export type Difficulty = (typeof difficulty)[number];
 
 export const gamemode = [
   'survival',
   'creative',
   'adventure',
-  'spectator'
-] as const
+  'spectator',
+] as const;
 export type Gamemode = (typeof gamemode)[number];
 
-export const function_permission_level = [1, 2, 3, 4] as const
-export type FunctionPermissionLevel = (typeof function_permission_level)[number];
+export const function_permission_level = [1, 2, 3, 4] as const;
+export type FunctionPermissionLevel =
+  (typeof function_permission_level)[number];
 
-export const op_permission_level = [0, 1, 2, 3, 4] as const
+export const op_permission_level = [0, 1, 2, 3, 4] as const;
 export type OpPermissionLevel = (typeof op_permission_level)[number];
 
 export type ServerProperties = {
