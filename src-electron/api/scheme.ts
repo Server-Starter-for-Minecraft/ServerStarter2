@@ -13,11 +13,7 @@ export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
 export type SpigotVersion = { id: string; type: 'spigot'; release: boolean };
 export type PapermcVersion = { id: string; type: 'papermc'; release: boolean };
 export type ForgeVersion = { id: string; type: 'forge'; release: boolean };
-export type MohistmcVersion = {
-  id: string;
-  type: 'mohistmc';
-  release: boolean;
-};
+export type MohistmcVersion = { id: string; type: 'mohistmc'; release: boolean };
 
 export type Version =
   | VanillaVersion
@@ -35,12 +31,42 @@ export type GitRemote = {
 };
 export type Remote = GitRemote;
 
+export const worldTypes = [
+  'default',
+  'flat',
+  'largeBiomes',
+  'amplified'
+] as const
+export type WorldType = (typeof worldTypes)[number];
+
+export const difficulty = [
+  'peaceful',
+  'easy',
+  'normal',
+  'hard'
+] as const
+export type Difficulty = (typeof difficulty)[number];
+
+export const gamemode = [
+  'survival',
+  'creative',
+  'adventure',
+  'spectator'
+] as const
+export type Gamemode = (typeof gamemode)[number];
+
+export const function_permission_level = [1, 2, 3, 4] as const
+export type FunctionPermissionLevel = (typeof function_permission_level)[number];
+
+export const op_permission_level = [0, 1, 2, 3, 4] as const
+export type OpPermissionLevel = (typeof op_permission_level)[number];
+
 export type ServerProperties = {
   'allow-flight'?: boolean;
   'allow-nether'?: boolean;
   'broadcast-console-to-ops'?: boolean;
   'broadcast-rcon-to-ops'?: boolean;
-  difficulty?: 'peaceful' | 'easy' | 'normal' | 'hard';
+  difficulty?: Difficulty;
   'enable-command-block'?: boolean;
   'enable-jmx-monitoring'?: boolean;
   'enable-rcon'?: boolean;
@@ -51,8 +77,8 @@ export type ServerProperties = {
   // 10-1000
   'entity-broadcast-range-percentage'?: number;
   'force-gamemode'?: boolean;
-  'function-permission-level'?: 1 | 2 | 3 | 4;
-  gamemode?: 'survival' | 'creative' | 'adventure' | 'spectator';
+  'function-permission-level'?: FunctionPermissionLevel;
+  gamemode?: Gamemode;
   'generate-structures'?: boolean;
   'generator-settings'?: string;
   hardcore?: boolean;
@@ -61,7 +87,7 @@ export type ServerProperties = {
   'initial-enabled-packs'?: string;
   'level-name'?: string;
   'level-seed'?: string;
-  'level-type'?: string;
+  'level-type'?: WorldType;
   'max-chained-neighbor-updates'?: number;
   // 0...2^31-1
   'max-players'?: number;
@@ -73,7 +99,7 @@ export type ServerProperties = {
   motd?: string;
   'network-compression-threshold'?: number;
   'online-mode'?: boolean;
-  'op-permission-level'?: 0 | 1 | 2 | 3 | 4;
+  'op-permission-level'?: OpPermissionLevel;
   'player-idle-timeout'?: number;
   'prevent-proxy-connections'?: boolean;
   'previews-chat'?: boolean;
