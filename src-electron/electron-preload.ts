@@ -85,6 +85,7 @@ const api: FrontAPI = {
   onUpdateStatus: on('UpdateStatus'),
   onAddConsole: on('AddConsole'),
   sendCommand: send('Command'),
+  sendOpenBrowser: send('OpenBrowser'),
   handleAgreeEula: handle('AgreeEula'),
   invokeRunServer: invoke('RunServer'),
   invokeGetAllWorlds: invoke('GetAllWorlds'),

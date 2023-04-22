@@ -6,6 +6,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import iconBtn from '../util/iconButton.vue';
+import { checkError } from 'src/components/Error/Error';
 
 interface Props {
   world: World;
@@ -28,7 +29,9 @@ async function runServer() {
   });
 
   // toRaw(proxy)とすることでvue上のProxyオブジェクトのtargetを抜き出せる
-  await window.API.invokeRunServer(toRaw(prop.world));
+  const res = await window.API.invokeRunServer(toRaw(prop.world));
+
+  checkError(res, console.log, 'サーバーが異常終了しました。')
 }
 
 const clicked = ref(false);
