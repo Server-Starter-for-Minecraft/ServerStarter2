@@ -1,47 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { versionTypes } from 'app/src-electron/api/scheme.js';
+import { onBeforeMount, ref } from 'vue';
+import { Version, versionTypes } from 'app/src-electron/api/scheme.js';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import propertyItem from 'src/components/util/propertyItem.vue';
+import propertyTable from './PropertyTable.vue';
+import { checkError } from '../Error/Error';
 
 interface Props {
   saveFunc: () => void
 }
 defineProps<Props>()
 
+async function updateVersionList() {
+  await window.API.invokeGetVersions(
+    store.world.settings.version.type
+  ).then(res => {
+    checkError(
+      res,
+      (checked) => versionList.value = checked
+    );
+  })
+}
+onBeforeMount(updateVersionList)
+
 const store = useWorldEditStore()
-const versionList = ['1.19.2', '1.19.1', '1.19.0'];
-const worldTypes = ['default', 'flat', 'largeBiomes', 'amplified']
-// TODO: worldTypeの初期値を決定
-const worldType = ref()
-
-
-const cols = [
-  {
-    name: 'propName',
-    label: 'プロパティ名',
-    field: 'propName',
-  },
-  {
-    name: 'value',
-    label: '値',
-    field: 'value'
-  },
-]
-const rows = [
-  {
-    propName: 'gamemode',
-    value: 'survival',
-  },
-  {
-    propName: 'white-list',
-    value: 'true',
-  },
-  {
-    propName: 'difficulty',
-    value: 'normal',
-  },
-]
+const versionList = ref([] as Version[])
 </script>
 
 <template>
@@ -63,13 +46,14 @@ const rows = [
           <q-select
             v-model="store.world.settings.version.type"
             :options="versionTypes"
+            @update:model-value="updateVersionList"
             label="サーバー"
             style="width: 150px"
             class="q-pr-lg"
           />
           <q-select
             v-model="store.world.settings.version.id"
-            :options="versionList"
+            :options="versionList.map(ver => ver.id)"
             label="バージョン"
             style="width: 150px"
             class="q-pr-lg"
@@ -77,39 +61,19 @@ const rows = [
       </template>
     </propertyItem>
 
-    <propertyItem propName="world type">
+    <!-- <propertyItem propName="world type">
       <template v-slot:userInput>
         <q-select
-          v-model="worldType"
+          v-model="serverProperty"
           :options="worldTypes"
           label="ワールドタイプ"
           style="width: 150px"
         />
       </template>
-    </propertyItem>
+    </propertyItem> -->
 
     <h1 id="Property">Property</h1>
-    <q-table
-      flat bordered
-      :rows="rows"
-      :columns="cols"
-      row-key="propName"
-      :rows-per-page-options="[5, 10, 0]"
-    >
-      <template v-slot:body="props">
-        <q-tr :props="props">
-          <q-td key="propName" :props="props">
-            {{ props.row.propName }}
-          </q-td>
-          <q-td key="value" :props="props">
-            {{ props.row.value }}
-            <q-popup-edit v-model="props.row.value" v-slot="scope">
-              <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-            </q-popup-edit>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
+    <propertyTable/>
     
     <h1 id="PersonList">Person List</h1>
     <h1 id="AdditionalList">Additional List</h1>
