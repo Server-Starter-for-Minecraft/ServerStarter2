@@ -139,18 +139,30 @@ export const parseServerProperties = (text: string) => {
   text.split('\n').forEach((v) => {
     const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
     if (match) {
-      // TODO: 強引なキャスト
       const [key, value] = match;
-      // 
-      if (boolean_keys.has(key)) propertiy[key] = value === 'true';
-      // 
-      else if (number_keys.has(key)) propertiy[key] = Number.parseInt(value);
-      // 
-      else if (string_keys.has(key)) propertiy[key] = value;
+
+      // boolean
+      if (haskeys(boolean_keys, key)) {
+        propertiy[key] = value === 'true';
+      }
+
+      // number
+      else if (haskeys(number_keys, key)) {
+        propertiy[key] = Number.parseInt(value) as any;
+      }
+
+      // string
+      else if (haskeys(string_keys, key)) {
+        propertiy[key] = value as any;
+      }
     }
   });
   return propertiy;
 };
+
+function haskeys<T>(set: Set<T>, key: string): key is Extract<T,string> {
+  return set.has(key as T & string);
+}
 
 export const stringifyServerProperties = (properties: ServerProperties) => {
   return Object.entries(properties)
