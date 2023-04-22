@@ -1,5 +1,5 @@
+import { checkError } from "./components/Error/Error";
 import { useMainStore } from "./stores/MainStore";
-import { checkError } from "./stores/ErrorStore";
 
 export async function InitWindow() {
   // storeの初期化
