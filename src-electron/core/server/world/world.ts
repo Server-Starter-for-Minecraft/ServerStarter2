@@ -8,10 +8,14 @@ export async function getAllWorlds(): Promise<Failable<World[]>> {
 function getDemoWorld() {
   const demoWorldSettings: WorldSettings = {
     avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
-    version: { id: '1.6.1', type: 'forge', release: true },
+    version: {
+      id: '1.19.5',
+      type: 'vanilla',
+      release: true 
+    },
   };
   const demoWorld: World = {
-    name: 'forge6',
+    name: 'vanilla19',
     settings: demoWorldSettings,
     datapacks: [],
     plugins: [],
