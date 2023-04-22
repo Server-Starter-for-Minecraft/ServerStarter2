@@ -193,11 +193,11 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
 
   // インストール開始
   // -jar forge-*-installer.jar --installServer server
-  const [, process] = interactiveProcess(
+  const process = interactiveProcess(
     javaPath.absolute().str(),
     args,
-    console.log,
-    console.log,
+    undefined,
+    undefined,
     installerPath.parent().absolute().str(),
     true
   );

@@ -6,11 +6,57 @@ import { isFailure } from '../../api/failable';
 import { defineLevelName, readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
 import { unrollSettings } from './settings';
-import { interactiveProcess } from '../utils/subprocess';
+import { execProcess, interactiveProcess } from '../utils/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
+import { sleep } from '../utils/testTools';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
+
+export async function testRunServer(version: Version) {
+  // サーバーデータを用意
+  const v = await readyVersion(version);
+
+  // サーバーデータの用意ができなかった場合エラー
+  if (isFailure(v)) return v;
+
+  const { programArguments, serverCwdPath, component } = v;
+
+  // 実行javaを用意
+  const javaPath = await readyJava(component, true);
+
+  // 実行javaが用意できなかった場合エラー
+  if (isFailure(javaPath)) return javaPath;
+
+  // サーバーを起動
+  const result = execProcess(
+    javaPath.absolute().str(),
+    [...programArguments, '--nogui'],
+    serverCwdPath.absolute().str(),
+    true
+  );
+
+  let error: any = undefined;
+  // 10秒経って起動を続けていたら正常に起動したとみなしプロセスをkill
+  sleep(100).then(() => {
+    try {
+      result.kill();
+    } catch (e) {
+      error = e;
+    }
+  });
+
+  const eula = serverCwdPath.child('eula.txt').exists();
+
+  const json = { version, eula, result, error }
+  console.log(json)
+
+  serverCwdPath
+    .child('result.json')
+    .writeText(JSON.stringify(json));
+
+  await result;
+}
 
 /** サーバーを起動する */
 export async function runServer(world: World) {
@@ -103,7 +149,7 @@ export async function runServer(world: World) {
 
   // javaのサブプロセスを起動
   // TODO: エラー出力先のハンドル
-  const [stdinfunc, process] = interactiveProcess(
+  const process = interactiveProcess(
     javaPath.absolute().str(),
     args,
     api.send.AddConsole,
@@ -112,7 +158,7 @@ export async function runServer(world: World) {
     true
   );
   // フロントエンドからの入力を受け付ける
-  stdin = stdinfunc;
+  stdin = process.write;
 
   // サーバー起動をWindowに知らせる
   api.send.StartServer();

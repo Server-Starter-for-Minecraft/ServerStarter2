@@ -178,11 +178,10 @@ async function buildSpigotVersion(
 
   function handler(msg: string) {
     // TODO:ビルドログをロガーに出力
-    console.log(msg);
   }
 
   // ビルドの開始
-  const [_, process] = interactiveProcess(
+  const process = interactiveProcess(
     javapath.absolute().str(),
     ['-jar', buildToolPath.absolute().str(), '--rev', version.id],
     handler,

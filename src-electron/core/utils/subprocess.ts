@@ -1,33 +1,75 @@
 import { Failable } from 'app/src-electron/api/failable';
 import * as child_process from 'child_process';
 
-// TODO: exitcodeに応じてFailableを返す
+export type ChildProcessPromise = Promise<Failable<undefined>> & {
+  kill(signal?: number | NodeJS.Signals | undefined): boolean;
+  write(msg: string): Promise<void>;
+};
+
+function promissifyProcess(
+  process: child_process.ChildProcess,
+  processpath: string,
+  args: string[]
+) {
+  function onExit(code: number | null) {
+    if (code === 0 || code === null) return undefined;
+    const command = process + ' ' + args.join(' ');
+    return new Error(
+      `error occured in running subprocess with exitcode:${processpath} command:${command}}`
+    );
+  }
+
+  const executor: (
+    resolve: (
+      value: Failable<undefined> | PromiseLike<Failable<undefined>>
+    ) => void
+  ) => void = (resolve) => {
+    process.on('exit', (code) => resolve(onExit(code)));
+    process.on('error', (err) => resolve(err));
+  };
+
+  const promise = new Promise(executor) as ChildProcessPromise;
+
+  const kill = (signal?: number | NodeJS.Signals | undefined): boolean => {
+    return process.kill(signal);
+  };
+
+  const write = (msg: string) =>
+    new Promise<void>((resolve) =>
+      process.stdin?.write(msg + '\n', () => resolve())
+    );
+  promise.kill = kill;
+  promise.write = write;
+
+  return promise;
+}
 
 export const interactiveProcess = (
   process: string,
   args: string[],
-  onout: (chunk: string) => void,
-  onerr: (chunk: string) => void,
+  onout: ((chunk: string) => void) | undefined,
+  onerr: ((chunk: string) => void) | undefined,
   cwd: string | undefined = undefined,
   shell = false
-): [(message: string) => Promise<void>, Promise<Failable<undefined>>] => {
+): ChildProcessPromise => {
   const child = child_process.spawn(process, args, {
     cwd,
     shell,
-    stdio: ['pipe', 'pipe', 'pipe'],
+    stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
   });
 
-  child.stdout.setEncoding('utf-8');
-  child.stdout.on('data', onout);
+  if (onout) {
+    child.stdout?.setEncoding('utf-8');
+    child.stdout?.on('data', onout);
+  }
 
-  child.stderr.setEncoding('utf-8');
-  child.stderr.on('data', onerr);
+  if (onerr) {
+    child.stderr?.setEncoding('utf-8');
+    child.stderr?.on('data', onerr);
+  }
 
-  return [
-    (msg) =>
-      new Promise((resolve) => child.stdin.write(msg + '\n', () => resolve())),
-    prommisifyChildprocess(child, process, args),
-  ];
+  console.log(1);
+  return promissifyProcess(child, process, args);
 };
 
 export function execProcess(
@@ -37,27 +79,5 @@ export function execProcess(
   shell = false
 ) {
   const child = child_process.spawn(process, args, { cwd, shell });
-
-  return prommisifyChildprocess(child, process, args);
-}
-
-function prommisifyChildprocess(
-  child: child_process.ChildProcess,
-  process: string,
-  args: string[]
-) {
-  function onExit(code: number | null) {
-    if (code === 0 || code === null) return undefined;
-    const command = process + ' ' + args.join(' ');
-    return new Error(
-      `error occured in running subprocess with exitcode:${code} command:${command}}`
-    );
-  }
-
-  const promise = new Promise<Failable<undefined>>((resolve) => {
-    child.on('exit', (code) => resolve(onExit(code)));
-    child.on('error', (err) => resolve(err));
-  });
-
-  return promise;
+  return promissifyProcess(child, process, args);
 }
