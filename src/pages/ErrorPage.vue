@@ -6,6 +6,10 @@ const store = useErrorStore()
 function showTwitter() {
   window.API.sendOpenBrowser('https://twitter.com/CivilT_T')
 }
+
+function closeWindow() {
+  window.close()
+}
 </script>
 
 <template>
@@ -32,9 +36,10 @@ function showTwitter() {
       </q-card-section>
 
       <q-card-actions class="justify-center">
+        <!-- TODO: バグ報告フォームの整備 -->
         <q-btn color="red" icon="pest_control" label="バグ報告" size="1.3rem" class="q-mx-md"/>
         <q-btn color="blue-1" text-color="blue" icon="img:https://cdn.iconscout.com/icon/free/png-512/free-twitter-87-432551.png?f=avif&w=256" label="作者へ連絡" size="1.3rem" class="q-mx-md" @click="showTwitter"/>
-        <q-btn icon="close" label="閉じる" size="1.3rem" class="q-mx-md"/>
+        <q-btn icon="close" label="閉じる" size="1.3rem" class="q-mx-md" @click="closeWindow"/>
       </q-card-actions>
     </q-card>
   </div>
