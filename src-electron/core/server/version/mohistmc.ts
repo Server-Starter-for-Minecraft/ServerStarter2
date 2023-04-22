@@ -49,7 +49,7 @@ async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
   const json = await versionData.json<string[]>();
   if (isFailure(json)) return json;
 
-  return json.map((id) => ({
+  return json.reverse().map((id) => ({
     id,
     type: 'mohistmc',
     release: true,

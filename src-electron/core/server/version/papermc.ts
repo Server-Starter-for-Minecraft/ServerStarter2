@@ -60,7 +60,7 @@ export const papermcVersionLoader: VersionLoader = {
     const json = await data.json<PapermcVersions>();
     if (isFailure(json)) return json;
 
-    return json.versions.map((id) => ({ id, release: true, type: 'papermc' }));
+    return json.versions.reverse().map((id) => ({ id, release: true, type: 'papermc' }));
   },
 
   async defineLevelName(worldPath) {
