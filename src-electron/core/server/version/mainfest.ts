@@ -1,4 +1,4 @@
-import { config } from '../../store';
+import { config } from '../../config';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { versionManifestPath } from '../const';

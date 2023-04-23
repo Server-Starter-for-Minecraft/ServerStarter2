@@ -1,9 +1,9 @@
 import { PapermcVersion } from 'app/src-electron/api/scheme';
-import { isFailure } from '../../../api/failable';
+import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent } from './vanilla';
 import { versionsPath } from '../const';
-import { VersionLoader } from './interface';
+import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
 
 const papermcVersionsPath = versionsPath.child('papermc');
@@ -52,16 +52,7 @@ export const papermcVersionLoader: VersionLoader = {
   },
 
   /** papermcのバージョンの一覧返す */
-  async getAllVersions() {
-    const VERSION_LIST_URL = 'https://api.papermc.io/v2/projects/paper';
-    const data = await BytesData.fromURL(VERSION_LIST_URL);
-    if (isFailure(data)) return data;
-
-    const json = await data.json<PapermcVersions>();
-    if (isFailure(json)) return json;
-
-    return json.versions.reverse().map((id) => ({ id, release: true, type: 'papermc' }));
-  },
+  getAllVersions: genGetAllVersions('papermc', getPapermcVersions),
 
   async defineLevelName(worldPath) {
     const levelName = worldPath
@@ -75,6 +66,19 @@ export const papermcVersionLoader: VersionLoader = {
     };
   },
 };
+
+async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
+  const VERSION_LIST_URL = 'https://api.papermc.io/v2/projects/paper';
+  const data = await BytesData.fromURL(VERSION_LIST_URL);
+  if (isFailure(data)) return data;
+
+  const json = await data.json<PapermcVersions>();
+  if (isFailure(json)) return json;
+
+  return json.versions
+    .reverse()
+    .map((id) => ({ id, release: true, type: 'papermc' }));
+}
 
 async function downloadPapermcVersion(version: PapermcVersion, jarpath: Path) {
   const buildsURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds`;

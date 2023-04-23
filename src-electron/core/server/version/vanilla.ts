@@ -3,9 +3,11 @@ import { getVersionMainfest } from './mainfest';
 import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { versionsPath } from '../const';
-import { VersionLoader } from './interface';
+import { VersionLoader, genGetAllVersions } from './base';
+import { config } from '../../config';
 
 const vanillaVersionsPath = versionsPath.child('vanilla');
+const allVanillaVersionsJsonPath = vanillaVersionsPath.child('vanilla.json');
 
 export type JavaComponent =
   | 'java-runtime-alpha'
@@ -63,20 +65,8 @@ export const vanillaVersionLoader: VersionLoader = {
   },
 
   /** バニラのバージョンの一覧返す */
-  async getAllVersions() {
-    const manifest = await getVersionMainfest();
-    if (isFailure(manifest)) return manifest;
+  getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersionsFromRemote),
 
-    // 1.2.5以前はマルチサーバーが存在しない
-    const lastindex = manifest.versions.findIndex((x) => x.id === '1.2.5');
-    const multiPlayableVersions = manifest.versions.slice(0, lastindex);
-
-    return multiPlayableVersions.map((x) => ({
-      type: 'vanilla',
-      release: x.type === 'release',
-      id: x.id,
-    }));
-  },
   async defineLevelName(worldPath) {
     const levelName = worldPath
       .child('world')
@@ -89,6 +79,23 @@ export const vanillaVersionLoader: VersionLoader = {
     };
   },
 };
+
+async function getAllVanillaVersionsFromRemote(): Promise<
+  Failable<VanillaVersion[]>
+> {
+  const manifest = await getVersionMainfest();
+  if (isFailure(manifest)) return manifest;
+
+  // 1.2.5以前はマルチサーバーが存在しない
+  const lastindex = manifest.versions.findIndex((x) => x.id === '1.2.5');
+  const multiPlayableVersions = manifest.versions.slice(0, lastindex);
+
+  return multiPlayableVersions.map((x) => ({
+    type: 'vanilla',
+    release: x.type === 'release',
+    id: x.id,
+  }));
+}
 
 /** バージョンのIDに適したjavaのコンポーネントを返す */
 export async function getJavaComponent(id: string) {

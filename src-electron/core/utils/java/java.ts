@@ -1,5 +1,5 @@
 import { runtimePath } from '../../server/const.js';
-import { config } from '../../store.js';
+import { config } from '../../config.js';
 import { BytesData } from '../bytesData/bytesData.js';
 import { osPlatform } from '../os/os.js';
 import { Path } from '../path/path.js';

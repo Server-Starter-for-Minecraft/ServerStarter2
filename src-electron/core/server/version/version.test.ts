@@ -5,7 +5,7 @@ import { JavaComponent, vanillaVersionLoader } from './vanilla';
 import { spigotVersionLoader } from './spigot';
 import { mohistmcVersionLoader } from './mohistmc';
 import { versionLoaders } from './version';
-import { VersionLoader } from './interface';
+import { VersionLoader } from './base';
 
 describe('vanillaVersion', async () => {
   test(
@@ -32,18 +32,17 @@ describe('vanillaVersion', async () => {
 
       // (await Promise.all(promisses)).forEach((x) => console.log(x));
 
-      // for (let loader of Object.values(versionLoaders)) {
-      //   await loadversion(loader);
-      // }
+      await Promise.all(
+        Object.values(versionLoaders).map((loader) =>
+          loader.getAllVersions(true)
+        )
+      );
 
       // await versionLoaders.spigot?.readyVersion({
       //   type: 'spigot',
       //   id: '1.16.4',
       //   release: true,
       // });
-
-      const versions = await forgeVersionLoader.getAllVersions();
-      new Path('forgeversions.json').writeText(JSON.stringify(versions));
 
       expect(1).toBe(1);
     },

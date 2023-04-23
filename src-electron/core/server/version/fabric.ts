@@ -7,23 +7,19 @@ import { isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';
 import { versionsPath } from '../const';
-import { VersionLoader } from './interface';
+import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
 import { getVersionMainfest } from './mainfest';
-
-const papermcVersionsPath = versionsPath.child('papermc');
 
 export const fabricVersionLoader: VersionLoader = {
   /** fabricのサーバーデータをダウンロード */
   async readyVersion(version: FabricVersion) {},
 
   /** fabricのバージョンの一覧返す */
-  getAllVersions: getAllFabricVersions,
+  getAllVersions: genGetAllVersions('fabric', getAllFabricVersions),
 
   async defineLevelName(worldPath) {},
 };
-
-
 
 type FabricVersionsGame = {
   version: string;

@@ -3,12 +3,12 @@ import { Path } from '../../utils/path/path';
 import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { JavaComponent, getJavaComponent } from './vanilla';
-import { config } from '../../store';
+import { config } from '../../config';
 import { spigotBuildPath, versionsPath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../utils/subprocess';
 import { readyJava } from '../../utils/java/java';
-import { VersionComponent, VersionLoader } from './interface';
+import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
 import { getVersionMainfest } from './mainfest';
 
 const spigotVersionsPath = versionsPath.child('spigot');
@@ -18,7 +18,7 @@ export const spigotVersionLoader: VersionLoader = {
   readyVersion: readySpigotVersion,
 
   /** spigotのバージョンの一覧返す */
-  getAllVersions: getSpigotVersions,
+  getAllVersions: genGetAllVersions("spigot", getSpigotVersions),
 
   /** spigotのlwvwlNameと実行時引数を返す */
   async defineLevelName(worldPath) {

@@ -10,8 +10,8 @@ log4js.configure({
       // },
     },
     _file: { type: 'file', filename: 'logs/serverstarter.log' },
-    out: { type: 'logLevelFilter', appender: '_out', level: 'error' },
-    file: { type: 'logLevelFilter', appender: '_file', level: 'error' },
+    out: { type: 'logLevelFilter', appender: '_out', level: 'info' },
+    file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
   },
   categories: {
     default: { appenders: ['out', 'file'], level: 'trace' },

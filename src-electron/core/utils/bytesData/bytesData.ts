@@ -89,7 +89,7 @@ export class BytesData {
     }
   }
 
-  // TODO:encodingの対応
+  /** utf-8の形式でByteDataに変換 */
   static async fromText(text: string): Promise<Failable<BytesData>> {
     return new BytesData(new TextEncoder().encode(text));
   }

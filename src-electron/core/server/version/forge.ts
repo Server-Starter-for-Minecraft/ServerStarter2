@@ -1,5 +1,5 @@
 import { ForgeVersion } from 'app/src-electron/api/scheme';
-import { VersionLoader } from './interface';
+import { VersionLoader, genGetAllVersions } from './base';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { Path } from '../../utils/path/path';
 import { getJavaComponent } from './vanilla';
@@ -51,7 +51,7 @@ export const forgeVersionLoader: VersionLoader = {
   },
 
   /** forgeのバージョンの一覧返す */
-  getAllVersions: getAllForgeVersions,
+  getAllVersions: genGetAllVersions('forge', getAllForgeVersions),
 
   async defineLevelName(worldPath, serverCwdPath) {
     // サーバーのCWDからの相対パスでないと動かない
@@ -180,12 +180,6 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
     '--installServer',
   ];
 
-  console.log(
-    javaPath.absolute().str(),
-    args,
-    installerPath.parent().absolute().str()
-  );
-
   // インストール開始
   // -jar forge-*-installer.jar --installServer server
   const process = interactiveProcess(
@@ -217,7 +211,6 @@ export async function getAllForgeVersions() {
   $('ul.section-content li.li-version-list ul li a').each((_, elem) => {
     const path = elem.attribs['href'];
     const match = path.match(/^index_([a-z0-9_\.-]+)\.html$/);
-    console.group(path, match);
     if (match) ids.push(match[1]);
   });
 

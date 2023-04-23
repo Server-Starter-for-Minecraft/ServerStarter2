@@ -1,10 +1,14 @@
 import Store from 'electron-store';
+import { VersionType } from '../api/scheme';
 
 export type Config = {
   version_manifest_v2_sha1?: string;
   spigot_buildtool_sha1?: string;
   sha1?: {
     runtime?: string;
+  };
+  versions_sha1?: {
+    [key in VersionType]: string;
   };
 };
 

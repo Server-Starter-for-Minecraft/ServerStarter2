@@ -1,6 +1,6 @@
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { VersionComponent, VersionLoader } from './interface';
+import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
 import { MohistmcVersion } from 'app/src-electron/api/scheme';
 import { versionsPath } from '../const';
 import { getJavaComponent } from './vanilla';
@@ -10,7 +10,7 @@ const papermcVersionsPath = versionsPath.child('mohistmc');
 
 export const mohistmcVersionLoader: VersionLoader = {
   readyVersion: readyMohistmcVersion,
-  getAllVersions: getAllMohistmcVersions,
+  getAllVersions: genGetAllVersions("mohistmc", getAllMohistmcVersions),
 };
 
 async function readyMohistmcVersion(

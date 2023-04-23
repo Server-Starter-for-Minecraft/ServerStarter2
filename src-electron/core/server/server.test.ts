@@ -1,6 +1,6 @@
 import { World } from 'app/src-electron/api/scheme';
 import { versionLoaders } from './version/version';
-import { VersionLoader } from './version/interface';
+import { VersionLoader } from './version/base';
 import { isFailure } from 'src-electron/api/failable';
 import { runServer, testRunServer } from './server';
 import { Path } from '../utils/path/path';
