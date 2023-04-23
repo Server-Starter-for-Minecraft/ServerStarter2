@@ -13,62 +13,64 @@ import { sleep } from '../utils/testTools';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
-export async function testRunServer(version: Version) {
-  // サーバーデータを用意
-  const v = await readyVersion(version);
+// export async function testRunServer(version: Version) {
+//   // サーバーデータを用意
+//   const v = await readyVersion(version);
 
-  // サーバーデータの用意ができなかった場合エラー
-  if (isFailure(v)) return v;
+//   // サーバーデータの用意ができなかった場合エラー
+//   if (isFailure(v)) return v;
 
-  const { programArguments, serverCwdPath, component } = v;
+//   const { programArguments, serverCwdPath, component } = v;
 
-  // 実行javaを用意
-  const javaPath = await readyJava(component, true);
+//   // 実行javaを用意
+//   const javaPath = await readyJava(component, true);
 
-  // 実行javaが用意できなかった場合エラー
-  if (isFailure(javaPath)) return javaPath;
+//   // 実行javaが用意できなかった場合エラー
+//   if (isFailure(javaPath)) return javaPath;
 
-  // サーバーを起動
-  const result = execProcess(
-    javaPath.absolute().str(),
-    [...programArguments, '--nogui'],
-    serverCwdPath.absolute().str(),
-    true
-  );
+//   // サーバーを起動
+//   const result = execProcess(
+//     javaPath.absolute().str(),
+//     [...programArguments, '--nogui'],
+//     serverCwdPath.absolute().str(),
+//     true
+//   );
 
-  let error: any = undefined;
-  // 10秒経って起動を続けていたら正常に起動したとみなしプロセスをkill
-  sleep(100).then(() => {
-    try {
-      result.kill();
-    } catch (e) {
-      error = e;
-    }
-  });
+//   let error: any = undefined;
+//   // 10秒経って起動を続けていたら正常に起動したとみなしプロセスをkill
+//   sleep(100).then(() => {
+//     try {
+//       result.kill();
+//     } catch (e) {
+//       error = e;
+//     }
+//   });
 
-  const eula = serverCwdPath.child('eula.txt').exists();
+//   const eula = serverCwdPath.child('eula.txt').exists();
 
-  const json = { version, eula, result, error }
-  console.log(json)
+//   const json = { version, eula, result, error }
+//   console.log(json)
 
-  serverCwdPath
-    .child('result.json')
-    .writeText(JSON.stringify(json));
+//   serverCwdPath
+//     .child('result.json')
+//     .writeText(JSON.stringify(json));
 
-  await result;
-}
+//   await result;
+// }
 
 /** サーバーを起動する */
 export async function runServer(world: World) {
   const worldPath = worldsPath.child(world.name);
   const settings = world.settings;
 
-  const memory = settings.memory ?? 5;
-
   // java実行時引数(ここから増える)
   // stdin,stdout,stderrの文字コードをutf-8に
   // 確保メモリ量を設定
-  const args = ['"-Dfile.encoding=UTF-8"', `-Xmx${memory}G`, `-Xms${memory}G`];
+  const args = ['"-Dfile.encoding=UTF-8"'];
+
+  if (settings.memory !== undefined) {
+    args.push(`-Xmx${settings.memory}G`, `-Xms${settings.memory}G`);
+  }
 
   // // ワールドが存在しない場合エラー
   // if (!worldPath.exists()) return Error(`world ${world.name} not exists`);
