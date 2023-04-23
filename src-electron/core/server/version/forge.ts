@@ -14,7 +14,7 @@ const forgeVersionsPath = versionsPath.child('forge');
 
 const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
 
-export const forgeVersionLoader: VersionLoader = {
+export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
   /** forgeのサーバーデータをダウンロード */
   async readyVersion(version: ForgeVersion) {
     // 適切なjavaのバージョンを取得

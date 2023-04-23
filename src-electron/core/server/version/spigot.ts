@@ -13,7 +13,7 @@ import { getVersionMainfest } from './mainfest';
 
 const spigotVersionsPath = versionsPath.child('spigot');
 
-export const spigotVersionLoader: VersionLoader = {
+export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
   /** spigotのサーバーデータをダウンロード */
   readyVersion: readySpigotVersion,
 

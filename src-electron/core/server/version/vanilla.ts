@@ -4,10 +4,8 @@ import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { versionsPath } from '../const';
 import { VersionLoader, genGetAllVersions } from './base';
-import { config } from '../../config';
 
 const vanillaVersionsPath = versionsPath.child('vanilla');
-const allVanillaVersionsJsonPath = vanillaVersionsPath.child('vanilla.json');
 
 export type JavaComponent =
   | 'java-runtime-alpha'
@@ -29,7 +27,7 @@ export type VanillaVersionJson = {
   };
 };
 
-export const vanillaVersionLoader: VersionLoader = {
+export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
   /** vanillaのサーバーデータをダウンロード */
   async readyVersion(version: VanillaVersion) {
     const versionPath = vanillaVersionsPath.child(version.id);
@@ -65,7 +63,7 @@ export const vanillaVersionLoader: VersionLoader = {
   },
 
   /** バニラのバージョンの一覧返す */
-  getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersionsFromRemote),
+  getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersions),
 
   async defineLevelName(worldPath) {
     const levelName = worldPath
@@ -80,9 +78,7 @@ export const vanillaVersionLoader: VersionLoader = {
   },
 };
 
-async function getAllVanillaVersionsFromRemote(): Promise<
-  Failable<VanillaVersion[]>
-> {
+async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
   const manifest = await getVersionMainfest();
   if (isFailure(manifest)) return manifest;
 

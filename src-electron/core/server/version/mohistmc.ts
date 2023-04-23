@@ -8,9 +8,9 @@ import { Path } from '../../utils/path/path';
 
 const papermcVersionsPath = versionsPath.child('mohistmc');
 
-export const mohistmcVersionLoader: VersionLoader = {
+export const mohistmcVersionLoader: VersionLoader<MohistmcVersion> = {
   readyVersion: readyMohistmcVersion,
-  getAllVersions: genGetAllVersions("mohistmc", getAllMohistmcVersions),
+  getAllVersions: genGetAllVersions('mohistmc', getAllMohistmcVersions),
 };
 
 async function readyMohistmcVersion(

@@ -10,7 +10,7 @@ log4js.configure({
       // },
     },
     _file: { type: 'file', filename: 'logs/serverstarter.log' },
-    out: { type: 'logLevelFilter', appender: '_out', level: 'info' },
+    out: { type: 'logLevelFilter', appender: '_out', level: 'error' },
     file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
   },
   categories: {

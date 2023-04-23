@@ -29,7 +29,7 @@ type PapermcBuilds = {
   }[];
 };
 
-export const papermcVersionLoader: VersionLoader = {
+export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
   /** papermcのサーバーデータをダウンロード */
   async readyVersion(version: PapermcVersion) {
     const versionPath = papermcVersionsPath.child(version.id);

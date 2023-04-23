@@ -9,7 +9,7 @@ import { Path } from '../../utils/path/path';
 import { fabricVersionLoader } from './fabric';
 
 export const versionLoaders: {
-  [key in VersionType]: VersionLoader;
+  [V in Version as V['type']]: VersionLoader<V>;
 } = {
   vanilla: vanillaVersionLoader,
   spigot: spigotVersionLoader,
@@ -20,11 +20,10 @@ export const versionLoaders: {
 };
 
 // 指定されたバージョンを準備する
-export async function readyVersion(version: Version) {
-  const loader = versionLoaders[version.type];
-  if (!loader) {
-    throw new Error(`unknown version type ${version.type}`);
-  }
+export async function readyVersion<V extends Version>(version: V) {
+  const loader: VersionLoader<V> = versionLoaders[
+    version.type
+  ] as VersionLoader<V>;
   return await loader.readyVersion(version);
 }
 

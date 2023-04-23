@@ -11,7 +11,7 @@ import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
 import { getVersionMainfest } from './mainfest';
 
-export const fabricVersionLoader: VersionLoader = {
+export const fabricVersionLoader: VersionLoader<FabricVersion> = {
   /** fabricのサーバーデータをダウンロード */
   async readyVersion(version: FabricVersion) {},
 
@@ -36,7 +36,7 @@ async function getAllFabricVersions() {
   const json = await data.json<FabricVersionsGame>();
   if (isFailure(json)) return json;
 
-  const vanilla = await vanillaVersionLoader.getAllVersions();
+  const vanilla = await vanillaVersionLoader.getAllVersions(undefined);
   if (isFailure(vanilla)) return vanilla;
 
   const versions: FabricVersion[] = json
