@@ -19,16 +19,18 @@ export class Path {
 
   child(child: string) {
     if (this.path) {
-      return new Path(this.path + '/' + child);
+      return new Path(path.join(this.path, child));
     }
     return new Path(child);
   }
 
   parent(times = 1) {
     if (this.path) {
-      return new Path(this.path + '/..'.repeat(times));
+      return new Path(
+        path.join(this.path, ...new Array(times).map(() => '..'))
+      );
     }
-    return new Path(Array(times).fill('..').join('/'));
+    return new Path(path.join(...Array(times).fill('..')));
   }
 
   absolute() {
