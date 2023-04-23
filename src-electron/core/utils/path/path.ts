@@ -27,7 +27,7 @@ export class Path {
   parent(times = 1) {
     if (this.path) {
       return new Path(
-        path.join(this.path, ...new Array(times).map(() => '..'))
+        path.join(this.path, ...new Array(times).fill('..'))
       );
     }
     return new Path(path.join(...Array(times).fill('..')));

@@ -155,6 +155,7 @@ export type WorldSettings = {
 
 export type World = {
   name: string;
+  container: string;
   settings: WorldSettings;
   datapacks: string[];
   plugins: string[];

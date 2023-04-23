@@ -1,5 +1,6 @@
 import { Failable } from 'app/src-electron/api/failable';
 import { World, WorldSettings } from 'app/src-electron/api/scheme';
+import { userDataPath } from '../../userDataPath';
 
 export async function getWorlds(
   worldContainer: string
@@ -18,6 +19,7 @@ function getDemoWorld() {
   };
   const demoWorld: World = {
     name: 'vanilla19',
+    container: userDataPath.child('servers').str(),
     settings: demoWorldSettings,
     datapacks: [],
     plugins: [],

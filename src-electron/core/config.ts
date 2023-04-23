@@ -12,14 +12,6 @@ export type Config = {
     [key in VersionType]: string;
   };
 };
-
-console.log(1);
-console.log('USERDATAPATH', {
-  cwd: userDataPath.str(),
-  name: 'config',
-  fileExtension: 'json',
-});
-
 // const store = new Store({encryptionKey: '7fb0fce6-ea98-48cb-b7d2-989f15ad20e8'})
 export const config = new Store<Config>({
   cwd: userDataPath.str(),

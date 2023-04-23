@@ -11,12 +11,11 @@ export const versionLoggers = rootLoggers.child('server').child('version');
 
 export type VersionComponent = {
   programArguments: string[];
-  serverCwdPath: Path;
   component: JavaComponent;
 };
 
 export type VersionLoader<V extends Version> = {
-  readyVersion(version: V): Promise<Failable<VersionComponent>>;
+  readyVersion(version: V, cwdPath: Path): Promise<Failable<VersionComponent>>;
 
   /**
    * @param useCache ローカルのキャッシュを使用するかどうか
@@ -28,8 +27,7 @@ export type VersionLoader<V extends Version> = {
   getAllVersions(useCache: boolean | undefined): Promise<Failable<V[]>>;
 
   defineLevelName(
-    worldPath: Path,
-    serverCwdPath: Path
+    worldPath: Path
   ): Promise<Failable<{ levelName: string; args: string[] }>>;
 };
 

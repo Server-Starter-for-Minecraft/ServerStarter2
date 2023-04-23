@@ -20,11 +20,14 @@ export const versionLoaders: {
 };
 
 // 指定されたバージョンを準備する
-export async function readyVersion<V extends Version>(version: V) {
+export async function readyVersion<V extends Version>(
+  version: V,
+  cwdPath: Path
+) {
   const loader: VersionLoader<V> = versionLoaders[
     version.type
   ] as VersionLoader<V>;
-  return await loader.readyVersion(version);
+  return await loader.readyVersion(version, cwdPath);
 }
 
 // 指定されたバージョンを準備する
@@ -37,14 +40,10 @@ export async function getVersions(type: VersionType, useCache: boolean) {
 }
 
 // LevelNameを取得する
-export async function defineLevelName(
-  type: VersionType,
-  worldPath: Path,
-  serverCwdPath: Path
-) {
+export async function defineLevelName(type: VersionType, worldPath: Path) {
   const loader = versionLoaders[type];
   if (!loader) {
     throw new Error(`unknown version type ${type}`);
   }
-  return await loader.defineLevelName(worldPath, serverCwdPath);
+  return await loader.defineLevelName(worldPath);
 }

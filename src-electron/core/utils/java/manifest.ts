@@ -41,11 +41,11 @@ export async function installManifest(manifest: Manifest, path: Path) {
           const result = await BytesData.fromPathOrUrl(
             p.path,
             v.downloads.raw.url,
-            v.downloads.raw.sha1,
+            { value: v.downloads.raw.sha1, type: 'sha1' },
             false,
             true
           );
-          if (isFailure(result)) console.log(p.path);
+          // if (isFailure(result)) console.log(p.path);
         };
         promises.push(filePromise());
         break;

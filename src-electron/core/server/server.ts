@@ -1,15 +1,13 @@
-import { Version, World } from 'app/src-electron/api/scheme';
-import { Path } from '../utils/path/path';
+import { World } from 'app/src-electron/api/scheme';
 import { getLog4jArg } from './log4j';
-import { worldsPath } from './const';
 import { isFailure } from '../../api/failable';
 import { defineLevelName, readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
 import { unrollSettings } from './settings';
-import { execProcess, interactiveProcess } from '../utils/subprocess';
+import { interactiveProcess } from '../utils/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
-import { sleep } from '../utils/testTools';
+import { Path } from '../utils/path/path';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
@@ -60,7 +58,8 @@ let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
 /** サーバーを起動する */
 export async function runServer(world: World) {
-  const worldPath = worldsPath.child(world.name);
+  const cwdPath = new Path(world.container).child(world.name);
+
   const settings = world.settings;
 
   // java実行時引数(ここから増える)
@@ -83,12 +82,12 @@ export async function runServer(world: World) {
   );
 
   // サーバーデータを用意
-  const version = await readyVersion(settings.version);
+  const version = await readyVersion(settings.version, cwdPath);
 
   // サーバーデータの用意ができなかった場合エラー
   if (isFailure(version)) return version;
 
-  const { programArguments, serverCwdPath, component } = version;
+  const { programArguments, component } = version;
 
   api.send.UpdateStatus(`javaランタイムを準備中 (${component})`);
 
@@ -100,7 +99,7 @@ export async function runServer(world: World) {
 
   api.send.UpdateStatus('log4jの引数を設定中');
 
-  const log4jarg = await getLog4jArg(serverCwdPath, settings.version);
+  const log4jarg = await getLog4jArg(cwdPath, settings.version);
 
   // log4jのファイルがダウンロードできなかった場合エラー
   if (isFailure(log4jarg)) return log4jarg;
@@ -114,11 +113,7 @@ export async function runServer(world: World) {
   // ワールドデータをダウンロード
 
   // level-nameと実行時引数の決定
-  const levelnameResult = await defineLevelName(
-    settings.version.type,
-    worldPath,
-    serverCwdPath
-  );
+  const levelnameResult = await defineLevelName(settings.version.type, cwdPath);
   if (isFailure(levelnameResult)) return levelnameResult;
   const { levelName, args: levelNameArgs } = levelnameResult;
 
@@ -128,16 +123,12 @@ export async function runServer(world: World) {
   api.send.UpdateStatus('設定ファイルの書き出し中');
 
   // 設定ファイルをサーバーCWD直下に書き出す
-  await unrollSettings(settings, levelName, serverCwdPath);
+  await unrollSettings(settings, levelName, cwdPath);
 
   api.send.UpdateStatus('Eulaの同意状況を確認中');
 
   // Eulaチェック
-  const eulaAgreement = await checkEula(
-    javaPath,
-    programArguments,
-    serverCwdPath
-  );
+  const eulaAgreement = await checkEula(javaPath, programArguments, cwdPath);
 
   // Eulaチェックに失敗した場合
   if (isFailure(eulaAgreement)) return eulaAgreement;
@@ -156,7 +147,7 @@ export async function runServer(world: World) {
     args,
     api.send.AddConsole,
     api.send.AddConsole,
-    serverCwdPath.absolute().str(),
+    cwdPath.absolute().str(),
     true
   );
   // フロントエンドからの入力を受け付ける

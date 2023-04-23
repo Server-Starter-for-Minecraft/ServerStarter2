@@ -68,7 +68,6 @@ export const interactiveProcess = (
     child.stderr?.on('data', onerr);
   }
 
-  console.log(1);
   return promissifyProcess(child, process, args);
 };
 

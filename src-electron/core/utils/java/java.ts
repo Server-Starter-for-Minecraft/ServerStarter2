@@ -71,9 +71,11 @@ async function getAllJson(): Promise<Failable<AllJson>> {
   try {
     const allJsonSha1 = config.get('sha1')?.runtime;
     const data = await BytesData.fromPathOrUrl(
-      'bin/runtime/all.json',
+      runtimePath.child('all.json').str(),
       'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',
-      allJsonSha1
+      allJsonSha1 !== undefined
+        ? { type: 'sha1', value: allJsonSha1 }
+        : allJsonSha1
     );
 
     if (isFailure(data)) return data;
@@ -91,7 +93,10 @@ async function getManifestJson(
   manifest: RuntimeManifest,
   path: string
 ): Promise<Failable<any>> {
-  const data = await BytesData.fromPathOrUrl(path, manifest.url, manifest.sha1);
+  const data = await BytesData.fromPathOrUrl(path, manifest.url, {
+    type: 'sha1',
+    value: manifest.sha1,
+  });
   if (isFailure(data)) return data;
 
   const json = await data.json<Manifest>();
