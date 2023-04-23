@@ -41,7 +41,8 @@ export interface API extends IAPI {
   };
   invokeWindowToMain: {
     RunServer: (world: World) => Promise<Failable<undefined>>;
-    GetAllWorlds: () => Promise<Failable<World[]>>;
+    GetWorldContainers: () => Promise<Failable<string[]>>;
+    GetWorlds: (worldContainer: string) => Promise<Failable<World[]>>;
     GetVersions: (
       type: VersionType,
       useCache: boolean

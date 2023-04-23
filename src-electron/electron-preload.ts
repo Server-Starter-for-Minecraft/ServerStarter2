@@ -88,7 +88,8 @@ const api: FrontAPI = {
   sendOpenBrowser: send('OpenBrowser'),
   handleAgreeEula: handle('AgreeEula'),
   invokeRunServer: invoke('RunServer'),
-  invokeGetAllWorlds: invoke('GetAllWorlds'),
+  invokeGetWorldContainers: invoke('GetWorldContainers'),
+  invokeGetWorlds: invoke('GetWorlds'),
   invokeGetVersions: invoke('GetVersions'),
 };
 

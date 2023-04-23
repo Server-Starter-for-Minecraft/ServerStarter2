@@ -17,7 +17,7 @@ export type ForgeVersion = { id: string; type: 'forge'; forge_version: string };
 export type MohistmcVersion = {
   id: string;
   type: 'mohistmc';
-  forge_version: string | undefined;
+  forge_version?: string;
   number: Number;
 };
 export type FabricVersion = {
