@@ -13,12 +13,12 @@ export type VersionType = (typeof versionTypes)[number];
 export type VanillaVersion = { id: string; type: 'vanilla'; release: boolean };
 export type SpigotVersion = { id: string; type: 'spigot' };
 export type PapermcVersion = { id: string; type: 'papermc' };
-export type ForgeVersion = { id: string; type: 'forge' };
+export type ForgeVersion = { id: string; type: 'forge'; forge_version: string };
 export type MohistmcVersion = {
   id: string;
   type: 'mohistmc';
-  forge_version: string;
-  number:Number
+  forge_version: string | undefined;
+  number: Number;
 };
 export type FabricVersion = {
   id: string;

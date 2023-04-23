@@ -42,21 +42,24 @@ describe('vanillaVersion', async () => {
       //   release: true,
       // });
 
+      const versions = await forgeVersionLoader.getAllVersions();
+      new Path('forgeversions.json').writeText(JSON.stringify(versions));
+
       expect(1).toBe(1);
     },
     { timeout: 2 ** 31 - 1 }
   );
 });
 
-async function loadversion(loader: VersionLoader | undefined) {
-  if (loader === undefined) return;
+// async function loadversion(loader: VersionLoader | undefined) {
+//   if (loader === undefined) return;
 
-  const versions = await loader.getAllVersions();
+//   const versions = await loader.getAllVersions();
 
-  if (isFailure(versions)) return versions;
+//   if (isFailure(versions)) return versions;
 
-  for (let version of versions) {
-    const result = await loader.readyVersion(version);
-    console.log(isSuccess(result), version);
-  }
-}
+//   for (let version of versions) {
+//     const result = await loader.readyVersion(version);
+//     console.log(result, version);
+//   }
+// }

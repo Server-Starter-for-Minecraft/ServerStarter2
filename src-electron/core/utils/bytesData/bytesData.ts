@@ -10,6 +10,11 @@ export class BytesDataError extends Error {}
 
 const loggers = utilLoggers.child('BytesData');
 
+export type Hash = {
+  type: 'sha1' | 'md5';
+  value: string;
+};
+
 /** BlobやFile等のBytesデータのクラス */
 export class BytesData {
   data: ArrayBuffer;
@@ -19,7 +24,7 @@ export class BytesData {
 
   static async fromURL(
     url: string,
-    hash: string | undefined = undefined
+    hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromURL', { url, hash });
     logger.start();
@@ -39,8 +44,8 @@ export class BytesData {
         logger.success();
         return result;
       }
-      const calcHash = await result.sha1();
-      if (hash === calcHash) {
+      const calcHash = await result[hash.type]();
+      if (hash.value === calcHash) {
         logger.success();
         return result;
       }
@@ -56,7 +61,7 @@ export class BytesData {
 
   static async fromPath(
     path: string,
-    hash: string | undefined = undefined
+    hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromPath', { path, hash });
     logger.start();
@@ -68,8 +73,9 @@ export class BytesData {
         logger.success();
         return data;
       }
-      const calcHash = await data.sha1();
-      if (hash === calcHash) {
+
+      const calcHash = await data[hash.type]();
+      if (hash.value === calcHash) {
         logger.success();
         return data;
       }
@@ -115,7 +121,7 @@ export class BytesData {
   static async fromPathOrUrl(
     path: string,
     url: string,
-    hash: string | undefined = undefined,
+    hash: Hash | undefined = undefined,
     prioritizeUrl = true,
     updateLocal = true,
     compareHashOnFetch = true
@@ -172,6 +178,12 @@ export class BytesData {
     const sha1 = createHash('sha1');
     sha1.update(Buffer.from(this.data));
     return sha1.digest('hex');
+  }
+
+  async md5() {
+    const md5 = createHash('md5');
+    md5.update(Buffer.from(this.data));
+    return md5.digest('hex');
   }
 
   async text(encoding = 'utf-8'): Promise<string> {

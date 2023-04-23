@@ -111,10 +111,10 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
     // ハッシュ値をコンフィグから読み込む
     const sha1 = config.get('spigot_buildtool_sha1');
     if (sha1) {
-      buildtool = await BytesData.fromPath(
-        buildToolPath.absolute().str(),
-        sha1
-      );
+      buildtool = await BytesData.fromPath(buildToolPath.absolute().str(), {
+        type: 'sha1',
+        value: sha1,
+      });
     }
   }
 

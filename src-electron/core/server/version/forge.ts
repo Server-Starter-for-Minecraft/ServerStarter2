@@ -1,6 +1,6 @@
 import { ForgeVersion } from 'app/src-electron/api/scheme';
 import { VersionLoader } from './interface';
-import { Failable, isFailure } from '../../../api/failable';
+import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { Path } from '../../utils/path/path';
 import { getJavaComponent } from './vanilla';
 import { BytesData } from '../../utils/bytesData/bytesData';
@@ -51,11 +51,7 @@ export const forgeVersionLoader: VersionLoader = {
   },
 
   /** forgeのバージョンの一覧返す */
-  async getAllVersions() {
-    const ids = await getVersionIds();
-    if (isFailure(ids)) return ids;
-    return ids.map((id) => ({ id, release: true, type: 'forge' }));
-  },
+  getAllVersions: getAllForgeVersions,
 
   async defineLevelName(worldPath, serverCwdPath) {
     // サーバーのCWDからの相対パスでないと動かない
@@ -84,7 +80,6 @@ async function installForgeVersion(
 
   // インストーラーのダウンロードURLを取得
   const serverURL = await getForgeDownloadUrl(version);
-  if (isFailure(serverURL)) return serverURL;
 
   // インストーラーを取得
   const serverData = await BytesData.fromURL(serverURL);
@@ -130,7 +125,7 @@ async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
     }
   }
 
-  if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"' ];
+  if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"'];
 
   return new Error(
     `run.bat or run.sh or server jar file is needed in ${serverCwdPath.str()}`
@@ -204,33 +199,12 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   return await process;
 }
 
+/** forgeのjarのダウンロードパスを返す 存在検証はしない */
 export async function getForgeDownloadUrl(version: ForgeVersion) {
-  const PageURL =
-    'https://files.minecraftforge.net/net/minecraftforge/forge/index_' +
-    version.id +
-    '.html';
-  const Page = await BytesData.fromURL(PageURL);
-  if (isFailure(Page)) return Page;
-
-  const $ = cheerio.load(await Page.text());
-
-  const AdURL = $('a[title=Installer]').last().attr('href');
-
-  if (AdURL === undefined) {
-    console.log($('div.download a').length, version.id);
-    return new Error(`failed to fetch forge download URL (${version.id})`);
-  }
-
-  const match = AdURL.match(
-    /^https:\/\/adfoc.us\/serve\/sitelinks\/\?id=\d+&url=([a-z0-9:\/\._-]+)$/
-  );
-  if (!match) return new Error(`failed to parse forge download URL (${AdURL})`);
-
-  const serverURL = match[1];
-  return serverURL;
+  return `https://maven.minecraftforge.net/net/minecraftforge/forge/${version.id}-${version.forge_version}/forge-${version.id}-${version.forge_version}-installer.jar`;
 }
 
-export async function getVersionIds() {
+export async function getAllForgeVersions() {
   const indexPage = await BytesData.fromURL(ForgeURL);
 
   if (isFailure(indexPage)) return indexPage;
@@ -246,7 +220,59 @@ export async function getVersionIds() {
     console.group(path, match);
     if (match) ids.push(match[1]);
   });
-  console.log(ids);
 
-  return ids;
+  // 各バージョン後ごとの全ビルドを並列取得してflat化
+  const versions = (await Promise.all(ids.map(scrapeForgeVersions)))
+    .filter(isSuccess)
+    .flatMap((x) => x);
+
+  return versions;
+}
+
+const noInstallerVersionIds = new Set([
+  '1.5.1',
+  '1.5',
+  '1.4.7',
+  '1.4.6',
+  '1.4.5',
+  '1.4.4',
+  '1.4.3',
+  '1.4.2',
+  '1.4.1',
+  '1.4.0',
+  '1.3.2',
+  '1.2.5',
+  '1.2.4',
+  '1.2.3',
+  '1.1',
+]);
+
+export async function scrapeForgeVersions(
+  id: string
+): Promise<Failable<ForgeVersion[]>> {
+  if (noInstallerVersionIds.has(id))
+    return new Error(`forge ${id} installer is not provided`);
+
+  const versionUrl = `https://files.minecraftforge.net/net/minecraftforge/forge/index_${id}.html`;
+  const page = await BytesData.fromURL(versionUrl);
+  if (isFailure(page)) return page;
+
+  const forge_versions: string[] = [];
+
+  const $ = cheerio.load(await page.text());
+  $('tbody > tr > td.download-version').each((_, elem) => {
+    const element = $(elem);
+    // 子要素を消して直接のテキストだけを取得
+    element.children().remove();
+    const path = element.text();
+    if (typeof path === 'string') {
+      forge_versions.push(path.trim());
+    }
+  });
+
+  return forge_versions.map((forge_version) => ({
+    id,
+    forge_version,
+    type: 'forge',
+  }));
 }
