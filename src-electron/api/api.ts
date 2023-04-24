@@ -1,5 +1,5 @@
 import { Failable } from './failable';
-import { Version, VersionType, World } from './scheme';
+import { Version, VersionType, World, WorldSettings } from './scheme';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**
@@ -41,6 +41,7 @@ export interface API extends IAPI {
   };
   invokeWindowToMain: {
     RunServer: (world: World) => Promise<Failable<undefined>>;
+    GetDefaultSettings: () => Promise<Failable<WorldSettings>>;
     GetWorldContainers: () => Promise<Failable<string[]>>;
     GetWorlds: (worldContainer: string) => Promise<Failable<World[]>>;
     GetVersions: (
