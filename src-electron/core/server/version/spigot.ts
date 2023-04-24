@@ -18,14 +18,7 @@ export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
   readyVersion: readySpigotVersion,
 
   /** spigotのバージョンの一覧返す */
-  getAllVersions: genGetAllVersions("spigot", getSpigotVersions),
-
-  /** spigotのlwvwlNameと実行時引数を返す */
-  async defineLevelName(worldPath) {
-    const levelName = 'world';
-    const args = ['--world-container', worldPath.absolute().str()];
-    return { levelName, args };
-  },
+  getAllVersions: genGetAllVersions('spigot', getSpigotVersions),
 };
 
 /** spigotのバージョンを準備 */

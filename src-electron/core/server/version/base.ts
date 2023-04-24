@@ -4,7 +4,7 @@ import { JavaComponent } from './vanilla';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { versionsPath } from '../const';
 import { config } from '../../config';
-import { BytesData } from '../../utils/bytesData/bytesData';
+import { BytesData, Hash } from '../../utils/bytesData/bytesData';
 import { rootLoggers } from '../../logger';
 
 export const versionLoggers = rootLoggers.child('server').child('version');
@@ -25,10 +25,6 @@ export type VersionLoader<V extends Version> = {
    * - undefined 起動中にリモートから取得済みだったらローカルを使用(おそらく最新版) 初回だけ遅い
    */
   getAllVersions(useCache: boolean | undefined): Promise<Failable<V[]>>;
-
-  defineLevelName(
-    worldPath: Path
-  ): Promise<Failable<{ levelName: string; args: string[] }>>;
 };
 
 const allVersionsReloadedMap: { [key in VersionType]: boolean } = {

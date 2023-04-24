@@ -62,18 +62,6 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 
   /** バニラのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersions),
-
-  async defineLevelName(worldPath) {
-    const levelName = worldPath
-      .child('world')
-      .absolute()
-      .str()
-      .replaceAll('\\', '\\\\');
-    return {
-      levelName,
-      args: [],
-    };
-  },
 };
 
 async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
@@ -104,8 +92,7 @@ export async function getJavaComponent(id: string) {
 export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
-  const path = vanillaVersionsPath.child(id);
-  const jsonpath = path.child('vanilla-' + id + '.json');
+  const jsonpath = vanillaVersionsPath.child('vanilla-' + id + '.json');
   const manifest = await getVersionMainfest();
 
   // version manifestが取得できなかった場合

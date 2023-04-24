@@ -1,7 +1,7 @@
 import { World } from 'app/src-electron/api/scheme';
 import { getLog4jArg } from './log4j';
 import { isFailure } from '../../api/failable';
-import { defineLevelName, readyVersion } from './version/version';
+import { readyVersion } from './version/version';
 import { readyJava } from '../utils/java/java';
 import { unrollSettings } from './settings';
 import { interactiveProcess } from '../utils/subprocess';
@@ -55,6 +55,8 @@ let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
 //   await result;
 // }
+
+const LEVEL_NAME = 'world';
 
 /** サーバーを起動する */
 export async function runServer(world: World) {
@@ -112,18 +114,10 @@ export async function runServer(world: World) {
 
   // ワールドデータをダウンロード
 
-  // level-nameと実行時引数の決定
-  const levelnameResult = await defineLevelName(settings.version.type, cwdPath);
-  if (isFailure(levelnameResult)) return levelnameResult;
-  const { levelName, args: levelNameArgs } = levelnameResult;
-
-  // ワールドディレクトリ指定用の引数を実行時引数に追加
-  if (args) args.push(...levelNameArgs);
-
   api.send.UpdateStatus('設定ファイルの書き出し中');
 
   // 設定ファイルをサーバーCWD直下に書き出す
-  await unrollSettings(settings, levelName, cwdPath);
+  await unrollSettings(settings, LEVEL_NAME, cwdPath);
 
   api.send.UpdateStatus('Eulaの同意状況を確認中');
 

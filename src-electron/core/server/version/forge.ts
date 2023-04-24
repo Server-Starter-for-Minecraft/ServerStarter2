@@ -52,18 +52,6 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
 
   /** forgeのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('forge', getAllForgeVersions),
-
-  async defineLevelName(worldPath, serverCwdPath) {
-    // サーバーのCWDからの相対パスでないと動かない
-    const levelName = serverCwdPath
-      .relativeto(worldPath.child('world'))
-      .str()
-      .replaceAll('\\', '/');
-    return {
-      levelName,
-      args: [],
-    };
-  },
 };
 
 async function installForgeVersion(

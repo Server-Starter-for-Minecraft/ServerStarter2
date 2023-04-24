@@ -38,12 +38,3 @@ export async function getVersions(type: VersionType, useCache: boolean) {
   }
   return await loader.getAllVersions(useCache);
 }
-
-// LevelNameを取得する
-export async function defineLevelName(type: VersionType, worldPath: Path) {
-  const loader = versionLoaders[type];
-  if (!loader) {
-    throw new Error(`unknown version type ${type}`);
-  }
-  return await loader.defineLevelName(worldPath);
-}

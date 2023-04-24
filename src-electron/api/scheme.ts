@@ -24,7 +24,8 @@ export type FabricVersion = {
   id: string;
   type: 'fabric';
   release: boolean;
-  stable: boolean;
+  loader: string;
+  installer: string;
 };
 
 export type Version =

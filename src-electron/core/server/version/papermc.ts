@@ -53,18 +53,6 @@ export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
 
   /** papermcのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('papermc', getPapermcVersions),
-
-  async defineLevelName(worldPath) {
-    const levelName = worldPath
-      .child('world')
-      .absolute()
-      .str()
-      .replaceAll('\\', '\\\\');
-    return {
-      levelName,
-      args: [],
-    };
-  },
 };
 
 async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
