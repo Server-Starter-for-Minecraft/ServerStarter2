@@ -1,6 +1,8 @@
 import { ServerProperties, ServerProperty } from 'app/src-electron/api/schema';
 import { objEach, objMap } from '../../utils/objmap';
 
+// TODO:stringの値のescape/unescape
+
 const PORT_MAX = 2 ** 16 - 2;
 
 export const defaultServerProperties: ServerProperties = {
