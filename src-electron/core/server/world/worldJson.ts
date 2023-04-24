@@ -9,7 +9,7 @@ export type WorldSettingJson = {
 };
 
 export function getWorldJsonPath(cwd: Path) {
-  return cwd.child('serverstarter.json');
+  return cwd.child('server_settings.json');
 }
 
 export async function loadWorldJson(cwd: Path) {
