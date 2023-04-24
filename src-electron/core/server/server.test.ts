@@ -4,15 +4,10 @@ import { VersionLoader } from './version/base';
 import { isFailure, isSuccess } from 'src-electron/api/failable';
 import { runServer } from './server';
 import { Path } from '../utils/path/path';
-import { versionsPath } from './const';
+import { versionsCachePath } from './const';
 import { getWorlds } from './world/world';
 import { setBackAPI } from '../api';
 import { userDataPath } from '../userDataPath';
-import readline from 'readline';
-
-async function input(msg: string, readinterface: readline.Interface) {
-  return new Promise<string>((resolve) => readinterface.question(msg, resolve));
-}
 
 setBackAPI({
   invoke: {

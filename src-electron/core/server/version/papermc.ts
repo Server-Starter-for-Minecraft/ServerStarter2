@@ -2,11 +2,11 @@ import { PapermcVersion } from 'app/src-electron/api/scheme';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent } from './vanilla';
-import { versionsPath } from '../const';
+import { versionsCachePath } from '../const';
 import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
 
-const papermcVersionsPath = versionsPath.child('papermc');
+const papermcVersionsPath = versionsCachePath.child('papermc');
 
 type PapermcVersions = {
   project_id: 'paper';

@@ -4,14 +4,14 @@ import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { JavaComponent, getJavaComponent } from './vanilla';
 import { config } from '../../config';
-import { spigotBuildPath, versionsPath } from '../const';
+import { spigotBuildPath, versionsCachePath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../utils/subprocess';
 import { readyJava } from '../../utils/java/java';
 import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
 import { getVersionMainfest } from './mainfest';
 
-const spigotVersionsPath = versionsPath.child('spigot');
+const spigotVersionsPath = versionsCachePath.child('spigot');
 
 export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
   /** spigotのサーバーデータを必要があればダウンロード */

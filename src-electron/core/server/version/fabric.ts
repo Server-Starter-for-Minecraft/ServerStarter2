@@ -2,11 +2,11 @@ import { FabricVersion } from 'app/src-electron/api/scheme';
 import { isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';
-import { versionsPath } from '../const';
+import { versionsCachePath } from '../const';
 import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
 
-const fabricVersionsPath = versionsPath.child('fabric');
+const fabricVersionsPath = versionsCachePath.child('fabric');
 
 export const fabricVersionLoader: VersionLoader<FabricVersion> = {
   /** fabricのサーバーデータを必要に応じてダウンロード */

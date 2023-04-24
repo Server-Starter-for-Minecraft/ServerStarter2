@@ -2,10 +2,12 @@ import { userDataPath } from '../userDataPath';
 
 export const mainPath = userDataPath;
 
-export const runtimePath = mainPath.child('bin/runtime');
-export const versionsPath = mainPath.child('versions');
+export const cachePath = mainPath.child('cache');
 
-export const versionManifestPath = versionsPath.child(
+export const runtimePath = mainPath.child('bin/runtime');
+export const versionsCachePath = cachePath.child('versions');
+
+export const versionManifestPath = versionsCachePath.child(
   'vanilla/version_manifest_v2.json'
 );
 

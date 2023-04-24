@@ -2,7 +2,7 @@ import { Version, VersionType } from 'app/src-electron/api/scheme';
 import { Path } from '../../utils/path/path';
 import { JavaComponent } from './vanilla';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
-import { versionsPath } from '../const';
+import { versionsCachePath } from '../const';
 import { config } from '../../config';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { rootLoggers } from '../../logger';
@@ -52,7 +52,7 @@ export const genGetAllVersions = <V extends Version>(
     });
     logger.start();
 
-    const jsonpath = versionsPath.child(`${type}/${type}-all.json`);
+    const jsonpath = versionsCachePath.child(`${type}/${type}-all.json`);
     const configkey = `versions_sha1.${type}`;
 
     if (useCache) {

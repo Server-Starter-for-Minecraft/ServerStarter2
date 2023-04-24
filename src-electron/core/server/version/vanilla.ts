@@ -2,11 +2,11 @@ import { VanillaVersion } from 'app/src-electron/api/scheme';
 import { getVersionMainfest } from './mainfest';
 import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
-import { versionsPath } from '../const';
+import { versionsCachePath } from '../const';
 import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
 
-const vanillaVersionsPath = versionsPath.child('vanilla');
+const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
 export type JavaComponent =
   | 'java-runtime-alpha'

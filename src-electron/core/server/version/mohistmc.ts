@@ -2,11 +2,11 @@ import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
 import { MohistmcVersion } from 'app/src-electron/api/scheme';
-import { versionsPath } from '../const';
+import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../utils/path/path';
 
-const papermcVersionsPath = versionsPath.child('mohistmc');
+const papermcVersionsPath = versionsCachePath.child('mohistmc');
 
 export const mohistmcVersionLoader: VersionLoader<MohistmcVersion> = {
   readyVersion: readyMohistmcVersion,

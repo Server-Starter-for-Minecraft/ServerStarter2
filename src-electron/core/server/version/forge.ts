@@ -5,12 +5,12 @@ import { Path } from '../../utils/path/path';
 import { getJavaComponent } from './vanilla';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import * as cheerio from 'cheerio';
-import { versionsPath } from '../const';
+import { versionsCachePath } from '../const';
 import { interactiveProcess } from '../../utils/subprocess';
 import { readyJava } from '../../utils/java/java';
 import { osPlatform } from '../../utils/os/os';
 
-const forgeVersionsPath = versionsPath.child('forge');
+const forgeVersionsPath = versionsCachePath.child('forge');
 
 const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
 
