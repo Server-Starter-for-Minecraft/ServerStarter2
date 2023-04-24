@@ -13,7 +13,7 @@ function setfirstProperty() {
   if (store.world.settings?.properties === void 0) { return _defaultServerProperties }
   
   for (const key in store.world.settings.properties) {
-    _defaultServerProperties[key] = store.world.settings.properties[key] as unknown
+    _defaultServerProperties[key] = store.world.settings.properties[key]
   }
   // return 
   return defaultServerProperties
@@ -25,6 +25,7 @@ const cols = [
     name: 'name',
     required: true,
     label: 'プロパティ名',
+    field: 'name',
     sortable: true
   },
   {
@@ -32,10 +33,9 @@ const cols = [
     label: '値',
     field: 'value',
     style: {width: '200px'},
-    sortable: true
   },
 ]
-const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { name: k, value: v } })
+const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { name: k, value: v.value } })
 </script>
 
 <template>

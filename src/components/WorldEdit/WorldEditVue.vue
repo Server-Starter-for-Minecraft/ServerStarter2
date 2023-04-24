@@ -11,17 +11,23 @@ interface Props {
 }
 defineProps<Props>();
 
+const store = useWorldEditStore();
+const versionList = ref([] as Version[]);
+
 async function updateVersionList() {
-  await window.API.invokeGetVersions(store.world.settings.version.type).then(
+  // TODO: useCache = true で良いのか確認
+  await window.API.invokeGetVersions(store.world.version.type, true).then(
     (res) => {
       checkError(res, (checked) => (versionList.value = checked));
     }
   );
+
+  // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
+  const storeWorldID = store.world.version.id
+  if (storeWorldID == '' || versionList.value.every(ver => ver.id != storeWorldID))
+    store.world.version.id = versionList.value[0].id
 }
 onBeforeMount(updateVersionList);
-
-const store = useWorldEditStore();
-const versionList = ref([] as Version[]);
 </script>
 
 <template>
@@ -41,7 +47,7 @@ const versionList = ref([] as Version[]);
     <propertyItem propName="version">
       <template v-slot:userInput>
         <q-select
-          v-model="store.world.settings.version.type"
+          v-model="store.world.version.type"
           :options="versionTypes"
           @update:model-value="updateVersionList"
           label="サーバー"
@@ -49,7 +55,7 @@ const versionList = ref([] as Version[]);
           class="q-pr-lg"
         />
         <q-select
-          v-model="store.world.settings.version.id"
+          v-model="store.world.version.id"
           :options="versionList.map((ver) => ver.id)"
           label="バージョン"
           style="width: 150px"
