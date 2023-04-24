@@ -5,6 +5,7 @@ import { getVersions } from '../server/version/version';
 import { getWorlds } from '../server/world/world';
 import { openBrowser } from '../utils/openBrowser';
 import { getWorldContainers } from '../server/worldContainer';
+import { getDefaultSettings } from '../server/settings/settings';
 
 export const backListener: BackListener<API> = {
   on: {
@@ -13,6 +14,7 @@ export const backListener: BackListener<API> = {
   },
   handle: {
     RunServer: runServer,
+    GetDefaultSettings: getDefaultSettings,
     GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,
     GetWorlds: getWorlds,

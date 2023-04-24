@@ -1,6 +1,7 @@
 import { WorldSettings } from 'app/src-electron/api/schema';
 import {
   defaultServerProperties,
+  mergeServerProperties,
   stringifyServerProperties,
 } from './properties';
 import { Path } from '../../utils/path/path';
@@ -20,6 +21,18 @@ export async function unrollSettings(
   serverCwdPath.child('server.properties').writeText(strprop);
 }
 
+// Javaの-Xmx,-Xmsのデフォルト値(Gb)
+const DEFAULT_JAVA_HEAP_SIZE = 2;
+
 export async function getDefaultSettings(): Promise<WorldSettings> {
-  return serverStarterSetting.get('default_settings');
+  const settings = serverStarterSetting.get('default_settings');
+
+  const properties = mergeServerProperties(
+    defaultServerProperties,
+    settings?.properties ?? {}
+  );
+
+  const memory = settings?.memory ?? DEFAULT_JAVA_HEAP_SIZE;
+
+  return { properties, memory };
 }
