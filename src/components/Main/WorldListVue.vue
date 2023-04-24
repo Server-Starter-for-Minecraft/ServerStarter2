@@ -3,9 +3,12 @@ import { ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import worldVue from 'app/src/components/Main/WorldVue.vue';
 
+const store = useMainStore()
+
 const text = ref('');
 const sortType = ref('名前');
 const sortTypes = ['名前', '最終プレイ'];
+const hasWorldData = store.showWorldList('').length !== 0
 </script>
 
 <template>
@@ -41,7 +44,7 @@ const sortTypes = ['名前', '最終プレイ'];
   <q-separator class="q-mx-md"/>
   
   <q-virtual-scroll
-    :items="useMainStore().showWorldList(text)"
+    :items="store.showWorldList(text)"
     separator
     v-slot="{ item, index }"
     class="q-pa-sm mainField fit"
@@ -50,7 +53,11 @@ const sortTypes = ['名前', '最終プレイ'];
   >
     <world-vue :world="item" :idx="index" />
   </q-virtual-scroll>
-  <div v-show="useMainStore().showWorldList(text).length == 0" class="col row justify-center items-center">
-    <p class="q-pa-none">おや？ お探しのワールドは存在しないようです</p>
+  <div v-show="store.showWorldList(text).length == 0" class="col row justify-center items-center">
+    <p v-show="hasWorldData" class="q-pa-none">おや？ お探しのワールドは存在しないようです</p>
+    <div v-show="!hasWorldData">
+      <p class="q-pa-none text-center">むむ？ ワールドデータが存在しないようです</p>
+      <p class="q-pa-none text-center">「新規作成」よりワールドデータを作成しましょう！</p>
+    </div>
   </div>
 </template>

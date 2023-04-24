@@ -24,7 +24,7 @@ const goProgress = async () => {
 async function runServer() {
   await goProgress();
   mainStore.setHeader(prop.world.name, {
-    subTitle: prop.world.settings.version.id,
+    subTitle: prop.world.version.id,
     sideText: `IP. ${systemStore.publicIP}`,
   });
 
@@ -62,7 +62,7 @@ function worldEdit() {
       @mouseleave="runBtnHovered = false"
     >
       <q-avatar square size="9vmin">
-        <q-img :src="world.settings.avater_path" :ratio="1" />
+        <q-img :src="world.avater_path" :ratio="1" />
         <q-btn
           v-show="clicked || runBtnHovered"
           @click="runServer"
@@ -78,7 +78,7 @@ function worldEdit() {
     <q-item-section>
       <div>
         <p class="worldName">{{ world.name }}</p>
-        <p class="versionName">{{ world.settings.version.id }}</p>
+        <p class="versionName">{{ world.version.id }}</p>
       </div>
     </q-item-section>
     <q-item-section side v-show="clicked || itemHovered">

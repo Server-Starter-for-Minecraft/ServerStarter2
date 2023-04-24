@@ -4,18 +4,18 @@ import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import WorldEditPage from '../components/WorldEdit/WorldEditVue.vue';
 
 useMainStore().setHeader('新規ワールド', {showMenuBtn: true});
+// TODO: 新規ワールドにおけるcontainerは？
+// idは '' を渡すことで最新バージョンをデフォルトで提示する
 useWorldEditStore().world = {
   name: '',
-  settings: {
-    version: {
-      id: '1.19.2',
-      type: 'vanilla',
-      release: true
-    }
+  version: {
+    id: '',
+    type: 'vanilla',
+    release: true
   },
-  datapacks: [],
-  plugins: [],
-  mods: []
+  container: '',
+  settings: {},
+  additional: {}
 }
 
 async function saveFunc() {
