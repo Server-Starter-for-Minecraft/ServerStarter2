@@ -46,7 +46,6 @@ async function readySpigotVersion(
 
   return {
     programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
-    serverCwdPath,
     component,
   };
 }

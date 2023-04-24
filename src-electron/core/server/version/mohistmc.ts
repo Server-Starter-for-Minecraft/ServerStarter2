@@ -33,7 +33,6 @@ async function readyMohistmcVersion(
 
   return {
     programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
-    serverCwdPath,
     component,
   };
 }
