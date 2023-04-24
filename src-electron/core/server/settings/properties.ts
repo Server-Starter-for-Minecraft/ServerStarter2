@@ -1,171 +1,189 @@
-import { ServerProperties } from 'app/src-electron/api/schema';
+import { ServerProperties, ServerProperty } from 'app/src-electron/api/schema';
+
+const PORT_MAX = 2 ** 16 - 2;
 
 export const defaultServerProperties: ServerProperties = {
-  'allow-flight': false,
-  'allow-nether': true,
-  'broadcast-console-to-ops': true,
-  'broadcast-rcon-to-ops': true,
-  difficulty: 'easy',
-  'enable-command-block': false,
-  'enable-jmx-monitoring': false,
-  'enable-rcon': false,
-  'enable-status': true,
-  'enable-query': false,
-  'enforce-secure-profile': true,
-  'enforce-whitelist': false,
-  'entity-broadcast-range-percentage': 100,
-  'force-gamemode': false,
-  'function-permission-level': 2,
-  gamemode: 'survival',
-  'generate-structures': true,
-  'generator-settings': '{}',
-  hardcore: false,
-  'hide-online-players': false,
-  'initial-disabled-packs': '',
-  'initial-enabled-packs': 'vanilla',
-  'level-name': '',
-  'level-seed': '',
-  'level-type': 'normal',
-  'max-chained-neighbor-updates': 1000000,
-  'max-players': 20,
-  'max-tick-time': 60000,
-  'max-world-size': 29999984,
-  motd: 'A Minecraft Server',
-  'network-compression-threshold': 256,
-  'online-mode': true,
-  'op-permission-level': 4,
-  'player-idle-timeout': 0,
-  'prevent-proxy-connections': false,
-  'previews-chat': false,
-  pvp: true,
-  'query.port': 25565,
-  'rate-limit': 0,
-  'rcon.password': '',
-  'rcon.port': 25575,
-  'resource-pack': '',
-  'resource-pack-prompt': '',
-  'resource-pack-sha1': '',
-  'require-resource-pack': false,
-  'server-ip': '',
-  'server-port': 25565,
-  'simulation-distance': 10,
-  'snooper-enabled': true,
-  'spawn-animals': true,
-  'spawn-monsters': true,
-  'spawn-npcs': true,
-  'spawn-protection': 16,
-  'sync-chunk-writes': true,
-  'text-filtering-config': '',
-  'use-native-transport': true,
-  'view-distance': 10,
-  'white-list': false,
+  'allow-flight': { type: 'boolean', value: false },
+
+  'allow-nether': { type: 'boolean', value: true },
+
+  'broadcast-console-to-ops': { type: 'boolean', value: true },
+
+  'broadcast-rcon-to-ops': { type: 'boolean', value: true },
+
+  difficulty: {
+    type: 'string',
+    value: 'easy',
+    enum: ['peaceful', 'easy', 'normal', 'hard'],
+  },
+
+  'enable-command-block': { type: 'boolean', value: false },
+
+  'enable-jmx-monitoring': { type: 'boolean', value: false },
+
+  'enable-rcon': { type: 'boolean', value: false },
+
+  'enable-status': { type: 'boolean', value: true },
+
+  'enable-query': { type: 'boolean', value: false },
+
+  'enforce-secure-profile': { type: 'boolean', value: true },
+
+  'enforce-whitelist': { type: 'boolean', value: false },
+
+  'entity-broadcast-range-percentage': {
+    type: 'number',
+    value: 100,
+    min: 0,
+    max: 500,
+  },
+
+  'force-gamemode': { type: 'boolean', value: false },
+
+  'function-permission-level': { type: 'number', value: 2, min: 1, max: 4 },
+
+  gamemode: {
+    type: 'string',
+    value: 'survival',
+    enum: ['survival', 'creative', 'adventure', 'spectator'],
+  },
+
+  'generate-structures': { type: 'boolean', value: true },
+
+  'generator-settings': { type: 'string', value: '{}' },
+
+  hardcore: { type: 'boolean', value: false },
+
+  'hide-online-players': { type: 'boolean', value: false },
+
+  'initial-disabled-packs': { type: 'string', value: '' },
+
+  'initial-enabled-packs': { type: 'string', value: 'vanilla' },
+
+  'level-name': { type: 'string', value: '' },
+
+  'level-seed': { type: 'string', value: '' },
+
+  'level-type': {
+    type: 'string',
+    value: 'normal',
+    enum: ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
+  },
+
+  // legacy?
+  'max-build-height': { type: 'number', value: 256, step: 8 },
+
+  'max-chained-neighbor-updates': { type: 'number', value: 1000000 },
+
+  'max-players': { type: 'number', value: 20, min: 0, max: 2 ** 31 - 1 },
+
+  'max-tick-time': { type: 'number', value: 60000, min: 0, max: 2 ** 63 - 1 },
+
+  'max-world-size': { type: 'number', value: 29999984, min: 1, max: 29999984 },
+
+  motd: { type: 'string', value: 'A Minecraft Server' },
+
+  'network-compression-threshold': { type: 'number', value: 256, min: -1 },
+
+  'online-mode': { type: 'boolean', value: true },
+
+  'op-permission-level': { type: 'number', value: 4, min: 1, max: 4 },
+
+  'player-idle-timeout': { type: 'number', value: 0, min: 0 },
+
+  'prevent-proxy-connections': { type: 'boolean', value: false },
+
+  'previews-chat': { type: 'boolean', value: false },
+
+  pvp: { type: 'boolean', value: true },
+
+  'query.port': { type: 'number', value: 25565, min: 1, max: PORT_MAX },
+
+  'rate-limit': { type: 'number', value: 0, min: 0 },
+
+  'rcon.password': { type: 'string', value: '' },
+
+  'rcon.port': { type: 'number', value: 25575, min: 1, max: PORT_MAX },
+
+  'resource-pack': { type: 'string', value: '' },
+
+  'resource-pack-prompt': { type: 'string', value: '' },
+
+  'resource-pack-sha1': { type: 'string', value: '' },
+
+  'require-resource-pack': { type: 'boolean', value: false },
+
+  'server-ip': { type: 'string', value: '' },
+
+  'server-port': { type: 'number', value: 25565, min: 1, max: PORT_MAX },
+
+  'simulation-distance': { type: 'number', value: 10, min: 3, max: 32 },
+
+  'snooper-enabled': { type: 'boolean', value: true },
+
+  'spawn-animals': { type: 'boolean', value: true },
+
+  'spawn-monsters': { type: 'boolean', value: true },
+
+  'spawn-npcs': { type: 'boolean', value: true },
+
+  'spawn-protection': { type: 'number', value: 16, min: 0 },
+
+  'sync-chunk-writes': { type: 'boolean', value: true },
+
+  'text-filtering-config': { type: 'string', value: '' },
+
+  'use-native-transport': { type: 'boolean', value: true },
+
+  'view-distance': { type: 'number', value: 10, min: 2, max: 32 },
+
+  'white-list': { type: 'boolean', value: false },
 };
 
-type Keys<T, U> = {
-  [K in keyof T]: T[K] extends U | undefined ? K : never;
-}[keyof T];
+// {value:
+// typ} Keys<T, U> = {
+//   [K in keyof T]: T[K] extends U | undefined ? K : never;
+// }[keyof T];
 
-type SetKeys<T, U> = Set<Keys<T, U>>;
-
-const boolean_keys: SetKeys<ServerProperties, boolean> = new Set([
-  'allow-flight',
-  'allow-nether',
-  'broadcast-console-to-ops',
-  'broadcast-rcon-to-ops',
-  'enable-command-block',
-  'enable-jmx-monitoring',
-  'enable-rcon',
-  'enable-status',
-  'enable-query',
-  'enforce-secure-profile',
-  'enforce-whitelist',
-  'force-gamemode',
-  'generate-structures',
-  'hardcore',
-  'hide-online-players',
-  'online-mode',
-  'prevent-proxy-connections',
-  'previews-chat',
-  'pvp',
-  'require-resource-pack',
-  'snooper-enabled',
-  'spawn-animals',
-  'spawn-monsters',
-  'spawn-npcs',
-  'sync-chunk-writes',
-  'use-native-transport',
-  'white-list',
-]);
-
-const number_keys: SetKeys<ServerProperties, number> = new Set([
-  'entity-broadcast-range-percentage',
-  'function-permission-level',
-  'max-chained-neighbor-updates',
-  'max-players',
-  'max-tick-time',
-  'max-world-size',
-  'network-compression-threshold',
-  'op-permission-level',
-  'player-idle-timeout',
-  'query.port',
-  'rate-limit',
-  'rcon.port',
-  'server-port',
-  'simulation-distance',
-  'spawn-protection',
-  'view-distance',
-]);
-
-const string_keys: SetKeys<ServerProperties, string> = new Set([
-  'difficulty',
-  'gamemode',
-  'generator-settings',
-  'initial-disabled-packs',
-  'initial-enabled-packs',
-  'level-name',
-  'level-seed',
-  'level-type',
-  'motd',
-  'rcon.password',
-  'resource-pack',
-  'resource-pack-prompt',
-  'resource-pack-sha1',
-  'text-filtering-config',
-  'server-ip',
-]);
+// type SetKeys<T, U> = Set<Keys<T, U>>;
 
 export const parseServerProperties = (text: string) => {
   const propertiy: ServerProperties = {};
   text.split('\n').forEach((v) => {
     const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
-    if (match) {
-      const [key, value] = match;
+    if (!match) return;
 
-      // boolean
-      if (haskeys(boolean_keys, key)) {
-        propertiy[key] = value === 'true';
-      }
+    const [key, value] = match;
 
-      // number
-      else if (haskeys(number_keys, key)) {
-        propertiy[key] = Number.parseInt(value) as any;
-      }
+    const defult = defaultServerProperties[key];
 
-      // string
-      else if (haskeys(string_keys, key)) {
-        propertiy[key] = value as any;
+    let prop: ServerProperty;
+
+    if (defult !== undefined) {
+      // 既知のサーバープロパティの場合
+      switch (defult.type) {
+        case 'string':
+          prop = { ...defult, value };
+          break;
+        case 'boolean':
+          prop = { ...defult, value: value.toLowerCase() === 'true' };
+          break;
+        case 'number':
+          prop = { ...defult, value: Number.parseInt(value) };
+          break;
       }
+    } else {
+      // 未知のサーバープロパティの場合
+      prop = { type: 'string', value };
     }
+
+    propertiy[key] = prop;
   });
   return propertiy;
 };
 
-function haskeys<T>(set: Set<T>, key: string): key is Extract<T, string> {
-  return set.has(key as T & string);
-}
-
 export const stringifyServerProperties = (properties: ServerProperties) => {
   return Object.entries(properties)
-    .map(([k, v]) => `${k}=${v}`)
+    .map(([k, v]) => `${k}=${v.value}`)
     .join('\n');
 };
