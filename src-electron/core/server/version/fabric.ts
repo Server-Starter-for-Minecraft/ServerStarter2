@@ -44,7 +44,7 @@ async function readyVersion(version: FabricVersion, cwdPath: Path) {
   if (isFailure(javaComponent)) return javaComponent;
 
   return {
-    programArguments: [],
+    programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
     component: javaComponent,
   };
 }
