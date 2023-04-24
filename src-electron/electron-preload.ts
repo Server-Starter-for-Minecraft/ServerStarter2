@@ -97,7 +97,8 @@ const api: FrontAPI = {
   invokeRunServer: invoke('RunServer'),
   invokeGetDefaultSettings: invoke('GetDefaultSettings'),
   invokeGetWorldContainers: invoke('GetWorldContainers'),
-  invokeGetWorlds: invoke('GetWorlds'),
+  invokeGetWorldAbbrs: invoke('GetWorldAbbrs'),
+  invokeGetWorld: invoke('GetWorld'),
   invokeGetVersions: invoke('GetVersions'),
 };
 

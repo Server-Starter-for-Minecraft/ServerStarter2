@@ -41,7 +41,6 @@ export type GitRemote = {
   owner: string;
   repo: string;
   branch: string;
-  new: boolean;
 };
 export type Remote = GitRemote;
 
@@ -114,6 +113,17 @@ export type WorldSettings = {
 
   /** 使用メモリ量 (Gb) */
   memory?: number;
+};
+
+export type WorldAbbr = {
+  /** ワールド名 */
+  name: string;
+
+  /** ディレクトリ */
+  container: string;
+
+  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+  avater_path?: string;
 };
 
 export type World = {

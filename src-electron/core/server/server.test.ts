@@ -5,7 +5,7 @@ import { isFailure, isSuccess } from 'src-electron/api/failable';
 import { runServer } from './server';
 import { Path } from '../utils/path/path';
 import { versionsCachePath } from './const';
-import { getWorlds } from './world/world';
+import { getWorldAbbrs } from './world/world';
 import { setBackAPI } from '../api';
 import { userDataPath } from '../userDataPath';
 
@@ -41,7 +41,7 @@ describe('vanillaVersion', async () => {
   test(
     '',
     async () => {
-      console.log(await runServer(demoWorld));
+      // console.log(await runServer(demoWorld));
 
       expect(1).toBe(1);
     },
