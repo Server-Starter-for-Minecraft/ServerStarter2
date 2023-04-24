@@ -3,7 +3,7 @@ import {
   VersionType,
   World,
   WorldSettings,
-} from 'app/src-electron/api/scheme';
+} from 'app/src-electron/api/schema';
 import { sleep } from '../utils/testTools';
 import { api } from 'app/src-electron/core/api';
 import { Failable } from '../../api/failable';

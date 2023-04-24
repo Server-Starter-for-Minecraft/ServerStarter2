@@ -1,4 +1,4 @@
-import { Version, VersionType } from 'app/src-electron/api/scheme';
+import { Version, VersionType } from 'app/src-electron/api/schema';
 import { vanillaVersionLoader } from './vanilla';
 import { VersionLoader } from './base';
 import { spigotVersionLoader } from './spigot';

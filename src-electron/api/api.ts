@@ -1,5 +1,5 @@
 import { Failable } from './failable';
-import { Version, VersionType, World, WorldSettings } from './scheme';
+import { Version, VersionType, World, WorldSettings } from './schema';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**

@@ -1,4 +1,4 @@
-import { PapermcVersion } from 'app/src-electron/api/scheme';
+import { PapermcVersion } from 'app/src-electron/api/schema';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent } from './vanilla';

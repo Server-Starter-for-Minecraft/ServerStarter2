@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { VersionType } from '../api/scheme';
+import { VersionType } from '../api/schema';
 import { userDataPath } from './userDataPath';
 
 export type Config = {

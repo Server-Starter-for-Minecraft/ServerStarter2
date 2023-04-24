@@ -1,5 +1,5 @@
 import { Failable } from 'app/src-electron/api/failable';
-import { World, WorldSettings } from 'app/src-electron/api/scheme';
+import { World, WorldSettings } from 'app/src-electron/api/schema';
 import { userDataPath } from '../../userDataPath';
 
 export async function getWorlds(

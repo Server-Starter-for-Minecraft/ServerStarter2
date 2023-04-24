@@ -1,7 +1,7 @@
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
-import { MohistmcVersion } from 'app/src-electron/api/scheme';
+import { MohistmcVersion } from 'app/src-electron/api/schema';
 import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../utils/path/path';

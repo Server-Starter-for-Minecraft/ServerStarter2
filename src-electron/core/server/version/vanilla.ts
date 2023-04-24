@@ -1,4 +1,4 @@
-import { VanillaVersion } from 'app/src-electron/api/scheme';
+import { VanillaVersion } from 'app/src-electron/api/schema';
 import { getVersionMainfest } from './mainfest';
 import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';

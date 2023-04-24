@@ -1,4 +1,4 @@
-import { Version } from 'app/src-electron/api/scheme';
+import { Version } from 'app/src-electron/api/schema';
 import { Path } from '../utils/path/path';
 import { BytesData } from '../utils/bytesData/bytesData';
 import { Failable, isFailure } from '../../api/failable';

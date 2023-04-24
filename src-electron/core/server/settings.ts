@@ -1,4 +1,4 @@
-import { WorldSettings } from 'app/src-electron/api/scheme';
+import { WorldSettings } from 'app/src-electron/api/schema';
 import {
   defaultServerProperties,
   stringifyServerProperties,

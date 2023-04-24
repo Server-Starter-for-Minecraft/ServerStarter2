@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/api/scheme';
+import { World } from 'app/src-electron/api/schema';
 import { defineStore } from 'pinia';
 
 export const useMainStore = defineStore('mainStore', {
@@ -10,21 +10,24 @@ export const useMainStore = defineStore('mainStore', {
       sideText: '',
       showMenuBtn: false,
       rightDrawerOpen: false,
-      worldList: [] as World[]
-    }
+      worldList: [] as World[],
+    };
   },
   actions: {
-    setHeader(title: string, { subTitle = '', sideText = '', showMenuBtn = false }) {
-      this.mainTitle = title
-      this.subTitle = subTitle
-      this.sideText = sideText
-      this.showMenuBtn = showMenuBtn
+    setHeader(
+      title: string,
+      { subTitle = '', sideText = '', showMenuBtn = false }
+    ) {
+      this.mainTitle = title;
+      this.subTitle = subTitle;
+      this.sideText = sideText;
+      this.showMenuBtn = showMenuBtn;
     },
     showWorldList(text: string) {
       if (text !== '') {
-        return this.worldList.filter(world => world.name.match(text))
+        return this.worldList.filter((world) => world.name.match(text));
       }
-      return this.worldList
-    }
-  }
-})
+      return this.worldList;
+    },
+  },
+});

@@ -1,4 +1,4 @@
-import { SpigotVersion } from 'app/src-electron/api/scheme';
+import { SpigotVersion } from 'app/src-electron/api/schema';
 import { Path } from '../../utils/path/path';
 import { Failable, isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';

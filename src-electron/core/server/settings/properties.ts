@@ -1,4 +1,4 @@
-import { ServerProperties } from 'app/src-electron/api/scheme';
+import { ServerProperties } from 'app/src-electron/api/schema';
 
 export const defaultServerProperties: ServerProperties = {
   'allow-flight': false,
@@ -160,7 +160,7 @@ export const parseServerProperties = (text: string) => {
   return propertiy;
 };
 
-function haskeys<T>(set: Set<T>, key: string): key is Extract<T,string> {
+function haskeys<T>(set: Set<T>, key: string): key is Extract<T, string> {
   return set.has(key as T & string);
 }
 
