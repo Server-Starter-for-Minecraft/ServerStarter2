@@ -86,17 +86,17 @@ export class Path {
   }
 
   async read(): Promise<Failable<BytesData>> {
-    return await BytesData.fromPath(this.path);
+    return await BytesData.fromPath(this);
   }
 
   async readJson<T>(): Promise<Failable<T>> {
-    const data = await BytesData.fromPath(this.path);
+    const data = await BytesData.fromPath(this);
     if (isFailure(data)) return data;
     return await data.json();
   }
 
   async readText(): Promise<Failable<string>> {
-    const data = await BytesData.fromPath(this.path);
+    const data = await BytesData.fromPath(this);
     if (isFailure(data)) return data;
     return await data.text();
   }

@@ -8,6 +8,11 @@ import { versionsPath } from './const';
 import { getWorlds } from './world/world';
 import { setBackAPI } from '../api';
 import { userDataPath } from '../userDataPath';
+import readline from 'readline';
+
+async function input(msg: string, readinterface: readline.Interface) {
+  return new Promise<string>((resolve) => readinterface.question(msg, resolve));
+}
 
 setBackAPI({
   invoke: {
@@ -28,7 +33,7 @@ const demoWorld: World = {
     avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
     version: {
       type: 'papermc',
-      build: 100,
+      build: 178,
       id: '1.19.2',
     },
   },
