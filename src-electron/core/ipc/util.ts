@@ -16,18 +16,19 @@ export const ipcSend = <C extends string>(
   ...args: any[]
 ) => window.webContents.send(channel, ...args);
 
-export async function ipcInvoke<C extends string, T>(
+export function ipcInvoke<C extends string, T>(
   window: BrowserWindow,
   channel: C,
   ...args: any[]
 ) {
-  return await new Promise<T>((resolve) => {
+  return new Promise<T>((resolve) => {
+    const sendId = crypto.randomUUID();
     ipcMain.on(
-      '__handle_' + channel,
-      (_: Electron.IpcMainEvent, result: any) => {
-        resolve(result);
+      'handle:' + channel,
+      (_: Electron.IpcMainEvent, result: any, resultId: string) => {
+        if (sendId === resultId) resolve(result);
       }
     );
-    window.webContents.send(channel, ...args);
+    window.webContents.send(channel, sendId, ...args);
   });
 }
