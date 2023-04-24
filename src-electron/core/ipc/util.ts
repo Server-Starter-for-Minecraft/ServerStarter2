@@ -23,12 +23,19 @@ export function ipcInvoke<C extends string, T>(
 ) {
   return new Promise<T>((resolve) => {
     const sendId = crypto.randomUUID();
-    ipcMain.on(
-      'handle:' + channel,
-      (_: Electron.IpcMainEvent, result: any, resultId: string) => {
-        if (sendId === resultId) resolve(result);
+    const handleChannel = 'handle:' + channel;
+    const listener = (
+      _: Electron.IpcMainEvent,
+      result: any,
+      resultId: string
+    ) => {
+      if (sendId === resultId) {
+        ipcMain.removeListener(handleChannel, listener);
+        resolve(result);
       }
-    );
+    };
+
+    ipcMain.on(handleChannel, listener);
     window.webContents.send(channel, sendId, ...args);
   });
 }
