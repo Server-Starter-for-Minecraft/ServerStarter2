@@ -61,7 +61,6 @@ const LEVEL_NAME = 'world';
 /** サーバーを起動する */
 export async function runServer(world: World) {
   const cwdPath = new Path(world.container).child(world.name);
-
   const settings = world.settings;
 
   // java実行時引数(ここから増える)

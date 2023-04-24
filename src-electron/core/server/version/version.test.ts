@@ -32,11 +32,11 @@ describe('vanillaVersion', async () => {
 
       // (await Promise.all(promisses)).forEach((x) => console.log(x));
 
-      await Promise.all(
-        Object.values(versionLoaders).map((loader) =>
-          loader.getAllVersions(true)
-        )
-      );
+      // await Promise.all(
+      //   Object.values(versionLoaders).map((loader) =>
+      //     loader.getAllVersions(true)
+      //   )
+      // );
 
       // await versionLoaders.spigot?.readyVersion({
       //   type: 'spigot',

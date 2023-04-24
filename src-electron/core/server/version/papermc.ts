@@ -98,7 +98,7 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     `${version.id}/${version.build}.json`
   );
   const jsonResponse = await BytesData.fromPathOrUrl(
-    jsonpath.str(),
+    jsonpath,
     buildURL,
     undefined,
     true,
@@ -115,7 +115,7 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
   const jarURL = buildURL + `/downloads/${name}`;
 
   const jarResponse = await BytesData.fromPathOrUrl(
-    jarpath.str(),
+    jarpath,
     jarURL,
     { type: 'sha256', value: sha256 },
     false,

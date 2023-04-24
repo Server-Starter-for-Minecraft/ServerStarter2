@@ -7,6 +7,7 @@ import { Path } from '../utils/path/path';
 import { versionsPath } from './const';
 import { getWorlds } from './world/world';
 import { setBackAPI } from '../api';
+import { userDataPath } from '../userDataPath';
 
 setBackAPI({
   invoke: {
@@ -20,14 +21,27 @@ setBackAPI({
   },
 });
 
+const demoWorld: World = {
+  name: 'papermc19',
+  container: userDataPath.child('servers').str(),
+  settings: {
+    avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
+    version: {
+      type: 'papermc',
+      build: 100,
+      id: '1.19.2',
+    },
+  },
+  datapacks: [],
+  plugins: [],
+  mods: [],
+};
+
 describe('vanillaVersion', async () => {
   test(
     '',
     async () => {
-      // const worlds = await getWorlds('');
-      // if (isSuccess(worlds)) {
-      //   await runServer(worlds[0]);
-      // }
+      console.log(await runServer(demoWorld));
 
       expect(1).toBe(1);
     },

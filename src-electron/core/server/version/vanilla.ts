@@ -39,7 +39,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 
     // jarデータを取得
     const serverData = await BytesData.fromPathOrUrl(
-      jarpath.path,
+      jarpath,
       json.downloads.server.url,
       {
         type: 'sha1',
@@ -105,7 +105,7 @@ export async function getVanillaVersionJson(
     return new Error(`Vanilla version ${id} is not exists`);
 
   // jsonデータを取得
-  const jsonData = await BytesData.fromPathOrUrl(jsonpath.path, record.url, {
+  const jsonData = await BytesData.fromPathOrUrl(jsonpath, record.url, {
     type: 'sha1',
     value: record.sha1,
   });

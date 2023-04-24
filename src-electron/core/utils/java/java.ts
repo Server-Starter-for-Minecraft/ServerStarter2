@@ -29,10 +29,7 @@ export async function readyJava(
   const manifest = json[osPlatform][component][0].manifest;
 
   const path = runtimePath.child(`${component}/${osPlatform}`);
-  const data = await getManifestJson(
-    manifest,
-    path.child('manifest.json').path
-  );
+  const data = await getManifestJson(manifest, path.child('manifest.json'));
   await installManifest(data, path);
   return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
 }
@@ -71,7 +68,7 @@ async function getAllJson(): Promise<Failable<AllJson>> {
   try {
     const allJsonSha1 = config.get('sha1')?.runtime;
     const data = await BytesData.fromPathOrUrl(
-      runtimePath.child('all.json').str(),
+      runtimePath.child('all.json'),
       'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',
       allJsonSha1 !== undefined
         ? { type: 'sha1', value: allJsonSha1 }
@@ -91,7 +88,7 @@ async function getAllJson(): Promise<Failable<AllJson>> {
 
 async function getManifestJson(
   manifest: RuntimeManifest,
-  path: string
+  path: Path
 ): Promise<Failable<any>> {
   const data = await BytesData.fromPathOrUrl(path, manifest.url, {
     type: 'sha1',

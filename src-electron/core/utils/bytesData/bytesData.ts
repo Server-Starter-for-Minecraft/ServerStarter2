@@ -60,14 +60,14 @@ export class BytesData {
   }
 
   static async fromPath(
-    path: string,
+    path: Path,
     hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromPath', { path, hash });
     logger.start();
 
     try {
-      const buffer = await promises.readFile(path);
+      const buffer = await promises.readFile(path.str());
       const data = new BytesData(buffer);
       if (hash === undefined) {
         logger.success();
@@ -119,7 +119,7 @@ export class BytesData {
    */
 
   static async fromPathOrUrl(
-    path: string,
+    path: Path,
     url: string,
     hash: Hash | undefined = undefined,
     prioritizeUrl = true,
@@ -139,8 +139,8 @@ export class BytesData {
       const data = await BytesData.fromURL(url, remoteHash);
       if (isSuccess(data)) {
         if (updateLocal) {
-          await new Path(path).parent().mkdir(true);
-          await data.write(path);
+          await path.parent().mkdir(true);
+          await data.write(path.str());
         }
         logger.success();
         return data;
@@ -166,8 +166,8 @@ export class BytesData {
       }
 
       if (updateLocal) {
-        await new Path(path).parent().mkdir(true);
-        await data.write(path);
+        await path.parent().mkdir(true);
+        await data.write(path.str());
       }
       logger.success();
       return data;

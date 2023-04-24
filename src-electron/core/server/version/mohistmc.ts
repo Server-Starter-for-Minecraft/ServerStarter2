@@ -49,7 +49,7 @@ async function downloadMohistmcVersion(
 
   // jarファイルを必要に応じてダウンロード
   const jardata = await BytesData.fromPathOrUrl(
-    jarPath.str(),
+    jarPath,
     build.url,
     { type: 'md5', value: build.md5 },
     false,
@@ -66,7 +66,7 @@ async function getMohistmcVersionsJson(
 ): Promise<Failable<MohistmcApiVersion>> {
   const JSON_URL = `https://mohistmc.com/api/${id}`;
   const jsondata = await BytesData.fromPathOrUrl(
-    papermcVersionsPath.child(`mohistmc-${id}.json`).str(),
+    papermcVersionsPath.child(`mohistmc-${id}.json`),
     JSON_URL,
     undefined,
     true,
@@ -82,7 +82,7 @@ async function getMohistmcVersionsJson(
 async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
   // mohistmcが対応しているバージョン一覧を取得
   const data = await BytesData.fromPathOrUrl(
-    papermcVersionsPath.child('versions.json').str(),
+    papermcVersionsPath.child('versions.json'),
     VERSIONS_URL,
     undefined,
     true,

@@ -39,7 +39,7 @@ export async function installManifest(manifest: Manifest, path: Path) {
       case 'file':
         const filePromise = async () => {
           const result = await BytesData.fromPathOrUrl(
-            p.path,
+            p,
             v.downloads.raw.url,
             { value: v.downloads.raw.sha1, type: 'sha1' },
             false,
