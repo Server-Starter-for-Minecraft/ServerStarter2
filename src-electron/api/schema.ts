@@ -103,6 +103,60 @@ export type ServerProperties = {
   [key in string]: ServerProperty;
 };
 
+export type FileData = {
+  name: string;
+  sha1: string;
+};
+
+export type WorldSettings = {
+  /** server.propertiesの内容 (json化済) */
+  properties?: ServerProperties;
+
+  /** 使用メモリ量 (Gb) */
+  memory?: number;
+};
+
+export type World = {
+  /** ワールド名 */
+  name: string;
+
+  /** ディレクトリ */
+  container: string;
+
+  /** バージョン */
+  version: Version;
+
+  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+  avater_path?: string;
+
+  /** リモートリポジトリ */
+  remote?: Remote;
+
+  /** 最終プレイ日? */
+  last_date?: Date;
+
+  /** 最終プレイ者 */
+  last_user?: string;
+
+  /** 起動中フラグ */
+  using?: boolean;
+
+  /** ワールド設定 */
+  settings: WorldSettings;
+
+  /** 導入済み */
+  additional: {
+    /** 導入済みデータパック */
+    datapacks?: FileData[];
+
+    /** 導入済みプラグイン */
+    plugins?: FileData[];
+
+    /** 導入済みMOD */
+    mods?: FileData[];
+  };
+};
+
 // {
 //   'allow-flight'?: boolean;
 //   'allow-nether'?: boolean;
@@ -174,57 +228,3 @@ export type ServerProperties = {
 //   'view-distance'?: number;
 //   'white-list'?: boolean;
 // };
-
-export type FileData = {
-  name: string;
-  sha1: string;
-};
-
-export type WorldSettings = {
-  /** server.propertiesの内容 (json化済) */
-  properties?: ServerProperties;
-
-  /** 使用メモリ量 (Gb) */
-  memory?: number;
-};
-
-export type World = {
-  /** ワールド名 */
-  name: string;
-
-  /** ディレクトリ */
-  container: string;
-
-  /** バージョン */
-  version: Version;
-
-  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
-  avater_path?: string;
-
-  /** リモートリポジトリ */
-  remote?: Remote;
-
-  /** 最終プレイ日? */
-  last_date?: Date;
-
-  /** 最終プレイ者 */
-  last_user?: string;
-
-  /** 起動中フラグ */
-  using?: boolean;
-
-  /** ワールド設定 */
-  settings: WorldSettings;
-
-  /** 導入済み */
-  additional: {
-    /** 導入済みデータパック */
-    datapacks?: FileData[];
-
-    /** 導入済みプラグイン */
-    plugins?: FileData[];
-
-    /** 導入済みMOD */
-    mods?: FileData[];
-  };
-};

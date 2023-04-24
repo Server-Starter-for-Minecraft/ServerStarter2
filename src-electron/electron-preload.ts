@@ -71,9 +71,13 @@ function handle<C extends string>(
   return ((
     handler: (event: Electron.IpcRendererEvent, ...args: any[]) => Promise<any>
   ) => {
-    const listener = (event: Electron.IpcRendererEvent, ...args: any[]) => {
+    const listener = (
+      event: Electron.IpcRendererEvent,
+      id: string,
+      ...args: any[]
+    ) => {
       handler(event, ...args).then((result) =>
-        ipcRenderer.send('__handle_' + channel, result)
+        ipcRenderer.send('handle:' + channel, result, id)
       );
     };
     ipcRenderer.on(channel, listener);

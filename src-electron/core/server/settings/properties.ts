@@ -1,4 +1,7 @@
 import { ServerProperties, ServerProperty } from 'app/src-electron/api/schema';
+import { objEach, objMap } from '../../utils/objmap';
+
+// TODO:stringの値のescape/unescape
 
 const PORT_MAX = 2 ** 16 - 2;
 
@@ -187,3 +190,12 @@ export const stringifyServerProperties = (properties: ServerProperties) => {
     .map(([k, v]) => `${k}=${v.value}`)
     .join('\n');
 };
+
+export function mergeServerProperties(
+  inferior: ServerProperties,
+  superior: ServerProperties
+) {
+  const result = objMap(inferior, (key, value) => [key, { ...value }]);
+  objEach(superior, (key, value) => (result[key] = { ...value }));
+  return result;
+}
