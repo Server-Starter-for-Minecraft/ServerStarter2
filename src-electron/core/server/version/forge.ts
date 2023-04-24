@@ -128,11 +128,11 @@ async function getProgramArgumentsFromBat(batPath: Path) {
   const txt = await data.text();
 
   for (const line of txt.split('\n')) {
-    const pattern = /^\s*java @user_jvm_args\.txt ([^ ]+) %\*\s*$/;
+    const pattern = /^\s*java @user_jvm_args\.txt (.+) %\*\s*$/;
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      return [arg];
+      return ['@user_jvm_args.txt', arg];
     }
   }
   return new Error('missing java command in run.bat file');
@@ -146,11 +146,11 @@ async function getProgramArgumentsFromSh(shPath: Path) {
   const txt = await data.text();
 
   for (const line of txt.split('\n')) {
-    const pattern = /^\s*java @user_jvm_args\.txt ([^ ]+) "\$@"\s*$/;
+    const pattern = /^\s*java @user_jvm_args\.txt (.+) "\$@"\s*$/;
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      return [arg];
+      return ['@user_jvm_args.txt', arg];
     }
   }
   return new Error('missing java command in run.sh file');
