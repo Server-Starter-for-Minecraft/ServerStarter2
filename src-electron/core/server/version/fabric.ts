@@ -1,16 +1,10 @@
-import {
-  FabricVersion,
-  VanillaVersion,
-  Version,
-} from 'app/src-electron/api/scheme';
+import { FabricVersion } from 'app/src-electron/api/scheme';
 import { isFailure } from '../../../api/failable';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';
 import { versionsPath } from '../const';
 import { VersionLoader, genGetAllVersions } from './base';
 import { Path } from '../../utils/path/path';
-import { getVersionMainfest } from './mainfest';
-import { log } from 'console';
 
 const fabricVersionsPath = versionsPath.child('fabric');
 

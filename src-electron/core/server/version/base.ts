@@ -4,7 +4,7 @@ import { JavaComponent } from './vanilla';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { versionsPath } from '../const';
 import { config } from '../../config';
-import { BytesData, Hash } from '../../utils/bytesData/bytesData';
+import { BytesData } from '../../utils/bytesData/bytesData';
 import { rootLoggers } from '../../logger';
 
 export const versionLoggers = rootLoggers.child('server').child('version');
