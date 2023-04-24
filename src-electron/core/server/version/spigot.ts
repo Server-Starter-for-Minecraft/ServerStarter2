@@ -14,19 +14,18 @@ import { getVersionMainfest } from './mainfest';
 const spigotVersionsPath = versionsPath.child('spigot');
 
 export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
-  /** spigotのサーバーデータをダウンロード */
+  /** spigotのサーバーデータを必要があればダウンロード */
   readyVersion: readySpigotVersion,
 
   /** spigotのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('spigot', getSpigotVersions),
 };
 
-/** spigotのバージョンを準備 */
+/** spigotのサーバーデータを必要があればダウンロード */
 async function readySpigotVersion(
   version: SpigotVersion
 ): Promise<Failable<VersionComponent>> {
   const versionPath = spigotVersionsPath.child(version.id);
-  const serverCwdPath = versionPath;
   const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
 
   // 適切なjavaのバージョンを取得
@@ -114,7 +113,7 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   if (isFailure(buildtool)) return buildtool;
 
   // ハッシュ値をコンフィグに保存
-  config.set('spigot_buildtool_sha1', await buildtool.sha1());
+  config.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
 
   await buildToolPath.write(buildtool);
 }

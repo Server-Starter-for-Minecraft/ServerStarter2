@@ -28,7 +28,7 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
 
   if (isSuccess(response)) {
     // 成功した場合ローカルに保存
-    config.set('version_manifest_v2_sha1', await response.sha1());
+    config.set('version_manifest_v2_sha1', await response.hash('sha1'));
     versionManifestPath.write(response);
   } else {
     // 失敗した場合ローカルから取得
@@ -49,7 +49,7 @@ async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
   if (isFailure(manifestData)) return manifestData;
 
   const manifestSha1 = config.get('version_manifest_v2_sha1');
-  if ((await manifestData.sha1()) !== manifestSha1)
+  if ((await manifestData.hash('sha1')) !== manifestSha1)
     return new Error('sha1 not match for version_manifest_v2.json');
 
   return manifestData.json();

@@ -78,7 +78,7 @@ export const genGetAllVersions = <V extends Version>(
 
     // 結果をローカルに保存
     await jsonpath.write(data);
-    config.set(configkey, await data.sha1());
+    config.set(configkey, await data.hash('sha1'));
 
     allVersionsReloadedMap[type] = true;
 
@@ -97,7 +97,7 @@ export async function getAllLocalVersions<V extends Version>(
   const data = await jsonpath.read();
   if (isFailure(data)) return;
 
-  const dataSha1 = await data.sha1();
+  const dataSha1 = await data.hash('sha1');
 
   if (configSha1 !== dataSha1) return;
 

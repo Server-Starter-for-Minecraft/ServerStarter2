@@ -29,7 +29,7 @@ export type VanillaVersionJson = {
 };
 
 export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
-  /** vanillaのサーバーデータをダウンロード */
+  /** vanillaのサーバーデータを必要があればダウンロード */
   async readyVersion(version: VanillaVersion, cwdPath: Path) {
     const jarpath = cwdPath.child(`${version.type}-${version.id}.jar`);
 

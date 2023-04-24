@@ -11,7 +11,7 @@ export class BytesDataError extends Error {}
 const loggers = utilLoggers.child('BytesData');
 
 export type Hash = {
-  type: 'sha1' | 'md5';
+  type: 'sha1' | 'md5' | 'sha256';
   value: string;
 };
 
@@ -44,7 +44,7 @@ export class BytesData {
         logger.success();
         return result;
       }
-      const calcHash = await result[hash.type]();
+      const calcHash = await result.hash(hash.type);
       if (hash.value === calcHash) {
         logger.success();
         return result;
@@ -74,7 +74,7 @@ export class BytesData {
         return data;
       }
 
-      const calcHash = await data[hash.type]();
+      const calcHash = await data.hash(hash.type);
       if (hash.value === calcHash) {
         logger.success();
         return data;
@@ -174,16 +174,10 @@ export class BytesData {
     }
   }
 
-  async sha1() {
-    const sha1 = createHash('sha1');
+  async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
+    const sha1 = createHash(algorithm);
     sha1.update(Buffer.from(this.data));
     return sha1.digest('hex');
-  }
-
-  async md5() {
-    const md5 = createHash('md5');
-    md5.update(Buffer.from(this.data));
-    return md5.digest('hex');
   }
 
   async text(encoding = 'utf-8'): Promise<string> {
