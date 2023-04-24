@@ -1,30 +1,27 @@
 <script setup lang="ts">
 import { onBeforeMount, ref } from 'vue';
-import { Version, versionTypes } from 'app/src-electron/api/scheme.js';
+import { Version, versionTypes } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import propertyItem from 'src/components/util/propertyItem.vue';
 import propertyTable from './PropertyTable.vue';
 import { checkError } from '../Error/Error';
 
 interface Props {
-  saveFunc: () => void
+  saveFunc: () => void;
 }
-defineProps<Props>()
+defineProps<Props>();
 
 async function updateVersionList() {
-  await window.API.invokeGetVersions(
-    store.world.settings.version.type
-  ).then(res => {
-    checkError(
-      res,
-      (checked) => versionList.value = checked
-    );
-  })
+  await window.API.invokeGetVersions(store.world.settings.version.type).then(
+    (res) => {
+      checkError(res, (checked) => (versionList.value = checked));
+    }
+  );
 }
-onBeforeMount(updateVersionList)
+onBeforeMount(updateVersionList);
 
-const store = useWorldEditStore()
-const versionList = ref([] as Version[])
+const store = useWorldEditStore();
+const versionList = ref([] as Version[]);
 </script>
 
 <template>
@@ -43,21 +40,21 @@ const versionList = ref([] as Version[])
 
     <propertyItem propName="version">
       <template v-slot:userInput>
-          <q-select
-            v-model="store.world.settings.version.type"
-            :options="versionTypes"
-            @update:model-value="updateVersionList"
-            label="サーバー"
-            style="width: 150px"
-            class="q-pr-lg"
-          />
-          <q-select
-            v-model="store.world.settings.version.id"
-            :options="versionList.map(ver => ver.id)"
-            label="バージョン"
-            style="width: 150px"
-            class="q-pr-lg"
-          />
+        <q-select
+          v-model="store.world.settings.version.type"
+          :options="versionTypes"
+          @update:model-value="updateVersionList"
+          label="サーバー"
+          style="width: 150px"
+          class="q-pr-lg"
+        />
+        <q-select
+          v-model="store.world.settings.version.id"
+          :options="versionList.map((ver) => ver.id)"
+          label="バージョン"
+          style="width: 150px"
+          class="q-pr-lg"
+        />
       </template>
     </propertyItem>
 
@@ -73,14 +70,13 @@ const versionList = ref([] as Version[])
     </propertyItem> -->
 
     <h1 id="Property">Property</h1>
-    <propertyTable/>
-    
+    <propertyTable />
+
     <h1 id="PersonList">Person List</h1>
     <h1 id="AdditionalList">Additional List</h1>
     <h1 id="ShareWorld">ShareWorld</h1>
 
-    <q-btn color="primary" label="保存" to="/" replace @click="saveFunc"/>
-
+    <q-btn color="primary" label="保存" to="/" replace @click="saveFunc" />
   </q-page>
 </template>
 
