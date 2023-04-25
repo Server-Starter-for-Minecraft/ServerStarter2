@@ -13,14 +13,19 @@ export function failabilify<P extends any[], R>(
 ): (
   ...args: P
 ) => R extends Promise<infer S> ? Promise<Failable<S>> : Failable<R> {
+  const arrowed = (...args: P) => func(...args);
   return ((...args: P) => {
     try {
-      const result = func(...args);
+      const result = arrowed(...args);
       if (result instanceof Promise) {
-        return result.then(
-          (value) => value,
-          (error) => error
-        );
+        const inner = async () => {
+          try {
+            return await result;
+          } catch (e) {
+            return e;
+          }
+        };
+        return inner();
       } else {
         return result;
       }

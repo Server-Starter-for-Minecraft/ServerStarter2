@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { BytesData } from '../bytesData/bytesData.js';
 import { Failable, isFailure } from '../../../api/failable.js';
 
@@ -26,9 +26,7 @@ export class Path {
 
   parent(times = 1) {
     if (this.path) {
-      return new Path(
-        path.join(this.path, ...new Array(times).fill('..'))
-      );
+      return new Path(path.join(this.path, ...new Array(times).fill('..')));
     }
     return new Path(path.join(...Array(times).fill('..')));
   }
@@ -106,12 +104,12 @@ export class Path {
   }
 
   async remove(recursive = false) {
-    if (this.exists()) {
-      if (await this.isDirectory()) {
-        await fs.promises.rmdir(this.path, { recursive });
-      } else {
-        await fs.promises.unlink(this.path);
-      }
+    if (!this.exists()) return;
+
+    if (await this.isDirectory()) {
+      await fs.promises.rmdir(this.path, { recursive });
+    } else {
+      await fs.promises.unlink(this.path);
     }
   }
 }

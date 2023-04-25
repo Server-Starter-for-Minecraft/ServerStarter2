@@ -37,3 +37,6 @@ yarn-error.log*
 /logs
 /userData
 *.py
+
+
+*.private.test.ts
