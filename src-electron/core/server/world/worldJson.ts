@@ -29,3 +29,8 @@ export async function loadWorldJson(cwd: Path) {
 
   return json;
 }
+
+export async function saveWorldJson(cwd: Path, json: WorldSettingJson) {
+  const jsonpath = getWorldJsonPath(cwd);
+  await jsonpath.writeText(JSON.stringify(json));
+}

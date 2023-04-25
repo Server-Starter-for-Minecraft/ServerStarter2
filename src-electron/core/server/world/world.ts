@@ -37,6 +37,9 @@ export async function getWorld(name: string, container: string) {
   const setting = await loadWorldJson(cwd);
   if (isFailure(setting)) return setting;
 
+  if (setting.remote !== undefined) {
+  }
+
   const world: World = {
     name,
     container,
@@ -48,15 +51,6 @@ export async function getWorld(name: string, container: string) {
   };
 
   return world;
-}
-
-function getDemoWorld() {
-  const demoWorld: WorldAbbr = {
-    name: 'vanilla19',
-    container: userDataPath.child('servers').str(),
-    avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
-  };
-  return demoWorld;
 }
 
 // const demoWorldSettings: WorldSettings = {
