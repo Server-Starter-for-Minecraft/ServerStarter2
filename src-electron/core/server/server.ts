@@ -9,6 +9,7 @@ import { api } from '../api';
 import { checkEula } from './eula';
 import { Path } from '../utils/path/path';
 import { LEVEL_NAME } from './const';
+import { pullRemoteWorld, pushRemoteWorld } from './remote/remote';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
@@ -92,10 +93,11 @@ export async function runServer(world: World) {
   api.send.UpdateStatus(`javaランタイムを準備中 (${component})`);
 
   // 実行javaを用意
-  const javaPath = await readyJava(component, true);
+  const _javaPath = await readyJava(component, true);
 
   // 実行javaが用意できなかった場合エラー
-  if (isFailure(javaPath)) return javaPath;
+  if (isFailure(_javaPath)) return _javaPath;
+  const javaPath = _javaPath;
 
   api.send.UpdateStatus('log4jの引数を設定中');
 
@@ -110,52 +112,73 @@ export async function runServer(world: World) {
   // サーバーのjarファイル参照を実行時引数に追加
   args.push(...programArguments, '--nogui');
 
-  // ワールドデータをダウンロード
-
-  api.send.UpdateStatus('設定ファイルの書き出し中');
-
-  // 設定ファイルをサーバーCWD直下に書き出す
-  await unrollSettings(settings, LEVEL_NAME, cwdPath);
-
-  api.send.UpdateStatus('Eulaの同意状況を確認中');
-
-  // Eulaチェック
-  const eulaAgreement = await checkEula(javaPath, programArguments, cwdPath);
-
-  // Eulaチェックに失敗した場合
-  if (isFailure(eulaAgreement)) return eulaAgreement;
-
-  // Eulaに同意しなかった場合エラー
-  if (!eulaAgreement) {
-    return new Error(
-      'To start server, you need to agree to Minecraft EULA (https://aka.ms/MinecraftEULA)'
-    );
+  // ワールドデータをpull
+  if (world.settings.remote?.type) {
+    const pullResult = await pullRemoteWorld(cwdPath, world.settings.remote);
+    // pullに失敗した場合
+    if (isFailure(pullResult)) return pullResult;
   }
 
-  // javaのサブプロセスを起動
-  // TODO: エラー出力先のハンドル
-  const process = interactiveProcess(
-    javaPath.absolute().str(),
-    args,
-    api.send.AddConsole,
-    api.send.AddConsole,
-    cwdPath.absolute().str(),
-    true
-  );
-  // フロントエンドからの入力を受け付ける
-  stdin = process.write;
+  async function runPulledWorld() {
+    api.send.UpdateStatus('設定ファイルの書き出し中');
 
-  // サーバー起動をWindowに知らせる
-  api.send.StartServer();
+    // 設定ファイルをサーバーCWD直下に書き出す
+    await unrollSettings(settings, LEVEL_NAME, cwdPath);
 
-  // サーバー終了まで待機
-  const result = await process;
+    api.send.UpdateStatus('Eulaの同意状況を確認中');
 
-  // フロントエンドからの入力を無視
-  stdin = undefined;
+    // Eulaチェック
+    const eulaAgreement = await checkEula(javaPath, programArguments, cwdPath);
 
-  // サーバーの実行に失敗した場合はエラー
-  if (isFailure(result)) return result;
+    // Eulaチェックに失敗した場合
+    if (isFailure(eulaAgreement)) return eulaAgreement;
+
+    // Eulaに同意しなかった場合エラー
+    if (!eulaAgreement) {
+      return new Error(
+        'To start server, you need to agree to Minecraft EULA (https://aka.ms/MinecraftEULA)'
+      );
+    }
+
+    // javaのサブプロセスを起動
+    // TODO: エラー出力先のハンドル
+    const process = interactiveProcess(
+      javaPath.absolute().str(),
+      args,
+      api.send.AddConsole,
+      api.send.AddConsole,
+      cwdPath.absolute().str(),
+      true
+    );
+    // フロントエンドからの入力を受け付ける
+    stdin = process.write;
+
+    // サーバー起動をWindowに知らせる
+    api.send.StartServer();
+
+    // サーバー終了まで待機
+    const result = await process;
+
+    // フロントエンドからの入力を無視
+    stdin = undefined;
+
+    // サーバーの実行に失敗した場合はエラー
+    if (isFailure(result)) return result;
+  }
+
+  // サーバーを実行
+  const result = await runPulledWorld();
+
+  // サーバーの成否にかかわらずワールドデータをpush
+  // TODO: このままでいいか要相談
+  if (world.settings.remote?.type) {
+    const pushResult = await pushRemoteWorld(cwdPath, world.settings.remote);
+    // pushに失敗した場合
+    if (isFailure(pushResult)) return pushResult;
+  }
+
+  // サーバーの実行結果を返す
+  return result;
 }
 
 export function runCommand(command: string): void {
