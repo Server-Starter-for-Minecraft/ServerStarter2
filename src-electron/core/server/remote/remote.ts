@@ -13,7 +13,7 @@ export const remoteOperators: {
 };
 
 // ワールドのデータをpull
-export async function pullWorld<R extends Remote>(
+export async function pullRemoteWorld<R extends Remote>(
   local: Path,
   remote: R
 ): Promise<Failable<undefined>> {
@@ -24,7 +24,7 @@ export async function pullWorld<R extends Remote>(
 }
 
 // ワールドのデータをpush
-export async function pushWorld<R extends Remote>(
+export async function pushRemoteWorld<R extends Remote>(
   local: Path,
   remote: R
 ): Promise<Failable<undefined>> {
@@ -35,12 +35,13 @@ export async function pushWorld<R extends Remote>(
 }
 
 // ワールドの設定を読み込む
-export async function getWorld<R extends Remote>(
-  local: Path,
+export async function getRemoteWorld<R extends Remote>(
+  name: string,
+  container: string,
   remote: R
 ): Promise<Failable<World>> {
   const loader: RemoteOperator<R> = remoteOperators[
     remote.type
   ] as RemoteOperator<R>;
-  return await loader.getWorld(local, remote);
+  return await loader.getWorld(name,container, remote);
 }

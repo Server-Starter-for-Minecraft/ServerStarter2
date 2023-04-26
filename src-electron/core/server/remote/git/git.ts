@@ -197,7 +197,8 @@ async function pushWorld(
 }
 
 async function getWorld(
-  local: Path,
+  name: string,
+  container: string,
   remote: GitRemote
 ): Promise<Failable<World>> {
   // githubでないホストを使用していた場合エラー
@@ -230,8 +231,8 @@ async function getWorld(
 
   return {
     avater_path,
-    name: local.basename(),
-    container: local.parent().str(),
+    name: name,
+    container: container,
     settings: json,
     additional: {},
   };

@@ -2,7 +2,7 @@ import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/core/ipc/link';
 import { runCommand, runServer } from '../server/server';
 import { getVersions } from '../server/version/version';
-import { getWorldAbbrs } from '../server/world/world';
+import { getWorld, getWorldAbbrs } from '../server/world/world';
 import { openBrowser } from '../utils/openBrowser';
 import { getWorldContainers } from '../server/worldContainer';
 import { getDefaultSettings } from '../server/settings/settings';
@@ -18,6 +18,6 @@ export const backListener: BackListener<API> = {
     GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,
     GetWorldAbbrs: getWorldAbbrs,
-    GetWorld: undefined,
+    GetWorld: getWorld,
   },
 };

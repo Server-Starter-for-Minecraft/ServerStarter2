@@ -4,6 +4,7 @@ import { userDataPath } from '../../userDataPath';
 import { Path } from '../../utils/path/path';
 import { asyncMap } from '../../utils/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
+import { getRemoteWorld } from '../remote/remote';
 
 export async function getWorldAbbrs(
   worldContainer: string
@@ -31,22 +32,25 @@ export async function getWorldAbbr(
   return result;
 }
 
-export async function getWorld(name: string, container: string) {
+export async function getWorld(
+  name: string,
+  container: string
+): Promise<Failable<World>> {
   const cwd = new Path(container).child(name);
 
-  const setting = await loadWorldJson(cwd);
-  if (isFailure(setting)) return setting;
+  const settings = await loadWorldJson(cwd);
+  if (isFailure(settings)) return settings;
 
-  if (setting.remote !== undefined) {
+  // リモートが存在する場合リモートからデータを取得
+  if (settings.remote !== undefined) {
+    return await getRemoteWorld(name, container, settings.remote);
   }
 
+  // リモートが存在しない場合ローカルのデータを使用
   const world: World = {
     name,
     container,
-    version: setting.version,
-    settings: {
-      memory: setting.memory,
-    },
+    settings,
     additional: {},
   };
 
