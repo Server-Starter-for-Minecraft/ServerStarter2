@@ -36,12 +36,16 @@ export type Version =
   | MohistmcVersion
   | FabricVersion;
 
-export type GitRemote = {
+export type GithubRemote = {
   type: 'git';
+  host: 'github';
   owner: string;
   repo: string;
   branch: string;
 };
+
+export type GitRemote = GithubRemote;
+
 export type Remote = GitRemote;
 
 export const worldTypes = [
@@ -113,6 +117,21 @@ export type WorldSettings = {
 
   /** 使用メモリ量 (Gb) */
   memory?: number;
+
+  /** バージョン */
+  version: Version;
+
+  /** リモートリポジトリ */
+  remote?: Remote;
+
+  /** 最終プレイ日? */
+  last_date?: Date;
+
+  /** 最終プレイ者 */
+  last_user?: string;
+
+  /** 起動中フラグ */
+  using?: boolean;
 };
 
 export type WorldAbbr = {
@@ -133,23 +152,8 @@ export type World = {
   /** ディレクトリ */
   container: string;
 
-  /** バージョン */
-  version: Version;
-
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   avater_path?: string;
-
-  /** リモートリポジトリ */
-  remote?: Remote;
-
-  /** 最終プレイ日? */
-  last_date?: Date;
-
-  /** 最終プレイ者 */
-  last_user?: string;
-
-  /** 起動中フラグ */
-  using?: boolean;
 
   /** ワールド設定 */
   settings: WorldSettings;

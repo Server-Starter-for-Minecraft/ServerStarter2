@@ -1,5 +1,5 @@
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
-import { World, WorldAbbr } from 'app/src-electron/api/schema';
+import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
+import { World, WorldAbbr } from 'src-electron/api/schema';
 import { userDataPath } from '../../userDataPath';
 import { Path } from '../../utils/path/path';
 import { asyncMap } from '../../utils/objmap';

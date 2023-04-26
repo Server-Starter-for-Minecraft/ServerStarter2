@@ -1,4 +1,4 @@
-import { ServerProperties, ServerProperty } from 'app/src-electron/api/schema';
+import { ServerProperties, ServerProperty } from 'src-electron/api/schema';
 import { objEach, objMap } from '../../utils/objmap';
 
 // TODO:stringの値のescape/unescape

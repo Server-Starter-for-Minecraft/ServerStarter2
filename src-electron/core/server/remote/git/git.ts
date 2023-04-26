@@ -5,21 +5,30 @@ import {
   isSuccess,
 } from 'src-electron/api/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
-import { GitRemote } from 'src-electron/api/schema';
+import {
+  GitRemote,
+  GithubRemote,
+  World,
+  WorldSettings,
+} from 'src-electron/api/schema';
 import { Path } from 'src-electron/core/utils/path/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
+import { fetchGithubFile } from './githubApi';
+import { server_settings_file_name } from '../../world/worldJson';
 
 export const gitRemoteOperator: RemoteOperator<GitRemote> = {
-  pull,
-  push,
+  pullWorld,
+  pushWorld,
+  getWorld,
 };
 
 const DEFAULT_REMOTE_NAME = 'serversterter';
 
 // TODO: ログの追加
 
-export function getRemoteUrl(remote: GitRemote, pat: string) {
+export function getRemoteUrl(remote: GithubRemote, pat: string) {
+  // githubでないホストを使用していた場合エラー
   return `https://${remote.owner}:${pat}@github.com/${remote.owner}/${remote.repo}`;
 }
 
@@ -70,10 +79,14 @@ export async function getRemoteName(
   return remotename;
 }
 
-export async function pull(
+export async function pullWorld(
   local: Path,
   remote: GitRemote
 ): Promise<Failable<undefined>> {
+  // githubでないホストを使用していた場合エラー
+  if (remote.host !== 'github')
+    return new Error(`server starter not correspond with host:${remote.host}`);
+
   // patを取得
   const pat = getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
@@ -121,10 +134,14 @@ export async function pull(
   return undefined;
 }
 
-export async function push(
+export async function pushWorld(
   local: Path,
   remote: GitRemote
 ): Promise<Failable<undefined>> {
+  // githubでないホストを使用していた場合エラー
+  if (remote.host !== 'github')
+    return new Error(`server starter not correspond with host:${remote.host}`);
+
   // ディレクトリが存在しない場合エラー
   if (!local.exists()) {
     return new Error(`unable to push non-existing directory ${local}`);
@@ -177,4 +194,37 @@ export async function push(
   if (isFailure(pushResult)) return pushResult;
 
   return undefined;
+}
+
+export async function getWorld(
+  local: Path,
+  remote: GitRemote
+): Promise<Failable<World>> {
+  // githubでないホストを使用していた場合エラー
+  if (remote.host !== 'github')
+    return new Error(`server starter not correspond with host:${remote.host}`);
+
+  // patを取得
+  const pat = getGitPat(remote.owner, remote.repo);
+  // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
+  if (isFailure(pat)) return pat;
+
+  const fileData = await fetchGithubFile(
+    remote.owner,
+    remote.repo,
+    remote.branch,
+    [server_settings_file_name],
+    pat
+  );
+  if (isFailure(fileData)) return fileData;
+
+  const json = await fileData.json<WorldSettings>();
+  if (isFailure(json)) return json;
+
+  return {
+    name: local.basename(),
+    container: local.parent().str(),
+    settings: json,
+    additional: {},
+  };
 }

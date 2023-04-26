@@ -1,11 +1,11 @@
-import { API } from 'app/src-electron/api/api';
-import { FrontListener, FrontCaller } from 'app/src-electron/core/ipc/link';
+import { API } from 'src-electron/api/api';
+import { FrontListener, FrontCaller } from 'src-electron/core/ipc/link';
 import {
   ipcHandle,
   ipcInvoke,
   ipcOn,
   ipcSend,
-} from 'app/src-electron/core/ipc/util';
+} from 'src-electron/core/ipc/util';
 import { BrowserWindow } from 'electron';
 
 type ChanneledFunc<C, T extends (...args: any) => any> = { __channel__: C } & T;

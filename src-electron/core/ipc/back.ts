@@ -1,5 +1,5 @@
-import { API } from 'app/src-electron/api/api';
-import { BackListener } from 'app/src-electron/core/ipc/link';
+import { API } from 'src-electron/api/api';
+import { BackListener } from 'src-electron/core/ipc/link';
 import { runCommand, runServer } from '../server/server';
 import { getVersions } from '../server/version/version';
 import { getWorldAbbrs } from '../server/world/world';

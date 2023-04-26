@@ -1,4 +1,4 @@
-import { ForgeVersion } from 'app/src-electron/api/schema';
+import { ForgeVersion } from 'src-electron/api/schema';
 import { VersionLoader, genGetAllVersions } from './base';
 import { Failable, isFailure, isSuccess } from '../../../api/failable';
 import { Path } from '../../utils/path/path';

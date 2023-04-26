@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/api/schema';
+import { World } from 'src-electron/api/schema';
 import { versionLoaders } from './version/version';
 import { VersionLoader } from './version/base';
 import { isFailure, isSuccess } from 'src-electron/api/failable';

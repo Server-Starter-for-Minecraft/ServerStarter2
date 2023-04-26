@@ -1,4 +1,4 @@
-import { IAPI } from 'app/src-electron/api/types';
+import { IAPI } from 'src-electron/api/types';
 
 export type BackCaller<A extends IAPI> = {
   send: {

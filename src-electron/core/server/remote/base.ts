@@ -1,8 +1,9 @@
-import { Failable } from 'app/src-electron/api/failable';
-import { Remote } from 'app/src-electron/api/schema';
+import { Failable } from 'src-electron/api/failable';
+import { Remote, World } from 'src-electron/api/schema';
 import { Path } from '../../utils/path/path';
 
 export type RemoteOperator<R extends Remote> = {
-  pull(local: Path, remote: R): Promise<Failable<undefined>>;
-  push(local: Path, remote: R): Promise<Failable<undefined>>;
+  pullWorld(local: Path, remote: R): Promise<Failable<undefined>>;
+  pushWorld(local: Path, remote: R): Promise<Failable<undefined>>;
+  getWorld: (local: Path, remote: R) => Promise<Failable<World>>;
 };

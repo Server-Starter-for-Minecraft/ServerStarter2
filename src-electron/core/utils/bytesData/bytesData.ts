@@ -24,13 +24,14 @@ export class BytesData {
 
   static async fromURL(
     url: string,
-    hash: Hash | undefined = undefined
+    hash: Hash | undefined = undefined,
+    headers?: { [key in string]: string }
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromURL', { url, hash });
     logger.start();
 
     try {
-      const res = await (await fetch).default(url);
+      const res = await (await fetch).default(url, { headers });
       if (!res.ok) {
         logger.fail({ status: res.status, statusText: res.statusText });
         return new BytesDataError(
@@ -94,6 +95,11 @@ export class BytesData {
     return new BytesData(new TextEncoder().encode(text));
   }
 
+  /** base64の形式でByteDataに変換 */
+  static async fromBase64(base64: string): Promise<Failable<BytesData>> {
+    return new BytesData(Buffer.from(base64, 'base64'));
+  }
+
   /**
    * TODO: ファイルに出力
    */
@@ -124,7 +130,8 @@ export class BytesData {
     hash: Hash | undefined = undefined,
     prioritizeUrl = true,
     updateLocal = true,
-    compareHashOnFetch = true
+    compareHashOnFetch = true,
+    headers?: { [key in string]: string }
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromPathOrUrl', {
       path,
@@ -136,7 +143,7 @@ export class BytesData {
     logger.start();
     const remoteHash = compareHashOnFetch ? hash : undefined;
     if (prioritizeUrl) {
-      const data = await BytesData.fromURL(url, remoteHash);
+      const data = await BytesData.fromURL(url, remoteHash, headers);
       if (isSuccess(data)) {
         if (updateLocal) {
           await path.parent().mkdir(true);

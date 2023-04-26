@@ -1,22 +1,23 @@
-import { isFailure } from 'app/src-electron/api/failable';
+import { isFailure } from 'src-electron/api/failable';
 import { Path } from '../../utils/path/path';
-import { Remote, Version, versionTypes } from 'app/src-electron/api/schema';
+import {
+  Remote,
+  Version,
+  WorldSettings,
+  versionTypes,
+} from 'src-electron/api/schema';
 
-export type WorldSettingJson = {
-  version: Version;
-  memory?: number;
-  remote?: Remote;
-};
+export const server_settings_file_name = 'server_settings.json';
 
 export function getWorldJsonPath(cwd: Path) {
-  return cwd.child('server_settings.json');
+  return cwd.child(server_settings_file_name);
 }
 
 export async function loadWorldJson(cwd: Path) {
   const jsonpath = getWorldJsonPath(cwd);
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 
-  const json = await jsonpath.readJson<WorldSettingJson>();
+  const json = await jsonpath.readJson<WorldSettings>();
   if (isFailure(json)) return json;
 
   if (json.version === undefined)
@@ -30,7 +31,7 @@ export async function loadWorldJson(cwd: Path) {
   return json;
 }
 
-export async function saveWorldJson(cwd: Path, json: WorldSettingJson) {
+export async function saveWorldJson(cwd: Path, json: WorldSettings) {
   const jsonpath = getWorldJsonPath(cwd);
   await jsonpath.writeText(JSON.stringify(json));
 }

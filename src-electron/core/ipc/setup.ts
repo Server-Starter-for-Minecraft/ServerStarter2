@@ -1,4 +1,4 @@
-import { API } from 'app/src-electron/api/api';
+import { API } from 'src-electron/api/api';
 import { linkIPC } from './link';
 import { setBackAPI } from '../api';
 import { BrowserWindow } from 'electron';

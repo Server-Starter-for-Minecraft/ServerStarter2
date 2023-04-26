@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/api/schema';
+import { World } from 'src-electron/api/schema';
 import { getLog4jArg } from './log4j';
 import { isFailure } from '../../api/failable';
 import { readyVersion } from './version/version';

@@ -1,4 +1,4 @@
-import { Failable } from 'app/src-electron/api/failable';
+import { Failable } from 'src-electron/api/failable';
 import * as child_process from 'child_process';
 
 export type ChildProcessPromise = Promise<Failable<undefined>> & {
