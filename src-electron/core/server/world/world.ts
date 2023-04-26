@@ -5,6 +5,7 @@ import { Path } from '../../utils/path/path';
 import { asyncMap } from '../../utils/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
 import { getRemoteWorld } from '../remote/remote';
+import { BytesData } from '../../utils/bytesData/bytesData';
 
 export async function getWorldAbbrs(
   worldContainer: string
@@ -46,9 +47,20 @@ export async function getWorld(
     return await getRemoteWorld(name, container, settings.remote);
   }
 
+  // アバターの読み込み
+  let avater_path: string | undefined = undefined;
+  const iconpath = cwd.child('world/icon.png');
+  if (iconpath.exists()) {
+    const data = await BytesData.fromPath(iconpath);
+    if (isSuccess(data)) {
+      avater_path = await data.encodeURI('image/png');
+    }
+  }
+
   // リモートが存在しない場合ローカルのデータを使用
   const world: World = {
     name,
+    avater_path,
     container,
     settings,
     additional: {},
