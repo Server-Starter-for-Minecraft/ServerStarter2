@@ -8,17 +8,16 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import {
   GitRemote,
   GithubRemote,
-  ServerProperties,
   World,
   WorldSettings,
 } from 'src-electron/api/schema';
 import { Path } from 'src-electron/core/utils/path/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
-import { fetchGithubFiles } from './githubApi';
 import { server_settings_file_name } from '../../world/worldJson';
 import { LEVEL_NAME } from '../../const';
 import { parseServerProperties } from '../../settings/properties';
+import { GithubBlob, GithubTree } from './githubApi';
 
 export const gitRemoteOperator: RemoteOperator<GitRemote> = {
   pullWorld,
@@ -213,38 +212,76 @@ async function getWorld(
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
   if (isFailure(pat)) return pat;
 
-  // ワールド設定のjsonの内容を取得
-  const [settingFile, avatarFile, propertiesFile] = await fetchGithubFiles(
+  const root = await GithubTree.fromRepository(
     remote.owner,
     remote.repo,
     remote.branch,
-    [server_settings_file_name, LEVEL_NAME + '/icon.png', 'server.properties'],
     pat
   );
+  if (isFailure(root)) return root;
+  const rootFiles = await root.files();
+  if (isFailure(rootFiles)) return rootFiles;
 
-  if (isFailure(settingFile)) return settingFile;
-  const json = await settingFile.json<WorldSettings>();
-  if (isFailure(json)) return json;
+  const propertiesFile = rootFiles['server.properties'];
+  const settingFile = rootFiles[server_settings_file_name];
+  const worldDir = rootFiles[LEVEL_NAME];
 
-  // iconの取得
-  let avater_path: undefined | string = undefined;
-  if (isSuccess(avatarFile)) {
-    avater_path = await avatarFile.encodeURI('image/png');
-  }
+  let [properties, settings, avater_path] = await Promise.all([
+    getProperties(propertiesFile),
+    getSettings(settingFile),
+    getIconURI(worldDir),
+  ]);
 
-  // server.propertiesの取得
-  let properties: ServerProperties | undefined = undefined;
-  if (isSuccess(propertiesFile)) {
-    const prop = await propertiesFile.text();
-    properties = parseServerProperties(prop);
+  if (settings === undefined) {
+    return new Error(`failed to load & parse ${settingFile.url}`);
   }
 
   return {
     avater_path,
-    name: name,
-    container: container,
-    settings: json,
+    name,
+    container,
+    settings,
     additional: {},
     properties,
   };
+}
+
+async function getSettings(settingsFile: GithubTree | GithubBlob) {
+  if (settingsFile === undefined) return undefined;
+  if (settingsFile instanceof GithubTree) return undefined;
+  const json = await settingsFile.loadJson<WorldSettings>();
+  if (isFailure(json)) return undefined;
+  return json;
+}
+
+async function getProperties(propertiesFile: GithubTree | GithubBlob) {
+  if (propertiesFile === undefined) return undefined;
+  if (propertiesFile instanceof GithubTree) return undefined;
+  const text = await propertiesFile.loadText();
+  if (isFailure(text)) return undefined;
+
+  return parseServerProperties(text);
+}
+
+async function getIconURI(worldDir: GithubTree | GithubBlob) {
+  // ディレクトリが存在しない場合
+  if (worldDir === undefined) return undefined;
+
+  // ディレクトリでない場合
+  if (worldDir instanceof GithubBlob) return undefined;
+
+  // icon.pngを取得
+  const files = await worldDir.files();
+  if (isFailure(files)) return undefined;
+  const iconFile = files['icon.png'];
+
+  // icon.pngが存在しない場合
+  if (iconFile === undefined) return undefined;
+  // icon.pngがファイルでない場合
+  if (iconFile instanceof GithubTree) return undefined;
+
+  // icon.pngの内容を読み込んでdata URIにエンコード
+  const bytes = await iconFile.loadBytes();
+  if (isFailure(bytes)) return undefined;
+  return await bytes.encodeURI('image/png');
 }
