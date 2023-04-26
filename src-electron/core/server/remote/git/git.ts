@@ -5,8 +5,15 @@ import {
   isSuccess,
 } from 'src-electron/api/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
-import { Path } from '../../utils/path/path';
 import { GitRemote } from 'src-electron/api/schema';
+import { Path } from 'src-electron/core/utils/path/path';
+import { getGitPat } from './pat';
+import { RemoteOperator } from '../base';
+
+export const gitRemoteOperator: RemoteOperator<GitRemote> = {
+  pull,
+  push,
+};
 
 const DEFAULT_REMOTE_NAME = 'serversterter';
 
@@ -63,8 +70,18 @@ export async function getRemoteName(
   return remotename;
 }
 
-export async function pull(local: Path, remote: GitRemote, pat: string) {
+export async function pull(
+  local: Path,
+  remote: GitRemote
+): Promise<Failable<undefined>> {
+  // patを取得
+  const pat = getGitPat(remote.owner, remote.repo);
+  // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
+  if (isFailure(pat)) return pat;
+
+  // ディレクトリが存在しない場合生成
   if (!local.exists()) local.mkdir(true);
+
   const git = simpleGit(local.str());
   const exists = await isGitRipository(git, local);
   if (exists) {
@@ -100,6 +117,64 @@ export async function pull(local: Path, remote: GitRemote, pat: string) {
   )();
 
   if (isFailure(cloneResult)) return cloneResult;
+
+  return undefined;
+}
+
+export async function push(
+  local: Path,
+  remote: GitRemote
+): Promise<Failable<undefined>> {
+  // ディレクトリが存在しない場合エラー
+  if (!local.exists()) {
+    return new Error(`unable to push non-existing directory ${local}`);
+  }
+
+  // patを取得
+  const pat = getGitPat(remote.owner, remote.repo);
+  // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
+  if (isFailure(pat)) return pat;
+
+  const git = simpleGit(local.str());
+
+  const exists = await isGitRipository(git, local);
+
+  // gitリポジトリだった場合
+  if (exists) {
+    // 該当のリモート名称を取得
+    const remoteName = await getRemoteName(git, remote, pat);
+    // 該当のリモート名称の取得に成功した場合
+    if (isSuccess(remoteName)) {
+      // pushを実行
+      const pushResult = await failabilify(() =>
+        git.push(remoteName, remote.branch)
+      )();
+      // pushに成功した場合
+      if (isSuccess(pushResult)) return undefined;
+    }
+  }
+
+  // .gitディレクトリを削除
+  const gitPath = local.child('.git');
+  if (gitPath.exists()) await gitPath.remove();
+
+  // git init
+  const initResult = await failabilify(() =>
+    git.init(['-b', DEFAULT_REMOTE_NAME])
+  )();
+  if (isFailure(initResult)) return initResult;
+
+  // git commit
+  const commitResult = await failabilify(() =>
+    git.commit('message', undefined, { '-a': null })
+  )();
+  if (isFailure(commitResult)) return commitResult;
+
+  // git push
+  const pushResult = await failabilify(() =>
+    git.push(DEFAULT_REMOTE_NAME, remote.branch)
+  )();
+  if (isFailure(pushResult)) return pushResult;
 
   return undefined;
 }
