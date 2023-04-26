@@ -1,6 +1,5 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
 import { ServerProperties, World, WorldAbbr } from 'src-electron/api/schema';
-import { userDataPath } from '../../userDataPath';
 import { Path } from '../../utils/path/path';
 import { asyncMap } from '../../utils/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
@@ -8,6 +7,8 @@ import { getRemoteWorld } from '../remote/remote';
 import { BytesData } from '../../utils/bytesData/bytesData';
 import { LEVEL_NAME } from '../const';
 import { parseServerProperties } from '../settings/properties';
+
+// TODO: datapacks/plugins/modsの読み込み
 
 export async function getWorldAbbrs(
   worldContainer: string

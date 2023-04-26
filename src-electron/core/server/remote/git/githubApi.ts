@@ -1,7 +1,13 @@
 import { Failable, isFailure } from 'src-electron/api/failable';
-import { BytesData, Hash } from 'src-electron/core/utils/bytesData/bytesData';
+import { BytesData } from 'src-electron/core/utils/bytesData/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 import { asyncMap } from 'app/src-electron/core/utils/objmap';
+
+// TODO: GithubAPIのクラス化
+//
+// repo = new GithubTree(owner,repo,pat)
+// files:{name:GithubTree|GithubBlob} = await repo.files()
+// const subs = await files["child"].files()
 
 async function get<T>(url: string, pat: string): Promise<Failable<T>> {
   // PATの認証情報をヘッダーに付与してfetch

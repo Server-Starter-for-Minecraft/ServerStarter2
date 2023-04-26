@@ -17,7 +17,7 @@ export type RemoteSetting = {
 };
 
 export type ServerStarterSetting = {
-  world_containers?: string[];
+  world_containers?: Record<string, string>;
   default_settings?: WorldSettings;
   remote?: RemoteSetting;
 };
