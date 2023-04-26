@@ -66,7 +66,3 @@ export async function fetchGithubFile(
       throw new Error(`unknown github api blob encoding: ${blobRes.encoding}`);
   }
 }
-
-// https://api.github.com/repos/txkodo/CoCgrowth/branches
-
-// https://api.github.com/repos/txkodo/CoCgrowth/git/commits/65446f8e6ae216af68d4c59a4b7ceaa110389c4c
