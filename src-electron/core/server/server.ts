@@ -8,6 +8,7 @@ import { interactiveProcess } from '../utils/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
 import { Path } from '../utils/path/path';
+import { LEVEL_NAME } from './const';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
@@ -55,8 +56,6 @@ let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
 //   await result;
 // }
-
-const LEVEL_NAME = 'world';
 
 /** サーバーを起動する */
 export async function runServer(world: World) {

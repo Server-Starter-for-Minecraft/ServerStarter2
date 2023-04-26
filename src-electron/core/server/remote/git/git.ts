@@ -8,6 +8,7 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import {
   GitRemote,
   GithubRemote,
+  ServerProperties,
   World,
   WorldSettings,
 } from 'src-electron/api/schema';
@@ -16,6 +17,8 @@ import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
 import { fetchGithubFiles } from './githubApi';
 import { server_settings_file_name } from '../../world/worldJson';
+import { LEVEL_NAME } from '../../const';
+import { parseServerProperties } from '../../settings/properties';
 
 export const gitRemoteOperator: RemoteOperator<GitRemote> = {
   pullWorld,
@@ -211,22 +214,29 @@ async function getWorld(
   if (isFailure(pat)) return pat;
 
   // ワールド設定のjsonの内容を取得
-  const [settingFile, avatarFile] = await fetchGithubFiles(
+  const [settingFile, avatarFile, propertiesFile] = await fetchGithubFiles(
     remote.owner,
     remote.repo,
     remote.branch,
-    [server_settings_file_name, 'world/icon.png'],
+    [server_settings_file_name, LEVEL_NAME + '/icon.png', 'server.properties'],
     pat
   );
-  if (isFailure(settingFile)) return settingFile;
 
+  if (isFailure(settingFile)) return settingFile;
   const json = await settingFile.json<WorldSettings>();
   if (isFailure(json)) return json;
 
+  // iconの取得
   let avater_path: undefined | string = undefined;
-
   if (isSuccess(avatarFile)) {
     avater_path = await avatarFile.encodeURI('image/png');
+  }
+
+  // server.propertiesの取得
+  let properties: ServerProperties | undefined = undefined;
+  if (isSuccess(propertiesFile)) {
+    const prop = await propertiesFile.text();
+    properties = parseServerProperties(prop);
   }
 
   return {
@@ -235,5 +245,6 @@ async function getWorld(
     container: container,
     settings: json,
     additional: {},
+    properties,
   };
 }

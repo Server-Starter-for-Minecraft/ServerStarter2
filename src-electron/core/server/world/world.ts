@@ -1,11 +1,13 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
-import { World, WorldAbbr } from 'src-electron/api/schema';
+import { ServerProperties, World, WorldAbbr } from 'src-electron/api/schema';
 import { userDataPath } from '../../userDataPath';
 import { Path } from '../../utils/path/path';
 import { asyncMap } from '../../utils/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
 import { getRemoteWorld } from '../remote/remote';
 import { BytesData } from '../../utils/bytesData/bytesData';
+import { LEVEL_NAME } from '../const';
+import { parseServerProperties } from '../settings/properties';
 
 export async function getWorldAbbrs(
   worldContainer: string
@@ -47,26 +49,47 @@ export async function getWorld(
     return await getRemoteWorld(name, container, settings.remote);
   }
 
+  // リモートが存在しない場合ローカルのデータを使用
+
   // アバターの読み込み
-  let avater_path: string | undefined = undefined;
-  const iconpath = cwd.child('world/icon.png');
+  const avater_path = await getIconURI(cwd);
+
+  // server.propertiesの取得
+  const properties = await getServerProperties(cwd);
+
+  const world: World = {
+    name,
+    container,
+    avater_path,
+    settings,
+    properties,
+    additional: {},
+  };
+  return world;
+}
+
+async function getIconURI(cwd: Path) {
+  let iconURI: string | undefined = undefined;
+  const iconpath = cwd.child(LEVEL_NAME + '/icon.png');
   if (iconpath.exists()) {
     const data = await BytesData.fromPath(iconpath);
     if (isSuccess(data)) {
-      avater_path = await data.encodeURI('image/png');
+      iconURI = await data.encodeURI('image/png');
     }
   }
+  return iconURI;
+}
 
-  // リモートが存在しない場合ローカルのデータを使用
-  const world: World = {
-    name,
-    avater_path,
-    container,
-    settings,
-    additional: {},
-  };
-
-  return world;
+async function getServerProperties(cwd: Path) {
+  let propertiesPath = cwd.child('server.properties');
+  let properties: ServerProperties | undefined = undefined;
+  if (isSuccess(propertiesPath)) {
+    const propertiesText = await propertiesPath.readText();
+    if (isSuccess(propertiesText)) {
+      properties = await parseServerProperties(propertiesText);
+    }
+  }
+  return properties;
 }
 
 // const demoWorldSettings: WorldSettings = {

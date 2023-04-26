@@ -112,9 +112,6 @@ export type FileData = {
 };
 
 export type WorldSettings = {
-  /** server.propertiesの内容 (json化済) */
-  properties?: ServerProperties;
-
   /** 使用メモリ量 (Gb) */
   memory?: number;
 
@@ -155,8 +152,11 @@ export type World = {
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   avater_path?: string;
 
-  /** ワールド設定 */
+  /** ワールド設定 (server_settings.jsonの内容) */
   settings: WorldSettings;
+
+  /** server.propertiesの内容 */
+  properties?: ServerProperties;
 
   /** 導入済み */
   additional: {

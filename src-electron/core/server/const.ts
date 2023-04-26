@@ -12,3 +12,5 @@ export const versionManifestPath = versionsCachePath.child(
 );
 
 export const spigotBuildPath = mainPath.child('spigotBuild');
+
+export const LEVEL_NAME = 'world';
