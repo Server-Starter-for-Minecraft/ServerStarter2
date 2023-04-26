@@ -205,4 +205,15 @@ export class BytesData {
       return e as unknown as Error;
     }
   }
+
+  /** data:{mimetype};base64,... の形式でエンコード
+   *
+   * mimetypeの例 "image/png"
+   */
+  async encodeURI(mimetype: string) {
+    // ArrayBufferからbase64に変換
+    const base64uri = Buffer.from(this.data).toString('base64');
+
+    return `data:${mimetype};base64,${base64uri}`;
+  }
 }

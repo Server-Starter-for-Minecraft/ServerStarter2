@@ -1,9 +1,7 @@
 import { Failable, isFailure } from 'src-electron/api/failable';
-import {
-  BytesData,
-  Hash,
-} from 'src-electron/core/utils/bytesData/bytesData';
+import { BytesData, Hash } from 'src-electron/core/utils/bytesData/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
+import { asyncMap } from 'app/src-electron/core/utils/objmap';
 
 async function get<T>(url: string, pat: string): Promise<Failable<T>> {
   // PATの認証情報をヘッダーに付与してfetch
@@ -19,43 +17,27 @@ async function get<T>(url: string, pat: string): Promise<Failable<T>> {
   return json;
 }
 
-export async function fetchGithubFile(
-  owner: string,
-  repo: string,
-  branch: string,
-  path: string[],
-  pat: string
-) {
-  const commitURL = `https://api.github.com/repos/${owner}/${repo}/branches/${branch}`;
-  const commitRes = await get<CommitRes>(commitURL, pat);
-  if (isFailure(commitRes)) return commitRes;
-  let tree = commitRes.commit.commit.tree;
+async function traceTree(rootUrl: string, parts: string[], pat: string) {
+  let treeUrl = rootUrl;
 
-  for (let elem of path) {
-    const treeRes = await get<TreeRes>(tree.url, pat);
+  for (let elem of parts) {
+    const treeRes = await get<TreeRes>(treeUrl, pat);
     if (isFailure(treeRes)) return treeRes;
-
-    if (treeRes.tree === undefined)
-      return new Error(
-        `github.com/${owner}/${repo}/${branch}/${path.join('/')} is not exists.`
-      );
+    if (treeRes.tree === undefined) return new Error(`${treeUrl} is not tree.`);
 
     for (const entry of treeRes.tree) {
       if (elem === entry.path) {
-        tree = entry;
+        treeUrl = entry.url;
         break;
       }
     }
   }
 
-  const blobRes = await get<BlobRes>(tree.url, pat);
+  const blobRes = await get<BlobRes>(treeUrl, pat);
   if (isFailure(blobRes)) return blobRes;
-  if (blobRes.content === undefined)
-    return new Error(
-      `github.com/${owner}/${repo}/${branch}/${path.join(
-        '/'
-      )} is not file but directory.`
-    );
+  if (blobRes.content === undefined) {
+    return new Error(`${treeUrl} does not have content.`);
+  }
 
   switch (blobRes.encoding) {
     case 'utf-8':
@@ -63,6 +45,26 @@ export async function fetchGithubFile(
     case 'base64':
       return BytesData.fromBase64(blobRes.content);
     default:
-      throw new Error(`unknown github api blob encoding: ${blobRes.encoding}`);
+      throw new Error(
+        `unknown github api blob encoding: ${blobRes.encoding}, url: ${treeUrl}`
+      );
   }
+}
+
+export async function fetchGithubFiles(
+  owner: string,
+  repo: string,
+  branch: string,
+  paths: string[],
+  pat: string
+): Promise<Failable<BytesData>[]> {
+  const commitURL = `https://api.github.com/repos/${owner}/${repo}/branches/${branch}`;
+  const commitRes = await get<CommitRes>(commitURL, pat);
+  if (isFailure(commitRes)) return paths.map(() => commitRes);
+  let treeUrl = commitRes.commit.commit.tree.url;
+
+  const results = await asyncMap(paths, (path) =>
+    traceTree(treeUrl, path.split('/'), pat)
+  );
+  return results;
 }

@@ -14,7 +14,7 @@ import {
 import { Path } from 'src-electron/core/utils/path/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
-import { fetchGithubFile } from './githubApi';
+import { fetchGithubFiles } from './githubApi';
 import { server_settings_file_name } from '../../world/worldJson';
 
 export const gitRemoteOperator: RemoteOperator<GitRemote> = {
@@ -27,12 +27,12 @@ const DEFAULT_REMOTE_NAME = 'serversterter';
 
 // TODO: ログの追加
 
-export function getRemoteUrl(remote: GithubRemote, pat: string) {
+function getRemoteUrl(remote: GithubRemote, pat: string) {
   // githubでないホストを使用していた場合エラー
   return `https://${remote.owner}:${pat}@github.com/${remote.owner}/${remote.repo}`;
 }
 
-export async function isGitRipository(git: SimpleGit, local: Path) {
+async function isGitRipository(git: SimpleGit, local: Path) {
   const topLevelStr = await failabilify((...args) => git.revparse(...args))([
     '--show-toplevel',
   ]);
@@ -45,7 +45,7 @@ export async function isGitRipository(git: SimpleGit, local: Path) {
  * 該当するリモートの名称を取得する
  * 該当するリモートが無ければ新しく追加する
  */
-export async function getRemoteName(
+async function getRemoteName(
   git: SimpleGit,
   remote: GitRemote,
   pat: string
@@ -79,7 +79,7 @@ export async function getRemoteName(
   return remotename;
 }
 
-export async function pullWorld(
+async function pullWorld(
   local: Path,
   remote: GitRemote
 ): Promise<Failable<undefined>> {
@@ -134,7 +134,7 @@ export async function pullWorld(
   return undefined;
 }
 
-export async function pushWorld(
+async function pushWorld(
   local: Path,
   remote: GitRemote
 ): Promise<Failable<undefined>> {
@@ -196,7 +196,7 @@ export async function pushWorld(
   return undefined;
 }
 
-export async function getWorld(
+async function getWorld(
   local: Path,
   remote: GitRemote
 ): Promise<Failable<World>> {
@@ -209,19 +209,27 @@ export async function getWorld(
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
   if (isFailure(pat)) return pat;
 
-  const fileData = await fetchGithubFile(
+  // ワールド設定のjsonの内容を取得
+  const [settingFile, avatarFile] = await fetchGithubFiles(
     remote.owner,
     remote.repo,
     remote.branch,
-    [server_settings_file_name],
+    [server_settings_file_name, 'world/icon.png'],
     pat
   );
-  if (isFailure(fileData)) return fileData;
+  if (isFailure(settingFile)) return settingFile;
 
-  const json = await fileData.json<WorldSettings>();
+  const json = await settingFile.json<WorldSettings>();
   if (isFailure(json)) return json;
 
+  let avater_path: undefined | string = undefined;
+
+  if (isSuccess(avatarFile)) {
+    avater_path = await avatarFile.encodeURI('image/png');
+  }
+
   return {
+    avater_path,
     name: local.basename(),
     container: local.parent().str(),
     settings: json,
