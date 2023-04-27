@@ -5,12 +5,7 @@ import {
   isSuccess,
 } from 'src-electron/api/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
-import {
-  GitRemote,
-  GithubRemote,
-  World,
-  WorldSettings,
-} from 'src-electron/api/schema';
+import { GithubRemote, World, WorldSettings } from 'src-electron/api/schema';
 import { Path } from 'src-electron/core/utils/path/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
@@ -19,7 +14,7 @@ import { LEVEL_NAME } from '../../const';
 import { parseServerProperties } from '../../settings/properties';
 import { GithubBlob, GithubTree } from './githubApi';
 
-export const gitRemoteOperator: RemoteOperator<GitRemote> = {
+export const gitRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
   pushWorld,
   getWorld,
@@ -49,7 +44,7 @@ async function isGitRipository(git: SimpleGit, local: Path) {
  */
 async function getRemoteName(
   git: SimpleGit,
-  remote: GitRemote,
+  remote: GithubRemote,
   pat: string
 ): Promise<Failable<string>> {
   const url = getRemoteUrl(remote, pat);
@@ -83,12 +78,8 @@ async function getRemoteName(
 
 async function pullWorld(
   local: Path,
-  remote: GitRemote
+  remote: GithubRemote
 ): Promise<Failable<undefined>> {
-  // githubでないホストを使用していた場合エラー
-  if (remote.host !== 'github')
-    return new Error(`server starter not correspond with host:${remote.host}`);
-
   // patを取得
   const pat = getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
@@ -138,12 +129,8 @@ async function pullWorld(
 
 async function pushWorld(
   local: Path,
-  remote: GitRemote
+  remote: GithubRemote
 ): Promise<Failable<undefined>> {
-  // githubでないホストを使用していた場合エラー
-  if (remote.host !== 'github')
-    return new Error(`server starter not correspond with host:${remote.host}`);
-
   // ディレクトリが存在しない場合エラー
   if (!local.exists()) {
     return new Error(`unable to push non-existing directory ${local}`);
@@ -201,12 +188,8 @@ async function pushWorld(
 async function getWorld(
   name: string,
   container: string,
-  remote: GitRemote
+  remote: GithubRemote
 ): Promise<Failable<World>> {
-  // githubでないホストを使用していた場合エラー
-  if (remote.host !== 'github')
-    return new Error(`server starter not correspond with host:${remote.host}`);
-
   // patを取得
   const pat = getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも

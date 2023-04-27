@@ -37,16 +37,13 @@ export type Version =
   | FabricVersion;
 
 export type GithubRemote = {
-  type: 'git';
-  host: 'github';
+  type: 'github';
   owner: string;
   repo: string;
   branch: string;
 };
 
-export type GitRemote = GithubRemote;
-
-export type Remote = GitRemote;
+export type Remote = GithubRemote;
 
 export const worldTypes = [
   'normal',
