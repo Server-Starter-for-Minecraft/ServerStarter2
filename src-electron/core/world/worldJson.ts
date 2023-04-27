@@ -1,4 +1,4 @@
-import { isFailure } from 'src-electron/api/failable';
+import { Failable, isFailure } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import {
   Remote,
@@ -13,7 +13,9 @@ export function getWorldJsonPath(cwd: Path) {
   return cwd.child(server_settings_file_name);
 }
 
-export async function loadWorldJson(cwd: Path) {
+export async function loadWorldJson(
+  cwd: Path
+): Promise<Failable<WorldSettings>> {
   const jsonpath = getWorldJsonPath(cwd);
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 

@@ -1,6 +1,10 @@
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'app/src-electron/ipc/link';
-import { runCommand, runServer } from '../core/server/server';
+import {
+  runCommand,
+  runServer,
+  saveWorldSettings,
+} from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { getWorld, getWorldAbbrs } from '../core/world/world';
 import { openBrowser } from '../util/openBrowser';
@@ -17,6 +21,7 @@ export const backListener: BackListener<API> = {
   },
   handle: {
     RunServer: runServer,
+    SaveWorldSettings: saveWorldSettings,
     GetDefaultSettings: getDefaultSettings,
     GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,

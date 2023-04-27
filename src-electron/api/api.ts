@@ -47,6 +47,8 @@ export interface API extends IAPI {
   };
   invokeWindowToMain: {
     RunServer: (world: World) => Promise<Failable<undefined>>;
+    SaveWorldSettings: (world: World) => Promise<Failable<undefined>>;
+
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 
     GetWorldContainers: () => Promise<Record<string, string>>;

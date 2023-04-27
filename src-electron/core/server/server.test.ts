@@ -2,7 +2,7 @@ import { World } from 'src-electron/api/schema';
 import { versionLoaders } from '../version/version';
 import { VersionLoader } from '../version/base';
 import { isFailure, isSuccess } from 'src-electron/api/failable';
-import { runServer } from './server';
+import { runServerOrSaveSettings } from './server';
 import { Path } from '../../util/path';
 import { mainPath, versionsCachePath } from '../const';
 import { getWorldAbbrs } from '../world/world';
