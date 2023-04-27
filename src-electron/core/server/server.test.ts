@@ -1,13 +1,12 @@
 import { World } from 'src-electron/api/schema';
-import { versionLoaders } from './version/version';
-import { VersionLoader } from './version/base';
+import { versionLoaders } from '../version/version';
+import { VersionLoader } from '../version/base';
 import { isFailure, isSuccess } from 'src-electron/api/failable';
 import { runServer } from './server';
-import { Path } from '../utils/path/path';
-import { versionsCachePath } from './const';
-import { getWorldAbbrs } from './world/world';
+import { Path } from '../../util/path';
+import { mainPath, versionsCachePath } from '../const';
+import { getWorldAbbrs } from '../world/world';
 import { setBackAPI } from '../api';
-import { userDataPath } from '../userDataPath';
 
 setBackAPI({
   invoke: {
@@ -23,7 +22,7 @@ setBackAPI({
 
 const demoWorld: World = {
   name: 'papermc19',
-  container: userDataPath.child('servers').str(),
+  container: mainPath.child('servers').str(),
   settings: {
     avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
     version: {

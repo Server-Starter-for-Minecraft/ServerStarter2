@@ -108,6 +108,17 @@ export type FileData = {
   sha1: string;
 };
 
+export type WorldAbbr = {
+  /** ワールド名 */
+  name: string;
+
+  /** ディレクトリ */
+  container: string;
+
+  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+  avater_path?: string;
+};
+
 export type WorldSettings = {
   /** 使用メモリ量 (Gb) */
   memory?: number;
@@ -126,17 +137,6 @@ export type WorldSettings = {
 
   /** 起動中フラグ */
   using?: boolean;
-};
-
-export type WorldAbbr = {
-  /** ワールド名 */
-  name: string;
-
-  /** ディレクトリ */
-  container: string;
-
-  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
-  avater_path?: string;
 };
 
 export type World = {
@@ -166,6 +166,12 @@ export type World = {
     /** 導入済みMOD */
     mods?: FileData[];
   };
+};
+
+/** serverstarterのデフォルトワールド設定 */
+export type SystemWorldSettings = {
+  memory?: number;
+  properties?: ServerProperties;
 };
 
 // {

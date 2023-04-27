@@ -1,14 +1,14 @@
 import { World } from 'src-electron/api/schema';
 import { getLog4jArg } from './log4j';
 import { isFailure } from '../../api/failable';
-import { readyVersion } from './version/version';
-import { readyJava } from '../utils/java/java';
-import { unrollSettings } from './settings/settings';
-import { interactiveProcess } from '../utils/subprocess';
+import { readyVersion } from '../version/version';
+import { readyJava } from '../../util/java/java';
+import { unrollSettings } from '../settings/settings';
+import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
-import { Path } from '../utils/path/path';
-import { LEVEL_NAME } from './const';
+import { Path } from '../../util/path';
+import { LEVEL_NAME } from '../const';
 import { pullRemoteWorld, pushRemoteWorld } from './remote/remote';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
