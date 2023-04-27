@@ -14,7 +14,7 @@ import { LEVEL_NAME } from '../../const';
 import { parseServerProperties } from '../../settings/properties';
 import { GithubBlob, GithubTree } from './githubApi';
 
-export const gitRemoteOperator: RemoteOperator<GithubRemote> = {
+export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
   pushWorld,
   getWorld,

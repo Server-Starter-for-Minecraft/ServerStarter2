@@ -7,9 +7,9 @@ import { unrollSettings } from '../settings/settings';
 import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
-import { Path } from '../../util/path';
 import { LEVEL_NAME } from '../const';
-import { pullRemoteWorld, pushRemoteWorld } from './remote/remote';
+import { worldContainerToPath } from '../world/worldContainer';
+import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
@@ -60,7 +60,8 @@ let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
 /** サーバーを起動する */
 export async function runServer(world: World) {
-  const cwdPath = new Path(world.container).child(world.name);
+  // サーバーのCWDパスを得る
+  const cwdPath = worldContainerToPath(world.container).child(world.name);
   const settings = world.settings;
 
   // java実行時引数(ここから増える)
@@ -123,7 +124,7 @@ export async function runServer(world: World) {
     api.send.UpdateStatus('設定ファイルの書き出し中');
 
     // 設定ファイルをサーバーCWD直下に書き出す
-    await unrollSettings(settings, LEVEL_NAME, cwdPath);
+    await unrollSettings(world, LEVEL_NAME, cwdPath);
 
     api.send.UpdateStatus('Eulaの同意状況を確認中');
 

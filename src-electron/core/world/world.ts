@@ -3,10 +3,10 @@ import { ServerProperties, World, WorldAbbr } from 'src-electron/api/schema';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
-import { getRemoteWorld } from '../server/remote/remote';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
 import { parseServerProperties } from '../settings/properties';
+import { getRemoteWorld } from '../remote/remote';
 
 // TODO: datapacks/plugins/modsの読み込み
 

@@ -1,13 +1,13 @@
 import { Remote, World } from 'src-electron/api/schema';
 import { RemoteOperator } from './base';
-import { gitRemoteOperator } from '../../remote/github/git';
-import { Path } from '../../../util/path';
 import { Failable } from 'src-electron/api/failable';
+import { githubRemoteOperator } from './github/git';
+import { Path } from 'app/src-electron/util/path';
 
 export const remoteOperators: {
   [R in Remote as R['type']]: RemoteOperator<Remote>;
 } = {
-  github: gitRemoteOperator,
+  github: githubRemoteOperator,
 };
 
 // ワールドのデータをpull
