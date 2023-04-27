@@ -7,13 +7,13 @@ export async function getWorldContainers(): Promise<Record<string, string>> {
   const paths = serverStarterSetting.get(WORLD_CONTAINERS_KEY) ?? {
     default: 'servers',
   };
-
+  await setWorldContainers(paths);
   return paths;
 }
 
 export async function setWorldContainers(
   worldContainers: Record<string, string>
-) {
+): Promise<void> {
   serverStarterSetting.set(WORLD_CONTAINERS_KEY, worldContainers);
 }
 

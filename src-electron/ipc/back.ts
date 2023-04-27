@@ -4,7 +4,10 @@ import { runCommand, runServer } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { getWorld, getWorldAbbrs } from '../core/world/world';
 import { openBrowser } from '../util/openBrowser';
-import { getWorldContainers } from '../core/world/worldContainer';
+import {
+  getWorldContainers,
+  setWorldContainers,
+} from '../core/world/worldContainer';
 import { getDefaultSettings } from '../core/settings/settings';
 
 export const backListener: BackListener<API> = {
@@ -17,6 +20,7 @@ export const backListener: BackListener<API> = {
     GetDefaultSettings: getDefaultSettings,
     GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,
+    SetWorldContainers: setWorldContainers,
     GetWorldAbbrs: getWorldAbbrs,
     GetWorld: getWorld,
   },
