@@ -1,6 +1,6 @@
+import { Failable, isFailure } from 'app/src-electron/api/failable.js';
 import { BytesData } from '../bytesData.js';
 import { Path } from '../path.js';
-import { isFailure } from '../../api/failable.js';
 
 export type Manifest = {
   files: {
@@ -32,7 +32,7 @@ export async function installManifest(manifest: Manifest, path: Path) {
 
   // manifestの順番でファイル/ディレクトリ/リンクを作る
   // ディレクトリは同期的に作成し、ファイル/リンクは非同期を並列して処理
-  const promises: Promise<void>[] = [];
+  const promises: Promise<Failable<undefined>>[] = [];
   for await (const [k, v] of Object.entries(manifest.files)) {
     const p = path.child(k);
     switch (v.type) {
@@ -45,7 +45,7 @@ export async function installManifest(manifest: Manifest, path: Path) {
             false,
             true
           );
-          // if (isFailure(result)) console.log(p.path);
+          if (isFailure(result)) return result;
         };
         promises.push(filePromise());
         break;
@@ -55,6 +55,7 @@ export async function installManifest(manifest: Manifest, path: Path) {
       case 'link':
         const linkPromise = async () => {
           await p.mklink(p.parent().child(v.target));
+          return undefined;
         };
         promises.push(linkPromise());
         break;
@@ -62,4 +63,5 @@ export async function installManifest(manifest: Manifest, path: Path) {
   }
   // ファイル/リンクの並列処理を待機
   await Promise.all(promises);
+  // TODO: Failureがあった場合の処理
 }

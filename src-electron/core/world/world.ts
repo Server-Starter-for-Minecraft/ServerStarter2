@@ -82,7 +82,7 @@ async function getIconURI(cwd: Path) {
 }
 
 async function getServerProperties(cwd: Path) {
-  let propertiesPath = cwd.child('server.properties');
+  const propertiesPath = cwd.child('server.properties');
   let properties: ServerProperties | undefined = undefined;
   if (isSuccess(propertiesPath)) {
     const propertiesText = await propertiesPath.readText();

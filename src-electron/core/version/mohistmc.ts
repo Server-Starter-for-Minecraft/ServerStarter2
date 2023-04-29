@@ -19,7 +19,6 @@ async function readyMohistmcVersion(
   const versionPath = papermcVersionsPath.child(
     `${version.id}-${version.number}`
   );
-  const serverCwdPath = versionPath;
   const jarpath = versionPath.child(
     `${version.type}-${version.id}-${version.number}.jar`
   );

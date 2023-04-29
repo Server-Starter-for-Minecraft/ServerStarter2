@@ -134,26 +134,3 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
   };
 }
 
-async function downloadPapermcVersion(version: PapermcVersion, jarpath: Path) {
-  const buildsURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds`;
-
-  const response = await BytesData.fromURL(buildsURL);
-  if (isFailure(response)) return response;
-
-  const buildsJson = await response.json<PapermcBuilds>();
-  if (isFailure(buildsJson)) return buildsJson;
-
-  const build = buildsJson.builds[buildsJson.builds.length - 1];
-
-  const build_id = build.build;
-
-  const build_file = build.downloads.application.name;
-
-  const serverURL = `https://api.papermc.io/v2/projects/paper/versions/${version.id}/builds/${build_id}/downloads/${build_file}`;
-
-  const server = await BytesData.fromURL(serverURL);
-  if (isFailure(server)) return server;
-
-  // jarファイルを保存
-  jarpath.write(server);
-}

@@ -54,7 +54,7 @@ async function getRemoteName(
   const names = new Set<string>();
 
   // すでにリモートが存在する場合
-  for (let remote of remotes) {
+  for (const remote of remotes) {
     const matchFetch = remote.refs.fetch === url;
     const matchPush = remote.refs.push === url;
     if (matchFetch && matchPush) return remote.name;
@@ -209,7 +209,7 @@ async function getWorld(
   const settingFile = rootFiles[server_settings_file_name];
   const worldDir = rootFiles[LEVEL_NAME];
 
-  let [properties, settings, avater_path] = await Promise.all([
+  const [properties, settings, avater_path] = await Promise.all([
     getProperties(propertiesFile),
     getSettings(settingFile),
     getIconURI(worldDir),

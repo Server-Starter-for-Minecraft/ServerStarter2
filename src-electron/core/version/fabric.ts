@@ -80,7 +80,7 @@ async function getLoaders() {
   const URL = 'https://meta.fabricmc.net/v2/versions/loader';
   // TODO: hash対応
   const data = await BytesData.fromPathOrUrl(
-    fabricVersionsPath.child(`loader.json`),
+    fabricVersionsPath.child('loader.json'),
     URL,
     undefined,
     true
@@ -109,7 +109,7 @@ async function getInstallers() {
   const URL = 'https://meta.fabricmc.net/v2/versions/installer';
   // TODO: hash対応
   const data = await BytesData.fromPathOrUrl(
-    fabricVersionsPath.child(`installer.json`),
+    fabricVersionsPath.child('installer.json'),
     URL,
     undefined,
     true
@@ -136,7 +136,7 @@ async function getGames() {
   const URL = 'https://meta.fabricmc.net/v2/versions/game';
   // TODO: hash対応
   const data = await BytesData.fromPathOrUrl(
-    fabricVersionsPath.child(`game.json`),
+    fabricVersionsPath.child('game.json'),
     URL,
     undefined,
     true

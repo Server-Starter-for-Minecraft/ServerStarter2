@@ -167,16 +167,12 @@ async function buildSpigotVersion(
   const javapath = await readyJava(javaComponent, false);
   if (isFailure(javapath)) return javapath;
 
-  function handler(msg: string) {
-    // TODO:ビルドログをロガーに出力
-  }
-
   // ビルドの開始
   const process = interactiveProcess(
     javapath.absolute().str(),
     ['-jar', buildToolPath.absolute().str(), '--rev', version.id],
-    handler,
-    handler,
+    undefined,
+    undefined,
     spigotBuildPath.absolute().str(),
     true
   );

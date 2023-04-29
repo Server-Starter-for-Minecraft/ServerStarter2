@@ -1,8 +1,4 @@
-import {
-  SystemWorldSettings,
-  World,
-  WorldSettings,
-} from 'src-electron/api/schema';
+import { SystemWorldSettings, World } from 'src-electron/api/schema';
 import {
   defaultServerProperties,
   mergeServerProperties,

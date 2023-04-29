@@ -1,8 +1,6 @@
 import { Failable, isFailure } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import {
-  Remote,
-  Version,
   WorldSettings,
   versionTypes,
 } from 'src-electron/api/schema';
