@@ -16,13 +16,16 @@ export const ipcSend = <C extends string>(
   ...args: any[]
 ) => window.webContents.send(channel, ...args);
 
+let invokeid = -1;
+
 export function ipcInvoke<C extends string, T>(
   window: BrowserWindow,
   channel: C,
   ...args: any[]
 ) {
   return new Promise<T>((resolve) => {
-    const sendId = crypto.randomUUID();
+    invokeid++;
+    const sendId = invokeid.toString();
     const handleChannel = 'handle:' + channel;
     const listener = (
       _: Electron.IpcMainEvent,

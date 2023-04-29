@@ -151,7 +151,6 @@ async function getGames() {
 
   return games
     .map(({ version }) => {
-      console.log(version);
       const vanillaver = vanilla.find(({ id }) => id === version);
       if (vanillaver === undefined) return vanillaver;
       const { id, release } = vanillaver;

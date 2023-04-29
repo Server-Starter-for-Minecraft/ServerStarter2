@@ -17,8 +17,10 @@ let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
 class WorldUsingError extends Error {}
 
-export const runServer = (world: World) => runServerOrSaveSettings(world,false);
-export const saveWorldSettings = (world: World) => runServerOrSaveSettings(world,true);
+export const runServer = (world: World) =>
+  runServerOrSaveSettings(world, false);
+export const saveWorldSettings = (world: World) =>
+  runServerOrSaveSettings(world, true);
 
 /**
  * サーバーを起動する/ワールド設定を保存する
