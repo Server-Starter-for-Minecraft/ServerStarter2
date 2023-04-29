@@ -3,9 +3,12 @@ import { useMainStore } from "./stores/MainStore";
 
 export async function InitWindow() {
   // storeの初期化
-  const worlds = await window.API.invokeGetAllWorlds()
-  checkError(
-    worlds,
-    (checked) => useMainStore().worldList = checked
-  )
+  const worldContainers = await window.API.invokeGetWorldContainers()
+  // TODO: world情報の取得
+  console.log(worldContainers)
+
+  // checkError(
+  //   worldContainers,
+  //   (checked) => useMainStore().worldList = checked
+  // )
 }

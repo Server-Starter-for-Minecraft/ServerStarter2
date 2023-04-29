@@ -16,16 +16,16 @@ const versionList = ref([] as Version[]);
 
 async function updateVersionList() {
   // TODO: useCache = true で良いのか確認
-  await window.API.invokeGetVersions(store.world.version.type, true).then(
+  await window.API.invokeGetVersions(store.world.settings.version.type, true).then(
     (res) => {
       checkError(res, (checked) => (versionList.value = checked));
     }
   );
 
   // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
-  const storeWorldID = store.world.version.id
+  const storeWorldID = store.world.settings.version.id
   if (storeWorldID == '' || versionList.value.every(ver => ver.id != storeWorldID))
-    store.world.version.id = versionList.value[0].id
+    store.world.settings.version.id = versionList.value[0].id
 }
 onBeforeMount(updateVersionList);
 </script>
@@ -47,7 +47,7 @@ onBeforeMount(updateVersionList);
     <propertyItem propName="version">
       <template v-slot:userInput>
         <q-select
-          v-model="store.world.version.type"
+          v-model="store.world.settings.version.type"
           :options="versionTypes"
           @update:model-value="updateVersionList"
           label="サーバー"
@@ -55,7 +55,7 @@ onBeforeMount(updateVersionList);
           class="q-pr-lg"
         />
         <q-select
-          v-model="store.world.version.id"
+          v-model="store.world.settings.version.id"
           :options="versionList.map((ver) => ver.id)"
           label="バージョン"
           style="width: 150px"

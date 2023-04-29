@@ -8,13 +8,14 @@ useMainStore().setHeader('新規ワールド', {showMenuBtn: true});
 // idは '' を渡すことで最新バージョンをデフォルトで提示する
 useWorldEditStore().world = {
   name: '',
-  version: {
-    id: '',
-    type: 'vanilla',
-    release: true
-  },
   container: '',
-  settings: {},
+  settings: {
+    version: {
+      id: '',
+      type: 'vanilla',
+      release: true
+    },
+  },
   additional: {}
 }
 

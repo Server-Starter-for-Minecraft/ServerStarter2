@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { defaultServerProperties } from 'app/src-electron/core/server/settings/properties';
+import { defaultServerProperties } from 'app/src-electron/core/settings/properties';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 
 const store = useWorldEditStore()
@@ -10,10 +10,10 @@ const store = useWorldEditStore()
 function setfirstProperty() {
   
   const _defaultServerProperties = defaultServerProperties
-  if (store.world.settings?.properties === void 0) { return _defaultServerProperties }
+  if (store.world.properties === void 0) { return _defaultServerProperties }
   
-  for (const key in store.world.settings.properties) {
-    _defaultServerProperties[key] = store.world.settings.properties[key]
+  for (const key in store.world.properties) {
+    _defaultServerProperties[key] = store.world.properties[key]
   }
   // return 
   return defaultServerProperties
