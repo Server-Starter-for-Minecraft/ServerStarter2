@@ -1,6 +1,6 @@
 import { isAbsolute } from 'path';
 import { WORLD_CONTAINERS_KEY, serverStarterSetting } from '../stores/setting';
-import { Path } from 'app/src-electron/util/path';
+import { Path } from 'src-electron/util/path';
 import { mainPath } from '../const';
 
 export async function getWorldContainers(): Promise<Record<string, string>> {

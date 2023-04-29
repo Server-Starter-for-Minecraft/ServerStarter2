@@ -13,7 +13,7 @@ export type GitRemoteSetting = {
 };
 
 export type RemoteSetting = {
-  git: GitRemoteSetting;
+  github: GitRemoteSetting;
 };
 
 export const WORLD_CONTAINERS_KEY = 'world_containers';

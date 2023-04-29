@@ -2,12 +2,12 @@ import { Failable } from 'src-electron/api/failable';
 import {
   REMOTES_KEY,
   serverStarterSetting,
-} from 'app/src-electron/core/stores/setting';
+} from 'src-electron/core/stores/setting';
 
 /** リポジトリを操作できる登録済みのPATを取得する。 */
 export function getGitPat(owner: string, repo: string): Failable<string> {
   const gitAccounts =
-    serverStarterSetting.get(REMOTES_KEY)?.git?.accounts ?? [];
+    serverStarterSetting.get(REMOTES_KEY)?.github?.accounts ?? [];
 
   for (const account of gitAccounts) {
     const matchOwner = owner === account.owner;
@@ -24,7 +24,7 @@ export function getGitPat(owner: string, repo: string): Failable<string> {
  * 既に登録されていた場合更新する。*/
 export function setGitPat(owner: string, repo: string, pat: string): undefined {
   const gitAccounts =
-    serverStarterSetting.get(REMOTES_KEY)?.git?.accounts ?? [];
+    serverStarterSetting.get(REMOTES_KEY)?.github?.accounts ?? [];
 
   for (const account of gitAccounts) {
     const matchOwner = owner === account.owner;

@@ -1,5 +1,5 @@
 import { Failable, isFailure } from 'src-electron/api/failable';
-import { BytesData } from 'app/src-electron/util/bytesData';
+import { BytesData } from 'src-electron/util/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 
 export class GithubTree {

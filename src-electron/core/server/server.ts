@@ -10,7 +10,7 @@ import { checkEula } from './eula';
 import { LEVEL_NAME } from '../const';
 import { worldContainerToPath } from '../world/worldContainer';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
-import { Path } from 'app/src-electron/util/path';
+import { Path } from 'src-electron/util/path';
 import { loadWorldJson } from '../world/worldJson';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
