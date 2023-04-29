@@ -13,13 +13,14 @@ export function setRouter(router: Router) {
  * @param successProcess エラーがなかった場合の処理
  * @param errorDescription エラーが起きた場合の説明文（デフォルトは「不明なエラーが発生しました。」）
  */
-export async function checkError<S, F extends Error>(
+export function checkError<S, F extends Error>(
     check: Failable<S, F>,
-    successProcess: (checked: S) => void,
+    successProcess?: (checked: S) => void,
     errorDescription?: string
   ) {
     if (isSuccess(check)) {
-      successProcess(check)
+      if (successProcess !== void 0) successProcess(check)
+      return check
     }
     else {
       if (errorDescription !== void 0) { useErrorStore().description = errorDescription }

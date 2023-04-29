@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from 'vue';
-import { Version, versionTypes } from 'app/src-electron/api/schema';
+import { onBeforeMount } from 'vue';
+import { versionTypes } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { useDialogStore } from 'src/stores/DialogStore';
 import propertyItem from 'src/components/util/propertyItem.vue';
 import propertyTable from './PropertyTable.vue';
-import { checkError } from '../Error/Error';
 
 interface Props {
   saveFunc: () => void;
@@ -12,20 +13,21 @@ interface Props {
 defineProps<Props>();
 
 const store = useWorldEditStore();
-const versionList = ref([] as Version[]);
 
 async function updateVersionList() {
-  // TODO: useCache = true で良いのか確認
-  await window.API.invokeGetVersions(store.world.settings.version.type, true).then(
-    (res) => {
-      checkError(res, (checked) => (versionList.value = checked));
-    }
-  );
+  const version = store.world.settings.version
+  const versionList = useSystemStore().serverVersions.get(version.type)
+  
+  // versionListがundefinedの時にエラー処理
+  if (versionList === void 0) {
+    useDialogStore().showDialog(`サーバーバージョン${version.type}の一覧取得に失敗したため，このサーバーは選択できません`)
+    store.world.settings.version.type = 'vanilla'
+    return
+  }
 
   // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
-  const storeWorldID = store.world.settings.version.id
-  if (storeWorldID == '' || versionList.value.every(ver => ver.id != storeWorldID))
-    store.world.settings.version.id = versionList.value[0].id
+  if (version.id == '' || versionList.every(ver => ver.id != version.id))
+    store.world.settings.version.id = versionList[0].id
 }
 onBeforeMount(updateVersionList);
 </script>
@@ -56,7 +58,7 @@ onBeforeMount(updateVersionList);
         />
         <q-select
           v-model="store.world.settings.version.id"
-          :options="versionList.map((ver) => ver.id)"
+          :options="useSystemStore().serverVersions.get(store.world.settings.version.type)?.map((ver) => ver.id)"
           label="バージョン"
           style="width: 150px"
           class="q-pr-lg"
