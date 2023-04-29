@@ -15,20 +15,6 @@ type PapermcVersions = {
   versions: string[];
 };
 
-type PapermcBuilds = {
-  project_id: 'paper';
-  project_name: 'Paper';
-  version: string;
-  builds: {
-    build: number;
-    downloads: {
-      application: {
-        name: 'paper-1.19.3-368.jar';
-      };
-    };
-  }[];
-};
-
 export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
   /** papermcのサーバーデータを必要があればダウンロード */
   readyVersion: readyVersion,
