@@ -1,9 +1,9 @@
 import { app } from 'electron';
 import { Path } from '../util/path';
 
-const userDataPath = new Path(
-  app?.getPath('userData') ?? 'userData'
-).absolute();
+const userDataPath = (process.env.DEBUGGING
+  ? new Path('userData')
+  : new Path(app?.getPath('userData'))).absolute()
 
 export const mainPath = userDataPath;
 

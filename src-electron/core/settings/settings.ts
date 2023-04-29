@@ -6,6 +6,7 @@ import {
 } from './properties';
 import { Path } from '../../util/path';
 import { SETTINGS_KEY, serverStarterSetting } from '../stores/setting';
+import { saveWorldJson } from '../world/worldJson';
 
 /** サーバー設定系ファイルをサーバーCWD直下に書き出す */
 export async function unrollSettings(
@@ -18,7 +19,10 @@ export async function unrollSettings(
     ...(world.properties ?? defaultServerProperties),
     'level-name': { type: 'string', value: levelName },
   });
-  serverCwdPath.child('server.properties').writeText(strprop);
+  await serverCwdPath.child('server.properties').writeText(strprop);
+
+  // jsonを書き出し
+  await saveWorldJson(serverCwdPath, world.settings);
 }
 
 // Javaの-Xmx,-Xmsのデフォルト値(Gb)
