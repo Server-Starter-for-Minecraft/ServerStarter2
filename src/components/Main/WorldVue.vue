@@ -7,6 +7,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import iconBtn from '../util/iconButton.vue';
 import { checkError } from 'src/components/Error/Error';
+import { deepCopy } from 'src/scripts/deepCopy';
 
 interface Props {
   world: World;
@@ -38,10 +39,12 @@ const clicked = ref(false);
 const itemHovered = ref(false);
 const runBtnHovered = ref(false);
 
+/**
+ * 各ワールドの編集ボタンを押されたときに、ワールドデータを編集ページに飛ばす
+ */
 function worldEdit() {
   useWorldEditStore().worldIndex = prop.idx
-  // TODO: deep copy のモジュールを作成？
-  useWorldEditStore().world = JSON.parse(JSON.stringify(prop.world)) as World
+  useWorldEditStore().world = deepCopy(prop.world)
 }
 </script>
 

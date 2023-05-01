@@ -3,13 +3,14 @@ import { ref } from 'vue'
 import { ServerProperty } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import { QTableCol } from '../util/iComponent';
+import { deepCopy } from 'src/scripts/deepCopy';
 
 const store = useWorldEditStore()
 /**
- * TODO: Propertyがない場合はデフォルトを適用し、ある場合はある項目だけ参照して他の項目はDefaultを適用させる
+ * Propertyがない場合はデフォルトを適用し、ある場合はある項目だけ参照して他の項目はDefaultを適用させる
  */
 async function setfirstProperty() {
-  const _defaultServerProperties = (await window.API.invokeGetDefaultSettings()).properties
+  const _defaultServerProperties = deepCopy((await window.API.invokeGetDefaultSettings()).properties)
   
   if (store.world.properties !== void 0) {
     for (const key in store.world.properties) {
