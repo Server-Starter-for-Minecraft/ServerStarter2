@@ -154,15 +154,30 @@ async function _runServer(
     await pushWorld();
   }
 
+  async function setUsingFlagFalse() {
+    // サーバー起動中のフラグを折る
+    settings.using = false;
+
+    // 設定ファイルをサーバーCWD直下に書き出す
+    api.send.UpdateStatus('設定ファイルの書き出し中');
+    await unrollSettings(world, '', cwdPath);
+  }
+
   // Eulaチェック
   api.send.UpdateStatus('Eulaの同意状況を確認中');
   const eulaAgreement = await checkEula(javaPath, programArguments, cwdPath);
 
   // Eulaチェックに失敗した場合
-  if (isFailure(eulaAgreement)) return eulaAgreement;
+  if (isFailure(eulaAgreement)) {
+    // 使用中フラグを折る
+    await setUsingFlagFalse();
+    return eulaAgreement;
+  }
 
   // Eulaに同意しなかった場合エラー
   if (!eulaAgreement) {
+    // 使用中フラグを折る
+    await setUsingFlagFalse();
     return new Error(
       'To start server, you need to agree to Minecraft EULA (https://aka.ms/MinecraftEULA)'
     );
@@ -190,12 +205,8 @@ async function _runServer(
   // フロントエンドからの入力を無視
   stdin = undefined;
 
-  // サーバー起動中のフラグを折る
-  settings.using = false;
-
-  // 設定ファイルをサーバーCWD直下に書き出す
-  api.send.UpdateStatus('設定ファイルの書き出し中');
-  await unrollSettings(world, '', cwdPath);
+  // 使用中フラグを折る
+  await setUsingFlagFalse();
 
   // サーバーの実行に失敗した場合はエラー
   if (isFailure(result)) return result;
