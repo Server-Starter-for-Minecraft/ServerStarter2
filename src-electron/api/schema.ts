@@ -171,7 +171,7 @@ export type World = {
 /** serverstarterのデフォルトワールド設定 */
 export type SystemWorldSettings = {
   memory?: number;
-  properties?: ServerProperties;
+  properties: ServerProperties;
 };
 
 /**
