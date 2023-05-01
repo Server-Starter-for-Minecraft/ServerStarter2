@@ -7,13 +7,14 @@ import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
 import { parseServerProperties } from '../settings/properties';
 import { getRemoteWorld } from '../remote/remote';
+import { worldContainerToPath } from './worldContainer';
 
 // TODO: datapacks/plugins/modsの読み込み
 
 export async function getWorldAbbrs(
   worldContainer: string
 ): Promise<Failable<WorldAbbr[]>> {
-  const subdir = await new Path(worldContainer).iter();
+  const subdir = await worldContainerToPath(worldContainer).iter();
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
   );
@@ -36,10 +37,8 @@ export async function getWorldAbbr(
   return result;
 }
 
-export async function getWorld(
-  worldAbbr:WorldAbbr
-): Promise<Failable<World>> {
-  const {container,name} = worldAbbr
+export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
+  const { container, name } = worldAbbr;
   const cwd = new Path(container).child(name);
 
   const settings = await loadWorldJson(cwd);
