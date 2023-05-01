@@ -174,6 +174,17 @@ export type SystemWorldSettings = {
   properties?: ServerProperties;
 };
 
+/**
+ * GetWorldContainersの戻り値
+ * SetWorldContainersの引数
+ */
+export type WorldContainers = {
+  default: string;
+  custom: {
+    [name in string]: string;
+  };
+};
+
 // {
 //   'allow-flight'?: boolean;
 //   'allow-nether'?: boolean;

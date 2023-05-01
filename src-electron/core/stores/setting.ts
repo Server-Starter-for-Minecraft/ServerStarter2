@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { SystemWorldSettings } from '../../api/schema';
+import { SystemWorldSettings, WorldContainers } from '../../api/schema';
 import { mainPath } from '../const';
 
 export type GitAccountSetting = {
@@ -21,7 +21,7 @@ export const SETTINGS_KEY = 'settings';
 export const REMOTES_KEY = 'remotes';
 
 export type ServerStarterSetting = {
-  [WORLD_CONTAINERS_KEY]?: Record<string, string>;
+  [WORLD_CONTAINERS_KEY]?: WorldContainers;
   [SETTINGS_KEY]?: SystemWorldSettings;
   [REMOTES_KEY]?: RemoteSetting;
 };
