@@ -1,5 +1,5 @@
 import { API } from '../api/api';
-import { BackCaller } from './ipc/link';
+import { BackCaller } from '../ipc/link';
 
 /** バックエンドからで呼んでいいapi */
 export let api: BackCaller<API>;

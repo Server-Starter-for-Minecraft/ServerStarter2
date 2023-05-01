@@ -36,14 +36,14 @@ export type Version =
   | MohistmcVersion
   | FabricVersion;
 
-export type GitRemote = {
-  type: 'git';
+export type GithubRemote = {
+  type: 'github';
   owner: string;
   repo: string;
   branch: string;
-  new: boolean;
 };
-export type Remote = GitRemote;
+
+export type Remote = GithubRemote;
 
 export const worldTypes = [
   'normal',
@@ -108,26 +108,23 @@ export type FileData = {
   sha1: string;
 };
 
-export type WorldSettings = {
-  /** server.propertiesの内容 (json化済) */
-  properties?: ServerProperties;
-
-  /** 使用メモリ量 (Gb) */
-  memory?: number;
-};
-
-export type World = {
+export type WorldAbbr = {
   /** ワールド名 */
   name: string;
 
   /** ディレクトリ */
   container: string;
 
-  /** バージョン */
-  version: Version;
-
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   avater_path?: string;
+};
+
+export type WorldSettings = {
+  /** 使用メモリ量 (Gb) */
+  memory?: number;
+
+  /** バージョン */
+  version: Version;
 
   /** リモートリポジトリ */
   remote?: Remote;
@@ -140,9 +137,23 @@ export type World = {
 
   /** 起動中フラグ */
   using?: boolean;
+};
 
-  /** ワールド設定 */
+export type World = {
+  /** ワールド名 */
+  name: string;
+
+  /** ディレクトリ */
+  container: string;
+
+  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+  avater_path?: string;
+
+  /** ワールド設定 (server_settings.jsonの内容) */
   settings: WorldSettings;
+
+  /** server.propertiesの内容 */
+  properties?: ServerProperties;
 
   /** 導入済み */
   additional: {
@@ -155,6 +166,12 @@ export type World = {
     /** 導入済みMOD */
     mods?: FileData[];
   };
+};
+
+/** serverstarterのデフォルトワールド設定 */
+export type SystemWorldSettings = {
+  memory?: number;
+  properties?: ServerProperties;
 };
 
 // {

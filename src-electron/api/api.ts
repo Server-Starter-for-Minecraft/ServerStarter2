@@ -1,5 +1,11 @@
 import { Failable } from './failable';
-import { Version, VersionType, World, WorldSettings } from './schema';
+import {
+  SystemWorldSettings,
+  Version,
+  VersionType,
+  World,
+  WorldAbbr,
+} from './schema';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**
@@ -10,7 +16,7 @@ import { IAPI, IBackAPI, IFrontAPI } from './types';
  * window.API.~ にて呼び出し/リスナー登録可能
  *
  * ### バックエンドの場合
- * import {api} from "src-electron/core/api"
+ * import {api} from "src-electron/api"
  *
  * api.~ にて呼び出し可能
  *
@@ -20,11 +26,11 @@ import { IAPI, IBackAPI, IFrontAPI } from './types';
  *
  * 2 src-electron/electron-preload の `const api`でエラーが出るので修正
  *
- * 3 src-electron/core/ipc/front の `function getFrontAPIListener`でエラーが出ていたら修正
+ * 3 src-electron/ipc/front の `function getFrontAPIListener`でエラーが出ていたら修正
  *
- * 4 src-electron/core/ipc/dummy_back の `const backListener`でエラーが出ていたら修正
+ * 4 src-electron/ipc/dummy_back の `const backListener`でエラーが出ていたら修正
  *
- * 5 src-electron/core/ipc/back の `const backListener`でエラーが出ていたら関数を追加(バックエンド側の対応が必要)
+ * 5 src-electron/ipc/back の `const backListener`でエラーが出ていたら関数を追加(バックエンド側の対応が必要)
  */
 export interface API extends IAPI {
   sendMainToWindow: {
@@ -41,9 +47,21 @@ export interface API extends IAPI {
   };
   invokeWindowToMain: {
     RunServer: (world: World) => Promise<Failable<undefined>>;
-    GetDefaultSettings: () => Promise<WorldSettings>;
-    GetWorldContainers: () => Promise<Failable<string[]>>;
-    GetWorlds: (worldContainer: string) => Promise<Failable<World[]>>;
+    SaveWorldSettings: (world: World) => Promise<Failable<undefined>>;
+
+    GetDefaultSettings: () => Promise<SystemWorldSettings>;
+
+    GetWorldContainers: () => Promise<Record<string, string>>;
+    SetWorldContainers: (
+      worldContainers: Record<string, string>
+    ) => Promise<void>;
+
+    GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
+    GetWorld: (
+      name: string,
+      worldContainer: string
+    ) => Promise<Failable<World>>;
+
     GetVersions: (
       type: VersionType,
       useCache: boolean

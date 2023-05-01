@@ -1,6 +1,6 @@
-import { Version } from 'app/src-electron/api/schema';
-import { Path } from '../utils/path/path';
-import { BytesData } from '../utils/bytesData/bytesData';
+import { Version } from 'src-electron/api/schema';
+import { Path } from '../../util/path';
+import { BytesData } from '../../util/bytesData';
 import { Failable, isFailure } from '../../api/failable';
 import { api } from '../api';
 

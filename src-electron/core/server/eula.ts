@@ -1,7 +1,7 @@
 import { api } from '../api';
-import { Path } from '../utils/path/path';
+import { Path } from '../../util/path';
 import { Failable, isFailure } from '../../api/failable';
-import { execProcess } from '../utils/subprocess';
+import { execProcess } from '../../util/subprocess';
 
 /**
  * Eulaに同意したかどうかを返す

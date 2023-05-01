@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ServerProperty } from 'app/src-electron/api/schema';
-import { defaultServerProperties } from 'app/src-electron/core/server/settings/properties';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import { QTableCol } from '../util/iComponent';
 
@@ -9,16 +8,16 @@ const store = useWorldEditStore()
 /**
  * TODO: Propertyがない場合はデフォルトを適用し、ある場合はある項目だけ参照して他の項目はDefaultを適用させる
  */
-function setfirstProperty() {
+async function setfirstProperty() {
+  const _defaultServerProperties = (await window.API.invokeGetDefaultSettings()).properties
   
-  const _defaultServerProperties = defaultServerProperties
-  if (store.world.settings?.properties === void 0) { return _defaultServerProperties }
-  
-  for (const key in store.world.settings.properties) {
-    _defaultServerProperties[key] = store.world.settings.properties[key]
+  if (store.world.properties !== void 0) {
+    for (const key in store.world.properties) {
+      _defaultServerProperties[key] = store.world.properties[key]
+    }
   }
-  // return 
-  return defaultServerProperties
+
+  return _defaultServerProperties
 }
 const serverProperty = ref(setfirstProperty())
 
@@ -84,7 +83,8 @@ const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { nam
   <q-table
     class="my-sticky-virtscroll-table"
     virtual-scroll
-    flat bordered
+    flat
+    bordered
     :rows-per-page-options="[0]"
     row-key="index"
     :rows="rows"
@@ -134,13 +134,15 @@ const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { nam
   </q-table>
 </template>
 
-
 <style lang="scss">
 .my-sticky-virtscroll-table {
   /* height or max-height is important */
   height: 410px;
 
-  .q-table__top, .q-table__bottom, thead, th {
+  .q-table__top,
+  .q-table__bottom,
+  thead,
+  th {
     /* bg color is important for th; just specify one */
     background-color: #00b4ff;
   }
@@ -153,7 +155,7 @@ const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { nam
   tr th {
     font-size: 1.2rem;
   }
-  
+
   /* this will be the loading indicator */
   thead tr:last-child th {
     /* height of all previous header rows */

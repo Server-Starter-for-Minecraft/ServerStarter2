@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/api/schema';
+import { World } from 'src-electron/api/schema';
 import { defineStore } from 'pinia';
 
 export const useWorldEditStore = defineStore('worldEditStore', {

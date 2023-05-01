@@ -3,9 +3,9 @@ import {
   VersionType,
   World,
   WorldSettings,
-} from 'app/src-electron/api/schema';
-import { sleep } from '../utils/testTools';
-import { api } from 'app/src-electron/core/api';
+} from 'src-electron/schema';
+import { sleep } from '../../util/testTools';
+import { api } from 'src-electron//api';
 import { Failable } from '../../api/failable';
 
 // 処理フロー
