@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { Ref, onBeforeMount, ref } from 'vue'
 import { ServerProperty } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import { QTableCol } from '../util/iComponent';
@@ -20,7 +20,29 @@ async function setfirstProperty() {
 
   return _defaultServerProperties
 }
-const serverProperty = ref(setfirstProperty())
+
+async function updateRows() {
+  rows.value = Object.entries(await setfirstProperty()).map(([name, value]) => ({ name, value }))
+}
+
+const cols: QTableCol[] = [
+  {
+    name: 'name',
+    required: true,
+    field: 'name',
+    label: 'プロパティ名',
+    sortable: true
+  },
+  {
+    name: 'value',
+    label: '値',
+    field: 'value',
+    style: 'width: 200px',
+    sortable: true
+  },
+]
+type Rows = { name: string; value: ServerProperty; }[]
+const rows: Ref<Rows> = ref([])
 
 /**
  * Propertyの編集に使用するEditerを指定
@@ -61,23 +83,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
   return `半角数字を入力してください${AdditionalMessage}`
 }
 
-const cols: QTableCol[] = [
-  {
-    name: 'name',
-    required: true,
-    field: 'name',
-    label: 'プロパティ名',
-    sortable: true
-  },
-  {
-    name: 'value',
-    label: '値',
-    field: 'value',
-    style: 'width: 200px',
-    sortable: true
-  },
-]
-const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { name: k, value: v } })
+onBeforeMount(updateRows)
 </script>
 
 <template>
@@ -90,6 +96,7 @@ const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { nam
     row-key="index"
     :rows="rows"
     :columns="cols"
+    :loading="rows.length === 0"
     hide-bottom
   >
     <template v-slot:body="props">
@@ -132,6 +139,10 @@ const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { nam
         </q-td>
       </q-tr>
     </template>
+
+    <template v-slot:loading>
+      <q-inner-loading showing color="primary"/>
+    </template>
   </q-table>
 </template>
 
@@ -145,7 +156,7 @@ const rows = Object.entries(serverProperty.value).map(([k, v]) => { return { nam
   thead,
   th {
     /* bg color is important for th; just specify one */
-    background-color: #00b4ff;
+    background-color: $primary;
   }
 
   thead tr th {

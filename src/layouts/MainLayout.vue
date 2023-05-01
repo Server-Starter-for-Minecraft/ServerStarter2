@@ -5,14 +5,12 @@ const mainStore = useMainStore();
 </script>
 
 <template>
+  <!-- TODO: drawerの定義をここで書き、drawerの中身はStoreで受ける -->
+  <!-- 画面サイズが小さいときにMenuBtnが表示され、大きいときにはDrawerが固定で表示させる -->
+
   <q-layout view="hHh Lpr rff">
     <q-header class="header">
       <q-toolbar class="q-pa-lg">
-        <q-toolbar-title>
-          <span class="title">{{ mainStore.mainTitle }}</span>
-          <span>{{ mainStore.subTitle }}</span>
-        </q-toolbar-title>
-
         <q-btn
           v-show="mainStore.showMenuBtn"
           flat
@@ -21,7 +19,13 @@ const mainStore = useMainStore();
           @click="mainStore.rightDrawerOpen = !mainStore.rightDrawerOpen"
           aria-label="Menu"
           icon="menu"
+          size="20px"
         />
+
+        <q-toolbar-title>
+          <span class="title">{{ mainStore.mainTitle }}</span>
+          <span>{{ mainStore.subTitle }}</span>
+        </q-toolbar-title>
 
         <div>{{ mainStore.sideText }}</div>
       </q-toolbar>
