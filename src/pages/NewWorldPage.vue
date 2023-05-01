@@ -2,13 +2,14 @@
 import { useMainStore } from 'src/stores/MainStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import WorldEditPage from '../components/WorldEdit/WorldEditVue.vue';
+import { useSystemStore } from 'src/stores/SystemStore';
 
 useMainStore().setHeader('新規ワールド', {showMenuBtn: true});
 // TODO: 新規ワールドにおけるcontainerは？
 // idは '' を渡すことで最新バージョンをデフォルトで提示する
 useWorldEditStore().world = {
   name: '',
-  container: '',
+  container: useSystemStore().worldContainers.default,
   settings: {
     version: {
       id: '',

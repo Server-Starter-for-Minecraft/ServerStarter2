@@ -1,21 +1,31 @@
 import { versionTypes } from "app/src-electron/api/schema";
 import { checkError } from "./components/Error/Error";
 import { useMainStore } from "./stores/MainStore";
-import { useWorldEditStore } from "./stores/WorldEditStore";
 import { useSystemStore } from "./stores/SystemStore";
+import { isSuccess } from "app/src-electron/api/failable";
+
 
 export async function InitWindow() {
   // storeの初期化
-  // TODO: world情報の取得
-  // const worldContainers = await window.API.invokeGetWorldContainers()
-  // console.log(worldContainers)
+  const sysStore = useSystemStore()
+  const mainStore = useMainStore()
 
-  // checkError(
-  //   worldContainers,
-  //   (checked) => useMainStore().worldList = checked
-  // )
+  // バージョンの読み込み
   await getAllVersion(true)
   getAllVersion(false)
+
+  // world読み込み
+  sysStore.worldContainers = await window.API.invokeGetWorldContainers()
+  const paths = [sysStore.worldContainers.default, ...Object.values(sysStore.worldContainers.custom)]
+  const worldAbbrFailables = await Promise.all(paths.map(window.API.invokeGetWorldAbbrs))
+  // TODO: container or world が読み込めなかった場合にPopupを表示する
+  const worldAbbrs = worldAbbrFailables.filter(isSuccess).flatMap(x => x)
+  const worlds = await Promise.all(worldAbbrs.map(window.API.invokeGetWorld))
+  mainStore.worldList = worlds.filter(isSuccess)
+
+  // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
+  // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく
+  // mainStore.worldListを (worldAbbr | world) にする？
 }
 
 /**
