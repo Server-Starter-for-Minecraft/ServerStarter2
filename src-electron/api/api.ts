@@ -56,10 +56,7 @@ export interface API extends IAPI {
     SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;
 
     GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
-    GetWorld: (
-      name: string,
-      worldContainer: string
-    ) => Promise<Failable<World>>;
+    GetWorld: (worldAbbr: WorldAbbr) => Promise<Failable<World>>;
 
     GetVersions: (
       type: VersionType,
