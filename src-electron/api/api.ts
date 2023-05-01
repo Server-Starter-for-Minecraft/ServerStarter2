@@ -5,6 +5,7 @@ import {
   VersionType,
   World,
   WorldAbbr,
+  WorldContainers,
 } from './schema';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
@@ -51,10 +52,8 @@ export interface API extends IAPI {
 
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 
-    GetWorldContainers: () => Promise<Record<string, string>>;
-    SetWorldContainers: (
-      worldContainers: Record<string, string>
-    ) => Promise<void>;
+    GetWorldContainers: () => Promise<WorldContainers>;
+    SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;
 
     GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
     GetWorld: (
