@@ -190,6 +190,13 @@ async function _runServer(
   // フロントエンドからの入力を無視
   stdin = undefined;
 
+  // サーバー起動中のフラグを折る
+  settings.using = false;
+
+  // 設定ファイルをサーバーCWD直下に書き出す
+  api.send.UpdateStatus('設定ファイルの書き出し中');
+  await unrollSettings(world, '', cwdPath);
+
   // サーバーの実行に失敗した場合はエラー
   if (isFailure(result)) return result;
 }
