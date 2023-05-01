@@ -39,7 +39,7 @@ export async function getWorldAbbr(
 
 export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
   const { container, name } = worldAbbr;
-  const cwd = new Path(container).child(name);
+  const cwd = worldContainerToPath(container).child(name);
 
   const settings = await loadWorldJson(cwd);
   if (isFailure(settings)) return settings;
