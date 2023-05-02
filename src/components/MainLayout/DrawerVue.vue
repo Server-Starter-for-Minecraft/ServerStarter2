@@ -29,7 +29,7 @@ const store = useMainStore();
               {{ menuItem.label }}
             </q-item-section>
             <q-tooltip
-              v-show="$q.screen.lt.md"
+              v-if="$q.screen.lt.md"
               anchor="center right"
               self="center left"
               :offset="[10, 10]"
