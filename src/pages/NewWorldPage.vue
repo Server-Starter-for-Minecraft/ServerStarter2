@@ -4,8 +4,6 @@ import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import WorldEditPage from '../components/WorldEdit/WorldEditVue.vue';
 import { useSystemStore } from 'src/stores/SystemStore';
 
-useMainStore().setHeader('新規ワールド', {showMenuBtn: true});
-// TODO: 新規ワールドにおけるcontainerは？
 // idは '' を渡すことで最新バージョンをデフォルトで提示する
 useWorldEditStore().world = {
   name: '',
@@ -26,5 +24,5 @@ async function saveFunc() {
 </script>
 
 <template>
-  <WorldEditPage :save-func="saveFunc"/>
+  <WorldEditPage title="新規ワールド" :save-func="saveFunc"/>
 </template>

@@ -8,7 +8,7 @@ const store = useMainStore()
 const text = ref('');
 const sortType = ref('名前');
 const sortTypes = ['名前', '最終プレイ'];
-const hasWorldData = store.showWorldList('').length !== 0
+const hasWorldData = store.searchWorld('').length !== 0
 </script>
 
 <template>
@@ -23,7 +23,7 @@ const hasWorldData = store.showWorldList('').length !== 0
           label="検索"
           @clear="text = ''"
           class="q-px-md"
-          >
+        >
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -41,10 +41,10 @@ const hasWorldData = store.showWorldList('').length !== 0
     </q-item-section>
   </q-item>
 
-  <q-separator class="q-mx-md"/>
-  
+  <q-separator class="q-mx-md" />
+
   <q-virtual-scroll
-    :items="store.showWorldList(text)"
+    :items="store.searchWorld(text)"
     separator
     v-slot="{ item, index }"
     class="q-pa-sm mainField fit"
@@ -53,7 +53,7 @@ const hasWorldData = store.showWorldList('').length !== 0
   >
     <world-vue :world="item" :idx="index" />
   </q-virtual-scroll>
-  <div v-show="store.showWorldList(text).length == 0" class="col row justify-center items-center">
+  <div v-show="store.searchWorld(text).length == 0" class="col row justify-center items-center">
     <p v-show="hasWorldData" class="q-pa-none">おや？ お探しのワールドは存在しないようです</p>
     <div v-show="!hasWorldData">
       <p class="q-pa-none text-center">むむ？ ワールドデータが存在しないようです</p>

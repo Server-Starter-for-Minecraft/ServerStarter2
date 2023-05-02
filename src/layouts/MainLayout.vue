@@ -16,7 +16,7 @@ const mainStore = useMainStore();
           flat
           dense
           round
-          @click="mainStore.rightDrawerOpen = !mainStore.rightDrawerOpen"
+          @click="mainStore.leftDrawerOpen = !mainStore.leftDrawerOpen"
           aria-label="Menu"
           icon="menu"
           size="20px"
@@ -30,6 +30,38 @@ const mainStore = useMainStore();
         <div>{{ mainStore.sideText }}</div>
       </q-toolbar>
     </q-header>
+
+    <q-drawer
+      v-model="mainStore.leftDrawerOpen"
+      :mini="$q.screen.lt.md"
+      :width="200"
+      :breakpoint="100"
+      bordered
+      :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
+    >
+      <q-list>
+        <template v-for="(menuItem, index) in mainStore.drawerContents" :key="index">
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon :name="menuItem.icon" />
+            </q-item-section>
+            <q-item-section>
+              {{ menuItem.label }}
+            </q-item-section>
+            <q-tooltip
+              v-show="$q.screen.lt.md"
+              anchor="center right"
+              self="center left"
+              :offset="[10, 10]"
+              class="text-body1"
+            >
+              {{ menuItem.label }}
+            </q-tooltip>
+          </q-item>
+          <q-separator :key="'sep' + index"  v-if="menuItem.separator" />
+        </template>
+      </q-list>
+    </q-drawer>
 
     <q-page-container>
       <router-view />

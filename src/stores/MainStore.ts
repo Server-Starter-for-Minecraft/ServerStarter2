@@ -1,6 +1,12 @@
 import { World } from 'app/src-electron/api/schema';
 import { defineStore } from 'pinia';
 
+export interface Drawer {
+  icon: string
+  label: string
+  separator: boolean
+}
+
 export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
@@ -9,21 +15,24 @@ export const useMainStore = defineStore('mainStore', {
       subTitle: '',
       sideText: '',
       showMenuBtn: false,
-      rightDrawerOpen: false,
+      leftDrawerOpen: false,
+      drawerContents: [] as Drawer[],
       worldList: [] as World[],
     };
   },
   actions: {
     setHeader(
       title: string,
-      { subTitle = '', sideText = '', showMenuBtn = false }
+      { subTitle = '', sideText = '', drawerContents = [] as Drawer[] }
     ) {
       this.mainTitle = title;
       this.subTitle = subTitle;
       this.sideText = sideText;
-      this.showMenuBtn = showMenuBtn;
+      this.showMenuBtn = drawerContents.length !== 0;
+      this.leftDrawerOpen = drawerContents.length !== 0;
+      this.drawerContents = drawerContents;
     },
-    showWorldList(text: string) {
+    searchWorld(text: string) {
       if (text !== '') {
         return this.worldList.filter((world) => world.name.match(text));
       }

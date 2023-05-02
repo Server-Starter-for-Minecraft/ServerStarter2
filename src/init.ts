@@ -10,6 +10,7 @@ export async function InitWindow() {
   const sysStore = useSystemStore()
   const mainStore = useMainStore()
 
+  // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み
   await getAllVersion(true)
   getAllVersion(false)

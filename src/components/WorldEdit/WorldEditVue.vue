@@ -6,11 +6,43 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { useDialogStore } from 'src/stores/DialogStore';
 import propertyItem from 'src/components/util/propertyItem.vue';
 import propertyTable from './PropertyTable.vue';
+import { Drawer, useMainStore } from 'src/stores/MainStore';
 
 interface Props {
+  title: string;
   saveFunc: () => void;
 }
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const drawer: Drawer[] = [
+  {
+    icon: 'settings',
+    label: 'General',
+    separator: true
+  },
+  {
+    icon: 'list_alt',
+    label: 'Property',
+    separator: false
+  },
+  {
+    icon: 'group',
+    label: 'Person List',
+    separator: false
+  },
+  {
+    icon: 'library_add',
+    label: 'Additional List',
+    separator: false
+  },
+  {
+    icon: 'share',
+    label: 'ShareWorld',
+    separator: false
+  },
+]
+
+useMainStore().setHeader(props.title, { drawerContents: drawer })
 
 const store = useWorldEditStore();
 
