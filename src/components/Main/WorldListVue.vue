@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
-import worldVue from 'app/src/components/Main/WorldVue.vue';
+import worldVue from './WorldVue.vue';
+import NewWorldBtn from './NewWorldBtn.vue';
 
 const store = useMainStore()
 
@@ -15,7 +16,7 @@ const hasWorldData = store.searchWorld('').length !== 0
   <q-item class="q-pa-md mainField" style="width: 100%;">
     <q-item-section>
       <div class="row">
-        <q-btn color="primary" to="new-world" style="font-size: 2.5vmin;">新規作成</q-btn>
+        <new-world-btn/>
       
         <q-input
           v-model="text"

@@ -1,29 +1,9 @@
 <script setup lang="ts">
-import { Ref, onBeforeMount, ref } from 'vue'
 import { ServerProperty } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
-import { QTableCol } from '../util/iComponent';
-import { deepCopy } from 'src/scripts/deepCopy';
+import { QTableCol } from 'src/components/util/iComponent';
 
 const store = useWorldEditStore()
-/**
- * Propertyがない場合はデフォルトを適用し、ある場合はある項目だけ参照して他の項目はDefaultを適用させる
- */
-async function setfirstProperty() {
-  const _defaultServerProperties = deepCopy((await window.API.invokeGetDefaultSettings()).properties)
-  
-  if (store.world.properties !== void 0) {
-    for (const key in store.world.properties) {
-      _defaultServerProperties[key] = store.world.properties[key]
-    }
-  }
-
-  return _defaultServerProperties
-}
-
-async function updateRows() {
-  rows.value = Object.entries(await setfirstProperty()).map(([name, value]) => ({ name, value }))
-}
 
 const cols: QTableCol[] = [
   {
@@ -41,8 +21,6 @@ const cols: QTableCol[] = [
     sortable: true
   },
 ]
-type Rows = { name: string; value: ServerProperty; }[]
-const rows: Ref<Rows> = ref([])
 
 /**
  * Propertyの編集に使用するEditerを指定
@@ -82,11 +60,11 @@ function validationMessage(min?:number, max?:number, step?:number) {
   if (AdditionalMessage!='') AdditionalMessage = ` (${AdditionalMessage})`
   return `半角数字を入力してください${AdditionalMessage}`
 }
-
-onBeforeMount(updateRows)
 </script>
 
 <template>
+  <h1>Property</h1>
+
   <q-table
     class="my-sticky-virtscroll-table"
     virtual-scroll
@@ -94,9 +72,9 @@ onBeforeMount(updateRows)
     bordered
     :rows-per-page-options="[0]"
     row-key="index"
-    :rows="rows"
+    :rows="store.propertyRows"
     :columns="cols"
-    :loading="rows.length === 0"
+    :loading="store.propertyRows.length === 0"
     hide-bottom
   >
     <template v-slot:body="props">

@@ -17,6 +17,7 @@ const prop = defineProps<Props>();
 
 const mainStore = useMainStore();
 const systemStore = useSystemStore();
+const editStore = useWorldEditStore();
 
 const router = useRouter();
 const goProgress = async () => {
@@ -43,8 +44,11 @@ const runBtnHovered = ref(false);
  * 各ワールドの編集ボタンを押されたときに、ワールドデータを編集ページに飛ばす
  */
 function worldEdit() {
-  useWorldEditStore().worldIndex = prop.idx
-  useWorldEditStore().world = deepCopy(prop.world)
+  function saveFunc() {
+    useMainStore().worldList[editStore.worldIndex] = editStore.world
+  }
+
+  editStore.setEditer(deepCopy(prop.world), saveFunc, { worldIndex: prop.idx })
 }
 </script>
 

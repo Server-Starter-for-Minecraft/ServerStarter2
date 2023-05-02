@@ -5,6 +5,7 @@ export interface Drawer {
   icon: string
   label: string
   separator: boolean
+  to: string
 }
 
 export const useMainStore = defineStore('mainStore', {
@@ -17,6 +18,7 @@ export const useMainStore = defineStore('mainStore', {
       showMenuBtn: false,
       leftDrawerOpen: false,
       drawerContents: [] as Drawer[],
+      selectedDrawer: '',
       worldList: [] as World[],
     };
   },
@@ -30,6 +32,7 @@ export const useMainStore = defineStore('mainStore', {
       this.sideText = sideText;
       this.showMenuBtn = drawerContents.length !== 0;
       this.leftDrawerOpen = drawerContents.length !== 0;
+      this.selectedDrawer = drawerContents[0]?.label;
       this.drawerContents = drawerContents;
     },
     searchWorld(text: string) {
