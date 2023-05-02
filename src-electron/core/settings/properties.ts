@@ -156,7 +156,7 @@ export const parseServerProperties = (text: string) => {
     const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
     if (!match) return;
 
-    const [key, value] = match;
+    const [,key, value] = match;
 
     const defult = defaultServerProperties[key];
 
@@ -186,6 +186,7 @@ export const parseServerProperties = (text: string) => {
 };
 
 export const stringifyServerProperties = (properties: ServerProperties) => {
+  console.log(properties)
   return Object.entries(properties)
     .map(([k, v]) => `${k}=${v.value}`)
     .join('\n');
