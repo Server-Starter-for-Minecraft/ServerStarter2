@@ -71,7 +71,10 @@ function worldEdit() {
       @mouseleave="runBtnHovered = false"
     >
       <q-avatar square size="4rem">
-        <q-img :src="world.avater_path" :ratio="1" />
+        <q-img
+          :src="world.avater_path === void 0 ? 'src/assets/defaultWorldIcon.svg' : world.avater_path"
+          :ratio="1"
+        />
         <q-btn
           v-show="clicked || runBtnHovered"
           @click="runServer"
