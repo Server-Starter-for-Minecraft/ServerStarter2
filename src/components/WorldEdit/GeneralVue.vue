@@ -5,6 +5,7 @@ import { useDialogStore } from 'src/stores/DialogStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import PropertyItem from 'src/components/util/propertyItem.vue';
+import SsSelect from '../util/base/ssSelect.vue';
 
 const store = useWorldEditStore();
 
@@ -33,7 +34,6 @@ onBeforeMount(updateVersionList);
       <q-input
         v-model="store.world.name"
         clearable
-        label="ワールド名"
         style="width: 300px"
       />
     </template>
@@ -41,7 +41,7 @@ onBeforeMount(updateVersionList);
 
   <PropertyItem propName="version">
     <template v-slot:userInput>
-      <q-select
+      <SsSelect
         v-model="store.world.settings.version.type"
         :options="versionTypes"
         @update:model-value="updateVersionList"
@@ -49,7 +49,7 @@ onBeforeMount(updateVersionList);
         style="width: 150px"
         class="q-pr-lg"
       />
-      <q-select
+      <SsSelect
         v-model="store.world.settings.version.id"
         :options="useSystemStore().serverVersions.get(store.world.settings.version.type)?.map((ver) => ver.id)"
         label="バージョン"

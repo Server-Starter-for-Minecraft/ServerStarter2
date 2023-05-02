@@ -30,7 +30,7 @@ function setNewWorld() {
   <q-btn
     color="primary"
     to="world-edit"
-    style="font-size: 2.5vmin;"
+    style="font-size: 1.2rem;"
     @click="setNewWorld"
   >
     新規作成

@@ -1,0 +1,41 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+
+interface Prop {
+  modelValue: string
+  label: string
+  options?: readonly any[]
+}
+
+const prop = defineProps<Prop>()
+const emit = defineEmits(['update:model-value'])
+
+const model = computed({
+  get() {
+    return prop.modelValue;
+  },
+  set(newValue) {
+    emit('update:model-value', newValue);
+  },
+})
+</script>
+
+<template>
+  <q-select
+    v-model="model"
+    :options="options"
+    :label="label"
+    class="font"
+    :popup-content-style="{fontSize: '0.9rem'}"
+  >
+    <template v-slot:label>
+      <p class="font q-pb-none">{{ label }}</p>
+    </template>
+  </q-select>
+</template>
+
+<style scoped lang="scss">
+.font {
+  font-size: 1rem;
+}
+</style>

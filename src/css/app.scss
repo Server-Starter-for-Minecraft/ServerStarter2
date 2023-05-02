@@ -30,6 +30,22 @@ body.body--dark {
 }
 
 
+// adjust font size
+html {
+  font-size: 100%;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 110%;
+  }
+}
+@media screen and (min-width: 1024px) {
+  html {
+    font-size: 120%;
+  }
+}
+
+
 .mainField {
   max-width: 1000px;
   margin: 0 auto;

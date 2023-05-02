@@ -3,6 +3,8 @@ import { ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import worldVue from './WorldVue.vue';
 import NewWorldBtn from './NewWorldBtn.vue';
+import SsSelect from '../util/base/ssSelect.vue';
+import SsInput from '../util/base/ssInput.vue';
 
 const store = useMainStore()
 
@@ -18,9 +20,8 @@ const hasWorldData = store.searchWorld('').length !== 0
       <div class="row">
         <new-world-btn/>
       
-        <q-input
+        <ss-input
           v-model="text"
-          clearable
           label="検索"
           @clear="text = ''"
           class="q-px-md"
@@ -28,12 +29,12 @@ const hasWorldData = store.searchWorld('').length !== 0
           <template v-slot:append>
             <q-icon name="search" />
           </template>
-        </q-input>
+        </ss-input>
       </div>
     </q-item-section>
 
     <q-item-section side>
-      <q-select
+      <ss-select
         v-model="sortType"
         :options="sortTypes"
         label="並び替え"

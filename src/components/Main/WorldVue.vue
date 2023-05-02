@@ -40,6 +40,8 @@ const clicked = ref(false);
 const itemHovered = ref(false);
 const runBtnHovered = ref(false);
 
+const versionName = `${prop.world.settings.version.id} (${prop.world.settings.version.type})`
+
 /**
  * 各ワールドの編集ボタンを押されたときに、ワールドデータを編集ページに飛ばす
  */
@@ -68,14 +70,14 @@ function worldEdit() {
       @mouseover="runBtnHovered = true"
       @mouseleave="runBtnHovered = false"
     >
-      <q-avatar square size="9vmin">
+      <q-avatar square size="4rem">
         <q-img :src="world.avater_path" :ratio="1" />
         <q-btn
           v-show="clicked || runBtnHovered"
           @click="runServer"
           flat
           dense
-          size="4.5vmin"
+          size="2rem"
           icon="play_arrow"
           text-color="white"
           class="absolute-center hantoumei"
@@ -85,15 +87,15 @@ function worldEdit() {
     <q-item-section>
       <div>
         <p class="worldName">{{ world.name }}</p>
-        <p class="versionName">{{ world.settings.version.id }}</p>
+        <p class="versionName">{{ versionName }}</p>
       </div>
     </q-item-section>
     <q-item-section side v-show="clicked || itemHovered">
       <div class="row">
         <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
-        <icon-btn icon="edit" text="ワールド編集" size="2vmin" to="world-edit" @click="worldEdit"/>
-        <icon-btn icon="folder_open" text="データを開く" size="2vmin"/>
-        <icon-btn icon="delete" text="削除" size="2vmin"/>
+        <icon-btn icon="edit" text="ワールド編集" size="0.9rem" to="world-edit" @click="worldEdit"/>
+        <icon-btn icon="folder_open" text="データを開く" size="0.9rem"/>
+        <icon-btn icon="delete" text="削除" size="0.9rem"/>
       </div>
     </q-item-section>
   </q-item>
@@ -101,17 +103,17 @@ function worldEdit() {
 
 <style scoped lang="scss">
 .worldBlock {
-  height: 12vmin;
+  height: 5.5rem;
 }
 
 .worldName {
-  font-size: 4vmin;
+  font-size: 2rem;
   font-weight: bold;
   margin: 0;
 }
 
 .versionName {
-  font-size: 2.5vmin;
+  font-size: 1rem;
   margin-bottom: 4px;
 }
 

@@ -59,6 +59,6 @@ h1 {
 
 .center {
   margin: 0 auto;
-  width: max-content;
+  width: 100%;
 }
 </style>
