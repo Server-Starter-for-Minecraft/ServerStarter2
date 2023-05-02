@@ -14,25 +14,29 @@ useMainStore().setHeader('Server Starter for Minecraft', {
 </script>
 
 <template>
-  <q-item class="q-pa-md row expandHeader">
+  <q-item :class="`q-pa-md row ${$q.dark.isActive ? 'expandHeader-dark' : 'expandHeader-light'}`">
     <q-item-section>
-      <p class="q-pl-md q-pt-lg" style="font-size: 2.5vmin;">IP. {{ systemStore.publicIP }}</p>
-      <q-checkbox v-model="autoShutdown" class="checkbox" style="font-size: 2vmin;"
-        >サーバー終了後にPCを自動シャットダウンする</q-checkbox
-      >
+      <p class="q-pl-md q-pt-lg text-body">IP. {{ systemStore.publicIP }}</p>
+      <q-checkbox v-model="autoShutdown" class="checkbox">
+        サーバー終了後にPCを自動シャットダウンする
+      </q-checkbox>
     </q-item-section>
     <q-item-section side>
-      <icon-btn icon="tune" size="16pt" text="詳細設定" to="settings" />
+      <icon-btn icon="tune" size="1.2rem" text="詳細設定" to="settings" />
     </q-item-section>
   </q-item>
 </template>
 
 <style scoped lang="scss">
-.expandHeader {
+.expandHeader-dark {
   background-color: #1a1a1a;
+}
+.expandHeader-light {
+  background-color: lightgray;
 }
 
 .checkbox {
   width: max-content;
+  font-size: 1rem;
 }
 </style>

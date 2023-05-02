@@ -8,7 +8,7 @@ const store = useMainStore();
   <q-drawer
       v-model="store.leftDrawerOpen"
       :mini="$q.screen.lt.md"
-      :width="200"
+      :width="300"
       :breakpoint="100"
       bordered
       :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
@@ -21,12 +21,13 @@ const store = useMainStore();
             :active="store.selectedDrawer === menuItem.label"
             @click="store.selectedDrawer = menuItem.label"
             :to="menuItem.to"
+            class="q-pa-md"
           >
             <q-item-section avatar>
-              <q-icon :name="menuItem.icon" />
+              <q-icon :name="menuItem.icon" size="1.4rem"/>
             </q-item-section>
             <q-item-section>
-              {{ menuItem.label }}
+              <span style="font-size: 1.2rem;">{{ menuItem.label }}</span>
             </q-item-section>
             <q-tooltip
               v-if="$q.screen.lt.md"

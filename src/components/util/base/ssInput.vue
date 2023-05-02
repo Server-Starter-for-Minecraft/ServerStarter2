@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { ValidationRule } from 'quasar/dist/types/api/validation'
 import { computed } from 'vue'
 
 interface Prop {
-  modelValue: string
-  label: string
-  onClear?: (value: any) => void
+  modelValue: string | number
+  label?: string
+  dense?: boolean
+  autofocus?: boolean
+  rules?: ValidationRule[]
+  onClear?: (value: string) => void
 }
 
 const prop = defineProps<Prop>()
@@ -24,6 +28,9 @@ const model = computed({
   <q-input
     v-model="model"
     :label="label"
+    :dense="dense"
+    :autofocus="autofocus"
+    :rules="rules"
     clearable
     @clear="onClear"
     class="font"

@@ -15,7 +15,7 @@ const mainStore = useMainStore();
           @click="mainStore.leftDrawerOpen = !mainStore.leftDrawerOpen"
           aria-label="Menu"
           icon="menu"
-          size="20px"
+          size="1.2rem"
         />
 
         <q-toolbar-title>
@@ -35,6 +35,6 @@ const mainStore = useMainStore();
 }
 
 .title {
-  font-size: 24pt;
+  font-size: 2rem;
 }
 </style>

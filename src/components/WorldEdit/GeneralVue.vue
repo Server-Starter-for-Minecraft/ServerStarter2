@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { onBeforeMount } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { versionTypes } from 'app/src-electron/api/schema';
 import { useDialogStore } from 'src/stores/DialogStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import PropertyItem from 'src/components/util/propertyItem.vue';
 import SsSelect from '../util/base/ssSelect.vue';
+import SsInput from '../util/base/ssInput.vue';
 
 const store = useWorldEditStore();
+const memorySize = ref('1')
+const memoryUnit = ref('GB')
 
 async function updateVersionList() {
   const version = store.world.version
@@ -28,45 +31,65 @@ onBeforeMount(updateVersionList);
 </script>
 
 <template>
-  <PropertyItem propName="name">
-    <template v-slot:userInput>
-      <!-- TODO: ワールド名のバリデーション -->
-      <q-input
-        v-model="store.world.name"
-        clearable
-        style="width: 300px"
-      />
-    </template>
-  </PropertyItem>
+  <h1>General</h1>
 
-  <PropertyItem propName="version">
-    <template v-slot:userInput>
-      <SsSelect
-        v-model="store.world.version.type"
-        :options="versionTypes"
-        @update:model-value="updateVersionList"
-        label="サーバー"
-        style="width: 150px"
-        class="q-pr-lg"
-      />
-      <SsSelect
-        v-model="store.world.version.id"
-        :options="useSystemStore().serverVersions.get(store.world.version.type)?.map((ver) => ver.id)"
-        label="バージョン"
-        style="width: 150px"
-        class="q-pr-lg"
-      />
-    </template>
-  </PropertyItem>
-
-  <!-- <PropertyItem propName="world type">
-    <template v-slot:userInput>
-      <q-select
-        v-model="serverProperty"
-        :options="worldTypes"
-        label="ワールドタイプ"
-        style="width: 150px"
-      />
-    </template>
-  </PropertyItem> -->
+  <div class="center">
+    <PropertyItem propName="name">
+      <template v-slot:userInput>
+        <!-- TODO: ワールド名のバリデーション -->
+        <SsInput v-model="store.world.name" label="ワールド名" style="width: 300px;"/>
+      </template>
+    </PropertyItem>
+  
+    <PropertyItem propName="version">
+      <template v-slot:userInput>
+        <SsSelect
+          v-model="store.world.version.type"
+          :options="versionTypes"
+          @update:model-value="updateVersionList"
+          label="サーバー"
+          style="width: 150px"
+          class="q-pr-lg"
+        />
+        <SsSelect
+          v-model="store.world.version.id"
+          :options="useSystemStore().serverVersions.get(store.world.version.type)?.map((ver) => ver.id)"
+          label="バージョン"
+          style="width: 150px"
+          class="q-pr-lg"
+        />
+      </template>
+    </PropertyItem>
+  
+    <!-- TODO: 値をstoreから読み込み、スタイル定義を整える -->
+    <PropertyItem prop-name="memory size">
+      <template v-slot:userInput>
+        <SsInput v-model="memorySize" class="q-pr-md" style="width: 100px;"/>
+        <SsSelect
+          v-model="memoryUnit"
+          :options="['MB', 'GB', 'TB']"
+          label="単位"
+          style="width: 100px;"
+        />
+      </template>
+    </PropertyItem>
+  
+    <!-- <PropertyItem propName="world type">
+      <template v-slot:userInput>
+        <q-select
+          v-model="serverProperty"
+          :options="worldTypes"
+          label="ワールドタイプ"
+          style="width: 150px"
+        />
+      </template>
+    </PropertyItem> -->
+  </div>
 </template>
+
+<style scoped lang="scss">
+.center {
+  margin: 0 auto;
+  width: max-content;
+}
+</style>
