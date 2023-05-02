@@ -37,8 +37,8 @@ async function runServerOrSaveSettings(
   // プロミスの待機はrunServerWithPullingの内部で行われる
   let pullWorld = undefined;
   let pushWorld = undefined;
-  if (world.settings.remote?.type) {
-    const remote = world.settings.remote;
+  if (world.remote?.type) {
+    const remote = world.remote;
     pullWorld = pullRemoteWorld(cwdPath, remote);
     pushWorld = () => pushRemoteWorld(cwdPath, remote);
   }
@@ -67,14 +67,10 @@ async function _runServer(
   pullWorld: undefined | Promise<Failable<undefined>>,
   pushWorld: undefined | (() => Promise<Failable<undefined>>)
 ) {
-  const settings = world.settings;
-
   // ワールドが起動中の場合エラー
-  if (settings.using)
+  if (world.using)
     return new WorldUsingError(
-      `world ${world.name} is running by ${
-        settings.last_user ?? '<annonymous>'
-      }`
+      `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
     );
 
   // java実行時引数(ここから増える)
@@ -82,19 +78,19 @@ async function _runServer(
   // 確保メモリ量を設定
   const args = ['"-Dfile.encoding=UTF-8"'];
 
-  if (settings.memory !== undefined) {
-    args.push(`-Xmx${settings.memory}G`, `-Xms${settings.memory}G`);
+  if (world.memory !== undefined) {
+    args.push(`-Xmx${world.memory}G`, `-Xms${world.memory}G`);
   }
 
   // // ワールドが存在しない場合エラー
   // if (!worldPath.exists()) return Error(`world ${world.name} not exists`);
 
   api.send.UpdateStatus(
-    `サーバーデータを準備中 ${settings.version.id} (${settings.version.type})`
+    `サーバーデータを準備中 ${world.version.id} (${world.version.type})`
   );
 
   // サーバーデータを用意
-  const version = await readyVersion(settings.version, cwdPath);
+  const version = await readyVersion(world.version, cwdPath);
 
   // サーバーデータの用意ができなかった場合エラー
   if (isFailure(version)) return version;
@@ -131,7 +127,7 @@ async function _runServer(
 
   // log4jの設定
   api.send.UpdateStatus('log4jの引数を設定中');
-  const log4jarg = await getLog4jArg(cwdPath, settings.version);
+  const log4jarg = await getLog4jArg(cwdPath, world.version);
 
   // log4jのファイルがダウンロードできなかった場合エラー
   if (isFailure(log4jarg)) return log4jarg;
@@ -143,7 +139,7 @@ async function _runServer(
   args.push(...programArguments, '--nogui');
 
   // サーバー起動中のフラグを立てる
-  settings.using = true;
+  world.using = true;
 
   // 設定ファイルをサーバーCWD直下に書き出す
   api.send.UpdateStatus('設定ファイルの書き出し中');
@@ -156,7 +152,7 @@ async function _runServer(
 
   async function setUsingFlagFalse() {
     // サーバー起動中のフラグを折る
-    settings.using = false;
+    world.using = false;
 
     // 設定ファイルをサーバーCWD直下に書き出す
     api.send.UpdateStatus('設定ファイルの書き出し中');
@@ -217,14 +213,10 @@ async function _saveSettings(
   cwdPath: Path,
   pullWorld: undefined | Promise<Failable<undefined>>
 ) {
-  const settings = world.settings;
-
   // ワールドが起動中の場合エラー
-  if (settings.using)
+  if (world.using)
     return new WorldUsingError(
-      `world ${world.name} is running by ${
-        settings.last_user ?? '<annonymous>'
-      }`
+      `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
     );
 
   // ワールドのpullが終わるのを待機
