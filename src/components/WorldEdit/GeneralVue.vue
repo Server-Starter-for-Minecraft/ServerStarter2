@@ -10,19 +10,19 @@ import SsSelect from '../util/base/ssSelect.vue';
 const store = useWorldEditStore();
 
 async function updateVersionList() {
-  const version = store.world.settings.version
+  const version = store.world.version
   const versionList = useSystemStore().serverVersions.get(version.type)
   
   // versionListがundefinedの時にエラー処理
   if (versionList === void 0) {
     useDialogStore().showDialog(`サーバーバージョン${version.type}の一覧取得に失敗したため，このサーバーは選択できません`)
-    store.world.settings.version.type = 'vanilla'
+    store.world.version.type = 'vanilla'
     return
   }
 
   // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
   if (version.id == '' || versionList.every(ver => ver.id != version.id))
-    store.world.settings.version.id = versionList[0].id
+    store.world.version.id = versionList[0].id
 }
 onBeforeMount(updateVersionList);
 </script>
@@ -42,7 +42,7 @@ onBeforeMount(updateVersionList);
   <PropertyItem propName="version">
     <template v-slot:userInput>
       <SsSelect
-        v-model="store.world.settings.version.type"
+        v-model="store.world.version.type"
         :options="versionTypes"
         @update:model-value="updateVersionList"
         label="サーバー"
@@ -50,8 +50,8 @@ onBeforeMount(updateVersionList);
         class="q-pr-lg"
       />
       <SsSelect
-        v-model="store.world.settings.version.id"
-        :options="useSystemStore().serverVersions.get(store.world.settings.version.type)?.map((ver) => ver.id)"
+        v-model="store.world.version.id"
+        :options="useSystemStore().serverVersions.get(store.world.version.type)?.map((ver) => ver.id)"
         label="バージョン"
         style="width: 150px"
         class="q-pr-lg"

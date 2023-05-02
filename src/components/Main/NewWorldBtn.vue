@@ -12,12 +12,10 @@ function setNewWorld() {
   const newWorld: World = {
     name: '',
     container: useSystemStore().worldContainers.default,
-    settings: {
-      version: {
-        id: '',
-        type: 'vanilla',
-        release: true
-      },
+    version: {
+      id: '',
+      type: 'vanilla',
+      release: true
     },
     additional: {}
   }

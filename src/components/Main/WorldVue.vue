@@ -26,7 +26,7 @@ const goProgress = async () => {
 async function runServer() {
   await goProgress();
   mainStore.setHeader(prop.world.name, {
-    subTitle: prop.world.settings.version.id,
+    subTitle: prop.world.version.id,
     sideText: `IP. ${systemStore.publicIP}`,
   });
 
@@ -40,7 +40,7 @@ const clicked = ref(false);
 const itemHovered = ref(false);
 const runBtnHovered = ref(false);
 
-const versionName = `${prop.world.settings.version.id} (${prop.world.settings.version.type})`
+const versionName = `${prop.world.version.id} (${prop.world.version.type})`
 
 /**
  * 各ワールドの編集ボタンを押されたときに、ワールドデータを編集ページに飛ばす
