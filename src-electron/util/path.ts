@@ -57,7 +57,7 @@ export class Path {
   }
 
   async isDirectory() {
-    return await fs.promises.stat(this.absolute().str());
+    return (await fs.promises.stat(this.absolute().str())).isDirectory();
   }
 
   async rename(newpath: Path) {

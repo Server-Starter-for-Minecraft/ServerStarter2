@@ -13,9 +13,9 @@ function promissifyProcess(
 ) {
   function onExit(code: number | null) {
     if (code === 0 || code === null) return undefined;
-    const command = process + ' ' + args.join(' ');
+    const command = processpath + ' ' + args.join(' ');
     return new Error(
-      `error occured in running subprocess with exitcode:${processpath} command:${command}}`
+      `error occured in running subprocess with exitcode:${code} command:${command}}`
     );
   }
 
