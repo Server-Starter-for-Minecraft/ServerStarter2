@@ -20,7 +20,7 @@ export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   getWorld,
 };
 
-const DEFAULT_REMOTE_NAME = 'serversterter';
+const DEFAULT_REMOTE_NAME = 'serverstarter';
 
 // TODO: ログの追加
 

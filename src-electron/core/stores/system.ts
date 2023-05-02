@@ -18,7 +18,7 @@ export function fixSystemSettings() {
   const store = systemSettings.store;
 
   const fixed = fix<SystemSettings>(store, {
-    container: { default: 'server', custom: {} },
+    container: { default: 'servers', custom: {} },
     player: { players: [], groups: [] },
     remote: { github: { accounts: [] } },
     world: { memory: 2, properties: defaultServerProperties },

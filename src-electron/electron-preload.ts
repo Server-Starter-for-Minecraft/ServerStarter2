@@ -98,6 +98,7 @@ const api: FrontAPI = {
   invokeSaveWorldSettings: invoke('SaveWorldSettings'),
 
   invokeGetSystemSettings: invoke('GetSystemSettings'),
+  invokeSetSystemSettings: invoke('SetSystemSettings'),
 
   invokeGetDefaultSettings: invoke('GetDefaultSettings'),
 

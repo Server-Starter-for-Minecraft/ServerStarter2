@@ -54,6 +54,7 @@ export interface API extends IAPI {
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 
     GetSystemSettings: () => Promise<SystemSettings>;
+    SetSystemSettings: (settings: SystemSettings) => Promise<void>;
 
     GetWorldContainers: () => Promise<WorldContainers>;
     SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;
