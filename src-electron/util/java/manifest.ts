@@ -43,7 +43,10 @@ export async function installManifest(manifest: Manifest, path: Path) {
             v.downloads.raw.url,
             { value: v.downloads.raw.sha1, type: 'sha1' },
             false,
-            true
+            true,
+            undefined,
+            undefined,
+            v.executable
           );
           if (isFailure(result)) return result;
         };

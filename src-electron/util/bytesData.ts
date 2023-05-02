@@ -103,11 +103,13 @@ export class BytesData {
   /**
    * TODO: ファイルに出力
    */
-  async write(path: string) {
+  async write(path: string, executable?: boolean) {
     const logger = loggers.operation('write', { path });
     logger.start();
+    // 実行権限を与えて保存
+    const settings = executable ? { mode: 0o744 } : undefined;
     try {
-      await promises.writeFile(path, Buffer.from(this.data));
+      await promises.writeFile(path, Buffer.from(this.data), settings);
       logger.success();
     } catch (e) {
       logger.fail(e);
@@ -131,7 +133,8 @@ export class BytesData {
     prioritizeUrl = true,
     updateLocal = true,
     compareHashOnFetch = true,
-    headers?: { [key in string]: string }
+    headers?: { [key in string]: string },
+    executable?: boolean
   ): Promise<Failable<BytesData>> {
     const logger = loggers.operation('fromPathOrUrl', {
       path,
@@ -147,7 +150,7 @@ export class BytesData {
       if (isSuccess(data)) {
         if (updateLocal) {
           await path.parent().mkdir(true);
-          await data.write(path.str());
+          await data.write(path.str(), executable);
         }
         logger.success();
         return data;
@@ -174,7 +177,7 @@ export class BytesData {
 
       if (updateLocal) {
         await path.parent().mkdir(true);
-        await data.write(path.str());
+        await data.write(path.str(), executable);
       }
       logger.success();
       return data;

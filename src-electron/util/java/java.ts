@@ -31,6 +31,7 @@ export async function readyJava(
   const path = runtimePath.child(`${component}/${osPlatform}`);
   const data = await getManifestJson(manifest, path.child('manifest.json'));
   await installManifest(data, path);
+
   return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
 }
 
