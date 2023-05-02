@@ -1,11 +1,19 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
-import { ServerProperties, World, WorldAbbr } from 'src-electron/api/schema';
+import {
+  ServerProperties,
+  ServerPropertiesMap,
+  World,
+  WorldAbbr,
+} from 'src-electron/api/schema';
 import { Path } from '../../util/path';
-import { asyncMap } from '../../util/objmap';
+import { asyncMap, objMap } from '../../util/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
-import { parseServerProperties } from '../settings/properties';
+import {
+  defaultServerProperties,
+  parseServerProperties,
+} from '../settings/properties';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
 
@@ -54,18 +62,36 @@ export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
   // アバターの読み込み
   const avater_path = await getIconURI(cwd);
 
-  // server.propertiesの取得
-  const properties = await getServerProperties(cwd);
-
+  settings.properties ?? {};
   const world: World = {
     name,
     container,
     avater_path,
-    settings,
-    properties,
+    version: settings.version,
+    using: settings.using,
+    remote: settings.remote,
+    last_date: settings.last_date,
+    last_user: settings.last_user,
+    memory: settings.memory,
+    properties: getServerProperties(settings.properties),
     additional: {},
   };
   return world;
+}
+
+function getServerProperties(
+  map: ServerPropertiesMap | undefined
+): ServerProperties {
+  return objMap(map ?? {}, (k, value) => {
+    const defaultProp = defaultServerProperties[k];
+    if (defaultProp) {
+      if (typeof value === defaultProp.type) {
+        return [k, { ...defaultProp, value }];
+      }
+      return [k, { ...defaultProp }];
+    }
+    return [k, { type: typeof value, value }];
+  }) as ServerProperties;
 }
 
 async function getIconURI(cwd: Path) {
@@ -78,18 +104,6 @@ async function getIconURI(cwd: Path) {
     }
   }
   return iconURI;
-}
-
-async function getServerProperties(cwd: Path) {
-  const propertiesPath = cwd.child('server.properties');
-  let properties: ServerProperties | undefined = undefined;
-  if (isSuccess(propertiesPath)) {
-    const propertiesText = await propertiesPath.readText();
-    if (isSuccess(propertiesText)) {
-      properties = await parseServerProperties(propertiesText);
-    }
-  }
-  return properties;
 }
 
 // const demoWorldSettings: WorldSettings = {

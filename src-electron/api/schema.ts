@@ -119,6 +119,10 @@ export type WorldAbbr = {
   avater_path?: string;
 };
 
+export type ServerPropertiesMap = {
+  [key in string]: string | number | boolean;
+};
+
 export type WorldSettings = {
   /** 使用メモリ量 (Gb) */
   memory?: number;
@@ -137,6 +141,9 @@ export type WorldSettings = {
 
   /** 起動中フラグ */
   using?: boolean;
+
+  /** 起動中フラグ */
+  properties?: ServerPropertiesMap;
 };
 
 export type World = {
@@ -149,8 +156,23 @@ export type World = {
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   avater_path?: string;
 
-  /** ワールド設定 (server_settings.jsonの内容) */
-  settings: WorldSettings;
+  /** バージョン */
+  version: Version;
+
+  /** 起動中フラグ */
+  using?: boolean;
+
+  /** リモートリポジトリ */
+  remote?: Remote;
+
+  /** 最終プレイ日? */
+  last_date?: Date;
+
+  /** 最終プレイ者 */
+  last_user?: string;
+
+  /** 使用メモリ量 (Gb) */
+  memory?: number;
 
   /** server.propertiesの内容 */
   properties?: ServerProperties;

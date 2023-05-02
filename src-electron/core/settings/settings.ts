@@ -1,7 +1,9 @@
 import {
+  ServerProperties,
   ServerProperty,
   SystemWorldSettings,
   World,
+  WorldSettings,
 } from 'src-electron/api/schema';
 import {
   defaultServerProperties,
@@ -11,6 +13,7 @@ import {
 import { Path } from '../../util/path';
 import { saveWorldJson } from '../world/worldJson';
 import { systemSettings } from '../stores/system';
+import { objMap } from 'app/src-electron/util/objmap';
 
 /** サーバー設定系ファイルをサーバーCWD直下に書き出す */
 export async function unrollSettings(
@@ -25,8 +28,23 @@ export async function unrollSettings(
   });
   await serverCwdPath.child('server.properties').writeText(strprop);
 
+  const worldSettings: WorldSettings = {
+    memory: world.memory,
+    version: world.version,
+    remote: world.remote,
+    last_date: world.last_date,
+    last_user: world.last_user,
+    using: world.using,
+    properties: getPropertiesMap(world.properties),
+  };
+
   // jsonを書き出し
-  await saveWorldJson(serverCwdPath, world.settings);
+  await saveWorldJson(serverCwdPath, worldSettings);
+}
+
+function getPropertiesMap(serverProperties: ServerProperties | undefined) {
+  if (serverProperties === undefined) return undefined;
+  return objMap(serverProperties, (k, v) => [k, v.value]);
 }
 
 // Javaの-Xmx,-Xmsのデフォルト値(Gb)
