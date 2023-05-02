@@ -13,6 +13,7 @@ import {
   setWorldContainers,
 } from '../core/world/worldContainer';
 import { getDefaultSettings } from '../core/settings/settings';
+import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 
 export const backListener: BackListener<API> = {
   on: {
@@ -21,7 +22,12 @@ export const backListener: BackListener<API> = {
   },
   handle: {
     RunServer: runServer,
+
     SaveWorldSettings: saveWorldSettings,
+
+    GetSystemSettings: getSystemSettings,
+    SetSystemSettings: setSystemSettings,
+
     GetDefaultSettings: getDefaultSettings,
     GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,

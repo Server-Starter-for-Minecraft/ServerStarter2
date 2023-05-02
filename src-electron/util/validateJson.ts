@@ -1,48 +1,48 @@
-type StringValidator = {
+export type StringValidator = {
   type: 'string';
   default: string;
 };
 
-type NumberValidator = {
+export type NumberValidator = {
   type: 'number';
   default: number;
 };
 
-type BooleanValidator = {
+export type BooleanValidator = {
   type: 'boolean';
   default: boolean;
 };
 
-type NullValidator = {
+export type NullValidator = {
   type: 'null';
 };
 
-type ArrayValidator<T extends Validator> = {
+export type ArrayValidator<T extends Validator> = {
   type: 'array';
   array: T;
   default?: Array<Varlidant<T>>;
 };
 
-type TupleValidator<T extends Validator[]> = {
+export type TupleValidator<T extends Validator[]> = {
   type: 'tuple';
   tuple: T;
   default: TupleVarlidant<T>;
 };
 
-type RecordValidator<T extends Validator> = {
+export type RecordValidator<T extends Validator> = {
   type: 'record';
   record: T;
   default?: Record<string, Varlidant<T>>;
 };
 
-type ObjectValidator = {
+export type ObjectValidator = {
   type: 'object';
   object: {
     [key in string]: Validator;
   };
 };
 
-type Validator =
+export type Validator =
   | StringValidator
   | NumberValidator
   | BooleanValidator
@@ -78,7 +78,10 @@ type ObjectVarlidant<T extends { [K in string]: Validator }> = {
   [K in keyof T]: Varlidant<T[K]>;
 };
 
-function validate<T extends Validator>(validator: T, value: any): Varlidant<T> {
+export function validateJson<T extends Validator>(
+  validator: T,
+  value: any
+): Varlidant<T> {
   switch (validator.type) {
     case 'string':
       if (typeof value === 'string') return value as Varlidant<T>;
@@ -99,7 +102,7 @@ function validate<T extends Validator>(validator: T, value: any): Varlidant<T> {
       if (value instanceof Array) {
         const result = [];
         for (const v of value) {
-          const r = validate(validator.array, v) as Varlidant<T>; // TODO: これ嘘
+          const r = validateJson(validator.array, v) as Varlidant<T>; // TODO: これ嘘
           result.push(r);
         }
         return result as Varlidant<T>;
@@ -110,7 +113,7 @@ function validate<T extends Validator>(validator: T, value: any): Varlidant<T> {
       if (value instanceof Array) {
         const result = [];
         for (const v of value) {
-          const r = validate(validator.tuple, v) as Varlidant<T>; // TODO: これ嘘
+          const r = validateJson(validator.tuple, v) as Varlidant<T>; // TODO: これ嘘
           result.push(r);
         }
         return result as Varlidant<T>;
@@ -123,7 +126,7 @@ function validate<T extends Validator>(validator: T, value: any): Varlidant<T> {
         const result: any = {};
         for (const e of Object.entries(value)) {
           const [k, v] = e;
-          const r = validate(validator.record, v);
+          const r = validateJson(validator.record, v);
           result[k] = r;
         }
         if (success) return result;
@@ -135,7 +138,7 @@ function validate<T extends Validator>(validator: T, value: any): Varlidant<T> {
       const result: any = {};
       for (const e of Object.entries(validator.object)) {
         const [k, v] = e;
-        const r = validate(v, value[k]);
+        const r = validateJson(v, value[k]);
         result[k] = r;
       }
       return result;

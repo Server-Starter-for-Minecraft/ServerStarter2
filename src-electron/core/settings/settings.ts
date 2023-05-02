@@ -1,12 +1,16 @@
-import { SystemWorldSettings, World } from 'src-electron/api/schema';
+import {
+  ServerProperty,
+  SystemWorldSettings,
+  World,
+} from 'src-electron/api/schema';
 import {
   defaultServerProperties,
   mergeServerProperties,
   stringifyServerProperties,
 } from './properties';
 import { Path } from '../../util/path';
-import { SETTINGS_KEY, serverStarterSetting } from '../stores/setting';
 import { saveWorldJson } from '../world/worldJson';
+import { systemSettings } from '../stores/system';
 
 /** サーバー設定系ファイルをサーバーCWD直下に書き出す */
 export async function unrollSettings(
@@ -30,11 +34,27 @@ const DEFAULT_JAVA_HEAP_SIZE = 2;
 
 // ワールド設定のデフォルト値を取得
 export async function getDefaultSettings(): Promise<SystemWorldSettings> {
-  const settings = serverStarterSetting.get(SETTINGS_KEY);
+  const settings = systemSettings.get('world');
+
+  let prop = settings?.properties;
+  if (prop === undefined) prop = {};
+  const undefLessProps = Object.fromEntries(
+    Object.entries(prop)
+      .map(([k, v]): [string, ServerProperty | undefined] => {
+        if (v === undefined) return [k, v];
+        if (v.type === undefined) return [k, undefined];
+        if (v.value === undefined) return [k, undefined];
+        // TODO: 怪しいアップキャスト
+        return [k, v as ServerProperty];
+      })
+      .filter<[string, ServerProperty]>(
+        (value): value is [string, ServerProperty] => value[0] !== undefined
+      )
+  );
 
   const properties = mergeServerProperties(
     defaultServerProperties,
-    settings?.properties ?? {}
+    undefLessProps
   );
 
   const memory = settings?.memory ?? DEFAULT_JAVA_HEAP_SIZE;
@@ -51,5 +71,5 @@ export async function getDefaultSettings(): Promise<SystemWorldSettings> {
 export async function setDefaultSettings(
   worldSettings: SystemWorldSettings
 ): Promise<void> {
-  serverStarterSetting.set(SETTINGS_KEY, worldSettings);
+  systemSettings.set('world', worldSettings);
 }

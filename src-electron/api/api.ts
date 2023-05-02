@@ -1,5 +1,6 @@
 import { Failable } from './failable';
 import {
+  SystemSettings,
   SystemWorldSettings,
   Version,
   VersionType,
@@ -51,6 +52,8 @@ export interface API extends IAPI {
     SaveWorldSettings: (world: World) => Promise<Failable<undefined>>;
 
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
+
+    GetSystemSettings: () => Promise<SystemSettings>;
 
     GetWorldContainers: () => Promise<WorldContainers>;
     SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;

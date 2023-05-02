@@ -170,8 +170,45 @@ export type World = {
 
 /** serverstarterのデフォルトワールド設定 */
 export type SystemWorldSettings = {
-  memory?: number;
+  memory: number;
   properties: ServerProperties;
+};
+
+export type GithubAccountSetting = {
+  owner: string;
+  repo: string;
+  pat: string;
+};
+
+export type GithubRemoteSetting = {
+  accounts: GithubAccountSetting[];
+};
+
+export type RemoteSetting = {
+  github: GithubRemoteSetting;
+};
+
+export type PlayerSetting = {
+  groups: PlayerGroup[];
+  players: Player[];
+};
+
+export type Player = {
+  name: string;
+  uuid: string;
+};
+
+export type PlayerGroup = {
+  name: string;
+  players: Player[];
+};
+
+/** システム設定まとめてここに格納 */
+export type SystemSettings = {
+  container: WorldContainers;
+  world: SystemWorldSettings;
+  remote: RemoteSetting;
+  player: PlayerSetting;
 };
 
 /**
