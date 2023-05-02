@@ -1,8 +1,8 @@
-import { versionTypes } from "app/src-electron/api/schema";
-import { checkError } from "./components/Error/Error";
-import { useMainStore } from "./stores/MainStore";
-import { useSystemStore } from "./stores/SystemStore";
-import { isSuccess } from "app/src-electron/api/failable";
+import { versionTypes } from 'app/src-electron/api/schema';
+import { checkError } from './components/Error/Error';
+import { useMainStore } from './stores/MainStore';
+import { useSystemStore } from './stores/SystemStore';
+import { isSuccess } from 'app/src-electron/api/failable';
 
 
 export async function InitWindow() {

@@ -9,7 +9,7 @@ const goConsole = async () => {
   await router.replace('console');
 };
 
-window.API.onStartServer((_: Electron.IpcRendererEvent) => goConsole());
+window.API.onStartServer(() => goConsole());
 </script>
 
 <template>
