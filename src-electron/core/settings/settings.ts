@@ -15,6 +15,12 @@ import { saveWorldJson } from '../world/worldJson';
 import { systemSettings } from '../stores/system';
 import { objMap } from 'app/src-electron/util/objmap';
 
+/** TODO: server.properies/ops.json/whiltelist.jsonを削除 */
+export async function removeServerSettingFiles(serverCwdPath: Path) {
+  // server.propertiesを削除
+  await serverCwdPath.child('server.properties').remove(true);
+}
+
 /** サーバー設定系ファイルをサーバーCWD直下に書き出す */
 export async function unrollSettings(
   world: World,

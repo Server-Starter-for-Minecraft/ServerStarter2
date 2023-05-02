@@ -3,7 +3,7 @@ import { getLog4jArg } from './log4j';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { readyVersion } from '../version/version';
 import { readyJava } from '../../util/java/java';
-import { unrollSettings } from '../settings/settings';
+import { removeServerSettingFiles, unrollSettings } from '../settings/settings';
 import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
@@ -56,6 +56,9 @@ async function runServerOrSaveSettings(
   if (pushWorld !== undefined && !(result instanceof WorldUsingError)) {
     await pushWorld();
   }
+
+  // サーバー実行時のみ必要なファイルを削除
+  await removeServerSettingFiles(cwdPath);
 
   // 実行結果を返す
   return result;
