@@ -2,6 +2,8 @@
 import { ServerProperty } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import { QTableCol } from 'src/components/util/iComponent';
+import SsSelect from '../util/base/ssSelect.vue';
+import SsInput from '../util/base/ssInput.vue';
 
 const store = useWorldEditStore()
 
@@ -11,13 +13,13 @@ const cols: QTableCol[] = [
     required: true,
     field: 'name',
     label: 'プロパティ名',
+    style: 'width: 400px',
     sortable: true
   },
   {
     name: 'value',
     label: '値',
     field: 'value',
-    style: 'width: 200px',
     sortable: true
   },
 ]
@@ -67,7 +69,6 @@ function validationMessage(min?:number, max?:number, step?:number) {
 
   <q-table
     class="my-sticky-virtscroll-table"
-    virtual-scroll
     flat
     bordered
     :rows-per-page-options="[0]"
@@ -83,37 +84,33 @@ function validationMessage(min?:number, max?:number, step?:number) {
           {{ props.row.name }}
         </q-td>
         <q-td key="value" :props="props">
-          {{ props.row.value.value }}
-          <q-popup-edit v-model="props.row.value.value" v-slot="scope">
-            <div v-show="selectEditer(props.row.value)=='string'" class="row">
-              <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-              <q-btn label="保存" color="primary" @click="scope.set" class="q-ml-md"/>
-            </div>
-            <div v-show="selectEditer(props.row.value)=='number'" class="row">
-              <!-- 半角数字、バリデーションを強制 -->
-              <q-input
-                v-model="scope.value"
-                dense
-                autofocus
-                counter
-                @keyup.enter="scope.set"
-                :rules="[
-                  val => numberValidate(
-                    val,
-                    props.row.value?.min,
-                    props.row.value?.max,
-                    props.row.value?.step
-                    ) || validationMessage(
-                    props.row.value?.min,
-                    props.row.value?.max,
-                    props.row.value?.step
-                  )]"
-              />
-              <q-btn label="保存" color="primary" @click="scope.set" class="q-ml-md"/>
-            </div>
-            <q-select v-show="selectEditer(props.row.value)=='boolean'" v-model="scope.value" :options="['true', 'false']" label="true / false" @update:model-value="scope.set"/>
-            <q-select v-show="selectEditer(props.row.value)=='enum'" v-model="scope.value" :options="props.row.value.enum" :label="props.row.name" @update:model-value="scope.set"/>
-          </q-popup-edit>
+          <div v-show="selectEditer(props.row.value)=='string'" class="row">
+            <ss-input v-model="props.row.value.value" dense autofocus style="width: 100%;" />
+          </div>
+          <div v-show="selectEditer(props.row.value)=='number'" class="row" style="width: 100%;">
+            <!-- 半角数字、バリデーションを強制 -->
+            <ss-input
+              v-model="props.row.value.value"
+              class="items-center"
+              style="width: 100%;"
+              dense
+              autofocus
+              :rules="[
+                val => numberValidate(
+                  val,
+                  props.row.value?.min,
+                  props.row.value?.max,
+                  props.row.value?.step
+                  ) || validationMessage(
+                  props.row.value?.min,
+                  props.row.value?.max,
+                  props.row.value?.step
+                )]"
+            />
+          </div>
+          <q-checkbox v-show="selectEditer(props.row.value)=='boolean'" v-model="props.row.value.value" :label="props.row.value.value"/>
+          <!-- TODO: 表の中でプルダウンが表示されない問題の修正 -->
+          <ss-select v-show="selectEditer(props.row.value)=='enum'" v-model="props.row.value.value" :options="props.row.value.enum" :label="props.row.name"/>
         </q-td>
       </q-tr>
     </template>
