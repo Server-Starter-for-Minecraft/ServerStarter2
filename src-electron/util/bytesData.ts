@@ -107,7 +107,7 @@ export class BytesData {
     const logger = loggers.operation('write', { path });
     logger.start();
     // 実行権限を与えて保存
-    const settings = executable ? { mode: 0o744 } : undefined;
+    const settings = executable ? { mode: 0o755 } : undefined;
     try {
       await promises.writeFile(path, Buffer.from(this.data), settings);
       logger.success();

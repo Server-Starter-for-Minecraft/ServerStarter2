@@ -31,8 +31,17 @@ export async function readyJava(
   const path = runtimePath.child(`${component}/${osPlatform}`);
   const data = await getManifestJson(manifest, path.child('manifest.json'));
   await installManifest(data, path);
-
-  return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
+  switch (osPlatform) {
+    case 'windows-x64':
+      return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
+    case 'linux':
+      return path.child('bin/java.exe');
+    case 'mac-os':
+    case 'mac-os-arm64':
+      return path.child('jre.bundle/Contents/Home/bin/java');
+    default:
+      return new Error(`Unknown OS:${osPlatform}`);
+  }
 }
 
 type RuntimeManifest = {
