@@ -225,12 +225,24 @@ export type PlayerGroup = {
   players: Player[];
 };
 
+export type UserSetting = {
+  // ServerStarterの利用規約同意状況
+  eula: boolean;
+  // システム言語
+  language: string;
+  // 実行者情報
+  owner?: Player;
+  // 自動シャットダウン
+  autoShutDown: boolean;
+};
+
 /** システム設定まとめてここに格納 */
 export type SystemSettings = {
   container: WorldContainers;
   world: SystemWorldSettings;
   remote: RemoteSetting;
   player: PlayerSetting;
+  user: UserSetting;
 };
 
 /**
