@@ -50,6 +50,7 @@ export function getFrontAPIListener(window: BrowserWindow): FrontListener<API> {
   const result: ChanneledFrontListener<FrontListener<API>> = {
     on: {
       StartServer: send('StartServer', window),
+      FinishServer: send('FinishServer', window),
       UpdateStatus: send('UpdateStatus', window),
       AddConsole: send('AddConsole', window),
     },

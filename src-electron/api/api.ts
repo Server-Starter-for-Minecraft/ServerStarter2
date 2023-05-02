@@ -37,6 +37,7 @@ import { IAPI, IBackAPI, IFrontAPI } from './types';
 export interface API extends IAPI {
   sendMainToWindow: {
     StartServer: () => void;
+    FinishServer: () => void;
     UpdateStatus: (message: string, ratio?: number) => void;
     AddConsole: (chunk: string) => void;
   };

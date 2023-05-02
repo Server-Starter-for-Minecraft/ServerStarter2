@@ -86,6 +86,7 @@ function handle<C extends string>(
 
 const api: FrontAPI = {
   onStartServer: on('StartServer'),
+  onFinishServer: on('FinishServer'),
   onUpdateStatus: on('UpdateStatus'),
   onAddConsole: on('AddConsole'),
 

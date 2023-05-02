@@ -64,6 +64,7 @@ async function runServerOrSaveSettings(
   return result;
 }
 
+/** ワールド設定を更新してサーバーを起動 */
 async function _runServer(
   world: World,
   cwdPath: Path,
@@ -201,8 +202,12 @@ async function _runServer(
   // サーバー終了まで待機
   const result = await process;
 
+  // サーバー起動をWindowに知らせる
+  api.send.FinishServer();
+
   // フロントエンドからの入力を無視
   stdin = undefined;
+
 
   // 使用中フラグを折る
   await setUsingFlagFalse();
@@ -211,6 +216,7 @@ async function _runServer(
   if (isFailure(result)) return result;
 }
 
+/** ワールド設定を更新する (サーバー起動はしない) */
 async function _saveSettings(
   world: World,
   cwdPath: Path,
