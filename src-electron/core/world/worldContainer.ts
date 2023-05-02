@@ -1,11 +1,11 @@
 import { isAbsolute } from 'path';
-import { WORLD_CONTAINERS_KEY, serverStarterSetting } from '../stores/setting';
 import { Path } from 'src-electron/util/path';
 import { mainPath } from '../const';
 import { WorldContainers } from 'app/src-electron/api/schema';
+import { systemSettings } from '../stores/system';
 
 export async function getWorldContainers(): Promise<WorldContainers> {
-  let containers = serverStarterSetting.get(WORLD_CONTAINERS_KEY);
+  let containers = systemSettings.get('container');
 
   if (typeof containers !== 'object')
     containers = {
@@ -23,7 +23,7 @@ export async function getWorldContainers(): Promise<WorldContainers> {
 export async function setWorldContainers(
   worldContainers: WorldContainers
 ): Promise<void> {
-  serverStarterSetting.set(WORLD_CONTAINERS_KEY, worldContainers);
+  systemSettings.set('container', worldContainers);
 }
 
 // world.containerが相対パスの場合mainpathからの相対パスとして処理

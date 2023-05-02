@@ -81,7 +81,7 @@ async function pullWorld(
   remote: GithubRemote
 ): Promise<Failable<undefined>> {
   // patを取得
-  const pat = getGitPat(remote.owner, remote.repo);
+  const pat = await getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
   if (isFailure(pat)) return pat;
 
@@ -137,7 +137,7 @@ async function pushWorld(
   }
 
   // patを取得
-  const pat = getGitPat(remote.owner, remote.repo);
+  const pat = await getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
   if (isFailure(pat)) return pat;
 
@@ -191,7 +191,7 @@ async function getWorld(
   remote: GithubRemote
 ): Promise<Failable<World>> {
   // patを取得
-  const pat = getGitPat(remote.owner, remote.repo);
+  const pat = await getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
   if (isFailure(pat)) return pat;
 
