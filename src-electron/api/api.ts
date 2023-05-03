@@ -7,6 +7,7 @@ import {
   World,
   WorldAbbr,
   WorldContainers,
+  WorldEdited,
 } from './schema';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
@@ -50,7 +51,7 @@ export interface API extends IAPI {
     OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
-    RunServer: (world: World) => Promise<Failable<undefined>>;
+    RunServer: (world: WorldEdited) => Promise<Failable<undefined>>;
     SaveWorldSettings: (world: World) => Promise<Failable<undefined>>;
 
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
