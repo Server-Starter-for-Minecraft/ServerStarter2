@@ -16,6 +16,7 @@ import {
 } from '../settings/properties';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
+import { worldSettingsToWorld } from '../settings/converter';
 
 // TODO: datapacks/plugins/modsの読み込み
 
@@ -63,35 +64,13 @@ export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
   const avater_path = await getIconURI(cwd);
 
   settings.properties ?? {};
-  const world: World = {
+  const world = worldSettingsToWorld({
     name,
     container,
     avater_path,
-    version: settings.version,
-    using: settings.using,
-    remote: settings.remote,
-    last_date: settings.last_date,
-    last_user: settings.last_user,
-    memory: settings.memory,
-    properties: getServerProperties(settings.properties),
-    additional: {},
-  };
+    settings,
+  });
   return world;
-}
-
-function getServerProperties(
-  map: ServerPropertiesMap | undefined
-): ServerProperties {
-  return objMap(map ?? {}, (k, value) => {
-    const defaultProp = defaultServerProperties[k];
-    if (defaultProp) {
-      if (typeof value === defaultProp.type) {
-        return [k, { ...defaultProp, value }];
-      }
-      return [k, { ...defaultProp }];
-    }
-    return [k, { type: typeof value, value }];
-  }) as ServerProperties;
 }
 
 async function getIconURI(cwd: Path) {

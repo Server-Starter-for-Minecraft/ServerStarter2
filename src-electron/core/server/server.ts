@@ -3,7 +3,11 @@ import { getLog4jArg } from './log4j';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { readyVersion } from '../version/version';
 import { readyJava } from '../../util/java/java';
-import { removeServerSettingFiles, unrollSettings } from '../settings/settings';
+import {
+  removeServerSettingFiles,
+  saveWorldSettingsJson,
+  unrollSettings,
+} from '../settings/settings';
 import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
@@ -12,6 +16,7 @@ import { worldContainerToPath } from '../world/worldContainer';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { Path } from 'src-electron/util/path';
 import { loadWorldJson } from '../world/worldJson';
+import { systemSettings } from '../stores/system';
 
 let stdin: undefined | ((command: string) => Promise<void>) = undefined;
 
@@ -33,13 +38,25 @@ async function runServerOrSaveSettings(
   // サーバーのCWDパスを得る
   const cwdPath = worldContainerToPath(world.container).child(world.name);
 
-  // ワールドデータをpullするプロミスを生成
+  // ワールドデータをpull/pushするプロミスを生成
   // プロミスの待機はrunServerWithPullingの内部で行われる
   let pullWorld = undefined;
   let pushWorld = undefined;
   if (world.remote?.type) {
     const remote = world.remote;
-    pullWorld = pullRemoteWorld(cwdPath, remote);
+    pullWorld = async () => {
+      await pullRemoteWorld(cwdPath, remote);
+      // pullしてきたワールドが使用中かどうかを確認し、使用中の場合エラー
+      const worldjson = await loadWorldJson(cwdPath);
+      if (isSuccess(worldjson)) {
+        if (worldjson.using)
+          return new WorldUsingError(
+            `world ${world.name} is running by ${
+              worldjson.last_user ?? '<annonymous>'
+            }`
+          );
+      }
+    };
     pushWorld = () => pushRemoteWorld(cwdPath, remote);
   }
 
@@ -57,9 +74,6 @@ async function runServerOrSaveSettings(
     await pushWorld();
   }
 
-  // サーバー実行時のみ必要なファイルを削除
-  await removeServerSettingFiles(cwdPath);
-
   // 実行結果を返す
   return result;
 }
@@ -68,7 +82,7 @@ async function runServerOrSaveSettings(
 async function _runServer(
   world: World,
   cwdPath: Path,
-  pullWorld: undefined | Promise<Failable<undefined>>,
+  pullWorld: undefined | (() => Promise<Failable<undefined>>),
   pushWorld: undefined | (() => Promise<Failable<undefined>>)
 ) {
   // ワールドが起動中の場合エラー
@@ -76,6 +90,9 @@ async function _runServer(
     return new WorldUsingError(
       `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
     );
+
+  // プルを開始
+  const pulling = pullWorld?.();
 
   // java実行時引数(ここから増える)
   // stdin,stdout,stderrの文字コードをutf-8に
@@ -111,22 +128,11 @@ async function _runServer(
   const javaPath = _javaPath;
 
   // ワールドのpullが終わるのを待機
-  if (pullWorld) {
+  if (pulling !== undefined) {
     api.send.UpdateStatus('ワールドデータのダウンロード中');
     const pullResult = await pullWorld;
     // ワールドのpullに失敗したら終了
     if (isFailure(pullResult)) return pullResult;
-
-    // pullしてきたワールドが使用中かどうかを確認し、使用中の場合エラー
-    const worldjson = await loadWorldJson(cwdPath);
-    if (isSuccess(worldjson)) {
-      if (worldjson.using)
-        return new WorldUsingError(
-          `world ${world.name} is running by ${
-            worldjson.last_user ?? '<annonymous>'
-          }`
-        );
-    }
   }
 
   // log4jの設定
@@ -142,25 +148,38 @@ async function _runServer(
   // サーバーのjarファイル参照を実行時引数に追加
   args.push(...programArguments, '--nogui');
 
-  // サーバー起動中のフラグを立てる
+  // 設定の更新
   world.using = true;
-
-  // 設定ファイルをサーバーCWD直下に書き出す
-  api.send.UpdateStatus('設定ファイルの書き出し中');
-  await unrollSettings(world, LEVEL_NAME, cwdPath);
+  world.last_user = systemSettings.get('user').owner;
+  world.last_date = new Date().getTime();
 
   // 起動中フラグを立てた状態でpush
-  if (pushWorld) {
-    await pushWorld();
-  }
+  if (pushWorld) await pushWorld();
+
+  // 設定ファイルをサーバーCWD直下に書き出す
+  api.send.UpdateStatus('サーバー設定ファイルの書き出し中');
+  await saveWorldSettingsJson(world, cwdPath);
+
+  // 設定ファイルをサーバーCWD直下に書き出す
+  api.send.UpdateStatus('サーバー設定ファイルの展開中');
+  world.properties = world.properties ?? {};
+  world.properties['level-name'] = { type: 'string', value: LEVEL_NAME };
+  await unrollSettings(world, cwdPath);
 
   async function setUsingFlagFalse() {
     // サーバー起動中のフラグを折る
     world.using = false;
 
+    // level-nameの削除
+    if (world.properties && world.properties['level-name']) {
+      delete world.properties['level-name'];
+    }
+
     // 設定ファイルをサーバーCWD直下に書き出す
     api.send.UpdateStatus('設定ファイルの書き出し中');
-    await unrollSettings(world, '', cwdPath);
+
+    // jsonの保存
+    await saveWorldSettingsJson(world, cwdPath);
   }
 
   // Eulaチェック
@@ -208,9 +227,11 @@ async function _runServer(
   // フロントエンドからの入力を無視
   stdin = undefined;
 
-
   // 使用中フラグを折る
   await setUsingFlagFalse();
+
+  // サーバー実行時のみ必要なファイルを削除
+  await removeServerSettingFiles(cwdPath);
 
   // サーバーの実行に失敗した場合はエラー
   if (isFailure(result)) return result;
@@ -220,7 +241,7 @@ async function _runServer(
 async function _saveSettings(
   world: World,
   cwdPath: Path,
-  pullWorld: undefined | Promise<Failable<undefined>>
+  pullWorld: undefined | (() => Promise<Failable<undefined>>)
 ) {
   // ワールドが起動中の場合エラー
   if (world.using)
@@ -228,28 +249,20 @@ async function _saveSettings(
       `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
     );
 
+  // プルを開始
+  const pulling = pullWorld?.();
+
   // ワールドのpullが終わるのを待機
-  if (pullWorld) {
+  if (pulling !== undefined) {
     api.send.UpdateStatus('ワールドデータのダウンロード中');
     const pullResult = await pullWorld;
     // ワールドのpullに失敗したら終了
     if (isFailure(pullResult)) return pullResult;
-
-    // pullしてきたワールドが使用中かどうかを確認し、使用中の場合エラー
-    const worldjson = await loadWorldJson(cwdPath);
-    if (isSuccess(worldjson)) {
-      if (worldjson.using)
-        return new WorldUsingError(
-          `world ${world.name} is running by ${
-            worldjson.last_user ?? '<annonymous>'
-          }`
-        );
-    }
   }
 
   // 設定ファイルをサーバーCWD直下に書き出す
   api.send.UpdateStatus('設定ファイルの書き出し中');
-  await unrollSettings(world, LEVEL_NAME, cwdPath);
+  await saveWorldSettingsJson(world, cwdPath);
 }
 
 export function runCommand(command: string): void {

@@ -21,19 +21,8 @@ export async function removeServerSettingFiles(serverCwdPath: Path) {
   await serverCwdPath.child('server.properties').remove(true);
 }
 
-/** サーバー設定系ファイルをサーバーCWD直下に書き出す */
-export async function unrollSettings(
-  world: World,
-  levelName: string,
-  serverCwdPath: Path
-) {
-  // server.properties を書き出し
-  const strprop = stringifyServerProperties({
-    ...(world.properties ?? defaultServerProperties),
-    'level-name': { type: 'string', value: levelName },
-  });
-  await serverCwdPath.child('server.properties').writeText(strprop);
-
+/** server_settings.jsonをサーバーCWD直下に書き出す */
+export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     version: world.version,
@@ -46,6 +35,15 @@ export async function unrollSettings(
 
   // jsonを書き出し
   await saveWorldJson(serverCwdPath, worldSettings);
+}
+
+/** サーバー設定系ファイルをサーバーCWD直下に書き出す */
+export async function unrollSettings(world: World, serverCwdPath: Path) {
+  // server.properties を書き出し
+  const strprop = stringifyServerProperties(
+    world.properties ?? defaultServerProperties
+  );
+  await serverCwdPath.child('server.properties').writeText(strprop);
 }
 
 function getPropertiesMap(serverProperties: ServerProperties | undefined) {

@@ -7,7 +7,7 @@ export async function setSystemSettings(
   settings: SystemSettings
 ): Promise<undefined> {
   systemSettings.store = settings;
-  return undefined
+  return undefined;
 }
 
 export async function getSystemSettings(): Promise<SystemSettings> {
@@ -22,6 +22,13 @@ export function fixSystemSettings() {
     player: { players: [], groups: [] },
     remote: { github: { accounts: [] } },
     world: { memory: 2, properties: defaultServerProperties },
+    user: {
+      autoShutDown: false,
+      eula: false,
+      // デフォルト言語 ja で OK?
+      language: 'ja',
+      owner: undefined,
+    },
   });
 
   systemSettings.store = fixed;

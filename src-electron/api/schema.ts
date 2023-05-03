@@ -133,11 +133,15 @@ export type WorldSettings = {
   /** リモートリポジトリ */
   remote?: Remote;
 
-  /** 最終プレイ日? */
-  last_date?: Date;
+  /** 最終プレイ日
+   *
+   * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
+   * new Dateの引数にすることで日付が得られる
+   */
+  last_date?: number;
 
   /** 最終プレイ者 */
-  last_user?: string;
+  last_user?: Player;
 
   /** 起動中フラグ */
   using?: boolean;
@@ -165,11 +169,15 @@ export type World = {
   /** リモートリポジトリ */
   remote?: Remote;
 
-  /** 最終プレイ日? */
-  last_date?: Date;
+  /** 最終プレイ日
+   *
+   * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
+   * new Dateの引数にすることで日付が得られる
+   */
+  last_date?: number;
 
   /** 最終プレイ者 */
-  last_user?: string;
+  last_user?: Player;
 
   /** 使用メモリ量 (Gb) */
   memory?: number;
@@ -225,11 +233,13 @@ export type PlayerGroup = {
   players: Player[];
 };
 
+export type Locale = 'ja' | 'en-US';
+
 export type UserSetting = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
   // システム言語
-  language: string;
+  language: Locale;
   // 実行者情報
   owner?: Player;
   // 自動シャットダウン
