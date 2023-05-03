@@ -1,4 +1,9 @@
-import { World, WorldAdditional, WorldEdited } from 'src-electron/api/schema';
+import {
+  MemoryUnit,
+  World,
+  WorldAdditional,
+  WorldEdited,
+} from 'src-electron/api/schema';
 import { getLog4jArg } from './log4j';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { readyVersion } from '../version/version';
@@ -11,7 +16,7 @@ import {
 import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
-import { LEVEL_NAME } from '../const';
+import { DEFAULT_MEMORY, LEVEL_NAME } from '../const';
 import { worldContainerToPath } from '../world/worldContainer';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { Path } from 'src-electron/util/path';
@@ -20,6 +25,7 @@ import { systemSettings } from '../stores/system';
 import { JavaComponent } from '../version/vanilla';
 import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
+import { rootLoggerHierarchy } from '../logger';
 
 class WorldUsingError extends Error {}
 
@@ -101,22 +107,55 @@ class ServerRunner {
 
   /** 使用メモリの設定 */
   private setMamoryAmount() {
-    const memory = this.world.memory;
-    if (memory !== undefined) {
-      let memorystr = '';
-      if (memory % 1024 === 0) {
-        memorystr = Math.round(memory / 1024).toString() + 'T';
-      } else if (memory % 1 === 0) {
-        memorystr = Math.round(memory).toString() + 'G';
-      } else if ((memory * 1024) % 1 === 0) {
-        memorystr = Math.round(memory * 1024).toString() + 'M';
-      } else if ((memory * 1024 ** 2) % 1 === 0) {
-        memorystr = Math.round(memory * 1024 ** 2).toString() + 'K';
-      } else {
-        memorystr = Math.round(memory * 1024 ** 3).toString();
-      }
-      this.args.push(`-Xmx${memorystr}`, `-Xms${memorystr}`);
+    let memory = this.world.memory ?? systemSettings.get('world').memory;
+
+    let memorystr = '';
+
+    let memorySize = Math.round(memory.size);
+
+    const lowerunit = memory.unit.toLowerCase() as Lowercase<MemoryUnit>;
+
+    const KB = 1000;
+    const MB = KB ** 2;
+    const GB = KB ** 3;
+    const TB = KB ** 4;
+
+    switch (lowerunit) {
+      case 'b':
+        memorystr = `${memorySize}`;
+        break;
+      case 'kib':
+        memorystr = `${memorySize}K`;
+        break;
+      case 'mib':
+        memorystr = `${memorySize}M`;
+        break;
+      case 'gib':
+        memorystr = `${memorySize}G`;
+        break;
+      case 'tib':
+        memorystr = `${memorySize}T`;
+        break;
+      case 'kb':
+        memorystr = `${memorySize * KB}`;
+        break;
+      case 'mb':
+        memorystr = `${memorySize * MB}`;
+        break;
+      case 'gb':
+        memorystr = `${memorySize * GB}`;
+        break;
+      case 'tb':
+        memorystr = `${memorySize * TB}`;
+        break;
+      default:
+        rootLoggerHierarchy.server
+          .setMamoryAmount(memory)
+          .error(`unknown unit ${memory.unit}`);
+        return;
     }
+
+    this.args.push(`-Xmx${memorystr}`, `-Xms${memorystr}`);
   }
 
   /** サーバーデータを用意 */

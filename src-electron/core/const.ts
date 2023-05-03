@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import { Path } from '../util/path';
+import { MemorySettings } from '../api/schema';
 
 const userDataPath = (
   process.env.DEBUGGING || !app
@@ -21,3 +22,8 @@ export const versionManifestPath = versionsCachePath.child(
 export const spigotBuildPath = mainPath.child('spigotBuild');
 
 export const LEVEL_NAME = 'world';
+
+export const DEFAULT_MEMORY: MemorySettings = {
+  size: 2,
+  unit: 'GiB',
+};

@@ -131,7 +131,7 @@ export type ServerPropertiesMap = {
 
 export type WorldSettings = {
   /** 使用メモリ量 (Gb) */
-  memory?: number;
+  memory?: MemorySettings;
 
   /** バージョン */
   version: Version;
@@ -190,7 +190,7 @@ export type WorldBase = {
   last_user?: Player;
 
   /** 使用メモリ量 (Gb) */
-  memory?: number;
+  memory?: MemorySettings;
 
   /** server.propertiesの内容 */
   properties?: ServerProperties;
@@ -234,9 +234,25 @@ export type WorldEdited = WorldBase & {
   additional: WorldEditedAdditional;
 };
 
+export type MemoryUnit =
+  | 'TB'
+  | 'GB'
+  | 'MB'
+  | 'KB'
+  | 'B'
+  | 'TiB'
+  | 'GiB'
+  | 'MiB'
+  | 'KiB';
+
+export type MemorySettings = {
+  size: number;
+  unit: MemoryUnit;
+};
+
 /** serverstarterのシステム設定内のワールド設定 */
 export type SystemWorldSettings = {
-  memory: number;
+  memory: MemorySettings;
   properties: ServerProperties;
 };
 
