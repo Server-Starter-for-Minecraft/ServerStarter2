@@ -6,6 +6,7 @@ import {
 } from 'app/src-electron/api/schema';
 import { objMap } from 'app/src-electron/util/objmap';
 import { defaultServerProperties } from './properties';
+import { deepcopy } from 'app/src-electron/util/deepcopy';
 
 type WorldSettingsPlus = {
   name: string;
@@ -20,36 +21,39 @@ export function worldSettingsToWorld({
   avater_path,
   settings,
 }: WorldSettingsPlus): World {
-  return {
+  const result = {
     name,
     container,
     avater_path,
     version: settings.version,
     using: settings.using,
-    remote: settings.remote,
+    remote_pull: settings.remote,
+    remote_push: settings.remote,
     last_date: settings.last_date,
     last_user: settings.last_user,
     memory: settings.memory,
     properties: getServerProperties(settings.properties),
     additional: {},
   };
+  return deepcopy(result);
 }
 
 export function worldToWorldSettings(world: World): WorldSettingsPlus {
-  return {
+  const result = {
     name: world.name,
     container: world.container,
     avater_path: world.avater_path,
     settings: {
       memory: world.memory,
       version: world.version,
-      remote: world.remote,
+      remote: world.remote_pull,
       last_date: world.last_date,
       last_user: world.last_user,
       using: world.using,
       properties: getPropertiesMap(world.properties),
     },
   };
+  return deepcopy(result);
 }
 
 function getServerProperties(

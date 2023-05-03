@@ -103,9 +103,21 @@ export type ServerProperties = {
   [key in string]: ServerProperty;
 };
 
+/** mod/plugin/datapack(zip)のデータを表す */
 export type FileData = {
   name: string;
   sha1: string;
+};
+
+/** datapack(folder)のデータを表す */
+export type FolderData = {
+  name: string;
+};
+
+/** 新しく追加する際のmod/plugin/datapackのデータを表す */
+export type NewData = {
+  name: string;
+  path: string;
 };
 
 export type WorldAbbr = {
@@ -150,7 +162,8 @@ export type WorldSettings = {
   properties?: ServerPropertiesMap;
 };
 
-export type World = {
+/** ワールドごとの設定 */
+export type WorldBase = {
   /** ワールド名 */
   name: string;
 
@@ -166,8 +179,11 @@ export type World = {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** リモートリポジトリ */
-  remote?: Remote;
+  /** pull元のリモートリポジトリ */
+  remote_pull?: Remote;
+
+  /** push先のリモートリポジトリ */
+  remote_push?: Remote;
 
   /** 最終プレイ日
    *
@@ -184,11 +200,13 @@ export type World = {
 
   /** server.propertiesの内容 */
   properties?: ServerProperties;
+};
 
+export type World = WorldBase & {
   /** 導入済み */
   additional: {
     /** 導入済みデータパック */
-    datapacks?: FileData[];
+    datapacks?: (FolderData | FileData)[];
 
     /** 導入済みプラグイン */
     plugins?: FileData[];
@@ -198,7 +216,27 @@ export type World = {
   };
 };
 
-/** serverstarterのデフォルトワールド設定 */
+export type WorldEdited = WorldBase & {
+  /** ワールド名称を変更する場合 */
+  new_name?: string;
+
+  /** カスタムマップを導入する場合 */
+  custom_map?: NewData;
+
+  /** 導入済み */
+  additional: {
+    /** 導入済みデータパック */
+    datapacks?: (FolderData | FileData | NewData)[];
+
+    /** 導入済みプラグイン */
+    plugins?: (FileData | NewData)[];
+
+    /** 導入済みMOD */
+    mods?: (FileData | NewData)[];
+  };
+};
+
+/** serverstarterのシステム設定内のワールド設定 */
 export type SystemWorldSettings = {
   memory: number;
   properties: ServerProperties;
@@ -265,75 +303,3 @@ export type WorldContainers = {
     [name in string]: string;
   };
 };
-
-// {
-//   'allow-flight'?: boolean;
-//   'allow-nether'?: boolean;
-//   'broadcast-console-to-ops'?: boolean;
-//   'broadcast-rcon-to-ops'?: boolean;
-//   difficulty?: Difficulty;
-//   'enable-command-block'?: boolean;
-//   'enable-jmx-monitoring'?: boolean;
-//   'enable-rcon'?: boolean;
-//   'enable-status'?: boolean;
-//   'enable-query'?: boolean;
-//   'enforce-secure-profile'?: boolean;
-//   'enforce-whitelist'?: boolean;
-//   // 10-1000
-//   'entity-broadcast-range-percentage'?: number;
-//   'force-gamemode'?: boolean;
-//   'function-permission-level'?: FunctionPermissionLevel;
-//   gamemode?: Gamemode;
-//   'generate-structures'?: boolean;
-//   'generator-settings'?: string;
-//   hardcore?: boolean;
-//   'hide-online-players'?: boolean;
-//   'initial-disabled-packs'?: string;
-//   'initial-enabled-packs'?: string;
-//   'level-name'?: string;
-//   'level-seed'?: string;
-//   'level-type'?: WorldType;
-//   'max-chained-neighbor-updates'?: number;
-//   // 0...2^31-1
-//   'max-players'?: number;
-//   // 0...2^63-1
-//   'max-tick-time'?: number;
-//   // 1...29999984
-//   'max-world-size'?: number;
-//   // len < 59
-//   motd?: string;
-//   'network-compression-threshold'?: number;
-//   'online-mode'?: boolean;
-//   'op-permission-level'?: OpPermissionLevel;
-//   'player-idle-timeout'?: number;
-//   'prevent-proxy-connections'?: boolean;
-//   'previews-chat'?: boolean;
-//   pvp?: boolean;
-//   // 1...2^16-2
-//   'query.port'?: number;
-//   'rate-limit'?: number;
-//   'rcon.password'?: string;
-//   // 1...2^16-2
-//   'rcon.port'?: number;
-//   'resource-pack'?: string;
-//   'resource-pack-prompt'?: string;
-//   'resource-pack-sha1'?: string;
-//   'require-resource-pack'?: boolean;
-//   'server-ip'?: string;
-//   // 1...2^16-2
-//   'server-port'?: number;
-//   // 3...32
-//   'simulation-distance'?: number;
-//   'snooper-enabled'?: boolean;
-//   'spawn-animals'?: boolean;
-//   'spawn-monsters'?: boolean;
-//   'spawn-npcs'?: boolean;
-//   'spawn-protection'?: number;
-//   'sync-chunk-writes'?: boolean;
-//   // enigma
-//   'text-filtering-config'?: string;
-//   'use-native-transport'?: boolean;
-//   // 3...32
-//   'view-distance'?: number;
-//   'white-list'?: boolean;
-// };

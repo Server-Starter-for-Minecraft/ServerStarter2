@@ -38,14 +38,14 @@ async function runServerOrSaveSettings(
   // サーバーのCWDパスを得る
   const cwdPath = worldContainerToPath(world.container).child(world.name);
 
-  // ワールドデータをpull/pushするプロミスを生成
+  // ワールドデータをpullする関数
   // プロミスの待機はrunServerWithPullingの内部で行われる
   let pullWorld = undefined;
-  let pushWorld = undefined;
-  if (world.remote?.type) {
-    const remote = world.remote;
+
+  const remote_pull = world.remote_pull;
+  if (remote_pull?.type) {
     pullWorld = async () => {
-      await pullRemoteWorld(cwdPath, remote);
+      await pullRemoteWorld(cwdPath, remote_pull);
       // pullしてきたワールドが使用中かどうかを確認し、使用中の場合エラー
       const worldjson = await loadWorldJson(cwdPath);
       if (isSuccess(worldjson)) {
@@ -57,8 +57,14 @@ async function runServerOrSaveSettings(
           );
       }
     };
-    pushWorld = () => pushRemoteWorld(cwdPath, remote);
   }
+
+  const remote_push = world.remote_push;
+  // ワールドデータをpushする関数
+  // プロミスの待機はrunServerWithPullingの内部で行われる
+  const pushWorld = remote_push?.type
+    ? () => pushRemoteWorld(cwdPath, remote_push)
+    : undefined;
 
   let result: Failable<undefined>;
   if (saveSettingsOnly) {
