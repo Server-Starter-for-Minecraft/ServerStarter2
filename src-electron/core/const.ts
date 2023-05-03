@@ -25,5 +25,5 @@ export const LEVEL_NAME = 'world';
 
 export const DEFAULT_MEMORY: MemorySettings = {
   size: 2,
-  unit: 'GiB',
+  unit: 'GB',
 };

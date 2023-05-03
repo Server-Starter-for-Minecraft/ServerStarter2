@@ -115,38 +115,26 @@ class ServerRunner {
 
     const lowerunit = memory.unit.toLowerCase() as Lowercase<MemoryUnit>;
 
-    const KB = 1000;
-    const MB = KB ** 2;
-    const GB = KB ** 3;
-    const TB = KB ** 4;
-
     switch (lowerunit) {
       case 'b':
+      case '':
         memorystr = `${memorySize}`;
         break;
-      case 'kib':
+      case 'kb':
+      case 'k':
         memorystr = `${memorySize}K`;
         break;
-      case 'mib':
+      case 'mb':
+      case 'm':
         memorystr = `${memorySize}M`;
         break;
-      case 'gib':
+      case 'gb':
+      case 'g':
         memorystr = `${memorySize}G`;
         break;
-      case 'tib':
-        memorystr = `${memorySize}T`;
-        break;
-      case 'kb':
-        memorystr = `${memorySize * KB}`;
-        break;
-      case 'mb':
-        memorystr = `${memorySize * MB}`;
-        break;
-      case 'gb':
-        memorystr = `${memorySize * GB}`;
-        break;
       case 'tb':
-        memorystr = `${memorySize * TB}`;
+      case 't':
+        memorystr = `${memorySize}T`;
         break;
       default:
         rootLoggerHierarchy.server

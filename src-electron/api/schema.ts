@@ -240,10 +240,11 @@ export type MemoryUnit =
   | 'MB'
   | 'GB'
   | 'TB'
-  | 'KiB'
-  | 'MiB'
-  | 'GiB'
-  | 'TiB';
+  | ''
+  | 'K'
+  | 'M'
+  | 'G'
+  | 'T';
 
 export type MemorySettings = {
   size: number;
