@@ -1,15 +1,40 @@
 import log4js from 'log4js';
 
+log4js.addLayout('custom', function () {
+  return function (logEvent) {
+    const level = logEvent.level.levelStr;
+    const category = logEvent.categoryName;
+    const operation = logEvent.data[0];
+    const state = logEvent.data[1];
+
+    const args = logEvent.data[2];
+
+    const data = logEvent.data
+      .slice(3)
+      .map((d) => {
+        let text = d;
+        if (text.length > 100) {
+          text = text.slice(undefined, 97) + '...';
+        }
+        return text;
+      })
+      .join(', ');
+
+    return `[${level}/${state}] ${category} ${operation}(${args}) ${data}`;
+  };
+});
+
 log4js.configure({
   appenders: {
     _out: {
       type: 'stdout',
-      // layout: {
-      //   type: 'pattern',
-      //   pattern: '[%p: %d] #%c [%m{0,1}] %m{1,2} %m{2}%n',
-      // },
+      layout: { type: 'custom' },
     },
-    _file: { type: 'file', filename: 'logs/serverstarter.log' },
+    _file: {
+      type: 'file',
+      filename: 'logs/serverstarter.log',
+      layout: { type: 'custom' },
+    },
     out: { type: 'logLevelFilter', appender: '_out', level: 'error' },
     file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
   },
@@ -23,19 +48,16 @@ log4js.configure({
 export function getLoggers(category: string | undefined) {
   const logger = log4js.getLogger(category);
   return {
-    child(subcategory: string) {
+    child(subcategory: string, kwargs: object | undefined) {
       if (category === undefined) {
         return getLoggers(subcategory);
       }
       return getLoggers(category + '.' + subcategory);
     },
     operation(operation: string, kwargs: object) {
-      const args =
-        '(' +
-        Object.entries(kwargs)
-          .map(([k, v]) => `${k}:${v}`)
-          .join(', ') +
-        ')';
+      const args = Object.entries(kwargs)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(', ');
       return {
         start(...message: any[]) {
           logger.trace(operation, 'start', args, ...message);

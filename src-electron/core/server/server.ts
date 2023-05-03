@@ -103,7 +103,7 @@ class ServerRunner {
   private setMamoryAmount() {
     const memory = this.world.memory;
     if (memory !== undefined) {
-      let memorystr: string = '';
+      let memorystr = '';
       if (memory % 1024 === 0) {
         memorystr = Math.round(memory / 1024).toString() + 'T';
       } else if (memory % 1 === 0) {
