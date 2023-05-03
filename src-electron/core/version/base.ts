@@ -5,9 +5,9 @@ import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { versionsCachePath } from '../const';
 import { config } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
-import { rootLoggers } from '../logger';
+import { rootLoggerHierarchy } from '../logger';
 
-export const versionLoggers = rootLoggers.child('server').child('version');
+export const versionLoggers = rootLoggerHierarchy.server.version;
 
 export type VersionComponent = {
   programArguments: string[];
@@ -46,10 +46,7 @@ export const genGetAllVersions = <V extends Version>(
       useCache = allVersionsReloadedMap[type];
     }
 
-    const logger = versionLoggers.operation('getAllVersions', {
-      type,
-      useCache,
-    });
+    const logger = versionLoggers.getAllVersions({ type, useCache });
     logger.start();
 
     const jsonpath = versionsCachePath.child(`${type}/${type}-all.json`);
