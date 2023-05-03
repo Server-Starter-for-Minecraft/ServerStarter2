@@ -313,7 +313,8 @@ class ServerRunner {
 
     await this.saveAndPush(true);
 
-    await this.checkEula(server, javaPath);
+    const eulaResult = await this.checkEula(server, javaPath);
+    if (isFailure(eulaResult)) return eulaResult;
 
     await this.unrollWorldSettings();
 
