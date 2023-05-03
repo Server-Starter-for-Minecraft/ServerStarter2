@@ -35,7 +35,7 @@ export async function readyJava(
     case 'windows-x64':
       return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
     case 'linux':
-      return path.child('bin/java.exe');
+      return path.child('bin/java');
     case 'mac-os':
     case 'mac-os-arm64':
       return path.child('jre.bundle/Contents/Home/bin/java');
