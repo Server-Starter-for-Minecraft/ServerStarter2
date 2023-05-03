@@ -103,7 +103,19 @@ class ServerRunner {
   private setMamoryAmount() {
     const memory = this.world.memory;
     if (memory !== undefined) {
-      this.args.push(`-Xmx${memory}G`, `-Xms${memory}G`);
+      let memorystr: string = '';
+      if (memory % 1024 === 0) {
+        memorystr = Math.round(memory / 1024).toString() + 'T';
+      } else if (memory % 1 === 0) {
+        memorystr = Math.round(memory).toString() + 'G';
+      } else if ((memory * 1024) % 1 === 0) {
+        memorystr = Math.round(memory * 1024).toString() + 'M';
+      } else if ((memory * 1024 ** 2) % 1 === 0) {
+        memorystr = Math.round(memory * 1024 ** 2).toString() + 'K';
+      } else {
+        memorystr = Math.round(memory * 1024 ** 3).toString();
+      }
+      this.args.push(`-Xmx${memorystr}`, `-Xms${memorystr}`);
     }
   }
 
