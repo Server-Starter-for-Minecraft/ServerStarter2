@@ -32,8 +32,14 @@ function promissifyProcess(
       value: Failable<undefined> | PromiseLike<Failable<undefined>>
     ) => void
   ) => void = (resolve) => {
-    process.on('exit', (code) => resolve(onExit(code)));
-    process.on('error', (err) => resolve(err));
+    process.on('exit', (code) => {
+      logger.success(code);
+      resolve(onExit(code));
+    });
+    process.on('error', (err) => {
+      logger.fail(err);
+      resolve(err);
+    });
   };
 
   const promise = new Promise(executor) as ChildProcessPromise;
@@ -48,17 +54,6 @@ function promissifyProcess(
     );
   promise.kill = kill;
   promise.write = write;
-
-  promise.then(
-    (x) => {
-      logger.success();
-      return x;
-    },
-    (x) => {
-      logger.fail(x);
-      return x;
-    }
-  );
 
   return promise;
 }
