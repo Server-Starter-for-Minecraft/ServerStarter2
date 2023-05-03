@@ -12,7 +12,7 @@ export async function installAdditional(
   additional: WorldEditedAdditional,
   cwdPath: Path
 ): Promise<[WorldAdditional, Failable<undefined>]> {
-  let failureMessages: string[] = [];
+  const failureMessages: string[] = [];
 
   // Datapackの導入
   const datapacksPromise = installFiles(
@@ -42,7 +42,7 @@ export async function installAdditional(
   ]);
 
   const failureCount = failureMessages.length;
-  let failure: Failable<undefined> =
+  const failure: Failable<undefined> =
     failureCount === 0
       ? undefined
       : failureCount === 1

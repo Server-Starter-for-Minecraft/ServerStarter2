@@ -1,5 +1,8 @@
 import { Failable } from 'src-electron/api/failable';
 import * as child_process from 'child_process';
+import { utilLoggers } from './logger';
+
+const loggers = utilLoggers.child('subprocess');
 
 export type ChildProcessPromise = Promise<Failable<undefined>> & {
   kill(signal?: number | NodeJS.Signals | undefined): boolean;
@@ -11,6 +14,11 @@ function promissifyProcess(
   processpath: string,
   args: string[]
 ) {
+  const logger = loggers.operation('promissifyProcess', {
+    command: processpath + ' ' + args.join(' '),
+  });
+  logger.start();
+
   function onExit(code: number | null) {
     if (code === 0 || code === null) return undefined;
     const command = processpath + ' ' + args.join(' ');
@@ -40,6 +48,17 @@ function promissifyProcess(
     );
   promise.kill = kill;
   promise.write = write;
+
+  promise.then(
+    (x) => {
+      logger.success();
+      return x;
+    },
+    (x) => {
+      logger.fail(x);
+      return x;
+    }
+  );
 
   return promise;
 }

@@ -29,9 +29,3 @@ export function deepcopy<T extends Copyable>(obj: T): T {
       throw Error(`${typeof obj} object is not valid in deepcopy`);
   }
 }
-
-function a(a: any) {
-  if (a === null) {
-    a;
-  }
-}

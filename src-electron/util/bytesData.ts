@@ -64,7 +64,7 @@ export class BytesData {
     path: Path,
     hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('fromPath', { path, hash });
+    const logger = loggers.operation('fromPath', { path:path.str(), hash });
     logger.start();
 
     try {
@@ -136,14 +136,6 @@ export class BytesData {
     headers?: { [key in string]: string },
     executable?: boolean
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('fromPathOrUrl', {
-      path,
-      url,
-      hash,
-      prioritizeUrl,
-      updateLocal,
-    });
-    logger.start();
     const remoteHash = compareHashOnFetch ? hash : undefined;
     if (prioritizeUrl) {
       const data = await BytesData.fromURL(url, remoteHash, headers);
@@ -152,26 +144,18 @@ export class BytesData {
           await path.parent().mkdir(true);
           await data.write(path.str(), executable);
         }
-        logger.success();
         return data;
       }
       const result = await BytesData.fromPath(path, hash);
-      if (isSuccess(result)) {
-        logger.fail();
-      } else {
-        logger.success();
-      }
       return result;
     } else {
       let data = await BytesData.fromPath(path, hash);
       if (isSuccess(data)) {
-        logger.success();
         return data;
       }
 
       data = await BytesData.fromURL(url, remoteHash);
       if (isFailure(data)) {
-        logger.fail();
         return data;
       }
 
@@ -179,7 +163,6 @@ export class BytesData {
         await path.parent().mkdir(true);
         await data.write(path.str(), executable);
       }
-      logger.success();
       return data;
     }
   }

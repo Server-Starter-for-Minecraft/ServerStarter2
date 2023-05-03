@@ -58,7 +58,7 @@ class ServerRunner {
 
   /** ワールドの設定を保存しデータをリモートにpushする */
   private async saveAndPush(using: boolean): Promise<Failable<undefined>> {
-    api.send.UpdateStatus(`不要なファイルを削除中`);
+    api.send.UpdateStatus('不要なファイルを削除中');
     // サーバー実行時のみ必要なファイルを削除
     await removeServerSettingFiles(this.cwdPath);
 
@@ -83,7 +83,7 @@ class ServerRunner {
     const remote_push = this.world.remote_push;
     if (remote_push === undefined) return;
 
-    api.send.UpdateStatus(`ワールドデータをアップロード中`);
+    api.send.UpdateStatus('ワールドデータをアップロード中');
     pushRemoteWorld(this.cwdPath, remote_push);
   }
 
