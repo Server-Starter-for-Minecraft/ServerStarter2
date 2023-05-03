@@ -7,6 +7,7 @@
   "include": ["src/**/*.ts", "src-electron/**/*.ts", "src/**/*.vue"],
   "ts-node": {
     "compilerOptions": {
+      "strictNullChecks": true,
       "module": "ESNext"
     }
   }
