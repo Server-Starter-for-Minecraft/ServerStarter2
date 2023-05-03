@@ -92,6 +92,7 @@ const api: FrontAPI = {
 
   sendCommand: send('Command'),
   sendOpenBrowser: send('OpenBrowser'),
+  sendOpenFolder: send('OpenFolder'),
 
   handleAgreeEula: handle('AgreeEula'),
 

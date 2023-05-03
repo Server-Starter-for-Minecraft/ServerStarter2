@@ -1,5 +1,5 @@
 import { Failable } from 'src-electron/api/failable';
-import { setSystemSettings, systemSettings } from '../../stores/system';
+import { systemSettings } from '../../stores/system';
 import { GithubAccountSetting } from 'app/src-electron/api/schema';
 
 /** リポジトリを操作できる登録済みのPATを取得する。 */

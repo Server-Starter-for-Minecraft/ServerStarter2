@@ -47,6 +47,7 @@ export interface API extends IAPI {
   sendWindowToMain: {
     Command: (command: string) => void;
     OpenBrowser: (url: string) => void;
+    OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
     RunServer: (world: World) => Promise<Failable<undefined>>;

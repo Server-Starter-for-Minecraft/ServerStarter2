@@ -7,7 +7,7 @@ import {
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { getWorld, getWorldAbbrs } from '../core/world/world';
-import { openBrowser } from '../util/openBrowser';
+import { openBrowser, openFolder } from '../util/shell';
 import {
   getWorldContainers,
   setWorldContainers,
@@ -19,6 +19,7 @@ export const backListener: BackListener<API> = {
   on: {
     Command: runCommand,
     OpenBrowser: openBrowser,
+    OpenFolder: openFolder,
   },
   handle: {
     RunServer: runServer,

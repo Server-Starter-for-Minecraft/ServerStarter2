@@ -43,6 +43,14 @@ function fix<T extends { [x: string]: unknown }>(
   return Object.fromEntries(
     Object.entries(defaultValue).map(([k, v]) => {
       const val = value?.[k];
+
+      if (v instanceof Array) {
+        if (val instanceof Array) {
+          return [k, val];
+        }
+        return [k, v];
+      }
+
       if (typeof v === 'object' && v !== null) {
         return [
           k,
