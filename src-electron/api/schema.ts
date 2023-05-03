@@ -235,15 +235,15 @@ export type WorldEdited = WorldBase & {
 };
 
 export type MemoryUnit =
-  | 'TB'
-  | 'GB'
-  | 'MB'
-  | 'KB'
   | 'B'
-  | 'TiB'
-  | 'GiB'
+  | 'KB'
+  | 'MB'
+  | 'GB'
+  | 'TB'
+  | 'KiB'
   | 'MiB'
-  | 'KiB';
+  | 'GiB'
+  | 'TiB';
 
 export type MemorySettings = {
   size: number;
