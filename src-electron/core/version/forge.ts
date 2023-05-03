@@ -1,5 +1,5 @@
 import { ForgeVersion } from 'src-electron/api/schema';
-import { VersionLoader, genGetAllVersions } from './base';
+import { VersionLoader, genGetAllVersions, needEulaAgreement } from './base';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { Path } from '../../util/path';
 import { getJavaComponent } from './vanilla';
@@ -52,6 +52,7 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
 
   /** forgeのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('forge', getAllForgeVersions),
+  needEulaAgreement,
 };
 
 async function installForgeVersion(

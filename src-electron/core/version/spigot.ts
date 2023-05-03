@@ -8,7 +8,12 @@ import { spigotBuildPath, versionsCachePath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../util/subprocess';
 import { readyJava } from '../../util/java/java';
-import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
+import {
+  VersionComponent,
+  VersionLoader,
+  genGetAllVersions,
+  needEulaAgreement,
+} from './base';
 import { getVersionMainfest } from './mainfest';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
@@ -19,6 +24,8 @@ export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
 
   /** spigotのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('spigot', getSpigotVersions),
+
+  needEulaAgreement,
 };
 
 /** spigotのサーバーデータを必要があればダウンロード */

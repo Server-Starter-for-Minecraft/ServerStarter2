@@ -25,7 +25,15 @@ export type VersionLoader<V extends Version> = {
    * - undefined 起動中にリモートから取得済みだったらローカルを使用(おそらく最新版) 初回だけ遅い
    */
   getAllVersions(useCache: boolean | undefined): Promise<Failable<V[]>>;
+
+  /** サーバーの起動にminecraft Eulaへの同意が必要かどうか */
+  needEulaAgreement(version: V): boolean;
 };
+
+export function needEulaAgreement(version: Version) {
+  version.id;
+  return true;
+}
 
 const allVersionsReloadedMap: { [key in VersionType]: boolean } = {
   fabric: false,

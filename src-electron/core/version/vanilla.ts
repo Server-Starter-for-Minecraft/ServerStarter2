@@ -3,7 +3,7 @@ import { getVersionMainfest } from './mainfest';
 import { Failable, isFailure } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { versionsCachePath } from '../const';
-import { VersionLoader, genGetAllVersions } from './base';
+import { VersionLoader, genGetAllVersions, needEulaAgreement } from './base';
 import { Path } from '../../util/path';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
@@ -62,6 +62,8 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 
   /** バニラのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersions),
+
+  needEulaAgreement,
 };
 
 async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
