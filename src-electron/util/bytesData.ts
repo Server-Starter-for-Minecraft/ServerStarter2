@@ -1,8 +1,8 @@
 import { createHash } from 'crypto';
 import { promises } from 'fs';
-import { utilLoggers } from './logger.js';
-import { Path } from './path.js';
-import { isSuccess, Failable, isFailure } from '../api/failable.js';
+import { utilLoggers } from './logger';
+import { Path } from './path';
+import { isSuccess, Failable, isFailure } from '../api/failable';
 
 const fetch = import('node-fetch');
 

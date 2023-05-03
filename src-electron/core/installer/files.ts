@@ -1,7 +1,7 @@
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
-import { FileData, NewData } from 'app/src-electron/api/schema';
-import { asyncMap } from 'app/src-electron/util/objmap';
-import { Path } from 'app/src-electron/util/path';
+import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
+import { FileData, NewData } from 'src-electron/api/schema';
+import { asyncMap } from 'src-electron/util/objmap';
+import { Path } from 'src-electron/util/path';
 
 export async function installFiles(
   files: (FileData | NewData)[] | undefined,

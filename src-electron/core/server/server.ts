@@ -26,7 +26,7 @@ import { JavaComponent } from '../version/vanilla';
 import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
-import { parseCommandLine } from 'app/src-electron/util/commandLineParser';
+import { parseCommandLine } from 'src-electron/util/commandLineParser';
 
 class WorldUsingError extends Error {}
 

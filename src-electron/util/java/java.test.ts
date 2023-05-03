@@ -1,5 +1,3 @@
-import { runtimePath } from '../../core/const.js';
-import { readyJava } from './java.js';
 
 describe('readyJava', async () => {
   test(

@@ -1,10 +1,10 @@
-import { runtimePath } from '../../core/const.js';
-import { config } from '../../core/stores/config.js';
-import { BytesData } from '../bytesData.js';
-import { osPlatform } from '../os.js';
-import { Path } from '../path.js';
-import { isFailure, Failable } from '../../api/failable.js';
-import { installManifest, Manifest } from './manifest.js';
+import { runtimePath } from '../../core/const';
+import { config } from '../../core/stores/config';
+import { BytesData } from '../bytesData';
+import { osPlatform } from '../os';
+import { Path } from '../path';
+import { isFailure, Failable } from '../../api/failable';
+import { installManifest, Manifest } from './manifest';
 
 export type component =
   | 'java-runtime-alpha'

@@ -1,63 +1,57 @@
-import { World } from 'src-electron/api/schema';
-import { versionLoaders } from '../version/version';
-import { VersionLoader } from '../version/base';
-import { isFailure, isSuccess } from 'src-electron/api/failable';
-import { runServerOrSaveSettings } from './server';
-import { Path } from '../../util/path';
-import { mainPath, versionsCachePath } from '../const';
-import { getWorldAbbrs } from '../world/world';
-import { setBackAPI } from '../api';
-
-setBackAPI({
-  invoke: {
-    async AgreeEula() {
-      return false;
-    },
-  },
-  send: {
-    UpdateStatus: console.log,
-    AddConsole: console.log,
-  },
-});
-
-const demoWorld: World = {
-  name: 'papermc19',
-  container: mainPath.child('servers').str(),
-  settings: {
-    avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
-    version: {
-      type: 'papermc',
-      build: 178,
-      id: '1.19.2',
-    },
-  },
-  datapacks: [],
-  plugins: [],
-  mods: [],
-};
+import { VanillaVersion } from 'src-electron/api/schema';
+import { vanillaVersionLoader } from '../version/vanilla';
+import { isFailure } from 'src-electron/api/failable';
+import { runCommand, runServer } from './server';
+import { mainPath } from '../const';
 
 describe('vanillaVersion', async () => {
   test(
     '',
     async () => {
-      // console.log(await runServer(demoWorld));
-
       expect(1).toBe(1);
+
+      const versions = await vanillaVersionLoader.getAllVersions(true);
+      if (isFailure(versions)) return;
+
+      const index = await findFirstFalse(versions, unlessEula);
+      console.log(index, versions[index]);
     },
     { timeout: 2 ** 31 - 1 }
   );
 });
 
-// async function loadversion(loader: VersionLoader | undefined) {
-//   if (loader === undefined) return;
+async function findFirstFalse(
+  dataarray: VanillaVersion[],
+  checkData: (data: VanillaVersion) => Promise<boolean>
+): Promise<number> {
+  let left = 0;
+  let right = dataarray.length - 1;
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    if (await checkData(dataarray[mid])) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  return left;
+}
 
-//   const versions = await loader.getAllVersions();
+async function unlessEula(data: VanillaVersion): Promise<boolean> {
+  const eula = mainPath.child(`test/${data.id}/eula.txt`);
+  await eula.remove();
 
-//   if (isFailure(versions)) return versions;
+  const running = runServer({
+    additional: {},
+    container: mainPath.child('test').str(),
+    name: data.id,
+    version: data,
+  });
+  await runCommand('stop');
+  await running;
 
-//   for (let version of versions) {
-//     console.log('start', version);
-//     await testRunServer(version);
-//     console.log('finish', version);
-//   }
-// }
+  const result = eula.exists();
+  console.log(data, result);
+
+  return result;
+}

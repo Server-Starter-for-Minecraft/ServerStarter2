@@ -13,7 +13,7 @@ import {
 import { Path } from '../../util/path';
 import { saveWorldJson } from '../world/worldJson';
 import { systemSettings } from '../stores/system';
-import { objMap } from 'app/src-electron/util/objmap';
+import { objMap } from 'src-electron/util/objmap';
 
 /** TODO: server.properies/ops.json/whiltelist.jsonを削除 */
 export async function removeServerSettingFiles(serverCwdPath: Path) {

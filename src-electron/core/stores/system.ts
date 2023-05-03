@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { SystemSettings } from 'app/src-electron/api/schema';
+import { SystemSettings } from 'src-electron/api/schema';
 import { DEFAULT_MEMORY, mainPath } from '../const';
 import { defaultServerProperties } from '../settings/properties';
 import { deepCopy } from 'src/scripts/deepCopy';
