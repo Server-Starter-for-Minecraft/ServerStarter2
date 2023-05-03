@@ -45,7 +45,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
         type: 'sha1',
         value: json.downloads.server.sha1,
       },
-      false
+      true
     );
 
     // serverデータがダウロードできなかった場合
@@ -105,7 +105,7 @@ export async function getVanillaVersionJson(
     return new Error(`Vanilla version ${id} is not exists`);
 
   // jsonデータを取得
-  const jsonData = await BytesData.fromPathOrUrl(jsonpath, record.url, {
+  const jsonData = await BytesData.fromUrlOrPath(jsonpath, record.url, {
     type: 'sha1',
     value: record.sha1,
   });

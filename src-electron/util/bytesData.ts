@@ -117,6 +117,10 @@ export class BytesData {
   }
 
   /**
+   * 非推奨
+   *
+   * fromPathOrUrl/fromUrlOrPathを使用すること
+   *
    * @param path
    * @param url
    * @param hash undefined データの整合性チェックのためのsha1ハッシュ値
@@ -130,41 +134,43 @@ export class BytesData {
     path: Path,
     url: string,
     hash: Hash | undefined = undefined,
-    prioritizeUrl = true,
-    updateLocal = true,
     compareHashOnFetch = true,
     headers?: { [key in string]: string },
     executable?: boolean
   ): Promise<Failable<BytesData>> {
     const remoteHash = compareHashOnFetch ? hash : undefined;
-    if (prioritizeUrl) {
-      const data = await BytesData.fromURL(url, remoteHash, headers);
-      if (isSuccess(data)) {
-        if (updateLocal) {
-          await path.parent().mkdir(true);
-          await data.write(path.str(), executable);
-        }
-        return data;
-      }
-      const result = await BytesData.fromPath(path, hash);
-      return result;
-    } else {
-      let data = await BytesData.fromPath(path, hash);
-      if (isSuccess(data)) {
-        return data;
-      }
-
-      data = await BytesData.fromURL(url, remoteHash);
-      if (isFailure(data)) {
-        return data;
-      }
-
-      if (updateLocal) {
-        await path.parent().mkdir(true);
-        await data.write(path.str(), executable);
-      }
+    let data = await BytesData.fromPath(path, hash);
+    if (isSuccess(data)) {
       return data;
     }
+
+    data = await BytesData.fromURL(url, remoteHash, headers);
+    if (isFailure(data)) {
+      return data;
+    }
+
+    await path.parent().mkdir(true);
+    await data.write(path.str(), executable);
+    return data;
+  }
+
+  static async fromUrlOrPath(
+    path: Path,
+    url: string,
+    hash: Hash | undefined = undefined,
+    compareHashOnFetch = true,
+    headers?: { [key in string]: string },
+    executable?: boolean
+  ): Promise<Failable<BytesData>> {
+    const remoteHash = compareHashOnFetch ? hash : undefined;
+    const data = await BytesData.fromURL(url, remoteHash, headers);
+    if (isSuccess(data)) {
+      await path.parent().mkdir(true);
+      await data.write(path.str(), executable);
+      return data;
+    }
+    const result = await BytesData.fromPath(path, hash);
+    return result;
   }
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {

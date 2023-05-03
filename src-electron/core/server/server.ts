@@ -16,7 +16,7 @@ import {
 import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
 import { checkEula } from './eula';
-import { DEFAULT_MEMORY, LEVEL_NAME } from '../const';
+import { LEVEL_NAME } from '../const';
 import { worldContainerToPath } from '../world/worldContainer';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { Path } from 'src-electron/util/path';
@@ -107,11 +107,11 @@ class ServerRunner {
 
   /** 使用メモリの設定 */
   private setMamoryAmount() {
-    let memory = this.world.memory ?? systemSettings.get('world').memory;
+    const memory = this.world.memory ?? systemSettings.get('world').memory;
 
     let memorystr = '';
 
-    let memorySize = Math.round(memory.size);
+    const memorySize = Math.round(memory.size);
 
     const lowerunit = memory.unit.toLowerCase() as Lowercase<MemoryUnit>;
 

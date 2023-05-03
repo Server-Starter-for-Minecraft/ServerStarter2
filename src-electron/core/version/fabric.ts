@@ -23,14 +23,7 @@ async function readyVersion(version: FabricVersion, cwdPath: Path) {
     `fabric-${version.id}-${version.loader}-${version.installer}.jar`
   );
 
-  const result = await BytesData.fromPathOrUrl(
-    jarpath,
-    url,
-    undefined,
-    false,
-    true,
-    false
-  );
+  const result = await BytesData.fromPathOrUrl(jarpath, url, undefined, false);
 
   if (isFailure(result)) return result;
 
@@ -79,11 +72,9 @@ type Loader = {
 async function getLoaders() {
   const URL = 'https://meta.fabricmc.net/v2/versions/loader';
   // TODO: hash対応
-  const data = await BytesData.fromPathOrUrl(
+  const data = await BytesData.fromUrlOrPath(
     fabricVersionsPath.child('loader.json'),
-    URL,
-    undefined,
-    true
+    URL
   );
   if (isFailure(data)) return data;
 
@@ -108,11 +99,9 @@ type Installer = {
 async function getInstallers() {
   const URL = 'https://meta.fabricmc.net/v2/versions/installer';
   // TODO: hash対応
-  const data = await BytesData.fromPathOrUrl(
+  const data = await BytesData.fromUrlOrPath(
     fabricVersionsPath.child('installer.json'),
-    URL,
-    undefined,
-    true
+    URL
   );
   if (isFailure(data)) return data;
 
@@ -135,11 +124,9 @@ type Game = {
 async function getGames() {
   const URL = 'https://meta.fabricmc.net/v2/versions/game';
   // TODO: hash対応
-  const data = await BytesData.fromPathOrUrl(
+  const data = await BytesData.fromUrlOrPath(
     fabricVersionsPath.child('game.json'),
-    URL,
-    undefined,
-    true
+    URL
   );
   if (isFailure(data)) return data;
 

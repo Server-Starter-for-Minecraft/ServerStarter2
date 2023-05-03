@@ -83,14 +83,7 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
   const jsonpath = papermcVersionsPath.child(
     `${version.id}/${version.build}.json`
   );
-  const jsonResponse = await BytesData.fromPathOrUrl(
-    jsonpath,
-    buildURL,
-    undefined,
-    true,
-    true,
-    undefined
-  );
+  const jsonResponse = await BytesData.fromUrlOrPath(jsonpath, buildURL);
   if (isFailure(jsonResponse)) return jsonResponse;
 
   const json = await jsonResponse.json<ApiBuild>();
@@ -104,9 +97,7 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     jarpath,
     jarURL,
     { type: 'sha256', value: sha256 },
-    false,
-    true,
-    undefined
+    true
   );
   if (isFailure(jarResponse)) return jarResponse;
 
@@ -119,4 +110,3 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     component,
   };
 }
-
