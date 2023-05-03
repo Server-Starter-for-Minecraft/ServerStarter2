@@ -3,7 +3,11 @@ import { isFailure } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';
 import { versionsCachePath } from '../const';
-import { VersionLoader, genGetAllVersions, needEulaAgreement } from './base';
+import {
+  VersionLoader,
+  genGetAllVersions,
+  needEulaAgreementVanilla,
+} from './base';
 import { Path } from '../../util/path';
 
 const fabricVersionsPath = versionsCachePath.child('fabric');
@@ -16,7 +20,7 @@ export const fabricVersionLoader: VersionLoader<FabricVersion> = {
   // TODO: jsonの内容がとてつもなく冗長になってしまっている
   getAllVersions: genGetAllVersions('fabric', getAllVersions),
 
-  needEulaAgreement,
+  needEulaAgreement: needEulaAgreementVanilla,
 };
 
 async function readyVersion(version: FabricVersion, cwdPath: Path) {

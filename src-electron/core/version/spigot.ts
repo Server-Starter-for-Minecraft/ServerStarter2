@@ -12,7 +12,7 @@ import {
   VersionComponent,
   VersionLoader,
   genGetAllVersions,
-  needEulaAgreement,
+  needEulaAgreementVanilla,
 } from './base';
 import { getVersionMainfest } from './mainfest';
 
@@ -25,7 +25,7 @@ export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
   /** spigotのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('spigot', getSpigotVersions),
 
-  needEulaAgreement,
+  needEulaAgreement: needEulaAgreementVanilla,
 };
 
 /** spigotのサーバーデータを必要があればダウンロード */

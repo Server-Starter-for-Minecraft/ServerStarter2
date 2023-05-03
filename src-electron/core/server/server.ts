@@ -6,7 +6,7 @@ import {
 } from 'src-electron/api/schema';
 import { getLog4jArg } from './log4j';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
-import { readyVersion } from '../version/version';
+import { needEulaAgreement, readyVersion } from '../version/version';
 import { readyJava } from '../../util/java/java';
 import {
   removeServerSettingFiles,
@@ -201,8 +201,14 @@ class ServerRunner {
     await saveWorldSettingsJson(this.world, this.cwdPath);
   }
 
-  /** Eulaチェック */
+  /** Eulaチェック(拒否した場合エラーを返す) */
   private async checkEula(server: VersionComponent, javaPath: Path) {
+    const needEula = needEulaAgreement(this.world.version);
+    // Eulaチェックが必要かどうかの検証に失敗した場合エラー
+    if (isFailure(needEula)) return needEula;
+
+    if (!needEula) return undefined;
+
     // Eulaチェック
     api.send.UpdateStatus('Eulaの同意状況を確認中');
     const eulaAgreement = await checkEula(

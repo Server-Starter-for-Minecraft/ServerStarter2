@@ -6,6 +6,7 @@ import { versionsCachePath } from '../const';
 import { config } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
 import { rootLoggerHierarchy } from '../logger';
+import { eulaUnnecessaryVersionIds } from './const';
 
 export const versionLoggers = rootLoggerHierarchy.server.version;
 
@@ -30,9 +31,9 @@ export type VersionLoader<V extends Version> = {
   needEulaAgreement(version: V): boolean;
 };
 
-export function needEulaAgreement(version: Version) {
-  version.id;
-  return true;
+export function needEulaAgreementVanilla(version: Version) {
+  // 1.17.10-pre1以前はfalse
+  return !eulaUnnecessaryVersionIds.includes(version.id);
 }
 
 const allVersionsReloadedMap: { [key in VersionType]: boolean } = {

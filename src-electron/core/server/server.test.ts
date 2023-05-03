@@ -3,6 +3,9 @@ import { vanillaVersionLoader } from '../version/vanilla';
 import { isFailure } from 'src-electron/api/failable';
 import { runCommand, runServer } from './server';
 import { mainPath } from '../const';
+import { setupDummyIPC } from 'src-electron/ipc/setup_dummy';
+
+setupDummyIPC();
 
 describe('vanillaVersion', async () => {
   test(
@@ -10,11 +13,11 @@ describe('vanillaVersion', async () => {
     async () => {
       expect(1).toBe(1);
 
-      const versions = await vanillaVersionLoader.getAllVersions(true);
-      if (isFailure(versions)) return;
+      // const versions = await vanillaVersionLoader.getAllVersions(true);
+      // if (isFailure(versions)) return;
 
-      const index = await findFirstFalse(versions, unlessEula);
-      console.log(index, versions[index]);
+      // const index = await findFirstFalse(versions, unlessEula);
+      // console.log(index, versions[index]);
     },
     { timeout: 2 ** 31 - 1 }
   );

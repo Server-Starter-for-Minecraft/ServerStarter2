@@ -3,7 +3,11 @@ import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent } from './vanilla';
 import { versionsCachePath } from '../const';
-import { VersionLoader, genGetAllVersions, needEulaAgreement } from './base';
+import {
+  VersionLoader,
+  genGetAllVersions,
+  needEulaAgreementVanilla,
+} from './base';
 import { Path } from '../../util/path';
 
 const papermcVersionsPath = versionsCachePath.child('papermc');
@@ -22,7 +26,7 @@ export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
   /** papermcのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('papermc', getPapermcVersions),
 
-  needEulaAgreement,
+  needEulaAgreement: needEulaAgreementVanilla,
 };
 
 async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
