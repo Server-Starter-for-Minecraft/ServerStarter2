@@ -26,6 +26,7 @@ import { JavaComponent } from '../version/vanilla';
 import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
+import { parseCommandLine } from 'app/src-electron/util/commandLineParser';
 
 class WorldUsingError extends Error {}
 
@@ -287,6 +288,8 @@ class ServerRunner {
 
     this.setMamoryAmount();
 
+    this.setAdditionalJavaArgument();
+
     const server = await this.readyServerData();
     // サーバーデータの用意ができなかった場合エラー
     if (isFailure(server)) return server;
@@ -321,6 +324,16 @@ class ServerRunner {
     if (isFailure(processResult)) return processResult;
 
     return this.constructWorld(additional);
+  }
+
+  /** ユーザー設定のJavaの実行時引数を反映する */
+  private setAdditionalJavaArgument(): Failable<undefined> {
+    const arg =
+      this.world.javaArguments ?? systemSettings.get('world').javaArguments;
+    if (arg === undefined) return;
+    const result = parseCommandLine(arg);
+    if (isFailure(result)) return result;
+    this.args.push(...result);
   }
 
   private async _saveWorldSettings(): Promise<Failable<World>> {

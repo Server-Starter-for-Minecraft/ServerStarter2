@@ -130,8 +130,11 @@ export type ServerPropertiesMap = {
 };
 
 export type WorldSettings = {
-  /** 使用メモリ量 (Gb) */
+  /** 使用メモリ量 */
   memory?: MemorySettings;
+
+  /** Javaの実行時引数 */
+  javaArguments?: string;
 
   /** バージョン */
   version: Version;
@@ -189,8 +192,11 @@ export type WorldBase = {
   /** 最終プレイ者 */
   last_user?: Player;
 
-  /** 使用メモリ量 (Gb) */
+  /** 使用メモリ量 */
   memory?: MemorySettings;
+
+  /** Javaの実行時引数 */
+  javaArguments?: string;
 
   /** server.propertiesの内容 */
   properties?: ServerProperties;
@@ -253,6 +259,9 @@ export type MemorySettings = {
 
 /** serverstarterのシステム設定内のワールド設定 */
 export type SystemWorldSettings = {
+  /** Javaの実行時引数 */
+  javaArguments?: string;
+
   memory: MemorySettings;
   properties: ServerProperties;
 };
