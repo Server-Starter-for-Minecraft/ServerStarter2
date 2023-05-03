@@ -7,7 +7,7 @@ import {
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { getWorld, getWorldAbbrs } from '../core/world/world';
-import { openBrowser, openFolder } from '../util/shell';
+import { openBrowser, openFolder } from '../tools/shell';
 import {
   getWorldContainers,
   setWorldContainers,
