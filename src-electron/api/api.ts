@@ -51,8 +51,8 @@ export interface API extends IAPI {
     OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
-    RunServer: (world: WorldEdited) => Promise<Failable<undefined>>;
-    SaveWorldSettings: (world: World) => Promise<Failable<undefined>>;
+    RunServer: (world: WorldEdited) => Promise<Failable<World>>;
+    SaveWorldSettings: (world: World) => Promise<Failable<World>>;
 
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 

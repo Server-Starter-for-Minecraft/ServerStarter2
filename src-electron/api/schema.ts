@@ -106,7 +106,6 @@ export type ServerProperties = {
 /** mod/plugin/datapack(zip)のデータを表す */
 export type FileData = {
   name: string;
-  sha1: string;
 };
 
 /** datapack(folder)のデータを表す */
@@ -202,18 +201,31 @@ export type WorldBase = {
   properties?: ServerProperties;
 };
 
+export type WorldAdditional = {
+  /** 導入済みデータパック */
+  datapacks?: (FolderData | FileData)[];
+
+  /** 導入済みプラグイン */
+  plugins?: FileData[];
+
+  /** 導入済みMOD */
+  mods?: FileData[];
+};
+
 export type World = WorldBase & {
   /** 導入済み */
-  additional: {
-    /** 導入済みデータパック */
-    datapacks?: (FolderData | FileData)[];
+  additional: WorldAdditional;
+};
 
-    /** 導入済みプラグイン */
-    plugins?: FileData[];
+export type WorldEditedAdditional = {
+  /** 導入済みデータパック */
+  datapacks?: (FolderData | FileData | NewData)[];
 
-    /** 導入済みMOD */
-    mods?: FileData[];
-  };
+  /** 導入済みプラグイン */
+  plugins?: (FileData | NewData)[];
+
+  /** 導入済みMOD */
+  mods?: (FileData | NewData)[];
 };
 
 export type WorldEdited = WorldBase & {
@@ -224,16 +236,7 @@ export type WorldEdited = WorldBase & {
   custom_map?: NewData;
 
   /** 導入済み */
-  additional: {
-    /** 導入済みデータパック */
-    datapacks?: (FolderData | FileData | NewData)[];
-
-    /** 導入済みプラグイン */
-    plugins?: (FileData | NewData)[];
-
-    /** 導入済みMOD */
-    mods?: (FileData | NewData)[];
-  };
+  additional: WorldEditedAdditional;
 };
 
 /** serverstarterのシステム設定内のワールド設定 */
