@@ -103,13 +103,8 @@ export type ServerProperties = {
   [key in string]: ServerProperty;
 };
 
-/** mod/plugin/datapack(zip)のデータを表す */
+/** mod/plugin/datapackのデータを表す */
 export type FileData = {
-  name: string;
-};
-
-/** datapack(folder)のデータを表す */
-export type FolderData = {
   name: string;
 };
 
@@ -203,7 +198,7 @@ export type WorldBase = {
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
-  datapacks?: (FolderData | FileData)[];
+  datapacks?: FileData[];
 
   /** 導入済みプラグイン */
   plugins?: FileData[];
@@ -219,7 +214,7 @@ export type World = WorldBase & {
 
 export type WorldEditedAdditional = {
   /** 導入済みデータパック */
-  datapacks?: (FolderData | FileData | NewData)[];
+  datapacks?: (FileData | NewData)[];
 
   /** 導入済みプラグイン */
   plugins?: (FileData | NewData)[];

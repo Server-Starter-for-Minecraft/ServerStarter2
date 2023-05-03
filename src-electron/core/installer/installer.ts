@@ -1,14 +1,10 @@
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
+import { Failable } from 'app/src-electron/api/failable';
 import {
-  FileData,
-  FolderData,
-  NewData,
   WorldAdditional,
   WorldEditedAdditional,
 } from 'app/src-electron/api/schema';
-import { asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
-import { installDatapacks } from './datapack';
+import { installFiles } from './files';
 
 // TODO: 一度使用したmod/plugin/datapackを別の場所に保管しておく
 
@@ -18,12 +14,32 @@ export async function installAdditional(
 ): Promise<[WorldAdditional, Failable<undefined>]> {
   let failureMessages: string[] = [];
 
-  // データパックの導入
-  const datapacks = await installDatapacks(
+  // Datapackの導入
+  const datapacksPromise = installFiles(
     additional.datapacks,
     cwdPath.child('world/datapacks'),
     failureMessages
   );
+
+  // Pluginの導入
+  const pluginsPromise = installFiles(
+    additional.plugins,
+    cwdPath.child('plugins'),
+    failureMessages
+  );
+
+  // Modの導入
+  const modsPromise = installFiles(
+    additional.mods,
+    cwdPath.child('mods'),
+    failureMessages
+  );
+
+  const [datapacks, plugins, mods] = await Promise.all([
+    datapacksPromise,
+    pluginsPromise,
+    modsPromise,
+  ]);
 
   const failureCount = failureMessages.length;
   let failure: Failable<undefined> =
@@ -39,6 +55,8 @@ export async function installAdditional(
   return [
     {
       datapacks,
+      plugins,
+      mods,
     },
     failure,
   ];
