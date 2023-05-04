@@ -26,12 +26,11 @@ export async function checkEula(
   const content = await eulaPath.read();
   if (isFailure(content)) return content;
 
-  const eulaParsed = parseEula(await content.text());
-  let agree = eulaParsed[0];
-  const comments = eulaParsed[1];
+  const { eula, url, comments } = parseEula(await content.text());
+  let agree = eula;
 
   if (!agree) {
-    agree = await api.invoke.AgreeEula();
+    agree = await api.invoke.AgreeEula(url);
   }
 
   const txt = stringifyEula(agree, comments);
@@ -46,11 +45,19 @@ function stringifyEula(agree: boolean, comments: string[]): string {
   return comments.join('\n') + `\neula=${agree}`;
 }
 
-function parseEula(txt: string): [boolean, string[]] {
+function parseEula(txt: string): {
+  eula: boolean;
+  url: string;
+  comments: string[];
+} {
   const comments: string[] = [];
   let eula = false;
+  let url = 'https://aka.ms/MinecraftEULA';
   txt.split('\n').forEach((line) => {
     if (line[0] === '#') {
+      // eulaのURLを見つけたら更新
+      const match = line.match(/https?:\/\/[^)]+/);
+      if (match) url = match[0];
       comments.push(line);
       return;
     }
@@ -59,7 +66,7 @@ function parseEula(txt: string): [boolean, string[]] {
       eula = match[1] === 'true';
     }
   });
-  return [eula, comments];
+  return { eula, url, comments };
 }
 
 async function generateEula(
