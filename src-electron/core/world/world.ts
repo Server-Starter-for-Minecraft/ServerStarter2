@@ -1,21 +1,13 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
-import {
-  ServerProperties,
-  ServerPropertiesMap,
-  World,
-  WorldAbbr,
-} from 'src-electron/api/schema';
 import { Path } from '../../util/path';
-import { asyncMap, objMap } from '../../util/objmap';
+import { asyncMap } from '../../util/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
-import {
-  defaultServerProperties,
-  parseServerProperties,
-} from '../settings/properties';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
+import { worldSettingsToWorld } from '../settings/converter';
+import { World, WorldAbbr } from 'app/src-electron/schema/world';
 
 // TODO: datapacks/plugins/modsの読み込み
 
@@ -54,7 +46,8 @@ export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
 
   // リモートが存在する場合リモートからデータを取得
   if (settings.remote !== undefined) {
-    return await getRemoteWorld(name, container, settings.remote);
+    const result = await getRemoteWorld(name, container, settings.remote);
+    return result;
   }
 
   // リモートが存在しない場合ローカルのデータを使用
@@ -63,35 +56,13 @@ export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
   const avater_path = await getIconURI(cwd);
 
   settings.properties ?? {};
-  const world: World = {
+  const world = worldSettingsToWorld({
     name,
     container,
     avater_path,
-    version: settings.version,
-    using: settings.using,
-    remote: settings.remote,
-    last_date: settings.last_date,
-    last_user: settings.last_user,
-    memory: settings.memory,
-    properties: getServerProperties(settings.properties),
-    additional: {},
-  };
+    settings,
+  });
   return world;
-}
-
-function getServerProperties(
-  map: ServerPropertiesMap | undefined
-): ServerProperties {
-  return objMap(map ?? {}, (k, value) => {
-    const defaultProp = defaultServerProperties[k];
-    if (defaultProp) {
-      if (typeof value === defaultProp.type) {
-        return [k, { ...defaultProp, value }];
-      }
-      return [k, { ...defaultProp }];
-    }
-    return [k, { type: typeof value, value }];
-  }) as ServerProperties;
 }
 
 async function getIconURI(cwd: Path) {

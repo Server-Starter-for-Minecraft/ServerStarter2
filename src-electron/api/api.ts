@@ -1,13 +1,12 @@
-import { Failable } from './failable';
+import { SystemSettings, WorldContainers } from '../schema/system';
+import { Version, VersionType } from '../schema/version';
 import {
-  SystemSettings,
   SystemWorldSettings,
-  Version,
-  VersionType,
   World,
   WorldAbbr,
-  WorldContainers,
-} from './schema';
+  WorldEdited,
+} from '../schema/world';
+import { Failable } from './failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**
@@ -47,10 +46,11 @@ export interface API extends IAPI {
   sendWindowToMain: {
     Command: (command: string) => void;
     OpenBrowser: (url: string) => void;
+    OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
-    RunServer: (world: World) => Promise<Failable<undefined>>;
-    SaveWorldSettings: (world: World) => Promise<Failable<undefined>>;
+    RunServer: (world: WorldEdited) => Promise<Failable<World>>;
+    SaveWorldSettings: (world: World) => Promise<Failable<World>>;
 
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 

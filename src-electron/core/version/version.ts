@@ -1,4 +1,3 @@
-import { Version, VersionType } from 'src-electron/api/schema';
 import { vanillaVersionLoader } from './vanilla';
 import { VersionLoader } from './base';
 import { spigotVersionLoader } from './spigot';
@@ -7,6 +6,7 @@ import { forgeVersionLoader } from './forge';
 import { mohistmcVersionLoader } from './mohistmc';
 import { Path } from '../../util/path';
 import { fabricVersionLoader } from './fabric';
+import { Version, VersionType } from 'app/src-electron/schema/version';
 
 export const versionLoaders: {
   [V in Version as V['type']]: VersionLoader<V>;
@@ -37,4 +37,13 @@ export async function getVersions(type: VersionType, useCache: boolean) {
     throw new Error(`unknown version type ${type}`);
   }
   return await loader.getAllVersions(useCache);
+}
+
+/** サーバーの起動にeulaが必要かどうか */
+export function needEulaAgreement<V extends Version>(version: V) {
+  const loader = versionLoaders[version.type] as VersionLoader<V>;
+  if (!loader) {
+    throw new Error(`unknown version type ${version.type}`);
+  }
+  return loader.needEulaAgreement(version);
 }

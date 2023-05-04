@@ -1,13 +1,14 @@
-import { Version, VersionType } from 'src-electron/api/schema';
+import { Version, VersionType } from 'src-electron/schema/version';
 import { Path } from '../../util/path';
 import { JavaComponent } from './vanilla';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { versionsCachePath } from '../const';
 import { config } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
-import { rootLoggers } from '../logger';
+import { rootLoggerHierarchy } from '../logger';
+import { eulaUnnecessaryVersionIds } from './const';
 
-export const versionLoggers = rootLoggers.child('server').child('version');
+export const versionLoggers = rootLoggerHierarchy.server.version;
 
 export type VersionComponent = {
   programArguments: string[];
@@ -25,7 +26,15 @@ export type VersionLoader<V extends Version> = {
    * - undefined 起動中にリモートから取得済みだったらローカルを使用(おそらく最新版) 初回だけ遅い
    */
   getAllVersions(useCache: boolean | undefined): Promise<Failable<V[]>>;
+
+  /** サーバーの起動にminecraft Eulaへの同意が必要かどうか */
+  needEulaAgreement(version: V): boolean;
 };
+
+export function needEulaAgreementVanilla(version: Version) {
+  // 1.17.10-pre1以前はfalse
+  return !eulaUnnecessaryVersionIds.includes(version.id);
+}
 
 const allVersionsReloadedMap: { [key in VersionType]: boolean } = {
   fabric: false,
@@ -46,10 +55,7 @@ export const genGetAllVersions = <V extends Version>(
       useCache = allVersionsReloadedMap[type];
     }
 
-    const logger = versionLoggers.operation('getAllVersions', {
-      type,
-      useCache,
-    });
+    const logger = versionLoggers.getAllVersions({ type, useCache });
     logger.start();
 
     const jsonpath = versionsCachePath.child(`${type}/${type}-all.json`);

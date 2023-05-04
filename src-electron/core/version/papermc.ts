@@ -1,9 +1,13 @@
-import { PapermcVersion } from 'src-electron/api/schema';
+import { PapermcVersion } from 'src-electron/schema/version';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent } from './vanilla';
 import { versionsCachePath } from '../const';
-import { VersionLoader, genGetAllVersions } from './base';
+import {
+  VersionLoader,
+  genGetAllVersions,
+  needEulaAgreementVanilla,
+} from './base';
 import { Path } from '../../util/path';
 
 const papermcVersionsPath = versionsCachePath.child('papermc');
@@ -21,6 +25,8 @@ export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
 
   /** papermcのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('papermc', getPapermcVersions),
+
+  needEulaAgreement: needEulaAgreementVanilla,
 };
 
 async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
@@ -83,14 +89,7 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
   const jsonpath = papermcVersionsPath.child(
     `${version.id}/${version.build}.json`
   );
-  const jsonResponse = await BytesData.fromPathOrUrl(
-    jsonpath,
-    buildURL,
-    undefined,
-    true,
-    true,
-    undefined
-  );
+  const jsonResponse = await BytesData.fromUrlOrPath(jsonpath, buildURL);
   if (isFailure(jsonResponse)) return jsonResponse;
 
   const json = await jsonResponse.json<ApiBuild>();
@@ -104,9 +103,7 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     jarpath,
     jarURL,
     { type: 'sha256', value: sha256 },
-    false,
-    true,
-    undefined
+    true
   );
   if (isFailure(jarResponse)) return jarResponse;
 
@@ -119,4 +116,3 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     component,
   };
 }
-

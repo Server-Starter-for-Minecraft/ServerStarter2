@@ -5,14 +5,15 @@ import {
   isSuccess,
 } from 'src-electron/api/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
-import { GithubRemote, World, WorldSettings } from 'src-electron/api/schema';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
 import { server_settings_file_name } from '../../world/worldJson';
 import { LEVEL_NAME } from '../../const';
-import { parseServerProperties } from '../../settings/properties';
 import { GithubBlob, GithubTree } from './githubApi';
+import { worldSettingsToWorld } from '../../settings/converter';
+import { GithubRemote } from 'app/src-electron/schema/remote';
+import { World, WorldSettings } from 'app/src-electron/schema/world';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
@@ -205,12 +206,10 @@ async function getWorld(
   const rootFiles = await root.files();
   if (isFailure(rootFiles)) return rootFiles;
 
-  const propertiesFile = rootFiles['server.properties'];
   const settingFile = rootFiles[server_settings_file_name];
   const worldDir = rootFiles[LEVEL_NAME];
 
-  const [properties, settings, avater_path] = await Promise.all([
-    getProperties(propertiesFile),
+  const [settings, avater_path] = await Promise.all([
     getSettings(settingFile),
     getIconURI(worldDir),
   ]);
@@ -219,14 +218,12 @@ async function getWorld(
     return new Error(`failed to load & parse ${settingFile.url}`);
   }
 
-  return {
+  return worldSettingsToWorld({
     avater_path,
-    name,
     container,
+    name,
     settings,
-    additional: {},
-    properties,
-  };
+  });
 }
 
 async function getSettings(settingsFile: GithubTree | GithubBlob) {
@@ -235,15 +232,6 @@ async function getSettings(settingsFile: GithubTree | GithubBlob) {
   const json = await settingsFile.loadJson<WorldSettings>();
   if (isFailure(json)) return undefined;
   return json;
-}
-
-async function getProperties(propertiesFile: GithubTree | GithubBlob) {
-  if (propertiesFile === undefined) return undefined;
-  if (propertiesFile instanceof GithubTree) return undefined;
-  const text = await propertiesFile.loadText();
-  if (isFailure(text)) return undefined;
-
-  return parseServerProperties(text);
 }
 
 async function getIconURI(worldDir: GithubTree | GithubBlob) {

@@ -1,6 +1,6 @@
-import { Failable, isFailure } from 'app/src-electron/api/failable.js';
-import { BytesData } from '../bytesData.js';
-import { Path } from '../path.js';
+import { Failable, isFailure } from 'src-electron/api/failable';
+import { BytesData } from '../bytesData';
+import { Path } from '../path';
 
 export type Manifest = {
   files: {
@@ -43,8 +43,6 @@ export async function installManifest(manifest: Manifest, path: Path) {
             v.downloads.raw.url,
             { value: v.downloads.raw.sha1, type: 'sha1' },
             false,
-            true,
-            undefined,
             undefined,
             v.executable
           );

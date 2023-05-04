@@ -1,13 +1,14 @@
 import Store from 'electron-store';
-import { SystemSettings } from 'app/src-electron/api/schema';
-import { mainPath } from '../const';
+import { DEFAULT_MEMORY, mainPath } from '../const';
 import { defaultServerProperties } from '../settings/properties';
+import { deepCopy } from 'src/scripts/deepCopy';
+import { SystemSettings } from 'app/src-electron/schema/system';
 
 export async function setSystemSettings(
   settings: SystemSettings
 ): Promise<undefined> {
   systemSettings.store = settings;
-  return undefined
+  return undefined;
 }
 
 export async function getSystemSettings(): Promise<SystemSettings> {
@@ -21,7 +22,17 @@ export function fixSystemSettings() {
     container: { default: 'servers', custom: {} },
     player: { players: [], groups: [] },
     remote: { github: { accounts: [] } },
-    world: { memory: 2, properties: defaultServerProperties },
+    world: {
+      memory: DEFAULT_MEMORY,
+      properties: defaultServerProperties,
+    },
+    user: {
+      autoShutDown: false,
+      eula: false,
+      // デフォルト言語 ja で OK?
+      language: 'ja',
+      owner: undefined,
+    },
   });
 
   systemSettings.store = fixed;
@@ -31,18 +42,26 @@ function fix<T extends { [x: string]: unknown }>(
   value: DeepPartial<T> | undefined,
   defaultValue: T
 ): T {
-  if (value === undefined) return defaultValue;
+  if (value === undefined) return deepCopy(defaultValue);
 
   return Object.fromEntries(
     Object.entries(defaultValue).map(([k, v]) => {
       const val = value?.[k];
+
+      if (v instanceof Array) {
+        if (val instanceof Array) {
+          return [k, val];
+        }
+        return [k, deepCopy(v)];
+      }
+
       if (typeof v === 'object' && v !== null) {
         return [
           k,
           fix(val as { [x: string]: unknown }, v as { [x: string]: unknown }),
         ];
       }
-      return [k, val ?? v];
+      return [k, val ?? deepCopy(v)];
     })
   ) as T;
 }

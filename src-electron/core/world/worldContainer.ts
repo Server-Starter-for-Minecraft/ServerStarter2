@@ -1,8 +1,8 @@
 import { isAbsolute } from 'path';
 import { Path } from 'src-electron/util/path';
 import { mainPath } from '../const';
-import { WorldContainers } from 'app/src-electron/api/schema';
 import { systemSettings } from '../stores/system';
+import { WorldContainers } from 'app/src-electron/schema/system';
 
 export async function getWorldContainers(): Promise<WorldContainers> {
   console.log('container', systemSettings.get('container'));
@@ -20,4 +20,4 @@ export function worldContainerToPath(worldContainer: string): Path {
   return isAbsolute(worldContainer)
     ? new Path(worldContainer)
     : mainPath.child(worldContainer);
-} 
+}

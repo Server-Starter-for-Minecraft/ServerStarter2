@@ -1,11 +1,11 @@
-import { World } from 'app/src-electron/api/schema';
+import { World } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
 
 export interface Drawer {
-  icon: string
-  label: string
-  separator: boolean
-  to: string
+  icon: string;
+  label: string;
+  separator: boolean;
+  to: string;
 }
 
 export const useMainStore = defineStore('mainStore', {

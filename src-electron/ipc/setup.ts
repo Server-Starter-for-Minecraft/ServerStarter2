@@ -9,8 +9,6 @@ import { getFrontAPIListener, setFrontAPI } from './front';
 // バックエンド
 import { backListener } from './back';
 
-// テスト用バックエンド
-// import { backListener } from './dummy_back';
 
 export function setupIPC(mainwindow: BrowserWindow) {
   const { back, front } = linkIPC<API>(
@@ -20,3 +18,4 @@ export function setupIPC(mainwindow: BrowserWindow) {
   setFrontAPI(front);
   setBackAPI(back);
 }
+

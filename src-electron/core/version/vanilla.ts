@@ -1,9 +1,13 @@
-import { VanillaVersion } from 'src-electron/api/schema';
+import { VanillaVersion } from 'src-electron/schema/version';
 import { getVersionMainfest } from './mainfest';
 import { Failable, isFailure } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { versionsCachePath } from '../const';
-import { VersionLoader, genGetAllVersions } from './base';
+import {
+  VersionLoader,
+  genGetAllVersions,
+  needEulaAgreementVanilla,
+} from './base';
 import { Path } from '../../util/path';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
@@ -45,7 +49,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
         type: 'sha1',
         value: json.downloads.server.sha1,
       },
-      false
+      true
     );
 
     // serverデータがダウロードできなかった場合
@@ -62,6 +66,8 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 
   /** バニラのバージョンの一覧返す */
   getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersions),
+
+  needEulaAgreement: needEulaAgreementVanilla,
 };
 
 async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
@@ -105,7 +111,7 @@ export async function getVanillaVersionJson(
     return new Error(`Vanilla version ${id} is not exists`);
 
   // jsonデータを取得
-  const jsonData = await BytesData.fromPathOrUrl(jsonpath, record.url, {
+  const jsonData = await BytesData.fromUrlOrPath(jsonpath, record.url, {
     type: 'sha1',
     value: record.sha1,
   });

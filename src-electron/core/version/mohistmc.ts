@@ -1,7 +1,12 @@
+import { MohistmcVersion } from 'src-electron/schema/version';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
-import { VersionComponent, VersionLoader, genGetAllVersions } from './base';
-import { MohistmcVersion } from 'src-electron/api/schema';
+import {
+  VersionComponent,
+  VersionLoader,
+  genGetAllVersions,
+  needEulaAgreementVanilla,
+} from './base';
 import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../util/path';
@@ -11,6 +16,7 @@ const papermcVersionsPath = versionsCachePath.child('mohistmc');
 export const mohistmcVersionLoader: VersionLoader<MohistmcVersion> = {
   readyVersion: readyMohistmcVersion,
   getAllVersions: genGetAllVersions('mohistmc', getAllMohistmcVersions),
+  needEulaAgreement: needEulaAgreementVanilla,
 };
 
 async function readyMohistmcVersion(
@@ -51,8 +57,6 @@ async function downloadMohistmcVersion(
     jarPath,
     build.url,
     { type: 'md5', value: build.md5 },
-    false,
-    true,
     true
   );
   if (isFailure(jardata)) return jardata;
@@ -64,13 +68,9 @@ async function getMohistmcVersionsJson(
   id: string
 ): Promise<Failable<MohistmcApiVersion>> {
   const JSON_URL = `https://mohistmc.com/api/${id}`;
-  const jsondata = await BytesData.fromPathOrUrl(
+  const jsondata = await BytesData.fromUrlOrPath(
     papermcVersionsPath.child(`mohistmc-${id}.json`),
-    JSON_URL,
-    undefined,
-    true,
-    true,
-    undefined
+    JSON_URL
   );
   if (isFailure(jsondata)) return jsondata;
 
@@ -80,13 +80,9 @@ async function getMohistmcVersionsJson(
 
 async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
   // mohistmcが対応しているバージョン一覧を取得
-  const data = await BytesData.fromPathOrUrl(
+  const data = await BytesData.fromUrlOrPath(
     papermcVersionsPath.child('versions.json'),
-    VERSIONS_URL,
-    undefined,
-    true,
-    true,
-    undefined
+    VERSIONS_URL
   );
   if (isFailure(data)) return data;
   const json = await data.json<string[]>();

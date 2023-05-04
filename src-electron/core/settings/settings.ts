@@ -1,43 +1,39 @@
 import {
-  ServerProperties,
-  ServerProperty,
-  SystemWorldSettings,
-  World,
-  WorldSettings,
-} from 'src-electron/api/schema';
-import {
   defaultServerProperties,
   mergeServerProperties,
+  serverPropertiesHandler,
   stringifyServerProperties,
 } from './properties';
 import { Path } from '../../util/path';
 import { saveWorldJson } from '../world/worldJson';
 import { systemSettings } from '../stores/system';
-import { objMap } from 'app/src-electron/util/objmap';
+import { asyncMap, objMap } from 'src-electron/util/objmap';
+import { opsHandler } from './ops';
+import { whitelistHandler } from './whitelist';
+import { bannedIpsHandler } from './bannedIps';
+import { bannedPlayersHandler } from './bannedPlayers';
+import { SystemWorldSettings, World, WorldSettings } from 'app/src-electron/schema/world';
+import { ServerProperties, ServerProperty } from 'app/src-electron/schema/serverproperty';
+
+const handlers = [
+  serverPropertiesHandler,
+  opsHandler,
+  whitelistHandler,
+  bannedIpsHandler,
+  bannedPlayersHandler,
+] as const;
 
 /** TODO: server.properies/ops.json/whiltelist.jsonを削除 */
 export async function removeServerSettingFiles(serverCwdPath: Path) {
-  // server.propertiesを削除
-  await serverCwdPath.child('server.properties').remove(true);
+  await asyncMap(handlers, (handler) => handler.remove(serverCwdPath));
 }
 
-/** サーバー設定系ファイルをサーバーCWD直下に書き出す */
-export async function unrollSettings(
-  world: World,
-  levelName: string,
-  serverCwdPath: Path
-) {
-  // server.properties を書き出し
-  const strprop = stringifyServerProperties({
-    ...(world.properties ?? defaultServerProperties),
-    'level-name': { type: 'string', value: levelName },
-  });
-  await serverCwdPath.child('server.properties').writeText(strprop);
-
+/** server_settings.jsonをサーバーCWD直下に書き出す */
+export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     version: world.version,
-    remote: world.remote,
+    remote: world.remote_pull,
     last_date: world.last_date,
     last_user: world.last_user,
     using: world.using,
@@ -46,6 +42,30 @@ export async function unrollSettings(
 
   // jsonを書き出し
   await saveWorldJson(serverCwdPath, worldSettings);
+}
+
+/** サーバー設定系ファイルをサーバーCWD直下に書き出す */
+export async function unrollSettings(world: World, serverCwdPath: Path) {
+  // server.properties を書き出し
+  const strprop = stringifyServerProperties(
+    world.properties ?? defaultServerProperties
+  );
+  await serverCwdPath.child('server.properties').writeText(strprop);
+
+  const promisses = [
+    serverPropertiesHandler.save(
+      serverCwdPath,
+      world.properties ?? defaultServerProperties
+    ),
+    // opsHandler.save(serverCwdPath, world.ops ?? []),
+    // whitelistHandler.save(serverCwdPath, world.ops ?? []),
+    // bannedIpsHandler.save(serverCwdPath, world.ops ?? []),
+    // bannedPlayersHandler.save(serverCwdPath, world.ops ?? []),
+  ] as const;
+
+  await promisses
+
+  world;
 }
 
 function getPropertiesMap(serverProperties: ServerProperties | undefined) {

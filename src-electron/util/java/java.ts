@@ -1,10 +1,10 @@
-import { runtimePath } from '../../core/const.js';
-import { config } from '../../core/stores/config.js';
-import { BytesData } from '../bytesData.js';
-import { osPlatform } from '../os.js';
-import { Path } from '../path.js';
-import { isFailure, Failable } from '../../api/failable.js';
-import { installManifest, Manifest } from './manifest.js';
+import { runtimePath } from '../../core/const';
+import { config } from '../../core/stores/config';
+import { BytesData } from '../bytesData';
+import { osPlatform } from '../os';
+import { Path } from '../path';
+import { isFailure, Failable } from '../../api/failable';
+import { installManifest, Manifest } from './manifest';
 
 export type component =
   | 'java-runtime-alpha'
@@ -31,8 +31,17 @@ export async function readyJava(
   const path = runtimePath.child(`${component}/${osPlatform}`);
   const data = await getManifestJson(manifest, path.child('manifest.json'));
   await installManifest(data, path);
-
-  return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
+  switch (osPlatform) {
+    case 'windows-x64':
+      return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
+    case 'linux':
+      return path.child('bin/java');
+    case 'mac-os':
+    case 'mac-os-arm64':
+      return path.child('jre.bundle/Contents/Home/bin/java');
+    default:
+      return new Error(`Unknown OS:${osPlatform}`);
+  }
 }
 
 type RuntimeManifest = {
@@ -68,12 +77,13 @@ type AllJson = {
 async function getAllJson(): Promise<Failable<AllJson>> {
   try {
     const allJsonSha1 = config.get('sha1')?.runtime;
-    const data = await BytesData.fromPathOrUrl(
+    const data = await BytesData.fromUrlOrPath(
       runtimePath.child('all.json'),
       'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',
       allJsonSha1 !== undefined
         ? { type: 'sha1', value: allJsonSha1 }
-        : allJsonSha1
+        : allJsonSha1,
+      true
     );
 
     if (isFailure(data)) return data;
@@ -91,10 +101,15 @@ async function getManifestJson(
   manifest: RuntimeManifest,
   path: Path
 ): Promise<Failable<any>> {
-  const data = await BytesData.fromPathOrUrl(path, manifest.url, {
-    type: 'sha1',
-    value: manifest.sha1,
-  });
+  const data = await BytesData.fromUrlOrPath(
+    path,
+    manifest.url,
+    {
+      type: 'sha1',
+      value: manifest.sha1,
+    },
+    true
+  );
   if (isFailure(data)) return data;
 
   const json = await data.json<Manifest>();

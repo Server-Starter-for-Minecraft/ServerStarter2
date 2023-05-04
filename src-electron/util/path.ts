@@ -1,7 +1,7 @@
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
-import { BytesData } from './bytesData.js';
-import { Failable, isFailure } from '../api/failable.js';
+import { BytesData } from './bytesData';
+import { Failable, isFailure } from '../api/failable';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
@@ -44,6 +44,7 @@ export class Path {
     return this.path;
   }
 
+  /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
   basename() {
     return path.basename(this.path);
   }
@@ -57,16 +58,16 @@ export class Path {
   }
 
   async isDirectory() {
-    return (await fs.promises.stat(this.absolute().str())).isDirectory();
+    return (await fs.stat(this.absolute().str())).isDirectory();
   }
 
   async rename(newpath: Path) {
     newpath.parent().mkdir(true);
-    await fs.promises.rename(this.path, newpath.absolute().str());
+    await fs.rename(this.path, newpath.absolute().str());
   }
 
   async mkdir(recursive = false) {
-    if (!this.exists()) await fs.promises.mkdir(this.path, { recursive });
+    if (!this.exists()) await fs.mkdir(this.path, { recursive });
   }
 
   async mklink(target: Path) {
@@ -80,7 +81,7 @@ export class Path {
 
   async writeText(content: string) {
     this.parent().mkdir(true);
-    await fs.promises.writeFile(this.path, content);
+    await fs.writeFile(this.path, content);
   }
 
   async read(): Promise<Failable<BytesData>> {
@@ -101,7 +102,7 @@ export class Path {
 
   async iter() {
     if (this.exists() ?? (await this.isDirectory()))
-      return (await fs.promises.readdir(this.path)).map((p) => this.child(p));
+      return (await fs.readdir(this.path)).map((p) => this.child(p));
     return [];
   }
 
@@ -109,9 +110,16 @@ export class Path {
     if (!this.exists()) return;
 
     if (await this.isDirectory()) {
-      await fs.promises.rmdir(this.path, { recursive });
+      await fs.rmdir(this.path, { recursive });
     } else {
-      await fs.promises.unlink(this.path);
+      await fs.unlink(this.path);
     }
+  }
+
+  async copyTo(target: Path) {
+    if (!this.exists()) return;
+    await target.parent().mkdir(true);
+    await target.remove(true);
+    await fs.copy(this.str(), target.str());
   }
 }

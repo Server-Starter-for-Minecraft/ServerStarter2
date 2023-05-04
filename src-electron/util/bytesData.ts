@@ -1,14 +1,14 @@
 import { createHash } from 'crypto';
 import { promises } from 'fs';
-import { utilLoggers } from './logger.js';
-import { Path } from './path.js';
-import { isSuccess, Failable, isFailure } from '../api/failable.js';
+import { utilLoggers } from './logger';
+import { Path } from './path';
+import { isSuccess, Failable, isFailure } from '../api/failable';
 
 const fetch = import('node-fetch');
 
 export class BytesDataError extends Error {}
 
-const loggers = utilLoggers.child('BytesData');
+const loggers = utilLoggers.BytesData;
 
 export type Hash = {
   type: 'sha1' | 'md5' | 'sha256';
@@ -27,7 +27,7 @@ export class BytesData {
     hash: Hash | undefined = undefined,
     headers?: { [key in string]: string }
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('fromURL', { url, hash });
+    const logger = loggers.fromURL({ url, hash });
     logger.start();
 
     try {
@@ -64,7 +64,7 @@ export class BytesData {
     path: Path,
     hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('fromPath', { path, hash });
+    const logger = loggers.fromPath({ path: path.str(), hash });
     logger.start();
 
     try {
@@ -104,10 +104,10 @@ export class BytesData {
    * TODO: ファイルに出力
    */
   async write(path: string, executable?: boolean) {
-    const logger = loggers.operation('write', { path });
+    const logger = loggers.write({ path });
     logger.start();
     // 実行権限を与えて保存
-    const settings = executable ? { mode: 0o744 } : undefined;
+    const settings = executable ? { mode: 0o755 } : undefined;
     try {
       await promises.writeFile(path, Buffer.from(this.data), settings);
       logger.success();
@@ -117,6 +117,10 @@ export class BytesData {
   }
 
   /**
+   * 非推奨
+   *
+   * fromPathOrUrl/fromUrlOrPathを使用すること
+   *
    * @param path
    * @param url
    * @param hash undefined データの整合性チェックのためのsha1ハッシュ値
@@ -130,58 +134,43 @@ export class BytesData {
     path: Path,
     url: string,
     hash: Hash | undefined = undefined,
-    prioritizeUrl = true,
-    updateLocal = true,
     compareHashOnFetch = true,
     headers?: { [key in string]: string },
     executable?: boolean
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.operation('fromPathOrUrl', {
-      path,
-      url,
-      hash,
-      prioritizeUrl,
-      updateLocal,
-    });
-    logger.start();
     const remoteHash = compareHashOnFetch ? hash : undefined;
-    if (prioritizeUrl) {
-      const data = await BytesData.fromURL(url, remoteHash, headers);
-      if (isSuccess(data)) {
-        if (updateLocal) {
-          await path.parent().mkdir(true);
-          await data.write(path.str(), executable);
-        }
-        logger.success();
-        return data;
-      }
-      const result = await BytesData.fromPath(path, hash);
-      if (isSuccess(result)) {
-        logger.fail();
-      } else {
-        logger.success();
-      }
-      return result;
-    } else {
-      let data = await BytesData.fromPath(path, hash);
-      if (isSuccess(data)) {
-        logger.success();
-        return data;
-      }
-
-      data = await BytesData.fromURL(url, remoteHash);
-      if (isFailure(data)) {
-        logger.fail();
-        return data;
-      }
-
-      if (updateLocal) {
-        await path.parent().mkdir(true);
-        await data.write(path.str(), executable);
-      }
-      logger.success();
+    let data = await BytesData.fromPath(path, hash);
+    if (isSuccess(data)) {
       return data;
     }
+
+    data = await BytesData.fromURL(url, remoteHash, headers);
+    if (isFailure(data)) {
+      return data;
+    }
+
+    await path.parent().mkdir(true);
+    await data.write(path.str(), executable);
+    return data;
+  }
+
+  static async fromUrlOrPath(
+    path: Path,
+    url: string,
+    hash: Hash | undefined = undefined,
+    compareHashOnFetch = true,
+    headers?: { [key in string]: string },
+    executable?: boolean
+  ): Promise<Failable<BytesData>> {
+    const remoteHash = compareHashOnFetch ? hash : undefined;
+    const data = await BytesData.fromURL(url, remoteHash, headers);
+    if (isSuccess(data)) {
+      await path.parent().mkdir(true);
+      await data.write(path.str(), executable);
+      return data;
+    }
+    const result = await BytesData.fromPath(path, hash);
+    return result;
   }
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
