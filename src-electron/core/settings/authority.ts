@@ -1,4 +1,8 @@
-import { PlayerSetting, WorldAuthority } from 'app/src-electron/schema/player';
+import {
+  OpSetting,
+  PlayerSetting,
+  WorldAuthority,
+} from 'app/src-electron/schema/player';
 import { Ops } from './ops';
 import { fix } from 'app/src-electron/util/fix';
 import { systemSettings } from '../stores/system';
@@ -75,8 +79,8 @@ export function getOpsAndWhitelist(authority: WorldAuthority | undefined) {
   allPlayers.forEach((player) => {
     if (player.op !== undefined) {
       ops.push({
-        bypassesPlayerLimit: false,
-        level: player.op,
+        bypassesPlayerLimit: player.op.bypassesPlayerLimit,
+        level: player.op.level,
         name: player.name,
         uuid: player.uuid,
       });
@@ -135,8 +139,20 @@ export async function updateAuthority(
       return;
     }
 
+    // opの内容が同じかどうかをチェック
+    function sameop(a: OpSetting | undefined, b: OpSetting | undefined) {
+      if (a === undefined && b === undefined) return true;
+      if (a === undefined || b === undefined) return false;
+      if (
+        a.bypassesPlayerLimit === b.bypassesPlayerLimit &&
+        a.level === b.level
+      )
+        return true;
+      return false;
+    }
+
     // 権限に変化がない場合無視
-    if (player.whitelist == old.whitelist && player.op == old.op) return;
+    if (player.whitelist == old.whitelist && sameop(player.op, old.op)) return;
 
     const editable = oldEditablePlayerRecord[player.uuid];
     if (editable === undefined) {
@@ -159,7 +175,7 @@ function constructPlayerSettings(ops: Ops, whitelist: Whitelist) {
     result[op.uuid] = {
       uuid: op.uuid,
       name: op.name,
-      op: op.level,
+      op: { bypassesPlayerLimit: op.bypassesPlayerLimit, level: op.level },
       whitelist: false,
     };
   });

@@ -26,6 +26,8 @@ export async function loadWorldJson(
       `unexpected value version.type:${json.version.type} in ${jsonpath.str()}.`
     );
 
+  console.log('KUSA', JSON.stringify(json, undefined, 2));
+
   return json;
 }
 

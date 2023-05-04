@@ -22,7 +22,7 @@ export function worldSettingsToWorld({
   avater_path,
   settings,
 }: WorldSettingsPlus): World {
-  const result = {
+  const result: World = {
     name,
     container,
     avater_path,
@@ -35,7 +35,7 @@ export function worldSettingsToWorld({
     memory: settings.memory,
     properties: getServerProperties(settings.properties),
     additional: {},
-    players: fix<WorldAuthority>(settings.players, {
+    authority: fix<WorldAuthority>(settings.authority, {
       groups: [],
       players: [],
       removed: [],
@@ -57,7 +57,7 @@ export function worldToWorldSettings(world: World): WorldSettingsPlus {
       last_user: world.last_user,
       using: world.using,
       properties: getPropertiesMap(world.properties),
-      players: world.players,
+      authority: world.authority,
     },
   };
   return deepcopy(result);

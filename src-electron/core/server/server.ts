@@ -27,7 +27,7 @@ import {
   WorldEdited,
 } from 'app/src-electron/schema/world';
 import { MemoryUnit } from 'app/src-electron/schema/memory';
-import { updateAuthority } from '../settings/players';
+import { updateAuthority } from '../settings/authority';
 import { opsHandler } from '../settings/ops';
 import { whitelistHandler } from '../settings/whitelist';
 

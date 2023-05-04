@@ -1,11 +1,11 @@
-import { OpLevel } from 'app/src-electron/schema/ops';
+import { OpLevel } from 'app/src-electron/schema/player';
 import { ServerSettingHandler } from './base';
 
 export type OpRecord = {
   uuid: string;
   name: string;
   level: OpLevel;
-  bypassesPlayerLimit: false;
+  bypassesPlayerLimit: boolean;
 };
 
 export type Ops = OpRecord[];

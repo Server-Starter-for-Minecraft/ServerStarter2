@@ -11,13 +11,18 @@ export type PlayerGroup = {
 
 export type OpLevel = 1 | 2 | 3 | 4;
 
+export type OpSetting = {
+  level: OpLevel;
+  bypassesPlayerLimit: boolean;
+};
+
 export type PlayerSetting = {
   /** プレイヤーの名前 */
   name: string;
   /** プレイヤーのUUID */
   uuid: string;
   /** プレイヤーのop権限レベル */
-  op?: OpLevel;
+  op?: OpSetting;
   /** プレイヤーがwhitelistに入っているか */
   whitelist: boolean;
 };
@@ -28,7 +33,7 @@ export type PlayerGroupSetting = {
   /** グループのUUID */
   uuid: string;
   /** グループのop権限レベル */
-  op?: OpLevel;
+  op?: OpSetting;
   /** グループがwhitelistに入っているか */
   whitelist: boolean;
 };

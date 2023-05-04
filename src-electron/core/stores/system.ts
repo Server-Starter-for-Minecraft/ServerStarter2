@@ -18,6 +18,8 @@ export async function getSystemSettings(): Promise<SystemSettings> {
 export function fixSystemSettings() {
   const store = systemSettings.store;
 
+  console.log(store);
+
   const fixed = fix<SystemSettings>(store, {
     container: { default: 'servers', custom: {} },
     player: { players: [], groups: [] },

@@ -1,6 +1,6 @@
 import log4js from 'log4js';
 
-log4js.addLayout('custom', function () {
+log4js.addLayout('custom', function (config: { max?: number }) {
   return function (logEvent) {
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
@@ -11,8 +11,8 @@ log4js.addLayout('custom', function () {
       .slice(2)
       .map((d) => {
         let text = d;
-        if (text.length > 100) {
-          text = text.slice(undefined, 97) + '...';
+        if (config.max && text.length > config.max) {
+          text = text.slice(undefined, config.max - 3) + '...';
         }
         return text;
       })
@@ -28,14 +28,14 @@ log4js.configure({
   appenders: {
     _out: {
       type: 'stdout',
-      layout: { type: 'custom' },
+      layout: { type: 'custom', max: 500 },
     },
     _file: {
       type: 'file',
       filename: 'logs/serverstarter.log',
-      layout: { type: 'custom' },
+      layout: { type: 'custom', max: 500 },
     },
-    out: { type: 'logLevelFilter', appender: '_out', level: 'error' },
+    out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
     file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
   },
   categories: {

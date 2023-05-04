@@ -19,7 +19,7 @@ import {
   ServerProperties,
   ServerProperty,
 } from 'app/src-electron/schema/serverproperty';
-import { getOpsAndWhitelist } from './players';
+import { getOpsAndWhitelist } from './authority';
 
 const handlers = [
   serverPropertiesHandler,
