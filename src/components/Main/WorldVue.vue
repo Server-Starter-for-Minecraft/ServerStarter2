@@ -72,7 +72,7 @@ function worldEdit() {
     >
       <q-avatar square size="4rem">
         <q-img
-          :src="world.avater_path === void 0 ? 'src/assets/defaultWorldIcon.svg' : world.avater_path"
+          :src="world.avater_path ?? 'src/assets/defaultWorldIcon.svg'"
           :ratio="1"
         />
         <q-btn
