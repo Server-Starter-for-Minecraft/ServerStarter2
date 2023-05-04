@@ -60,7 +60,7 @@ export async function asyncMap<T, U>(
 }
 
 // 非同期関数でforEachする
-export async function asyncForEach<T, U>(
+export async function asyncForEach<T>(
   values: T[],
   func: (value: T, index: number) => Promise<void>
 ): Promise<void> {
