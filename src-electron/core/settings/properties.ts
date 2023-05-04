@@ -1,5 +1,7 @@
 import { ServerProperties, ServerProperty } from 'src-electron/api/schema';
 import { objEach, objMap } from '../../util/objmap';
+import { ServerSettingHandler } from './base';
+import { isFailure } from 'app/src-electron/api/failable';
 
 // TODO:stringの値のescape/unescape
 
@@ -201,3 +203,19 @@ export function mergeServerProperties(
   objEach(superior, (key, value) => (result[key] = { ...value }));
   return result;
 }
+
+const FILENAME = 'server.properties';
+
+export const serverPropertiesHandler: ServerSettingHandler<ServerProperties> = {
+  async load(cwdPath) {
+    const text = await cwdPath.child(FILENAME).readText();
+    if (isFailure(text)) return text;
+    return parseServerProperties(text);
+  },
+  save(cwdPath, value) {
+    return cwdPath.child(FILENAME).writeText(stringifyServerProperties(value));
+  },
+  remove(cwdPath) {
+    return cwdPath.child(FILENAME).remove();
+  },
+};

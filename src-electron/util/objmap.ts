@@ -53,8 +53,16 @@ export function objEach<K extends string, V>(
 
 // 非同期関数でmapする
 export async function asyncMap<T, U>(
-  values: T[],
+  values: Readonly<T[]>,
   func: (value: T, index: number) => Promise<U>
 ): Promise<U[]> {
   return await Promise.all(values.map(func));
+}
+
+// 非同期関数でforEachする
+export async function asyncForEach<T, U>(
+  values: T[],
+  func: (value: T, index: number) => Promise<void>
+): Promise<void> {
+  await Promise.all(values.map(func));
 }

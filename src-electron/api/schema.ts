@@ -238,6 +238,9 @@ export type WorldEdited = WorldBase & {
 
   /** 導入済み */
   additional: WorldEditedAdditional;
+
+  // /** op権限 */
+  // ops: Op;
 };
 
 export type MemoryUnit =
