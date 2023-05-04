@@ -63,6 +63,8 @@ export async function unrollSettings(world: World, serverCwdPath: Path) {
     // bannedPlayersHandler.save(serverCwdPath, world.ops ?? []),
   ] as const;
 
+  await promisses
+
   world;
 }
 
