@@ -9,6 +9,9 @@ export type Whitelist = WhitelistRecord[];
 
 const FILENAME = 'whitelist.json';
 
+const MESSAGE =
+  '"このファイルは使用されません。ホワイトリストの書き換えはServerStarter本体から行ってください。"';
+
 export const whitelistHandler: ServerSettingHandler<Whitelist> = {
   load(cwdPath) {
     return cwdPath.child(FILENAME).readJson<Whitelist>();
@@ -17,6 +20,6 @@ export const whitelistHandler: ServerSettingHandler<Whitelist> = {
     return cwdPath.child(FILENAME).writeText(JSON.stringify(value));
   },
   remove(cwdPath) {
-    return cwdPath.child(FILENAME).remove();
+    return cwdPath.child(FILENAME).writeText(MESSAGE);
   },
 };

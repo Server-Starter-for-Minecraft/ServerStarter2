@@ -41,7 +41,7 @@ export interface API extends IAPI {
     AddConsole: (chunk: string) => void;
   };
   invokeMainToWindow: {
-    AgreeEula: () => Promise<boolean>;
+    AgreeEula: (url: string) => Promise<boolean>;
   };
   sendWindowToMain: {
     Command: (command: string) => void;

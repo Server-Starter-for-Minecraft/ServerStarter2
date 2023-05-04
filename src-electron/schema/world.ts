@@ -1,6 +1,6 @@
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
-import { Player } from './player';
+import { Player, WorldAuthority } from './player';
 import { Remote } from './remote';
 import { ServerProperties, ServerPropertiesMap } from './serverproperty';
 import { Version } from './version';
@@ -58,6 +58,9 @@ export type WorldBase = {
 
   /** server.propertiesの内容 */
   properties?: ServerProperties;
+
+  /** プレイヤーの設定 */
+  authority: WorldAuthority;
 };
 
 export type WorldAdditional = {
@@ -96,12 +99,12 @@ export type WorldEdited = WorldBase & {
 
   /** 導入済み */
   additional: WorldEditedAdditional;
-
-  // /** op権限 */
-  // ops: Op;
 };
 
-/** ワールドの設定 */
+/**
+ * ワールドの設定
+ * server_settings.jsonの内容
+ */
 export type WorldSettings = {
   /** 使用メモリ量 */
   memory?: MemorySettings;
@@ -130,6 +133,9 @@ export type WorldSettings = {
 
   /** 起動中フラグ */
   properties?: ServerPropertiesMap;
+
+  /** プレイヤーの設定 */
+  authority?: WorldAuthority;
 };
 
 /** serverstarterのシステム設定内のワールド設定 */
@@ -138,5 +144,6 @@ export type SystemWorldSettings = {
   javaArguments?: string;
 
   memory: MemorySettings;
+
   properties: ServerProperties;
 };

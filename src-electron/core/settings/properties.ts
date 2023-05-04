@@ -209,6 +209,9 @@ export function mergeServerProperties(
 
 const FILENAME = 'server.properties';
 
+const MESSAGE =
+  '"このファイルは使用されません。サーバープロパティの書き換えはServerStarter本体から行ってください。"';
+
 export const serverPropertiesHandler: ServerSettingHandler<ServerProperties> = {
   async load(cwdPath) {
     const text = await cwdPath.child(FILENAME).readText();
@@ -219,6 +222,6 @@ export const serverPropertiesHandler: ServerSettingHandler<ServerProperties> = {
     return cwdPath.child(FILENAME).writeText(stringifyServerProperties(value));
   },
   remove(cwdPath) {
-    return cwdPath.child(FILENAME).remove();
+    return cwdPath.child(FILENAME).writeText(MESSAGE);
   },
 };
