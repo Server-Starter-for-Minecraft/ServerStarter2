@@ -98,11 +98,11 @@ export function getOpsAndWhitelist(authority: WorldAuthority | undefined) {
 
 /** サーバー起動後の whitelist/ops の内容を取得して更新 */
 export async function updateAuthority(
-  auth: WorldAuthority | undefined,
+  authority: WorldAuthority | undefined,
   ops: Ops,
   whitelist: Whitelist
-) {
-  const authority = fix<WorldAuthority>(auth, {
+): Promise<WorldAuthority> {
+  authority = fix<WorldAuthority>(authority, {
     groups: [],
     players: [],
     removed: [],
@@ -119,53 +119,57 @@ export async function updateAuthority(
     authority.players.map((p) => [p.uuid, p])
   );
 
+  const oldRemovedRecord = Object.fromEntries(
+    authority.removed.map((p) => [p.uuid, p])
+  );
+
   const newPlayerSettings = constructPlayerSettings(ops, whitelist);
 
-  // プレイヤーが削除済みだった場合削除を取り消す
-  function rescue(authority: WorldAuthority, uuid: string) {
-    const i = authority.removed.findIndex((p) => p.uuid === uuid);
-    if (i != -1) {
-      delete authority.removed[i];
-    }
-  }
+  // 変化前のプレイヤー設定でループ
+  Object.values(oldPlayerSettings).forEach((player) => {
+    if (newPlayerSettings[player.uuid] === undefined) {
+      // Op権限がはく奪された場合
 
+      // 編集可能プレイヤーから削除
+      delete oldEditablePlayerRecord[player.uuid];
+
+      // 削除済みプレイヤーに追加
+      oldRemovedRecord[player.uuid] = { name: player.name, uuid: player.uuid };
+    }
+  });
+
+  // 変化後のプレイヤー設定でループ
   Object.values(newPlayerSettings).forEach((player) => {
     const old = oldPlayerSettings[player.uuid];
 
-    // プレイヤー一覧に存在しない場合は追加
-    if (old === undefined) {
-      authority.players.push(player);
-      rescue(authority, player.uuid);
+    // 権限に変化がない場合無視
+    if (
+      old !== undefined &&
+      player.whitelist == old.whitelist &&
+      sameop(player.op, old.op)
+    ) {
       return;
     }
 
-    // opの内容が同じかどうかをチェック
-    function sameop(a: OpSetting | undefined, b: OpSetting | undefined) {
-      if (a === undefined && b === undefined) return true;
-      if (a === undefined || b === undefined) return false;
-      if (
-        a.bypassesPlayerLimit === b.bypassesPlayerLimit &&
-        a.level === b.level
-      )
-        return true;
-      return false;
-    }
-
-    // 権限に変化がない場合無視
-    if (player.whitelist == old.whitelist && sameop(player.op, old.op)) return;
-
-    const editable = oldEditablePlayerRecord[player.uuid];
-    if (editable === undefined) {
-      // 編集可能プレイヤー一覧に存在しない場合は追加
-      authority.players.push(player);
-      rescue(authority, player.uuid);
-    } else {
-      // 編集可能プレイヤー一覧に存在する場合は設定を上書き
-      editable.op = player.op;
-      editable.whitelist = player.whitelist;
-    }
+    // 権限に変化がある場合、編集可能プレイヤーとして登録
+    oldEditablePlayerRecord[player.uuid] = player;
+    delete oldRemovedRecord[player.uuid];
   });
-  return authority;
+
+  return {
+    groups: authority.groups,
+    players: Object.values(oldEditablePlayerRecord),
+    removed: Object.values(oldRemovedRecord),
+  };
+}
+
+// opの内容が同じかどうかをチェック
+function sameop(a: OpSetting | undefined, b: OpSetting | undefined) {
+  if (a === undefined && b === undefined) return true;
+  if (a === undefined || b === undefined) return false;
+  if (a.bypassesPlayerLimit === b.bypassesPlayerLimit && a.level === b.level)
+    return true;
+  return false;
 }
 
 function constructPlayerSettings(ops: Ops, whitelist: Whitelist) {
