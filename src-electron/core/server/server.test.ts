@@ -1,4 +1,4 @@
-import { VanillaVersion } from 'src-electron/api/schema';
+import { VanillaVersion } from 'src-electron/api/schema_old';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { isFailure } from 'src-electron/api/failable';
 import { runCommand, runServer } from './server';

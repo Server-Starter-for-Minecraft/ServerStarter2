@@ -1,4 +1,4 @@
-import { ForgeVersion } from 'src-electron/api/schema';
+import { ForgeVersion } from 'src-electron/api/schema_old';
 import {
   VersionLoader,
   genGetAllVersions,

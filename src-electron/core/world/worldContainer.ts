@@ -1,7 +1,7 @@
 import { isAbsolute } from 'path';
 import { Path } from 'src-electron/util/path';
 import { mainPath } from '../const';
-import { WorldContainers } from 'src-electron/api/schema';
+import { WorldContainers } from 'src-electron/api/schema_old';
 import { systemSettings } from '../stores/system';
 
 export async function getWorldContainers(): Promise<WorldContainers> {

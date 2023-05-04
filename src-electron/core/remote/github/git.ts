@@ -5,7 +5,11 @@ import {
   isSuccess,
 } from 'src-electron/api/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
-import { GithubRemote, World, WorldSettings } from 'src-electron/api/schema';
+import {
+  GithubRemote,
+  World,
+  WorldSettings,
+} from 'src-electron/api/schema_old';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';

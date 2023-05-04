@@ -6,7 +6,7 @@ import {
   genGetAllVersions,
   needEulaAgreementVanilla,
 } from './base';
-import { MohistmcVersion } from 'src-electron/api/schema';
+import { MohistmcVersion } from 'src-electron/api/schema_old';
 import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../util/path';

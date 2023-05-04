@@ -3,7 +3,7 @@ import {
   ServerPropertiesMap,
   World,
   WorldSettings,
-} from 'src-electron/api/schema';
+} from 'src-electron/api/schema_old';
 import { objMap } from 'src-electron/util/objmap';
 import { defaultServerProperties } from './properties';
 import { deepcopy } from 'src-electron/util/deepcopy';

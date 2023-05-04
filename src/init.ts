@@ -1,4 +1,4 @@
-import { versionTypes } from 'app/src-electron/api/schema';
+import { versionTypes } from 'app/src-electron/api/schema_old';
 import { checkError } from './components/Error/Error';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';

@@ -1,5 +1,5 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
-import { FileData, NewData } from 'src-electron/api/schema';
+import { FileData, NewData } from 'src-electron/api/schema_old';
 import { asyncMap } from 'src-electron/util/objmap';
 import { Path } from 'src-electron/util/path';
 

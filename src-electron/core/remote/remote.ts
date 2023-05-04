@@ -1,4 +1,4 @@
-import { Remote, World } from 'src-electron/api/schema';
+import { Remote, World } from 'src-electron/api/schema_old';
 import { RemoteOperator } from './base';
 import { Failable } from 'src-electron/api/failable';
 import { githubRemoteOperator } from './github/git';

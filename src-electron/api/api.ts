@@ -8,7 +8,7 @@ import {
   WorldAbbr,
   WorldContainers,
   WorldEdited,
-} from './schema';
+} from './schema_old';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**

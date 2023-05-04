@@ -1,10 +1,7 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
-import {
-  World,
-  WorldAbbr,
-} from 'src-electron/api/schema';
+import { World, WorldAbbr } from 'src-electron/api/schema_old';
 import { Path } from '../../util/path';
-import { asyncMap} from '../../util/objmap';
+import { asyncMap } from '../../util/objmap';
 import { getWorldJsonPath, loadWorldJson } from './worldJson';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';

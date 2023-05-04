@@ -1,7 +1,7 @@
-import { ServerProperties, ServerProperty } from 'src-electron/api/schema';
+import { ServerProperties, ServerProperty } from 'src-electron/api/schema_old';
 import { objEach, objMap } from '../../util/objmap';
 import { ServerSettingHandler } from './base';
-import { isFailure } from 'app/src-electron/api/failable';
+import { isFailure } from 'src-electron/api/failable';
 
 // TODO:stringの値のescape/unescape
 

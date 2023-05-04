@@ -3,7 +3,7 @@ import {
   World,
   WorldAdditional,
   WorldEdited,
-} from 'src-electron/api/schema';
+} from 'src-electron/api/schema_old';
 import { getLog4jArg } from './log4j';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { needEulaAgreement, readyVersion } from '../version/version';

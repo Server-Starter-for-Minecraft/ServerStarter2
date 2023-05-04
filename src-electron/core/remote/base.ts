@@ -1,5 +1,5 @@
 import { Failable } from 'src-electron/api/failable';
-import { Remote, World } from 'src-electron/api/schema';
+import { Remote, World } from 'src-electron/api/schema_old';
 import { Path } from '../../util/path';
 
 export type RemoteOperator<R extends Remote> = {

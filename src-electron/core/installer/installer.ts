@@ -2,7 +2,7 @@ import { Failable } from 'src-electron/api/failable';
 import {
   WorldAdditional,
   WorldEditedAdditional,
-} from 'src-electron/api/schema';
+} from 'src-electron/api/schema_old';
 import { Path } from 'src-electron/util/path';
 import { installFiles } from './files';
 

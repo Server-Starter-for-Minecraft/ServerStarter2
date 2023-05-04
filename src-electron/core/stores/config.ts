@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { VersionType } from '../../api/schema';
+import { VersionType } from '../../api/schema_old';
 import { mainPath } from '../const';
 
 export type Config = {
