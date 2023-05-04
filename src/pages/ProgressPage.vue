@@ -16,9 +16,10 @@ window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent) => {
   return await promise;
 });
 
-window.API.onUpdateStatus((_event, message, ratio) => {
+window.API.onUpdateStatus((_event, message , current, total) => {
   progressStore.message = message;
-  progressStore.progressRatio = ratio;
+  const isUndefined = current === void 0 || total === void 0
+  progressStore.progressRatio = isUndefined ? undefined : current / total;
 });
 </script>
 

@@ -37,7 +37,7 @@ export interface API extends IAPI {
   sendMainToWindow: {
     StartServer: () => void;
     FinishServer: () => void;
-    UpdateStatus: (message: string, ratio?: number) => void;
+    UpdateStatus: (message: string, current?:number, total?:number) => void;
     AddConsole: (chunk: string) => void;
   };
   invokeMainToWindow: {
