@@ -21,8 +21,15 @@ import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
-import { World, WorldAdditional, WorldEdited } from 'app/src-electron/schema/world';
+import {
+  World,
+  WorldAdditional,
+  WorldEdited,
+} from 'app/src-electron/schema/world';
 import { MemoryUnit } from 'app/src-electron/schema/memory';
+import { updateAuthority } from '../settings/players';
+import { opsHandler } from '../settings/ops';
+import { whitelistHandler } from '../settings/whitelist';
 
 class WorldUsingError extends Error {}
 
@@ -271,7 +278,21 @@ class ServerRunner {
       remote_pull: world.remote_pull,
       remote_push: world.remote_push,
       additional,
+      authority: world.authority,
     };
+  }
+
+  /** op/whitelistの内容を読み込んでサーバー実行中の更新を反映 */
+  private async updateAuthority(): Promise<void> {
+    const ops = await opsHandler.load(this.cwdPath);
+    const whitelist = await whitelistHandler.load(this.cwdPath);
+    if (isSuccess(ops) && isSuccess(whitelist)) {
+      this.world.authority = await updateAuthority(
+        this.world.authority,
+        ops,
+        whitelist
+      );
+    }
   }
 
   private async _runServer(): Promise<Failable<World>> {
@@ -324,6 +345,10 @@ class ServerRunner {
     this.args.push(...server.programArguments, '--nogui');
 
     const processResult = await this.awaitServerProcess(javaPath);
+
+    // 権限を更新
+    await this.updateAuthority();
+
     if (isFailure(processResult)) return processResult;
 
     return this.constructWorld(additional);

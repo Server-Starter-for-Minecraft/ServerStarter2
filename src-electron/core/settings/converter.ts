@@ -8,7 +8,7 @@ import {
 } from 'app/src-electron/schema/serverproperty';
 import { fixSystemSettings } from '../stores/system';
 import { fix } from 'app/src-electron/util/fix';
-import { WorldPlayers } from 'app/src-electron/schema/player';
+import { WorldAuthority } from 'app/src-electron/schema/player';
 
 type WorldSettingsPlus = {
   name: string;
@@ -36,7 +36,7 @@ export function worldSettingsToWorld({
     memory: settings.memory,
     properties: getServerProperties(settings.properties),
     additional: {},
-    players: fix<WorldPlayers>(settings.players, {
+    players: fix<WorldAuthority>(settings.players, {
       groups: [],
       players: [],
       removed: [],

@@ -10,17 +10,24 @@ import { systemSettings } from '../stores/system';
 import { asyncMap, objMap } from 'src-electron/util/objmap';
 import { opsHandler } from './ops';
 import { whitelistHandler } from './whitelist';
-import { bannedIpsHandler } from './bannedIps';
-import { bannedPlayersHandler } from './bannedPlayers';
-import { SystemWorldSettings, World, WorldSettings } from 'app/src-electron/schema/world';
-import { ServerProperties, ServerProperty } from 'app/src-electron/schema/serverproperty';
+import {
+  SystemWorldSettings,
+  World,
+  WorldSettings,
+} from 'app/src-electron/schema/world';
+import {
+  ServerProperties,
+  ServerProperty,
+} from 'app/src-electron/schema/serverproperty';
+import { getOpsAndWhitelist } from './players';
 
 const handlers = [
   serverPropertiesHandler,
   opsHandler,
   whitelistHandler,
-  bannedIpsHandler,
-  bannedPlayersHandler,
+  // BAN系のファイルは参照しない
+  // bannedIpsHandler,
+  // bannedPlayersHandler,
 ] as const;
 
 /** TODO: server.properies/ops.json/whiltelist.jsonを削除 */
@@ -52,18 +59,22 @@ export async function unrollSettings(world: World, serverCwdPath: Path) {
   );
   await serverCwdPath.child('server.properties').writeText(strprop);
 
+  // ops.json/whitelist.jsonの中身を算出
+  const { ops, whitelist } = getOpsAndWhitelist(world.authority);
+
+  // 設定ファイルを保存
   const promisses = [
     serverPropertiesHandler.save(
       serverCwdPath,
       world.properties ?? defaultServerProperties
     ),
-    // opsHandler.save(serverCwdPath, world.ops ?? []),
-    // whitelistHandler.save(serverCwdPath, world.ops ?? []),
+    opsHandler.save(serverCwdPath, ops),
+    whitelistHandler.save(serverCwdPath, whitelist),
     // bannedIpsHandler.save(serverCwdPath, world.ops ?? []),
     // bannedPlayersHandler.save(serverCwdPath, world.ops ?? []),
   ] as const;
 
-  await promisses
+  await promisses;
 
   world;
 }

@@ -17,7 +17,7 @@ export type PlayerSetting = {
   /** プレイヤーのUUID */
   uuid: string;
   /** プレイヤーのop権限レベル */
-  op: OpLevel;
+  op?: OpLevel;
   /** プレイヤーがwhitelistに入っているか */
   whitelist: boolean;
 };
@@ -28,13 +28,13 @@ export type PlayerGroupSetting = {
   /** グループのUUID */
   uuid: string;
   /** グループのop権限レベル */
-  op: OpLevel;
+  op?: OpLevel;
   /** グループがwhitelistに入っているか */
   whitelist: boolean;
 };
 
 /** ワ－ルドごとのプレイヤー/グループと権限の設定 */
-export type WorldPlayers = {
+export type WorldAuthority = {
   /** ワールドに紐づいたグループとその権限 */
   groups: PlayerGroupSetting[];
   /** ワールドに紐づいたプレイヤーとその権限(手動追加された場合に限る) */

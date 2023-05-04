@@ -1,7 +1,6 @@
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
-import { Ops } from './ops';
-import { Player, WorldPlayers } from './player';
+import { Player, WorldAuthority } from './player';
 import { Remote } from './remote';
 import { ServerProperties, ServerPropertiesMap } from './serverproperty';
 import { Version } from './version';
@@ -61,7 +60,7 @@ export type WorldBase = {
   properties?: ServerProperties;
 
   /** プレイヤーの設定 */
-  players: WorldPlayers;
+  authority: WorldAuthority;
 };
 
 export type WorldAdditional = {
@@ -136,7 +135,7 @@ export type WorldSettings = {
   properties?: ServerPropertiesMap;
 
   /** プレイヤーの設定 */
-  players?: WorldPlayers;
+  authority?: WorldAuthority;
 };
 
 /** serverstarterのシステム設定内のワールド設定 */
