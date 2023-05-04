@@ -2,7 +2,13 @@ import { objMap } from 'src-electron/util/objmap';
 import { defaultServerProperties } from './properties';
 import { deepcopy } from 'src-electron/util/deepcopy';
 import { World, WorldSettings } from 'app/src-electron/schema/world';
-import { ServerProperties, ServerPropertiesMap } from 'app/src-electron/schema/serverproperty';
+import {
+  ServerProperties,
+  ServerPropertiesMap,
+} from 'app/src-electron/schema/serverproperty';
+import { fixSystemSettings } from '../stores/system';
+import { fix } from 'app/src-electron/util/fix';
+import { WorldPlayers } from 'app/src-electron/schema/player';
 
 type WorldSettingsPlus = {
   name: string;
@@ -30,6 +36,11 @@ export function worldSettingsToWorld({
     memory: settings.memory,
     properties: getServerProperties(settings.properties),
     additional: {},
+    players: fix<WorldPlayers>(settings.players, {
+      groups: [],
+      players: [],
+      removed: [],
+    }),
   };
   return deepcopy(result);
 }
@@ -47,6 +58,7 @@ export function worldToWorldSettings(world: World): WorldSettingsPlus {
       last_user: world.last_user,
       using: world.using,
       properties: getPropertiesMap(world.properties),
+      players: world.players,
     },
   };
   return deepcopy(result);

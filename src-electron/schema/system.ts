@@ -6,14 +6,14 @@ import { SystemWorldSettings } from './world';
 export type SystemSettings = {
   container: WorldContainers;
   world: SystemWorldSettings;
-  remote: RemoteSetting;
-  player: PlayerSetting;
-  user: UserSetting;
+  remote: SystemRemoteSetting;
+  player: SystemPlayerSetting;
+  user: SystemUserSetting;
 };
 
 export type Locale = 'ja' | 'en-US';
 
-export type UserSetting = {
+export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
   // システム言語
@@ -35,11 +35,11 @@ export type WorldContainers = {
   };
 };
 
-export type PlayerSetting = {
+export type SystemPlayerSetting = {
   groups: PlayerGroup[];
   players: Player[];
 };
 
-export type RemoteSetting = {
+export type SystemRemoteSetting = {
   github: GithubRemoteSetting;
 };

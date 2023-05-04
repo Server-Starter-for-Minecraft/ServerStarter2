@@ -1,8 +1,9 @@
 import Store from 'electron-store';
 import { DEFAULT_MEMORY, mainPath } from '../const';
 import { defaultServerProperties } from '../settings/properties';
-import { deepCopy } from 'src/scripts/deepCopy';
-import { SystemSettings } from 'app/src-electron/schema/system';
+import { SystemSettings } from 'src-electron/schema/system';
+import { Copyable, deepcopy } from 'src-electron/util/deepcopy';
+import { fix } from 'app/src-electron/util/fix';
 
 export async function setSystemSettings(
   settings: SystemSettings
@@ -37,39 +38,6 @@ export function fixSystemSettings() {
 
   systemSettings.store = fixed;
 }
-
-function fix<T extends { [x: string]: unknown }>(
-  value: DeepPartial<T> | undefined,
-  defaultValue: T
-): T {
-  if (value === undefined) return deepCopy(defaultValue);
-
-  return Object.fromEntries(
-    Object.entries(defaultValue).map(([k, v]) => {
-      const val = value?.[k];
-
-      if (v instanceof Array) {
-        if (val instanceof Array) {
-          return [k, val];
-        }
-        return [k, deepCopy(v)];
-      }
-
-      if (typeof v === 'object' && v !== null) {
-        return [
-          k,
-          fix(val as { [x: string]: unknown }, v as { [x: string]: unknown }),
-        ];
-      }
-      return [k, val ?? deepCopy(v)];
-    })
-  ) as T;
-}
-
-type DeepPartial<T> = T extends object
-  ? { [P in keyof T]?: DeepPartial<T[P]> | undefined }
-  : T;
-
 export const systemSettings = new Store<SystemSettings>({
   cwd: mainPath.str(),
   name: 'serverstarter',

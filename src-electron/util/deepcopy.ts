@@ -1,6 +1,6 @@
 import { objValueMap } from './objmap';
 
-type Copyable =
+export type Copyable =
   | string
   | number
   | boolean

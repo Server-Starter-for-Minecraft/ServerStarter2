@@ -136,7 +136,7 @@ export type WorldSettings = {
   properties?: ServerPropertiesMap;
 
   /** プレイヤーの設定 */
-  players: WorldPlayers;
+  players?: WorldPlayers;
 };
 
 /** serverstarterのシステム設定内のワールド設定 */
