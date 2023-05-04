@@ -44,6 +44,8 @@ export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
     last_date: world.last_date,
     last_user: world.last_user,
     using: world.using,
+    authority: world.authority,
+    javaArguments: world.javaArguments,
     properties: getPropertiesMap(world.properties),
   };
 

@@ -2,7 +2,6 @@ import Store from 'electron-store';
 import { DEFAULT_MEMORY, mainPath } from '../const';
 import { defaultServerProperties } from '../settings/properties';
 import { SystemSettings } from 'src-electron/schema/system';
-import { Copyable, deepcopy } from 'src-electron/util/deepcopy';
 import { fix } from 'app/src-electron/util/fix';
 
 export async function setSystemSettings(

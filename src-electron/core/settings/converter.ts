@@ -6,7 +6,6 @@ import {
   ServerProperties,
   ServerPropertiesMap,
 } from 'app/src-electron/schema/serverproperty';
-import { fixSystemSettings } from '../stores/system';
 import { fix } from 'app/src-electron/util/fix';
 import { WorldAuthority } from 'app/src-electron/schema/player';
 
