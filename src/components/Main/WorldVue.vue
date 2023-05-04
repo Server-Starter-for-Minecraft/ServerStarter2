@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
-import { World } from 'app/src-electron/api/schema';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import iconBtn from '../util/iconButton.vue';
 import { checkError } from 'src/components/Error/Error';
 import { deepCopy } from 'src/scripts/deepCopy';
+import { World } from 'app/src-electron/schema/world';
 
 interface Props {
   world: World;

@@ -1,6 +1,7 @@
 import { Failable, isFailure } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
-import { WorldSettings, versionTypes } from 'src-electron/api/schema_old';
+import { WorldSettings } from 'app/src-electron/schema/world';
+import { versionTypes } from 'app/src-electron/schema/version';
 
 export const server_settings_file_name = 'server_settings.json';
 

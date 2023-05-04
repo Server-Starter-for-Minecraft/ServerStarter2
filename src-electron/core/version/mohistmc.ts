@@ -1,3 +1,4 @@
+import { MohistmcVersion } from 'src-electron/schema/version';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import {
@@ -6,7 +7,6 @@ import {
   genGetAllVersions,
   needEulaAgreementVanilla,
 } from './base';
-import { MohistmcVersion } from 'src-electron/api/schema_old';
 import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../util/path';

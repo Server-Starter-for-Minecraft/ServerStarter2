@@ -1,11 +1,4 @@
 import {
-  ServerProperties,
-  ServerProperty,
-  SystemWorldSettings,
-  World,
-  WorldSettings,
-} from 'src-electron/api/schema_old';
-import {
   defaultServerProperties,
   mergeServerProperties,
   serverPropertiesHandler,
@@ -19,6 +12,8 @@ import { opsHandler } from './ops';
 import { whitelistHandler } from './whitelist';
 import { bannedIpsHandler } from './bannedIps';
 import { bannedPlayersHandler } from './bannedPlayers';
+import { SystemWorldSettings, World, WorldSettings } from 'app/src-electron/schema/world';
+import { ServerProperties, ServerProperty } from 'app/src-electron/schema/serverproperty';
 
 const handlers = [
   serverPropertiesHandler,

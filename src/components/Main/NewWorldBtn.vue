@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { World } from 'app/src-electron/api/schema';
+import { World } from 'app/src-electron/schema/world';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';

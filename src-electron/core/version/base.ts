@@ -1,4 +1,4 @@
-import { Version, VersionType } from 'src-electron/api/schema_old';
+import { Version, VersionType } from 'src-electron/schema/version';
 import { Path } from '../../util/path';
 import { JavaComponent } from './vanilla';
 import { Failable, isFailure, isSuccess } from '../../api/failable';

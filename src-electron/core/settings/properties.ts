@@ -1,4 +1,7 @@
-import { ServerProperties, ServerProperty } from 'src-electron/api/schema_old';
+import {
+  ServerProperties,
+  ServerProperty,
+} from 'app/src-electron/schema/serverproperty';
 import { objEach, objMap } from '../../util/objmap';
 import { ServerSettingHandler } from './base';
 import { isFailure } from 'src-electron/api/failable';

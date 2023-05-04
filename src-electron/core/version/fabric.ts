@@ -1,4 +1,4 @@
-import { FabricVersion } from 'src-electron/api/schema_old';
+import { FabricVersion } from 'src-electron/schema/version';
 import { isFailure } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';

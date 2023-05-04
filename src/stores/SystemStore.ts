@@ -1,10 +1,7 @@
 import { defineStore } from 'pinia';
 import { version } from '../../package.json';
-import {
-  Version,
-  VersionType,
-  WorldContainers,
-} from 'app/src-electron/api/schema_old';
+import { Version, VersionType } from 'app/src-electron/schema/version';
+import { WorldContainers } from 'app/src-electron/schema/system';
 
 export const useSystemStore = defineStore('systemStore', {
   state: () => {

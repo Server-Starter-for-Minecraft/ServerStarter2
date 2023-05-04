@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { Path } from '../util/path';
-import { MemorySettings } from '../api/schema_old';
+import { MemorySettings } from '../schema/memory';
 
 const userDataPath = (
   process.env.DEBUGGING || !app

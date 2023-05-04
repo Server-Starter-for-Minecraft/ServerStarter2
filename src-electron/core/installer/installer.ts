@@ -1,10 +1,10 @@
 import { Failable } from 'src-electron/api/failable';
+import { Path } from 'src-electron/util/path';
+import { installFiles } from './files';
 import {
   WorldAdditional,
   WorldEditedAdditional,
-} from 'src-electron/api/schema_old';
-import { Path } from 'src-electron/util/path';
-import { installFiles } from './files';
+} from 'app/src-electron/schema/world';
 
 // TODO: 一度使用したmod/plugin/datapackを別の場所に保管しておく
 

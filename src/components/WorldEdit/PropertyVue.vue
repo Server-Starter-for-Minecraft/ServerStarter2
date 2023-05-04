@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ServerProperty } from 'app/src-electron/api/schema';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import { QTableCol } from 'src/components/util/iComponent';
 import SsSelect from '../util/base/ssSelect.vue';
 import SsInput from '../util/base/ssInput.vue';
+import { ServerProperty } from 'app/src-electron/schema/serverproperty';
 
 const store = useWorldEditStore()
 

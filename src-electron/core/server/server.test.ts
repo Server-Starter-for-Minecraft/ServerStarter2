@@ -1,9 +1,7 @@
-import { VanillaVersion } from 'src-electron/api/schema_old';
-import { vanillaVersionLoader } from '../version/vanilla';
-import { isFailure } from 'src-electron/api/failable';
 import { runCommand, runServer } from './server';
 import { mainPath } from '../const';
 import { setupDummyIPC } from 'src-electron/ipc/setup_dummy';
+import { VanillaVersion } from 'app/src-electron/schema/version';
 
 setupDummyIPC();
 

@@ -1,4 +1,5 @@
-import { ServerProperty, World } from 'app/src-electron/api/schema_old';
+import { ServerProperty } from 'app/src-electron/schema/serverproperty';
+import { World } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
 import { deepCopy } from 'src/scripts/deepCopy';
 

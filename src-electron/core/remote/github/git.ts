@@ -5,11 +5,6 @@ import {
   isSuccess,
 } from 'src-electron/api/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
-import {
-  GithubRemote,
-  World,
-  WorldSettings,
-} from 'src-electron/api/schema_old';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
@@ -17,6 +12,8 @@ import { server_settings_file_name } from '../../world/worldJson';
 import { LEVEL_NAME } from '../../const';
 import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';
+import { GithubRemote } from 'app/src-electron/schema/remote';
+import { World, WorldSettings } from 'app/src-electron/schema/world';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,

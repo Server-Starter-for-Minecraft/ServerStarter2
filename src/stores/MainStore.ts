@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/api/schema_old';
+import { World } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
 
 export interface Drawer {

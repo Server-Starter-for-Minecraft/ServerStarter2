@@ -1,14 +1,12 @@
-import { Failable } from './failable';
+import { SystemSettings, WorldContainers } from '../schema/system';
+import { Version, VersionType } from '../schema/version';
 import {
-  SystemSettings,
   SystemWorldSettings,
-  Version,
-  VersionType,
   World,
   WorldAbbr,
-  WorldContainers,
   WorldEdited,
-} from './schema_old';
+} from '../schema/world';
+import { Failable } from './failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**

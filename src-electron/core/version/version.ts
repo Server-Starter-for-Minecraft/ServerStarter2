@@ -1,4 +1,3 @@
-import { Version, VersionType } from 'src-electron/api/schema_old';
 import { vanillaVersionLoader } from './vanilla';
 import { VersionLoader } from './base';
 import { spigotVersionLoader } from './spigot';
@@ -7,6 +6,7 @@ import { forgeVersionLoader } from './forge';
 import { mohistmcVersionLoader } from './mohistmc';
 import { Path } from '../../util/path';
 import { fabricVersionLoader } from './fabric';
+import { Version, VersionType } from 'app/src-electron/schema/version';
 
 export const versionLoaders: {
   [V in Version as V['type']]: VersionLoader<V>;

@@ -1,8 +1,8 @@
-import { Version } from 'src-electron/api/schema_old';
 import { Path } from '../../util/path';
 import { BytesData } from '../../util/bytesData';
 import { Failable, isFailure } from '../../api/failable';
 import { api } from '../api';
+import { Version } from 'app/src-electron/schema/version';
 
 const ver_17_18 = [
   '1.18.1-rc2',

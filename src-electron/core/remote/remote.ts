@@ -1,8 +1,9 @@
-import { Remote, World } from 'src-electron/api/schema_old';
 import { RemoteOperator } from './base';
 import { Failable } from 'src-electron/api/failable';
 import { githubRemoteOperator } from './github/git';
 import { Path } from 'src-electron/util/path';
+import { Remote } from 'app/src-electron/schema/remote';
+import { World } from 'app/src-electron/schema/world';
 
 export const remoteOperators: {
   [R in Remote as R['type']]: RemoteOperator<Remote>;

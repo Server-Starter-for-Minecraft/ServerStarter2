@@ -1,9 +1,3 @@
-import {
-  MemoryUnit,
-  World,
-  WorldAdditional,
-  WorldEdited,
-} from 'src-electron/api/schema_old';
 import { getLog4jArg } from './log4j';
 import { Failable, isFailure, isSuccess } from '../../api/failable';
 import { needEulaAgreement, readyVersion } from '../version/version';
@@ -27,6 +21,8 @@ import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
+import { World, WorldAdditional, WorldEdited } from 'app/src-electron/schema/world';
+import { MemoryUnit } from 'app/src-electron/schema/memory';
 
 class WorldUsingError extends Error {}
 
