@@ -1,5 +1,5 @@
 import { ServerProperty } from 'app/src-electron/schema/serverproperty';
-import { World } from 'app/src-electron/schema/world';
+import { WorldEdited } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
 import { deepCopy } from 'src/scripts/deepCopy';
 
@@ -9,7 +9,7 @@ export const useWorldEditStore = defineStore('worldEditStore', {
   state: () => {
     return {
       worldIndex: -1,
-      world: {} as World,
+      world: {} as WorldEdited,
       title: '',
       saveFunc: () => {
         return;
@@ -22,7 +22,7 @@ export const useWorldEditStore = defineStore('worldEditStore', {
      * World Editページを起動するにあたり必要なデータの受け渡し
      */
     setEditer(
-      world: World,
+      world: WorldEdited,
       saveFunc: () => void,
       { worldIndex = -1, title = 'ワールド編集' }
     ) {

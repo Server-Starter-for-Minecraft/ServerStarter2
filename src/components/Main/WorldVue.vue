@@ -7,10 +7,10 @@ import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import iconBtn from '../util/iconButton.vue';
 import { checkError } from 'src/components/Error/Error';
 import { deepCopy } from 'src/scripts/deepCopy';
-import { World } from 'app/src-electron/schema/world';
+import { WorldEdited } from 'app/src-electron/schema/world';
 
 interface Props {
-  world: World;
+  world: WorldEdited;
   idx: number;
 }
 const prop = defineProps<Props>();
