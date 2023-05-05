@@ -37,7 +37,7 @@ export interface API extends IAPI {
   sendMainToWindow: {
     StartServer: () => void;
     FinishServer: () => void;
-    UpdateStatus: (message: string, current?:number, total?:number) => void;
+    UpdateStatus: (message: string, current?: number, total?: number) => void;
     AddConsole: (chunk: string) => void;
   };
   invokeMainToWindow: {
@@ -63,10 +63,14 @@ export interface API extends IAPI {
     GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
     GetWorld: (worldAbbr: WorldAbbr) => Promise<Failable<World>>;
 
+    DeleteWorld: (world: WorldEdited) => Promise<Failable<void>>;
+
     GetVersions: (
       type: VersionType,
       useCache: boolean
     ) => Promise<Failable<Version[]>>;
+    
+    GenUUID: ()=> Promise<string>;
   };
 }
 

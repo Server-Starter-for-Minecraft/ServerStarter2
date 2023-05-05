@@ -96,6 +96,8 @@ const api: FrontAPI = {
 
   handleAgreeEula: handle('AgreeEula'),
 
+  invokeDeleteWorld: invoke('DeleteWorld'),
+
   invokeRunServer: invoke('RunServer'),
   invokeSaveWorldSettings: invoke('SaveWorldSettings'),
 
@@ -111,6 +113,8 @@ const api: FrontAPI = {
   invokeGetWorld: invoke('GetWorld'),
 
   invokeGetVersions: invoke('GetVersions'),
+
+  invokeGenUUID: invoke('GenUUID'),
 };
 
 contextBridge.exposeInMainWorld('API', api);
