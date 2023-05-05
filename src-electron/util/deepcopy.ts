@@ -9,8 +9,8 @@ export type Copyable =
   | CopyableArray
   | CopyableObject;
 
-interface CopyableArray extends Array<Copyable> {}
-interface CopyableObject extends Record<string, Copyable> {}
+export interface CopyableArray extends Array<Copyable> {}
+export interface CopyableObject extends Record<string, Copyable> {}
 
 // オブジェクトを再帰的にコピー
 export function deepcopy<T extends Copyable>(obj: T): T {

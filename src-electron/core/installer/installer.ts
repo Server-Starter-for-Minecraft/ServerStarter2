@@ -4,7 +4,7 @@ import { installFiles } from './files';
 import {
   WorldAdditional,
   WorldEditedAdditional,
-} from 'app/src-electron/schema/world';
+} from 'src-electron/schema/world';
 
 // TODO: 一度使用したmod/plugin/datapackを別の場所に保管しておく
 

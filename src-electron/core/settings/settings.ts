@@ -5,7 +5,7 @@ import {
   stringifyServerProperties,
 } from './properties';
 import { Path } from '../../util/path';
-import { saveWorldJson } from '../world/worldJson';
+import { saveWorldJson } from './worldJson';
 import { systemSettings } from '../stores/system';
 import { asyncMap, objMap } from 'src-electron/util/objmap';
 import { opsHandler } from './ops';
@@ -14,11 +14,11 @@ import {
   SystemWorldSettings,
   World,
   WorldSettings,
-} from 'app/src-electron/schema/world';
+} from 'src-electron/schema/world';
 import {
   ServerProperties,
   ServerProperty,
-} from 'app/src-electron/schema/serverproperty';
+} from 'src-electron/schema/serverproperty';
 import { getOpsAndWhitelist } from './authority';
 
 const handlers = [

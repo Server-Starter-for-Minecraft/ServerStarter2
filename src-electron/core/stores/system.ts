@@ -2,7 +2,7 @@ import Store from 'electron-store';
 import { DEFAULT_MEMORY, mainPath } from '../const';
 import { defaultServerProperties } from '../settings/properties';
 import { SystemSettings } from 'src-electron/schema/system';
-import { fix } from 'app/src-electron/util/fix';
+import { fix } from 'src-electron/util/fix';
 
 export async function setSystemSettings(
   settings: SystemSettings
