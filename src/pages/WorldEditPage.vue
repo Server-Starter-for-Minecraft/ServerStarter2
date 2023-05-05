@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Drawer, useMainStore } from 'src/stores/MainStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
-import { onBeforeMount } from 'vue';
 
 const store = useWorldEditStore()
 
@@ -39,8 +38,6 @@ const drawer: Drawer[] = [
 ]
 
 useMainStore().setHeader(store.title, { drawerContents: drawer })
-
-onBeforeMount(store.updateRows)
 </script>
 
 <template>

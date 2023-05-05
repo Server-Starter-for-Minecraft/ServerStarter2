@@ -1,4 +1,4 @@
-import { World } from 'app/src-electron/schema/world';
+import { WorldEdited } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
 
 export interface Drawer {
@@ -19,7 +19,7 @@ export const useMainStore = defineStore('mainStore', {
       leftDrawerOpen: false,
       drawerContents: [] as Drawer[],
       selectedDrawer: '',
-      worldList: [] as World[],
+      worldList: [] as WorldEdited[],
     };
   },
   actions: {

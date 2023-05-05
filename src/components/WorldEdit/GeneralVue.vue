@@ -79,18 +79,18 @@ onBeforeMount(updateVersionList);
     <!-- TODO: Worldオブジェクトにメモリの規定値を割り当てることを要請 -->
     <PropertyItem prop-name="memory size">
       <template v-slot:userInput>
-        <!-- <SsInput
-          v-model="store.world.memory?.size"
+        <SsInput
+          v-model="store.world.memory.size"
           label="大きさ"
           class="q-pr-md"
           style="width: 100px"
         />
         <SsSelect
-          v-model="store.world.memory?.unit"
+          v-model="store.world.memory.unit"
           :options="['MB', 'GB', 'TB']"
           label="単位"
           style="width: 100px"
-        /> -->
+        />
       </template>
     </PropertyItem>
   </div>

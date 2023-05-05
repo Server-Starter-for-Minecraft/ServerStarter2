@@ -8,6 +8,7 @@ import iconBtn from '../util/iconButton.vue';
 import { checkError } from 'src/components/Error/Error';
 import { deepCopy } from 'src/scripts/deepCopy';
 import { WorldEdited } from 'app/src-electron/schema/world';
+import { useDialogStore } from 'src/stores/DialogStore';
 
 interface Props {
   world: WorldEdited;
@@ -47,10 +48,28 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
  */
 function worldEdit() {
   function saveFunc() {
-    useMainStore().worldList[editStore.worldIndex] = editStore.world
+    mainStore.worldList[editStore.worldIndex] = editStore.getEditedWorld()
   }
 
   editStore.setEditer(deepCopy(prop.world), saveFunc, { worldIndex: prop.idx })
+}
+
+/**
+ * ゴミ箱ボタンを押したときの削除処理
+ */
+ function removeWorld(item: WorldEdited) {
+  function removeAction() {
+    mainStore.worldList.splice(prop.idx, 1)
+    // TODO: Worldデータそのものを消す処理を追記
+  }
+
+  useDialogStore().showDialog(
+    `${item.name}をワールド一覧から削除しますか？`, 
+    [
+      {label: 'キャンセル'},
+      {label: 'OK', color: 'primary', action: removeAction},
+    ]
+  )
 }
 </script>
 
@@ -98,7 +117,7 @@ function worldEdit() {
         <!-- TODO: 「データを開く」はワールド編集の中に入れて、「再構成」を表に出す？ -->
         <icon-btn icon="edit" text="ワールド編集" size="0.9rem" to="world-edit" @click="worldEdit"/>
         <icon-btn icon="folder_open" text="データを開く" size="0.9rem"/>
-        <icon-btn icon="delete" text="削除" size="0.9rem"/>
+        <icon-btn icon="delete" text="削除" size="0.9rem" @click="removeWorld(world)"/>
       </div>
     </q-item-section>
   </q-item>

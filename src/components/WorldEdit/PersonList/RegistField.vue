@@ -10,8 +10,9 @@ import { useDialogStore } from 'src/stores/DialogStore';
 const store = useWorldEditStore()
 const sysStore = useSystemStore()
 
-const players = sysStore.systemSettings.player.players.map(p => p.name)
-const groups  = sysStore.systemSettings.player.groups.map(g => g.name)
+type SelectData = {name: string, idx: number}
+const players = sysStore.systemSettings.player.players.map((p, idx) => {return { name: p.name, idx: idx }})
+const groups  = sysStore.systemSettings.player.groups.map((g, idx) => {return { name: g.name, idx: idx }})
 
 const opLevels = [
   {label: '未設定', value: 'unset'},
@@ -22,18 +23,19 @@ const opLevels = [
 ]
 
 const addGroup  = ref(false)
-const name = ref(players[0])
+const selected: Ref<SelectData> = ref(players[0])
 const opLevel: Ref<OpLevel | 'unset'> = ref(4)
 const whiteList = ref(true)
 
 function regist() {
   if (addGroup.value) {
-    if (store.groupRows.map(g => g.name).includes(name.value)) {
-      useDialogStore().showDialog(`${name.value}はグループ一覧にすでに登録されています`)
+    if (store.groupRows.map(g => g.name).includes(selected.value.name)) {
+      useDialogStore().showDialog(`${selected.value.name}はグループ一覧にすでに登録されています`)
     }
     else {
       const group = {
-        name: name.value,
+        name: selected.value.name,
+        uuid: sysStore.systemSettings.player.groups[selected.value.idx].uuid,
         op: opLevel.value,
         white_list: whiteList.value
       }
@@ -41,12 +43,13 @@ function regist() {
     }
   }
   else {
-    if (store.playerRows.map(p => p.name).includes(name.value)) {
-      useDialogStore().showDialog(`${name.value}はプレイヤー一覧にすでに登録されています`)
+    if (store.playerRows.map(p => p.name).includes(selected.value.name)) {
+      useDialogStore().showDialog(`${selected.value.name}はプレイヤー一覧にすでに登録されています`)
     }
     else {
       const player = {
-        name: name.value,
+        name: selected.value.name,
+        uuid: sysStore.systemSettings.player.players[selected.value.idx].uuid,
         op: opLevel.value,
         white_list: whiteList.value,
         group: false
@@ -66,12 +69,12 @@ function regist() {
     <div class="center">
       <PropertyItem prop-name="追加のやり方">
         <template v-slot:userInput>
-          <q-toggle v-model="addGroup" :label="addGroup ? 'グループ単位' : 'プレイヤー単位'" @update:model-value="name = (addGroup ? groups : players)[0]" size="3rem" style="font-size: 1.2rem;"/>
+          <q-toggle v-model="addGroup" :label="addGroup ? 'グループ単位' : 'プレイヤー単位'" @update:model-value="selected = (addGroup ? groups : players)[0]" size="3rem" style="font-size: 1.2rem;"/>
         </template>
       </PropertyItem>
       <PropertyItem :prop-name="addGroup ? 'グループ名' : 'プレイヤー名'">
         <template v-slot:userInput>
-          <SsSelect v-model="name" label="名称" :options="addGroup ? groups : players" class="select"/>
+          <SsSelect v-model="selected" option-label="name" option-value="idx" label="名称" :options="addGroup ? groups : players" class="select"/>
         </template>
       </PropertyItem>
       <PropertyItem prop-name="OPレベル">

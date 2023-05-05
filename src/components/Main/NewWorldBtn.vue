@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { WorldEdited } from 'app/src-electron/schema/world';
+import { deepCopy } from 'src/scripts/deepCopy';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 
 function setNewWorld() {
   function saveFunc() {
-    useMainStore().worldList.push(useWorldEditStore().world)
+    useMainStore().worldList.push(useWorldEditStore().getEditedWorld())
   }
 
   // TODO: フロントエンドで扱うWorld型をWorldEdited型に変更
@@ -19,10 +20,11 @@ function setNewWorld() {
       release: true
     },
     additional: {},
+    memory: useSystemStore().systemSettings.world.memory,
     authority: {groups: [], players: [], removed: []}
   }
 
-  useWorldEditStore().setEditer(newWorld, saveFunc, { title: '新規ワールド' })
+  useWorldEditStore().setEditer(deepCopy(newWorld), saveFunc, { title: '新規ワールド' })
 }
 </script>
 

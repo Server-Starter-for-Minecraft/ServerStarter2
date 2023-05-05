@@ -1,12 +1,12 @@
-import { ServerProperty } from 'app/src-electron/schema/serverproperty';
-import { WorldEdited } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
+import { OpLevel, PlayerGroupSetting, PlayerSetting } from 'app/src-electron/schema/player';
+import { ServerProperties, ServerProperty } from 'app/src-electron/schema/serverproperty';
+import { WorldEdited } from 'app/src-electron/schema/world';
 import { deepCopy } from 'src/scripts/deepCopy';
-import { OpLevel } from 'app/src-electron/schema/player';
 
-type PropertyRow = { name: string; value: ServerProperty };
-export type PlayerRow = { name: string; op: OpLevel | 'unset'; white_list: boolean; group: boolean };
-export type GroupRow = { name: string; op: OpLevel | 'unset'; white_list: boolean; };
+export type PropertyRow = { name: string; value: ServerProperty, useDefault: boolean };
+export type PlayerRow = { name: string; uuid: string; op: OpLevel | 'unset'; white_list: boolean; group: boolean };
+export type GroupRow = { name: string; uuid: string; op: OpLevel | 'unset'; white_list: boolean; };
 
 export const useWorldEditStore = defineStore('worldEditStore', {
   state: () => {
@@ -26,7 +26,7 @@ export const useWorldEditStore = defineStore('worldEditStore', {
     /**
      * World Editページを起動するにあたり必要なデータの受け渡し
      */
-    setEditer(
+    async setEditer(
       world: WorldEdited,
       saveFunc: () => void,
       { worldIndex = -1, title = 'ワールド編集' }
@@ -35,30 +35,102 @@ export const useWorldEditStore = defineStore('worldEditStore', {
       this.worldIndex = worldIndex;
       this.title = title;
       this.saveFunc = saveFunc;
+
+      // set rows for q-table
+      this.propertyRows = await getPropertyRows(world)
+      this.playerRows = getPlayerRows(world)
+      this.groupRows = getGroupRows(world)
     },
     /**
-     * Propertyがない場合はデフォルトを適用し、ある場合はある項目だけ参照して他の項目はDefaultを適用させる
+     * 編集済みのWorldEditedオブジェクトを取得する
      */
-    async setfirstProperty() {
-      const _defaultServerProperties = deepCopy(
-        (await window.API.invokeGetDefaultSettings()).properties
-      );
+    getEditedWorld(): WorldEdited {
+      const returnWorld = deepCopy(this.world)
 
-      if (this.world.properties !== void 0) {
-        for (const key in this.world.properties) {
-          _defaultServerProperties[key] = this.world.properties[key];
-        }
-      }
+      // 分散して定義した項目を統合
+      returnWorld.properties = getEditedProperties(this.propertyRows)
+      returnWorld.authority.players = getPlayers(this.playerRows)
+      returnWorld.authority.groups = getGroups(this.groupRows)
 
-      return _defaultServerProperties;
-    },
-    /**
-     * Property tableの値を元のWorldの値に更新する
-     */
-    async updateRows() {
-      this.propertyRows = Object.entries(await this.setfirstProperty()).map(
-        ([name, value]) => ({ name, value })
-      );
-    },
+      return returnWorld
+    }
   },
 });
+
+async function getPropertyRows(world: WorldEdited): Promise<PropertyRow[]> {
+  const settings = await window.API.invokeGetDefaultSettings()
+  return Object.entries(settings.properties)
+    .map(([k, v]) => {
+      return {
+        name: k,
+        value: world.properties?.[k] ?? v,
+        useDefault: true
+      }
+    })
+}
+
+function getPlayerRows(world: WorldEdited): PlayerRow[] {
+  return world.authority.players.map(p => {
+    return {
+      name: p.name,
+      uuid: p.uuid,
+      op: p.op?.level ?? 'unset',
+      white_list: p.whitelist,
+      group: false
+    }
+  })
+}
+
+function getGroupRows(world: WorldEdited): GroupRow[] {
+  return world.authority.groups.map(g => {
+    return {
+      name: g.name,
+      uuid: g.uuid,
+      op: g.op?.level ?? 'unset',
+      white_list: g.whitelist
+    }
+  })
+}
+
+function getEditedProperties(propertyRows: PropertyRow[]): ServerProperties {
+  const filteredRow = propertyRows.filter(row => !row.useDefault)
+  return Object.fromEntries(filteredRow.map(row => [row.name, row.value]))
+}
+
+function getPlayers(playerRows: PlayerRow[]): PlayerSetting[] {
+  function setOP(op: OpLevel | 'unset') {
+    if (op === 'unset') return undefined
+    return {
+      level: op,
+      bypassesPlayerLimit: false
+    }
+  }
+
+  return playerRows.map(row => {
+    return {
+      name: row.name,
+      uuid: row.uuid,
+      op: setOP(row.op),
+      whitelist: row.white_list
+    }
+  })
+}
+
+function getGroups(groupRows: GroupRow[]): PlayerGroupSetting[] {
+  function setOP(op: OpLevel | 'unset') {
+    if (op === 'unset') return undefined
+    return {
+      level: op,
+      bypassesPlayerLimit: false
+    }
+  }
+
+  return groupRows.map(row => {
+    return {
+      name: row.name,
+      uuid: row.uuid,
+      op: setOP(row.op),
+      whitelist: row.white_list
+    }
+  })
+}
