@@ -1,5 +1,8 @@
-<template>
-  <h1>ShareWorld</h1>
+<script setup lang="ts">
+import TitleVue from './TitleVue.vue';
 
-  
+</script>
+
+<template>
+  <TitleVue title="ShareWorld"/>
 </template>

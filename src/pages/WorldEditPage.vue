@@ -44,21 +44,23 @@ onBeforeMount(store.updateRows)
 </script>
 
 <template>
-  <q-page class="mainField center">
+  <q-page class="mainField center q-pa-md">
     <router-view />
 
-    <q-btn color="primary" label="保存" to="/" replace @click="store.saveFunc" />
-    <q-btn label="キャンセル" to="/" replace/>
+    <div class="q-py-md text-right">
+      <q-btn color="grey" label="キャンセル" size="1rem" to="/" replace class="q-ma-sm btn"/>
+      <q-btn color="primary" label="保存" size="1rem" to="/" replace @click="store.saveFunc" class="q-ma-sm btn"/>
+    </div>
   </q-page>
 </template>
 
 <style scoped lang="scss">
-h1 {
-  font-size: 26pt;
-}
-
 .center {
   margin: 0 auto;
   width: 100%;
+}
+
+.btn {
+  width: 7rem;
 }
 </style>

@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { ServerProperty } from 'app/src-electron/schema/serverproperty';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import { QTableCol } from 'src/components/util/iComponent';
 import SsSelect from '../util/base/ssSelect.vue';
 import SsInput from '../util/base/ssInput.vue';
-import { ServerProperty } from 'app/src-electron/schema/serverproperty';
+import TitleVue from './TitleVue.vue';
 
 const store = useWorldEditStore()
 
@@ -65,7 +66,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
 </script>
 
 <template>
-  <h1>Property</h1>
+  <TitleVue title="Property"/>
 
   <q-table
     class="my-sticky-virtscroll-table"

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { onBeforeMount, ref } from 'vue';
+import { versionTypes } from 'app/src-electron/schema/version';
 import { useDialogStore } from 'src/stores/DialogStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import PropertyItem from 'src/components/util/propertyItem.vue';
 import SsSelect from '../util/base/ssSelect.vue';
 import SsInput from '../util/base/ssInput.vue';
-import { versionTypes } from 'app/src-electron/schema/version';
+import TitleVue from './TitleVue.vue';
 
 const store = useWorldEditStore();
 const memorySize = ref('1');
@@ -33,7 +34,7 @@ onBeforeMount(updateVersionList);
 </script>
 
 <template>
-  <h1>General</h1>
+  <TitleVue title="General"/>
 
   <div class="center">
     <PropertyItem propName="name">
@@ -83,17 +84,6 @@ onBeforeMount(updateVersionList);
         />
       </template>
     </PropertyItem>
-
-    <!-- <PropertyItem propName="world type">
-      <template v-slot:userInput>
-        <q-select
-          v-model="serverProperty"
-          :options="worldTypes"
-          label="ワールドタイプ"
-          style="width: 150px"
-        />
-      </template>
-    </PropertyItem> -->
   </div>
 </template>
 
