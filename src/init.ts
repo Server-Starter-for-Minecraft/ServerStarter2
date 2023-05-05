@@ -3,6 +3,7 @@ import { checkError } from './components/Error/Error';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import { isSuccess } from 'app/src-electron/api/failable';
+import { deepCopy } from './scripts/deepCopy';
 
 export async function InitWindow() {
   // storeの初期化
@@ -33,6 +34,9 @@ export async function InitWindow() {
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく
   // mainStore.worldListを (worldAbbr | world) にする？
+
+  // systemSettingsの読み込み
+  sysStore.systemSettings = deepCopy(await window.API.invokeGetSystemSettings())
 }
 
 /**
