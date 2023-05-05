@@ -6,4 +6,4 @@ const crypto = require('crypto')
 //   return uuid
 // }
 /**UUIDの生成関数 */
-export const genUUID = ():string=>crypto.randomUUID()
+export const genUUID = async ():Promise<string>=>crypto.randomUUID()

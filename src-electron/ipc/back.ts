@@ -14,6 +14,7 @@ import {
 } from '../core/world/worldContainer';
 import { getDefaultSettings } from '../core/settings/settings';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
+import { genUUID } from 'src-electron/tools/uuid';
 
 export const backListener: BackListener<API> = {
   on: {
@@ -37,5 +38,7 @@ export const backListener: BackListener<API> = {
     SetWorldContainers: setWorldContainers,
     GetWorldAbbrs: getWorldAbbrs,
     GetWorld: getWorld,
+    
+    GenUUID: genUUID,
   },
 };

@@ -69,6 +69,8 @@ export interface API extends IAPI {
       type: VersionType,
       useCache: boolean
     ) => Promise<Failable<Version[]>>;
+    
+    GenUUID: ()=> Promise<string>;
   };
 }
 
