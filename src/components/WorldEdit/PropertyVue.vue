@@ -76,6 +76,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
       class="my-sticky-virtscroll-table"
       flat
       bordered
+      separator="vertical"
       :rows-per-page-options="[0]"
       row-key="index"
       :rows="store.propertyRows"
@@ -127,9 +128,3 @@ function validationMessage(min?:number, max?:number, step?:number) {
     </q-table>
   </q-scroll-area>
 </template>
-
-<style lang="scss">
-td {
-  font-size: 1rem !important;
-}
-</style>

@@ -63,7 +63,8 @@ html {
   thead,
   th {
     /* bg color is important for th; just specify one */
-    background-color: $primary;
+    // background-color: $primary;
+    background-color: transparent;
   }
 
   thead tr th {
@@ -89,5 +90,9 @@ html {
   tbody {
     /* height of all previous header rows */
     scroll-margin-top: 48px;
+  }
+  
+  td {
+    font-size: 1rem !important;
   }
 }

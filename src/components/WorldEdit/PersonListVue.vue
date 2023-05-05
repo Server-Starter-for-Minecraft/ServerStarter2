@@ -1,22 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import SsSelect from '../util/base/ssSelect.vue';
-import PropertyItem from '../util/propertyItem.vue';
 import TitleVue from './TitleVue.vue';
-
-const players = ['test', 'test2']
-const playerName = ref(players[0])
+import RegistField from './PersonList/RegistField.vue'
+import Players from './PersonList/PlayersVue.vue'
+import Groups from './PersonList/GroupsVue.vue'
 </script>
 
 <template>
   <TitleVue title="Person List"/>
-  
-  <PropertyItem prop-name="プレイヤー名">
-    <template v-slot:userInput>
-      <SsSelect v-model="playerName" label="名前" :options="players"/>
-    </template>
-  </PropertyItem>
-</template>
 
-<style scoped lang="scss">
-</style>
+  <q-separator class="q-my-sm"/>
+  <RegistField/>
+  <q-separator class="q-my-sm"/>
+
+  <Groups/>
+
+  <Players/>
+</template>

@@ -2,6 +2,10 @@
 import { useDialogStore } from 'src/stores/DialogStore';
 
 const store = useDialogStore()
+
+if (store.dialogBtns === void 0 || store.dialogBtns.length===0) {
+  store.dialogBtns = [{label: 'OK', color: 'primary'}]
+}
 </script>
 
 <template>
@@ -16,7 +20,9 @@ const store = useDialogStore()
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="OK" color="primary" v-close-popup />
+        <template v-for="btn in store.dialogBtns" :key="btn">
+          <q-btn flat :label="btn.label" :color="btn.color" @click="btn.action" v-close-popup />
+        </template>
       </q-card-actions>
     </q-card>
   </q-dialog>

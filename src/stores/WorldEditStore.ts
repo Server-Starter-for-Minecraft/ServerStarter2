@@ -2,8 +2,11 @@ import { ServerProperty } from 'app/src-electron/schema/serverproperty';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { defineStore } from 'pinia';
 import { deepCopy } from 'src/scripts/deepCopy';
+import { OpLevel } from 'app/src-electron/schema/player';
 
-type PropertyRows = { name: string; value: ServerProperty }[];
+type PropertyRow = { name: string; value: ServerProperty };
+export type PlayerRow = { name: string; op: OpLevel | 'unset'; white_list: boolean; group: boolean };
+export type GroupRow = { name: string; op: OpLevel | 'unset'; white_list: boolean; };
 
 export const useWorldEditStore = defineStore('worldEditStore', {
   state: () => {
@@ -14,7 +17,9 @@ export const useWorldEditStore = defineStore('worldEditStore', {
       saveFunc: () => {
         return;
       },
-      propertyRows: [] as PropertyRows,
+      propertyRows: [] as PropertyRow[],
+      playerRows: [] as PlayerRow[],
+      groupRows: [] as GroupRow[],
     };
   },
   actions: {

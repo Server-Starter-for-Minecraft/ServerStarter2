@@ -12,6 +12,6 @@ defineProps(['propName'])
 <style scoped lang="scss">
 .propName {
   width: 12rem;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
 }
 </style>

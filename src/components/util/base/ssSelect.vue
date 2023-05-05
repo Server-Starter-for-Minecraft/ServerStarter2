@@ -2,9 +2,10 @@
 import { computed } from 'vue'
 
 interface Prop {
-  modelValue: string
-  label: string
+  modelValue: string | number
   options?: readonly any[]
+  label?: string
+  disable?: boolean
 }
 
 const prop = defineProps<Prop>()
@@ -27,6 +28,7 @@ const model = computed({
     :label="label"
     class="font"
     :popup-content-style="{fontSize: '0.9rem'}"
+    :disable="disable"
   >
     <template v-slot:label>
       <p class="font q-pb-none">{{ label }}</p>
