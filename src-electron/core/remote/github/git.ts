@@ -8,7 +8,7 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
-import { server_settings_file_name } from '../../world/worldJson';
+import { server_settings_file_name } from '../../settings/worldJson';
 import { LEVEL_NAME } from '../../const';
 import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';

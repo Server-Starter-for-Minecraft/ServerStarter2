@@ -1,7 +1,7 @@
 import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
-import { getWorldJsonPath, loadWorldJson } from './worldJson';
+import { getWorldJsonPath, loadWorldJson } from '../settings/worldJson';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
 import { getRemoteWorld } from '../remote/remote';

@@ -5,7 +5,7 @@ import {
   stringifyServerProperties,
 } from './properties';
 import { Path } from '../../util/path';
-import { saveWorldJson } from '../world/worldJson';
+import { saveWorldJson } from './worldJson';
 import { systemSettings } from '../stores/system';
 import { asyncMap, objMap } from 'src-electron/util/objmap';
 import { opsHandler } from './ops';

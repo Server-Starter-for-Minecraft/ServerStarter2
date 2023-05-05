@@ -14,7 +14,7 @@ import { LEVEL_NAME } from '../const';
 import { worldContainerToPath } from '../world/worldContainer';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { Path } from 'src-electron/util/path';
-import { loadWorldJson } from '../world/worldJson';
+import { loadWorldJson } from '../settings/worldJson';
 import { systemSettings } from '../stores/system';
 import { JavaComponent } from '../version/vanilla';
 import { VersionComponent } from '../version/base';
