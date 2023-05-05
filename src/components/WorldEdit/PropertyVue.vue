@@ -14,14 +14,15 @@ const cols: QTableCol[] = [
     required: true,
     field: 'name',
     label: 'プロパティ名',
-    style: 'width: 400px',
+    style: 'width: 300px',
     sortable: true
   },
   {
     name: 'value',
     label: '値',
     field: 'value',
-    sortable: true
+    style: 'text-align: left',
+    sortable: false
   },
 ]
 
@@ -38,15 +39,14 @@ function selectEditer(prop: ServerProperty) {
  */
 function numberValidate(val:number, min?:number, max?:number, step?:number) {
   const re = !isNaN(val)  // 半角数字チェック
-  const minVal = min === void 0 || val > min
-  const maxVal = max === void 0 || val < max
+  const minVal = min === void 0 || val >= min
+  const maxVal = max === void 0 || val <= max
   const stepVal = step === void 0 || val % step == 0
 
   return re && minVal && maxVal && stepVal
 }
 /**
  * バリデーションエラー時のメッセージ
- * TODO: メッセージのデバッグ 
  */
 function validationMessage(min?:number, max?:number, step?:number) {
   let AdditionalMessage = ''
@@ -54,9 +54,9 @@ function validationMessage(min?:number, max?:number, step?:number) {
     AdditionalMessage+=`${min}以上`
   }
   if (max !== void 0) {
-    AdditionalMessage+=`${min}以下`
+    AdditionalMessage+=`${max}以下`
   }
-  if (max !== void 0) {
+  if (step !== void 0) {
     AdditionalMessage+=`${step}の倍数`
   }
 
@@ -68,6 +68,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
 <template>
   <TitleVue title="Property"/>
 
+  <!-- TODO: 規定値を用いるか否かの対応（データ構造に規定値云々の記述はあるのか？） -->
   <q-table
     class="my-sticky-virtscroll-table"
     flat
@@ -109,8 +110,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
                 )]"
             />
           </div>
-          <q-checkbox v-show="selectEditer(props.row.value)=='boolean'" v-model="props.row.value.value" :label="props.row.value.value"/>
-          <!-- TODO: 表の中でプルダウンが表示されない問題の修正 -->
+          <q-toggle v-show="selectEditer(props.row.value)=='boolean'" v-model="props.row.value.value" :label="props.row.value.value.toString()"/>
           <ss-select v-show="selectEditer(props.row.value)=='enum'" v-model="props.row.value.value" :options="props.row.value.enum" :label="props.row.name"/>
         </q-td>
       </q-tr>
