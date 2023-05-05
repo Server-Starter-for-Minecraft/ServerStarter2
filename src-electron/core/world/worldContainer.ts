@@ -5,7 +5,6 @@ import { systemSettings } from '../stores/system';
 import { WorldContainers } from 'src-electron/schema/system';
 
 export async function getWorldContainers(): Promise<WorldContainers> {
-  console.log('container', systemSettings.get('container'));
   return systemSettings.get('container');
 }
 

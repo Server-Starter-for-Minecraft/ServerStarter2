@@ -86,8 +86,6 @@ async function generateEula(
     true
   );
 
-  console.log('EULA', result);
-
   if (!eulaPath.exists()) {
     return new Error('failed to generate eula.txt.');
   }

@@ -192,7 +192,6 @@ export const parseServerProperties = (text: string) => {
 };
 
 export const stringifyServerProperties = (properties: ServerProperties) => {
-  console.log(properties);
   return Object.entries(properties)
     .map(([k, v]) => `${k}=${v.value}`)
     .join('\n');
