@@ -51,7 +51,7 @@ export type WorldBase = {
   last_user?: Player;
 
   /** 使用メモリ量 */
-  memory?: MemorySettings;
+  memory: MemorySettings;
 
   /** Javaの実行時引数 */
   javaArguments?: string;
@@ -107,7 +107,7 @@ export type WorldEdited = WorldBase & {
  */
 export type WorldSettings = {
   /** 使用メモリ量 */
-  memory?: MemorySettings;
+  memory: MemorySettings;
 
   /** Javaの実行時引数 */
   javaArguments?: string;

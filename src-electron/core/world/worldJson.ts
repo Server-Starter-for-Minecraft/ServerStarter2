@@ -9,6 +9,7 @@ export function getWorldJsonPath(cwd: Path) {
   return cwd.child(server_settings_file_name);
 }
 
+// TODO:データのFix
 export async function loadWorldJson(
   cwd: Path
 ): Promise<Failable<WorldSettings>> {
