@@ -4,9 +4,5 @@ import TitleVue from './TitleVue.vue';
 </script>
 
 <template>
-  <TitleVue title="Additional List">
-    <template v-slot:contents>
-      
-    </template>
-  </TitleVue>  
+  <TitleVue title="Additional List"/>
 </template>

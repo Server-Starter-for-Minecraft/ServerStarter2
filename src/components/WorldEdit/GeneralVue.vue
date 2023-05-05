@@ -10,8 +10,10 @@ import SsInput from '../util/base/ssInput.vue';
 import TitleVue from './TitleVue.vue';
 
 const store = useWorldEditStore();
-const memorySize = ref('1');
-const memoryUnit = ref('GB');
+
+function checkWorldName(name: string) {
+  return name.match(/^[0-9a-zA-Z_-]+$/) !== null
+}
 
 async function updateVersionList() {
   const version = store.world.version;
@@ -39,10 +41,12 @@ onBeforeMount(updateVersionList);
   <div class="center">
     <PropertyItem propName="name">
       <template v-slot:userInput>
-        <!-- TODO: ワールド名のバリデーション -->
         <SsInput
           v-model="store.world.name"
           label="ワールド名"
+          :rules="[
+            val => checkWorldName(val) || 'ワールド名は半角英数字でなければなりません'
+          ]"
           style="width: 300px"
         />
       </template>
@@ -72,16 +76,21 @@ onBeforeMount(updateVersionList);
       </template>
     </PropertyItem>
 
-    <!-- TODO: 値をstoreから読み込み、スタイル定義を整える -->
+    <!-- TODO: Worldオブジェクトにメモリの規定値を割り当てることを要請 -->
     <PropertyItem prop-name="memory size">
       <template v-slot:userInput>
-        <SsInput v-model="memorySize" class="q-pr-md" style="width: 100px" />
+        <!-- <SsInput
+          v-model="store.world.memory?.size"
+          label="大きさ"
+          class="q-pr-md"
+          style="width: 100px"
+        />
         <SsSelect
-          v-model="memoryUnit"
+          v-model="store.world.memory?.unit"
           :options="['MB', 'GB', 'TB']"
           label="単位"
           style="width: 100px"
-        />
+        /> -->
       </template>
     </PropertyItem>
   </div>
