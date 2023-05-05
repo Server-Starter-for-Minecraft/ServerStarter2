@@ -12,8 +12,8 @@ import { server_settings_file_name } from '../../settings/worldJson';
 import { LEVEL_NAME } from '../../const';
 import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';
-import { GithubRemote } from 'app/src-electron/schema/remote';
-import { World, WorldSettings } from 'app/src-electron/schema/world';
+import { GithubRemote } from 'src-electron/schema/remote';
+import { World, WorldSettings } from 'src-electron/schema/world';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,

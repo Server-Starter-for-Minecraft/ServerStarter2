@@ -1,3 +1,4 @@
+import { testWorldSettingsFixer } from 'src-electron/core/settings/worldJson';
 import {
   FAIL,
   arrayFixer,
@@ -284,5 +285,38 @@ describe('dataFixer', async () => {
     expect(fixer(null)).toBe('default');
     expect(fixer({})).toBe('default');
     expect(fixer([])).toBe('default');
+  });
+  test('world fixer test', () => {
+    const fixer = testWorldSettingsFixer();
+    expect(fixer('')).toBe(FAIL);
+    expect(fixer('a')).toBe(FAIL);
+    expect(fixer(0)).toBe(FAIL);
+    expect(fixer(1)).toBe(FAIL);
+    expect(fixer(true)).toBe(FAIL);
+    expect(fixer(false)).toBe(FAIL);
+    expect(fixer(null)).toBe(FAIL);
+    expect(fixer({})).toBe(FAIL);
+    expect(fixer([])).toBe(FAIL);
+
+    // console.log('HELLOWORLD');
+    // const r = fixer({
+    //   version: { id: '23w18a', type: 'vanilla', release: true },
+    //   last_date: 1683220681091,
+    //   using: false,
+    //   authority: {
+    //     groups: [
+    //       {
+    //         uuid: '1',
+    //         name: 'G',
+    //         op: { level: 1, bypassesPlayerLimit: false },
+    //         whitelist: true,
+    //       },
+    //     ],
+    //     players: [],
+    //     removed: [],
+    //   },
+    //   properties: {},
+    // });
+    // console.log(JSON.stringify(r));
   });
 });

@@ -1,4 +1,4 @@
-import { OpLevel } from 'app/src-electron/schema/player';
+import { OpLevel } from 'src-electron/schema/player';
 import { ServerSettingHandler } from './base';
 
 export type OpRecord = {

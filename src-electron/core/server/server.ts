@@ -21,12 +21,8 @@ import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
-import {
-  World,
-  WorldAdditional,
-  WorldEdited,
-} from 'app/src-electron/schema/world';
-import { MemoryUnit } from 'app/src-electron/schema/memory';
+import { World, WorldAdditional, WorldEdited } from 'src-electron/schema/world';
+import { MemoryUnit } from 'src-electron/schema/memory';
 import { updateAuthority } from '../settings/authority';
 import { opsHandler } from '../settings/ops';
 import { whitelistHandler } from '../settings/whitelist';

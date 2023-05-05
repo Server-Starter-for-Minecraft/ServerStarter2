@@ -14,11 +14,11 @@ import {
   SystemWorldSettings,
   World,
   WorldSettings,
-} from 'app/src-electron/schema/world';
+} from 'src-electron/schema/world';
 import {
   ServerProperties,
   ServerProperty,
-} from 'app/src-electron/schema/serverproperty';
+} from 'src-electron/schema/serverproperty';
 import { getOpsAndWhitelist } from './authority';
 
 const handlers = [

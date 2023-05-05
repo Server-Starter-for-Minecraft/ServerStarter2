@@ -77,7 +77,7 @@ export function objectFixer<T extends object>(
   fixNonObject: boolean
 ): Fixer<T | FAIL> {
   function result(arg: any) {
-    if (typeof arg !== 'object'  || arg instanceof Array || arg === null) {
+    if (typeof arg !== 'object' || arg instanceof Array || arg === null) {
       if (fixNonObject) arg = {};
       else return FAIL;
     }
@@ -92,23 +92,55 @@ export function objectFixer<T extends object>(
   return result;
 }
 
+export function recordFixer<K extends string, T>(
+  valueFixer: Fixer<T | FAIL>,
+  fixNonObject: true
+): Fixer<Record<K, T>>;
+export function recordFixer<K extends string, T>(
+  valueFixer: Fixer<T | FAIL>,
+  fixNonObject: boolean
+): Fixer<Record<K, T> | FAIL>;
+export function recordFixer<K extends string, T>(
+  valueFixer: Fixer<T | FAIL>,
+  fixNonObject: boolean
+): Fixer<Record<K, T> | FAIL> {
+  function result(arg: any) {
+    if (typeof arg !== 'object' || arg instanceof Array || arg === null) {
+      if (fixNonObject) arg = {};
+      else return FAIL;
+    }
+    const entries = Object.entries(arg)
+      .map(([k, v]) => [k, valueFixer(v)])
+      .filter(([, v]) => v !== FAIL);
+    return Object.fromEntries(entries);
+  }
+  return result;
+}
+
 export function arrayFixer<T>(
   childFixer: Fixer<T | FAIL>,
   fixNonArray: true
-): Fixer<T>;
+): Fixer<T[]>;
 export function arrayFixer<T>(
   childFixer: Fixer<T | FAIL>,
   fixNonArray: false
-): Fixer<T | FAIL>;
+): Fixer<T[] | FAIL>;
 export function arrayFixer<T>(
   childFixer: Fixer<T>,
   fixNonArray: boolean
-): Fixer<T | FAIL> {
+): Fixer<T[] | FAIL> {
   function result(arg: any) {
     if (!(arg instanceof Array)) return fixNonArray ? [] : FAIL;
     return arg.map(childFixer).filter((x) => x !== FAIL);
   }
-  return result as Fixer<T | FAIL>;
+  return result as Fixer<T[] | FAIL>;
+}
+
+export function optionalFixer<T>(fixer: Fixer<T | FAIL>): Fixer<T | undefined> {
+  return (arg: any) => {
+    const r = fixer(arg);
+    return r === FAIL ? undefined : r;
+  };
 }
 
 export function unionFixer<A, B>(
@@ -118,7 +150,7 @@ export function unionFixer<A, B>(
 export function unionFixer<A, B, C>(
   a: Fixer<A>,
   b: Fixer<B>,
-  c: Fixer<B>
+  c: Fixer<C>
 ): Fixer<Exclude<A | B, FAIL> | C>;
 export function unionFixer<A, B, C, D>(
   a: Fixer<A>,
@@ -133,6 +165,23 @@ export function unionFixer<A, B, C, D, E>(
   d: Fixer<D>,
   e: Fixer<E>
 ): Fixer<Exclude<A | B | C | D, FAIL> | E>;
+export function unionFixer<A, B, C, D, E, F>(
+  a: Fixer<A>,
+  b: Fixer<B>,
+  c: Fixer<C>,
+  d: Fixer<D>,
+  e: Fixer<E>,
+  f: Fixer<F>
+): Fixer<Exclude<A | B | C | D | E, FAIL> | F>;
+export function unionFixer<A, B, C, D, E, F, G>(
+  a: Fixer<A>,
+  b: Fixer<B>,
+  c: Fixer<C>,
+  d: Fixer<D>,
+  e: Fixer<E>,
+  f: Fixer<F>,
+  g: Fixer<G>
+): Fixer<Exclude<A | B | C | D | E | F, FAIL> | G>;
 export function unionFixer(...fixers: Fixer<any>[]): Fixer<any> {
   return (arg: any) => {
     for (const fixer of fixers) {

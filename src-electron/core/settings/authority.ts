@@ -2,11 +2,11 @@ import {
   OpSetting,
   PlayerSetting,
   WorldAuthority,
-} from 'app/src-electron/schema/player';
+} from 'src-electron/schema/player';
 import { Ops } from './ops';
-import { fix } from 'app/src-electron/util/fix';
+import { fix } from 'src-electron/util/fix';
 import { systemSettings } from '../stores/system';
-import { Player } from 'app/src-electron/schema/player';
+import { Player } from 'src-electron/schema/player';
 import { Whitelist } from './whitelist';
 
 function getAllPlayers(authority: WorldAuthority) {

@@ -7,7 +7,7 @@ import { LEVEL_NAME } from '../const';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
 import { worldSettingsToWorld } from '../settings/converter';
-import { World, WorldAbbr } from 'app/src-electron/schema/world';
+import { World, WorldAbbr } from 'src-electron/schema/world';
 
 // TODO: datapacks/plugins/modsの読み込み
 
