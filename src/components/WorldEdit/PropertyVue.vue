@@ -123,53 +123,9 @@ function validationMessage(min?:number, max?:number, step?:number) {
       </template>
     </q-table>
   </q-scroll-area>
-
-  <!-- <q-scroll-area class="fit" style="flex: 1 0 0;">
-    <template v-for="_ in new Array(100)" :key="_">
-      <p>test</p>
-    </template>
-  </q-scroll-area> -->
 </template>
 
 <style lang="scss">
-.my-sticky-virtscroll-table {
-  /* height or max-height is important */
-  // height: 410px;
-
-  .q-table__top,
-  .q-table__bottom,
-  thead,
-  th {
-    /* bg color is important for th; just specify one */
-    background-color: $primary;
-  }
-
-  thead tr th {
-    position: sticky;
-    z-index: 1;
-  }
-
-  tr th {
-    font-size: 1.2rem;
-  }
-
-  /* this will be the loading indicator */
-  thead tr:last-child th {
-    /* height of all previous header rows */
-    top: 48px;
-  }
-
-  thead tr:first-child th {
-    top: 0;
-  }
-
-  /* prevent scrolling behind sticky top row on focus */
-  tbody {
-    /* height of all previous header rows */
-    scroll-margin-top: 48px;
-  }
-}
-
 td {
   font-size: 1rem !important;
 }
