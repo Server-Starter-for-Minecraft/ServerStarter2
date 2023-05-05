@@ -44,7 +44,7 @@ onBeforeMount(store.updateRows)
 </script>
 
 <template>
-  <q-page class="mainField center q-pa-md">
+  <q-page class="mainField column center q-pa-md">
     <router-view />
 
     <div class="q-py-md text-right">

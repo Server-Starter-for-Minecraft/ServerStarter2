@@ -68,64 +68,73 @@ function validationMessage(min?:number, max?:number, step?:number) {
 <template>
   <TitleVue title="Property"/>
 
-  <!-- TODO: 規定値を用いるか否かの対応（データ構造に規定値云々の記述はあるのか？） -->
-  <q-table
-    class="my-sticky-virtscroll-table"
-    flat
-    bordered
-    :rows-per-page-options="[0]"
-    row-key="index"
-    :rows="store.propertyRows"
-    :columns="cols"
-    :loading="store.propertyRows.length === 0"
-    hide-bottom
-  >
-    <template v-slot:body="props">
-      <q-tr :props="props">
-        <q-td key="name" :props="props">
-          {{ props.row.name }}
-        </q-td>
-        <q-td key="value" :props="props">
-          <div v-show="selectEditer(props.row.value)=='string'" class="row">
-            <ss-input v-model="props.row.value.value" dense autofocus style="width: 100%;" />
-          </div>
-          <div v-show="selectEditer(props.row.value)=='number'" class="row" style="width: 100%;">
-            <!-- 半角数字、バリデーションを強制 -->
-            <ss-input
-              v-model="props.row.value.value"
-              class="items-center"
-              style="width: 100%;"
-              dense
-              autofocus
-              :rules="[
-                val => numberValidate(
-                  val,
-                  props.row.value?.min,
-                  props.row.value?.max,
-                  props.row.value?.step
-                  ) || validationMessage(
-                  props.row.value?.min,
-                  props.row.value?.max,
-                  props.row.value?.step
-                )]"
-            />
-          </div>
-          <q-toggle v-show="selectEditer(props.row.value)=='boolean'" v-model="props.row.value.value" :label="props.row.value.value.toString()"/>
-          <ss-select v-show="selectEditer(props.row.value)=='enum'" v-model="props.row.value.value" :options="props.row.value.enum" :label="props.row.name"/>
-        </q-td>
-      </q-tr>
-    </template>
+  <!-- TODO: headerを残しつつ、画面いっぱいに表を表示する方法があれば改善 -->
+  <q-scroll-area class="fit" style="flex: 1 1 0">
+    <!-- TODO: 規定値を用いるか否かの対応（データ構造に規定値云々の記述はあるのか？） -->
+    <q-table
+      class="my-sticky-virtscroll-table"
+      flat
+      bordered
+      :rows-per-page-options="[0]"
+      row-key="index"
+      :rows="store.propertyRows"
+      :columns="cols"
+      :loading="store.propertyRows.length === 0"
+      hide-bottom
+    >
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td key="name" :props="props">
+            {{ props.row.name }}
+          </q-td>
+          <q-td key="value" :props="props">
+            <div v-show="selectEditer(props.row.value)=='string'" class="row">
+              <ss-input v-model="props.row.value.value" dense autofocus style="width: 100%;" />
+            </div>
+            <div v-show="selectEditer(props.row.value)=='number'" class="row" style="width: 100%;">
+              <!-- 半角数字、バリデーションを強制 -->
+              <ss-input
+                v-model="props.row.value.value"
+                class="items-center"
+                style="width: 100%;"
+                dense
+                autofocus
+                :rules="[
+                  val => numberValidate(
+                    val,
+                    props.row.value?.min,
+                    props.row.value?.max,
+                    props.row.value?.step
+                    ) || validationMessage(
+                    props.row.value?.min,
+                    props.row.value?.max,
+                    props.row.value?.step
+                  )]"
+              />
+            </div>
+            <q-toggle v-show="selectEditer(props.row.value)=='boolean'" v-model="props.row.value.value" :label="props.row.value.value.toString()"/>
+            <ss-select v-show="selectEditer(props.row.value)=='enum'" v-model="props.row.value.value" :options="props.row.value.enum" :label="props.row.name"/>
+          </q-td>
+        </q-tr>
+      </template>
+  
+      <template v-slot:loading>
+        <q-inner-loading showing color="primary"/>
+      </template>
+    </q-table>
+  </q-scroll-area>
 
-    <template v-slot:loading>
-      <q-inner-loading showing color="primary"/>
+  <!-- <q-scroll-area class="fit" style="flex: 1 0 0;">
+    <template v-for="_ in new Array(100)" :key="_">
+      <p>test</p>
     </template>
-  </q-table>
+  </q-scroll-area> -->
 </template>
 
 <style lang="scss">
 .my-sticky-virtscroll-table {
   /* height or max-height is important */
-  height: 410px;
+  // height: 410px;
 
   .q-table__top,
   .q-table__bottom,
