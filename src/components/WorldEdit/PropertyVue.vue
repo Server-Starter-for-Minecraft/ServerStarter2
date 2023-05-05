@@ -5,6 +5,7 @@ import { QTableCol } from 'src/components/util/iComponent';
 import SsSelect from '../util/base/ssSelect.vue';
 import SsInput from '../util/base/ssInput.vue';
 import TitleVue from './TitleVue.vue';
+import PropertyLine from './Property/PropertyLine.vue'
 
 const store = useWorldEditStore()
 
@@ -83,6 +84,8 @@ function validationMessage(min?:number, max?:number, step?:number) {
       hide-bottom
     >
       <template v-slot:body="props">
+        <!-- TODO: PropertyLineを分散定義するとエラーになる理由の検証 -->
+        <!-- <PropertyLine :props="props"/> -->
         <q-tr :props="props">
           <q-td key="name" :props="props">
             {{ props.row.name }}
