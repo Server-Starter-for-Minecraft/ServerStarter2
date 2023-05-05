@@ -9,6 +9,7 @@ import { checkError } from 'src/components/Error/Error';
 import { deepCopy } from 'src/scripts/deepCopy';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { useDialogStore } from 'src/stores/DialogStore';
+import { isFailure } from 'app/src-electron/api/failable';
 
 interface Props {
   world: WorldEdited;
@@ -58,9 +59,16 @@ function worldEdit() {
  * ゴミ箱ボタンを押したときの削除処理
  */
  function removeWorld(item: WorldEdited) {
-  function removeAction() {
-    mainStore.worldList.splice(prop.idx, 1)
-    // TODO: Worldデータそのものを消す処理を追記
+  async function removeAction() {
+    const res = await window.API.invokeDeleteWorld(item)
+    if (isFailure(res)) {
+      useDialogStore().showDialog(
+        `${item.name}の削除に失敗しました`
+      )
+    }
+    else {
+      mainStore.worldList.splice(prop.idx, 1)
+    }
   }
 
   useDialogStore().showDialog(
