@@ -14,7 +14,7 @@ export const useDialogStore = defineStore('dialogStore', {
     showDialog(message: string, options?: DialogBtn[]) {
       this.dialogModel = true
       this.dialogMessage = message
-      this.dialogBtns = options
+      this.dialogBtns = options ?? [{label: 'OK', color: 'primary'}]
     }
   }
 })
