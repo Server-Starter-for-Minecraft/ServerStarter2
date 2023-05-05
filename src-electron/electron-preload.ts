@@ -96,6 +96,8 @@ const api: FrontAPI = {
 
   handleAgreeEula: handle('AgreeEula'),
 
+  invokeDeleteWorld: invoke('DeleteWorld'),
+
   invokeRunServer: invoke('RunServer'),
   invokeSaveWorldSettings: invoke('SaveWorldSettings'),
 

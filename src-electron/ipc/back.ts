@@ -6,7 +6,7 @@ import {
   saveWorldSettings,
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
-import { getWorld, getWorldAbbrs } from '../core/world/world';
+import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import {
   getWorldContainers,
@@ -23,6 +23,8 @@ export const backListener: BackListener<API> = {
   },
   handle: {
     RunServer: runServer,
+
+    DeleteWorld: deleteWorld,
 
     SaveWorldSettings: saveWorldSettings,
 
