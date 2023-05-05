@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount } from 'vue';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { useDialogStore } from 'src/stores/DialogStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldEditStore } from 'src/stores/WorldEditStore';
 import PropertyItem from 'src/components/util/propertyItem.vue';
-import SsSelect from '../util/base/ssSelect.vue';
-import SsInput from '../util/base/ssInput.vue';
+import SsSelect from 'src/components/util/base/ssSelect.vue';
+import SsInput from 'src/components/util/base/ssInput.vue';
 import TitleVue from './TitleVue.vue';
 
 const store = useWorldEditStore();
-
-function checkWorldName(name: string) {
-  return name.match(/^[0-9a-zA-Z_-]+$/) !== null
-}
 
 async function updateVersionList() {
   const version = store.world.version;
@@ -45,7 +41,7 @@ onBeforeMount(updateVersionList);
           v-model="store.world.name"
           label="ワールド名"
           :rules="[
-            val => checkWorldName(val) || 'ワールド名は半角英数字でなければなりません'
+            () => store.checkTitle || 'ワールド名は半角英数字でなければなりません'
           ]"
           style="width: 300px"
         />

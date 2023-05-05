@@ -46,7 +46,7 @@ useMainStore().setHeader(store.title, { drawerContents: drawer })
 
     <div class="q-py-md text-right">
       <q-btn color="grey" label="キャンセル" size="1rem" to="/" replace class="q-ma-sm btn"/>
-      <q-btn color="primary" label="保存" size="1rem" to="/" replace @click="store.saveFunc" class="q-ma-sm btn"/>
+      <q-btn color="primary" label="保存" size="1rem" to="/" replace :disable="!store.canSave" @click="store.saveFunc" class="q-ma-sm btn"/>
     </div>
   </q-page>
 </template>

@@ -22,6 +22,14 @@ export const useWorldEditStore = defineStore('worldEditStore', {
       groupRows: [] as GroupRow[],
     };
   },
+  getters: {
+    checkTitle(state) {
+      return checkWorldTitle(state.world.name)
+    },
+    canSave(state) {
+      return checkWorldTitle(state.world.name)
+    }
+  },
   actions: {
     /**
      * World Editページを起動するにあたり必要なデータの受け渡し
@@ -56,6 +64,10 @@ export const useWorldEditStore = defineStore('worldEditStore', {
     }
   },
 });
+
+function checkWorldTitle(name: string) {
+  return name.match(/^[0-9a-zA-Z_-]+$/) !== null && name !== ''
+}
 
 async function getPropertyRows(world: WorldEdited): Promise<PropertyRow[]> {
   const settings = await window.API.invokeGetDefaultSettings()
