@@ -1,7 +1,6 @@
-import { OpLevel, OpSetting, PlayerSetting } from 'src-electron/schema/player';
+import { OpLevel, PlayerSetting } from 'src-electron/schema/player';
 import { Ops } from './files/ops';
-import { Whitelist, WhitelistRecord } from './files/whitelist';
-import { FoldSettings } from 'app/src-electron/schema/world';
+import { Whitelist } from './files/whitelist';
 
 /**
  * PlayerSetting[]からOpsとWhitelistを構成
@@ -111,7 +110,7 @@ export function getPlayerSettingDiff(
   }
 
   for (const afterItem of after) {
-    const beforeItem = afterMap[afterItem.uuid];
+    const beforeItem = beforeMap[afterItem.uuid];
     if (beforeItem === undefined) {
       // afterにあってbeforeにない
       // whitelistに追加

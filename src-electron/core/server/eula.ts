@@ -2,6 +2,7 @@ import { api } from '../api';
 import { Path } from '../../util/path';
 import { Failable, isFailure } from '../../api/failable';
 import { execProcess } from '../../util/subprocess';
+import { WorldId } from 'app/src-electron/schema/world';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -72,9 +73,10 @@ function parseEula(txt: string): {
 async function generateEula(
   javaPath: Path,
   programArgunets: string[],
-  serverCwdPath: Path
+  serverCwdPath: Path,
+  worldId: WorldId
 ): Promise<Failable<undefined>> {
-  api.send.UpdateStatus('eula.txtを生成中');
+  api.send.UpdateStatus(worldId, 'eula.txtを生成中');
 
   const eulaPath = serverCwdPath.child('eula.txt');
 
@@ -85,6 +87,10 @@ async function generateEula(
     serverCwdPath.absolute().str(),
     true
   );
+
+  if (isFailure(result)) {
+    return new Error('failed to generate eula.txt.');
+  }
 
   if (!eulaPath.exists()) {
     return new Error('failed to generate eula.txt.');
