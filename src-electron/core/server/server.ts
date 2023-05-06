@@ -32,6 +32,7 @@ import { MemoryUnit } from 'src-electron/schema/memory';
 import { foldSettings } from '../settings/settings';
 import { getPlayerSettingDiff } from '../settings/players';
 import { sleep } from 'app/src-electron/util/testTools';
+import { serverPropertiesHandler } from '../settings/files/properties';
 
 class WorldUsingError extends Error {}
 
@@ -452,6 +453,9 @@ class ServerRunner {
   async setWorldSettings(settings: FoldSettings): Promise<Failable<World>> {
     if (this.stdin === undefined)
       return new Error(`World ${this.id} is not in running`);
+
+    // server.propertiesの保存
+    await serverPropertiesHandler.save(this.cwdPath, settings.properties);
 
     const diff = getPlayerSettingDiff(this.world.players, settings.players);
 
