@@ -1,9 +1,11 @@
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
 import {
+  getRunningWorld,
   runCommand,
   runServer,
   saveWorldSettings,
+  updateRunningWorld,
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
@@ -38,6 +40,9 @@ export const backListener: BackListener<API> = {
     SetWorldContainers: setWorldContainers,
     GetWorldAbbrs: getWorldAbbrs,
     GetWorld: getWorld,
+
+    GetRunningWorld: getRunningWorld,
+    UpdatetRunningWorld: updateRunningWorld,
 
     GenUUID: genUUID,
   },

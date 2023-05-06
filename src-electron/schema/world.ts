@@ -141,3 +141,8 @@ export type SystemWorldSettings = {
 
   properties: ServerProperties;
 };
+
+export type FoldSettings = {
+  properties: ServerProperties;
+  players: PlayerSetting[];
+};

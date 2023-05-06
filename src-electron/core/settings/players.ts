@@ -1,6 +1,7 @@
-import { PlayerSetting } from 'src-electron/schema/player';
+import { OpLevel, OpSetting, PlayerSetting } from 'src-electron/schema/player';
 import { Ops } from './files/ops';
-import { Whitelist } from './files/whitelist';
+import { Whitelist, WhitelistRecord } from './files/whitelist';
+import { FoldSettings } from 'app/src-electron/schema/world';
 
 /**
  * PlayerSetting[]からOpsとWhitelistを構成
@@ -58,4 +59,72 @@ export function constructPleyerSettings({
   });
 
   return Object.values(playersRecord);
+}
+
+type PlayerDiff = {
+  whitelist: {
+    append: string[];
+    remove: string[];
+  };
+  op: { before: 0 | OpLevel; after: 0 | OpLevel; uuid: string }[];
+};
+
+/** PlayerSettingの差分を取得 */
+export function getPlayerSettingDiff(
+  before: PlayerSetting[],
+  after: PlayerSetting[]
+): PlayerDiff {
+  const result: PlayerDiff = {
+    whitelist: { append: [], remove: [] },
+    op: [],
+  };
+
+  const beforeMap = Object.fromEntries(before.map((x) => [x.uuid, x]));
+  const afterMap = Object.fromEntries(after.map((x) => [x.uuid, x]));
+
+  for (const beforeItem of before) {
+    const afterItem = afterMap[beforeItem.uuid];
+    if (afterItem === undefined) {
+      // beforeにあってafterにない
+      // whitelistから削除
+      result.whitelist.remove.push(beforeItem.uuid);
+      if (beforeItem.op !== undefined) {
+        // opから削除
+        result.op.push({
+          uuid: beforeItem.uuid,
+          before: beforeItem.op.level,
+          after: 0,
+        });
+      }
+    } else {
+      // beforeにもafterにもある
+      const beforeLevel = beforeItem.op?.level ?? 0;
+      const afterLevel = afterItem.op?.level ?? 0;
+      if (beforeLevel !== afterLevel) {
+        result.op.push({
+          uuid: beforeItem.uuid,
+          before: beforeLevel,
+          after: afterLevel,
+        });
+      }
+    }
+  }
+
+  for (const afterItem of after) {
+    const beforeItem = afterMap[afterItem.uuid];
+    if (beforeItem === undefined) {
+      // afterにあってbeforeにない
+      // whitelistに追加
+      result.whitelist.append.push(afterItem.uuid);
+      if (afterItem.op !== undefined) {
+        // opに追加
+        result.op.push({
+          uuid: afterItem.uuid,
+          before: 0,
+          after: afterItem.op.level,
+        });
+      }
+    }
+  }
+  return result;
 }

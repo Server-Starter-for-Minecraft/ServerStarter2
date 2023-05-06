@@ -21,20 +21,47 @@ import { VersionComponent } from '../version/base';
 import { installAdditional } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
-import { World, WorldAdditional, WorldEdited } from 'src-electron/schema/world';
+import {
+  FoldSettings,
+  World,
+  WorldAdditional,
+  WorldEdited,
+  WorldId,
+} from 'src-electron/schema/world';
 import { MemoryUnit } from 'src-electron/schema/memory';
 import { foldSettings } from '../settings/settings';
+import { getPlayerSettingDiff } from '../settings/players';
+import { sleep } from 'app/src-electron/util/testTools';
 
 class WorldUsingError extends Error {}
 
 class ServerRunner {
-  static stdin: undefined | ((command: string) => Promise<void>) = undefined;
+  private static serverMap: Record<string, ServerRunner> = {};
 
+  static getServerMapKey = ({ container, name }: WorldId) =>
+    container + '/' + name;
+
+  static getServerRunner(worldID: WorldId) {
+    return ServerRunner.serverMap[ServerRunner.getServerMapKey(worldID)];
+  }
+
+  static setServerRunner(worldID: WorldId, serverRunner: ServerRunner) {
+    ServerRunner.serverMap[ServerRunner.getServerMapKey(worldID)] =
+      serverRunner;
+  }
+
+  static removeServerRunner(worldID: WorldId) {
+    delete ServerRunner.serverMap[ServerRunner.getServerMapKey(worldID)];
+  }
+
+  stdin: undefined | ((command: string) => Promise<void>) = undefined;
   world: WorldEdited;
   cwdPath: Path;
   args: string[];
 
   constructor(world: WorldEdited) {
+    ServerRunner.setServerRunner(world, this);
+
     this.world = world;
 
     // コマンド引数の設定
@@ -42,6 +69,14 @@ class ServerRunner {
 
     // サーバーのCWDパスを得る
     this.cwdPath = worldContainerToPath(world.container).child(world.name);
+  }
+
+  get id(): WorldId {
+    return { name: this.world.name, container: this.world.container };
+  }
+
+  private sendUpdateStatus(message: string) {
+    api.send.UpdateStatus(this.id, message);
   }
 
   private async pull(): Promise<Failable<undefined>> {
@@ -62,7 +97,7 @@ class ServerRunner {
 
   /** ワールドの設定を保存しデータをリモートにpushする */
   private async saveAndPush(using: boolean): Promise<Failable<undefined>> {
-    api.send.UpdateStatus('不要なファイルを削除中');
+    this.sendUpdateStatus('不要なファイルを削除中');
     // サーバー実行時のみ必要なファイルを削除
     await removeServerSettingFiles(this.cwdPath);
 
@@ -87,7 +122,7 @@ class ServerRunner {
     const remote_push = this.world.remote_push;
     if (remote_push === undefined) return;
 
-    api.send.UpdateStatus('ワールドデータをアップロード中');
+    this.sendUpdateStatus('ワールドデータをアップロード中');
     pushRemoteWorld(this.cwdPath, remote_push);
   }
 
@@ -147,7 +182,7 @@ class ServerRunner {
   /** サーバーデータを用意 */
   private async readyServerData() {
     const world = this.world;
-    api.send.UpdateStatus(
+    this.sendUpdateStatus(
       `サーバーデータを準備中 ${world.version.id} (${world.version.type})`
     );
     return await readyVersion(world.version, this.cwdPath);
@@ -155,7 +190,7 @@ class ServerRunner {
 
   /** Javaランタイムを用意 */
   private async readyJavaRuntime(component: JavaComponent) {
-    api.send.UpdateStatus(`javaランタイムを準備中 (${component})`);
+    this.sendUpdateStatus(`javaランタイムを準備中 (${component})`);
 
     // 実行javaを用意
     return await readyJava(component, true);
@@ -164,14 +199,14 @@ class ServerRunner {
   /** ワールドのpullが終わるのを待機 */
   private async awaitPull(pulling: Promise<Failable<undefined>>) {
     // ワールドのpullが終わるのを待機
-    api.send.UpdateStatus('ワールドデータのダウンロード中');
+    this.sendUpdateStatus('ワールドデータのダウンロード中');
     return await pulling;
   }
 
   /** log4jの脆弱性を回避 */
   private async handleLog4j() {
     // log4jの設定
-    api.send.UpdateStatus('log4jの引数を設定中');
+    this.sendUpdateStatus('log4jの引数を設定中');
     const log4jarg = await getLog4jArg(this.cwdPath, this.world.version);
 
     // log4jのファイルがダウンロードできなかった場合エラー
@@ -185,7 +220,7 @@ class ServerRunner {
   private async unrollWorldSettings() {
     const world = this.world;
     // 設定ファイルをサーバーCWD直下に書き出す
-    api.send.UpdateStatus('サーバー設定ファイルの展開中');
+    this.sendUpdateStatus('サーバー設定ファイルの展開中');
     world.properties['level-name'] = { type: 'string', value: LEVEL_NAME };
     await unfoldSettings(this.cwdPath, world);
   }
@@ -193,7 +228,7 @@ class ServerRunner {
   /** 設定jsonを保存 */
   private async saveWorldSettingFile() {
     // 設定ファイルをサーバーCWD直下に書き出す
-    api.send.UpdateStatus('サーバー設定ファイルの保存中');
+    this.sendUpdateStatus('サーバー設定ファイルの保存中');
     await saveWorldSettingsJson(this.world, this.cwdPath);
   }
 
@@ -206,7 +241,7 @@ class ServerRunner {
     if (!needEula) return undefined;
 
     // Eulaチェック
-    api.send.UpdateStatus('Eulaの同意状況を確認中');
+    this.sendUpdateStatus('Eulaの同意状況を確認中');
     const eulaAgreement = await checkEula(
       javaPath,
       server.programArguments,
@@ -228,28 +263,31 @@ class ServerRunner {
   private async awaitServerProcess(javaPath: Path) {
     // javaのサブプロセスを起動
     // TODO: エラー出力先のハンドル
+
+    const addConsole = (chunk: string) => api.send.AddConsole(this.id, chunk);
+
     const process = interactiveProcess(
       javaPath.absolute().str(),
       this.args,
-      api.send.AddConsole,
-      api.send.AddConsole,
+      addConsole,
+      addConsole,
       this.cwdPath.absolute().str(),
       true
     );
     // フロントエンドからの入力を受け付ける
-    ServerRunner.stdin = process.write;
+    this.stdin = process.write;
 
     // サーバー起動をWindowに知らせる
-    api.send.StartServer();
+    api.send.StartServer(this.id);
 
     // サーバー終了まで待機
     const result = await process;
 
     // サーバー起動をWindowに知らせる
-    api.send.FinishServer();
+    api.send.FinishServer(this.id);
 
     // フロントエンドからの入力を無視
-    ServerRunner.stdin = undefined;
+    this.stdin = undefined;
 
     return result;
   }
@@ -387,66 +425,98 @@ class ServerRunner {
     return result;
   }
 
-  static runCommand(command: string) {
-    if (ServerRunner.stdin === undefined) return;
+  async runCommand(command: string) {
+    if (this.stdin === undefined)
+      return new Error(`World ${this.id} is not in running`);
+
     if (command == 'reboot') {
       // TODO: 再起動に関する実装を行う
     } else {
-      ServerRunner.stdin(command).then(() =>
-        api.send.AddConsole(`/${command}`)
-      );
+      await this.stdin(command);
+      api.send.AddConsole(this.id, `/${command}`);
     }
+  }
+
+  // 実行中のワールドの設定を取得
+  async getWorldSettings(): Promise<Failable<World>> {
+    if (this.stdin === undefined)
+      return new Error(`World ${this.id} is not in running`);
+
+    const { properties, players } = await foldSettings(this.cwdPath);
+    this.world.players = players;
+    this.world.properties = properties;
+    return this.world;
+  }
+
+  // 実行中のワールドの設定を更新
+  async setWorldSettings(settings: FoldSettings): Promise<Failable<World>> {
+    if (this.stdin === undefined)
+      return new Error(`World ${this.id} is not in running`);
+
+    const diff = getPlayerSettingDiff(this.world.players, settings.players);
+
+    const promisses: Promise<any>[] = [];
+
+    // whitelist add
+    promisses.push(
+      ...diff.whitelist.append.map((uuid) =>
+        this.runCommand(`whitelist add ${uuid}`)
+      )
+    );
+
+    // whitelist remove
+    promisses.push(
+      ...diff.whitelist.remove.map((uuid) =>
+        this.runCommand(`whitelist remove ${uuid}`)
+      )
+    );
+
+    promisses.push(
+      ...diff.op.map(async (op) => {
+        if (op.after === 0) {
+          this.runCommand(`deop ${op.uuid}`);
+          return;
+        }
+        if (op.after !== 4) {
+          // 無理
+          return;
+        }
+        if (op.before === 0) {
+          this.runCommand(`op ${op.uuid}`);
+          return;
+        }
+        await this.runCommand(`deop ${op.uuid}`);
+        await this.runCommand(`op ${op.uuid}`);
+      })
+    );
+
+    await Promise.all(promisses);
+
+    if (diff.whitelist.remove.length > 0 || diff.whitelist.append.length > 0) {
+      await this.runCommand('whitelist reload');
+    }
+
+    // TODO: すべてのコマンドの実行が終了したことがわからないのでとりあえずこうしている
+    await sleep(5);
+
+    return this.getWorldSettings();
   }
 }
 
 export const runServer = (world: WorldEdited) =>
   new ServerRunner(world).runServer();
+
 export const saveWorldSettings = (world: World) =>
   new ServerRunner(world).saveWorldSettings();
 
-export const runCommand = ServerRunner.runCommand;
+export function runCommand(world: WorldId, command: string) {
+  ServerRunner.getServerRunner(world).runCommand(command);
+}
 
-// export async function testRunServer(version: Version) {
-//   // サーバーデータを用意
-//   const v = await readyVersion(version);
+export function getRunningWorld(world: WorldId) {
+  return ServerRunner.getServerRunner(world).getWorldSettings();
+}
 
-//   // サーバーデータの用意ができなかった場合エラー
-//   if (isFailure(v)) return v;
-
-//   const { programArguments, serverCwdPath, component } = v;
-
-//   // 実行javaを用意
-//   const javaPath = await readyJava(component, true);
-
-//   // 実行javaが用意できなかった場合エラー
-//   if (isFailure(javaPath)) return javaPath;
-
-//   // サーバーを起動
-//   const result = execProcess(
-//     javaPath.absolute().str(),
-//     [...programArguments, '--nogui'],
-//     serverCwdPath.absolute().str(),
-//     true
-//   );
-
-//   let error: any = undefined;
-//   // 10秒経って起動を続けていたら正常に起動したとみなしプロセスをkill
-//   sleep(100).then(() => {
-//     try {
-//       result.kill();
-//     } catch (e) {
-//       error = e;
-//     }
-//   });
-
-//   const eula = serverCwdPath.child('eula.txt').exists();
-
-//   const json = { version, eula, result, error }
-//   console.log(json)
-
-//   serverCwdPath
-//     .child('result.json')
-//     .writeText(JSON.stringify(json));
-
-//   await result;
-// }
+export function updateRunningWorld(world: WorldId, settings: FoldSettings) {
+  return ServerRunner.getServerRunner(world).setWorldSettings(settings);
+}

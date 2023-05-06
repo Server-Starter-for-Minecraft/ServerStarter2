@@ -10,6 +10,7 @@ import { asyncMap, objMap } from 'src-electron/util/objmap';
 import { opsHandler } from './files/ops';
 import { whitelistHandler } from './files/whitelist';
 import {
+  FoldSettings,
   SystemWorldSettings,
   World,
   WorldSettings,
@@ -20,7 +21,6 @@ import {
 } from 'src-electron/schema/serverproperty';
 import { constructOpsAndWhitelist, constructPleyerSettings } from './players';
 import { orDefault } from 'app/src-electron/api/failable';
-import { PlayerSetting } from 'app/src-electron/schema/player';
 
 const handlers = [
   serverPropertiesHandler,
@@ -54,15 +54,10 @@ export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
   await saveWorldJson(serverCwdPath, worldSettings);
 }
 
-export type Settings = {
-  properties: ServerProperties;
-  players: PlayerSetting[];
-};
-
 /** サーバー設定系ファイルをサーバーCWD直下に書き出す */
 export async function unfoldSettings(
   serverCwdPath: Path,
-  { properties, players }: Settings
+  { properties, players }: FoldSettings
 ): Promise<void> {
   // ops.json/whitelist.jsonの中身を算出
   const { ops, whitelist } = constructOpsAndWhitelist(players);
@@ -83,7 +78,7 @@ export async function unfoldSettings(
 }
 
 /** サーバー設定系ファイルをサーバーCWD直下から読み込む */
-export async function foldSettings(serverCwdPath: Path): Promise<Settings> {
+export async function foldSettings(serverCwdPath: Path): Promise<FoldSettings> {
   // 設定ファイルを読みこみ
   const promisses = [
     // server.properties

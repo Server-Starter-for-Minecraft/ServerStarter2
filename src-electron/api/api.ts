@@ -1,6 +1,7 @@
 import { SystemSettings, WorldContainers } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import {
+  FoldSettings,
   SystemWorldSettings,
   World,
   WorldAbbr,
@@ -36,16 +37,21 @@ import { IAPI, IBackAPI, IFrontAPI } from './types';
  */
 export interface API extends IAPI {
   sendMainToWindow: {
-    StartServer: () => void;
-    FinishServer: () => void;
-    UpdateStatus: (message: string, current?: number, total?: number) => void;
-    AddConsole: (chunk: string) => void;
+    StartServer: (world: WorldId) => void;
+    FinishServer: (world: WorldId) => void;
+    UpdateStatus: (
+      world: WorldId,
+      message: string,
+      current?: number,
+      total?: number
+    ) => void;
+    AddConsole: (world: WorldId, chunk: string) => void;
   };
   invokeMainToWindow: {
-    AgreeEula: (url: string) => Promise<boolean>;
+    AgreeEula: (world: WorldId, url: string) => Promise<boolean>;
   };
   sendWindowToMain: {
-    Command: (command: string) => void;
+    Command: (world: WorldId, command: string) => void;
     OpenBrowser: (url: string) => void;
     OpenFolder: (path: string) => void;
   };
@@ -64,11 +70,14 @@ export interface API extends IAPI {
     GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
     GetWorld: (WorldId: WorldId) => Promise<Failable<World>>;
 
-    /** 現在実行中のワールドを取得(サーバー内でのデータの更新を反映する) ※未実装 */
+    /** 現在実行中のワールドを取得(サーバー内でのデータの更新を反映する) */
     GetRunningWorld: (WorldId: WorldId) => Promise<Failable<World>>;
 
-    /** 現在実行中のワールドの設定等を変更(戻り値は変更後のワールド) ※未実装 */
-    UpdatetRunningWorld: (WorldId: WorldId) => Promise<Failable<World>>;
+    /** 現在実行中のワールドの設定等を変更(戻り値は変更後のワールド) */
+    UpdatetRunningWorld: (
+      WorldId: WorldId,
+      settings: FoldSettings
+    ) => Promise<Failable<World>>;
 
     DeleteWorld: (world: WorldId) => Promise<Failable<void>>;
 
