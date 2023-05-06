@@ -1,6 +1,6 @@
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
-import { Player, WorldAuthority } from './player';
+import { Player, PlayerSetting } from './player';
 import { Remote } from './remote';
 import { ServerProperties, ServerPropertiesMap } from './serverproperty';
 import { Version } from './version';
@@ -51,10 +51,10 @@ export interface WorldBase extends WorldAbbr {
   javaArguments?: string;
 
   /** server.propertiesの内容 */
-  properties?: ServerProperties;
+  properties: ServerProperties;
 
   /** プレイヤーの設定 */
-  authority: WorldAuthority;
+  players: PlayerSetting[];
 }
 
 export type WorldAdditional = {
@@ -129,7 +129,7 @@ export type WorldSettings = {
   properties?: ServerPropertiesMap;
 
   /** プレイヤーの設定 */
-  authority?: WorldAuthority;
+  players: PlayerSetting[];
 };
 
 /** serverstarterのシステム設定内のワールド設定 */

@@ -1,6 +1,6 @@
 import { objValueMap } from './objmap';
 
-export type Copyable =
+type Copyable =
   | string
   | number
   | boolean
@@ -9,11 +9,11 @@ export type Copyable =
   | CopyableArray
   | CopyableObject;
 
-export interface CopyableArray extends Array<Copyable> {}
-export interface CopyableObject extends Record<string, Copyable> {}
+interface CopyableArray extends Array<Copyable> {}
+interface CopyableObject extends Record<string, Copyable> {}
 
 // オブジェクトを再帰的にコピー
-export function deepcopy<T extends Copyable>(obj: T): T {
+export function deepcopy<T>(obj: T): T {
   switch (typeof obj) {
     case 'string':
     case 'boolean':
@@ -24,7 +24,10 @@ export function deepcopy<T extends Copyable>(obj: T): T {
     case 'object':
       if (obj === null) return null as T;
       if (obj instanceof Array) return obj.map(deepcopy) as T;
-      return objValueMap<string, Copyable, Copyable>(obj, deepcopy) as T;
+      return objValueMap<string, Copyable, Copyable>(
+        obj as CopyableObject,
+        deepcopy
+      ) as T;
     default:
       throw Error(`${typeof obj} object is not valid in deepcopy`);
   }

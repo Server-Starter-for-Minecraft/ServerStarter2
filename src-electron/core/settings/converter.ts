@@ -6,8 +6,6 @@ import {
   ServerProperties,
   ServerPropertiesMap,
 } from 'src-electron/schema/serverproperty';
-import { fix } from 'src-electron/util/fix';
-import { WorldAuthority } from 'src-electron/schema/player';
 
 type WorldSettingsPlus = {
   name: string;
@@ -35,12 +33,9 @@ export function worldSettingsToWorld({
     memory: settings.memory,
     properties: getServerProperties(settings.properties),
     additional: {},
-    authority: fix<WorldAuthority>(settings.authority, {
-      groups: [],
-      players: [],
-      removed: [],
-    }),
+    players: settings.players,
   };
+
   return deepcopy(result);
 }
 
@@ -57,7 +52,7 @@ export function worldToWorldSettings(world: World): WorldSettingsPlus {
       last_user: world.last_user,
       using: world.using,
       properties: getPropertiesMap(world.properties),
-      authority: world.authority,
+      players: world.players,
     },
   };
   return deepcopy(result);

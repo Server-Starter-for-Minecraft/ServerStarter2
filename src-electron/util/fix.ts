@@ -1,10 +1,10 @@
-import { Copyable, deepcopy } from './deepcopy';
+import { deepcopy } from './deepcopy';
 
 export type DeepPartial<T> = T extends object
   ? { [P in keyof T]?: DeepPartial<T[P]> | undefined }
   : T;
 
-export function fix<T extends { [x: string]: Copyable }>(
+export function fix<T extends { [x: string]: any }>(
   value: DeepPartial<T> | undefined,
   defaultValue: T
 ): T {
@@ -22,10 +22,7 @@ export function fix<T extends { [x: string]: Copyable }>(
       }
 
       if (typeof v === 'object' && v !== null) {
-        return [
-          k,
-          fix(val as { [x: string]: Copyable }, v as { [x: string]: Copyable }),
-        ];
+        return [k, fix(val as { [x: string]: any }, v as { [x: string]: any })];
       }
       return [k, val ?? deepcopy(v)];
     })

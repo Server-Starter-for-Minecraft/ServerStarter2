@@ -29,7 +29,6 @@ import {
   Player,
   PlayerGroupSetting,
   PlayerSetting,
-  WorldAuthority,
 } from 'src-electron/schema/player';
 import { systemSettings } from '../stores/system';
 import { GithubRemote, Remote } from 'src-electron/schema/remote';
@@ -112,16 +111,6 @@ const playerFixer = (): Fixer<Player | FAIL> =>
     {
       name: stringFixer(),
       uuid: stringFixer(),
-    },
-    true
-  );
-
-const worldAuthorityFixer = (): Fixer<WorldAuthority> =>
-  objectFixer<WorldAuthority>(
-    {
-      groups: arrayFixer(playerGroupSettingFixer(), true),
-      players: arrayFixer(playerSettingFixer(), true),
-      removed: arrayFixer(playerFixer(), true),
     },
     true
   );
@@ -234,7 +223,7 @@ const worldSettingsFixer = (): Fixer<WorldSettings | FAIL> =>
       last_user: optionalFixer(playerFixer()),
       using: optionalFixer(booleanFixer()),
       properties: serverPropertiesMapFixer(),
-      authority: optionalFixer(worldAuthorityFixer()),
+      players: arrayFixer(playerSettingFixer(), true),
     },
     false
   );

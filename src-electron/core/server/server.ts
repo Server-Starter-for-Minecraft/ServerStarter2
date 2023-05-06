@@ -5,7 +5,7 @@ import { readyJava } from '../../util/java/java';
 import {
   removeServerSettingFiles,
   saveWorldSettingsJson,
-  unrollSettings,
+  unfoldSettings,
 } from '../settings/settings';
 import { interactiveProcess } from '../../util/subprocess';
 import { api } from '../api';
@@ -23,7 +23,7 @@ import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
 import { World, WorldAdditional, WorldEdited } from 'src-electron/schema/world';
 import { MemoryUnit } from 'src-electron/schema/memory';
-import { updateAuthority } from '../settings/authority';
+import { getPlayersOfRunningWorld } from '../settings/players';
 import { opsHandler } from '../settings/ops';
 import { whitelistHandler } from '../settings/whitelist';
 
@@ -190,7 +190,7 @@ class ServerRunner {
     api.send.UpdateStatus('サーバー設定ファイルの展開中');
     world.properties = world.properties ?? {};
     world.properties['level-name'] = { type: 'string', value: LEVEL_NAME };
-    await unrollSettings(world, this.cwdPath);
+    await unfoldSettings(world, this.cwdPath);
   }
 
   /** 設定jsonを保存 */
@@ -283,7 +283,7 @@ class ServerRunner {
     const ops = await opsHandler.load(this.cwdPath);
     const whitelist = await whitelistHandler.load(this.cwdPath);
     if (isSuccess(ops) && isSuccess(whitelist)) {
-      this.world.authority = await updateAuthority(
+      this.world.authority = await getPlayersOfRunningWorld(
         this.world.authority,
         ops,
         whitelist

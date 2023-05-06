@@ -19,7 +19,9 @@ import {
   ServerProperties,
   ServerProperty,
 } from 'src-electron/schema/serverproperty';
-import { getOpsAndWhitelist } from './authority';
+import { constructOpsAndWhitelist, constructPleyerSettings } from './players';
+import { orDefault } from 'app/src-electron/api/failable';
+import { PlayerSetting } from 'app/src-electron/schema/player';
 
 const handlers = [
   serverPropertiesHandler,
@@ -44,7 +46,7 @@ export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
     last_date: world.last_date,
     last_user: world.last_user,
     using: world.using,
-    authority: world.authority,
+    players: world.players,
     javaArguments: world.javaArguments,
     properties: getPropertiesMap(world.properties),
   };
@@ -53,32 +55,59 @@ export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
   await saveWorldJson(serverCwdPath, worldSettings);
 }
 
-/** サーバー設定系ファイルをサーバーCWD直下に書き出す */
-export async function unrollSettings(world: World, serverCwdPath: Path) {
-  // server.properties を書き出し
-  const strprop = stringifyServerProperties(
-    world.properties ?? defaultServerProperties
-  );
-  await serverCwdPath.child('server.properties').writeText(strprop);
+export type Settings = {
+  properties: ServerProperties;
+  players: PlayerSetting[];
+};
 
+/** サーバー設定系ファイルをサーバーCWD直下に書き出す */
+export async function unfoldSettings(
+  serverCwdPath: Path,
+  { properties, players }: Settings
+): Promise<void> {
   // ops.json/whitelist.jsonの中身を算出
-  const { ops, whitelist } = getOpsAndWhitelist(world.authority);
+  const { ops, whitelist } = constructOpsAndWhitelist(players);
 
   // 設定ファイルを保存
   const promisses = [
-    serverPropertiesHandler.save(
-      serverCwdPath,
-      world.properties ?? defaultServerProperties
-    ),
+    // server.properties
+    serverPropertiesHandler.save(serverCwdPath, properties),
+    // ops.json
     opsHandler.save(serverCwdPath, ops),
+    // whitelist.json
     whitelistHandler.save(serverCwdPath, whitelist),
     // bannedIpsHandler.save(serverCwdPath, world.ops ?? []),
     // bannedPlayersHandler.save(serverCwdPath, world.ops ?? []),
   ] as const;
 
-  await promisses;
+  await Promise.all(promisses);
+}
 
-  world;
+/** サーバー設定系ファイルをサーバーCWD直下から読み込む */
+export async function foldSettings(serverCwdPath: Path): Promise<Settings> {
+  // 設定ファイルを読みこみ
+  const promisses = [
+    // server.properties
+    serverPropertiesHandler.load(serverCwdPath),
+    // ops.json
+    opsHandler.load(serverCwdPath),
+    // whitelist.json
+    whitelistHandler.load(serverCwdPath),
+    // bannedIpsHandler.save(serverCwdPath, world.ops ?? []),
+    // bannedPlayersHandler.save(serverCwdPath, world.ops ?? []),
+  ] as const;
+
+  const [properties, ops, whitelist] = await Promise.all(promisses);
+
+  const players = constructPleyerSettings({
+    ops: orDefault(ops, []),
+    whitelist: orDefault(whitelist, []),
+  });
+
+  return {
+    properties: orDefault(properties, {}),
+    players,
+  };
 }
 
 function getPropertiesMap(serverProperties: ServerProperties | undefined) {
