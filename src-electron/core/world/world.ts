@@ -12,9 +12,9 @@ import { LEVEL_NAME } from '../const';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
 import { worldSettingsToWorld } from '../settings/converter';
-import { World, WorldAbbr, WorldEdited } from 'src-electron/schema/world';
+import { World, WorldAbbr, WorldId } from 'src-electron/schema/world';
 
-export async function deleteWorld(world: WorldEdited) {
+export async function deleteWorld(world: WorldId) {
   const dir = await worldContainerToPath(world.container).child(world.name);
   return await failabilify(dir.remove)();
 }

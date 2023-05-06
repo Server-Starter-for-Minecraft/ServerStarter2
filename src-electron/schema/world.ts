@@ -5,29 +5,23 @@ import { Remote } from './remote';
 import { ServerProperties, ServerPropertiesMap } from './serverproperty';
 import { Version } from './version';
 
-/** 取得が速い代わりに情報が少ないワールド */
-export type WorldAbbr = {
+/** ワールドの情報取得時にIDとして使うデータ構造 */
+export type WorldId = {
   /** ワールド名 */
   name: string;
 
   /** ディレクトリ */
   container: string;
+};
 
+/** 取得が速い代わりに情報が少ないワールド */
+export type WorldAbbr = WorldId & {
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   avater_path?: string;
 };
 
 /** ワールドごとの設定 */
-export type WorldBase = {
-  /** ワールド名 */
-  name: string;
-
-  /** ディレクトリ */
-  container: string;
-
-  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
-  avater_path?: string;
-
+export type WorldBase = WorldAbbr & {
   /** バージョン */
   version: Version;
 

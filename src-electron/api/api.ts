@@ -5,6 +5,7 @@ import {
   World,
   WorldAbbr,
   WorldEdited,
+  WorldId,
 } from '../schema/world';
 import { Failable } from './failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
@@ -61,16 +62,22 @@ export interface API extends IAPI {
     SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;
 
     GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
-    GetWorld: (worldAbbr: WorldAbbr) => Promise<Failable<World>>;
+    GetWorld: (WorldId: WorldId) => Promise<Failable<World>>;
 
-    DeleteWorld: (world: WorldEdited) => Promise<Failable<void>>;
+    /** 現在実行中のワールドを取得(サーバー内でのデータの更新を反映する) ※未実装 */
+    GetRunningWorld: (WorldId: WorldId) => Promise<Failable<World>>;
+
+    /** 現在実行中のワールドの設定等を変更(戻り値は変更後のワールド) ※未実装 */
+    UpdatetRunningWorld: (WorldId: WorldId) => Promise<Failable<World>>;
+
+    DeleteWorld: (world: WorldId) => Promise<Failable<void>>;
 
     GetVersions: (
       type: VersionType,
       useCache: boolean
     ) => Promise<Failable<Version[]>>;
-    
-    GenUUID: ()=> Promise<string>;
+
+    GenUUID: () => Promise<string>;
   };
 }
 
