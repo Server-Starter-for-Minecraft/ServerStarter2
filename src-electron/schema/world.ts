@@ -6,22 +6,22 @@ import { ServerProperties, ServerPropertiesMap } from './serverproperty';
 import { Version } from './version';
 
 /** ワールドの情報取得時にIDとして使うデータ構造 */
-export type WorldId = {
+export interface WorldId {
   /** ワールド名 */
   name: string;
 
   /** ディレクトリ */
   container: string;
-};
+}
 
 /** 取得が速い代わりに情報が少ないワールド */
-export type WorldAbbr = WorldId & {
+export interface WorldAbbr extends WorldId {
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   avater_path?: string;
-};
+}
 
 /** ワールドごとの設定 */
-export type WorldBase = WorldAbbr & {
+export interface WorldBase extends WorldAbbr {
   /** バージョン */
   version: Version;
 
@@ -55,7 +55,7 @@ export type WorldBase = WorldAbbr & {
 
   /** プレイヤーの設定 */
   authority: WorldAuthority;
-};
+}
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
@@ -68,10 +68,10 @@ export type WorldAdditional = {
   mods?: FileData[];
 };
 
-export type World = WorldBase & {
+export interface World extends WorldBase {
   /** 導入済み */
   additional: WorldAdditional;
-};
+}
 
 export type WorldEditedAdditional = {
   /** 導入済みデータパック */
