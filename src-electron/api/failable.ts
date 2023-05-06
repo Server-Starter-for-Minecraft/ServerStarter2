@@ -8,6 +8,11 @@ export const isFailure = <S, F extends Error>(
   value: Failable<S, F>
 ): value is F => value instanceof Error;
 
+export const orDefault = <S, F extends Error>(
+  value: Failable<S, F>,
+  defaultValue: S
+): S => (isFailure(value) ? defaultValue : value);
+
 export function failabilify<P extends any[], R>(
   func: (...args: P) => R
 ): (
