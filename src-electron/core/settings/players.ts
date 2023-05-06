@@ -1,6 +1,6 @@
-import { OpSetting, PlayerSetting } from 'src-electron/schema/player';
-import { Ops } from './ops';
-import { Whitelist } from './whitelist';
+import { PlayerSetting } from 'src-electron/schema/player';
+import { Ops } from './files/ops';
+import { Whitelist } from './files/whitelist';
 
 /**
  * PlayerSetting[]からOpsとWhitelistを構成

@@ -1,11 +1,11 @@
 import { objMap } from 'src-electron/util/objmap';
-import { defaultServerProperties } from './properties';
 import { deepcopy } from 'src-electron/util/deepcopy';
 import { World, WorldSettings } from 'src-electron/schema/world';
 import {
   ServerProperties,
   ServerPropertiesMap,
 } from 'src-electron/schema/serverproperty';
+import { defaultServerProperties } from './files/properties';
 
 type WorldSettingsPlus = {
   name: string;

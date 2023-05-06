@@ -21,9 +21,9 @@ export const versionManifestPath = versionsCachePath.child(
 
 export const spigotBuildPath = mainPath.child('spigotBuild');
 
-export const LEVEL_NAME = 'world';
+export const LEVEL_NAME = 'world' as const;
 
 export const DEFAULT_MEMORY: MemorySettings = {
   size: 2,
   unit: 'GB',
-};
+} as const;

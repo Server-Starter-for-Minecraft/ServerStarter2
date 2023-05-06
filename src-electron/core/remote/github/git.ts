@@ -8,7 +8,7 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
-import { server_settings_file_name } from '../../settings/worldJson';
+import { serverSettingsFileName } from '../../settings/worldJson';
 import { LEVEL_NAME } from '../../const';
 import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';
@@ -206,7 +206,7 @@ async function getWorld(
   const rootFiles = await root.files();
   if (isFailure(rootFiles)) return rootFiles;
 
-  const settingFile = rootFiles[server_settings_file_name];
+  const settingFile = rootFiles[serverSettingsFileName];
   const worldDir = rootFiles[LEVEL_NAME];
 
   const [settings, avater_path] = await Promise.all([

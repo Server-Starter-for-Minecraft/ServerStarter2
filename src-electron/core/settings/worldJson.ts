@@ -24,20 +24,15 @@ import {
   unionFixer,
 } from '../../util/detaFixer/fixer';
 import { MemorySettings } from 'src-electron/schema/memory';
-import {
-  OpSetting,
-  Player,
-  PlayerGroupSetting,
-  PlayerSetting,
-} from 'src-electron/schema/player';
+import { OpSetting, Player, PlayerSetting } from 'src-electron/schema/player';
 import { systemSettings } from '../stores/system';
 import { GithubRemote, Remote } from 'src-electron/schema/remote';
 import { ServerPropertiesMap } from 'src-electron/schema/serverproperty';
 
-export const server_settings_file_name = 'server_settings.json';
+export const serverSettingsFileName = 'server_settings.json';
 
 export function getWorldJsonPath(cwd: Path) {
-  return cwd.child(server_settings_file_name);
+  return cwd.child(serverSettingsFileName);
 }
 
 export async function loadWorldJson(
@@ -84,24 +79,12 @@ const opSettingFixer = (): Fixer<OpSetting | FAIL> =>
     true
   );
 
-const playerGroupSettingFixer = (): Fixer<PlayerGroupSetting | FAIL> =>
-  objectFixer<PlayerGroupSetting>(
-    {
-      name: stringFixer(),
-      uuid: stringFixer(),
-      op: optionalFixer(opSettingFixer()),
-      whitelist: booleanFixer(false),
-    },
-    true
-  );
-
 const playerSettingFixer = (): Fixer<PlayerSetting | FAIL> =>
   objectFixer<PlayerSetting>(
     {
       name: stringFixer(),
       uuid: stringFixer(),
       op: optionalFixer(opSettingFixer()),
-      whitelist: booleanFixer(false),
     },
     true
   );

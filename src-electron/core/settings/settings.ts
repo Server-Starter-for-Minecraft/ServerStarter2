@@ -2,14 +2,13 @@ import {
   defaultServerProperties,
   mergeServerProperties,
   serverPropertiesHandler,
-  stringifyServerProperties,
-} from './properties';
+} from './files/properties';
 import { Path } from '../../util/path';
 import { saveWorldJson } from './worldJson';
 import { systemSettings } from '../stores/system';
 import { asyncMap, objMap } from 'src-electron/util/objmap';
-import { opsHandler } from './ops';
-import { whitelistHandler } from './whitelist';
+import { opsHandler } from './files/ops';
+import { whitelistHandler } from './files/whitelist';
 import {
   SystemWorldSettings,
   World,

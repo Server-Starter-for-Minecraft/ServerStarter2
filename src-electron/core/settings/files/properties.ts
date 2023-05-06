@@ -2,7 +2,7 @@ import {
   ServerProperties,
   ServerProperty,
 } from 'src-electron/schema/serverproperty';
-import { objEach, objMap } from '../../util/objmap';
+import { objEach, objMap } from 'src-electron/util/objmap';
 import { ServerSettingHandler } from './base';
 import { isFailure } from 'src-electron/api/failable';
 

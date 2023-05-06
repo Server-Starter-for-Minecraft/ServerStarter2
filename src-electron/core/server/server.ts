@@ -23,9 +23,7 @@ import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
 import { World, WorldAdditional, WorldEdited } from 'src-electron/schema/world';
 import { MemoryUnit } from 'src-electron/schema/memory';
-import { getPlayersOfRunningWorld } from '../settings/players';
-import { opsHandler } from '../settings/ops';
-import { whitelistHandler } from '../settings/whitelist';
+import { foldSettings } from '../settings/settings';
 
 class WorldUsingError extends Error {}
 
@@ -188,9 +186,8 @@ class ServerRunner {
     const world = this.world;
     // 設定ファイルをサーバーCWD直下に書き出す
     api.send.UpdateStatus('サーバー設定ファイルの展開中');
-    world.properties = world.properties ?? {};
     world.properties['level-name'] = { type: 'string', value: LEVEL_NAME };
-    await unfoldSettings(world, this.cwdPath);
+    await unfoldSettings(this.cwdPath, world);
   }
 
   /** 設定jsonを保存 */
@@ -274,21 +271,15 @@ class ServerRunner {
       remote_pull: world.remote_pull,
       remote_push: world.remote_push,
       additional,
-      authority: world.authority,
+      players: world.players,
     };
   }
 
-  /** op/whitelistの内容を読み込んでサーバー実行中の更新を反映 */
+  /** op/whitelist/propertiesの内容を読み込んでサーバー実行中の更新を反映 */
   private async updateAuthority(): Promise<void> {
-    const ops = await opsHandler.load(this.cwdPath);
-    const whitelist = await whitelistHandler.load(this.cwdPath);
-    if (isSuccess(ops) && isSuccess(whitelist)) {
-      this.world.authority = await getPlayersOfRunningWorld(
-        this.world.authority,
-        ops,
-        whitelist
-      );
-    }
+    const { players, properties } = await foldSettings(this.cwdPath);
+    this.world.players = players;
+    this.world.properties = properties;
   }
 
   private async _runServer(): Promise<Failable<World>> {
