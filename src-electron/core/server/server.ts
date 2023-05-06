@@ -246,7 +246,8 @@ class ServerRunner {
     const eulaAgreement = await checkEula(
       javaPath,
       server.programArguments,
-      this.cwdPath
+      this.cwdPath,
+      this.world
     );
 
     // Eulaチェックに失敗した場合エラー

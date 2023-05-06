@@ -13,13 +13,19 @@ import { WorldId } from 'app/src-electron/schema/world';
 export async function checkEula(
   javaPath: Path,
   programArgunets: string[],
-  serverCwdPath: Path
+  serverCwdPath: Path,
+  worldId: WorldId
 ): Promise<Failable<boolean>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // eula.txtが存在しない場合生成
   if (!eulaPath.exists()) {
-    const result = await generateEula(javaPath, programArgunets, serverCwdPath);
+    const result = await generateEula(
+      javaPath,
+      programArgunets,
+      serverCwdPath,
+      worldId
+    );
     // 生成に失敗した場合エラー
     if (isFailure(result)) return result;
   }
@@ -31,7 +37,7 @@ export async function checkEula(
   let agree = eula;
 
   if (!agree) {
-    agree = await api.invoke.AgreeEula(url);
+    agree = await api.invoke.AgreeEula(worldId, url);
   }
 
   const txt = stringifyEula(agree, comments);
