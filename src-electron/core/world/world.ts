@@ -66,12 +66,7 @@ export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
 
   // リモートが存在する場合リモートからデータを取得
   if (settings.remote !== undefined) {
-    const result = await getRemoteWorld(
-      worldID,
-      name,
-      container,
-      settings.remote
-    );
+    const result = await getRemoteWorld(worldID, settings.remote);
     return result;
   }
 

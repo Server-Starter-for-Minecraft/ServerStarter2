@@ -15,6 +15,7 @@ import { worldSettingsToWorld } from '../../settings/converter';
 import { GithubRemote } from 'src-electron/schema/remote';
 import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
+import { WorldPathMap } from '../../world/worldMap';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
@@ -189,10 +190,13 @@ async function pushWorld(
 
 async function getWorld(
   id: WorldID,
-  name: WorldName,
-  container: WorldContainer,
   remote: GithubRemote
 ): Promise<Failable<World>> {
+  const location = WorldPathMap.get(id);
+  if (isFailure(location)) return location;
+
+  const { container, name } = location;
+
   // patを取得
   const pat = await getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも

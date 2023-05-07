@@ -37,12 +37,10 @@ export async function pushRemoteWorld<R extends Remote>(
 // ワールドの設定を読み込む
 export async function getRemoteWorld<R extends Remote>(
   id: WorldID,
-  name: WorldName,
-  container: WorldContainer,
   remote: R
 ): Promise<Failable<World>> {
   const loader: RemoteOperator<R> = remoteOperators[
     remote.type
   ] as RemoteOperator<R>;
-  return await loader.getWorld(id, name, container, remote);
+  return await loader.getWorld(id, remote);
 }
