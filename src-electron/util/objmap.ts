@@ -1,3 +1,5 @@
+import { fromEntries, toEntries } from './obj';
+
 // objectに対してmapできるようにする
 export function objMap<K extends string, V, K2 extends string, V2>(
   object: { [key in K]: V },
@@ -5,11 +7,9 @@ export function objMap<K extends string, V, K2 extends string, V2>(
 ): {
   [key in K2]: V2;
 } {
-  const entries: [K, V][] = Object.entries<V>(object) as [K, V][];
-  const mapped: [K2, V2][] = entries.map(([key, value], index) =>
-    func(key, value, index)
-  );
-  return Object.fromEntries(mapped) as { [key in K2]: V2 };
+  const entries = toEntries(object);
+  const mapped = entries.map(([key, value], index) => func(key, value, index));
+  return fromEntries(mapped);
 }
 
 // objectに対してmapできるようにする
@@ -19,12 +19,12 @@ export function objValueMap<K extends string, V, V2>(
 ): {
   [key in K]: V2;
 } {
-  const entries: [K, V][] = Object.entries<V>(object) as [K, V][];
-  const mapped: [K, V2][] = entries.map(([key, value], index) => [
+  const entries = toEntries(object);
+  const mapped = entries.map(([key, value], index): [K, V2] => [
     key,
     func(value, key, index),
   ]);
-  return Object.fromEntries(mapped) as { [key in K]: V2 };
+  return fromEntries(mapped);
 }
 
 // objectに対してmapできるようにする
@@ -34,12 +34,12 @@ export function objKeyMap<K extends string, V, K2 extends string>(
 ): {
   [key in K2]: V;
 } {
-  const entries: [K, V][] = Object.entries<V>(object) as [K, V][];
-  const mapped: [K2, V][] = entries.map(([key, value], index) => [
+  const entries = toEntries(object);
+  const mapped = entries.map(([key, value], index): [K2, V] => [
     func(key, value, index),
     value,
   ]);
-  return Object.fromEntries(mapped) as { [key in K2]: V };
+  return fromEntries(mapped);
 }
 
 // objectに対してforEachできるようにする
@@ -47,7 +47,7 @@ export function objEach<K extends string, V>(
   object: { [key in K]: V },
   func: (key: K, value: V, index: number) => void
 ): void {
-  const entries: [K, V][] = Object.entries<V>(object) as [K, V][];
+  const entries = toEntries(object);
   entries.forEach(([key, value], index) => func(key, value, index));
 }
 
