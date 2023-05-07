@@ -3,7 +3,8 @@ import { Failable } from 'src-electron/api/failable';
 import { githubRemoteOperator } from './github/git';
 import { Path } from 'src-electron/util/path';
 import { Remote } from 'src-electron/schema/remote';
-import { World } from 'src-electron/schema/world';
+import { World, WorldID } from 'src-electron/schema/world';
+import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 
 export const remoteOperators: {
   [R in Remote as R['type']]: RemoteOperator<Remote>;
@@ -35,12 +36,13 @@ export async function pushRemoteWorld<R extends Remote>(
 
 // ワールドの設定を読み込む
 export async function getRemoteWorld<R extends Remote>(
-  name: string,
-  container: string,
+  id: WorldID,
+  name: WorldName,
+  container: WorldContainer,
   remote: R
 ): Promise<Failable<World>> {
   const loader: RemoteOperator<R> = remoteOperators[
     remote.type
   ] as RemoteOperator<R>;
-  return await loader.getWorld(name, container, remote);
+  return await loader.getWorld(id, name, container, remote);
 }

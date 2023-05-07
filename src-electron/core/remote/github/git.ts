@@ -13,7 +13,8 @@ import { LEVEL_NAME } from '../../const';
 import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';
 import { GithubRemote } from 'src-electron/schema/remote';
-import { World, WorldSettings } from 'src-electron/schema/world';
+import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
+import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
@@ -187,8 +188,9 @@ async function pushWorld(
 }
 
 async function getWorld(
-  name: string,
-  container: string,
+  id: WorldID,
+  name: WorldName,
+  container: WorldContainer,
   remote: GithubRemote
 ): Promise<Failable<World>> {
   // patを取得
@@ -219,6 +221,7 @@ async function getWorld(
   }
 
   return worldSettingsToWorld({
+    id,
     avater_path,
     container,
     name,

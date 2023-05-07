@@ -16,6 +16,7 @@ import { worldSettingsToWorld } from '../settings/converter';
 import { World, WorldAbbr, WorldID } from 'src-electron/schema/world';
 import { genUUID } from 'app/src-electron/tools/uuid';
 import { WorldPathMap, wroldLocationToPath } from './worldMap';
+import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 
 export async function deleteWorld(worldID: WorldID) {
   const cwd = runOnSuccess(wroldLocationToPath)(WorldPathMap.get(worldID));
@@ -26,7 +27,7 @@ export async function deleteWorld(worldID: WorldID) {
 }
 
 export async function getWorldAbbrs(
-  worldContainer: string
+  worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr[]>> {
   const subdir = await worldContainerToPath(worldContainer).iter();
   const results = await asyncMap(subdir, (x) =>
@@ -46,8 +47,8 @@ export async function getWorldAbbr(
 
   const result: WorldAbbr = {
     id: (await genUUID()) as WorldID,
-    name: path.basename(),
-    container: worldContainer,
+    name: path.basename() as WorldName,
+    container: worldContainer as WorldContainer,
   };
   return result;
 }
@@ -65,7 +66,12 @@ export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
 
   // リモートが存在する場合リモートからデータを取得
   if (settings.remote !== undefined) {
-    const result = await getRemoteWorld(name, container, settings.remote);
+    const result = await getRemoteWorld(
+      worldID,
+      name,
+      container,
+      settings.remote
+    );
     return result;
   }
 
@@ -76,6 +82,7 @@ export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
 
   settings.properties ?? {};
   const world = worldSettingsToWorld({
+    id: worldID,
     name,
     container,
     avater_path,

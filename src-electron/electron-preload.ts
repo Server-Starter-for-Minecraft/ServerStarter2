@@ -117,7 +117,7 @@ const api: FrontAPI = {
   invokeGenUUID: invoke('GenUUID'),
 
   invokeGetRunningWorld: invoke('GetRunningWorld'),
-  invokeUpdatetRunningWorld: invoke('UpdatetRunningWorld'),
+  // invokeUpdatetRunningWorld: invoke('UpdatetRunningWorld'),
 };
 
 contextBridge.exposeInMainWorld('API', api);

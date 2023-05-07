@@ -1,3 +1,4 @@
+import { WorldContainer } from './brands';
 import { Player, PlayerGroup } from './player';
 import { GithubRemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
@@ -29,9 +30,9 @@ export type SystemUserSetting = {
  * SetWorldContainersの引数
  */
 export type WorldContainers = {
-  default: string;
+  default: WorldContainer;
   custom: {
-    [name in string]: string;
+    [name in string]: WorldContainer;
   };
 };
 

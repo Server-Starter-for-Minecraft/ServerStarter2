@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import { Path } from '../util/path';
 import { MemorySettings } from '../schema/memory';
+import { WorldContainer } from '../schema/brands';
 
 const userDataPath = (
   process.env.DEBUGGING || !app
@@ -27,3 +28,5 @@ export const DEFAULT_MEMORY: MemorySettings = {
   size: 2,
   unit: 'GB',
 } as const;
+
+export const DEFAULT_WORLD_CONTAINER = 'servers' as WorldContainer

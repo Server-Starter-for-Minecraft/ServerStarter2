@@ -1,5 +1,5 @@
 import { Brand } from '../util/brand';
-import { UUID } from './brands';
+import { UUID, WorldContainer, WorldName } from './brands';
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
 import { Player, PlayerSetting } from './player';
@@ -13,10 +13,10 @@ export type WorldID = Brand<UUID, 'WorldID'>;
 export interface WorldAbbr {
   /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   /** ワールド名 */
-  name: string;
+  name: WorldName;
 
   /** ディレクトリ */
-  container: string;
+  container: WorldContainer;
 
   /** ワールドのID (ServerStarterが起動するごとに変わる) */
   id: WorldID;

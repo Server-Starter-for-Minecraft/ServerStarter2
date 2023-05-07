@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { DEFAULT_MEMORY, mainPath } from '../const';
+import { DEFAULT_MEMORY, DEFAULT_WORLD_CONTAINER, mainPath } from '../const';
 import { SystemSettings } from 'src-electron/schema/system';
 import { fix } from 'src-electron/util/fix';
 import { defaultServerProperties } from '../settings/files/properties';
@@ -21,7 +21,7 @@ export function fixSystemSettings() {
   //console.log(store);
 
   const fixed = fix<SystemSettings>(store, {
-    container: { default: 'servers', custom: {} },
+    container: { default: DEFAULT_WORLD_CONTAINER, custom: {} },
     player: { players: [], groups: [] },
     remote: { github: { accounts: [] } },
     world: {

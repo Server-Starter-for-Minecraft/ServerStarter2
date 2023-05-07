@@ -2,8 +2,9 @@ import { Failable } from 'app/src-electron/api/failable';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/path';
 import { worldContainerToPath } from './worldContainer';
+import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 
-export type WorldLoaction = { name: string; container: string };
+export type WorldLoaction = { name: WorldName; container: WorldContainer };
 const worldPathMap: Record<WorldID, WorldLoaction> = {};
 
 export const WorldPathMap = {
