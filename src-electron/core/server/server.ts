@@ -31,8 +31,9 @@ import {
 import { MemoryUnit } from 'src-electron/schema/memory';
 import { foldSettings } from '../settings/settings';
 import { getPlayerSettingDiff } from '../settings/players';
-import { sleep } from 'app/src-electron/util/testTools';
+import { sleep } from 'app/src-electron/util/sleep';
 import { serverPropertiesHandler } from '../settings/files/properties';
+import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 
 class WorldUsingError extends Error {}
 
@@ -267,8 +268,15 @@ class ServerRunner {
       addConsole,
       addConsole,
       this.cwdPath.absolute().str(),
-      true
+      true,
+      // アプリケーション終了時/stopコマンドを実行 (実行から10秒のタイムアウトでプロセスキル)
+      async (process) => {
+        await process.write('stop');
+        await process;
+      },
+      10000
     );
+
     // フロントエンドからの入力を受け付ける
     this.stdin = process.write;
 

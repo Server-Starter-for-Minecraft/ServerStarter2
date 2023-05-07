@@ -4,7 +4,7 @@ import {
   World,
   WorldSettings,
 } from 'src-electron/schema';
-import { sleep } from '../../util/testTools';
+import { sleep } from '../../util/sleep';
 import { api } from 'src-electron//api';
 import { Failable } from '../../api/failable';
 
