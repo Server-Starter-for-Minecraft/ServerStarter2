@@ -9,13 +9,11 @@ import { getFrontAPIListener, setFrontAPI } from './front';
 // バックエンド
 import { backListener } from './back';
 
-
-export function setupIPC(mainwindow: BrowserWindow) {
+export function setupIPC(mainwindowGetter: () => BrowserWindow | undefined) {
   const { back, front } = linkIPC<API>(
     backListener,
-    getFrontAPIListener(mainwindow)
+    getFrontAPIListener(mainwindowGetter)
   );
   setFrontAPI(front);
   setBackAPI(back);
 }
-

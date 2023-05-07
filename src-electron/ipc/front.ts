@@ -2,26 +2,30 @@ import { API } from 'src-electron/api/api';
 import { FrontListener, FrontCaller } from 'src-electron/ipc/link';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from 'src-electron/ipc/util';
 import { BrowserWindow } from 'electron';
+import { Failable } from '../api/failable';
 
 type ChanneledFunc<C, T extends (...args: any) => any> = { __channel__: C } & T;
 
 /** MainからMainWindowの処理を呼び出し非同期で待機する */
 export const invoke = <C extends string, T>(
   channel: C,
-  window: BrowserWindow
+  window: () => BrowserWindow | undefined
 ) =>
-  ((...args: any[]) =>
-    ipcInvoke<C, T>(window, channel, ...args)) as ChanneledFunc<
-    C,
-    (...args: any[]) => Promise<T>
-  >;
+  ((...args: any[]) => {
+    const win = window();
+    if (win !== undefined) return ipcInvoke<C, T>(win, channel, ...args);
+    else return new Error('window not exists');
+  }) as ChanneledFunc<C, (...args: any[]) => Promise<Failable<T>>>;
 
 /** MainからMainWindowの処理を同期で発火する */
-export const send = <C extends string>(channel: C, window: BrowserWindow) =>
-  ((...args: any[]) => ipcSend(window, channel, ...args)) as ChanneledFunc<
-    C,
-    (...args: any[]) => void
-  >;
+export const send = <C extends string>(
+  channel: C,
+  window: () => BrowserWindow | undefined
+) =>
+  ((...args: any[]) => {
+    const win = window();
+    if (win !== undefined) ipcSend(win, channel, ...args);
+  }) as ChanneledFunc<C, (...args: any[]) => void>;
 
 export function setFrontAPI(front: FrontCaller<API>) {
   Object.entries(front.invoke).forEach(([k, v]) => {
@@ -41,7 +45,9 @@ type ChanneledFrontListener<L extends FrontListener<any>> = {
   };
 };
 
-export function getFrontAPIListener(window: BrowserWindow): FrontListener<API> {
+export function getFrontAPIListener(
+  window: () => BrowserWindow | undefined
+): FrontListener<API> {
   const result: ChanneledFrontListener<FrontListener<API>> = {
     on: {
       StartServer: send('StartServer', window),
@@ -53,5 +59,6 @@ export function getFrontAPIListener(window: BrowserWindow): FrontListener<API> {
       AgreeEula: invoke('AgreeEula', window),
     },
   };
+  const a = invoke('AgreeEula', window);
   return result;
 }

@@ -1,11 +1,16 @@
 import { IAPI } from 'src-electron/api/types';
+import { Failable } from '../api/failable';
 
 export type BackCaller<A extends IAPI> = {
   send: {
     [key in keyof A['sendMainToWindow']]: A['sendMainToWindow'][key];
   };
   invoke: {
-    [key in keyof A['invokeMainToWindow']]: A['invokeMainToWindow'][key];
+    [key in keyof A['invokeMainToWindow']]: A['invokeMainToWindow'][key] extends (
+      ...args: infer P
+    ) => Promise<infer R>
+      ? (...args: P) => Promise<Failable<R>>
+      : never;
   };
 };
 
@@ -32,7 +37,11 @@ export type FrontListener<A extends IAPI> = {
     [key in keyof A['sendMainToWindow']]: A['sendMainToWindow'][key];
   };
   handle: {
-    [key in keyof A['invokeMainToWindow']]: A['invokeMainToWindow'][key];
+    [key in keyof A['invokeMainToWindow']]: A['invokeMainToWindow'][key] extends (
+      ...args: infer P
+    ) => Promise<infer R>
+      ? (...args: P) => Promise<Failable<R>>
+      : never;
   };
 };
 

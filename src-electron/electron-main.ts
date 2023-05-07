@@ -55,7 +55,7 @@ function createWindow() {
   });
 
   // フロントエンドとバックエンドの呼び出し処理をリンク
-  setupIPC(mainWindow);
+  setupIPC(() => mainWindow);
 }
 
 app.whenReady().then(createWindow);

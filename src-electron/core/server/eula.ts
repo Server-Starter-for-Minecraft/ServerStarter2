@@ -37,7 +37,10 @@ export async function checkEula(
   let agree = eula;
 
   if (!agree) {
-    agree = await api.invoke.AgreeEula(worldId, url);
+    const result = await api.invoke.AgreeEula(worldId, url);
+    // mainWindowが存在しなかった場合エラーとなる
+    if (isFailure(result)) return result;
+    agree = result;
   }
 
   const txt = stringifyEula(agree, comments);
