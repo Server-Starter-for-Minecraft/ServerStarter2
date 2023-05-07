@@ -14,7 +14,6 @@ import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';
 import { GithubRemote } from 'src-electron/schema/remote';
 import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
-import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { WorldPathMap } from '../../world/worldMap';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {

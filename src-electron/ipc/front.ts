@@ -59,6 +59,5 @@ export function getFrontAPIListener(
       AgreeEula: invoke('AgreeEula', window),
     },
   };
-  const a = invoke('AgreeEula', window);
   return result;
 }

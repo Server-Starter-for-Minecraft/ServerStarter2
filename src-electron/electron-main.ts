@@ -5,7 +5,6 @@ import path from 'path';
 import os from 'os';
 import { setupIPC } from './ipc/setup';
 import { onQuit } from './lifecycle/lifecycle';
-import { sleep } from './util/testTools';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
