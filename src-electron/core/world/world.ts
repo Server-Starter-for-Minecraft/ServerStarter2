@@ -22,7 +22,10 @@ export async function deleteWorld(worldID: WorldID) {
   const cwd = runOnSuccess(wroldLocationToPath)(WorldPathMap.get(worldID));
   if (isFailure(cwd)) return cwd;
 
-  await failabilify(cwd.remove)();
+  const result = await failabilify(cwd.remove)();
+  if (isFailure(result)) return result;
+
+  WorldPathMap.delete(worldID);
   return;
 }
 
