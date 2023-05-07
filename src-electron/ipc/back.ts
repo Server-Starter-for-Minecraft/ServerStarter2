@@ -46,6 +46,6 @@ export const backListener: BackListener<API> = {
     GetRunningWorld: getRunningWorld,
     // UpdatetRunningWorld: updateRunningWorld,
 
-    GenUUID: genUUID,
+    GenUUID: async () => genUUID(),
   },
 };

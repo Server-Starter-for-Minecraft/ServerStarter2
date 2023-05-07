@@ -49,7 +49,7 @@ export async function getWorldAbbr(
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 
   const result: WorldAbbr = {
-    id: (await genUUID()) as WorldID,
+    id: genUUID() as WorldID,
     name: path.basename() as WorldName,
     container: worldContainer as WorldContainer,
   };

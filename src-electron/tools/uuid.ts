@@ -8,4 +8,4 @@ const crypto = require('crypto');
 //   return uuid
 // }
 /**UUIDの生成関数 */
-export const genUUID = async (): Promise<UUID> => crypto.randomUUID();
+export const genUUID = (): UUID => crypto.randomUUID();
