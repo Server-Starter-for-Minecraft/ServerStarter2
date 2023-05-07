@@ -444,7 +444,7 @@ class ServerRunner {
     return this.world;
   }
 
-  // 実行中のワールドの設定を更新
+  // 実行中のワールドの設定を更新 (現状使用していない)
   async setWorldSettings(settings: FoldSettings): Promise<Failable<World>> {
     if (this.stdin === undefined)
       return new Error(`World ${this.world.id} is not in running`);
@@ -516,6 +516,6 @@ export function getRunningWorld(world: WorldID) {
   return ServerRunner.getServerRunner(world).getWorldSettings();
 }
 
-export function updateRunningWorld(world: WorldID, settings: FoldSettings) {
-  return ServerRunner.getServerRunner(world).setWorldSettings(settings);
-}
+// export function updateRunningWorld(world: WorldID, settings: FoldSettings) {
+//   return ServerRunner.getServerRunner(world).setWorldSettings(settings);
+// }

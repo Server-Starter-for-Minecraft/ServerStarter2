@@ -74,10 +74,10 @@ export interface API extends IAPI {
     GetRunningWorld: (WorldId: WorldID) => Promise<Failable<World>>;
 
     /** 現在実行中のワールドの設定等を変更(戻り値は変更後のワールド) */
-    UpdatetRunningWorld: (
-      WorldId: WorldID,
-      settings: FoldSettings
-    ) => Promise<Failable<World>>;
+    // UpdatetRunningWorld: (
+    //   WorldId: WorldID,
+    //   settings: FoldSettings
+    // ) => Promise<Failable<World>>;
 
     DeleteWorld: (world: WorldID) => Promise<Failable<void>>;
 

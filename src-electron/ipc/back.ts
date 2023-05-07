@@ -4,8 +4,7 @@ import {
   getRunningWorld,
   runCommand,
   runServer,
-  saveWorldSettings,
-  updateRunningWorld,
+  saveWorldSettings
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
@@ -42,7 +41,7 @@ export const backListener: BackListener<API> = {
     GetWorld: getWorld,
 
     GetRunningWorld: getRunningWorld,
-    UpdatetRunningWorld: updateRunningWorld,
+    // UpdatetRunningWorld: updateRunningWorld,
 
     GenUUID: genUUID,
   },
