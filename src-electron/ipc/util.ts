@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { rootLoggerHierarchy } from '../core/logger';
+import { assertComplete } from '../lifecycle/lifecycle';
 
 export const ipcLoggers = rootLoggerHierarchy.ipc;
 
@@ -23,7 +24,7 @@ export const ipcHandle = <C extends string>(
         return x;
       }
     );
-    return result;
+    return assertComplete(result);
   });
 
 export const ipcOn = <C extends string>(
