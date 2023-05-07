@@ -4,6 +4,8 @@ import { app, BrowserWindow, nativeTheme } from 'electron';
 import path from 'path';
 import os from 'os';
 import { setupIPC } from './ipc/setup';
+import { onQuit } from './lifecycle/lifecycle';
+import { sleep } from './util/testTools';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -58,8 +60,20 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (platform !== 'darwin') {
+    await onQuit.invoke();
+    app.quit();
+  }
+});
+
+// will-quitのタイミングで終了時処理を走らせる
+let finishedWillQuitEvent = false;
+app.on('will-quit', async (e) => {
+  if (!finishedWillQuitEvent) {
+    e.preventDefault();
+    await onQuit.invoke();
+    finishedWillQuitEvent = true;
     app.quit();
   }
 });
