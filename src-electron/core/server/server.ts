@@ -26,7 +26,7 @@ import {
   World,
   WorldAdditional,
   WorldEdited,
-  WorldId,
+  WorldID,
 } from 'src-electron/schema/world';
 import { MemoryUnit } from 'src-electron/schema/memory';
 import { foldSettings } from '../settings/settings';
@@ -37,22 +37,18 @@ import { serverPropertiesHandler } from '../settings/files/properties';
 class WorldUsingError extends Error {}
 
 class ServerRunner {
-  private static serverMap: Record<string, ServerRunner> = {};
+  private static serverMap: Record<WorldID, ServerRunner> = {};
 
-  static getServerMapKey = ({ container, name }: WorldId) =>
-    container + '/' + name;
-
-  static getServerRunner(worldID: WorldId) {
-    return ServerRunner.serverMap[ServerRunner.getServerMapKey(worldID)];
+  static getServerRunner(worldID: WorldID) {
+    return ServerRunner.serverMap[worldID];
   }
 
-  static setServerRunner(worldID: WorldId, serverRunner: ServerRunner) {
-    ServerRunner.serverMap[ServerRunner.getServerMapKey(worldID)] =
-      serverRunner;
+  static setServerRunner(worldID: WorldID, serverRunner: ServerRunner) {
+    ServerRunner.serverMap[worldID] = serverRunner;
   }
 
-  static removeServerRunner(worldID: WorldId) {
-    delete ServerRunner.serverMap[ServerRunner.getServerMapKey(worldID)];
+  static removeServerRunner(worldID: WorldID) {
+    delete ServerRunner.serverMap[worldID];
   }
 
   stdin: undefined | ((command: string) => Promise<void>) = undefined;
@@ -61,7 +57,7 @@ class ServerRunner {
   args: string[];
 
   constructor(world: WorldEdited) {
-    ServerRunner.setServerRunner(world, this);
+    ServerRunner.setServerRunner(world.id, this);
 
     this.world = world;
 
@@ -72,12 +68,8 @@ class ServerRunner {
     this.cwdPath = worldContainerToPath(world.container).child(world.name);
   }
 
-  get id(): WorldId {
-    return { name: this.world.name, container: this.world.container };
-  }
-
   private sendUpdateStatus(message: string) {
-    api.send.UpdateStatus(this.id, message);
+    api.send.UpdateStatus(this.world.id, message);
   }
 
   private async pull(): Promise<Failable<undefined>> {
@@ -244,10 +236,10 @@ class ServerRunner {
     // Eulaチェック
     this.sendUpdateStatus('Eulaの同意状況を確認中');
     const eulaAgreement = await checkEula(
+      this.world.id,
       javaPath,
       server.programArguments,
-      this.cwdPath,
-      this.world
+      this.cwdPath
     );
 
     // Eulaチェックに失敗した場合エラー
@@ -266,7 +258,8 @@ class ServerRunner {
     // javaのサブプロセスを起動
     // TODO: エラー出力先のハンドル
 
-    const addConsole = (chunk: string) => api.send.AddConsole(this.id, chunk);
+    const addConsole = (chunk: string) =>
+      api.send.AddConsole(this.world.id, chunk);
 
     const process = interactiveProcess(
       javaPath.absolute().str(),
@@ -280,13 +273,13 @@ class ServerRunner {
     this.stdin = process.write;
 
     // サーバー起動をWindowに知らせる
-    api.send.StartServer(this.id);
+    api.send.StartServer(this.world.id);
 
     // サーバー終了まで待機
     const result = await process;
 
     // サーバー起動をWindowに知らせる
-    api.send.FinishServer(this.id);
+    api.send.FinishServer(this.world.id);
 
     // フロントエンドからの入力を無視
     this.stdin = undefined;
@@ -297,6 +290,7 @@ class ServerRunner {
   private constructWorld(additional: WorldAdditional): World {
     const world = this.world;
     return {
+      id: this.world.id,
       name: world.name,
       container: world.container,
       version: world.version,
@@ -429,20 +423,20 @@ class ServerRunner {
 
   async runCommand(command: string) {
     if (this.stdin === undefined)
-      return new Error(`World ${this.id} is not in running`);
+      return new Error(`World ${this.world.id} is not in running`);
 
     if (command == 'reboot') {
       // TODO: 再起動に関する実装を行う
     } else {
       await this.stdin(command);
-      api.send.AddConsole(this.id, `/${command}`);
+      api.send.AddConsole(this.world.id, `/${command}`);
     }
   }
 
   // 実行中のワールドの設定を取得
   async getWorldSettings(): Promise<Failable<World>> {
     if (this.stdin === undefined)
-      return new Error(`World ${this.id} is not in running`);
+      return new Error(`World ${this.world.id} is not in running`);
 
     const { properties, players } = await foldSettings(this.cwdPath);
     this.world.players = players;
@@ -453,7 +447,7 @@ class ServerRunner {
   // 実行中のワールドの設定を更新
   async setWorldSettings(settings: FoldSettings): Promise<Failable<World>> {
     if (this.stdin === undefined)
-      return new Error(`World ${this.id} is not in running`);
+      return new Error(`World ${this.world.id} is not in running`);
 
     // server.propertiesの保存
     await serverPropertiesHandler.save(this.cwdPath, settings.properties);
@@ -514,14 +508,14 @@ export const runServer = (world: WorldEdited) =>
 export const saveWorldSettings = (world: World) =>
   new ServerRunner(world).saveWorldSettings();
 
-export function runCommand(world: WorldId, command: string) {
+export function runCommand(world: WorldID, command: string) {
   ServerRunner.getServerRunner(world).runCommand(command);
 }
 
-export function getRunningWorld(world: WorldId) {
+export function getRunningWorld(world: WorldID) {
   return ServerRunner.getServerRunner(world).getWorldSettings();
 }
 
-export function updateRunningWorld(world: WorldId, settings: FoldSettings) {
+export function updateRunningWorld(world: WorldID, settings: FoldSettings) {
   return ServerRunner.getServerRunner(world).setWorldSettings(settings);
 }

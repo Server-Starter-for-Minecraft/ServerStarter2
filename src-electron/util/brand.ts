@@ -1,1 +1,1 @@
-export type Brand<T, B> = T & { __brand: B };
+export type Brand<T, B extends string> = T & { [K in B as `__${K}__`]: B };

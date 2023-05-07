@@ -2,7 +2,7 @@ import { api } from '../api';
 import { Path } from '../../util/path';
 import { Failable, isFailure } from '../../api/failable';
 import { execProcess } from '../../util/subprocess';
-import { WorldId } from 'app/src-electron/schema/world';
+import { WorldID } from 'app/src-electron/schema/world';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -11,10 +11,10 @@ import { WorldId } from 'app/src-electron/schema/world';
  * eula=falseだった場合ユーザーに同意を求める
  */
 export async function checkEula(
+  worldId: WorldID,
   javaPath: Path,
   programArgunets: string[],
-  serverCwdPath: Path,
-  worldId: WorldId
+  serverCwdPath: Path
 ): Promise<Failable<boolean>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
@@ -80,7 +80,7 @@ async function generateEula(
   javaPath: Path,
   programArgunets: string[],
   serverCwdPath: Path,
-  worldId: WorldId
+  worldId: WorldID
 ): Promise<Failable<undefined>> {
   api.send.UpdateStatus(worldId, 'eula.txtを生成中');
 

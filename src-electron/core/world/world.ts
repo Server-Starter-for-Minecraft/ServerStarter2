@@ -3,6 +3,7 @@ import {
   failabilify,
   isFailure,
   isSuccess,
+  runOnSuccess,
 } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
@@ -12,11 +13,16 @@ import { LEVEL_NAME } from '../const';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
 import { worldSettingsToWorld } from '../settings/converter';
-import { World, WorldAbbr, WorldId } from 'src-electron/schema/world';
+import { World, WorldAbbr, WorldID } from 'src-electron/schema/world';
+import { genUUID } from 'app/src-electron/tools/uuid';
+import { WorldPathMap, wroldLocationToPath } from './worldMap';
 
-export async function deleteWorld(world: WorldId) {
-  const dir = await worldContainerToPath(world.container).child(world.name);
-  return await failabilify(dir.remove)();
+export async function deleteWorld(worldID: WorldID) {
+  const cwd = runOnSuccess(wroldLocationToPath)(WorldPathMap.get(worldID));
+  if (isFailure(cwd)) return cwd;
+
+  await failabilify(cwd.remove)();
+  return;
 }
 
 export async function getWorldAbbrs(
@@ -39,15 +45,20 @@ export async function getWorldAbbr(
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 
   const result: WorldAbbr = {
+    id: (await genUUID()) as WorldID,
     name: path.basename(),
     container: worldContainer,
   };
   return result;
 }
 
-export async function getWorld(worldAbbr: WorldAbbr): Promise<Failable<World>> {
-  const { container, name } = worldAbbr;
-  const cwd = worldContainerToPath(container).child(name);
+export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
+  const location = WorldPathMap.get(worldID);
+  if (isFailure(location)) return location;
+  const { name, container } = location;
+
+  const cwd = wroldLocationToPath(location);
+  if (isFailure(cwd)) return cwd;
 
   const settings = await loadWorldJson(cwd);
   if (isFailure(settings)) return settings;

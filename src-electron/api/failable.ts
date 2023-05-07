@@ -45,3 +45,18 @@ export function failabilify<P extends any[], R>(
     ...args: P
   ) => R extends Promise<infer S> ? Promise<Failable<S>> : Failable<R>;
 }
+
+export type FailableTuple<T extends any[]> = {
+  [K in keyof T]: T[K] | Error;
+};
+
+export function runOnSuccess<P extends any[], R>(func: (...args: P) => R) {
+  function result(...args: FailableTuple<P>): Failable<R> {
+    if (args.every(isSuccess)) {
+      return func(...(args as P));
+    } else {
+      return (args as FailableTuple<P>).find(isFailure);
+    }
+  }
+  return result;
+}

@@ -6,7 +6,7 @@ import {
   World,
   WorldAbbr,
   WorldEdited,
-  WorldId,
+  WorldID,
 } from '../schema/world';
 import { Failable } from './failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
@@ -37,21 +37,21 @@ import { IAPI, IBackAPI, IFrontAPI } from './types';
  */
 export interface API extends IAPI {
   sendMainToWindow: {
-    StartServer: (world: WorldId) => void;
-    FinishServer: (world: WorldId) => void;
+    StartServer: (world: WorldID) => void;
+    FinishServer: (world: WorldID) => void;
     UpdateStatus: (
-      world: WorldId,
+      world: WorldID,
       message: string,
       current?: number,
       total?: number
     ) => void;
-    AddConsole: (world: WorldId, chunk: string) => void;
+    AddConsole: (world: WorldID, chunk: string) => void;
   };
   invokeMainToWindow: {
-    AgreeEula: (world: WorldId, url: string) => Promise<boolean>;
+    AgreeEula: (world: WorldID, url: string) => Promise<boolean>;
   };
   sendWindowToMain: {
-    Command: (world: WorldId, command: string) => void;
+    Command: (world: WorldID, command: string) => void;
     OpenBrowser: (url: string) => void;
     OpenFolder: (path: string) => void;
   };
@@ -68,18 +68,18 @@ export interface API extends IAPI {
     SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;
 
     GetWorldAbbrs: (worldContainer: string) => Promise<Failable<WorldAbbr[]>>;
-    GetWorld: (WorldId: WorldId) => Promise<Failable<World>>;
+    GetWorld: (WorldId: WorldID) => Promise<Failable<World>>;
 
     /** 現在実行中のワールドを取得(サーバー内でのデータの更新を反映する) */
-    GetRunningWorld: (WorldId: WorldId) => Promise<Failable<World>>;
+    GetRunningWorld: (WorldId: WorldID) => Promise<Failable<World>>;
 
     /** 現在実行中のワールドの設定等を変更(戻り値は変更後のワールド) */
     UpdatetRunningWorld: (
-      WorldId: WorldId,
+      WorldId: WorldID,
       settings: FoldSettings
     ) => Promise<Failable<World>>;
 
-    DeleteWorld: (world: WorldId) => Promise<Failable<void>>;
+    DeleteWorld: (world: WorldID) => Promise<Failable<void>>;
 
     GetVersions: (
       type: VersionType,

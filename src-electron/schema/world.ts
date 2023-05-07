@@ -1,3 +1,5 @@
+import { Brand } from '../util/brand';
+import { UUID } from './brands';
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
 import { Player, PlayerSetting } from './player';
@@ -5,18 +7,21 @@ import { Remote } from './remote';
 import { ServerProperties, ServerPropertiesMap } from './serverproperty';
 import { Version } from './version';
 
-/** ワールドの情報取得時にIDとして使うデータ構造 */
-export interface WorldId {
+export type WorldID = Brand<UUID, 'WorldID'>;
+
+/** 取得が速い代わりに情報が少ないワールド */
+export interface WorldAbbr {
+  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
   /** ワールド名 */
   name: string;
 
   /** ディレクトリ */
   container: string;
-}
 
-/** 取得が速い代わりに情報が少ないワールド */
-export interface WorldAbbr extends WorldId {
-  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+  /** ワールドのID (ServerStarterが起動するごとに変わる) */
+  id: WorldID;
+
+  /** アイコンのURI */
   avater_path?: string;
 }
 
@@ -85,9 +90,6 @@ export type WorldEditedAdditional = {
 };
 
 export type WorldEdited = WorldBase & {
-  /** ワールド名称を変更する場合 */
-  new_name?: string;
-
   /** カスタムマップを導入する場合 */
   custom_map?: NewData;
 
