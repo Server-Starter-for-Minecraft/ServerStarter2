@@ -9,10 +9,9 @@ export const onQuit = createAppEvent();
  * 注釈: Windows では、システムのシャットダウン/再起動やユーザーのログアウトでアプリケーションが閉じられようとしている場合には、処理の終了は保証されない
  */
 export async function assertComplete<T>(promise: Promise<T>) {
-  const dispatch = onQuit(async (dispatch) => {
+  const dispatch = onQuit(async () => {
     await promise;
-    dispatch();
-  });
+  }, true);
   const result = await promise;
   dispatch();
   return result;

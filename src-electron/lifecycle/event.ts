@@ -5,7 +5,7 @@ import { toEntries } from '../util/obj';
 export type AppEventListener = (dispatch: () => void) => void | Promise<void>;
 
 export type AppEvent = {
-  (listener: AppEventListener): () => void;
+  (listener: AppEventListener, once: boolean): () => void;
   invoke: () => Promise<void>;
 };
 
@@ -18,10 +18,16 @@ export const createAppEvent = (): AppEvent => {
     }
   };
 
-  const result = (listener: AppEventListener) => {
+  const result = (listener: AppEventListener, once: boolean) => {
     const id = genUUID();
-    listeners[id] = listener;
-    return dispatcher(id);
+    const dispatch = dispatcher(id);
+    listeners[id] = once
+      ? async () => {
+          await listener(dispatch);
+          dispatch();
+        }
+      : listener;
+    return dispatch;
   };
 
   const invoke = async () => {
