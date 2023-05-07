@@ -4,7 +4,7 @@ import {
   getRunningWorld,
   runCommand,
   runServer,
-  saveWorldSettings
+  saveWorldSettings,
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
@@ -16,6 +16,7 @@ import {
 import { getDefaultSettings } from '../core/settings/settings';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { genUUID } from 'src-electron/tools/uuid';
+import { validateNewWorldName } from '../core/world/name';
 
 export const backListener: BackListener<API> = {
   on: {
@@ -39,6 +40,8 @@ export const backListener: BackListener<API> = {
     SetWorldContainers: setWorldContainers,
     GetWorldAbbrs: getWorldAbbrs,
     GetWorld: getWorld,
+
+    ValidateNewWorldName: validateNewWorldName,
 
     GetRunningWorld: getRunningWorld,
     // UpdatetRunningWorld: updateRunningWorld,

@@ -1,4 +1,4 @@
-import { WorldContainer } from '../schema/brands';
+import { UUID, WorldContainer, WorldName } from '../schema/brands';
 import { SystemSettings, WorldContainers } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import {
@@ -68,7 +68,9 @@ export interface API extends IAPI {
     GetWorldContainers: () => Promise<WorldContainers>;
     SetWorldContainers: (worldContainers: WorldContainers) => Promise<void>;
 
-    GetWorldAbbrs: (worldContainer: WorldContainer) => Promise<Failable<WorldAbbr[]>>;
+    GetWorldAbbrs: (
+      worldContainer: WorldContainer
+    ) => Promise<Failable<WorldAbbr[]>>;
     GetWorld: (WorldId: WorldID) => Promise<Failable<World>>;
 
     /** 現在実行中のワールドを取得(サーバー内でのデータの更新を反映する) */
@@ -87,7 +89,13 @@ export interface API extends IAPI {
       useCache: boolean
     ) => Promise<Failable<Version[]>>;
 
-    GenUUID: () => Promise<string>;
+    /** ワールド名が使用可能かどうかを検証する */
+    ValidateNewWorldName: (
+      worldContainer: WorldContainer,
+      worldName: string
+    ) => Promise<Failable<WorldName>>;
+
+    GenUUID: () => Promise<UUID>;
   };
 }
 

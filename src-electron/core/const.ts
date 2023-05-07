@@ -29,4 +29,6 @@ export const DEFAULT_MEMORY: MemorySettings = {
   unit: 'GB',
 } as const;
 
-export const DEFAULT_WORLD_CONTAINER = 'servers' as WorldContainer
+export const DEFAULT_WORLD_CONTAINER = 'servers' as WorldContainer;
+
+export const WORLDNAME_REGEX = /^[a-zA-Z0-9_-]+$/;

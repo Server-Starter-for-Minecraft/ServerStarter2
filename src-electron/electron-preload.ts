@@ -114,6 +114,8 @@ const api: FrontAPI = {
 
   invokeGetVersions: invoke('GetVersions'),
 
+  invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
+
   invokeGenUUID: invoke('GenUUID'),
 
   invokeGetRunningWorld: invoke('GetRunningWorld'),
