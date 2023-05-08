@@ -15,17 +15,17 @@ import { worldContainerToPath } from './worldContainer';
 import { worldSettingsToWorld } from '../settings/converter';
 import { World, WorldAbbr, WorldID } from 'src-electron/schema/world';
 import { genUUID } from 'app/src-electron/tools/uuid';
-import { WorldPathMap, wroldLocationToPath } from './worldMap';
+import { WorldLocationMap, wroldLocationToPath } from './worldMap';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 
 export async function deleteWorld(worldID: WorldID) {
-  const cwd = runOnSuccess(wroldLocationToPath)(WorldPathMap.get(worldID));
+  const cwd = runOnSuccess(wroldLocationToPath)(WorldLocationMap.get(worldID));
   if (isFailure(cwd)) return cwd;
 
   const result = await failabilify(cwd.remove)();
   if (isFailure(result)) return result;
 
-  WorldPathMap.delete(worldID);
+  WorldLocationMap.delete(worldID);
   return;
 }
 
@@ -57,7 +57,7 @@ export async function getWorldAbbr(
 }
 
 export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
-  const location = WorldPathMap.get(worldID);
+  const location = WorldLocationMap.get(worldID);
   if (isFailure(location)) return location;
   const { name, container } = location;
 

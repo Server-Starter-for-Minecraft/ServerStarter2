@@ -7,7 +7,7 @@ import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 export type WorldLoaction = { name: WorldName; container: WorldContainer };
 const worldPathMap: Record<WorldID, WorldLoaction> = {};
 
-export const WorldPathMap = {
+export const WorldLocationMap = {
   get(id: WorldID): Failable<WorldLoaction> {
     return worldPathMap[id] ?? new Error(`missing world id:${id}`);
   },

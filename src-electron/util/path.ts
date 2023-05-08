@@ -122,4 +122,11 @@ export class Path {
     await target.remove(true);
     await fs.copy(this.str(), target.str());
   }
+
+  async moveTo(target: Path) {
+    if (!this.exists()) return;
+    await target.parent().mkdir(true);
+    await target.remove(true);
+    await fs.move(this.str(), target.str());
+  }
 }

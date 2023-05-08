@@ -14,7 +14,7 @@ import { GithubBlob, GithubTree } from './githubApi';
 import { worldSettingsToWorld } from '../../settings/converter';
 import { GithubRemote } from 'src-electron/schema/remote';
 import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
-import { WorldPathMap } from '../../world/worldMap';
+import { WorldLocationMap } from '../../world/worldMap';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
@@ -191,7 +191,7 @@ async function getWorld(
   id: WorldID,
   remote: GithubRemote
 ): Promise<Failable<World>> {
-  const location = WorldPathMap.get(id);
+  const location = WorldLocationMap.get(id);
   if (isFailure(location)) return location;
 
   const { container, name } = location;

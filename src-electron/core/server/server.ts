@@ -1,5 +1,10 @@
 import { getLog4jArg } from './log4j';
-import { Failable, isFailure, isSuccess } from '../../api/failable';
+import {
+  Failable,
+  isFailure,
+  isSuccess,
+  runOnSuccess,
+} from '../../api/failable';
 import { needEulaAgreement, readyVersion } from '../version/version';
 import { readyJava } from '../../util/java/java';
 import {
@@ -33,7 +38,7 @@ import { foldSettings } from '../settings/settings';
 import { getPlayerSettingDiff } from '../settings/players';
 import { sleep } from 'app/src-electron/util/sleep';
 import { serverPropertiesHandler } from '../settings/files/properties';
-import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
+import { WorldLocationMap, wroldLocationToPath } from '../world/worldMap';
 
 class WorldUsingError extends Error {}
 
@@ -73,6 +78,7 @@ class ServerRunner {
     api.send.UpdateStatus(this.world.id, message);
   }
 
+  /** プルを実行 */
   private async pull(): Promise<Failable<undefined>> {
     const remote_pull = this.world.remote_pull;
     if (remote_pull === undefined) return;
@@ -87,6 +93,30 @@ class ServerRunner {
           }`
         );
     }
+  }
+
+  /** ワールドの保存場所を変更する */
+  private async changeLocation(): Promise<Failable<undefined>> {
+    const world = this.world;
+
+    const nextPath = wroldLocationToPath(world);
+
+    // 現状のパスを取得
+    const currentPath = runOnSuccess(wroldLocationToPath)(
+      WorldLocationMap.get(world.id)
+    );
+    if (isFailure(currentPath)) return currentPath;
+
+    if (currentPath.absolute().str() !== nextPath.str()) {
+      await currentPath.moveTo(nextPath);
+    }
+
+    WorldLocationMap.set(world.id, {
+      name: world.name,
+      container: world.container,
+    });
+
+    this.cwdPath = nextPath;
   }
 
   /** ワールドの設定を保存しデータをリモートにpushする */
@@ -333,6 +363,9 @@ class ServerRunner {
         `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
       );
 
+    // ワ－ルドパスが変更されていた場合、ディレクトリを移動
+    await this.changeLocation();
+
     // プルを開始
     const pulling = this.pull();
 
@@ -401,6 +434,9 @@ class ServerRunner {
       return new WorldUsingError(
         `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
       );
+
+    // ワ－ルドパスが変更されていた場合、ディレクトリを移動
+    await this.changeLocation();
 
     // プルを開始
     const pullResult = await this.awaitPull(this.pull());
