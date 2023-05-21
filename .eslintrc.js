@@ -73,6 +73,7 @@ module.exports = {
     quotes: ['warn', 'single', { avoidEscape: true }],
 
     '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
 
     // this rule, if on, would require explicit return type on the `render` function
     '@typescript-eslint/explicit-function-return-type': 'off',
