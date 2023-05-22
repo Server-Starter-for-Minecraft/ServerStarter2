@@ -1,5 +1,5 @@
 import { Locale } from 'app/src-electron/schema/system';
-import enUS from './en-US';
+import { enUS } from './en-US';
 
 // 現状enUSのデータ型をスキーマとしている
 type MessageSchema = typeof enUS;
