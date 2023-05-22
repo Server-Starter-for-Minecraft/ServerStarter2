@@ -41,18 +41,22 @@ export async function getWorldAbbrs(
 
 export async function getWorldAbbr(
   path: Path,
-  worldContainer: string
+  worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
   if (!path.isDirectory()) return new Error(`${path.str()} is not directory.`);
   const jsonpath = getWorldJsonPath(path);
 
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 
+  const id = genUUID() as WorldID;
+  const name = path.basename() as WorldName;
+  const container = worldContainer as WorldContainer;
   const result: WorldAbbr = {
-    id: genUUID() as WorldID,
-    name: path.basename() as WorldName,
-    container: worldContainer as WorldContainer,
+    id,
+    name,
+    container,
   };
+  WorldLocationMap.set(id, { name, container });
   return result;
 }
 
