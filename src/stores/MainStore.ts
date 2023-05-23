@@ -4,8 +4,7 @@ import { defineStore } from 'pinia';
 export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
-      selectedIdx: -1,
-      leftDrawerOpen: true,
+      selectedIdx: 0,
       worldList: [] as WorldEdited[],
     };
   },

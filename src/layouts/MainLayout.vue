@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import DrawerVue from 'src/components/MainLayout/DrawerVue.vue';
+import WorldList from 'src/components/MainLayout/WorldList.vue';
+import WorldPage from 'src/pages/WorldPage.vue';
 </script>
 
 <template>
   <q-layout view="hHh Lpr rff">
-
-    <DrawerVue/>
-
-    <!-- <q-page-container>
-      <router-view />
-    </q-page-container> -->
+    <q-page-container class="row" style="width: 100vw;">
+      <WorldList/>
+      <WorldPage/>
+    </q-page-container>
   </q-layout>
 </template>
