@@ -27,7 +27,7 @@ export async function InitWindow() {
   // TODO: container or world が読み込めなかった場合にPopupを表示する
   const worldAbbrs = worldAbbrFailables.filter(isSuccess).flatMap((x) => x);
   const worlds = await Promise.all(
-    worldAbbrs.map((abbr) => window.API.invokeGetWorld(abbr))
+    worldAbbrs.map((abbr) => window.API.invokeGetWorld(abbr.id))
   );
   mainStore.worldList = worlds.filter(isSuccess);
 
