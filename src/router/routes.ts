@@ -5,7 +5,12 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('src/pages/HomePage.vue') },
+      { path: 'home', component: () => import('src/pages/WorldTabs/HomePage.vue') },
+      { path: 'console', component: () => import('src/pages/WorldTabs/ConsolePage.vue') },
+      { path: 'property', component: () => import('src/pages/WorldTabs/PropertyPage.vue') },
+      { path: 'player', component: () => import('src/pages/WorldTabs/PlayerPage.vue') },
+      { path: 'contents', component: () => import('src/pages/WorldTabs/ContentsPage.vue') },
+      { path: 'share-world', component: () => import('src/pages/WorldTabs/ShareWorldPage.vue') },
     ]
   },
   {
