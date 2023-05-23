@@ -5,7 +5,7 @@ import WorldPage from 'src/pages/WorldPage.vue';
 
 <template>
   <q-layout view="hHh Lpr rff">
-    <q-page-container class="row" style="width: 100vw;">
+    <q-page-container class="row">
       <WorldList/>
       <WorldPage/>
     </q-page-container>
