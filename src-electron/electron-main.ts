@@ -38,7 +38,8 @@ function createWindow() {
   });
 
   mainWindow.loadURL(process.env.APP_URL);
-  mainWindow.removeMenu()
+  // TODO: リリース時にコメントイン
+  // mainWindow.removeMenu()
 
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled
