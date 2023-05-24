@@ -10,7 +10,7 @@
     class="fit q-px-sm"
     style="flex: 1 1 0;"
   >
-    <q-route-tab to="/home" label="ホーム" />
+    <q-route-tab to="/" label="ホーム" />
     <q-route-tab to="/console" label="サーバー本体" />
     <q-route-tab to="/property" label="プロパティ" />
     <q-route-tab to="/player" label="プレイヤー管理" />

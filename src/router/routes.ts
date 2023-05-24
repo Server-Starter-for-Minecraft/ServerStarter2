@@ -5,7 +5,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: 'home', component: () => import('src/pages/WorldTabs/HomePage.vue') },
+      { path: '', component: () => import('src/pages/WorldTabs/HomePage.vue') },
       { path: 'console', component: () => import('src/pages/WorldTabs/ConsolePage.vue') },
       { path: 'property', component: () => import('src/pages/WorldTabs/PropertyPage.vue') },
       { path: 'player', component: () => import('src/pages/WorldTabs/PlayerPage.vue') },
