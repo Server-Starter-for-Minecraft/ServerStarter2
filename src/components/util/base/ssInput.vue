@@ -36,7 +36,7 @@ const model = computed({
     class="font"
   >
     <template v-slot:label>
-      <p class="font q-mb-sm">{{ label }}</p>
+      <p class="q-pb-sm">{{ label }}</p>
     </template>
   </q-input>
 </template>

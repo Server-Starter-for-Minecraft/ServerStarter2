@@ -35,7 +35,7 @@ const model = computed({
     :option-value="optionValue"
   >
     <template v-slot:label>
-      <p class="font q-pb-none">{{ label }}</p>
+      <p class="font q-pb-sm">{{ label }}</p>
     </template>
   </q-select>
 </template>

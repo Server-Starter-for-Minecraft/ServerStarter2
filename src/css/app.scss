@@ -3,6 +3,13 @@ p {
   font-size: 14pt;
 }
 
+h1 {
+  font-size: 1.5rem;
+  line-height: 1em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
 // スクロールバー
 html {
     overflow: overlay; 
@@ -48,6 +55,7 @@ html {
 
 // コンテンツの表示領域を定義
 .mainField {
+  width: 80%;
   max-width: 1000px;
   margin: 0 auto;
 }
