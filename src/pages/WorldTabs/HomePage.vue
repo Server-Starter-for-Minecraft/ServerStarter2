@@ -16,7 +16,7 @@ const showSoloWorld = ref(false)
 <template>
   <div class="mainField">
     <!-- TODO: 入力欄のバリデーション -->
-    <h1>ワールド名</h1>
+    <h1 class="q-mt-none">ワールド名</h1>
     <SsInput
       v-model="world.name"
       label="半角英数字でワールド名を入力"

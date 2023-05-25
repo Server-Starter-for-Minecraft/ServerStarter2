@@ -4,11 +4,11 @@ import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 </script>
 
 <template>
-  <div class="column fit">
+  <div class="column" style="width: 100%; min-height: 100vh;">
     <HeaderView/>
     <SettingTabsView/>
     
-    <div class="fit" style="flex: 1 1 0;">
+    <div class="fit col">
       <router-view />
     </div>
   </div>

@@ -6,8 +6,8 @@ p {
 h1 {
   font-size: 1.5rem;
   line-height: 1em;
-  margin-top: 2em;
-  margin-bottom: 1em;
+  padding-top: 2rem;
+  padding-bottom: 1rem;
 }
 
 // スクロールバー
@@ -55,6 +55,7 @@ html {
 
 // コンテンツの表示領域を定義
 .mainField {
+  height: 100%;
   width: 80%;
   max-width: 1000px;
   margin: 0 auto;
