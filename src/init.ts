@@ -5,7 +5,7 @@ import { useSystemStore } from './stores/SystemStore';
 import { isSuccess } from 'app/src-electron/api/failable';
 import { deepCopy } from './scripts/deepCopy';
 
-export async function InitWindow() {
+export async function initWindow() {
   // storeの初期化
   const sysStore = useSystemStore();
   const mainStore = useMainStore();
@@ -13,7 +13,6 @@ export async function InitWindow() {
   // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み
   await getAllVersion(true);
-  getAllVersion(false);
 
   // world読み込み
   sysStore.worldContainers = await window.API.invokeGetWorldContainers();
@@ -37,6 +36,11 @@ export async function InitWindow() {
 
   // systemSettingsの読み込み
   sysStore.systemSettings = deepCopy(await window.API.invokeGetSystemSettings())
+}
+
+export async function afterWindow() {
+  // バージョンの読み込み
+  getAllVersion(false);
 }
 
 /**
