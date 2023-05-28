@@ -8,7 +8,7 @@ import IconButtonView from '../World/IconButtonView.vue';
 const store = useMainStore();
 const searchWorldName = ref('')
 const drawer = ref(true)
-const miniDrawer = ref(false)
+const miniDrawer = ref(true)
 </script>
 
 <template>

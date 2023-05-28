@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useWorldTabsStore } from 'src/stores/WorldTabsStore';
 import { thumbStyle } from '../scrollBar';
 
 interface Group {
@@ -7,11 +8,14 @@ interface Group {
   label: string
 }
 
-const menuLink = ref('')
+const worldStore = useWorldTabsStore()
 
+const menuLink = ref('base')
+
+// TODO: 将来的にnameはclassifications.tsから取得し、labelはi18nからnameをkeyとして取得
 const groupNames: Group[] = [
   {
-    name: '',
+    name: 'base',
     label: '基本設定'
   },
   {
@@ -59,6 +63,11 @@ const groupNames: Group[] = [
     label: 'その他'
   }
 ]
+
+function groupClicked(selectedGroupName: string) {
+  menuLink.value = selectedGroupName
+  worldStore.property.selectTab = selectedGroupName
+}
 </script>
 
 <template>
@@ -70,10 +79,8 @@ const groupNames: Group[] = [
       <template v-for="group in groupNames" :key="group">
         <q-item
           clickable
-          v-ripple
-          :to="`/property/${group.name}`"
           :active="menuLink === group.name"
-          @click="menuLink = group.name"
+          @click="() => groupClicked(group.name)"
         >
           <q-item-section style="width: max-content;">{{ group.label }}</q-item-section>
         </q-item>
