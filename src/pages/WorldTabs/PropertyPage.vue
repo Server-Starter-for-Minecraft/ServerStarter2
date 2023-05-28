@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { thumbStyle } from 'src/components/World/scrollBar';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import { ref } from 'vue';
 
 const searchProp = ref('')
 </script>
@@ -18,6 +19,14 @@ const searchProp = ref('')
       <div class="row fit" style="flex: 1 1 0;">
         <SideMenuView/>
         <q-separator vertical inset/>
+        <div class="col">
+          <q-scroll-area
+            :thumb-style="thumbStyle"
+            class="fit"
+          >
+            <RouterView/>
+          </q-scroll-area>
+        </div>
       </div>
     </div>
   </div>

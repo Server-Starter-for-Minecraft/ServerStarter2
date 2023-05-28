@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { thumbStyle } from '../scrollBar';
 
 interface Group {
   name: string
   label: string
 }
 
-const menuLink = ref('inbox')
+const menuLink = ref('')
 
 const groupNames: Group[] = [
   {
@@ -61,16 +62,22 @@ const groupNames: Group[] = [
 </script>
 
 <template>
-  <q-list>
-    <template v-for="group in groupNames" :key="group">
-      <q-item
-        clickable
-        v-ripple
-        :active="menuLink === group.name"
-        @click="menuLink = group.name"
-      >
-        <q-item-section>{{ group.label }}</q-item-section>
-      </q-item>
-    </template>
-  </q-list>
+  <div style="width: 170px;">
+    <q-scroll-area
+      :thumb-style="thumbStyle"
+      class="fit"
+    >
+      <template v-for="group in groupNames" :key="group">
+        <q-item
+          clickable
+          v-ripple
+          :to="group.name"
+          :active="menuLink === group.name"
+          @click="menuLink = group.name"
+        >
+          <q-item-section style="width: max-content;">{{ group.label }}</q-item-section>
+        </q-item>
+      </template>
+    </q-scroll-area>
+  </div>
 </template>
