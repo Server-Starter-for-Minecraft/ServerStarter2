@@ -8,8 +8,8 @@ import SettingTabsView from 'src/components/World/SettingTabsView.vue';
     <HeaderView/>
     <SettingTabsView/>
     
-    <div class="fit col">
+    <q-scroll-area class="fit col">
       <router-view />
-    </div>
+    </q-scroll-area>
   </div>
 </template>
