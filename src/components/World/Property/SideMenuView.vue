@@ -23,7 +23,7 @@ const groupNames: Group[] = [
     label: 'サーバー'
   },
   {
-    name: 'generation',
+    name: 'generater',
     label: 'ワールド生成'
   },
   {
@@ -71,7 +71,7 @@ const groupNames: Group[] = [
         <q-item
           clickable
           v-ripple
-          :to="group.name"
+          :to="`/property/${group.name}`"
           :active="menuLink === group.name"
           @click="menuLink = group.name"
         >
