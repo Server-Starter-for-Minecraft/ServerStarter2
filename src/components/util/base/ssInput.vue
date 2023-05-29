@@ -3,7 +3,7 @@ import { ValidationRule } from 'quasar/dist/types/api/validation'
 import { computed } from 'vue'
 
 interface Prop {
-  modelValue: string | number
+  modelValue: any
   label?: string
   dense?: boolean
   autofocus?: boolean

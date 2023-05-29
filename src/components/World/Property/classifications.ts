@@ -20,7 +20,6 @@ export const propertyClasses: iPropertyClasses = {
   'server': [
     'motd',
     'enable-status',
-    'level-name',
   ],
   'generater': [
     'level-type',

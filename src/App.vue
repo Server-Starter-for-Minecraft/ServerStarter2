@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
+import { onBeforeMount, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { setRouter } from './components/Error/Error';
 import { useConsoleStore } from './stores/ConsoleStore';
@@ -26,6 +26,6 @@ window.API.onAddConsole((_event, value) => {
 });
 
 // Windowの起動時処理
-initWindow()
+onBeforeMount(initWindow)
 onMounted(afterWindow)
 </script>
