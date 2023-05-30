@@ -60,6 +60,8 @@ export interface API extends IAPI {
     RunServer: (world: WorldEdited) => Promise<Failable<World>>;
     SaveWorldSettings: (world: World) => Promise<Failable<World>>;
 
+    // 【TODO】: DefaultServerPropertyと各Worldに保存するときのPropertyの型を分離
+    // 各Worldに保存するときのPropertyには値そのもの（string|boolean|number）のみを保存
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 
     GetSystemSettings: () => Promise<SystemSettings>;

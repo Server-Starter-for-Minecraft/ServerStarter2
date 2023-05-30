@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, toRaw, watch } from 'vue';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import InputFieldView from './InputFieldView.vue';
@@ -15,8 +15,8 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
 const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName]
-const userInput = ref(mainStore.worldList[mainStore.selectedIdx].properties[prop.settingName]?.value ?? '')
-const syncIcon = () => userInput.value === ''
+const userInput = ref(mainStore.worldList[mainStore.selectedIdx].properties[prop.settingName]?.value ?? defaultProperty.value)
+const showCancel = () => userInput.value !== defaultProperty.value
 
 /**
  * Propertyの編集に使用するEditerを指定
@@ -26,6 +26,24 @@ function selectEditer() {
   if ('enum' in defaultProperty) return 'enum'
   return defaultProperty.type
 }
+
+/**
+ * 設定を規定値に戻す
+ */
+function cancelSettings() {
+  userInput.value = defaultProperty.value
+}
+
+/**
+ * userInputが変更された時に設定を保存する
+ */
+watch(
+  userInput,
+  (newVal, oldVal) => {
+    mainStore.worldList[mainStore.selectedIdx].properties[prop.settingName] = {type: defaultProperty.type, value: newVal}
+    window.API.invokeSaveWorldSettings(toRaw(mainStore.worldList[mainStore.selectedIdx]))
+  }
+)
 </script>
 
 <template>
@@ -56,17 +74,20 @@ function selectEditer() {
     </q-item-section>
 
     <q-item-section side>
-      <q-icon v-show="syncIcon()" name="sync" size="1.5rem" color="primary">
+      <q-btn
+        v-show="showCancel()"
+        flat
+        dense
+        icon="do_not_disturb_on"
+        size="1rem"
+        color="red"
+        @click="cancelSettings"
+      >
         <q-tooltip>
-          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty.value }}を適用します</p>
+          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty.value }}に設定を戻します</p>
           <p class="text-caption q-ma-none">「システム設定」>「プロパティ」 より基本設定を変更できます</p>
         </q-tooltip>
-      </q-icon>
-      <q-icon v-show="!syncIcon()" name="sync_disabled" size="1.5rem">
-        <q-tooltip>
-          <p class="text-caption q-ma-none">{{ userInput }}を適用します</p>
-        </q-tooltip>
-      </q-icon>
+      </q-btn>
     </q-item-section>
 
   </q-item>
