@@ -97,6 +97,7 @@ export interface API extends IAPI {
     ) => Promise<Failable<WorldName>>;
 
     GenUUID: () => Promise<UUID>;
+    PickDirectory: () => Promise<string>;
   };
 }
 
