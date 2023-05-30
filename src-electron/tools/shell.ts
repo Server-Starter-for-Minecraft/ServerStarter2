@@ -9,13 +9,12 @@ export function openFolder(path: string) {
 }
 
 export const pickDirectory =
-  (windowGetter: () => BrowserWindow | undefined) => async () => {
+  (windowGetter: () => BrowserWindow | undefined) =>
+  async (): Promise<Electron.OpenDialogReturnValue> => {
     const window = windowGetter();
-    // TODO: エラーログ出力が必要か
-    if (!window) return '';
-    return JSON.stringify(
-      await dialog.showOpenDialog(window, {
-        properties: ['openDirectory'],
-      })
-    );
+    // windowがない場合キャンセル状態の値を返す(Windowから呼ぶことを想定しているので、たぶん起こらない)
+    if (!window) return { canceled: true, filePaths: [] };
+    return await dialog.showOpenDialog(window, {
+      properties: ['openDirectory'],
+    });
   };
