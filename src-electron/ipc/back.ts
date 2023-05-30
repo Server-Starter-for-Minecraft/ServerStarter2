@@ -8,7 +8,7 @@ import {
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
-import { openBrowser, openFolder } from '../tools/shell';
+import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
 import {
   getWorldContainers,
   setWorldContainers,
@@ -17,8 +17,11 @@ import { getDefaultSettings } from '../core/settings/settings';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';
+import { BrowserWindow } from 'electron';
 
-export const backListener: BackListener<API> = {
+export const getBackListener = (
+  windowGetter: () => BrowserWindow | undefined
+): BackListener<API> => ({
   on: {
     Command: runCommand,
     OpenBrowser: openBrowser,
@@ -26,6 +29,7 @@ export const backListener: BackListener<API> = {
   },
   handle: {
     RunServer: runServer,
+    PickDirectory: pickDirectory(windowGetter),
 
     DeleteWorld: deleteWorld,
 
@@ -48,4 +52,4 @@ export const backListener: BackListener<API> = {
 
     GenUUID: async () => genUUID(),
   },
-};
+});

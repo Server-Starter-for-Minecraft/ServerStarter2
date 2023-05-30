@@ -133,10 +133,7 @@ class ServerRunner {
 
     // 使用中の場合level-nameをworldにする
     if (using) {
-      this.world.properties['level-name'] = {
-        type: 'string',
-        value: LEVEL_NAME,
-      };
+      this.world.properties['level-name'] = LEVEL_NAME;
     } else {
       delete this.world.properties['level-name'];
     }
@@ -245,7 +242,7 @@ class ServerRunner {
     const world = this.world;
     // 設定ファイルをサーバーCWD直下に書き出す
     this.sendUpdateStatus('サーバー設定ファイルの展開中');
-    world.properties['level-name'] = { type: 'string', value: LEVEL_NAME };
+    world.properties['level-name'] = LEVEL_NAME;
     await unfoldSettings(this.cwdPath, world);
   }
 

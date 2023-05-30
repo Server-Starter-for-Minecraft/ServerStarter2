@@ -26,10 +26,12 @@ export type ServerProperty =
   | BooleanServerProperty
   | NumberServerProperty;
 
+/** サーバープロパティ(注釈あり) */
 export type ServerProperties = {
   [key in string]: ServerProperty;
 };
 
+/** サーバープロパティ(注釈なし) */
 export type ServerPropertiesMap = {
   [key in string]: string | number | boolean;
 };

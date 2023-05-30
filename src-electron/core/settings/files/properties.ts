@@ -1,5 +1,6 @@
 import {
   ServerProperties,
+  ServerPropertiesMap,
   ServerProperty,
 } from 'src-electron/schema/serverproperty';
 import { objEach, objMap } from 'src-electron/util/objmap';
@@ -156,8 +157,8 @@ export const defaultServerProperties: ServerProperties = {
 
 // type SetKeys<T, U> = Set<Keys<T, U>>;
 
-export const parseServerProperties = (text: string) => {
-  const propertiy: ServerProperties = {};
+export const parseServerPropertiesMap = (text: string) => {
+  const propertiy: ServerPropertiesMap = {};
   text.split('\n').forEach((v) => {
     const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
     if (!match) return;
@@ -166,24 +167,24 @@ export const parseServerProperties = (text: string) => {
 
     const defult = defaultServerProperties[key];
 
-    let prop: ServerProperty;
+    let prop: string | number | boolean;
 
     if (defult !== undefined) {
       // 既知のサーバープロパティの場合
       switch (defult.type) {
         case 'string':
-          prop = { ...defult, value };
+          prop = value;
           break;
         case 'boolean':
-          prop = { ...defult, value: value.toLowerCase() === 'true' };
+          prop = value.toLowerCase() === 'true';
           break;
         case 'number':
-          prop = { ...defult, value: Number.parseInt(value) };
+          prop = Number.parseInt(value);
           break;
       }
     } else {
-      // 未知のサーバープロパティの場合
-      prop = { type: 'string', value };
+      // 未知のサーバープロパティの場合stringとして扱う
+      prop = value;
     }
 
     propertiy[key] = prop;
@@ -191,9 +192,11 @@ export const parseServerProperties = (text: string) => {
   return propertiy;
 };
 
-export const stringifyServerProperties = (properties: ServerProperties) => {
+export const stringifyServerPropertiesMap = (
+  properties: ServerPropertiesMap
+) => {
   return Object.entries(properties)
-    .map(([k, v]) => `${k}=${v.value}`)
+    .map(([k, v]) => `${k}=${v}`)
     .join('\n');
 };
 
@@ -211,16 +214,19 @@ const FILENAME = 'server.properties';
 const MESSAGE =
   '"このファイルは使用されません。サーバープロパティの書き換えはServerStarter本体から行ってください。"';
 
-export const serverPropertiesHandler: ServerSettingHandler<ServerProperties> = {
-  async load(cwdPath) {
-    const text = await cwdPath.child(FILENAME).readText();
-    if (isFailure(text)) return text;
-    return parseServerProperties(text);
-  },
-  save(cwdPath, value) {
-    return cwdPath.child(FILENAME).writeText(stringifyServerProperties(value));
-  },
-  remove(cwdPath) {
-    return cwdPath.child(FILENAME).writeText(MESSAGE);
-  },
-};
+export const serverPropertiesHandler: ServerSettingHandler<ServerPropertiesMap> =
+  {
+    async load(cwdPath) {
+      const text = await cwdPath.child(FILENAME).readText();
+      if (isFailure(text)) return text;
+      return parseServerPropertiesMap(text);
+    },
+    save(cwdPath, value) {
+      return cwdPath
+        .child(FILENAME)
+        .writeText(stringifyServerPropertiesMap(value));
+    },
+    remove(cwdPath) {
+      return cwdPath.child(FILENAME).writeText(MESSAGE);
+    },
+  };
