@@ -76,7 +76,7 @@ export const defaultServerProperties: ServerProperties = {
 
   'level-type': {
     type: 'string',
-    value: 'normal',
+    value: 'default',
     enum: ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
   },
 
