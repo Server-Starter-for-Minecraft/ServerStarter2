@@ -56,7 +56,7 @@ export interface WorldBase extends WorldAbbr {
   javaArguments?: string;
 
   /** server.propertiesの内容 */
-  properties: ServerProperties;
+  properties: ServerPropertiesMap;
 
   /** プレイヤーの設定 */
   players: PlayerSetting[];
@@ -127,7 +127,7 @@ export type WorldSettings = {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** 起動中フラグ */
+  /** サーバープロパティ */
   properties?: ServerPropertiesMap;
 
   /** プレイヤーの設定 */
@@ -144,7 +144,8 @@ export type SystemWorldSettings = {
   properties: ServerProperties;
 };
 
+/** サーバーCWD直下の設定系ファイルの情報 */
 export type FoldSettings = {
-  properties: ServerProperties;
+  properties: ServerPropertiesMap;
   players: PlayerSetting[];
 };

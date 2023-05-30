@@ -47,7 +47,7 @@ export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
     using: world.using,
     players: world.players,
     javaArguments: world.javaArguments,
-    properties: getPropertiesMap(world.properties),
+    properties: world.properties,
   };
 
   // jsonを書き出し
@@ -103,12 +103,6 @@ export async function foldSettings(serverCwdPath: Path): Promise<FoldSettings> {
     players,
   };
 }
-
-function getPropertiesMap(serverProperties: ServerProperties | undefined) {
-  if (serverProperties === undefined) return undefined;
-  return objMap(serverProperties, (k, v) => [k, v.value]);
-}
-
 // Javaの-Xmx,-Xmsのデフォルト値(Gb)
 const DEFAULT_JAVA_HEAP_SIZE = 2;
 

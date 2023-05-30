@@ -2,7 +2,6 @@ import { UUID, WorldContainer, WorldName } from '../schema/brands';
 import { SystemSettings, WorldContainers } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import {
-  FoldSettings,
   SystemWorldSettings,
   World,
   WorldAbbr,
