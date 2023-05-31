@@ -11,10 +11,13 @@ const worldStore = useWorldTabsStore()
 <template>
   <div class="mainField">
     <div class="column fit">
+      <!-- TODO: 検索によって絞り込まれたプロパティについて、
+        PropertyGroupが絞られた後に表示されているGroupの一番上に自動で再フォーカスする -->
       <SsInput
         v-model="worldStore.property.searchName"
         label="プロパティを検索"
         class="q-py-md"
+        @clear="() => worldStore.property.searchName = ''"
       />
   
       <div class="row fit" style="flex: 1 1 0;">

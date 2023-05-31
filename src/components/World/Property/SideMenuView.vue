@@ -10,8 +10,6 @@ interface Group {
 
 const worldStore = useWorldTabsStore()
 
-const menuLink = ref('base')
-
 // TODO: 将来的にnameはclassifications.tsから取得し、labelはi18nからnameをkeyとして取得
 const groupNames: Group[] = [
   {
@@ -65,7 +63,6 @@ const groupNames: Group[] = [
 ]
 
 function groupClicked(selectedGroupName: string) {
-  menuLink.value = selectedGroupName
   worldStore.property.selectTab = selectedGroupName
 }
 </script>
@@ -78,8 +75,9 @@ function groupClicked(selectedGroupName: string) {
     >
       <template v-for="group in groupNames" :key="group">
         <q-item
+          v-show="worldStore.searchProperties(group.name).length !== 0"
           clickable
-          :active="menuLink === group.name"
+          :active="worldStore.property.selectTab === group.name"
           @click="() => groupClicked(group.name)"
         >
           <q-item-section style="width: max-content;">{{ group.label }}</q-item-section>
