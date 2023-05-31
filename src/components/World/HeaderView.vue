@@ -10,7 +10,7 @@ const sysStore = useSystemStore()
   <q-item>
     <q-item-section>
       <div class="row items-center">
-        <span class="title q-pr-md">{{ mainStore.worldList[mainStore.selectedIdx].name }}</span>
+        <span class="title q-pr-md">{{ mainStore.world().name }}</span>
         <span class="text-red">ステータス</span>
       </div>
     </q-item-section>

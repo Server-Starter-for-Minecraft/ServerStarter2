@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { NumberServerProperty, StringServerProperty } from 'app/src-electron/schema/serverproperty';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
   modelValue: string | number | boolean
-  inputType: 'enum' | 'string' | 'number' | 'boolean' | 'undefined'
-  min?: number
-  max?: number
-  step?: number
-  enum?: any[]
+  propertyName: string
 }
 const prop = defineProps<Prop>()
 const emit = defineEmits(['update:model-value'])
+
+const sysStore = useSystemStore()
+const defaultProperty = sysStore.systemSettings.world.properties[prop.propertyName]
 
 const model = computed({
   get() {
@@ -22,6 +23,15 @@ const model = computed({
     emit('update:model-value', newValue);
   },
 })
+
+/**
+ * Propertyの編集に使用するEditerを指定
+ */
+function selectEditer() {
+  if (defaultProperty === void 0) return 'undefined'
+  if ('enum' in defaultProperty) return 'enum'
+  return defaultProperty.type
+}
 
 /**
  * 数字入力のバリデーションを定義
@@ -55,11 +65,17 @@ function validationMessage(min?:number, max?:number, step?:number) {
 </script>
 
 <template>
-  <div v-if="inputType=='string'" class="row">
-    <!-- TODO: clearableが正常に作動しない問題の修正 -->
-    <SsInput v-model="model" dense autofocus style="width: 100%;" @clear="model = ''"/>
+  <div v-if="selectEditer()=='string'" class="row">
+    <SsInput
+      v-model="model"
+      dense
+      autofocus
+      @clear="model = ''"
+      style="width: 100%;"
+    />
   </div>
-  <div v-if="inputType=='number'" class="row" style="width: 100%;">
+  
+  <div v-if="selectEditer()=='number'" class="row" style="width: 100%;">
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
       v-model="model"
@@ -70,17 +86,26 @@ function validationMessage(min?:number, max?:number, step?:number) {
       :rules="[
         val => numberValidate(
           val,
-          min,
-          max,
-          step
+          (defaultProperty as NumberServerProperty)?.min,
+          (defaultProperty as NumberServerProperty)?.max,
+          (defaultProperty as NumberServerProperty)?.step
           ) || validationMessage(
-          min,
-          max,
-          step
+          (defaultProperty as NumberServerProperty)?.min,
+          (defaultProperty as NumberServerProperty)?.max,
+          (defaultProperty as NumberServerProperty)?.step
         )]"
     />
   </div>
-  <q-toggle v-show="inputType=='boolean'" v-model="model" :label="model.toString()"/>
-  <!-- TODO: selectの場合にエラーが出る原因の調査 -->
-  <!-- <SsSelect v-show="inputType=='enum'" v-model="model" :options="enum"/> -->
+  
+  <q-toggle
+    v-show="selectEditer()=='boolean'"
+    v-model="model"
+    :label="model?.toString()"
+  />
+  
+  <SsSelect
+    v-show="selectEditer()=='enum'"
+    v-model="model"
+    :options="(defaultProperty as StringServerProperty)?.enum"
+  />
 </template>

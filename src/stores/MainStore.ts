@@ -1,5 +1,6 @@
-import { WorldEdited } from 'app/src-electron/schema/world';
+import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { WorldEdited } from 'app/src-electron/schema/world';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -15,5 +16,14 @@ export const useMainStore = defineStore('mainStore', {
       }
       return this.worldList;
     },
+    /**
+     * このプロパティからWorldを呼び出すことで、
+     * ワールドオブジェクトに変更が入った場合、直ちに変更が保存される
+     */
+    world() {
+      const world = this.worldList[this.selectedIdx]
+      window.API.invokeSaveWorldSettings(toRaw(world))
+      return world
+    }
   },
 });

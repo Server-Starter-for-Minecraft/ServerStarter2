@@ -6,7 +6,6 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 
 const mainStore = useMainStore()
-const world = mainStore.worldList[mainStore.selectedIdx]
 
 const customWorldPath = ref(null)
 const soloWorldName = ref('個人ワールドを選択')
@@ -18,7 +17,7 @@ const showSoloWorld = ref(false)
     <!-- TODO: 入力欄のバリデーション -->
     <h1 class="q-mt-none">ワールド名</h1>
     <SsInput
-      v-model="world.name"
+      v-model="mainStore.world().name"
       label="半角英数字でワールド名を入力"
     />
 
@@ -26,12 +25,12 @@ const showSoloWorld = ref(false)
     <h1>バージョン</h1>
     <div class="row">
       <SsSelect
-        v-model="world.version.type"
+        v-model="mainStore.world().version.type"
         label="サーバーの種類を選択"
         class="col-5 q-pr-md"
       />
       <SsSelect
-        v-model="world.version.id"
+        v-model="mainStore.world().version.id"
         label="バージョンを選択"
         class="col"
       />
@@ -63,12 +62,12 @@ const showSoloWorld = ref(false)
     <ExpansionView title="起動設定">
       <div class="row" style="max-width: 300px;">
         <SsInput
-          v-model="world.memory"
+          v-model="mainStore.world().memory"
           label="メモリサイズ"
           class="col q-pr-md"
         />
         <SsSelect
-          v-model="world.memory"
+          v-model="mainStore.world().memory"
           :options="['MB', 'GB', 'TB']"
           label="単位"
           class="col-3"
@@ -76,7 +75,7 @@ const showSoloWorld = ref(false)
       </div>
 
       <SsInput
-        v-model="world.javaArguments"
+        v-model="mainStore.world().javaArguments"
         label="JVM引数"
         class="q-pt-md"
       />

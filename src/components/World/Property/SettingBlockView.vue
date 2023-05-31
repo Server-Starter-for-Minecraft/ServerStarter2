@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, toRaw, watch } from 'vue';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import InputFieldView from './InputFieldView.vue';
@@ -15,35 +14,15 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
 const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName]
-const userInput = ref(mainStore.worldList[mainStore.selectedIdx].properties[prop.settingName]?.value ?? defaultProperty.value)
-const showCancel = () => userInput.value !== defaultProperty.value
-
-/**
- * Propertyの編集に使用するEditerを指定
- */
-function selectEditer() {
-  if (defaultProperty === void 0) return 'undefined'
-  if ('enum' in defaultProperty) return 'enum'
-  return defaultProperty.type
-}
+const showCancel = () => mainStore.world().properties[prop.settingName] !== defaultProperty.value
 
 /**
  * 設定を規定値に戻す
  */
-function cancelSettings() {
-  userInput.value = defaultProperty.value
+ function cancelSettings() {
+  mainStore.world().properties[prop.settingName] = defaultProperty.value
 }
 
-/**
- * userInputが変更された時に設定を保存する
- */
-watch(
-  userInput,
-  (newVal, oldVal) => {
-    mainStore.worldList[mainStore.selectedIdx].properties[prop.settingName] = {type: defaultProperty.type, value: newVal}
-    window.API.invokeSaveWorldSettings(toRaw(mainStore.worldList[mainStore.selectedIdx]))
-  }
-)
 </script>
 
 <template>
@@ -53,23 +32,8 @@ watch(
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption">設定内容の説明</div>
       <InputFieldView
-        v-if="defaultProperty.type === 'string'"
-        v-model="userInput"
-        :input-type="selectEditer()"
-        :enum="defaultProperty.enum"
-      />
-      <InputFieldView
-        v-if="defaultProperty.type === 'number'"
-        v-model="userInput"
-        :input-type="selectEditer()"
-        :min="defaultProperty.min"
-        :max="defaultProperty.max"
-        :step="defaultProperty.step"
-      />
-      <InputFieldView
-        v-if="defaultProperty.type === 'boolean' || selectEditer() === 'undefined'"
-        v-model="userInput"
-        :input-type="selectEditer()"
+        v-model="mainStore.world().properties[settingName]"
+        :property-name="settingName"
       />
     </q-item-section>
 
