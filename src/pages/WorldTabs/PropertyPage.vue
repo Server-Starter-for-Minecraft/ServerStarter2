@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { useWorldTabsStore } from 'src/stores/WorldTabsStore';
+import { usePropertyStore } from 'src/stores/WorldTabsStore';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
 
-const worldStore = useWorldTabsStore()
+const propertyStore = usePropertyStore()
 </script>
 
 <template>
   <div class="mainField">
     <div class="column fit">
-      <!-- TODO: 検索によって絞り込まれたプロパティについて、
-        PropertyGroupが絞られた後に表示されているGroupの一番上に自動で再フォーカスする -->
       <SsInput
-        v-model="worldStore.property.searchName"
+        v-model="propertyStore.searchName"
         label="プロパティを検索"
         class="q-py-md"
-        @clear="() => worldStore.property.searchName = ''"
+        @clear="() => propertyStore.searchName = ''"
       />
   
       <div class="row fit" style="flex: 1 1 0;">

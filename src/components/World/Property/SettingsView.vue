@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useWorldTabsStore } from 'src/stores/WorldTabsStore';
+import { usePropertyStore } from 'src/stores/WorldTabsStore';
 import SettingBlockView from './SettingBlockView.vue';
 
-const worldStore = useWorldTabsStore()
+const propertyStore = usePropertyStore()
 </script>
 
 <template>
-  <template v-for="key in worldStore.searchProperties()" :key="key">
+  <template v-for="key in propertyStore.searchProperties()" :key="key">
     <SettingBlockView :setting-name="key"/>
   </template>
 </template>

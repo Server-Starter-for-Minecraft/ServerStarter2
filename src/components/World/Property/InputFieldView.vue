@@ -8,6 +8,7 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 interface Prop {
   modelValue: string | number | boolean
   propertyName: string
+  autofocus?: boolean
 }
 const prop = defineProps<Prop>()
 const emit = defineEmits(['update:model-value'])
@@ -69,7 +70,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
     <SsInput
       v-model="model"
       dense
-      autofocus
+      :autofocus="autofocus"
       @clear="model = ''"
       style="width: 100%;"
     />
@@ -82,7 +83,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
       class="items-center"
       style="width: 100%;"
       dense
-      autofocus
+      :autofocus="autofocus"
       :rules="[
         val => numberValidate(
           val,
