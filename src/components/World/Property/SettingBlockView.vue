@@ -14,13 +14,13 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
 const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName]
-const showCancel = () => mainStore.world().properties[prop.settingName] !== defaultProperty.value
+const showCancel = () => mainStore.world.properties[prop.settingName] !== defaultProperty.value
 
 /**
  * 設定を規定値に戻す
  */
  function cancelSettings() {
-  mainStore.world().properties[prop.settingName] = defaultProperty.value
+  mainStore.world.properties[prop.settingName] = defaultProperty.value
 }
 
 </script>
@@ -32,7 +32,7 @@ const showCancel = () => mainStore.world().properties[prop.settingName] !== defa
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption">設定内容の説明</div>
       <InputFieldView
-        v-model="mainStore.world().properties[settingName]"
+        v-model="mainStore.world.properties[settingName]"
         :property-name="settingName"
       />
     </q-item-section>

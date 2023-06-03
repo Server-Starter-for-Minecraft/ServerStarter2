@@ -10,6 +10,15 @@ export const useMainStore = defineStore('mainStore', {
     };
   },
   getters: {
+    /**
+     * このプロパティからWorldを呼び出すことで、
+     * ワールドオブジェクトに変更が入った場合、直ちに変更が保存される
+     */
+    world(state) {
+      const world = state.worldList[state.selectedIdx]
+      window.API.invokeSaveWorldSettings(toRaw(world))
+      return world
+    },
     selectedWorldID(state) {
       return state.worldList[state.selectedIdx].id
     }
@@ -21,14 +30,5 @@ export const useMainStore = defineStore('mainStore', {
       }
       return this.worldList;
     },
-    /**
-     * このプロパティからWorldを呼び出すことで、
-     * ワールドオブジェクトに変更が入った場合、直ちに変更が保存される
-     */
-    world() {
-      const world = this.worldList[this.selectedIdx]
-      window.API.invokeSaveWorldSettings(toRaw(world))
-      return world
-    }
   },
 });
