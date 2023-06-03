@@ -9,8 +9,6 @@ interface WorldProgress {
   }
 }
 
-const mainStore = useMainStore()
-
 export const useProgressStore = defineStore('progressStore', {
   state: () => {
     return {
@@ -19,6 +17,26 @@ export const useProgressStore = defineStore('progressStore', {
       _ratio: undefined as undefined | number,
       _world: {} as WorldProgress
     };
+  },
+  getters: {
+    /**
+     * メッセージを取得
+     * 
+     * ※Storeの_messageを直接参照してはいけない
+     */
+    message(state) {
+      const mainStore = useMainStore()
+      return state._message ?? state._world[mainStore.selectedWorldID]?.message ?? ''
+    },
+    /**
+     * 進捗割合を取得
+     * 
+     * ※Storeの_ratioを直接参照してはいけない
+     */
+    ratio(state) {
+      const mainStore = useMainStore()
+      return state._message !== void 0 ? state._ratio : state._world[mainStore.selectedWorldID]?.ratio ?? undefined
+    }
   },
   actions: {
     /**
@@ -59,21 +77,5 @@ export const useProgressStore = defineStore('progressStore', {
         this._world[worldID].ratio = undefined
       }
     },
-    /**
-     * メッセージを取得
-     * 
-     * ※Storeの_messageを直接参照してはいけない
-     */
-    message() {
-      return this._message ?? this._world[mainStore.selectedWorldID]?.message ?? ''
-    },
-    /**
-     * 進捗割合を取得
-     * 
-     * ※Storeの_ratioを直接参照してはいけない
-     */
-    ratio() {
-      return this._message !== void 0 ? this._ratio : this._world[mainStore.selectedWorldID]?.ratio ?? undefined
-    }
   }
 });

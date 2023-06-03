@@ -33,10 +33,10 @@ window.API.onUpdateStatus((_event, worldID, message , current, total) => {
       class="q-ma-md"
     />
 
-    <p class="message">{{ progressStore.message() }}</p>
-    <div v-if="progressStore.ratio() !== void 0">
+    <p class="message">{{ progressStore.message }}</p>
+    <div v-if="progressStore.ratio !== void 0">
       <q-linear-progress
-        :value="(progressStore.ratio() as number) / 100"
+        :value="(progressStore.ratio as number) / 100"
         rounded
         color="$primary"
         class="q-pa-md"
