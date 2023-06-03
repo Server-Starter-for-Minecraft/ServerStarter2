@@ -4,7 +4,7 @@ import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 </script>
 
 <template>
-  <div class="column" style="width: 100%; min-height: 100vh;">
+  <div class="column full-width window-height">
     <HeaderView/>
     <SettingTabsView/>
     

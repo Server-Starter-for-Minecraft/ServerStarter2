@@ -22,7 +22,7 @@ window.API.onUpdateStatus((_event, worldID, message , current, total) => {
 </script>
 
 <template>
-  <div class="absolute-center circle">
+  <div class="justify-center column items-center fit">
     <q-circular-progress
       indeterminate
       size="50px"
@@ -31,6 +31,7 @@ window.API.onUpdateStatus((_event, worldID, message , current, total) => {
       color="primary"
       track-color="grey-3"
       class="q-ma-md"
+      style="margin: auto 0;"
     />
 
     <p class="message">{{ progressStore.message }}</p>
@@ -49,10 +50,6 @@ window.API.onUpdateStatus((_event, worldID, message , current, total) => {
 </template>
 
 <style scoped lang="scss">
-.circle {
-  text-align: center;
-}
-
 .message {
   font-size: 20pt;
 }

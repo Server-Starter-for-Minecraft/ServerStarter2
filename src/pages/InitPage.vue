@@ -22,5 +22,7 @@ asyncProcess()
 </script>
 
 <template>
-  <progress-page/>
+  <div class="absolute-center">
+    <progress-page/>
+  </div>
 </template>
