@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMainStore } from 'src/stores/MainStore';
+import { runServer } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
-import { useDialogStore } from 'src/stores/DialogStore';
-import { isFailure } from 'app/src-electron/api/failable';
 
 interface Props {
   world: WorldEdited;
@@ -14,17 +13,10 @@ const prop = defineProps<Props>();
 
 const mainStore = useMainStore();
 
-const router = useRouter();
-const goProgress = async () => {
-  await router.replace('progress');
-};
-async function runServer() {
-  // await goProgress();
-
-  // // toRaw(proxy)とすることでvue上のProxyオブジェクトのtargetを抜き出せる
-  // const res = await window.API.invokeRunServer(toRaw(prop.world));
-
-  // checkError(res, console.log, 'サーバーが異常終了しました。')
+const router = useRouter()
+async function startServer() {
+  await router.push('/console');
+  runServer()
 }
 
 const clicked = ref(false);
@@ -65,7 +57,7 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
     :active="(clicked = mainStore.selectedIdx == prop.idx)"
     :focused="(clicked = mainStore.selectedIdx == prop.idx)"
     @click="mainStore.selectedIdx = idx"
-    v-on:dblclick="runServer"
+    v-on:dblclick="startServer"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
@@ -82,7 +74,7 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
         />
         <q-btn
           v-show="clicked || runBtnHovered"
-          @click="runServer"
+          @click="startServer"
           flat
           dense
           size="2rem"

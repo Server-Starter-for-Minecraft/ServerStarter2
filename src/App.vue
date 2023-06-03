@@ -14,8 +14,8 @@ const $q = useQuasar();
 $q.dark.set('auto');
 
 // メッセージをコンソールに追加
-window.API.onAddConsole((_event, value) => {
-  useConsoleStore().console.push(value);
+window.API.onAddConsole((_event, worldID, chunk) => {
+  useConsoleStore().setConsole(worldID, chunk);
 });
 
 // Windowの起動時処理
@@ -23,6 +23,6 @@ router.push('/init')
 </script>
 
 <template>
-  <popup-dialog/>
+  <popup-dialog />
   <router-view />
 </template>
