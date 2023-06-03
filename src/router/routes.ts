@@ -14,6 +14,10 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/init',
+    component: () => import('pages/InitPage.vue')
+  },
+  {
     path: '/error',
     component: () => import('pages/ErrorPage.vue'),
   },

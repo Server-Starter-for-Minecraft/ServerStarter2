@@ -16,10 +16,8 @@ window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent) => {
   return await promise;
 });
 
-window.API.onUpdateStatus((_event, message , current, total) => {
-  progressStore.message = message;
-  const isUndefined = current === void 0 || total === void 0
-  progressStore.progressRatio = isUndefined ? undefined : current / total;
+window.API.onUpdateStatus((_event, worldID, message , current, total) => {
+  progressStore.setProgress(message, current=current, total=total, worldID=worldID)
 });
 </script>
 
@@ -35,10 +33,10 @@ window.API.onUpdateStatus((_event, message , current, total) => {
       class="q-ma-md"
     />
 
-    <p class="message">{{ progressStore.message }}</p>
-    <div v-if="progressStore.progressRatio">
+    <p class="message">{{ progressStore.message() }}</p>
+    <div v-if="progressStore.ratio() !== void 0">
       <q-linear-progress
-        :value="progressStore.progressRatio / 100"
+        :value="(progressStore.ratio() as number) / 100"
         rounded
         color="$primary"
         class="q-pa-md"

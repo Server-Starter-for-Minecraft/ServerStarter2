@@ -1,15 +1,8 @@
-<template>
-  <popup-dialog/>
-  <router-view />
-</template>
-
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { onBeforeMount, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { setRouter } from './components/Error/Error';
 import { useConsoleStore } from './stores/ConsoleStore';
-import { initWindow, afterWindow } from './init';
 import PopupDialog from './components/util/popupDialog.vue';
 
 // routerを定義
@@ -26,6 +19,10 @@ window.API.onAddConsole((_event, value) => {
 });
 
 // Windowの起動時処理
-onBeforeMount(initWindow)
-onMounted(afterWindow)
+router.push('/init')
 </script>
+
+<template>
+  <popup-dialog/>
+  <router-view />
+</template>

@@ -9,6 +9,11 @@ export const useMainStore = defineStore('mainStore', {
       worldList: [] as WorldEdited[],
     };
   },
+  getters: {
+    selectedWorldID(state) {
+      return state.worldList[state.selectedIdx].id
+    }
+  },
   actions: {
     searchWorld(text: string) {
       if (text !== '') {
