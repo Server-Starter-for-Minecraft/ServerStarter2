@@ -9,6 +9,10 @@ const store = useMainStore();
 const searchWorldName = ref('')
 const drawer = ref(true)
 const miniDrawer = ref(true)
+
+function openHP() {
+  window.API.sendOpenBrowser('https://civiltt.github.io/ServerStarter/')
+}
 </script>
 
 <template>
@@ -25,6 +29,7 @@ const miniDrawer = ref(true)
     <q-img src="src/assets/drawer/mainImage.png" class="img">
       <div class="absolute-full">
         <q-img src="src/assets/systemLogo.svg" fit="contain" style="height: 100%;"/>
+        <q-btn class="absolute-full" @click="openHP"/>
       </div>
     </q-img>
 
