@@ -102,6 +102,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
     v-show="selectEditer()=='boolean'"
     v-model="model"
     :label="model?.toString()"
+    style="font-size: 1rem;"
   />
   
   <SsSelect
