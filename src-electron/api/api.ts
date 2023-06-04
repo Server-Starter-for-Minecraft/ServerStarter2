@@ -63,6 +63,7 @@ export interface API extends IAPI {
     // 各Worldに保存するときのPropertyには値そのもの（string|boolean|number）のみを保存
     GetDefaultSettings: () => Promise<SystemWorldSettings>;
 
+    // TODO: New World に対応するデフォルトワールドオブジェクトを取得する関数を整備
     GetSystemSettings: () => Promise<SystemSettings>;
     SetSystemSettings: (settings: SystemSettings) => Promise<void>;
 

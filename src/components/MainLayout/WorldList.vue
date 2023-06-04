@@ -22,6 +22,12 @@ const miniDrawer = ref(true)
     :class="`column ${$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'}`"
     style="height: 100vh;"
   >
+    <q-img src="src/assets/drawer/mainImage.png" class="img">
+      <div class="absolute-full">
+        <q-img src="src/assets/systemLogo.svg" fit="contain" style="height: 100%;"/>
+      </div>
+    </q-img>
+
     <search-world-view v-model="searchWorldName"/>
     
     <q-scroll-area class="fit col">
@@ -37,3 +43,10 @@ const miniDrawer = ref(true)
     <icon-button-view icon-name="settings" label="システム設定"/>
   </q-drawer>
 </template>
+
+<style scoped lang="scss">
+.img {
+  height: 100px;
+  opacity: 0.7;
+}
+</style>
