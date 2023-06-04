@@ -52,6 +52,5 @@ function openHP() {
 <style scoped lang="scss">
 .img {
   height: 100px;
-  opacity: 0.7;
 }
 </style>
