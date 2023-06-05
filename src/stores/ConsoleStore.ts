@@ -55,7 +55,7 @@ export async function runServer() {
   const consoleStore = useConsoleStore()
 
   consoleStore.setProgress(mainStore.selectedWorldID, '1.19.4 / TestWorld を起動中')
-  const res = await window.API.invokeRunServer(toRaw(mainStore.world));
+  const res = await window.API.invokeRunServer(toRaw(mainStore.world()));
 
   checkError(res, console.log, 'サーバーが異常終了しました。')
 }
