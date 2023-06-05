@@ -16,7 +16,7 @@ const propertyStore = usePropertyStore()
  */
 function resetAll() {
   Object.keys(sysStore.systemSettings.world.properties).map(key => {
-    mainStore.world.properties[key] = sysStore.systemSettings.world.properties[key].value
+    mainStore.world().properties[key] = sysStore.systemSettings.world.properties[key].value
   })
 }
 </script>

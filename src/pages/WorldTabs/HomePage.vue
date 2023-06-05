@@ -17,7 +17,7 @@ const soloWorldName = ref('個人ワールドを選択')
 const showSoloWorld = ref(false)
 
 function cleanUpID() {
-  const version = mainStore.world.version;
+  const version = mainStore.world().version;
   const versionList = sysStore.serverVersions.get(version.type);
 
   // versionListがundefinedの時にエラー処理
@@ -25,13 +25,13 @@ function cleanUpID() {
     dialogStore.showDialog(
       `サーバーバージョン${version.type}の一覧取得に失敗したため，このサーバーは選択できません`
     );
-    mainStore.world.version.type = 'vanilla';
+    mainStore.world().version.type = 'vanilla';
     return;
   }
 
   // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
   if (version.id == '' || versionList.every((ver) => ver.id != version.id))
-    mainStore.world.version.id = versionList[0].id;
+    mainStore.world().version.id = versionList[0].id;
 }
 </script>
 
@@ -40,7 +40,7 @@ function cleanUpID() {
     <!-- TODO: 入力欄のバリデーション -->
     <h1 class="q-mt-none">ワールド名</h1>
     <SsInput
-      v-model="mainStore.world.name"
+      v-model="mainStore.world().name"
       label="半角英数字でワールド名を入力"
     />
 
@@ -48,15 +48,15 @@ function cleanUpID() {
     <h1>バージョン</h1>
     <div class="row">
       <SsSelect
-        v-model="mainStore.world.version.type"
+        v-model="mainStore.world().version.type"
         @update:model-value="cleanUpID"
         :options="versionTypes"
         label="サーバーの種類を選択"
         class="col-5 q-pr-md"
       />
       <SsSelect
-        v-model="mainStore.world.version.id"
-        :options="sysStore.serverVersions.get(mainStore.world.version.type)?.map(ver => ver.id)"
+        v-model="mainStore.world().version.id"
+        :options="sysStore.serverVersions.get(mainStore.world().version.type)?.map(ver => ver.id)"
         label="バージョンを選択"
         class="col"
       />
@@ -88,12 +88,12 @@ function cleanUpID() {
     <ExpansionView title="起動設定">
       <div class="row" style="max-width: 300px;">
         <SsInput
-          v-model="mainStore.world.memory"
+          v-model="mainStore.world().memory"
           label="メモリサイズ"
           class="col q-pr-md"
         />
         <SsSelect
-          v-model="mainStore.world.memory"
+          v-model="mainStore.world().memory"
           :options="['MB', 'GB', 'TB']"
           label="単位"
           class="col-3"
@@ -101,7 +101,7 @@ function cleanUpID() {
       </div>
 
       <SsInput
-        v-model="mainStore.world.javaArguments"
+        v-model="mainStore.world().javaArguments"
         label="JVM引数"
         class="q-pt-md"
       />
