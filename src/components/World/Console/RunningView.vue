@@ -1,26 +1,40 @@
 <script setup lang="ts">
+import { Ref, ref } from 'vue';
+import { QVirtualScroll } from 'quasar';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 
 const consoleStore = useConsoleStore()
+// TODO: これをPinia側で定義してうまく動くかどうかを確認
+const virtualListRef: Ref<null | QVirtualScroll> = ref(null)
 
-// 自動スクロール
-function autoScroll() {
-  let container = document.getElementById('scroll');
-  container?.scrollIntoView(false);
-  if (container != null) {
-    container.scrollTop = container.scrollHeight;
-  }
+/**
+ * コンソールの一番下に自動でスクロールする
+ */
+function scroll2End() {
+  virtualListRef.value?.scrollTo(consoleStore.console.length, 'start-force')
 }
+
 // コンソール表示
-window.API.onAddConsole(() => {
-  autoScroll();
+window.API.onAddConsole((_event, worldID, chunk) => {
+  // TODO: センスのある記法求む
+  consoleStore.setConsole(worldID, chunk);
+  setTimeout(scroll2End, 0)
 });
 </script>
 
 <template>
+  <!-- TODO: 一番下でないときにボタンを表示 -->
+  <!-- <q-btn
+    class="q-ml-sm"
+    label="Go"
+    no-caps
+    color="primary"
+    @click="scroll2End"
+  /> -->
+
   <q-virtual-scroll
     v-if="consoleStore.status === 'Running'"
-    id="scroll"
+    ref="virtualListRef"
     :items="consoleStore.console"
     v-slot="{ item }"
     class="q-pa-md fit"

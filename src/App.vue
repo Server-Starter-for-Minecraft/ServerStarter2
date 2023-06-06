@@ -14,10 +14,6 @@ const $q = useQuasar();
 $q.dark.set('auto');
 
 const consoleStore = useConsoleStore()
-// メッセージをコンソールに追加
-window.API.onAddConsole((_event, worldID, chunk) => {
-  useConsoleStore().setConsole(worldID, chunk);
-});
 // サーバー起動時に画面遷移
 window.API.onStartServer((_event, worldID) => {
   consoleStore.setConsole(worldID, '')
