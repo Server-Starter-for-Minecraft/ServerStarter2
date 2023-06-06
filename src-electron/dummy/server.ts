@@ -6,7 +6,6 @@ import { startConsoles, stopConsoles } from './const/server_message';
 const serverStopper: Record<WorldID, () => void> = {};
 
 export async function runServer(world: WorldEdited) {
-
   api.send.UpdateStatus(world.id, '開始時処理');
   await sleep(200);
 
@@ -36,7 +35,7 @@ async function putStartConsole(world: WorldID) {
 }
 
 async function putStopConsole(world: WorldID) {
-  for (const console of startConsoles) {
+  for (const console of stopConsoles) {
     if (serverStopper[world] === undefined) break;
     api.send.AddConsole(world, console);
     await sleep(50);
