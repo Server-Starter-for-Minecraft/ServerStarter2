@@ -88,12 +88,12 @@ function cleanUpID() {
     <ExpansionView title="起動設定">
       <div class="row" style="max-width: 300px;">
         <SsInput
-          v-model="mainStore.world().memory"
+          v-model="mainStore.world().memory.size"
           label="メモリサイズ"
           class="col q-pr-md"
         />
         <SsSelect
-          v-model="mainStore.world().memory"
+          v-model="mainStore.world().memory.unit"
           :options="['MB', 'GB', 'TB']"
           label="単位"
           class="col-3"

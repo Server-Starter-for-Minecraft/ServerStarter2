@@ -6,6 +6,7 @@ import RunningView from 'src/components/World/Console/RunningView.vue'
 import OperationView from 'src/components/World/Console/OperationView.vue'
 
 const consoleStore = useConsoleStore()
+// ワールドタブを選択せずにこの画面に到達した場合にStatusなどをセットする
 consoleStore.setTab()
 </script>
 

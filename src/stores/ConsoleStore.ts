@@ -29,6 +29,11 @@ export const useConsoleStore = defineStore('consoleStore', {
     }
   },
   actions: {
+    /**
+     * コンソールを表示するために必要な情報を宣言
+     * 
+     * mainStoreのSelectedIdxを変更してから呼び出す
+     */
     setTab() {
       const mainStore = useMainStore()
       if (this._world[mainStore.selectedWorldID] === void 0) {
@@ -43,9 +48,9 @@ export const useConsoleStore = defineStore('consoleStore', {
       progressStore.setProgress(message, current=current, total=total, worldID=worldID)
       this._world[worldID].status = 'Ready'
     },
-    setConsole(worldID: WorldID, consoleLine: string) {
+    setConsole(worldID: WorldID, consoleLine?: string) {
       this._world[worldID].status = 'Running'
-      this._world[worldID].console.push(consoleLine)
+      if (consoleLine !== void 0) { this._world[worldID].console.push(consoleLine) }
     },
   }
 })

@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMainStore } from 'src/stores/MainStore';
-import { runServer } from 'src/stores/ConsoleStore';
+import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
 const prop = defineProps<Props>();
 
 const mainStore = useMainStore();
+const consoleStore = useConsoleStore()
 
 const router = useRouter()
 async function startServer() {
@@ -49,14 +50,22 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
 //     ]
 //   )
 // }
+
+/**
+ * ワールドを選択した際に行うワールド関連の初期化
+ */
+function selectWorldIdx() {
+  mainStore.selectedIdx = prop.idx
+  consoleStore.setTab()
+}
 </script>
 
 <template>
   <q-item
     clickable
-    :active="(clicked = mainStore.selectedIdx == prop.idx)"
-    :focused="(clicked = mainStore.selectedIdx == prop.idx)"
-    @click="mainStore.selectedIdx = idx"
+    :active="(clicked = mainStore.selectedIdx == idx)"
+    :focused="(clicked = mainStore.selectedIdx == idx)"
+    @click="selectWorldIdx"
     v-on:dblclick="startServer"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
