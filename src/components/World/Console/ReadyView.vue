@@ -6,7 +6,7 @@ const consoleStore = useConsoleStore()
 </script>
 
 <template>
-  <div v-if="consoleStore.status === 'Ready'" class="fit">
+  <div v-if="consoleStore.status() === 'Ready'" class="fit">
     <progress-page/>
   </div>
 </template>

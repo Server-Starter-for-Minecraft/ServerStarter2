@@ -18,6 +18,10 @@ const consoleStore = useConsoleStore()
 window.API.onStartServer((_event, worldID) => {
   consoleStore.setConsole(worldID, '')
 })
+// サーバー終了時に画面遷移
+window.API.onFinishServer((_event, worldID) => {
+  consoleStore.setProgress(worldID, '')
+})
 
 // Windowの起動時処理
 router.push('/init')

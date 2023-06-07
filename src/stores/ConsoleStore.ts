@@ -18,40 +18,52 @@ export const useConsoleStore = defineStore('consoleStore', {
       _world: {} as WorldConsole
     }
   },
-  getters: {
-    status(state) {
-      const mainStore = useMainStore()
-      return state._world[mainStore.selectedWorldID].status
-    },
-    console(state) {
-      const mainStore = useMainStore()
-      return state._world[mainStore.selectedWorldID].console
-    }
-  },
   actions: {
     /**
      * コンソールを表示するために必要な情報を宣言
      * 
      * mainStoreのSelectedIdxを変更してから呼び出す
+     * 
+     * @param force すでにデータが存在していてもコンソールとステータスを初期化する
      */
-    setTab() {
+    initTab(force = false) {
       const mainStore = useMainStore()
-      if (this._world[mainStore.selectedWorldID] === void 0) {
+      if (this._world[mainStore.selectedWorldID] === void 0 || force) {
         this._world[mainStore.selectedWorldID] = {
           status: 'Stop',
           console: new Array<string>()
         }
       }
     },
+    /**
+     * 進捗を登録する
+     */
     setProgress(worldID: WorldID, message: string, current?: number, total?: number) {
       const progressStore = useProgressStore()
       progressStore.setProgress(message, current=current, total=total, worldID=worldID)
       this._world[worldID].status = 'Ready'
     },
+    /**
+     * コンソールに行を追加する 
+     */
     setConsole(worldID: WorldID, consoleLine?: string) {
       this._world[worldID].status = 'Running'
       if (consoleLine !== void 0) { this._world[worldID].console.push(consoleLine) }
     },
+    /**
+     * ワールドの実行状態を取得する
+     */
+    status(worldID?: WorldID) {
+      const id = worldID ?? useMainStore().selectedWorldID
+      return this._world[id]?.status ?? 'Stop'
+    },
+    /**
+     * ワールドのコンソール状態を取得する
+     */
+    console(worldID?: WorldID) {
+      const id = worldID ?? useMainStore().selectedWorldID
+      return this._world[id].console
+    }
   }
 })
 
@@ -63,4 +75,7 @@ export async function runServer() {
   const res = await window.API.invokeRunServer(toRaw(mainStore.world()));
 
   checkError(res, console.log, 'サーバーが異常終了しました。')
+
+  // サーバータブをリセット
+  consoleStore.initTab(true)
 }

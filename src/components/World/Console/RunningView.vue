@@ -11,7 +11,7 @@ const virtualListRef: Ref<null | QVirtualScroll> = ref(null)
  * コンソールの一番下に自動でスクロールする
  */
 function scroll2End() {
-  virtualListRef.value?.scrollTo(consoleStore.console.length, 'start-force')
+  virtualListRef.value?.scrollTo(consoleStore.console().length, 'start-force')
 }
 
 // コンソール表示
@@ -33,9 +33,9 @@ window.API.onAddConsole((_event, worldID, chunk) => {
   /> -->
 
   <q-virtual-scroll
-    v-if="consoleStore.status === 'Running'"
+    v-if="consoleStore.status() === 'Running'"
     ref="virtualListRef"
-    :items="consoleStore.console"
+    :items="consoleStore.console()"
     v-slot="{ item }"
     class="q-pa-md fit"
     style="flex: 1 1 0;"

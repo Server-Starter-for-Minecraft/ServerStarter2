@@ -16,6 +16,13 @@ const consoleStore = useConsoleStore()
 
 const router = useRouter()
 async function startServer() {
+  // 選択されているワールドを更新
+  selectWorldIdx()
+
+  // Stop状態のでない時にはサーバーを起動できないようにする
+  if (consoleStore.status()!=='Stop') { return }
+
+  // サーバーの起動を開始
   await router.push('/console');
   runServer()
 }
@@ -56,7 +63,7 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
  */
 function selectWorldIdx() {
   mainStore.selectedIdx = prop.idx
-  consoleStore.setTab()
+  consoleStore.initTab()
 }
 </script>
 
@@ -82,7 +89,7 @@ function selectWorldIdx() {
           :ratio="1"
         />
         <q-btn
-          v-show="clicked || runBtnHovered"
+          v-show="consoleStore.status(world.id)==='Stop' && (clicked || runBtnHovered)"
           @click="startServer"
           flat
           dense

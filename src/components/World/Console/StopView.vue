@@ -6,7 +6,7 @@ const consoleStore = useConsoleStore()
 
 <template>
   <div
-    v-if="consoleStore.status === 'Stop'"
+    v-if="consoleStore.status() === 'Stop'"
     class="justify-center row fit"
   >
     <q-btn

@@ -7,7 +7,7 @@ import OperationView from 'src/components/World/Console/OperationView.vue'
 
 const consoleStore = useConsoleStore()
 // ワールドタブを選択せずにこの画面に到達した場合にStatusなどをセットする
-consoleStore.setTab()
+consoleStore.initTab()
 </script>
 
 <template>
@@ -20,6 +20,6 @@ consoleStore.setTab()
 
     <q-separator inset/>
 
-    <OperationView :disable="consoleStore.status !== 'Running'"/>
+    <OperationView :disable="consoleStore.status() !== 'Running'"/>
   </div>
 </template>
