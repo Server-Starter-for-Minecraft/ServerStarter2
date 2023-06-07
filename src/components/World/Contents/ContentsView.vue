@@ -16,7 +16,7 @@ defineProps<Prop>()
     <h2>導入済み{{ type }}</h2>
     <div class="q-pa-md row items-start q-gutter-md">
       <template v-for="name in itemNames" :key="name">
-        <ItemCardView :name="name" action-type="add" />
+        <ItemCardView :name="name" action-type="delete" />
       </template>
     </div>
     
@@ -24,7 +24,7 @@ defineProps<Prop>()
     <div class="q-pa-md row items-start q-gutter-md">
       <ItemCardView name="新規" action-type="add" color="red"/>
       <template v-for="name in candidateItems" :key="name">
-        <ItemCardView :name="name" action-type="delete" />
+        <ItemCardView :name="name" action-type="add" />
       </template>
     </div>
   </div>
