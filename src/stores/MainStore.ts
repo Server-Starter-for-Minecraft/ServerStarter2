@@ -31,5 +31,11 @@ export const useMainStore = defineStore('mainStore', {
       console.log(world.properties)
       return world
     },
+    /**
+     * 選択されているワールドを削除する
+     */
+    removeWorld() {
+      this.worldList.splice(this.selectedIdx, 1)
+    }
   },
 });

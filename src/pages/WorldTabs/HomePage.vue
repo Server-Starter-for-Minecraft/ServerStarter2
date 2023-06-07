@@ -2,11 +2,12 @@
 import { ref } from 'vue';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { useDialogStore } from 'src/stores/DialogStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useDialogStore } from 'src/stores/DialogStore';
+import DangerView from 'src/components/util/dangerView.vue';
 
 const mainStore = useMainStore()
 const sysStore = useSystemStore()
@@ -16,7 +17,10 @@ const customWorldPath = ref(null)
 const soloWorldName = ref('個人ワールドを選択')
 const showSoloWorld = ref(false)
 
-function cleanUpID() {
+/**
+ * バージョンの一覧を取得する
+ */
+function getAllVers() {
   const version = mainStore.world().version;
   const versionList = sysStore.serverVersions.get(version.type);
 
@@ -32,6 +36,14 @@ function cleanUpID() {
   // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
   if (version.id == '' || versionList.every((ver) => ver.id != version.id))
     mainStore.world().version.id = versionList[0].id;
+}
+
+/**
+ * 選択されているワールドを削除する
+ */
+function removeWorld() {
+  window.API.invokeDeleteWorld(mainStore.selectedWorldID)
+  mainStore.removeWorld()
 }
 </script>
 
@@ -49,7 +61,7 @@ function cleanUpID() {
     <div class="row">
       <SsSelect
         v-model="mainStore.world().version.type"
-        @update:model-value="cleanUpID"
+        @update:model-value="getAllVers"
         :options="versionTypes"
         label="サーバーの種類を選択"
         class="col-5 q-pr-md"
@@ -107,6 +119,20 @@ function cleanUpID() {
       />
     </ExpansionView>
 
-
+    <DangerView
+      title="ワールドの削除"
+      :text="[
+        'このワールドを削除すると、ワールドデータを元に戻すことはできません。',
+        '十分に注意して実行して下さい。'
+      ]"
+      btn-text="ワールドを削除"
+      @action="removeWorld"
+      show-dialog
+      dialog-title="ワールドを削除します"
+      :dialog-text="[
+        `${mainStore.world().name}のデータは永久に失われ、元に戻すことはできません。`,
+        '本当にワールドを削除しますか？'
+      ]"
+    />
   </div>
 </template>
