@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useDialogStore } from 'src/stores/DialogStore'
 
 interface Prop {
   title: string
@@ -12,11 +12,22 @@ interface Prop {
 }
 const prop = defineProps<Prop>()
 
-const dialogModel = ref(false)
-
 function dialog() {
-  if (prop.showDialog) {
-    dialogModel.value = true
+  if (prop.showDialog && prop.dialogTitle && prop.dialogText) {
+    useDialogStore().showDialog(
+      prop.dialogTitle,
+      prop.dialogText,
+      [
+        {
+          label: 'Cancel',
+        },
+        {
+          label: 'OK',
+          color: 'primary',
+          action: prop.onAction
+        }
+      ]
+    )
   }
   else {
     prop.onAction()
@@ -39,23 +50,6 @@ function dialog() {
       </q-card-section>
     </q-card>
   </div>
-
-  <q-dialog v-model="dialogModel">
-    <q-card>
-      <q-card-section>
-        <div class="text-h6 text-bold">{{ dialogTitle }}</div>
-      </q-card-section>
-
-      <q-card-section class="q-pt-none">
-        <p v-for="line in dialogText" :key="line">{{ line }}</p>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" v-close-popup/>
-        <q-btn flat label="Yes" color="red" @click="onAction" v-close-popup/>
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 </template>
 
 <style scoped lang="scss">

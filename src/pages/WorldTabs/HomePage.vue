@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useDialogStore } from 'src/stores/DialogStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -10,6 +11,7 @@ import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
 
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 const sysStore = useSystemStore()
 const dialogStore = useDialogStore()
 
@@ -27,7 +29,8 @@ function getAllVers() {
   // versionListがundefinedの時にエラー処理
   if (versionList === void 0) {
     dialogStore.showDialog(
-      `サーバーバージョン${version.type}の一覧取得に失敗したため，このサーバーは選択できません`
+      '警告',
+      [`サーバーバージョン${version.type}の一覧取得に失敗したため，このサーバーは選択できません`]
     );
     mainStore.world().version.type = 'vanilla';
     return;
@@ -120,6 +123,7 @@ function removeWorld() {
     </ExpansionView>
 
     <DangerView
+      v-if="consoleStore.status() === 'Stop'"
       title="ワールドの削除"
       :text="[
         'このワールドを削除すると、ワールドデータを元に戻すことはできません。',
