@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import WorldTab from './WorldTab.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
-import IconButtonView from '../World/IconButtonView.vue';
+import IconButtonView from '../World/utils/IconButtonView.vue';
 
 const store = useMainStore();
 const searchWorldName = ref('')
