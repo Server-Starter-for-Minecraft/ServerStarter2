@@ -63,4 +63,20 @@ export const dummySystemSettings: SystemSettings = {
     owner: player1,
     autoShutDown: false,
   },
+  cache: {
+    datapacks: [
+      {
+        name: '導入済み1',
+        description: '説明文説明文説明文説明文説明文説明文'
+      },
+      {
+        name: '導入済み2',
+        description: '説明文説明文説明文説明文説明文説明文'
+      },
+      {
+        name: '導入済み3',
+        description: '説明文説明文説明文説明文説明文説明文'
+      },
+    ]
+  }
 };

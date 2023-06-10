@@ -60,5 +60,6 @@ async function installFile(
   }
   return {
     name: file.name,
+    description: file.description
   };
 }

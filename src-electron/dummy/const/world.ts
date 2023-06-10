@@ -72,7 +72,18 @@ const playerSettings = [player1Setting, player2Setting, player3Setting];
 export const world1: World = {
   id: world1Id,
   name: world1Name,
-  additional: {},
+  additional: {
+    datapacks: [
+      {
+        name: 'world1_datapack1',
+        description: '説明文説明文説明文説明文説明文説明文'
+      },
+      {
+        name: 'world1_datapack2',
+        description: '説明文説明文説明文説明文説明文説明文'
+      }
+    ]
+  },
   container: serverContainer,
   memory: {
     size: 2,

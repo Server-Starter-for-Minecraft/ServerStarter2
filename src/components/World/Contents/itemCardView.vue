@@ -1,6 +1,7 @@
 <script setup lang="ts">
 interface Prop {
   name: string
+  desc?: string
   actionType: 'delete' | 'add'
   color?: string
 }
@@ -11,7 +12,7 @@ defineProps<Prop>()
   <q-card flat class="card" :style="{'background': color}">
     <q-card-section>
       <h1 class="q-py-none q-my-none title-text">{{ name }}</h1>
-      <div class="text-caption q-pt-md">アイテムの説明</div>
+      <div v-if="desc !== void 0" class="text-caption q-pt-md">{{ desc }}</div>
     </q-card-section>
     <div class="text-h5 absolute-bottom text-right">
       <q-btn v-show="actionType === 'delete'" flat color="grey" size="1.1rem" icon="delete"/>

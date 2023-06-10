@@ -1,20 +1,16 @@
 <script setup lang="ts">
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import ContentsView from 'src/components/World/Contents/ContentsView.vue';
 
-// TODO: これは最終的には導入経験のあるデータパック一覧をシステム設定より取得
-// データパック名とそれらの説明文のセットをDatapackオブジェクトに格納されていてほしい
-const oldDatapacks = [
-  'testPack1',
-  'testPack2',
-  'testPack3',
-  'testPack4',
-]
+const sysStore = useSystemStore()
+const mainStore = useMainStore()
 </script>
 
 <template>
   <ContentsView
     type="datapack"
-    :item-names="['kusaPack1', 'kusaPack2']"
-    :candidate-items="oldDatapacks"
+    :item-names="mainStore.world().additional.datapacks"
+    :candidate-items="sysStore.systemSettings.cache.datapacks"
   />
 </template>
