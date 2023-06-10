@@ -9,6 +9,7 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
+import { isFailure } from 'app/src-electron/api/failable';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -44,9 +45,17 @@ function getAllVers() {
 /**
  * 選択されているワールドを削除する
  */
-function removeWorld() {
-  window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-  mainStore.removeWorld()
+async function removeWorld() {
+  const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
+  if (isFailure(res)) {
+    dialogStore.showDialog(
+      `${mainStore.world().name}の削除に失敗しました`,
+      []
+    )
+  }
+  else {
+    mainStore.removeWorld()
+  }
 }
 </script>
 
