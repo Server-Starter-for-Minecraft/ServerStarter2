@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import IconTabView from './utils/IconTabView.vue';
 import IconTabDropdownView from './utils/IconTabDropdownView.vue';
-
-const tab = ref('home')
 </script>
 
 <template>
   <q-tabs
-    v-model="tab"
+    v-model="$route.path"
     inline-label
     align="left"
     dense
@@ -17,22 +14,21 @@ const tab = ref('home')
     class="fit q-px-sm"
     style="flex: 1 1 0;"
   >
-    <icon-tab-view name="home" icon="home" label="ホーム" to="" />
-    <icon-tab-view name="console" icon="dns" label="サーバー本体" />
-    <icon-tab-view name="property" icon="list_alt" label="プロパティ" />
-    <icon-tab-view name="player" icon="group" label="プレイヤー管理" />
+    <icon-tab-view path="" icon="home" label="ホーム" />
+    <icon-tab-view path="console" icon="dns" label="サーバー本体" />
+    <icon-tab-view path="property" icon="list_alt" label="プロパティ" />
+    <icon-tab-view path="player" icon="group" label="プレイヤー管理" />
     <icon-tab-dropdown-view
-      v-model="tab"
-      name="contents"
+      path="contents"
       icon="library_add"
       label="追加コンテンツ"
       :btns = "[
-        { name: 'datapack', label: 'データパック' },
-        { name: 'plugin', label: 'プラグイン' },
-        { name: 'mod', label: 'MOD' },
+        { path: 'datapack', label: 'データパック' },
+        { path: 'plugin', label: 'プラグイン' },
+        { path: 'mod', label: 'MOD' },
       ]"
     />
-    <icon-tab-view name="share-world" icon="share" label="ワールド共有" />
+    <icon-tab-view path="share-world" icon="share" label="ワールド共有" />
   </q-tabs>
 
   <q-separator />

@@ -2,31 +2,28 @@
 import { useRouter } from 'vue-router';
 
 interface Prop {
-  name: string
+  path: string
   icon?: string
   label?: string
-  to?: string
   disableRouter?: boolean
 }
 const prop = defineProps<Prop>()
 const router = useRouter()
 
-const toPath = prop.to ?? prop.name
-
 async function to() {
-  await router.push(`/${toPath}`)
+  await router.push(`/${prop.path}`)
 }
 </script>
 
 <template>
   <q-tab
-    :name="name"
+    :name="`/${path}`"
     :icon="icon"
-    :label="$q.screen.gt.md || $route.path===`/${toPath}` ? label : undefined"
+    :label="$q.screen.gt.md || $route.path===`/${path}` ? label : undefined"
     @click="disableRouter ? undefined : to()"
   >
     <slot/>
-    <q-tooltip v-if="!($q.screen.gt.md || $route.path===`/${toPath}`)">
+    <q-tooltip v-if="!($q.screen.gt.md || $route.path===`/${path}`)">
       {{ label }}
     </q-tooltip>
   </q-tab>

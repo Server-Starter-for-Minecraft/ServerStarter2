@@ -34,31 +34,6 @@ const runBtnHovered = ref(false);
 const versionName = `${prop.world.version.id} (${prop.world.version.type})`
 
 /**
- * ゴミ箱ボタンを押したときの削除処理
- */
-//  function removeWorld(item: WorldEdited) {
-//   async function removeAction() {
-//     const res = await window.API.invokeDeleteWorld(item)
-//     if (isFailure(res)) {
-//       useDialogStore().showDialog(
-//         `${item.name}の削除に失敗しました`
-//       )
-//     }
-//     else {
-//       mainStore.worldList.splice(prop.idx, 1)
-//     }
-//   }
-
-//   useDialogStore().showDialog(
-//     `${item.name}をワールド一覧から削除しますか？`, 
-//     [
-//       {label: 'キャンセル'},
-//       {label: 'OK', color: 'primary', action: removeAction},
-//     ]
-//   )
-// }
-
-/**
  * ワールドを選択した際に行うワールド関連の初期化
  */
 function selectWorldIdx() {
