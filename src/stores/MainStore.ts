@@ -28,7 +28,6 @@ export const useMainStore = defineStore('mainStore', {
     world() {
       const world = this.worldList[this.selectedIdx]
       window.API.invokeSaveWorldSettings(toRaw(world))
-      console.log(world.properties)
       return world
     },
     /**
