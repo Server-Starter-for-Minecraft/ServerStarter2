@@ -5,14 +5,16 @@ interface Prop {
   name: string
   label: string
   to?: string
+  onClick?: () => void
 }
 const prop = defineProps<Prop>()
 const router = useRouter()
 
 const toPath = prop.to ?? prop.name
 
-async function to() {
+async function clicked() {
   await router.push(`/${toPath}`)
+  if (prop.onClick) { prop.onClick() }
 }
 </script>
 
@@ -20,7 +22,7 @@ async function to() {
   <q-item
     :active="$route.path===`/${toPath}`"
     clickable
-    @click="to()"
+    @click="clicked()"
   >
     <q-item-section>{{ label }}</q-item-section>
   </q-item>
