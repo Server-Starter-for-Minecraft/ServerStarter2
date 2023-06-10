@@ -1,18 +1,13 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
 import { useProgressStore } from '../stores/ProgressStore';
-let agree: Ref<((value: boolean) => void) | null> = ref(null);
 
 const progressStore = useProgressStore();
 
 // Eulaの同意処理
-window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent) => {
-  const promise = new Promise<boolean>((resolve) => {
-    agree.value = (value: boolean) => {
-      agree.value = null;
-      resolve(value);
-    };
-  });
+window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID) => {
+  const promise = new Promise<boolean>(
+    (resolve) => { progressStore.back2frontHandler(resolve, worldID) }
+  );
   return await promise;
 });
 
@@ -44,8 +39,17 @@ window.API.onUpdateStatus((_event, worldID, message , current, total) => {
         style="max-height: 1pt"
       />
     </div>
-    <q-btn v-show="agree" @click="agree?.(true)">AGREE EULA!!</q-btn>
-    <q-btn v-show="agree" @click="agree?.(false)">DISAGREE EULA!!</q-btn>
+
+    <q-btn
+      v-show="progressStore.userSelecter"
+      @click="progressStore.userSelecter?.(true)"
+      label="AGREE EULA!!"
+    />
+    <q-btn
+      v-show="progressStore.userSelecter"
+      @click="progressStore.userSelecter?.(false)"
+      label="DISAGREE EULA!!"
+    />
   </div>
 </template>
 

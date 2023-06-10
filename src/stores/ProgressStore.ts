@@ -6,6 +6,7 @@ interface WorldProgress {
   [id: WorldID]: {
     message: string
     ratio?: number
+    selecter?: (value: boolean) => void
   }
 }
 
@@ -36,6 +37,13 @@ export const useProgressStore = defineStore('progressStore', {
     ratio(state) {
       const mainStore = useMainStore()
       return state._message !== void 0 ? state._ratio : state._world[mainStore.selectedWorldID]?.ratio ?? undefined
+    },
+    /**
+     * ワールドへの同意画面を表示し、ユーザーの選択を受ける
+     */
+    userSelecter(state) {
+      const mainStore = useMainStore()
+      return state._message !== void 0 ? undefined : state._world[mainStore.selectedWorldID]?.selecter
     }
   },
   actions: {
@@ -56,7 +64,7 @@ export const useProgressStore = defineStore('progressStore', {
       else {
         this._world[worldID] = {
           message: message,
-          ratio: ratio
+          ratio: ratio,
         }
       }
     },
@@ -77,5 +85,14 @@ export const useProgressStore = defineStore('progressStore', {
         this._world[worldID].ratio = undefined
       }
     },
+    /**
+     * バックエンドからユーザーの選択による処理を要求された場合にイベントに登録しておく処理
+     */
+    back2frontHandler(resolve: (value: boolean | PromiseLike<boolean>) => void, worldID: WorldID) {
+      this._world[worldID].selecter = (value: boolean) => {
+        this._world[worldID].selecter = undefined;
+        resolve(value);
+      };
+    }
   }
 });
