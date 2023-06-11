@@ -1,22 +1,37 @@
 import { Player } from 'app/src-electron/schema/player';
-import { WorldContainer } from '../../schema/brands';
+import { ImageURI, PlayerUUID, WorldContainer } from '../../schema/brands';
 import { SystemSettings, WorldContainers } from '../../schema/system';
 import { defaultServerProperties } from './serverProperties';
 import { SystemWorldSettings } from 'app/src-electron/schema/world';
 
+export const player1UUID = '8c4d8e1b-26b0-4e73-a8b2-f10d55e1c20c' as PlayerUUID;
+export const player2UUID = '5050fa2d-6a88-45da-b25e-7bcda267dfe2' as PlayerUUID;
+export const player3UUID = '8b3dfc8d-c75a-4e8a-86ba-8a0697b0942e' as PlayerUUID;
+
+export const playerAvatar =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIBAMAAAA2IaO4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAqUExURQAPLP3++Pb28+jo5b+QecaXfMmkjT8/PwCTINCqj9m+owJ3NTe6VGHBQ8rHOi0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAApSURBVBjTY0AAIUMlRQaVoGR1hohZUzcy5KxauZFh7qpVlxm0Vq1aBACCXAsTpdjxUAAAAABJRU5ErkJggg==' as ImageURI;
+export const playerAvatarOverlay =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABXSURBVChTY2Tg1/nPQA6YUy2MX+PP6w4IBfnBsv9x6oi204JLNKWhKvr778d/pidvP0O5DAyPHwtAWRDg5OiOsAvZJBh48eLpf4Zv3z5jtxsIvn37/B8A3fAn0FlZxgwAAAAASUVORK5CYII=' as ImageURI;
+
 export const player1: Player = {
   name: 'player1',
-  uuid: '8c4d8e1b-26b0-4e73-a8b2-f10d55e1c20c',
+  uuid: player1UUID,
+  avatar: playerAvatar,
+  avatar_overlay: playerAvatarOverlay,
 };
 
 export const player2: Player = {
   name: 'player2',
-  uuid: '5050fa2d-6a88-45da-b25e-7bcda267dfe2',
+  uuid: player2UUID,
+  avatar: playerAvatar,
+  avatar_overlay: playerAvatarOverlay,
 };
 
 export const player3: Player = {
   name: 'player3',
-  uuid: '8b3dfc8d-c75a-4e8a-86ba-8a0697b0942e',
+  uuid: player3UUID,
+  avatar: playerAvatar,
+  avatar_overlay: playerAvatarOverlay,
 };
 
 export const dummySystemWorldSettings: SystemWorldSettings = {
@@ -52,7 +67,7 @@ export const dummySystemSettings: SystemSettings = {
     groups: [
       {
         name: 'testGroup',
-        players: [player1, player2, player3],
+        players: [player1UUID, player2UUID, player3UUID],
       },
     ],
     players: [player1, player2, player3],
@@ -67,16 +82,16 @@ export const dummySystemSettings: SystemSettings = {
     datapacks: [
       {
         name: '導入済み1',
-        description: '説明文説明文説明文説明文説明文説明文'
+        description: '説明文説明文説明文説明文説明文説明文',
       },
       {
         name: '導入済み2',
-        description: '説明文説明文説明文説明文説明文説明文'
+        description: '説明文説明文説明文説明文説明文説明文',
       },
       {
         name: '導入済み3',
-        description: '説明文説明文説明文説明文説明文説明文'
+        description: '説明文説明文説明文説明文説明文説明文',
       },
-    ]
-  }
+    ],
+  },
 };

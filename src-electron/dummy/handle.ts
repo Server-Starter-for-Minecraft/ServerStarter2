@@ -6,6 +6,8 @@ import {
   dummySystemSettings,
   dummySystemWorldSettings,
   dummyWorldContainers,
+  playerAvatar,
+  playerAvatarOverlay,
   serverWorldContainer,
 } from './const/systemSettings';
 import { Version, VersionType } from '../schema/version';
@@ -140,10 +142,8 @@ export const SearchPlayer = async (
     return {
       name: uuidOrName,
       uuid: `00000000-${uuidOrName}-0000000000000000` as PlayerUUID,
-      avatar:
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIBAMAAAA2IaO4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAqUExURQAPLP3++Pb28+jo5b+QecaXfMmkjT8/PwCTINCqj9m+owJ3NTe6VGHBQ8rHOi0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAApSURBVBjTY0AAIUMlRQaVoGR1hohZUzcy5KxauZFh7qpVlxm0Vq1aBACCXAsTpdjxUAAAAABJRU5ErkJggg==' as ImageURI,
-      avatar_overlay:
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABXSURBVChTY2Tg1/nPQA6YUy2MX+PP6w4IBfnBsv9x6oi204JLNKWhKvr778d/pidvP0O5DAyPHwtAWRDg5OiOsAvZJBh48eLpf4Zv3z5jtxsIvn37/B8A3fAn0FlZxgwAAAAASUVORK5CYII=' as ImageURI,
+      avatar: playerAvatar,
+      avatar_overlay: playerAvatarOverlay,
     };
   }
 
@@ -153,10 +153,8 @@ export const SearchPlayer = async (
     return {
       name: 'TestPlayer',
       uuid: uuidOrName as PlayerUUID,
-      avatar:
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIBAMAAAA2IaO4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAqUExURQAPLP3++Pb28+jo5b+QecaXfMmkjT8/PwCTINCqj9m+owJ3NTe6VGHBQ8rHOi0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAApSURBVBjTY0AAIUMlRQaVoGR1hohZUzcy5KxauZFh7qpVlxm0Vq1aBACCXAsTpdjxUAAAAABJRU5ErkJggg==' as ImageURI,
-      avatar_overlay:
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABXSURBVChTY2Tg1/nPQA6YUy2MX+PP6w4IBfnBsv9x6oi204JLNKWhKvr778d/pidvP0O5DAyPHwtAWRDg5OiOsAvZJBh48eLpf4Zv3z5jtxsIvn37/B8A3fAn0FlZxgwAAAAASUVORK5CYII=' as ImageURI,
+      avatar: playerAvatar,
+      avatar_overlay: playerAvatarOverlay,
     };
   }
   return new Error(`Non existing player: ${uuidOrName}`);

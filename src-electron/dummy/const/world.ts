@@ -1,14 +1,7 @@
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import { World, WorldAbbr, WorldID } from 'app/src-electron/schema/world';
-import { genUUID } from 'app/src-electron/tools/uuid';
-import {
-  dummySystemWorldSettings,
-  player1,
-  player2,
-  player3,
-} from './systemSettings';
-import { defaultServerProperties } from './serverProperties';
+import { player1UUID, player2UUID, player3UUID } from './systemSettings';
 import { dummyServerPropertiesMap } from './serverPropertiesMap';
 
 const world1Id = '11111111-1111-1111-1111-111111111111' as WorldID;
@@ -49,7 +42,7 @@ export const dummyWorldAbbrs: WorldAbbr[] = [
 ];
 
 export const player1Setting: PlayerSetting = {
-  ...player1,
+  uuid: player1UUID,
   op: {
     bypassesPlayerLimit: true,
     level: 4,
@@ -57,15 +50,14 @@ export const player1Setting: PlayerSetting = {
 };
 
 export const player2Setting: PlayerSetting = {
-  ...player2,
+  uuid: player2UUID,
+
   op: {
     bypassesPlayerLimit: false,
     level: 1,
   },
 };
-export const player3Setting: PlayerSetting = {
-  ...player3,
-};
+export const player3Setting: PlayerSetting = { uuid: player3UUID };
 
 const playerSettings = [player1Setting, player2Setting, player3Setting];
 
@@ -76,13 +68,13 @@ export const world1: World = {
     datapacks: [
       {
         name: 'world1_datapack1',
-        description: '説明文説明文説明文説明文説明文説明文'
+        description: '説明文説明文説明文説明文説明文説明文',
       },
       {
         name: 'world1_datapack2',
-        description: '説明文説明文説明文説明文説明文説明文'
-      }
-    ]
+        description: '説明文説明文説明文説明文説明文説明文',
+      },
+    ],
   },
   container: serverContainer,
   memory: {
