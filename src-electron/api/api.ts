@@ -88,7 +88,7 @@ export interface API extends IAPI {
     DeleteWorld: (world: WorldID) => Promise<Failable<void>>;
 
     /** プレイヤーを名前またはUUIDで検索する(完全一致のみ) */
-    SearchPlayer: (name_or_uuid: string) => Promise<Failable<Player>>;
+    SearchPlayer: (nameOrUuid: string) => Promise<Failable<Player>>;
 
     GetVersions: (
       type: VersionType,
