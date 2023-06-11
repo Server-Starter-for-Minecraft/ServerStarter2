@@ -1,4 +1,5 @@
 import { UUID, WorldContainer, WorldName } from '../schema/brands';
+import { Player } from '../schema/player';
 import { SystemSettings, WorldContainers } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import {
@@ -85,6 +86,9 @@ export interface API extends IAPI {
     // ) => Promise<Failable<World>>;
 
     DeleteWorld: (world: WorldID) => Promise<Failable<void>>;
+
+    /** プレイヤーを名前またはUUIDで検索する(完全一致のみ) */
+    SearchPlayer: (name_or_uuid: string) => Promise<Failable<Player>>;
 
     GetVersions: (
       type: VersionType,
