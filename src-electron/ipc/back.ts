@@ -18,6 +18,7 @@ import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';
 import { BrowserWindow } from 'electron';
+import { searchPlayer } from '../core/player/search';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -49,6 +50,8 @@ export const getBackListener = (
 
     GetRunningWorld: getRunningWorld,
     // UpdatetRunningWorld: updateRunningWorld,
+
+    SearchPlayer: searchPlayer,
 
     GenUUID: async () => genUUID(),
   },

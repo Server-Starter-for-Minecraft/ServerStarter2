@@ -3,6 +3,8 @@ import { promises } from 'fs';
 import { utilLoggers } from './logger';
 import { Path } from './path';
 import { isSuccess, Failable, isFailure } from '../api/failable';
+import { Png } from './png';
+import sharp from 'sharp';
 
 const fetch = import('node-fetch');
 
@@ -22,6 +24,7 @@ export class BytesData {
     this.data = data;
   }
 
+  /** URLからデータを取得. ステータスコードが200でない場合はすべてエラーとみなす */
   static async fromURL(
     url: string,
     hash: Hash | undefined = undefined,
@@ -32,7 +35,7 @@ export class BytesData {
 
     try {
       const res = await (await fetch).default(url, { headers });
-      if (!res.ok) {
+      if (res.status !== 200) {
         logger.fail({ status: res.status, statusText: res.statusText });
         return new BytesDataError(
           `failed to fetch ${url} status: ${res.status} ${res.statusText}`
@@ -98,6 +101,11 @@ export class BytesData {
   /** base64の形式でByteDataに変換 */
   static async fromBase64(base64: string): Promise<Failable<BytesData>> {
     return new BytesData(Buffer.from(base64, 'base64'));
+  }
+
+  /** base64の形式でByteDataに変換 */
+  static async fromBuffer(buffer: Buffer): Promise<Failable<BytesData>> {
+    return new BytesData(buffer);
   }
 
   /**
@@ -192,6 +200,15 @@ export class BytesData {
         const text = new TextDecoder(encoding).decode(this.data);
         resolve(JSON.parse(text));
       });
+    } catch (e) {
+      // TODO: 黒魔術の解消
+      return e as unknown as Error;
+    }
+  }
+
+  async png(): Promise<Failable<Png>> {
+    try {
+      return new Png(sharp(this.data));
     } catch (e) {
       // TODO: 黒魔術の解消
       return e as unknown as Error;
