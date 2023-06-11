@@ -15,7 +15,7 @@ import {
   setSystemSettings,
   setWorldContainers,
   validateNewWorldName,
-  SearchPlayer,
+  searchPlayer,
 } from '../dummy/handle';
 import { getRunningWorld } from '../core/server/server';
 import { genUUID } from '../tools/uuid';
@@ -47,7 +47,7 @@ export const getBackListener = (
     GetWorldAbbrs: getWorldAbbrs,
     GetWorld: getWorld,
 
-    SearchPlayer: SearchPlayer,
+    SearchPlayer: searchPlayer,
 
     ValidateNewWorldName: validateNewWorldName,
 

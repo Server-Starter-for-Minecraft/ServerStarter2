@@ -134,7 +134,7 @@ export const getRunningWorld = async (WorldId: WorldID) => {
   return worldMap[WorldId];
 };
 
-export const SearchPlayer = async (
+export const searchPlayer = async (
   uuidOrName: string
 ): Promise<Failable<Player>> => {
   await sleep(sleepTime);
