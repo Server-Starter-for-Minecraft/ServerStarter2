@@ -47,6 +47,9 @@ export interface API extends IAPI {
       total?: number
     ) => void;
     AddConsole: (world: WorldID, chunk: string) => void;
+
+    /** mainプロセス側かでSystemSettingが変更された場合に走る */
+    UpdateSystemSettings: (settings: SystemSettings) => void;
   };
   invokeMainToWindow: {
     AgreeEula: (world: WorldID, url: string) => Promise<boolean>;
