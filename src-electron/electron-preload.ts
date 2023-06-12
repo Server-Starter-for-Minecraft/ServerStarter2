@@ -89,6 +89,7 @@ const api: FrontAPI = {
   onFinishServer: on('FinishServer'),
   onUpdateStatus: on('UpdateStatus'),
   onAddConsole: on('AddConsole'),
+  onUpdateSystemSettings: on('UpdateSystemSettings'),
 
   sendCommand: send('Command'),
   sendOpenBrowser: send('OpenBrowser'),
