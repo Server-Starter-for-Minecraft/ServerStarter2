@@ -99,6 +99,8 @@ const api: FrontAPI = {
 
   invokePickDirectory: invoke('PickDirectory'),
 
+  invokeGetDefaultWorld: invoke('GetDefaultWorld'),
+
   invokeDeleteWorld: invoke('DeleteWorld'),
 
   invokeRunServer: invoke('RunServer'),
