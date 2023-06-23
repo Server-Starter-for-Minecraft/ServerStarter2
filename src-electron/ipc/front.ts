@@ -54,6 +54,7 @@ export function getFrontAPIListener(
       FinishServer: send('FinishServer', window),
       UpdateStatus: send('UpdateStatus', window),
       AddConsole: send('AddConsole', window),
+      UpdateSystemSettings: send('UpdateSystemSettings', window),
     },
     handle: {
       AgreeEula: invoke('AgreeEula', window),

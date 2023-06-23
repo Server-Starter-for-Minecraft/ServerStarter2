@@ -19,7 +19,7 @@ import {
   WorldContainer,
   WorldName,
 } from '../schema/brands';
-import { dummyWorldAbbrs, worldMap } from './const/world';
+import { dummyWorldAbbrs, getNewWorld, worldMap } from './const/world';
 import { Player } from '../schema/player';
 
 const sleepTime = 500;
@@ -158,4 +158,10 @@ export const searchPlayer = async (
     };
   }
   return new Error(`Non existing player: ${uuidOrName}`);
+};
+
+export const getDefaultWorld = async () => {
+  await sleep(100);
+  console.log(`[getDefaultWorld]`);
+  return getNewWorld();
 };
