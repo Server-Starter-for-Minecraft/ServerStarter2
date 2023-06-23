@@ -4,8 +4,8 @@ import ItemCardView from './itemCardView.vue';
 
 interface Prop {
   type: 'datapack' | 'plugin' | 'mod'
-  itemNames: (FileData | NewData)[]
-  candidateItems: (FileData | NewData)[]
+  itemNames?: (FileData | NewData)[]
+  candidateItems?: (FileData | NewData)[]
 }
 defineProps<Prop>()
 </script>
