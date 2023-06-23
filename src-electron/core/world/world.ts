@@ -6,7 +6,7 @@ import {
   runOnSuccess,
 } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
-import { asyncMap } from '../../util/objmap';
+import { asyncMap, objMap } from '../../util/objmap';
 import { getWorldJsonPath, loadWorldJson } from '../settings/worldJson';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
@@ -14,9 +14,15 @@ import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
 import { worldSettingsToWorld } from '../settings/converter';
 import { World, WorldAbbr, WorldID } from 'src-electron/schema/world';
-import { genUUID } from 'app/src-electron/tools/uuid';
+import { genUUID } from 'src-electron/tools/uuid';
 import { WorldLocationMap, wroldLocationToPath } from './worldMap';
-import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
+import { WorldContainer, WorldName } from 'src-electron/schema/brands';
+import { vanillaVersionLoader } from '../version/vanilla';
+import { getSystemSettings } from '../stores/system';
+import {
+  ServerProperties,
+  ServerPropertiesMap,
+} from 'app/src-electron/schema/serverproperty';
 
 export async function deleteWorld(worldID: WorldID) {
   const cwd = runOnSuccess(wroldLocationToPath)(WorldLocationMap.get(worldID));
@@ -105,11 +111,42 @@ async function getIconURI(cwd: Path) {
   return iconURI;
 }
 
-// const demoWorldSettings: WorldSettings = {
-//   avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
-//   version: {
-//     id: '1.19.2',
-//     type: 'vanilla',
-//     release: true,
-//   },
-// };
+function propertiesToMap(properties: ServerProperties): ServerPropertiesMap {
+  return objMap(properties, (k, v) => [k, v.value]);
+}
+
+/**
+ * ワールドデータを新規生成して返す
+ * ワールドのidは呼び出すたびに新しくなる
+ */
+export async function getDefaultWorld() {
+  const vanillaVersions = await vanillaVersionLoader.getAllVersions(true);
+  if (isFailure(vanillaVersions)) return vanillaVersions;
+
+  const latestRelease = vanillaVersions.find((ver) => ver.release);
+
+  const systemSettings = await getSystemSettings();
+
+  if (latestRelease === undefined)
+    return new Error('Assertion: This error cannot occur');
+
+  const world: World = {
+    // TODO: NewWorldが使用済みの場合末尾に"(n)"を追加
+    name: 'NewWorld' as WorldName,
+    container: systemSettings.container.default,
+    id: genUUID() as WorldID,
+    version: latestRelease,
+    using: false,
+    remote_pull: undefined,
+    remote_push: undefined,
+    last_date: undefined,
+    last_user: undefined,
+    memory: systemSettings.world.memory,
+    javaArguments: systemSettings.world.javaArguments,
+    properties: propertiesToMap(systemSettings.world.properties),
+    players: [],
+    additional: {},
+  };
+
+  return world;
+}

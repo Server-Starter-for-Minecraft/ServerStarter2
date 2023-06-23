@@ -1,5 +1,6 @@
 import { Brand } from '../util/brand';
 
+/** UUID文字列 ( 00000000-0000-0000-0000-000000000000 の形にフォーマットされた文字列) */
 export type UUID = Brand<string, 'UUID'>;
 
 /** ワールドコンテナの名前文字列 */

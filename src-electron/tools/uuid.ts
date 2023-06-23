@@ -8,7 +8,7 @@ const crypto = require('crypto');
 //   const uuid:string = crypto.randomUUID()
 //   return uuid
 // }
-/**UUIDの生成関数 */
+/**UUIDの生成関数(フォーマット済み) */
 export const genUUID = (): UUID => crypto.randomUUID();
 
 /**

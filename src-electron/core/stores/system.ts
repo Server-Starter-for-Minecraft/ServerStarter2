@@ -35,6 +35,7 @@ export function fixSystemSettings() {
       language: 'ja',
       owner: undefined,
     },
+    cache: {},
   });
 
   systemSettings.store = fixed;

@@ -7,7 +7,12 @@ import {
   saveWorldSettings,
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
-import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
+import {
+  deleteWorld,
+  getDefaultWorld,
+  getWorld,
+  getWorldAbbrs,
+} from '../core/world/world';
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
 import {
   getWorldContainers,
@@ -49,6 +54,8 @@ export const getBackListener = (
     ValidateNewWorldName: validateNewWorldName,
 
     GetRunningWorld: getRunningWorld,
+
+    GetDefaultWorld: getDefaultWorld,
     // UpdatetRunningWorld: updateRunningWorld,
 
     SearchPlayer: searchPlayer,
