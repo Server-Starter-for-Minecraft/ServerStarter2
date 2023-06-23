@@ -134,3 +134,25 @@ export const worldMap: Record<WorldID, World> = {};
 worldMap[world1Id] = world1;
 worldMap[world2Id] = world2;
 worldMap[world3Id] = world3;
+
+export function getNewWorld() {
+  const newWorld: World = {
+    id: world3Id,
+    name: 'NewWorld' as WorldName,
+    additional: {},
+    container: serverContainer,
+    memory: {
+      size: 2,
+      unit: 'GB',
+    },
+    players: playerSettings,
+    properties: dummyServerPropertiesMap,
+    using: false,
+    version: {
+      type: 'vanilla',
+      id: '1.19.4',
+      release: true,
+    },
+  };
+  return newWorld;
+}
