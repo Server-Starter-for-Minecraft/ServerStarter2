@@ -62,10 +62,8 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', async () => {
-  if (platform !== 'darwin') {
-    await onQuit.invoke();
-    app.quit();
-  }
+  await onQuit.invoke();
+  app.quit();
 });
 
 // will-quitのタイミングで終了時処理を走らせる
