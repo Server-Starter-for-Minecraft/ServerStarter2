@@ -5,6 +5,7 @@ export function openBrowser(url: string) {
 }
 
 export function openFolder(path: string) {
+  console.log("HELLOWORODASDAW")
   shell.showItemInFolder(path);
 }
 
