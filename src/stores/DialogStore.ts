@@ -6,16 +6,18 @@ export const useDialogStore = defineStore('dialogStore', {
   state: () => {
     return {
       dialogModel: false,
-      dialogTitle: 'Alert',
-      dialogMessage: [] as string[],
+      dialogTitleKey: 'error.title',
+      dialogMessageKey: '',
+      dialogMessageArg: {} as Record<string, unknown> | undefined,
       dialogBtns: [] as DialogBtn[] | undefined
     }
   },
   actions: {
-    showDialog(title: string, message: string[], options?: DialogBtn[]) {
+    showDialog(titleI18nKey: string, messageI18nKey: string, messageI18nArg?: Record<string, unknown>, options?: DialogBtn[]) {
       this.dialogModel = true
-      this.dialogTitle = title
-      this.dialogMessage = message
+      this.dialogTitleKey = titleI18nKey
+      this.dialogMessageKey = messageI18nKey
+      this.dialogMessageArg = messageI18nArg
       this.dialogBtns = options ?? [{label: 'OK', color: 'primary'}]
     }
   }
