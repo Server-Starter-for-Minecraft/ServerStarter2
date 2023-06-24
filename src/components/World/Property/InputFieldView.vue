@@ -14,7 +14,7 @@ const prop = defineProps<Prop>()
 const emit = defineEmits(['update:model-value'])
 
 const sysStore = useSystemStore()
-const defaultProperty = sysStore.systemSettings.world.properties[prop.propertyName]
+const defaultProperty = sysStore.systemSettings().world.properties[prop.propertyName]
 
 const model = computed({
   get() {

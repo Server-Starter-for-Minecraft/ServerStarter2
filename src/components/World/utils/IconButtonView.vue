@@ -2,12 +2,13 @@
 interface Prop {
   iconName: string
   label: string
+  to?: string
 }
 defineProps<Prop>()
 </script>
 
 <template>
-  <q-item clickable>
+  <q-item clickable :to="to">
     <q-item-section avatar>
       <q-icon :name="iconName" size="2rem" class="q-py-sm"/>
     </q-item-section>

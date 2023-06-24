@@ -62,7 +62,7 @@ async function removeWorld() {
 <template>
   <div class="mainField">
     <!-- TODO: 入力欄のバリデーション -->
-    <h1 class="q-mt-none">{{$t("home.worldname")}}</h1>
+    <h1 class="q-mt-none">{{ $t("home.worldname") }}</h1>
     <SsInput
       v-model="mainStore.world().name"
       label="半角英数字でワールド名を入力"

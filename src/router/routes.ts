@@ -13,6 +13,16 @@ const routes: RouteRecordRaw[] = [
       { path: 'plugin', component: () => import('src/pages/WorldTabs/PluginPage.vue') },
       { path: 'mod', component: () => import('src/pages/WorldTabs/ModPage.vue') },
       { path: 'share-world', component: () => import('src/pages/WorldTabs/ShareWorldPage.vue') },
+
+      {
+        path: 'system/',
+        component: () => import('pages/SystemPage.vue'),
+        children: [
+          { path: '', component: () => import('src/pages/SystemSettings/GeneralPage.vue') },
+          { path: 'property', component: () => import('src/pages/SystemSettings/PropertyPage.vue') },
+          { path: 'remote', component: () => import('src/pages/SystemSettings/RemotePage.vue') },
+        ]
+      }
     ]
   },
   {

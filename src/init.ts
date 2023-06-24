@@ -35,7 +35,7 @@ export async function initWindow() {
   // mainStore.worldListを (worldAbbr | world) にする？
 
   // systemSettingsの読み込み
-  sysStore.systemSettings = deepCopy(await window.API.invokeGetSystemSettings())
+  sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
 }
 
 export async function afterWindow() {

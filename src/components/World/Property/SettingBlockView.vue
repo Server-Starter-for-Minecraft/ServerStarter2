@@ -13,7 +13,7 @@ const prop = defineProps<Prop>()
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
-const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName]
+const defaultProperty = sysStore.systemSettings().world.properties[prop.settingName]
 const showCancel = () => mainStore.world().properties[prop.settingName] !== defaultProperty.value
 
 /**

@@ -45,7 +45,7 @@ function openHP() {
 
     <icon-button-view icon-name="add" label="ワールドを追加"/>
     <q-separator class="q-mx-xs"/>
-    <icon-button-view icon-name="settings" label="システム設定"/>
+    <icon-button-view icon-name="settings" label="システム設定" to="/system"/>
   </q-drawer>
 </template>
 

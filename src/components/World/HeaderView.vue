@@ -10,8 +10,13 @@ const sysStore = useSystemStore()
   <q-item>
     <q-item-section>
       <div class="row items-center">
-        <span class="title q-pr-md">{{ mainStore.world().name }}</span>
-        <span class="text-red">ステータス</span>
+        <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
+          <span class="title q-pr-md">{{ mainStore.world().name }}</span>
+          <span class="text-red">ステータス</span>
+        </template>
+        <template v-else>          
+          <span class="title q-pr-md">システム設定</span>
+        </template>
       </div>
     </q-item-section>
     <q-item-section side>

@@ -14,13 +14,17 @@ export type SystemSettings = {
   cache: CacheContents;
 };
 
-export type Locale = 'ja' | 'en-US';
+export const locales = ['ja', 'en-US'] as const
+export type Locale = (typeof locales)[number];
+
+export const colorThemes = ['auto', 'light', 'dark'] as const
+export type ColorTheme = (typeof colorThemes)[number];
 
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
   // カラーテーマ Light/Dark
-  theme: 'auto' | 'light' | 'dark';
+  theme: ColorTheme;
   // システム言語
   language: Locale;
   // 実行者情報

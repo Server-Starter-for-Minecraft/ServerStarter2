@@ -45,9 +45,10 @@ function selectWorldIdx() {
 <template>
   <q-item
     clickable
-    :active="(clicked = mainStore.selectedIdx == idx)"
-    :focused="(clicked = mainStore.selectedIdx == idx)"
+    :active="(clicked = mainStore.selectedIdx == idx && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
+    :focused="(clicked = mainStore.selectedIdx == idx && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
     @click="selectWorldIdx"
+    to="/"
     v-on:dblclick="startServer"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"

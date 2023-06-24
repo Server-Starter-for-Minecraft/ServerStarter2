@@ -15,8 +15,8 @@ const propertyStore = usePropertyStore()
  * 全てのServer Propertyを基本設定に戻す
  */
 function resetAll() {
-  Object.keys(sysStore.systemSettings.world.properties).map(key => {
-    mainStore.world().properties[key] = sysStore.systemSettings.world.properties[key].value
+  Object.keys(sysStore.systemSettings().world.properties).map(key => {
+    mainStore.world().properties[key] = sysStore.systemSettings().world.properties[key].value
   })
 }
 </script>
