@@ -33,9 +33,6 @@ export async function initWindow() {
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく
   // mainStore.worldListを (worldAbbr | world) にする？
-
-  // systemSettingsの読み込み
-  sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
 }
 
 export async function afterWindow() {
