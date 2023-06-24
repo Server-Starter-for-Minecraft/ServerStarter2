@@ -40,3 +40,4 @@ yarn-error.log*
 
 
 *.private.test.ts
+design/schedule.xlsx
