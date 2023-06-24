@@ -1,5 +1,5 @@
 import log4js from 'log4js';
-import { mainPath } from './const';
+import { mainPath } from 'src-electron/core/const';
 
 log4js.addLayout('custom', function (config: { max?: number }) {
   return function (logEvent) {
@@ -34,6 +34,7 @@ log4js.configure({
     _file: {
       type: 'file',
       filename: mainPath.child('logs/serverstarter.log').path,
+      //filename: 'logs/serverstarter.log',
       layout: { type: 'custom', max: 500 },
     },
     out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
@@ -88,7 +89,7 @@ class LoggerWrapper {
   }
 }
 
-interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
+export interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
   [loggerSymbol]: string | undefined;
   (kwargs: object): LoggerWrapper;
 }
