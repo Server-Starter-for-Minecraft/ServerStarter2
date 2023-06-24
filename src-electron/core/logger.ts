@@ -1,4 +1,5 @@
 import log4js from 'log4js';
+import { mainPath } from './const';
 
 log4js.addLayout('custom', function (config: { max?: number }) {
   return function (logEvent) {
@@ -32,7 +33,7 @@ log4js.configure({
     },
     _file: {
       type: 'file',
-      filename: 'logs/serverstarter.log',
+      filename: mainPath.child('logs/serverstarter.log').path,
       layout: { type: 'custom', max: 500 },
     },
     out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
