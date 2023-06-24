@@ -10,6 +10,8 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
 import { isFailure } from 'app/src-electron/api/failable';
+import { deleteWorld } from 'app/src-electron/core/world/world';
+import { dialog } from 'electron';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -48,10 +50,7 @@ function getAllVers() {
 async function removeWorld() {
   const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
   if (isFailure(res)) {
-    dialogStore.showDialog(
-      `${mainStore.world().name}の削除に失敗しました`,
-      []
-    )
+    dialogStore.showDialog('failDelete.title', 'failDelete.description', { deleteName: mainStore.world().name })
   }
   else {
     mainStore.removeWorld()
@@ -62,7 +61,7 @@ async function removeWorld() {
 <template>
   <div class="mainField">
     <!-- TODO: 入力欄のバリデーション -->
-    <h1 class="q-mt-none">{{$t("home.worldname")}}</h1>
+    <h1 class="q-mt-none">{{ $t("home.worldName") }}</h1>
     <SsInput
       v-model="mainStore.world().name"
       label="半角英数字でワールド名を入力"
@@ -133,19 +132,14 @@ async function removeWorld() {
 
     <DangerView
       v-if="consoleStore.status() === 'Stop'"
-      title="ワールドの削除"
-      :text="[
-        'このワールドを削除すると、ワールドデータを元に戻すことはできません。',
-        '十分に注意して実行して下さい。'
-      ]"
-      btn-text="ワールドを削除"
+      :title="$t('deleteWorld.title')"
+      i18nKey="deleteWorld.titleExplanation"
+      :btn-text="$t('deleteWorld.dialogTitle')"
       @action="removeWorld"
       show-dialog
-      dialog-title="ワールドを削除します"
-      :dialog-text="[
-        `${mainStore.world().name}のデータは永久に失われ、元に戻すことはできません。`,
-        '本当にワールドを削除しますか？'
-      ]"
+      dialog-title-key="deleteWorld.dialogTitle"
+      dialog-i18n-key="deleteWorld.dialogExplanation"
+      :dialog-i18n-arg="{ deleteName: mainStore.world().name }"
     />
   </div>
 </template>

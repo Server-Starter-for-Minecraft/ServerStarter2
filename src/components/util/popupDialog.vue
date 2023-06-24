@@ -16,11 +16,12 @@ if (store.dialogBtns === void 0 || store.dialogBtns.length===0) {
 
         <q-card-section>
           <q-card-section>
-            <h1>{{ store.dialogTitle }}</h1>
+            <h1 v-html="$t(store.dialogTitleKey)"/>
           </q-card-section>
     
           <q-card-section class="q-pt-none">
-            <p v-for="line in store.dialogMessage" :key="line">{{ line }}</p>
+            <p v-if="store.dialogMessageArg !== void 0" v-html="$t(store.dialogMessageKey, store.dialogMessageArg)"></p>
+            <p v-else v-html="$t(store.dialogMessageKey)"></p>
           </q-card-section>
     
           <q-card-actions align="right">

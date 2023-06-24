@@ -3,15 +3,33 @@
 import { MessageSchema } from "src/boot/i18n";
 
 export const enUS: MessageSchema = {
-  failed: 'Action failed',
-  success: 'Action was successful',
   home: {
-    worldname: 'World Name',
+    worldName: 'World Name',
+    enterName: 'Enter your world name',
     version: 'Version',
-    useworld: 'Use existing world',
-    settings: 'Opening Settings'
+    serverType: 'Select the Server type',
+    versionType: 'Select the Server Version',
+    useWorld: 'Use existing world',
+    settings: 'Open Settings'
   },
-  property: {
-    levelseed: 'World Seed Value'
+  importWorld: {
+    
+  },
+  settingDetails: {
+    
+  },
+  deleteWorld: {
+    title: 'Delete World',
+    titleExplanation: '\
+    If you delete the world, you can not recover the data in any way.<br>\
+    Please execute it carefully.',
+    dialogTitle: 'Delete World',
+    dialogExplanation: '\
+    The world data of {deleteName} will absolutely be deleted.<br>\
+    Are you sure to delete the world data?',
+  },
+  failDelete: {
+    title: 'Failed delete',
+    description: 'Failed to delete {deleteName}',
   },
 };

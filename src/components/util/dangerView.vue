@@ -3,20 +3,22 @@ import { useDialogStore } from 'src/stores/DialogStore'
 
 interface Prop {
   title: string
-  text: string[]
+  i18nKey: string
   btnText: string
   showDialog?: boolean
-  dialogTitle?: string
-  dialogText?: string[]
+  dialogTitleKey?: string
+  dialogI18nKey?: string
+  dialogI18nArg?: { [key: string]: string }
   onAction: () => void
 }
 const prop = defineProps<Prop>()
 
 function dialog() {
-  if (prop.showDialog && prop.dialogTitle && prop.dialogText) {
+  if (prop.showDialog && prop.dialogTitleKey && prop.dialogI18nKey) {
     useDialogStore().showDialog(
-      prop.dialogTitle,
-      prop.dialogText,
+      prop.dialogTitleKey,
+      prop.dialogI18nKey,
+      prop.dialogI18nArg,
       [
         {
           label: 'Cancel',
@@ -41,7 +43,7 @@ function dialog() {
       <q-card-section horizontal>
         <div class="col q-pa-md">
           <h1>{{ title }}</h1>
-          <p v-for="line in text" :key="line">{{ line }}</p>
+          <p v-html="$t(i18nKey)"/>
         </div>
   
         <q-card-actions vertical class="justify-around">
@@ -68,5 +70,6 @@ h1 {
 p {
   margin: 0;
   margin-bottom: 5px;
+  line-height: 2rem;
 }
 </style>
