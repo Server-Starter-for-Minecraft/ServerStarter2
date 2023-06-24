@@ -19,6 +19,8 @@ export type Locale = 'ja' | 'en-US';
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
+  // カラーテーマ Light/Dark
+  theme: 'auto' | 'light' | 'dark';
   // システム言語
   language: Locale;
   // 実行者情報
@@ -56,4 +58,4 @@ export type CacheContents = {
 
   /** 導入済みMOD */
   mods?: (FileData | NewData)[];
-}
+};
