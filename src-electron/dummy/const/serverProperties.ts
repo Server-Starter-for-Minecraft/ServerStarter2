@@ -1,123 +1,142 @@
-import { ServerPropertiesMap } from '../../schema/serverproperty';
+import { ServerProperties } from '../../schema/serverproperty';
 
-export const defaultServerProperties: ServerPropertiesMap = {
-  'allow-flight': false,
+const PORT_MAX = 25565;
 
-  'allow-nether': true,
+export const defaultServerProperties: ServerProperties = {
+  'allow-flight': { type: 'boolean', value: false },
 
-  'broadcast-console-to-ops': true,
+  'allow-nether': { type: 'boolean', value: true },
 
-  'broadcast-rcon-to-ops': true,
+  'broadcast-console-to-ops': { type: 'boolean', value: true },
 
-  difficulty: 'easy',
+  'broadcast-rcon-to-ops': { type: 'boolean', value: true },
 
-  'enable-command-block': false,
+  difficulty: {
+    type: 'string',
+    value: 'easy',
+    enum: ['peaceful', 'easy', 'normal', 'hard'],
+  },
 
-  'enable-jmx-monitoring': false,
+  'enable-command-block': { type: 'boolean', value: false },
 
-  'enable-rcon': false,
+  'enable-jmx-monitoring': { type: 'boolean', value: false },
 
-  'enable-status': true,
+  'enable-rcon': { type: 'boolean', value: false },
 
-  'enable-query': false,
+  'enable-status': { type: 'boolean', value: true },
 
-  'enforce-secure-profile': true,
+  'enable-query': { type: 'boolean', value: false },
 
-  'enforce-whitelist': false,
+  'enforce-secure-profile': { type: 'boolean', value: true },
 
-  'entity-broadcast-range-percentage': 100,
+  'enforce-whitelist': { type: 'boolean', value: false },
 
-  'force-gamemode': false,
+  'entity-broadcast-range-percentage': {
+    type: 'number',
+    value: 100,
+    min: 0,
+    max: 500,
+  },
 
-  'function-permission-level': 2,
+  'force-gamemode': { type: 'boolean', value: false },
 
-  gamemode: 'survival',
+  'function-permission-level': { type: 'number', value: 2, min: 1, max: 4 },
 
-  'generate-structures': true,
+  gamemode: {
+    type: 'string',
+    value: 'survival',
+    enum: ['survival', 'creative', 'adventure', 'spectator'],
+  },
 
-  'generator-settings': '{}',
+  'generate-structures': { type: 'boolean', value: true },
 
-  hardcore: false,
+  'generator-settings': { type: 'string', value: '{}' },
 
-  'hide-online-players': false,
+  hardcore: { type: 'boolean', value: false },
 
-  'initial-disabled-packs': '',
+  'hide-online-players': { type: 'boolean', value: false },
 
-  'initial-enabled-packs': 'vanilla',
+  'initial-disabled-packs': { type: 'string', value: '' },
+
+  'initial-enabled-packs': { type: 'string', value: 'vanilla' },
 
   // 自動設定のため削除
-  // 'level-name': '',
+  // 'level-name': { type: 'string', value: '' },
 
-  'level-seed': '',
+  'level-seed': { type: 'string', value: '' },
 
-  'level-type': 'default',
+  'level-type': {
+    type: 'string',
+    value: 'default',
+    enum: ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
+  },
 
   // legacy?
-  'max-build-height': 256,
+  'max-build-height': { type: 'number', value: 256, step: 8 },
 
-  'max-chained-neighbor-updates': 1000000,
+  'max-chained-neighbor-updates': { type: 'number', value: 1000000 },
 
-  'max-players': 20,
+  'max-players': { type: 'number', value: 20, min: 0, max: 2 ** 31 - 1 },
 
-  'max-tick-time': 60000,
+  'max-tick-time': { type: 'number', value: 60000, min: 0, max: 2 ** 63 - 1 },
 
-  'max-world-size': 29999984,
+  'max-world-size': { type: 'number', value: 29999984, min: 1, max: 29999984 },
 
-  motd: 'Ainecraft Server',
+  motd: { type: 'string', value: 'A Minecraft Server' },
 
-  'network-compression-threshold': 256,
+  'network-compression-threshold': { type: 'number', value: 256, min: -1 },
 
-  'online-mode': true,
+  'online-mode': { type: 'boolean', value: true },
 
-  'op-permission-level': 4,
+  'op-permission-level': { type: 'number', value: 4, min: 1, max: 4 },
 
-  'player-idle-timeout': 0,
+  'player-idle-timeout': { type: 'number', value: 0, min: 0 },
 
-  'prevent-proxy-connections': false,
+  'prevent-proxy-connections': { type: 'boolean', value: false },
 
-  'previews-chat': false,
+  'previews-chat': { type: 'boolean', value: false },
 
-  pvp: true,
+  pvp: { type: 'boolean', value: true },
 
-  'query.port': 25565,
+  'query.port': { type: 'number', value: 25565, min: 1, max: PORT_MAX },
 
-  'rate-limit': 0,
+  'rate-limit': { type: 'number', value: 0, min: 0 },
 
-  'rcon.password': '',
+  'rcon.password': { type: 'string', value: '' },
 
-  'rcon.port': 25575,
+  'rcon.port': { type: 'number', value: 25575, min: 1, max: PORT_MAX },
 
-  'resource-pack': '',
+  'resource-pack': { type: 'string', value: '' },
 
-  'resource-pack-prompt': '',
+  'resource-pack-prompt': { type: 'string', value: '' },
 
-  'resource-pack-sha1': '',
+  'resource-pack-sha1': { type: 'string', value: '' },
 
-  'require-resource-pack': false,
+  'require-resource-pack': { type: 'boolean', value: false },
 
-  'server-ip': '',
+  'server-ip': { type: 'string', value: '' },
 
-  'server-port': 25565,
+  'server-port': { type: 'number', value: 25565, min: 1, max: PORT_MAX },
 
-  'simulation-distance': 10,
+  'simulation-distance': { type: 'number', value: 10, min: 3, max: 32 },
 
-  'snooper-enabled': true,
+  'snooper-enabled': { type: 'boolean', value: true },
 
-  'spawn-animals': true,
+  'spawn-animals': { type: 'boolean', value: true },
 
-  'spawn-monsters': true,
+  'spawn-monsters': { type: 'boolean', value: true },
 
-  'spawn-npcs': true,
+  'spawn-npcs': { type: 'boolean', value: true },
 
-  'spawn-protection': 16,
+  'spawn-protection': { type: 'number', value: 16, min: 0 },
 
-  'sync-chunk-writes': true,
+  'sync-chunk-writes': { type: 'boolean', value: true },
 
-  'text-filtering-config': '',
+  'text-filtering-config': { type: 'string', value: '' },
 
-  'use-native-transport': true,
+  'use-native-transport': { type: 'boolean', value: true },
 
-  'view-distance': 10,
+  'view-distance': { type: 'number', value: 10, min: 2, max: 32 },
 
-  'white-list': false,
+  'white-list': { type: 'boolean', value: false },
 };
