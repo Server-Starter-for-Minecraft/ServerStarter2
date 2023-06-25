@@ -35,9 +35,10 @@ export const getBackListener = (
   },
   handle: {
     RunServer: runServer,
-    PickDirectory: pickDirectory(windowGetter),
 
     DeleteWorld: deleteWorld,
+
+    PickDirectory: pickDirectory(windowGetter),
 
     SaveWorldSettings: saveWorldSettings,
 

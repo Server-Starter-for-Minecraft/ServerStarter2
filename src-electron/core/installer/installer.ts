@@ -1,17 +1,18 @@
-import { Failable } from 'src-electron/api/failable';
+import { Failable, isFailure } from 'src-electron/api/failable';
 import { Path } from 'src-electron/util/path';
 import { installFiles } from './files';
 import {
   WorldAdditional,
   WorldEditedAdditional,
 } from 'src-electron/schema/world';
+import { WithError, withError } from 'app/src-electron/api/witherror';
 
 // TODO: 一度使用したmod/plugin/datapackを別の場所に保管しておく
 
-export async function installAdditional(
+export async function installAdditionals(
   additional: WorldEditedAdditional,
   cwdPath: Path
-): Promise<[WorldAdditional, Failable<undefined>]> {
+): Promise<WithError<WorldAdditional>> {
   const failureMessages: string[] = [];
 
   // Datapackの導入
@@ -52,12 +53,13 @@ export async function installAdditional(
             failureMessages.join(', ')
         );
 
-  return [
-    {
-      datapacks,
-      plugins,
-      mods,
-    },
-    failure,
-  ];
+  const newAdditional = {
+    datapacks,
+    plugins,
+    mods,
+  };
+
+  if (isFailure(failure)) return withError(newAdditional, [failure]);
+
+  return withError(newAdditional);
 }

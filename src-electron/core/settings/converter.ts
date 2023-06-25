@@ -32,14 +32,14 @@ export function worldSettingsToWorld({
     using: settings.using,
     remote_pull: settings.remote,
     remote_push: settings.remote,
+    remote: settings.remote,
     last_date: settings.last_date,
     last_user: settings.last_user,
     memory: settings.memory,
-    properties: getServerProperties(settings.properties),
+    properties: settings.properties ?? {},
     additional: {},
     players: settings.players,
   };
-
   return deepcopy(result);
 }
 
@@ -78,7 +78,9 @@ function getServerProperties(
   }) as ServerProperties;
 }
 
-function getPropertiesMap(serverProperties: ServerProperties | undefined) {
-  if (serverProperties === undefined) return undefined;
+function getPropertiesMap(
+  serverProperties: ServerProperties | undefined
+): ServerPropertiesMap {
+  if (serverProperties === undefined) return {};
   return objMap(serverProperties, (k, v) => [k, v.value]);
 }

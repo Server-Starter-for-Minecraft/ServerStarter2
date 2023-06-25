@@ -23,7 +23,7 @@ import { loadWorldJson } from '../settings/worldJson';
 import { systemSettings } from '../stores/system';
 import { JavaComponent } from '../version/vanilla';
 import { VersionComponent } from '../version/base';
-import { installAdditional } from '../installer/installer';
+import { installAdditionals } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
 import {
@@ -388,7 +388,7 @@ class ServerRunner {
     await this.handleLog4j();
 
     // datapack,mod,pluginのインストール
-    const [additional] = await installAdditional(
+    const [additional] = await installAdditionals(
       world.additional,
       this.cwdPath
     );
@@ -442,7 +442,7 @@ class ServerRunner {
     if (isFailure(pullResult)) return pullResult;
 
     // datapack,mod,pluginのインストール
-    const [additional] = await installAdditional(
+    const [additional] = await installAdditionals(
       world.additional,
       this.cwdPath
     );
@@ -546,8 +546,7 @@ class ServerRunner {
 export const runServer = (world: WorldEdited) =>
   new ServerRunner(world).runServer();
 
-export const saveWorldSettings = (world: World) =>
-  new ServerRunner(world).saveWorldSettings();
+export function saveWorldSettings(world: WorldEdited) {}
 
 export function runCommand(world: WorldID, command: string) {
   ServerRunner.getServerRunner(world).runCommand(command);

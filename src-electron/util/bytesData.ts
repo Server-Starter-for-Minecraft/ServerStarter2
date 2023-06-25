@@ -181,6 +181,18 @@ export class BytesData {
     return result;
   }
 
+  /** data:{mimetype};base64,... の形式でデコード
+   *
+   * mimetypeの例 "image/png"
+   */
+  static async fromBase64URI(uri: string): Promise<Failable<BytesData>> {
+    const regex =
+      /^data:[0-9A-Za-z!#$%&'*+.^_`|~-]+;base64,([A-Za-z0-9+/]+=*)$/;
+    const match = uri.match(regex);
+    if (match === null) return new Error('value not matches to base64 uri');
+    return this.fromBase64(match[1]);
+  }
+
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
     const sha1 = createHash(algorithm);
     sha1.update(Buffer.from(this.data));
