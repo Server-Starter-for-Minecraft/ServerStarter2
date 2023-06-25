@@ -1,4 +1,4 @@
-import { ServerProperties, ServerPropertiesMap } from '../../schema/serverproperty';
+import { ServerProperties } from '../../schema/serverproperty';
 
 const PORT_MAX = 25565;
 
