@@ -55,9 +55,11 @@ export function getFrontAPIListener(
       UpdateStatus: send('UpdateStatus', window),
       AddConsole: send('AddConsole', window),
       UpdateSystemSettings: send('UpdateSystemSettings', window),
+      SMWTest: send('SMWTest', window),
     },
     handle: {
       AgreeEula: invoke('AgreeEula', window),
+      IMWTest: invoke('IMWTest', window),
     },
   };
   return result;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useConsoleStore } from 'src/stores/console';
-import ToolBar from './ToolBar.vue';
+import ToolBarInvoke from './ToolBarInvoke.vue';
+import ToolBarHandle from './ToolBarHandle.vue';
 import { QVirtualScroll } from 'quasar';
 import { Ref, ref } from 'vue';
 const store = useConsoleStore();
@@ -8,15 +9,20 @@ const store = useConsoleStore();
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
 
 store.$subscribe(() => {
-  virtualListRef.value?.scrollTo(store.getSelectedChannel.length + 1);
+  if (store.getSelectedChannel) {
+    virtualListRef.value?.scrollTo(store.getSelectedChannel.values.length + 1);
+  }
 });
 </script>
 <template>
-  <div class="full-width full-height column justify-between">
+  <div
+    v-if="store.getSelectedChannel && store.getSelectedChannel.values"
+    class="full-width full-height column justify-between"
+  >
     <q-virtual-scroll
       class="col full-width"
       ref="virtualListRef"
-      :items="store.getSelectedChannel"
+      :items="store.getSelectedChannel.values"
       separator
       v-slot="{ item, index }"
     >
@@ -24,6 +30,7 @@ store.$subscribe(() => {
         {{ item }}
       </q-item>
     </q-virtual-scroll>
-    <ToolBar />
+    <ToolBarInvoke v-if="store.getSelectedChannel.type === 'invoke'" />
+    <ToolBarHandle v-else-if="store.getSelectedChannel.type === 'handle'" />
   </div>
 </template>

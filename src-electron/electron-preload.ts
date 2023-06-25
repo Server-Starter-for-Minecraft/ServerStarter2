@@ -126,6 +126,11 @@ const api: FrontAPI = {
   invokeGenUUID: invoke('GenUUID'),
 
   invokeGetRunningWorld: invoke('GetRunningWorld'),
+
+  invokeIWMTest: invoke('IWMTest'),
+  onSMWTest: on('SMWTest'),
+  handleIMWTest: handle('IMWTest'),
+  sendSWMTest: send('SWMTest'),
   // invokeUpdatetRunningWorld: invoke('UpdatetRunningWorld'),
 };
 

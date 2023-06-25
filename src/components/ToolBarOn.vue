@@ -12,10 +12,10 @@ async function sendApi() {
   try {
     args = JSON.parse(`[${text.value}]`);
   } catch (e) {
-    store.addConsole('引数のパースに失敗しました');
+    store.pushConsole('引数のパースに失敗しました');
     return;
   }
-  store.addConsole(
+  store.pushConsole(
     `${api.value}(${args.map((value) => JSON.stringify(value)).join(',')})`
   );
 
@@ -26,12 +26,12 @@ async function sendApi() {
   try {
     if (api.value.startsWith('invoke')) {
       result = await apifunc(...args);
-      store.addConsole(JSON.stringify(result));
+      store.pushConsole(JSON.stringify(result));
     } else {
       apifunc(...args);
     }
   } catch (e) {
-    store.addConsole(`APIの呼び出し先でエラーが発生しました ${e}`);
+    store.pushConsole(`APIの呼び出し先でエラーが発生しました ${e}`);
     return;
   }
 }

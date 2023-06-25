@@ -1,8 +1,8 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import path from 'path';
-import os from 'os';
+import * as path from 'path';
+import * as os from 'os';
 import { setupIPC } from './ipc/setup';
 import { onQuit } from './lifecycle/lifecycle';
 

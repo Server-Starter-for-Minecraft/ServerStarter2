@@ -50,14 +50,20 @@ export interface API extends IAPI {
 
     /** mainプロセス側かでSystemSettingが変更された場合に走る */
     UpdateSystemSettings: (settings: SystemSettings) => void;
+
+    SMWTest: (value: string) => void;
   };
   invokeMainToWindow: {
     AgreeEula: (world: WorldID, url: string) => Promise<boolean>;
+
+    IMWTest: (value: string) => Promise<string>;
   };
   sendWindowToMain: {
     Command: (world: WorldID, command: string) => void;
     OpenBrowser: (url: string) => void;
     OpenFolder: (path: string) => void;
+
+    SWMTest: (value: string) => void;
   };
   invokeWindowToMain: {
     RunServer: (world: WorldEdited) => Promise<Failable<World>>;
@@ -108,6 +114,8 @@ export interface API extends IAPI {
 
     GenUUID: () => Promise<UUID>;
     PickDirectory: () => Promise<Electron.OpenDialogReturnValue>;
+
+    IWMTest: (value: string) => Promise<string>;
   };
 }
 

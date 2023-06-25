@@ -36,7 +36,7 @@ import {
 import { MemoryUnit } from 'src-electron/schema/memory';
 import { foldSettings } from '../settings/settings';
 import { getPlayerSettingDiff } from '../settings/players';
-import { sleep } from 'app/src-electron/util/sleep';
+import { sleep } from 'src-electron/util/sleep';
 import { serverPropertiesHandler } from '../settings/files/properties';
 import { WorldLocationMap, wroldLocationToPath } from '../world/worldMap';
 
@@ -106,7 +106,6 @@ class ServerRunner {
       WorldLocationMap.get(world.id)
     );
     if (isFailure(currentPath)) return currentPath;
-
     if (currentPath.absolute().str() !== nextPath.str()) {
       await currentPath.moveTo(nextPath);
     }

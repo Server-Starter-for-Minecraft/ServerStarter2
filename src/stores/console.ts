@@ -3,39 +3,68 @@ import { ref, computed } from 'vue';
 
 export type ConsoleValue = string;
 
-export type Console = {
+export type InvokeConsole = {
+  type: 'invoke';
   values: ConsoleValue[];
 };
 
+export type HandleConsole = {
+  type: 'handle';
+  values: ConsoleValue[];
+};
+
+export type OnConsole = {
+  type: 'on';
+  values: ConsoleValue[];
+};
+
+export type Console = InvokeConsole | HandleConsole | OnConsole;
+
+export const callbacks: Record<string, (arg: any) => void> = {};
+
 export const useConsoleStore = defineStore('console', () => {
-  const consoles = ref<Record<string, ConsoleValue[]>>({
-    0: [],
+  const consoles = ref<Record<string, Console>>({
+    main: { type: 'invoke', values: [] },
+    on: { type: 'on', values: [] },
   });
 
   const selectedChannel = ref('0');
 
-  const getChannel = computed((channel: string) => consoles.value[channel]);
+  function getChannel(channel: string) {
+    return consoles.value[channel];
+  }
   const getSelectedChannel = computed(
     () => consoles.value[selectedChannel.value]
   );
 
-  let headerChannel = 0;
-  function addChannel() {
-    headerChannel += 1;
-    selectedChannel.value = headerChannel.toString();
-    consoles.value[headerChannel] = [];
+  function pushConsoleTo(channel: string, console: ConsoleValue) {
+    consoles.value[channel].values.push(console);
   }
 
-  function addConsole(console: ConsoleValue) {
-    getSelectedChannel.value.push(console);
+  let headerChannel = 0;
+  function addConsole(console: Console) {
+    headerChannel += 1;
+    selectedChannel.value = headerChannel.toString();
+    consoles.value[headerChannel] = console;
+    return selectedChannel.value;
+  }
+
+  function pushConsole(console: ConsoleValue) {
+    getSelectedChannel.value.values.push(console);
+  }
+
+  function removeConsole(channel: string) {
+    delete consoles.value[channel];
   }
 
   return {
     consoles,
     selectedChannel,
     getChannel,
-    addChannel,
-    addConsole,
+    pushConsoleTo,
+    addConsole: addConsole,
+    removeConsole,
+    pushConsole: pushConsole,
     getSelectedChannel,
   };
 });

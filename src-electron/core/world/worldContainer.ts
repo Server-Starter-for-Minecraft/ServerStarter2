@@ -3,7 +3,7 @@ import { Path } from 'src-electron/util/path';
 import { mainPath } from '../const';
 import { systemSettings } from '../stores/system';
 import { WorldContainers } from 'src-electron/schema/system';
-import { WorldContainer } from 'app/src-electron/schema/brands';
+import { WorldContainer } from 'src-electron/schema/brands';
 
 export async function getWorldContainers(): Promise<WorldContainers> {
   return systemSettings.get('container');

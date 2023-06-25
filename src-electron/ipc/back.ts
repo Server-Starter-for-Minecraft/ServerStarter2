@@ -1,5 +1,6 @@
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
+import { BrowserWindow } from 'electron';
 import {
   getRunningWorld,
   runCommand,
@@ -22,8 +23,8 @@ import { getDefaultSettings } from '../core/settings/settings';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';
-import { BrowserWindow } from 'electron';
 import { searchPlayer } from '../core/player/search';
+import { testHandle, testOn } from './test';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -32,6 +33,7 @@ export const getBackListener = (
     Command: runCommand,
     OpenBrowser: openBrowser,
     OpenFolder: openFolder,
+    SWMTest: testOn,
   },
   handle: {
     RunServer: runServer,
@@ -62,5 +64,6 @@ export const getBackListener = (
     SearchPlayer: searchPlayer,
 
     GenUUID: async () => genUUID(),
+    IWMTest: testHandle,
   },
 });

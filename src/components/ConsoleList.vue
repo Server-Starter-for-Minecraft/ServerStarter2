@@ -9,13 +9,17 @@ const console = useConsoleStore();
   >
     <div>
       <q-tabs v-model="console.selectedChannel" vertical class="text-teal">
-        <div v-for="k in Object.keys(console.consoles)" :key="k">
-          <q-tab :name="k" :label="'コンソール' + k" />
+        <div v-for="[k, v] in Object.entries(console.consoles).reverse()" :key="k">
+          <q-tab :name="k" :label="v.type" />
         </div>
       </q-tabs>
     </div>
     <q-space />
-    <q-btn flat icon="add" @click="console.addChannel">
+    <q-btn
+      flat
+      icon="add"
+      @click="(e) => console.addConsole({ type: 'invoke', values: [] })"
+    >
       コンソールを追加
     </q-btn>
   </div>
