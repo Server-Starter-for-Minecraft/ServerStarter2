@@ -33,7 +33,7 @@ import IconTabDropdownView from './utils/IconTabDropdownView.vue';
     </template>
     <template v-else>
       <icon-tab-view path="system" icon="home" label="共有設定" />
-      <icon-tab-view path="system/property" icon="list_alt" label="プロパティ" />
+      <icon-tab-view path="system/property" icon="list_alt" label="既定プロパティ" />
       <icon-tab-view path="system/remote" icon="share" label="リモート" />
     </template> 
   </q-tabs>

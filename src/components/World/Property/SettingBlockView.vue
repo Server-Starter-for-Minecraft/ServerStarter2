@@ -31,13 +31,21 @@ const showCancel = () => mainStore.world().properties[prop.settingName] !== defa
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption">設定内容の説明</div>
-      <InputFieldView
-        v-model="mainStore.world().properties[settingName]"
-        :property-name="settingName"
-      />
+      <template v-if="$router.currentRoute.value.path === '/system/property'">
+        <InputFieldView
+          v-model="sysStore.systemSettings().world.properties[settingName].value"
+          :property-name="settingName"
+        />
+      </template>
+      <template v-else>
+        <InputFieldView
+          v-model="mainStore.world().properties[settingName]"
+          :property-name="settingName"
+        />
+      </template>
     </q-item-section>
 
-    <q-item-section side>
+    <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>
       <q-btn
         v-show="showCancel()"
         flat
