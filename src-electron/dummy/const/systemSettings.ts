@@ -75,6 +75,7 @@ export const dummySystemSettings: SystemSettings = {
   user: {
     eula: true,
     language: 'ja',
+    theme: 'auto',
     owner: player1,
     autoShutDown: false,
   },
