@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
+import { assets } from 'src/assets/assets';
 
 interface Props {
   world: WorldEdited;
@@ -61,7 +62,7 @@ function selectWorldIdx() {
     >
       <q-avatar square size="4rem">
         <q-img
-          :src="world.avater_path ?? 'src/assets/defaultWorldIcon.svg'"
+          :src="world.avater_path ?? assets.svg.defaultWorldIcon"
           :ratio="1"
         />
         <q-btn

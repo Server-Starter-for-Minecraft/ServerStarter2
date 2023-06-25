@@ -4,6 +4,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import WorldTab from './WorldTab.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
+import { assets } from 'src/assets/assets';
 
 const store = useMainStore();
 const searchWorldName = ref('')
@@ -26,9 +27,9 @@ function openHP() {
     :class="`column ${$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'}`"
     style="height: 100vh;"
   >
-    <q-img src="src/assets/drawer/mainImage.png" class="img">
+    <q-img :src="assets.png.mainImage" class="img">
       <div class="absolute-full">
-        <q-img src="src/assets/systemLogo.svg" fit="contain" style="height: 100%;"/>
+        <q-img :src="assets.svg.systemLogo" fit="contain" style="height: 100%;"/>
         <q-btn class="absolute-full" @click="openHP"/>
       </div>
     </q-img>
