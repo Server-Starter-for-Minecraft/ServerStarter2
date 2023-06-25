@@ -33,11 +33,14 @@ export interface WorldBase extends WorldAbbr {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** pull元のリモートリポジトリ */
+  /** pull元のリモートリポジトリ *使わない */
   remote_pull?: Remote;
 
-  /** push先のリモートリポジトリ */
+  /** push先のリモートリポジトリ *使わない */
   remote_push?: Remote;
+
+  /** リモートリポジトリ */
+  remote?: Remote;
 
   /** 最終プレイ日
    *
