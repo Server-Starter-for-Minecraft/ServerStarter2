@@ -45,5 +45,12 @@ function changeTheme(colorTheme: ColorTheme) {
       :options="colorThemes"
       label="ServerStarterの配色モードを選択してください"
     />
+
+    <h1>自動シャットダウン</h1>
+    <q-toggle
+      v-model="sysStore.systemSettings().user.autoShutDown"
+      label="サーバー終了後に自動でPCをシャットダウンする"
+      style="font-size: 1rem;"
+    />
   </div>
 </template>
