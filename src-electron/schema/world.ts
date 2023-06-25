@@ -141,7 +141,7 @@ export type SystemWorldSettings = {
 
   memory: MemorySettings;
 
-  properties: ServerProperties;
+  properties: ServerPropertiesMap;
 };
 
 /** サーバーCWD直下の設定系ファイルの情報 */
