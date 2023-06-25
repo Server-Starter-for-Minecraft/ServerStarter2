@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import { propertyClasses } from 'src/components/World/Property/classifications';
+import { useSystemStore } from './SystemStore';
+import { PlayerSetting } from 'app/src-electron/schema/player';
 
 // TODO: 将来的にnameはclassifications.tsから取得し、labelはi18nからnameをkeyとして取得
 const groupNames = [
@@ -106,5 +108,45 @@ export const useConsoleStore = defineStore('consoleStore', {
     return {
       consoleLines: new Array<string>()
     }
+  }
+});
+
+
+export const usePlayerStore = defineStore('playerStore', {
+  state: () => {
+    return {
+      searchName: '',
+      focusCards: [] as string[]
+    }
+  },
+  actions: {
+    /**
+     * プレイヤーの検索
+     */
+    searchPlayers(players: PlayerSetting[]) {
+      const sysStore = useSystemStore()
+      const playersData = sysStore.systemSettings().player.players
+
+      if (this.searchName !== '') {
+        return players.filter(
+          player => playersData.filter(p => p.uuid === player.uuid)[0].name.match(this.searchName)
+        );
+      }
+      
+      return players;
+    },
+    /**
+     * プレイヤーグループの検索
+     */
+    searchGroups() {
+      const sysStore = useSystemStore()
+      const groupsData = sysStore.systemSettings().player.groups
+      
+      if (this.searchName !== '') {
+        return groupsData.filter(g => g.name.match(this.searchName))
+      }
+      
+      return groupsData;
+    },
   }
 });
