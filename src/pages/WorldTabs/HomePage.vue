@@ -31,10 +31,7 @@ function getAllVers() {
 
   // versionListがundefinedの時にエラー処理
   if (versionList === void 0) {
-    dialogStore.showDialog(
-      '警告',
-      [`サーバーバージョン${version.type}の一覧取得に失敗したため，このサーバーは選択できません`]
-    );
+    dialogStore.showDialog('home.error.title', 'home.error.failedGetVersion', { serverVersion: mainStore.world().version });
     mainStore.world().version.type = 'vanilla';
     return;
   }
@@ -49,8 +46,8 @@ function getAllVers() {
  */
 async function removeWorld() {
   const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-  if (isFailure(res)) {
-    dialogStore.showDialog('failDelete.title', 'failDelete.description', { deleteName: mainStore.world().name })
+  if (!isFailure(res)) {
+    dialogStore.showDialog('home.error.title', 'home.error.failedDelete', { serverName: mainStore.world().name })
   }
   else {
     mainStore.removeWorld()
@@ -61,26 +58,26 @@ async function removeWorld() {
 <template>
   <div class="mainField">
     <!-- TODO: 入力欄のバリデーション -->
-    <h1 class="q-mt-none">{{ $t("home.worldName") }}</h1>
+    <h1 class="q-mt-none">{{ $t("home.worldName.title") }}</h1>
     <SsInput
       v-model="mainStore.world().name"
-      label="半角英数字でワールド名を入力"
+      :label="$t('home.worldName.enterName')"
     />
 
     <!-- TODO: バージョン一覧の取得 -->
-    <h1>バージョン</h1>
+    <h1>{{ $t("home.version.title") }}</h1>
     <div class="row">
       <SsSelect
         v-model="mainStore.world().version.type"
         @update:model-value="getAllVers"
         :options="versionTypes"
-        label="サーバーの種類を選択"
+        :label="$t('home.version.serverType')"
         class="col-5 q-pr-md"
       />
       <SsSelect
         v-model="mainStore.world().version.id"
         :options="sysStore.serverVersions.get(mainStore.world().version.type)?.map(ver => ver.id)"
-        label="バージョンを選択"
+        :label="$t('home.version.versionType')"
         class="col"
       />
     </div>
@@ -88,14 +85,14 @@ async function removeWorld() {
     <!-- TODO: 配布ワールドは新規World以外でも導入できるようにするのか？ -->
     <!-- TODO: 配布ワールドだけでなく、既存の個人ワールドについても.minecraftがある場合は導入できるようにする？ -->
     <!-- 個人ワールドのデフォルトパスは変更できるようにする -->
-    <ExpansionView title="既存ワールドの導入">
-      <q-toggle v-model="showSoloWorld" :label="showSoloWorld ? '個人ワールドを導入する' : '配布ワールドをZipファイルより導入する'"/>
-      <p v-show="!showSoloWorld" class="text-caption q-ma-none q-mt-md">インターネットよりダウンロードしたワールド（配布ワールド）を導入する</p>
-      <p v-show="showSoloWorld" class="text-caption q-ma-none q-mt-md">このPC上にあるMinecraftの個人ワールドを導入する</p>
+    <ExpansionView :title="$t('home.useWorld.title')">
+      <q-toggle v-model="showSoloWorld" :label="showSoloWorld ? $t('home.useWorld.solo') : $t('home.useWorld.custom')"/>
+      <p v-show="!showSoloWorld" class="text-caption q-ma-none q-mt-md">{{  $t("home.useWorld.descCustom") }}</p>
+      <p v-show="showSoloWorld" class="text-caption q-ma-none q-mt-md">{{  $t("home.useWorld.descSolo") }}</p>
       <q-file
         v-show="!showSoloWorld"
         v-model="customWorldPath"
-        label="配布ワールド(.zip)を選択"
+        :label="$t('home.useWorld.pickCustom')"
         clearable
         accept=".zip"
       >
@@ -108,37 +105,37 @@ async function removeWorld() {
     <!-- <input type="file" webkitdirectory directory multiple/> -->
 
     <!-- TODO: memoryがsizeとunitのpropertyを有していないバグをバックに報告 -->
-    <ExpansionView title="起動設定">
+    <ExpansionView :title="$t('home.setting.title')">
       <div class="row" style="max-width: 300px;">
         <SsInput
           v-model="mainStore.world().memory.size"
-          label="メモリサイズ"
+          :label="$t('home.setting.memSize')"
           class="col q-pr-md"
         />
         <SsSelect
           v-model="mainStore.world().memory.unit"
           :options="['MB', 'GB', 'TB']"
-          label="単位"
+          :label="$t('home.setting.unit')"
           class="col-3"
         />
       </div>
 
       <SsInput
         v-model="mainStore.world().javaArguments"
-        label="JVM引数"
+        :label="$t('home.setting.jvmArgument')"
         class="q-pt-md"
       />
     </ExpansionView>
 
     <DangerView
       v-if="consoleStore.status() === 'Stop'"
-      :title="$t('deleteWorld.title')"
-      i18nKey="deleteWorld.titleExplanation"
-      :btn-text="$t('deleteWorld.dialogTitle')"
+      :title="$t('home.deleteWorld.title')"
+      i18nKey="home.deleteWorld.titleDesc"
+      :btn-text="$t('home.deleteWorld.button')"
       @action="removeWorld"
       show-dialog
-      dialog-title-key="deleteWorld.dialogTitle"
-      dialog-i18n-key="deleteWorld.dialogExplanation"
+      dialog-title-key="home.deleteWorld.dialogTitle"
+      dialog-i18n-key="home.deleteWorld.dialogDesc"
       :dialog-i18n-arg="{ deleteName: mainStore.world().name }"
     />
   </div>
