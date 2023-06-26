@@ -3,7 +3,7 @@ import { deepcopy } from 'src-electron/util/deepcopy';
 import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
 import {
   ServerProperties,
-  ServerPropertiesMap,
+  ServerProperties,
 } from 'src-electron/schema/serverproperty';
 import { defaultServerProperties } from './files/properties';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
@@ -64,7 +64,7 @@ export function worldToWorldSettings(world: World): WorldSettingsPlus {
 }
 
 function getServerProperties(
-  map: ServerPropertiesMap | undefined
+  map: ServerProperties | undefined
 ): ServerProperties {
   return objMap(map ?? {}, (k, value) => {
     const defaultProp = defaultServerProperties[k];

@@ -1,5 +1,3 @@
-import { Failable } from './failable';
-
 export interface IAPI {
   sendMainToWindow: {
     [key in string]: (...args: any[]) => void;

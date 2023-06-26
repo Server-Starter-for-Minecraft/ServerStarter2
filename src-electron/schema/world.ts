@@ -4,7 +4,7 @@ import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
 import { Player, PlayerSetting } from './player';
 import { Remote } from './remote';
-import { ServerProperties, ServerPropertiesMap } from './serverproperty';
+import { ServerProperties } from './serverproperty';
 import { Version } from './version';
 
 export type WorldID = Brand<UUID, 'WorldID'>;
@@ -33,11 +33,8 @@ export interface WorldBase extends WorldAbbr {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** pull元のリモートリポジトリ *使わない */
-  remote_pull?: Remote;
-
-  /** push先のリモートリポジトリ *使わない */
-  remote_push?: Remote;
+  /** 同期先のリモート */
+  remote?: Remote;
 
   /** リモートリポジトリ */
   remote?: Remote;
@@ -59,7 +56,7 @@ export interface WorldBase extends WorldAbbr {
   javaArguments?: string;
 
   /** server.propertiesの内容 */
-  properties: ServerPropertiesMap;
+  properties: ServerProperties;
 
   /** プレイヤーの設定 */
   players: PlayerSetting[];
@@ -92,13 +89,24 @@ export type WorldEditedAdditional = {
   mods?: (FileData | NewData)[];
 };
 
-export type WorldEdited = WorldBase & {
+export interface WorldEdited extends WorldBase {
   /** カスタムマップを導入する場合 */
   custom_map?: NewData;
 
+  /** データの取得元のリモート(同期はしない)
+   * リモート版カスタムマップ的な感じ
+   * 新規ワールドで既存リモートを読み込むときくらいにしか使わないと思う
+   * {
+   *   remote_source:A
+   *   remote:B
+   * }
+   * とした場合 Aからワールドのデータを取得して Bと同期する
+   */
+  remote_source?: Remote;
+
   /** 導入済み */
   additional: WorldEditedAdditional;
-};
+}
 
 /**
  * ワールドの設定
@@ -114,7 +122,7 @@ export type WorldSettings = {
   /** バージョン */
   version: Version;
 
-  /** リモートリポジトリ */
+  /** 同期先のリモートリポジトリ */
   remote?: Remote;
 
   /** 最終プレイ日
@@ -131,7 +139,7 @@ export type WorldSettings = {
   using?: boolean;
 
   /** サーバープロパティ */
-  properties?: ServerPropertiesMap;
+  properties?: ServerProperties;
 
   /** プレイヤーの設定 */
   players: PlayerSetting[];
@@ -149,6 +157,6 @@ export type SystemWorldSettings = {
 
 /** サーバーCWD直下の設定系ファイルの情報 */
 export type FoldSettings = {
-  properties: ServerPropertiesMap;
+  properties: ServerProperties;
   players: PlayerSetting[];
 };

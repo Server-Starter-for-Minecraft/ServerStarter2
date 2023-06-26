@@ -5,22 +5,22 @@ import { startConsoles, stopConsoles } from './const/server_message';
 
 const serverStopper: Record<WorldID, () => void> = {};
 
-export async function runServer(world: WorldEdited) {
-  api.send.UpdateStatus(world.id, '開始時処理');
+export async function runServer(world: WorldID) {
+  api.send.UpdateStatus(world, '開始時処理');
   await sleep(200);
 
-  await api.invoke.AgreeEula(world.id, '<Minecraft eula url here>');
+  await api.invoke.AgreeEula(world, '<Minecraft eula url here>');
 
-  api.send.StartServer(world.id);
+  api.send.StartServer(world);
 
   await new Promise((resolve) => {
-    serverStopper[world.id] = () => resolve(null);
-    putStartConsole(world.id);
+    serverStopper[world] = () => resolve(null);
+    putStartConsole(world);
   });
 
-  api.send.FinishServer(world.id);
+  api.send.FinishServer(world);
 
-  api.send.UpdateStatus(world.id, '終了時処理');
+  api.send.UpdateStatus(world, '終了時処理');
   await sleep(200);
 
   return world;
