@@ -5,6 +5,7 @@ import { Path } from './path';
 import { isSuccess, Failable, isFailure } from '../api/failable';
 import { Png } from './png';
 import sharp from 'sharp';
+import { ImageURI } from '../schema/brands';
 
 const fetch = import('node-fetch');
 
@@ -231,10 +232,10 @@ export class BytesData {
    *
    * mimetypeの例 "image/png"
    */
-  async encodeURI(mimetype: string) {
+  async encodeURI(mimetype: string): Promise<ImageURI> {
     // ArrayBufferからbase64に変換
     const base64uri = Buffer.from(this.data).toString('base64');
 
-    return `data:${mimetype};base64,${base64uri}`;
+    return `data:${mimetype};base64,${base64uri}` as ImageURI;
   }
 }

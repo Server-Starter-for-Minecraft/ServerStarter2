@@ -1,8 +1,8 @@
 import { objMap } from 'src-electron/util/objmap';
 import { deepcopy } from 'src-electron/util/deepcopy';
-import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
+import { World, WorldID } from 'src-electron/schema/world';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
-import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { WorldSettings } from '../world/settings/json';
 
 type WorldSettingsPlus = {
   id: WorldID;

@@ -85,6 +85,11 @@ export class Path {
     await fs.writeFile(this.path, content);
   }
 
+  async writeJson<T>(content: T) {
+    this.parent().mkdir(true);
+    await fs.writeFile(this.path, JSON.stringify(content));
+  }
+
   async read(): Promise<Failable<BytesData>> {
     return await BytesData.fromPath(this);
   }

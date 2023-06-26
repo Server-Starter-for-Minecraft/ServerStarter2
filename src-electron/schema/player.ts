@@ -35,6 +35,8 @@ export type OpSetting = {
 export type PlayerSetting = {
   /** プレイヤーのUUID */
   uuid: PlayerUUID;
+  /** プレイヤー名 */
+  name: string;
   /** プレイヤーのop権限レベル */
   op?: OpSetting;
 };

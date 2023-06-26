@@ -3,7 +3,6 @@ import {
   WorldAdditional,
   WorldEdited,
   WorldID,
-  WorldSettings,
 } from 'app/src-electron/schema/world';
 import { pullRemoteWorld } from '../remote/remote';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
@@ -13,14 +12,14 @@ import {
   failabilify,
   isFailure,
 } from 'app/src-electron/api/failable';
-import { loadWorldJson, saveWorldJson } from '../settings/worldJson';
-import { getIconURI, setIconURI } from './icon';
 import { worldSettingsToWorld } from '../settings/converter';
 import { Remote } from 'app/src-electron/schema/remote';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { installAdditionals } from '../installer/installer';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
+import { WorldSettings, serverJsonFile } from './settings/json';
+import { loadLocalFiles, saveLocalFiles } from './local';
 
 export class WorldHandlerError extends Error {}
 
@@ -58,14 +57,14 @@ export class WorldHandler {
   }
 
   /** 現在のワールドの保存場所を返す */
-  gatSavePath() {
+  getSavePath() {
     return worldContainerToPath(this.container).child(this.name);
   }
 
   /** セーブデータを移動する*/
   async move(name: WorldName, container: WorldContainer) {
     // 現在のワールドの保存場所
-    const currentPath = this.gatSavePath();
+    const currentPath = this.getSavePath();
     // 変更される保存先
     const targetPath = worldContainerToPath(container).child(name);
 
@@ -81,18 +80,13 @@ export class WorldHandler {
   }
 
   private async pull(remote: Remote) {
-    const savePath = this.gatSavePath();
+    const savePath = this.getSavePath();
 
     // セーブデータをリモートからPull
     const pull = await pullRemoteWorld(savePath, remote);
+
     // Pullに失敗した場合エラー
-    if (isFailure(pull)) return pull;
-
-    // リモートからPullしてきたワールド設定を読み込んで上書き
-    const worldSettings = await loadWorldJson(savePath);
-    if (isFailure(worldSettings)) return worldSettings;
-
-    return worldSettings;
+    return pull;
   }
 
   /** サーバーのデータを保存 */
@@ -105,7 +99,7 @@ export class WorldHandler {
 
     // セーブデータ移動
     await this.move(world.name, world.container);
-    const savePath = this.gatSavePath();
+    const savePath = this.getSavePath();
     currentWorld.name = world.name;
     currentWorld.container = world.container;
 
@@ -124,75 +118,38 @@ export class WorldHandler {
       world.additional,
       savePath
     );
-    currentWorld.additional = addtionalResult.value;
+    world.additional = addtionalResult.value;
     errors.push(...addtionalResult.errors);
 
-    if (world.avater_path) {
-      const avaratResult = await setIconURI(savePath, world.avater_path);
-      if (isFailure(avaratResult)) errors.push(avaratResult);
-      // 成功した場合のみ上書き
-      else currentWorld.avater_path = world.avater_path;
-    }
+    await saveLocalFiles(savePath, world);
 
-    // 特に処理の必要のない設定を上書き
-    currentWorld.version = world.version;
-    currentWorld.using = world.using;
-    currentWorld.last_date = world.last_date;
-    currentWorld.last_user = world.last_user;
-    currentWorld.memory = world.memory;
-    currentWorld.properties = world.properties;
-    currentWorld.remote = world.remote;
-    currentWorld.players = world.players;
-    currentWorld.javaArguments = world.javaArguments;
-
-    const settings: WorldSettings = {
-      version: world.version,
-      using: world.using,
-      last_date: world.last_date,
-      last_user: world.last_user,
-      memory: world.memory,
-      properties: world.properties,
-      remote: world.remote,
-      players: world.players,
-      javaArguments: world.javaArguments,
-    };
-
-    // jsonを保存
-    await saveWorldJson(savePath, settings);
-
-    return withError(currentWorld, errors);
+    return withError(world, errors);
   }
 
   /** サーバーのデータをロード */
   async load(): Promise<Failable<World>> {
-    const savePath = this.gatSavePath();
+    const savePath = this.getSavePath();
 
     // ローカルに保存されたワールド設定を読み込む
-    let worldSettings = await loadWorldJson(savePath);
+    let worldSettings = await serverJsonFile.load(savePath);
     if (isFailure(worldSettings)) return worldSettings;
 
     // セーブデータをリモートからPull
     if (worldSettings.remote) {
-      const remoteWorldSettings = await this.pull(worldSettings.remote);
+      // セーブデータをリモートからPull
+      const pull = await pullRemoteWorld(savePath, worldSettings.remote);
 
       // Pullに失敗した場合エラー
-      if (isFailure(remoteWorldSettings)) return remoteWorldSettings;
-
-      // リモートからPullしてきたワールド設定を読み込んで上書き
-      worldSettings = remoteWorldSettings;
+      if (isFailure(pull)) return pull;
     }
 
-    // アバターの読み込み
-    const avater_path = await getIconURI(savePath);
-
-    // worldオブジェクトを生成
-    const world = worldSettingsToWorld({
-      id: this.id,
-      name: this.name,
-      container: this.container,
-      avater_path,
-      settings: worldSettings,
-    });
+    // ローカルの設定ファイルを読み込む
+    const world = await loadLocalFiles(
+      savePath,
+      this.id,
+      this.name,
+      this.container
+    );
 
     return world;
   }
@@ -201,7 +158,7 @@ export class WorldHandler {
   async create(world: WorldEdited): Promise<WithError<Failable<World>>> {
     this.container = world.container;
     this.name = world.name;
-    const savePath = this.gatSavePath();
+    const savePath = this.getSavePath();
 
     const errors: Error[] = [];
 
@@ -217,78 +174,37 @@ export class WorldHandler {
     // 保存先ディレクトリを作成
     await savePath.mkdir(true);
 
+    // remote_sourceが存在した場合にセーブデータをリモートからPull
+    if (world.remote_source) {
+      const pull = await pullRemoteWorld(savePath, world.remote_source);
+      // Pullに失敗した場合エラー
+      if (isFailure(pull)) return withError(pull);
+      delete world.remote_source;
+    }
+
     // TODO: カスタムマップの導入処理
     if (world.custom_map) {
     }
+    delete world.custom_map;
 
     // Datapack/Mod/Pluginの導入処理
     const addtionalResult = await installAdditionals(
       world.additional,
       savePath
     );
+    world.additional = addtionalResult.value;
     errors.push(...addtionalResult.errors);
 
-    const resultWorld = worldEditedToWorld(world, addtionalResult.value);
+    // 設定ファイルの保存
+    await saveLocalFiles(savePath, world);
 
-    // iconの保存
-    delete resultWorld.avater_path;
-    console.log('WOTLD', world);
-    console.log('RESULTWOTLD', resultWorld);
-    if (world.avater_path !== undefined) {
-      console.log(world.avater_path);
-      const avaratResult = await setIconURI(savePath, world.avater_path);
-      if (isFailure(avaratResult)) errors.push(avaratResult);
-      // 成功した場合のみ上書き
-      else resultWorld.avater_path = world.avater_path;
-    }
-
-    const settings: WorldSettings = {
-      version: resultWorld.version,
-      using: resultWorld.using,
-      last_date: resultWorld.last_date,
-      last_user: resultWorld.last_user,
-      memory: resultWorld.memory,
-      properties: resultWorld.properties,
-      remote: resultWorld.remote,
-      players: resultWorld.players,
-      javaArguments: resultWorld.javaArguments,
-    };
-
-    // ワールド設定のjsonを保存
-    await saveWorldJson(savePath, settings);
-
-    return withError(resultWorld, errors);
+    return withError(world, errors);
   }
 
   async delete(): Promise<WithError<Failable<undefined>>> {
-    console.log('THIS IS PATH', this.gatSavePath().path);
-    const result = await failabilify(() => this.gatSavePath().remove(true))();
-    console.log('THIS IS RESULT', result);
+    const result = await failabilify(() => this.getSavePath().remove(true))();
     if (isFailure(result)) return withError(result);
     delete WorldHandler.worldPathMap[this.id];
     return withError(undefined);
   }
-}
-
-function worldEditedToWorld(
-  worldEdited: WorldEdited,
-  additional: WorldAdditional
-) {
-  const world: World = {
-    name: worldEdited.name,
-    container: worldEdited.container,
-    avater_path: worldEdited.avater_path,
-    id: worldEdited.id,
-    version: worldEdited.version,
-    using: worldEdited.using,
-    last_date: worldEdited.last_date,
-    last_user: worldEdited.last_user,
-    memory: worldEdited.memory,
-    properties: worldEdited.properties,
-    remote: worldEdited.remote,
-    players: worldEdited.players,
-    javaArguments: worldEdited.javaArguments,
-    additional,
-  };
-  return world;
 }

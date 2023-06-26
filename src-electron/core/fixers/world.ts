@@ -8,7 +8,6 @@ import {
   WorldEdited,
   WorldEditedAdditional,
   WorldID,
-  WorldSettings,
 } from 'app/src-electron/schema/world';
 import {
   Fixer,
@@ -16,17 +15,20 @@ import {
   booleanFixer,
   defaultFixer,
   extendFixer,
-  mergeFixer,
   numberFixer,
   objectFixer,
   optionalFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { fixUUID, fixWorldContainer, fixWorldName } from './brands';
-import { WorldName } from 'app/src-electron/schema/brands';
+import {
+  fixPlayerUUID,
+  fixUUID,
+  fixWorldContainer,
+  fixWorldName,
+} from './brands';
 import { fixVersion } from './version';
 import { fixRemote } from './remote';
-import { fixPlayer, fixPlayerSetting } from './player';
+import { fixPlayerSetting } from './player';
 import { fixMemorySettings } from './memory';
 import { DEFAULT_MEMORY, DEFAULT_SERVER_PROPERTIES } from '../const';
 import { fixServerProperties } from './serverproperty';
@@ -74,7 +76,7 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
     last_date: optionalFixer(numberFixer()),
 
     /** 最終プレイ者 */
-    last_user: optionalFixer(fixPlayer),
+    last_user: optionalFixer(fixPlayerUUID),
 
     /** 使用メモリ量 */
     memory: defaultFixer(fixMemorySettings, DEFAULT_MEMORY),
@@ -148,46 +150,6 @@ export const fixWorldEdited = extendFixer<WorldEdited, WorldBase>(
 
     /** 導入済み */
     additional: defaultFixer(fixWorldEditedAdditional, {}),
-  },
-  false
-);
-
-/**
- * ワールドの設定
- * server_settings.jsonの内容
- */
-export const fixWorldSettings = objectFixer<WorldSettings>(
-  {
-    /** 使用メモリ量 */
-    memory: fixMemorySettings,
-
-    /** Javaの実行時引数 */
-    javaArguments: optionalFixer(stringFixer()),
-
-    /** バージョン */
-    version: fixVersion,
-
-    /** 同期先のリモートリポジトリ */
-    remote: optionalFixer(fixRemote),
-
-    /** 最終プレイ日
-     *
-     * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
-     * new Dateの引数にすることで日付が得られる
-     */
-    last_date: optionalFixer(numberFixer()),
-
-    /** 最終プレイ者 */
-    last_user: optionalFixer(fixPlayer),
-
-    /** 起動中フラグ */
-    using: optionalFixer(booleanFixer()),
-
-    /** サーバープロパティ */
-    properties: optionalFixer(fixServerProperties),
-
-    /** プレイヤーの設定 */
-    players: arrayFixer(fixPlayerSetting, true),
   },
   false
 );

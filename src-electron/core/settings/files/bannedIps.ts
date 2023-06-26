@@ -1,4 +1,4 @@
-import { ServerSettingHandler } from './base';
+import { ServerSettingFile } from '../../world/settings/base';
 
 export type BannedIp = {
   ip: string;
@@ -21,7 +21,7 @@ export type BannedIps = BannedIp[];
 
 const FILENAME = 'banned-ips.json';
 
-export const bannedIpsHandler: ServerSettingHandler<BannedIps> = {
+export const bannedIpsHandler: ServerSettingFile<BannedIps> = {
   load(cwdPath) {
     return cwdPath.child(FILENAME).readJson<BannedIps>();
   },

@@ -1,5 +1,11 @@
 import { Brand } from '../util/brand';
-import { UUID, WorldContainer, WorldName } from './brands';
+import {
+  ImageURI,
+  PlayerUUID,
+  UUID,
+  WorldContainer,
+  WorldName,
+} from './brands';
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
 import { Player, PlayerSetting } from './player';
@@ -22,7 +28,7 @@ export interface WorldAbbr {
   id: WorldID;
 
   /** アイコンのURI */
-  avater_path?: string;
+  avater_path?: ImageURI;
 }
 
 /** ワールドごとの設定 */
@@ -44,7 +50,7 @@ export interface WorldBase extends WorldAbbr {
   last_date?: number;
 
   /** 最終プレイ者 */
-  last_user?: Player;
+  last_user?: PlayerUUID;
 
   /** 使用メモリ量 */
   memory: MemorySettings;
@@ -104,43 +110,6 @@ export interface WorldEdited extends WorldBase {
   /** 導入済み */
   additional: WorldEditedAdditional;
 }
-
-/**
- * ワールドの設定
- * server_settings.jsonの内容
- */
-export type WorldSettings = {
-  /** 使用メモリ量 */
-  memory: MemorySettings;
-
-  /** Javaの実行時引数 */
-  javaArguments?: string;
-
-  /** バージョン */
-  version: Version;
-
-  /** 同期先のリモートリポジトリ */
-  remote?: Remote;
-
-  /** 最終プレイ日
-   *
-   * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
-   * new Dateの引数にすることで日付が得られる
-   */
-  last_date?: number;
-
-  /** 最終プレイ者 */
-  last_user?: Player;
-
-  /** 起動中フラグ */
-  using?: boolean;
-
-  /** サーバープロパティ */
-  properties?: ServerProperties;
-
-  /** プレイヤーの設定 */
-  players: PlayerSetting[];
-};
 
 /** serverstarterのシステム設定内のワールド設定 */
 export type SystemWorldSettings = {

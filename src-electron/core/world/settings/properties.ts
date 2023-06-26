@@ -1,13 +1,15 @@
-import { ServerSettingHandler } from './base';
-import { isFailure } from 'src-electron/api/failable';
+import { ServerSettingFile } from './base';
+import { Failable, isFailure } from 'src-electron/api/failable';
 import {
   ServerProperties,
   ServerPropertiesAnnotation,
 } from 'app/src-electron/schema/serverproperty';
+import { Path } from 'app/src-electron/util/path';
 
 // TODO:stringの値のescape/unescape
 
 const PORT_MAX = 2 ** 16 - 2;
+
 export const annotations: ServerPropertiesAnnotation = {
   'allow-flight': { type: 'boolean', default: false },
 
@@ -198,21 +200,23 @@ const stringify = (properties: ServerProperties) => {
     .join('\n');
 };
 
-const FILENAME = 'server.properties';
+export const SERVER_PROPERTIES_PATH = 'server.properties';
 
-const MESSAGE =
-  '"このファイルは使用されません。サーバープロパティの書き換えはServerStarter本体から行ってください。"';
-
-export const serverPropertiesHandler: ServerSettingHandler<ServerProperties> = {
+export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
   async load(cwdPath) {
-    const text = await cwdPath.child(FILENAME).readText();
-    if (isFailure(text)) return text;
-    return parse(text);
+    const filePath = cwdPath.child(SERVER_PROPERTIES_PATH);
+
+    let data = await filePath.readText();
+
+    if (isFailure(data)) return data;
+
+    const parsed = parse(data);
+
+    return parsed;
   },
-  save(cwdPath, value) {
-    return cwdPath.child(FILENAME).writeText(stringify(value));
-  },
-  remove(cwdPath) {
-    return cwdPath.child(FILENAME).writeText(MESSAGE);
+  async save(cwdPath, value) {
+    const filePath = cwdPath.child(SERVER_PROPERTIES_PATH);
+
+    await filePath.writeText(stringify(value));
   },
 };

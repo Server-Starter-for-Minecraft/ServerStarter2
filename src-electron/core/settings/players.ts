@@ -1,6 +1,6 @@
 import { OpLevel, PlayerSetting } from 'src-electron/schema/player';
-import { Ops } from './files/ops';
-import { Whitelist } from './files/whitelist';
+import { Ops } from '../world/settings/ops';
+import { Whitelist } from '../world/settings/whitelist';
 
 /**
  * PlayerSetting[]からOpsとWhitelistを構成
