@@ -24,6 +24,7 @@ import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';
 import { searchPlayer } from '../core/player/search';
+import { getStaticResoure } from '../core/resource';
 import { testHandle, testOn } from './test';
 
 export const getBackListener = (
@@ -36,23 +37,27 @@ export const getBackListener = (
     SWMTest: testOn,
   },
   handle: {
-    RunServer: runServer,
-
-    DeleteWorld: deleteWorld,
-
-    PickDirectory: pickDirectory(windowGetter),
-
-    SaveWorldSettings: saveWorldSettings,
+    GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,
 
-    GetDefaultSettings: getDefaultSettings,
-    GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,
     SetWorldContainers: setWorldContainers,
+
     GetWorldAbbrs: getWorldAbbrs,
+
     GetWorld: getWorld,
+    SetWorld: undefined,
+    NewWorld: undefined,
+    CreateWorld: undefined,
+    DeleteWorld: undefined,
+
+    RunServer: runServer,
+
+    SearchPlayer: searchPlayer,
+
+    GetVersions: getVersions,
 
     ValidateNewWorldName: validateNewWorldName,
 

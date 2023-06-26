@@ -5,13 +5,15 @@ export type primitive = number | string | boolean | null;
 export const FAIL = Symbol();
 export type FAIL = typeof FAIL;
 
-export function literalFixer<T extends primitive>(values: T[]): Fixer<T | FAIL>;
 export function literalFixer<T extends primitive>(
-  values: T[],
+  values: readonly T[]
+): Fixer<T | FAIL>;
+export function literalFixer<T extends primitive>(
+  values: readonly T[],
   defaultValue: T
 ): Fixer<T>;
 export function literalFixer<T extends primitive>(
-  values: T[],
+  values: readonly T[],
   defaultValue?: T
 ): Fixer<T> {
   return (arg: any) =>
@@ -22,40 +24,71 @@ export function literalFixer<T extends primitive>(
       : FAIL;
 }
 
-export function stringFixer(): Fixer<string | FAIL>;
-export function stringFixer(defaultValue: string): Fixer<string>;
-export function stringFixer(defaultValue?: string): Fixer<string | FAIL> {
+export function stringFixer<T extends string = string>(): Fixer<T | FAIL>;
+export function stringFixer<T extends string = string>(
+  defaultValue: T
+): Fixer<T>;
+export function stringFixer<T extends string = string>(
+  defaultValue?: T
+): Fixer<T | FAIL> {
   return ((arg: any) => {
     if (typeof arg === 'string') return arg;
     return defaultValue ?? FAIL;
-  }) as Fixer<string | FAIL>;
+  }) as Fixer<T | FAIL>;
 }
 
-export function numberFixer(): Fixer<number | FAIL>;
-export function numberFixer(defaultValue: number): Fixer<number>;
-export function numberFixer(defaultValue?: number): Fixer<number | FAIL> {
+export function regexFixer<T extends string = string>(
+  pattern: RegExp
+): Fixer<T | FAIL>;
+export function regexFixer<T extends string = string>(
+  pattern: RegExp,
+  defaultValue: T
+): Fixer<T>;
+export function regexFixer<T extends string = string>(
+  pattern: RegExp,
+  defaultValue?: T
+): Fixer<T | FAIL> {
+  return ((arg: any) => {
+    if (typeof arg === 'string' && arg.match(pattern)) return arg;
+    return defaultValue ?? FAIL;
+  }) as Fixer<T | FAIL>;
+}
+
+export function numberFixer<T extends number = number>(): Fixer<T | FAIL>;
+export function numberFixer<T extends number = number>(
+  defaultValue: T
+): Fixer<T>;
+export function numberFixer<T extends number = number>(
+  defaultValue?: T
+): Fixer<T | FAIL> {
   return ((arg: any) => {
     if (typeof arg === 'number') return arg;
     return defaultValue ?? FAIL;
-  }) as Fixer<number | FAIL>;
+  }) as Fixer<T | FAIL>;
 }
 
-export function booleanFixer(): Fixer<boolean | FAIL>;
-export function booleanFixer(defaultValue: boolean): Fixer<boolean>;
-export function booleanFixer(defaultValue?: boolean): Fixer<boolean | FAIL> {
+export function booleanFixer<T extends boolean = boolean>(): Fixer<T | FAIL>;
+export function booleanFixer<T extends boolean = boolean>(
+  defaultValue: T
+): Fixer<T>;
+export function booleanFixer<T extends boolean = boolean>(
+  defaultValue?: T
+): Fixer<T | FAIL> {
   return ((arg: any) => {
     if (typeof arg === 'boolean') return arg;
     return defaultValue ?? FAIL;
-  }) as Fixer<boolean | FAIL>;
+  }) as Fixer<T | FAIL>;
 }
 
-export function nullFixer(): Fixer<null | FAIL>;
-export function nullFixer(defaultValue: null): Fixer<null>;
-export function nullFixer(defaultValue?: null): Fixer<null | FAIL> {
+export function nullFixer<T extends null = null>(): Fixer<T | FAIL>;
+export function nullFixer<T extends null = null>(defaultValue: T): Fixer<T>;
+export function nullFixer<T extends null = null>(
+  defaultValue?: T
+): Fixer<T | FAIL> {
   return ((arg: any) => {
     if (defaultValue === null || arg === null) return null;
     return FAIL;
-  }) as Fixer<null | FAIL>;
+  }) as Fixer<T | FAIL>;
 }
 
 export function objectFixer<T extends object>(
@@ -143,6 +176,16 @@ export function optionalFixer<T>(fixer: Fixer<T | FAIL>): Fixer<T | undefined> {
   };
 }
 
+export function defaultFixer<T>(
+  fixer: Fixer<T | FAIL>,
+  defaultValue: T
+): Fixer<T> {
+  return (arg: any) => {
+    const r = fixer(arg);
+    return r === FAIL ? defaultValue : r;
+  };
+}
+
 export function unionFixer<A, B>(
   a: Fixer<A>,
   b: Fixer<B>
@@ -190,4 +233,172 @@ export function unionFixer(...fixers: Fixer<any>[]): Fixer<any> {
     }
     return FAIL;
   };
+}
+
+export function mergeFixer<A extends object, B extends object>(
+  a: Fixer<A>,
+  b: Fixer<B>
+): Fixer<A & B>;
+export function mergeFixer<A extends object, B extends object>(
+  a: Fixer<A | FAIL>,
+  b: Fixer<B | FAIL>
+): Fixer<(A & B) | FAIL>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object
+>(a: Fixer<A>, b: Fixer<B>, c: Fixer<C>): Fixer<A & B & C>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object
+>(
+  a: Fixer<A | FAIL>,
+  b: Fixer<B | FAIL>,
+  c: Fixer<C | FAIL>
+): Fixer<(A & B & C) | FAIL>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object
+>(a: Fixer<A>, b: Fixer<B>, c: Fixer<C>, d: Fixer<D>): Fixer<A & B & C & D>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object
+>(
+  a: Fixer<A | FAIL>,
+  b: Fixer<B | FAIL>,
+  c: Fixer<C | FAIL>,
+  d: Fixer<D | FAIL>
+): Fixer<(A & B & C & D) | FAIL>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object
+>(
+  a: Fixer<A>,
+  b: Fixer<B>,
+  c: Fixer<C>,
+  d: Fixer<D>,
+  e: Fixer<E>
+): Fixer<A & B & C & D & E>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object
+>(
+  a: Fixer<A | FAIL>,
+  b: Fixer<B | FAIL>,
+  c: Fixer<C | FAIL>,
+  d: Fixer<D | FAIL>,
+  e: Fixer<E | FAIL>
+): Fixer<(A & B & C & D & E) | FAIL>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object,
+  F extends object
+>(
+  a: Fixer<A>,
+  b: Fixer<B>,
+  c: Fixer<C>,
+  d: Fixer<D>,
+  e: Fixer<E>,
+  f: Fixer<F>
+): Fixer<A & B & C & D & E & F>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object,
+  F extends object
+>(
+  a: Fixer<A | FAIL>,
+  b: Fixer<B | FAIL>,
+  c: Fixer<C | FAIL>,
+  d: Fixer<D | FAIL>,
+  e: Fixer<E | FAIL>,
+  f: Fixer<F | FAIL>
+): Fixer<(A & B & C & D & E & F) | FAIL>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object,
+  F extends object,
+  G extends object
+>(
+  a: Fixer<A>,
+  b: Fixer<B>,
+  c: Fixer<C>,
+  d: Fixer<D>,
+  e: Fixer<E>,
+  f: Fixer<F>,
+  g: Fixer<G>
+): Fixer<A & B & C & D & E & F & G>;
+export function mergeFixer<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object,
+  F extends object,
+  G extends object
+>(
+  a: Fixer<A | FAIL>,
+  b: Fixer<B | FAIL>,
+  c: Fixer<C | FAIL>,
+  d: Fixer<D | FAIL>,
+  e: Fixer<E | FAIL>,
+  f: Fixer<F | FAIL>,
+  g: Fixer<G | FAIL>
+): Fixer<(A & B & C & D & E & F & G) | FAIL>;
+export function mergeFixer(...fixers: Fixer<object | FAIL>[]): Fixer<any> {
+  let result = {};
+  return (arg: any) => {
+    for (const fixer of fixers) {
+      const r = fixer(arg);
+      if (r === FAIL) return FAIL;
+      result = { ...result, ...r };
+    }
+    return result;
+  };
+}
+
+export function extendFixer<T, B extends Partial<T>>(
+  base: Fixer<B>,
+  pattern: {
+    [K in keyof (Omit<T, keyof B> & Partial<T>)]: Fixer<T[K]>;
+  },
+  fixNonObject: true
+): Fixer<T>;
+export function extendFixer<T, B extends Partial<T>>(
+  base: Fixer<B | FAIL>,
+  pattern: {
+    [K in keyof (Omit<T, keyof B> & Partial<T>)]: Fixer<T[K] | FAIL>;
+  },
+  fixNonObject: boolean
+): Fixer<T | FAIL>;
+export function extendFixer<T, B extends Partial<T>>(
+  base: Fixer<B | FAIL>,
+  pattern: {
+    [K in keyof (Omit<T, keyof B> & Partial<T>)]: Fixer<T[K] | FAIL>;
+  },
+  fixNonObject: boolean
+): Fixer<T | FAIL> {
+  return mergeFixer<B, Omit<T, keyof B> & Partial<T>>(
+    base,
+    objectFixer<Omit<T, keyof B> & Partial<T>>(pattern, fixNonObject)
+  ) as Fixer<T | FAIL>;
 }

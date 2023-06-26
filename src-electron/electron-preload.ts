@@ -85,37 +85,41 @@ function handle<C extends string>(
 }
 
 const api: FrontAPI = {
+  // ON
   onStartServer: on('StartServer'),
   onFinishServer: on('FinishServer'),
   onUpdateStatus: on('UpdateStatus'),
   onAddConsole: on('AddConsole'),
   onUpdateSystemSettings: on('UpdateSystemSettings'),
 
+  // HANDLE
+  handleAgreeEula: handle('AgreeEula'),
+
+  // SEND
   sendCommand: send('Command'),
   sendOpenBrowser: send('OpenBrowser'),
   sendOpenFolder: send('OpenFolder'),
 
-  handleAgreeEula: handle('AgreeEula'),
-
-  invokePickDirectory: invoke('PickDirectory'),
-
-  invokeGetDefaultWorld: invoke('GetDefaultWorld'),
-
-  invokeDeleteWorld: invoke('DeleteWorld'),
-
-  invokeRunServer: invoke('RunServer'),
-  invokeSaveWorldSettings: invoke('SaveWorldSettings'),
+  // INVOKE
+  invokeGetStaticResouce: invoke('GetStaticResouce'),
 
   invokeGetSystemSettings: invoke('GetSystemSettings'),
   invokeSetSystemSettings: invoke('SetSystemSettings'),
-
-  invokeGetDefaultSettings: invoke('GetDefaultSettings'),
 
   invokeGetWorldContainers: invoke('GetWorldContainers'),
   invokeSetWorldContainers: invoke('SetWorldContainers'),
 
   invokeGetWorldAbbrs: invoke('GetWorldAbbrs'),
+
   invokeGetWorld: invoke('GetWorld'),
+  invokeSetWorld: invoke('SetWorld'),
+  invokeNewWorld: invoke('NewWorld'),
+  invokeCreateWorld: invoke('CreateWorld'),
+  invokeDeleteWorld: invoke('DeleteWorld'),
+
+  invokeRunServer: invoke('RunServer'),
+
+  invokeSearchPlayer: invoke('SearchPlayer'),
 
   invokeGetVersions: invoke('GetVersions'),
 
