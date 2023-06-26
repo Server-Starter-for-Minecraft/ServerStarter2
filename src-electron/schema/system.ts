@@ -1,8 +1,9 @@
-import { WorldContainer } from './brands';
+import { ImageURI, WorldContainer } from './brands';
 import { Player, PlayerGroup } from './player';
 import { GithubRemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
 import { FileData, NewData } from './filedata';
+import { Brand } from '../util/brand';
 
 /** システム設定まとめてここに格納 */
 export type SystemSettings = {
@@ -16,6 +17,19 @@ export type SystemSettings = {
 
 export type Locale = 'ja' | 'en-US';
 
+/** ローカルのワールドの保存先ディレクトリ */
+export type LocalSaveContainer = Brand<string, 'LocalSaveContainer'>;
+
+/** ローカルのワールド */
+export type LocalSave = {
+  // 保存先ディレクトリ
+  container: LocalSaveContainer;
+  // ワールド名
+  name: string;
+  // icon.png
+  avatar_path?: ImageURI;
+};
+
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
@@ -27,6 +41,8 @@ export type SystemUserSetting = {
   owner?: Player;
   // 自動シャットダウン
   autoShutDown: boolean;
+  //ローカルのワールドの保存先ディレクトリ一覧
+  localSaveContainer: LocalSaveContainer[];
 };
 
 /**

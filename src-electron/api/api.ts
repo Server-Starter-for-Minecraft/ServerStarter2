@@ -1,7 +1,12 @@
 import { WorldContainer, WorldName } from '../schema/brands';
 import { Player } from '../schema/player';
 import { StaticResouce } from '../schema/static';
-import { SystemSettings, WorldContainers } from '../schema/system';
+import {
+  LocalSave,
+  LocalSaveContainer,
+  SystemSettings,
+  WorldContainers,
+} from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
 import { Failable } from './failable';
@@ -111,6 +116,11 @@ export interface API extends IAPI {
       type: VersionType,
       useCache: boolean
     ) => Promise<WithError<Failable<Version[]>>>;
+
+    /** ローカルのセーブデータ一覧を取得 */
+    GetLocalSaveData: (
+      container: LocalSaveContainer
+    ) => Promise<WithError<Failable<LocalSave[]>>>;
 
     /** ワールド名が使用可能かどうかを検証する */
     ValidateNewWorldName: (
