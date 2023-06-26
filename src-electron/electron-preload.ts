@@ -116,9 +116,11 @@ const api: FrontAPI = {
 
   invokeRunServer: invoke('RunServer'),
 
-  invokeSearchPlayer: invoke('SearchPlayer'),
+  invokeGetPlayer: invoke('GetPlayer'),
 
   invokeGetVersions: invoke('GetVersions'),
+
+  invokeGetLocalSaveData: invoke('GetLocalSaveData'),
 
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 
