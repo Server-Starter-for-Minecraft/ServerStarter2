@@ -15,6 +15,7 @@ import { worldSettingsToWorld } from '../settings/converter';
 import { Remote } from 'app/src-electron/schema/remote';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { installAdditionals } from '../installer/installer';
+import { validateNewWorldName } from './name';
 
 export class WorldHandlerError extends Error {}
 
@@ -181,4 +182,90 @@ export class WorldHandler {
 
     return world;
   }
+
+  /** サーバーのデータを新規作成して保存 */
+  async create(world: WorldEdited): Promise<WithError<Failable<World>>> {
+    this.container = world.container;
+    this.name = world.name;
+    const savePath = this.gatSavePath();
+
+    const errors: Error[] = [];
+
+    // ワールド名が使用不能だった場合(たぶん起こらない)
+    const worldNameValidated = validateNewWorldName(
+      world.container,
+      world.name
+    );
+    if (isFailure(worldNameValidated)) {
+      return withError(worldNameValidated, errors);
+    }
+
+    // 保存先ディレクトリを作成
+    await savePath.mkdir(true);
+
+    // TODO: カスタムマップの導入処理
+    if (world.custom_map) {
+    }
+
+    // Datapack/Mod/Pluginの導入処理
+    const addtionalResult = await installAdditionals(
+      world.additional,
+      savePath
+    );
+    errors.push(...addtionalResult.errors);
+
+    const resultWorld = worldEditedToWorld(world, addtionalResult.value);
+
+    // iconの保存
+    delete resultWorld.avater_path;
+    console.log('WOTLD', world);
+    console.log('RESULTWOTLD', resultWorld);
+    if (world.avater_path !== undefined) {
+      console.log(world.avater_path);
+      const avaratResult = await setIconURI(savePath, world.avater_path);
+      if (isFailure(avaratResult)) errors.push(avaratResult);
+      // 成功した場合のみ上書き
+      else resultWorld.avater_path = world.avater_path;
+    }
+
+    const settings: WorldSettings = {
+      version: resultWorld.version,
+      using: resultWorld.using,
+      last_date: resultWorld.last_date,
+      last_user: resultWorld.last_user,
+      memory: resultWorld.memory,
+      properties: resultWorld.properties,
+      remote: resultWorld.remote,
+      players: resultWorld.players,
+      javaArguments: resultWorld.javaArguments,
+    };
+
+    // ワールド設定のjsonを保存
+    await saveWorldJson(savePath, settings);
+
+    return withError(resultWorld, errors);
+  }
+}
+
+function worldEditedToWorld(
+  worldEdited: WorldEdited,
+  additional: WorldAdditional
+) {
+  const world: World = {
+    name: worldEdited.name,
+    container: worldEdited.container,
+    avater_path: worldEdited.avater_path,
+    id: worldEdited.id,
+    version: worldEdited.version,
+    using: worldEdited.using,
+    last_date: worldEdited.last_date,
+    last_user: worldEdited.last_user,
+    memory: worldEdited.memory,
+    properties: worldEdited.properties,
+    remote: worldEdited.remote,
+    players: worldEdited.players,
+    javaArguments: worldEdited.javaArguments,
+    additional,
+  };
+  return world;
 }

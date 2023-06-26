@@ -7,12 +7,9 @@ import {
 } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
-import { getWorldJsonPath, loadWorldJson } from '../settings/worldJson';
-import { BytesData } from '../../util/bytesData';
-import { LEVEL_NAME } from '../const';
-import { getRemoteWorld } from '../remote/remote';
+import { getWorldJsonPath } from '../settings/worldJson';
+import { NEW_WORLD_NAME } from '../const';
 import { worldContainerToPath } from './worldContainer';
-import { worldSettingsToWorld } from '../settings/converter';
 import {
   World,
   WorldAbbr,
@@ -26,6 +23,7 @@ import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
 import { WorldHandler } from './handler';
 import { WithError, withError } from 'app/src-electron/api/witherror';
+import { validateNewWorldName } from './name';
 
 export async function deleteWorld(worldID: WorldID) {
   const cwd = runOnSuccess(wroldLocationToPath)(WorldLocationMap.get(worldID));
@@ -40,12 +38,12 @@ export async function deleteWorld(worldID: WorldID) {
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
-): Promise<Failable<WorldAbbr[]>> {
+): Promise<WithError<Failable<WorldAbbr[]>>> {
   const subdir = await worldContainerToPath(worldContainer).iter();
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
   );
-  return results.filter(isSuccess);
+  return withError(results.filter(isSuccess), results.filter(isFailure));
 }
 
 export async function getWorldAbbr(
@@ -75,10 +73,12 @@ export async function getWorldAbbr(
 }
 
 /** WorldIDからワールドデータ取得 (リモートが存在する場合リモートから読み込む) */
-export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
+export async function getWorld(
+  worldID: WorldID
+): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
-  if (isFailure(handler)) return handler;
-  return await handler.load();
+  if (isFailure(handler)) return withError(handler);
+  return withError(await handler.load());
 }
 
 /** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
@@ -94,20 +94,20 @@ export async function setWorld(
  * ワールドデータを新規生成して返す
  * ワールドのidは呼び出すたびに新しくなる
  */
-export async function getDefaultWorld() {
+export async function newWorld(): Promise<WithError<Failable<World>>> {
   const vanillaVersions = await vanillaVersionLoader.getAllVersions(true);
-  if (isFailure(vanillaVersions)) return vanillaVersions;
+  if (isFailure(vanillaVersions)) return withError(vanillaVersions);
 
   const latestRelease = vanillaVersions.find((ver) => ver.release);
 
   const systemSettings = await getSystemSettings();
 
-  if (latestRelease === undefined)
-    return new Error('Assertion: This error cannot occur');
+  if (latestRelease === undefined) {
+    return withError(new Error('Assertion: This error cannot occur'));
+  }
 
   const world: World = {
-    // TODO: NewWorldが使用済みの場合末尾に"(n)"を追加
-    name: 'NewWorld' as WorldName,
+    name: await getDefaultWorldName(systemSettings.container.default),
     container: systemSettings.container.default,
     id: genUUID() as WorldID,
     version: latestRelease,
@@ -122,5 +122,36 @@ export async function getDefaultWorld() {
     additional: {},
   };
 
-  return world;
+  // WorldHandlerに登録
+  WorldHandler.register(world.id, world.name, world.container);
+
+  return withError(world);
+}
+
+/** 新規作成する際のワールド名を取得 */
+async function getDefaultWorldName(container: WorldContainer) {
+  let worldName = NEW_WORLD_NAME;
+
+  let result = await validateNewWorldName(container, worldName);
+  let i = 0;
+  while (isFailure(result)) {
+    worldName = `${NEW_WORLD_NAME}_${i}`;
+    i += 1;
+    console.log(99,result,worldName);
+    result = await validateNewWorldName(container, worldName);
+    console.log(100,result);
+  }
+  return result;
+}
+
+/**
+ * ワールドデータ(ディレクトリとfile)を生成する
+ * 注：newWorld()によって生成されたものに限る
+ */
+export async function createWorld(
+  world: WorldEdited
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(world.id);
+  if (isFailure(handler)) return withError(handler);
+  return await handler.create(world);
 }

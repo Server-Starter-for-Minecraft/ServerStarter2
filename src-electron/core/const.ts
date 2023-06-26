@@ -4,7 +4,7 @@ import { MemorySettings } from '../schema/memory';
 import { WorldContainer } from '../schema/brands';
 import { ServerProperties } from '../schema/serverproperty';
 import * as server_properties from './settings/files/properties';
-import { objMap, objValueMap } from '../util/objmap';
+import { objValueMap } from '../util/objmap';
 import { Locale } from '../schema/system';
 
 const userDataPath = (
@@ -34,6 +34,8 @@ export const DEFAULT_MEMORY: MemorySettings = {
 } as const;
 
 export const DEFAULT_LOCALE: Locale = 'ja';
+
+export const NEW_WORLD_NAME = 'NewWorld';
 
 export const DEFAULT_SERVER_PROPERTIES: ServerProperties = objValueMap(
   server_properties.annotations,

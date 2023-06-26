@@ -8,7 +8,13 @@ import {
   saveWorldSettings,
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
-import { getWorld, getWorldAbbrs, setWorld } from '../core/world/world';
+import {
+  newWorld,
+  getWorld,
+  getWorldAbbrs,
+  setWorld,
+  createWorld,
+} from '../core/world/world';
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { validateNewWorldName } from '../core/world/name';
@@ -35,8 +41,8 @@ export const getBackListener = (
 
     GetWorld: getWorld,
     SetWorld: setWorld,
-    NewWorld: undefined,
-    CreateWorld: undefined,
+    NewWorld: newWorld,
+    CreateWorld: createWorld,
     DeleteWorld: undefined,
 
     RunServer: runServer,
