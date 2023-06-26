@@ -26,215 +26,32 @@ import { VersionComponent } from '../version/base';
 import { installAdditionals } from '../installer/installer';
 import { rootLoggerHierarchy } from '../logger';
 import { parseCommandLine } from 'src-electron/util/commandLineParser';
-import {
-  FoldSettings,
-  World,
-  WorldAdditional,
-  WorldEdited,
-  WorldID,
-} from 'src-electron/schema/world';
-import { MemoryUnit } from 'src-electron/schema/memory';
+import { World, WorldID } from 'src-electron/schema/world';
 import { foldSettings } from '../settings/settings';
-import { getPlayerSettingDiff } from '../settings/players';
-import { sleep } from 'src-electron/util/sleep';
-import { serverPropertiesHandler } from '../settings/files/properties';
-import { WorldLocationMap, wroldLocationToPath } from '../world/worldMap';
+import { getMemoryArguments } from './memory';
+import { getAdditionalJavaArgument, javaEncodingToUtf8 } from './javaArgs';
 
 class WorldUsingError extends Error {}
 
 class ServerRunner {
-  private static serverMap: Record<WorldID, ServerRunner> = {};
-
-  static getServerRunner(worldID: WorldID) {
-    return ServerRunner.serverMap[worldID];
-  }
-
-  static setServerRunner(worldID: WorldID, serverRunner: ServerRunner) {
-    ServerRunner.serverMap[worldID] = serverRunner;
-  }
-
-  static removeServerRunner(worldID: WorldID) {
-    delete ServerRunner.serverMap[worldID];
-  }
-
   stdin: undefined | ((command: string) => Promise<void>) = undefined;
-  world: WorldEdited;
-  cwdPath: Path;
   args: string[];
+  cwdPath: Path;
+  world: World;
 
-  constructor(world: WorldEdited) {
-    ServerRunner.setServerRunner(world.id, this);
-
-    this.world = world;
-
+  constructor(world: World, cwdPath: Path) {
     // コマンド引数の設定
+    this.cwdPath = cwdPath;
+    this.world = world;
     this.args = [];
-
-    // サーバーのCWDパスを得る
-    this.cwdPath = worldContainerToPath(world.container).child(world.name);
   }
 
   private sendUpdateStatus(message: string) {
     api.send.UpdateStatus(this.world.id, message);
   }
 
-  /** プルを実行 */
-  private async pull(): Promise<Failable<undefined>> {
-    const remote_pull = this.world.remote_pull;
-    if (remote_pull === undefined) return;
-    await pullRemoteWorld(this.cwdPath, remote_pull);
-    // pullしてきたワールドが使用中かどうかを確認し、使用中の場合エラー
-    const worldjson = await loadWorldJson(this.cwdPath);
-    if (isSuccess(worldjson)) {
-      if (worldjson.using)
-        return new WorldUsingError(
-          `world ${this.world.name} is running by ${
-            worldjson.last_user ?? '<annonymous>'
-          }`
-        );
-    }
-  }
-
-  /** ワールドの保存場所を変更する */
-  private async changeLocation(): Promise<Failable<undefined>> {
-    const world = this.world;
-
-    const nextPath = wroldLocationToPath(world);
-
-    // 現状のパスを取得
-    const currentPath = runOnSuccess(wroldLocationToPath)(
-      WorldLocationMap.get(world.id)
-    );
-    if (isFailure(currentPath)) return currentPath;
-    if (currentPath.absolute().str() !== nextPath.str()) {
-      await currentPath.moveTo(nextPath);
-    }
-
-    WorldLocationMap.set(world.id, {
-      name: world.name,
-      container: world.container,
-    });
-
-    this.cwdPath = nextPath;
-  }
-
-  /** ワールドの設定を保存しデータをリモートにpushする */
-  private async saveAndPush(using: boolean): Promise<Failable<undefined>> {
-    this.sendUpdateStatus('不要なファイルを削除中');
-    // サーバー実行時のみ必要なファイルを削除
-    await removeServerSettingFiles(this.cwdPath);
-
-    this.world.using = using;
-    this.world.last_user = systemSettings.get('user').owner;
-    this.world.last_date = new Date().getTime();
-
-    this.world.properties ??= {};
-
-    // 使用中の場合level-nameをworldにする
-    if (using) {
-      this.world.properties['level-name'] = LEVEL_NAME;
-    } else {
-      delete this.world.properties['level-name'];
-    }
-
-    await this.saveWorldSettingFile();
-
-    const remote_push = this.world.remote_push;
-    if (remote_push === undefined) return;
-
-    this.sendUpdateStatus('ワールドデータをアップロード中');
-    pushRemoteWorld(this.cwdPath, remote_push);
-  }
-
-  /** ワールドが使用中でない限り設定の変更を反映しデータをリモートにpushする */
-  private async pushOnNotUsing(result: Failable<World>): Promise<void> {
-    if (!(result instanceof WorldUsingError)) {
-      await this.saveAndPush(false);
-    }
-  }
-
-  /** stdin,stdout,stderrの文字コードをutf-8に */
-  private setJavaEncoding() {
-    this.args.push('"-Dfile.encoding=UTF-8"');
-  }
-
-  /** 使用メモリの設定 */
-  private setMamoryAmount() {
-    const memory = this.world.memory ?? systemSettings.get('world').memory;
-
-    let memorystr = '';
-
-    const memorySize = Math.round(memory.size);
-
-    const lowerunit = memory.unit.toLowerCase() as Lowercase<MemoryUnit>;
-
-    switch (lowerunit) {
-      case 'b':
-      case '':
-        memorystr = `${memorySize}`;
-        break;
-      case 'kb':
-      case 'k':
-        memorystr = `${memorySize}K`;
-        break;
-      case 'mb':
-      case 'm':
-        memorystr = `${memorySize}M`;
-        break;
-      case 'gb':
-      case 'g':
-        memorystr = `${memorySize}G`;
-        break;
-      case 'tb':
-      case 't':
-        memorystr = `${memorySize}T`;
-        break;
-      default:
-        rootLoggerHierarchy.server
-          .setMamoryAmount(memory)
-          .error(`unknown unit ${memory.unit}`);
-        return;
-    }
-
-    this.args.push(`-Xmx${memorystr}`, `-Xms${memorystr}`);
-  }
-
-  /** サーバーデータを用意 */
-  private async readyServerData() {
-    const world = this.world;
-    this.sendUpdateStatus(
-      `サーバーデータを準備中 ${world.version.id} (${world.version.type})`
-    );
-    return await readyVersion(world.version, this.cwdPath);
-  }
-
-  /** Javaランタイムを用意 */
-  private async readyJavaRuntime(component: JavaComponent) {
-    this.sendUpdateStatus(`javaランタイムを準備中 (${component})`);
-
-    // 実行javaを用意
-    return await readyJava(component, true);
-  }
-
-  /** ワールドのpullが終わるのを待機 */
-  private async awaitPull(pulling: Promise<Failable<undefined>>) {
-    // ワールドのpullが終わるのを待機
-    this.sendUpdateStatus('ワールドデータのダウンロード中');
-    return await pulling;
-  }
-
   /** log4jの脆弱性を回避 */
-  private async handleLog4j() {
-    // log4jの設定
-    this.sendUpdateStatus('log4jの引数を設定中');
-    const log4jarg = await getLog4jArg(this.cwdPath, this.world.version);
-
-    // log4jのファイルがダウンロードできなかった場合エラー
-    if (isFailure(log4jarg)) return log4jarg;
-
-    // log4j引数を実行時引数に追加
-    if (log4jarg) this.args.push(log4jarg);
-  }
+  private async handleLog4j() {}
 
   /** 設定ファイルを展開 */
   private async unrollWorldSettings() {
@@ -243,13 +60,6 @@ class ServerRunner {
     this.sendUpdateStatus('サーバー設定ファイルの展開中');
     world.properties['level-name'] = LEVEL_NAME;
     await unfoldSettings(this.cwdPath, world);
-  }
-
-  /** 設定jsonを保存 */
-  private async saveWorldSettingFile() {
-    // 設定ファイルをサーバーCWD直下に書き出す
-    this.sendUpdateStatus('サーバー設定ファイルの保存中');
-    await saveWorldSettingsJson(this.world, this.cwdPath);
   }
 
   /** Eulaチェック(拒否した場合エラーを返す) */
@@ -321,28 +131,6 @@ class ServerRunner {
     return result;
   }
 
-  private constructWorld(additional: WorldAdditional): World {
-    const world = this.world;
-    return {
-      id: this.world.id,
-      name: world.name,
-      container: world.container,
-      version: world.version,
-      avater_path: world.avater_path,
-
-      using: world.using,
-      last_date: world.last_date,
-      last_user: world.last_user,
-      memory: world.memory,
-
-      properties: world.properties,
-      remote_pull: world.remote_pull,
-      remote_push: world.remote_push,
-      additional,
-      players: world.players,
-    };
-  }
-
   /** op/whitelist/propertiesの内容を読み込んでサーバー実行中の更新を反映 */
   private async updateAuthority(): Promise<void> {
     const { players, properties } = await foldSettings(this.cwdPath);
@@ -350,115 +138,69 @@ class ServerRunner {
     this.world.properties = properties;
   }
 
-  private async _runServer(): Promise<Failable<World>> {
-    const world = this.world;
-
+  async runServer(world: World): Promise<Failable<World>> {
     // ワールドが起動中の場合エラー
     if (world.using)
       return new WorldUsingError(
         `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
       );
 
-    // ワ－ルドパスが変更されていた場合、ディレクトリを移動
-    await this.changeLocation();
+    const javaArgs: string[] = [];
 
-    // プルを開始
-    const pulling = this.pull();
+    // JAVAのstdioのエンコードをutf-8に
+    javaArgs.push(...javaEncodingToUtf8());
 
-    this.setJavaEncoding();
+    // 実行メモリ量のJAVA引数
+    javaArgs.push(...(await getMemoryArguments(world.memory)));
 
-    this.setMamoryAmount();
+    // ユーザー定義JAVA引数
+    const additionalJavaArgument = await getAdditionalJavaArgument(world);
+    if (isFailure(additionalJavaArgument)) {
+      // TODO: エラーの伝達方法を変更
+      this.sendUpdateStatus(additionalJavaArgument.toString());
+    } else {
+      javaArgs.push(...additionalJavaArgument);
+    }
 
-    this.setAdditionalJavaArgument();
-
-    const server = await this.readyServerData();
+    // サーバーデータ準備
+    this.sendUpdateStatus(
+      `サーバーデータを準備中 ${world.version.id} (${world.version.type})`
+    );
+    const server = await readyVersion(world.version, this.cwdPath);
     // サーバーデータの用意ができなかった場合エラー
     if (isFailure(server)) return server;
 
-    const javaPath = await this.readyJavaRuntime(server.component);
+    // 実行javaを用意
+    this.sendUpdateStatus(`javaランタイムを準備中 (${server.component})`);
+    const javaPath = await readyJava(server.component, true);
     // 実行javaが用意できなかった場合エラー
     if (isFailure(javaPath)) return javaPath;
 
-    const pullResult = await this.awaitPull(pulling);
-    // pullに失敗した場合エラー
-    // TODO: PAT切れだった場合PATを更新してリトライ
-    if (isFailure(pullResult)) return pullResult;
+    // log4jの設定
+    this.sendUpdateStatus('log4jの引数を設定中');
+    const log4jarg = await getLog4jArg(this.cwdPath, this.world.version);
+    // log4jのファイルがダウンロードできなかった場合エラー
+    if (isFailure(log4jarg)) return log4jarg;
+    // log4j引数を実行時引数に追加
+    if (log4jarg) javaArgs.push(log4jarg);
 
-    await this.handleLog4j();
-
-    // datapack,mod,pluginのインストール
-    const [additional] = await installAdditionals(
-      world.additional,
-      this.cwdPath
-    );
-
-    await this.saveAndPush(true);
-
+    // Eulaの同意チェック
     const eulaResult = await this.checkEula(server, javaPath);
     if (isFailure(eulaResult)) return eulaResult;
 
+    // ワールド設定を展開
     await this.unrollWorldSettings();
 
     // サーバーのjarファイル参照を実行時引数に追加
-    this.args.push(...server.programArguments, '--nogui');
+    javaArgs.push(...server.programArguments, '--nogui');
 
+    // ワールド設定を展開
     const processResult = await this.awaitServerProcess(javaPath);
 
     // 権限を更新
     await this.updateAuthority();
 
     if (isFailure(processResult)) return processResult;
-
-    return this.constructWorld(additional);
-  }
-
-  /** ユーザー設定のJavaの実行時引数を反映する */
-  private setAdditionalJavaArgument(): Failable<undefined> {
-    const arg =
-      this.world.javaArguments ?? systemSettings.get('world').javaArguments;
-    if (arg === undefined) return;
-    const result = parseCommandLine(arg);
-    if (isFailure(result)) return result;
-    this.args.push(...result);
-  }
-
-  private async _saveWorldSettings(): Promise<Failable<World>> {
-    const world = this.world;
-
-    // ワールドが起動中の場合エラー
-    if (world.using)
-      return new WorldUsingError(
-        `world ${world.name} is running by ${world.last_user ?? '<annonymous>'}`
-      );
-
-    // ワ－ルドパスが変更されていた場合、ディレクトリを移動
-    await this.changeLocation();
-
-    // プルを開始
-    const pullResult = await this.awaitPull(this.pull());
-    // pullに失敗した場合エラー
-    // TODO: PAT切れだった場合PATを更新してリトライ
-    if (isFailure(pullResult)) return pullResult;
-
-    // datapack,mod,pluginのインストール
-    const [additional] = await installAdditionals(
-      world.additional,
-      this.cwdPath
-    );
-
-    return this.constructWorld(additional);
-  }
-
-  async runServer(): Promise<Failable<World>> {
-    const result = await this._runServer();
-    await this.pushOnNotUsing(result);
-    return result;
-  }
-
-  async saveWorldSettings(): Promise<Failable<World>> {
-    const result = await this._saveWorldSettings();
-    await this.pushOnNotUsing(result);
-    return result;
   }
 
   async runCommand(command: string) {
@@ -472,89 +214,4 @@ class ServerRunner {
       api.send.AddConsole(this.world.id, `/${command}`);
     }
   }
-
-  // 実行中のワールドの設定を取得
-  async getWorldSettings(): Promise<Failable<World>> {
-    if (this.stdin === undefined)
-      return new Error(`World ${this.world.id} is not in running`);
-
-    const { properties, players } = await foldSettings(this.cwdPath);
-    this.world.players = players;
-    this.world.properties = properties;
-    return this.world;
-  }
-
-  // 実行中のワールドの設定を更新 (現状使用していない)
-  async setWorldSettings(settings: FoldSettings): Promise<Failable<World>> {
-    if (this.stdin === undefined)
-      return new Error(`World ${this.world.id} is not in running`);
-
-    // server.propertiesの保存
-    await serverPropertiesHandler.save(this.cwdPath, settings.properties);
-
-    const diff = getPlayerSettingDiff(this.world.players, settings.players);
-
-    const promisses: Promise<any>[] = [];
-
-    // whitelist add
-    promisses.push(
-      ...diff.whitelist.append.map((uuid) =>
-        this.runCommand(`whitelist add ${uuid}`)
-      )
-    );
-
-    // whitelist remove
-    promisses.push(
-      ...diff.whitelist.remove.map((uuid) =>
-        this.runCommand(`whitelist remove ${uuid}`)
-      )
-    );
-
-    promisses.push(
-      ...diff.op.map(async (op) => {
-        if (op.after === 0) {
-          this.runCommand(`deop ${op.uuid}`);
-          return;
-        }
-        if (op.after !== 4) {
-          // 無理
-          return;
-        }
-        if (op.before === 0) {
-          this.runCommand(`op ${op.uuid}`);
-          return;
-        }
-        await this.runCommand(`deop ${op.uuid}`);
-        await this.runCommand(`op ${op.uuid}`);
-      })
-    );
-
-    await Promise.all(promisses);
-
-    if (diff.whitelist.remove.length > 0 || diff.whitelist.append.length > 0) {
-      await this.runCommand('whitelist reload');
-    }
-
-    // TODO: すべてのコマンドの実行が終了したことがわからないのでとりあえずこうしている
-    await sleep(5);
-
-    return this.getWorldSettings();
-  }
 }
-
-export const runServer = (world: WorldEdited) =>
-  new ServerRunner(world).runServer();
-
-export function saveWorldSettings(world: WorldEdited) {}
-
-export function runCommand(world: WorldID, command: string) {
-  ServerRunner.getServerRunner(world).runCommand(command);
-}
-
-export function getRunningWorld(world: WorldID) {
-  return ServerRunner.getServerRunner(world).getWorldSettings();
-}
-
-// export function updateRunningWorld(world: WorldID, settings: FoldSettings) {
-//   return ServerRunner.getServerRunner(world).setWorldSettings(settings);
-// }
