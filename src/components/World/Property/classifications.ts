@@ -21,7 +21,7 @@ export const propertyClasses: iPropertyClasses = {
     'motd',
     'enable-status',
   ],
-  'generater': [
+  'generator': [
     'level-type',
     'level-seed',
     'allow-nether',
