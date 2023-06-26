@@ -2,20 +2,20 @@ import Store from 'electron-store';
 import { DEFAULT_MEMORY, DEFAULT_WORLD_CONTAINER, mainPath } from '../const';
 import { SystemSettings } from 'src-electron/schema/system';
 import { fix } from 'src-electron/util/fix';
-import { defaultServerProperties } from '../settings/files/properties';
+import { objectFixer } from 'app/src-electron/util/detaFixer/fixer';
 
 export async function setSystemSettings(
   settings: SystemSettings
-): Promise<undefined> {
+): Promise<SystemSettings> {
   systemSettings.store = settings;
-  return undefined;
+  return settings;
 }
 
 export async function getSystemSettings(): Promise<SystemSettings> {
   return systemSettings.store;
 }
 
-export function fixSystemSettings() {
+function fixSystemSettings() {
   const store = systemSettings.store;
 
   //console.log(store);

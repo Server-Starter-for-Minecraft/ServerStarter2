@@ -24,6 +24,7 @@ import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';
 import { BrowserWindow } from 'electron';
 import { searchPlayer } from '../core/player/search';
+import { getStaticResoure } from '../core/resource';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -34,33 +35,30 @@ export const getBackListener = (
     OpenFolder: openFolder,
   },
   handle: {
-    RunServer: runServer,
-
-    DeleteWorld: deleteWorld,
-
-    PickDirectory: pickDirectory(windowGetter),
-
-    SaveWorldSettings: saveWorldSettings,
+    GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,
 
-    GetDefaultSettings: getDefaultSettings,
-    GetVersions: getVersions,
     GetWorldContainers: getWorldContainers,
     SetWorldContainers: setWorldContainers,
+
     GetWorldAbbrs: getWorldAbbrs,
+
     GetWorld: getWorld,
+    SetWorld: undefined,
+    NewWorld: undefined,
+    CreateWorld: undefined,
+    DeleteWorld: undefined,
 
-    ValidateNewWorldName: validateNewWorldName,
-
-    GetRunningWorld: getRunningWorld,
-
-    GetDefaultWorld: getDefaultWorld,
-    // UpdatetRunningWorld: updateRunningWorld,
+    RunServer: runServer,
 
     SearchPlayer: searchPlayer,
 
-    GenUUID: async () => genUUID(),
+    GetVersions: getVersions,
+
+    ValidateNewWorldName: validateNewWorldName,
+
+    PickDirectory: pickDirectory(windowGetter),
   },
 });
