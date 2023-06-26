@@ -6,5 +6,5 @@ import { enUSproperty } from "src/i18n/en-US/property";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
-  property:enUSHome
+  property:enUSproperty
 };

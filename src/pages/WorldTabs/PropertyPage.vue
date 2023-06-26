@@ -27,7 +27,7 @@ function resetAll() {
       <div class="row">
         <SsInput
           v-model="propertyStore.searchName"
-          label="プロパティを検索"
+          :label="$t('property.main.search')"
           class="q-py-md col"
           @clear="() => propertyStore.searchName = ''"
         />
@@ -35,7 +35,7 @@ function resetAll() {
         <q-btn
           dense
           icon="do_not_disturb_on_total_silence"
-          label="全て戻す"
+          :label="$t('property.main.resetAll')"
           color="red"
           class="q-my-lg q-ml-lg q-pa-sm"
           style="font-size: 1rem;"

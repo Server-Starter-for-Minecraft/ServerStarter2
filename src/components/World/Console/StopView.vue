@@ -10,7 +10,7 @@ const consoleStore = useConsoleStore()
     class="justify-center row fit"
   >
     <q-btn
-      label="サーバーを起動"
+      :label="$t('property.console.boot')"
       size="1rem"
       icon="play_arrow"
       color="primary"
