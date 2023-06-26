@@ -1,5 +1,5 @@
 import { StaticResouce } from '../schema/static';
-import * as server_properties from './world/settings/properties';
+import * as server_properties from './world/files/properties';
 
 export const staticResoure: StaticResouce = {
   properties: server_properties.annotations,

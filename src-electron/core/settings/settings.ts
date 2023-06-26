@@ -2,8 +2,8 @@ import { Path } from '../../util/path';
 import { saveWorldJson } from './worldJson';
 import { systemSettings } from '../stores/system';
 import { asyncMap } from 'src-electron/util/objmap';
-import { opsHandler } from '../world/settings/ops';
-import { whitelistHandler } from '../world/settings/whitelist';
+import { opsHandler } from '../world/files/ops';
+import { whitelistHandler } from '../world/files/whitelist';
 import {
   FoldSettings,
   SystemWorldSettings,
@@ -12,7 +12,7 @@ import {
 } from 'src-electron/schema/world';
 import { constructOpsAndWhitelist, constructPleyerSettings } from './players';
 import { orDefault } from 'app/src-electron/api/failable';
-import { serverPropertiesHandler } from '../world/settings/properties';
+import { serverPropertiesHandler } from '../world/files/properties';
 
 const handlers = [
   serverPropertiesHandler,

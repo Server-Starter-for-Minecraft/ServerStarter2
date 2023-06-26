@@ -3,7 +3,7 @@ import { Path } from '../util/path';
 import { MemorySettings } from '../schema/memory';
 import { WorldContainer } from '../schema/brands';
 import { ServerProperties } from '../schema/serverproperty';
-import * as server_properties from './world/settings/properties';
+import * as server_properties from './world/files/properties';
 import { objValueMap } from '../util/objmap';
 import { Locale } from '../schema/system';
 

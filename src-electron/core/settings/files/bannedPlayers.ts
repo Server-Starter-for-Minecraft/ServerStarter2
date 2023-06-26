@@ -1,4 +1,4 @@
-import { ServerSettingFile } from '../../world/settings/base';
+import { ServerSettingFile } from '../../world/files/base';
 
 export type BannedPlayer = {
   uuid: string;

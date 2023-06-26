@@ -6,11 +6,11 @@ import {
   WorldContainer,
   WorldName,
 } from 'app/src-electron/schema/brands';
-import { WorldSettings, serverJsonFile } from './settings/json';
-import { serverIconFile } from './settings/icon';
-import { serverPropertiesFile } from './settings/properties';
-import { Ops, serverOpsFile } from './settings/ops';
-import { Whitelist, serverWhitelistFile } from './settings/whitelist';
+import { WorldSettings, serverJsonFile } from './files/json';
+import { serverIconFile } from './files/icon';
+import { serverPropertiesFile } from './files/properties';
+import { Ops, serverOpsFile } from './files/ops';
+import { Whitelist, serverWhitelistFile } from './files/whitelist';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {

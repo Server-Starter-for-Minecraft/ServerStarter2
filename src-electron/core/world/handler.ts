@@ -18,7 +18,7 @@ import { WithError, withError } from 'app/src-electron/api/witherror';
 import { installAdditionals } from '../installer/installer';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
-import { WorldSettings, serverJsonFile } from './settings/json';
+import { WorldSettings, serverJsonFile } from './files/json';
 import { loadLocalFiles, saveLocalFiles } from './local';
 
 export class WorldHandlerError extends Error {}
