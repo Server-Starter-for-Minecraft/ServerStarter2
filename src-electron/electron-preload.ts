@@ -122,11 +122,7 @@ const api: FrontAPI = {
 
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 
-  invokeSearchPlayer: invoke('SearchPlayer'),
-
-  invokeGenUUID: invoke('GenUUID'),
-
-  invokeGetRunningWorld: invoke('GetRunningWorld'),
+  invokePickDirectory: invoke('PickDirectory'),
 
   invokeIWMTest: invoke('IWMTest'),
   onSMWTest: on('SMWTest'),

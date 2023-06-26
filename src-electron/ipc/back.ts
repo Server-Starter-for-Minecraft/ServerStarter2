@@ -8,19 +8,9 @@ import {
   saveWorldSettings,
 } from '../core/server/server';
 import { getVersions } from '../core/version/version';
-import {
-  deleteWorld,
-  getDefaultWorld,
-  getWorld,
-  getWorldAbbrs,
-} from '../core/world/world';
+import { getWorld, getWorldAbbrs, setWorld } from '../core/world/world';
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
-import {
-  getWorldContainers,
-  setWorldContainers,
-} from '../core/world/worldContainer';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
-import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';
 import { searchPlayer } from '../core/player/search';
 import { getStaticResoure } from '../core/resource';
@@ -44,7 +34,7 @@ export const getBackListener = (
     GetWorldAbbrs: getWorldAbbrs,
 
     GetWorld: getWorld,
-    SetWorld: undefined,
+    SetWorld: setWorld,
     NewWorld: undefined,
     CreateWorld: undefined,
     DeleteWorld: undefined,

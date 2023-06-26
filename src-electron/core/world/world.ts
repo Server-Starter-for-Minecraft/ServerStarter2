@@ -6,23 +6,26 @@ import {
   runOnSuccess,
 } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
-import { asyncMap, objMap } from '../../util/objmap';
+import { asyncMap } from '../../util/objmap';
 import { getWorldJsonPath, loadWorldJson } from '../settings/worldJson';
 import { BytesData } from '../../util/bytesData';
 import { LEVEL_NAME } from '../const';
 import { getRemoteWorld } from '../remote/remote';
 import { worldContainerToPath } from './worldContainer';
 import { worldSettingsToWorld } from '../settings/converter';
-import { World, WorldAbbr, WorldID } from 'src-electron/schema/world';
+import {
+  World,
+  WorldAbbr,
+  WorldEdited,
+  WorldID,
+} from 'src-electron/schema/world';
 import { genUUID } from 'src-electron/tools/uuid';
 import { WorldLocationMap, wroldLocationToPath } from './worldMap';
 import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
-import {
-  ServerProperties,
-  ServerPropertiesMap,
-} from 'app/src-electron/schema/serverproperty';
+import { WorldHandler } from './handler';
+import { WithError, withError } from 'app/src-electron/api/witherror';
 
 export async function deleteWorld(worldID: WorldID) {
   const cwd = runOnSuccess(wroldLocationToPath)(WorldLocationMap.get(worldID));
@@ -49,6 +52,7 @@ export async function getWorldAbbr(
   path: Path,
   worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
+  console.log(path.path);
   if (!path.isDirectory()) return new Error(`${path.str()} is not directory.`);
   const jsonpath = getWorldJsonPath(path);
 
@@ -63,56 +67,27 @@ export async function getWorldAbbr(
     container,
   };
   WorldLocationMap.set(id, { name, container });
+
+  // WorldHandlerに登録
+  WorldHandler.register(id, name, container);
+
   return result;
 }
 
+/** WorldIDからワールドデータ取得 (リモートが存在する場合リモートから読み込む) */
 export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
-  const location = WorldLocationMap.get(worldID);
-  if (isFailure(location)) return location;
-  const { name, container } = location;
-
-  const cwd = wroldLocationToPath(location);
-  if (isFailure(cwd)) return cwd;
-
-  const settings = await loadWorldJson(cwd);
-  if (isFailure(settings)) return settings;
-
-  // リモートが存在する場合リモートからデータを取得
-  if (settings.remote !== undefined) {
-    const result = await getRemoteWorld(worldID, settings.remote);
-    return result;
-  }
-
-  // リモートが存在しない場合ローカルのデータを使用
-
-  // アバターの読み込み
-  const avater_path = await getIconURI(cwd);
-
-  settings.properties ?? {};
-  const world = worldSettingsToWorld({
-    id: worldID,
-    name,
-    container,
-    avater_path,
-    settings,
-  });
-  return world;
+  const handler = WorldHandler.get(worldID);
+  if (isFailure(handler)) return handler;
+  return await handler.load();
 }
 
-async function getIconURI(cwd: Path) {
-  let iconURI: string | undefined = undefined;
-  const iconpath = cwd.child(LEVEL_NAME + '/icon.png');
-  if (iconpath.exists()) {
-    const data = await BytesData.fromPath(iconpath);
-    if (isSuccess(data)) {
-      iconURI = await data.encodeURI('image/png');
-    }
-  }
-  return iconURI;
-}
-
-function propertiesToMap(properties: ServerProperties): ServerPropertiesMap {
-  return objMap(properties, (k, v) => [k, v.value]);
+/** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
+export async function setWorld(
+  world: WorldEdited
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(world.id);
+  if (isFailure(handler)) return withError(handler);
+  return await handler.save(world);
 }
 
 /**
@@ -137,13 +112,12 @@ export async function getDefaultWorld() {
     id: genUUID() as WorldID,
     version: latestRelease,
     using: false,
-    remote_pull: undefined,
-    remote_push: undefined,
+    remote: undefined,
     last_date: undefined,
     last_user: undefined,
     memory: systemSettings.world.memory,
     javaArguments: systemSettings.world.javaArguments,
-    properties: propertiesToMap(systemSettings.world.properties),
+    properties: systemSettings.world.properties,
     players: [],
     additional: {},
   };

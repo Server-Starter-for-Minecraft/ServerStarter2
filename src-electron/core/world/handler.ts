@@ -19,7 +19,7 @@ import { installAdditionals } from '../installer/installer';
 export class WorldHandlerError extends Error {}
 
 export class WorldHandler {
-  static worldPathMap: Record<WorldID, WorldHandler> = {};
+  private static worldPathMap: Record<WorldID, WorldHandler> = {};
 
   name: WorldName;
   container: WorldContainer;
@@ -30,9 +30,14 @@ export class WorldHandler {
     this.container = container;
   }
 
-  static get(id: WorldID, name: WorldName, container: WorldContainer) {
+  /** WorldAbbrができた段階でここに登録しておく */
+  static register(id: WorldID, name: WorldName, container: WorldContainer) {
+    WorldHandler.worldPathMap[id] = new WorldHandler(id, name, container);
+  }
+
+  static get(id: WorldID): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldPathMap)) {
-      WorldHandler.worldPathMap[id] = new WorldHandler(id, name, container);
+      return new Error(`missing world data is:${id}`);
     }
     return WorldHandler.worldPathMap[id];
   }
@@ -144,7 +149,7 @@ export class WorldHandler {
   }
 
   /** サーバーのデータをロード */
-  async load() {
+  async load(): Promise<Failable<World>> {
     const savePath = this.gatSavePath();
 
     // ローカルに保存されたワールド設定を読み込む
