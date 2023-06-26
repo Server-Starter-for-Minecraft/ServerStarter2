@@ -1,6 +1,6 @@
-import { ServerPropertiesMap } from '../../schema/serverproperty';
+import { ServerProperties } from '../../schema/serverproperty';
 
-export const dummyServerPropertiesMap: ServerPropertiesMap = {
+export const dummyServerPropertiesMap: ServerProperties = {
   'allow-flight': false,
 
   'allow-nether': true,

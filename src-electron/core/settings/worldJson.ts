@@ -27,7 +27,7 @@ import { MemorySettings } from 'src-electron/schema/memory';
 import { OpSetting, Player, PlayerSetting } from 'src-electron/schema/player';
 import { systemSettings } from '../stores/system';
 import { GithubRemote, Remote } from 'src-electron/schema/remote';
-import { ServerPropertiesMap } from 'src-electron/schema/serverproperty';
+import { ServerProperties } from 'src-electron/schema/serverproperty';
 
 export const serverSettingsFileName = 'server_settings.json';
 
@@ -189,7 +189,7 @@ const githubRemoteFixer = (): Fixer<GithubRemote | FAIL> =>
 
 const remoteFixer = (): Fixer<Remote | FAIL> => githubRemoteFixer();
 
-const serverPropertiesMapFixer = (): Fixer<ServerPropertiesMap> =>
+const serverPropertiesMapFixer = (): Fixer<ServerProperties> =>
   recordFixer<string, string | number | boolean>(
     unionFixer(stringFixer(), numberFixer(), booleanFixer()),
     true

@@ -1,212 +1,204 @@
-import {
-  ServerProperties,
-  ServerPropertiesMap,
-  ServerProperty,
-} from 'src-electron/schema/serverproperty';
 import { objEach, objMap } from 'src-electron/util/objmap';
 import { ServerSettingHandler } from './base';
 import { isFailure } from 'src-electron/api/failable';
+import {
+  ServerProperties,
+  ServerPropertiesAnnotation,
+} from 'app/src-electron/schema/serverproperty';
 
 // TODO:stringの値のescape/unescape
 
 const PORT_MAX = 2 ** 16 - 2;
+export namespace server_properties {
+  export const annotations: ServerPropertiesAnnotation = {
+    'allow-flight': { type: 'boolean', default: false },
 
-export const defaultServerProperties: ServerProperties = {
-  'allow-flight': { type: 'boolean', value: false },
+    'allow-nether': { type: 'boolean', default: true },
 
-  'allow-nether': { type: 'boolean', value: true },
+    'broadcast-console-to-ops': { type: 'boolean', default: true },
 
-  'broadcast-console-to-ops': { type: 'boolean', value: true },
+    'broadcast-rcon-to-ops': { type: 'boolean', default: true },
 
-  'broadcast-rcon-to-ops': { type: 'boolean', value: true },
+    difficulty: {
+      type: 'string',
+      default: 'easy',
+      enum: ['peaceful', 'easy', 'normal', 'hard'],
+    },
 
-  difficulty: {
-    type: 'string',
-    value: 'easy',
-    enum: ['peaceful', 'easy', 'normal', 'hard'],
-  },
+    'enable-command-block': { type: 'boolean', default: false },
 
-  'enable-command-block': { type: 'boolean', value: false },
+    'enable-jmx-monitoring': { type: 'boolean', default: false },
 
-  'enable-jmx-monitoring': { type: 'boolean', value: false },
+    'enable-rcon': { type: 'boolean', default: false },
 
-  'enable-rcon': { type: 'boolean', value: false },
+    'enable-status': { type: 'boolean', default: true },
 
-  'enable-status': { type: 'boolean', value: true },
+    'enable-query': { type: 'boolean', default: false },
 
-  'enable-query': { type: 'boolean', value: false },
+    'enforce-secure-profile': { type: 'boolean', default: true },
 
-  'enforce-secure-profile': { type: 'boolean', value: true },
+    'enforce-whitelist': { type: 'boolean', default: false },
 
-  'enforce-whitelist': { type: 'boolean', value: false },
+    'entity-broadcast-range-percentage': {
+      type: 'number',
+      default: 100,
+      min: 0,
+      max: 500,
+    },
 
-  'entity-broadcast-range-percentage': {
-    type: 'number',
-    value: 100,
-    min: 0,
-    max: 500,
-  },
+    'force-gamemode': { type: 'boolean', default: false },
 
-  'force-gamemode': { type: 'boolean', value: false },
+    'function-permission-level': { type: 'number', default: 2, min: 1, max: 4 },
 
-  'function-permission-level': { type: 'number', value: 2, min: 1, max: 4 },
+    gamemode: {
+      type: 'string',
+      default: 'survival',
+      enum: ['survival', 'creative', 'adventure', 'spectator'],
+    },
 
-  gamemode: {
-    type: 'string',
-    value: 'survival',
-    enum: ['survival', 'creative', 'adventure', 'spectator'],
-  },
+    'generate-structures': { type: 'boolean', default: true },
 
-  'generate-structures': { type: 'boolean', value: true },
+    'generator-settings': { type: 'string', default: '{}' },
 
-  'generator-settings': { type: 'string', value: '{}' },
+    hardcore: { type: 'boolean', default: false },
 
-  hardcore: { type: 'boolean', value: false },
+    'hide-online-players': { type: 'boolean', default: false },
 
-  'hide-online-players': { type: 'boolean', value: false },
+    'initial-disabled-packs': { type: 'string', default: '' },
 
-  'initial-disabled-packs': { type: 'string', value: '' },
+    'initial-enabled-packs': { type: 'string', default: 'vanilla' },
 
-  'initial-enabled-packs': { type: 'string', value: 'vanilla' },
+    // 自動設定のため削除
+    // 'level-name': { type: 'string', default: '' },
 
-  // 自動設定のため削除
-  // 'level-name': { type: 'string', value: '' },
+    'level-seed': { type: 'string', default: '' },
 
-  'level-seed': { type: 'string', value: '' },
+    'level-type': {
+      type: 'string',
+      default: 'default',
+      enum: ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
+    },
 
-  'level-type': {
-    type: 'string',
-    value: 'default',
-    enum: ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
-  },
+    // legacy?
+    'max-build-height': { type: 'number', default: 256, step: 8 },
 
-  // legacy?
-  'max-build-height': { type: 'number', value: 256, step: 8 },
+    'max-chained-neighbor-updates': { type: 'number', default: 1000000 },
 
-  'max-chained-neighbor-updates': { type: 'number', value: 1000000 },
+    'max-players': { type: 'number', default: 20, min: 0, max: 2 ** 31 - 1 },
 
-  'max-players': { type: 'number', value: 20, min: 0, max: 2 ** 31 - 1 },
+    'max-tick-time': {
+      type: 'number',
+      default: 60000,
+      min: 0,
+      max: 2 ** 63 - 1,
+    },
 
-  'max-tick-time': { type: 'number', value: 60000, min: 0, max: 2 ** 63 - 1 },
+    'max-world-size': {
+      type: 'number',
+      default: 29999984,
+      min: 1,
+      max: 29999984,
+    },
 
-  'max-world-size': { type: 'number', value: 29999984, min: 1, max: 29999984 },
+    motd: { type: 'string', default: 'A Minecraft Server' },
 
-  motd: { type: 'string', value: 'A Minecraft Server' },
+    'network-compression-threshold': { type: 'number', default: 256, min: -1 },
 
-  'network-compression-threshold': { type: 'number', value: 256, min: -1 },
+    'online-mode': { type: 'boolean', default: true },
 
-  'online-mode': { type: 'boolean', value: true },
+    'op-permission-level': { type: 'number', default: 4, min: 1, max: 4 },
 
-  'op-permission-level': { type: 'number', value: 4, min: 1, max: 4 },
+    'player-idle-timeout': { type: 'number', default: 0, min: 0 },
 
-  'player-idle-timeout': { type: 'number', value: 0, min: 0 },
+    'prevent-proxy-connections': { type: 'boolean', default: false },
 
-  'prevent-proxy-connections': { type: 'boolean', value: false },
+    'previews-chat': { type: 'boolean', default: false },
 
-  'previews-chat': { type: 'boolean', value: false },
+    pvp: { type: 'boolean', default: true },
 
-  pvp: { type: 'boolean', value: true },
+    'query.port': { type: 'number', default: 25565, min: 1, max: PORT_MAX },
 
-  'query.port': { type: 'number', value: 25565, min: 1, max: PORT_MAX },
+    'rate-limit': { type: 'number', default: 0, min: 0 },
 
-  'rate-limit': { type: 'number', value: 0, min: 0 },
+    'rcon.password': { type: 'string', default: '' },
 
-  'rcon.password': { type: 'string', value: '' },
+    'rcon.port': { type: 'number', default: 25575, min: 1, max: PORT_MAX },
 
-  'rcon.port': { type: 'number', value: 25575, min: 1, max: PORT_MAX },
+    'resource-pack': { type: 'string', default: '' },
 
-  'resource-pack': { type: 'string', value: '' },
+    'resource-pack-prompt': { type: 'string', default: '' },
 
-  'resource-pack-prompt': { type: 'string', value: '' },
+    'resource-pack-sha1': { type: 'string', default: '' },
 
-  'resource-pack-sha1': { type: 'string', value: '' },
+    'require-resource-pack': { type: 'boolean', default: false },
 
-  'require-resource-pack': { type: 'boolean', value: false },
+    'server-ip': { type: 'string', default: '' },
 
-  'server-ip': { type: 'string', value: '' },
+    'server-port': { type: 'number', default: 25565, min: 1, max: PORT_MAX },
 
-  'server-port': { type: 'number', value: 25565, min: 1, max: PORT_MAX },
+    'simulation-distance': { type: 'number', default: 10, min: 3, max: 32 },
 
-  'simulation-distance': { type: 'number', value: 10, min: 3, max: 32 },
+    'snooper-enabled': { type: 'boolean', default: true },
 
-  'snooper-enabled': { type: 'boolean', value: true },
+    'spawn-animals': { type: 'boolean', default: true },
 
-  'spawn-animals': { type: 'boolean', value: true },
+    'spawn-monsters': { type: 'boolean', default: true },
 
-  'spawn-monsters': { type: 'boolean', value: true },
+    'spawn-npcs': { type: 'boolean', default: true },
 
-  'spawn-npcs': { type: 'boolean', value: true },
+    'spawn-protection': { type: 'number', default: 16, min: 0 },
 
-  'spawn-protection': { type: 'number', value: 16, min: 0 },
+    'sync-chunk-writes': { type: 'boolean', default: true },
 
-  'sync-chunk-writes': { type: 'boolean', value: true },
+    'text-filtering-config': { type: 'string', default: '' },
 
-  'text-filtering-config': { type: 'string', value: '' },
+    'use-native-transport': { type: 'boolean', default: true },
 
-  'use-native-transport': { type: 'boolean', value: true },
+    'view-distance': { type: 'number', default: 10, min: 2, max: 32 },
 
-  'view-distance': { type: 'number', value: 10, min: 2, max: 32 },
+    'white-list': { type: 'boolean', default: false },
+  };
 
-  'white-list': { type: 'boolean', value: false },
-};
+  /** server.propertiesの中身(string)をパースする */
+  export const parse = (text: string) => {
+    const propertiy: ServerProperties = {};
+    text.split('\n').forEach((v) => {
+      const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
+      if (!match) return;
 
-// {value:
-// typ} Keys<T, U> = {
-//   [K in keyof T]: T[K] extends U | undefined ? K : never;
-// }[keyof T];
+      const [, key, value] = match;
 
-// type SetKeys<T, U> = Set<Keys<T, U>>;
+      const defult = annotations[key];
 
-export const parseServerPropertiesMap = (text: string) => {
-  const propertiy: ServerPropertiesMap = {};
-  text.split('\n').forEach((v) => {
-    const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
-    if (!match) return;
+      let prop: string | number | boolean;
 
-    const [, key, value] = match;
-
-    const defult = defaultServerProperties[key];
-
-    let prop: string | number | boolean;
-
-    if (defult !== undefined) {
-      // 既知のサーバープロパティの場合
-      switch (defult.type) {
-        case 'string':
-          prop = value;
-          break;
-        case 'boolean':
-          prop = value.toLowerCase() === 'true';
-          break;
-        case 'number':
-          prop = Number.parseInt(value);
-          break;
+      if (defult !== undefined) {
+        // 既知のサーバープロパティの場合
+        switch (defult.type) {
+          case 'string':
+            prop = value;
+            break;
+          case 'boolean':
+            prop = value.toLowerCase() === 'true';
+            break;
+          case 'number':
+            prop = Number.parseInt(value);
+            break;
+        }
+      } else {
+        // 未知のサーバープロパティの場合stringとして扱う
+        prop = value;
       }
-    } else {
-      // 未知のサーバープロパティの場合stringとして扱う
-      prop = value;
-    }
+      propertiy[key] = prop;
+    });
+    return propertiy;
+  };
 
-    propertiy[key] = prop;
-  });
-  return propertiy;
-};
-
-export const stringifyServerPropertiesMap = (
-  properties: ServerPropertiesMap
-) => {
-  return Object.entries(properties)
-    .map(([k, v]) => `${k}=${v}`)
-    .join('\n');
-};
-
-export function mergeServerProperties(
-  inferior: ServerProperties,
-  superior: ServerProperties
-) {
-  const result = objMap(inferior, (key, value) => [key, { ...value }]);
-  objEach(superior, (key, value) => (result[key] = { ...value }));
-  return result;
+  export const stringify = (properties: ServerProperties) => {
+    return Object.entries(properties)
+      .map(([k, v]) => `${k}=${v}`)
+      .join('\n');
+  };
 }
 
 const FILENAME = 'server.properties';
@@ -214,19 +206,18 @@ const FILENAME = 'server.properties';
 const MESSAGE =
   '"このファイルは使用されません。サーバープロパティの書き換えはServerStarter本体から行ってください。"';
 
-export const serverPropertiesHandler: ServerSettingHandler<ServerPropertiesMap> =
-  {
-    async load(cwdPath) {
-      const text = await cwdPath.child(FILENAME).readText();
-      if (isFailure(text)) return text;
-      return parseServerPropertiesMap(text);
-    },
-    save(cwdPath, value) {
-      return cwdPath
-        .child(FILENAME)
-        .writeText(stringifyServerPropertiesMap(value));
-    },
-    remove(cwdPath) {
-      return cwdPath.child(FILENAME).writeText(MESSAGE);
-    },
-  };
+export const serverPropertiesHandler: ServerSettingHandler<ServerProperties> = {
+  async load(cwdPath) {
+    const text = await cwdPath.child(FILENAME).readText();
+    if (isFailure(text)) return text;
+    return server_properties.parse(text);
+  },
+  save(cwdPath, value) {
+    return cwdPath
+      .child(FILENAME)
+      .writeText(server_properties.stringify(value));
+  },
+  remove(cwdPath) {
+    return cwdPath.child(FILENAME).writeText(MESSAGE);
+  },
+};
