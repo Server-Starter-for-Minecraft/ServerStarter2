@@ -3,58 +3,6 @@ import { propertyClasses } from 'src/components/World/Property/classifications';
 import { useSystemStore } from './SystemStore';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 
-// TODO: 将来的にnameはclassifications.tsから取得し、labelはi18nからnameをkeyとして取得
-const groupNames = [
-  {
-    name: 'base',
-    label: '基本設定'
-  },
-  {
-    name: 'player',
-    label: 'プレイヤー'
-  },
-  {
-    name: 'server',
-    label: 'サーバー'
-  },
-  {
-    name: 'generater',
-    label: 'ワールド生成'
-  },
-  {
-    name: 'spawning',
-    label: 'ワールドスポーン'
-  },
-  {
-    name: 'world',
-    label: 'ワールド本体'
-  },
-  {
-    name: 'network',
-    label: 'ネットワーク'
-  },
-  {
-    name: 'rcon-query',
-    label: 'RCON / Query'
-  },
-  {
-    name: 'command',
-    label: 'コマンド'
-  },
-  {
-    name: 'resourcepack',
-    label: 'リソースパック'
-  },
-  {
-    name: 'security',
-    label: 'セキュリティ'
-  },
-  {
-    name: 'other',
-    label: 'その他'
-  }
-]
-
 export const usePropertyStore = defineStore('propertyStore', {
   state: () => {
     return {
@@ -81,8 +29,8 @@ export const usePropertyStore = defineStore('propertyStore', {
      * Property設定の左側にあるグループ一覧
      */
     propertyTabs() {
-      return groupNames.filter(
-        g => this.searchProperties(g.name).length !== 0
+      return Object.keys(propertyClasses).filter(
+        gKey => this.searchProperties(gKey).length !== 0
       )
     },
     /**
@@ -91,12 +39,12 @@ export const usePropertyStore = defineStore('propertyStore', {
     selectPropertyTab(groupName: string) {
       const groups = this.propertyTabs()
 
-      if (groups.map(g => g.name).includes(this.selectTab)) {
+      if (groups.includes(this.selectTab)) {
         return this.selectTab === groupName
       }
       else {
-        this.selectTab = groups[0].name
-        return this.selectTab === groups[0].name
+        this.selectTab = groups[0]
+        return this.selectTab === groups[0]
       }
     }
   }
