@@ -45,18 +45,18 @@ export async function getWorldAbbr(
 
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 
-  const id = genUUID() as WorldID;
   const name = path.basename() as WorldName;
   const container = worldContainer as WorldContainer;
+
+  // WorldHandlerに登録
+  const id = WorldHandler.register(name, container);
+
   const result: WorldAbbr = {
     id,
     name,
     container,
   };
   WorldLocationMap.set(id, { name, container });
-
-  // WorldHandlerに登録
-  WorldHandler.register(id, name, container);
 
   return result;
 }
@@ -95,10 +95,16 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     return withError(new Error('Assertion: This error cannot occur'));
   }
 
+  const container = systemSettings.container.default;
+  const name = await getDefaultWorldName(container);
+
+  // WorldHandlerに登録
+  const id = WorldHandler.register(name, container);
+
   const world: World = {
-    name: await getDefaultWorldName(systemSettings.container.default),
-    container: systemSettings.container.default,
-    id: genUUID() as WorldID,
+    name,
+    container,
+    id,
     version: latestRelease,
     using: false,
     remote: undefined,
@@ -110,9 +116,6 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     players: [],
     additional: {},
   };
-
-  // WorldHandlerに登録
-  WorldHandler.register(world.id, world.name, world.container);
 
   return withError(world);
 }
@@ -152,7 +155,7 @@ export async function deleteWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<undefined>>> {
   const handler = WorldHandler.get(worldID);
-  console.log(handler)
+  console.log(handler);
   if (isFailure(handler)) return withError(handler);
   return await handler.delete();
 }

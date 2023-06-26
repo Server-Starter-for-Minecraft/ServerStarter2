@@ -20,6 +20,7 @@ import { Remote } from 'app/src-electron/schema/remote';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { installAdditionals } from '../installer/installer';
 import { validateNewWorldName } from './name';
+import { genUUID } from 'app/src-electron/tools/uuid';
 
 export class WorldHandlerError extends Error {}
 
@@ -35,9 +36,18 @@ export class WorldHandler {
     this.container = container;
   }
 
-  /** WorldAbbrができた段階でここに登録しておく */
-  static register(id: WorldID, name: WorldName, container: WorldContainer) {
+  /** WorldAbbrができた段階でここに登録し、idを生成 */
+  static register(name: WorldName, container: WorldContainer): WorldID {
+    const registered = Object.entries(WorldHandler.worldPathMap).find(
+      ([, value]) => value.container == container && value.name == name
+    );
+    // 既に登録済みの場合登録されたidを返す
+    if (registered !== undefined) {
+      return registered[0] as WorldID;
+    }
+    const id = genUUID() as WorldID;
     WorldHandler.worldPathMap[id] = new WorldHandler(id, name, container);
+    return id;
   }
 
   static get(id: WorldID): Failable<WorldHandler> {
