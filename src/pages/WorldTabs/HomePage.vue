@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useDialogStore } from 'src/stores/DialogStore';
+import { isFailure } from 'app/src-electron/api/failable';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
-import { isFailure } from 'app/src-electron/api/failable';
-import { deleteWorld } from 'app/src-electron/core/world/world';
-import { dialog } from 'electron';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 const sysStore = useSystemStore()
 const dialogStore = useDialogStore()
+const { t } = useI18n()
 
 const customWorldPath = ref(null)
-const soloWorldName = ref('個人ワールドを選択')
+const soloWorldName = ref(t('home.useWorld.solo'))
 const showSoloWorld = ref(false)
 
 /**
