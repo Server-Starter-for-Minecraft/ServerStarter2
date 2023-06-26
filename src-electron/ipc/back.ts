@@ -14,6 +14,7 @@ import {
   getWorldAbbrs,
   setWorld,
   createWorld,
+  deleteWorld,
 } from '../core/world/world';
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
@@ -43,7 +44,7 @@ export const getBackListener = (
     SetWorld: setWorld,
     NewWorld: newWorld,
     CreateWorld: createWorld,
-    DeleteWorld: undefined,
+    DeleteWorld: deleteWorld,
 
     RunServer: runServer,
 

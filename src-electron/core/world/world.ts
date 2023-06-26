@@ -25,17 +25,6 @@ import { WorldHandler } from './handler';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { validateNewWorldName } from './name';
 
-export async function deleteWorld(worldID: WorldID) {
-  const cwd = runOnSuccess(wroldLocationToPath)(WorldLocationMap.get(worldID));
-  if (isFailure(cwd)) return cwd;
-
-  const result = await failabilify(cwd.remove)();
-  if (isFailure(result)) return result;
-
-  WorldLocationMap.delete(worldID);
-  return;
-}
-
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
 ): Promise<WithError<Failable<WorldAbbr[]>>> {
@@ -137,9 +126,9 @@ async function getDefaultWorldName(container: WorldContainer) {
   while (isFailure(result)) {
     worldName = `${NEW_WORLD_NAME}_${i}`;
     i += 1;
-    console.log(99,result,worldName);
+    console.log(99, result, worldName);
     result = await validateNewWorldName(container, worldName);
-    console.log(100,result);
+    console.log(100, result);
   }
   return result;
 }
@@ -154,4 +143,16 @@ export async function createWorld(
   const handler = WorldHandler.get(world.id);
   if (isFailure(handler)) return withError(handler);
   return await handler.create(world);
+}
+
+/**
+ * ワールドデータを削除する
+ */
+export async function deleteWorld(
+  worldID: WorldID
+): Promise<WithError<Failable<undefined>>> {
+  const handler = WorldHandler.get(worldID);
+  console.log(handler)
+  if (isFailure(handler)) return withError(handler);
+  return await handler.delete();
 }

@@ -8,7 +8,11 @@ import {
 import { pullRemoteWorld } from '../remote/remote';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { worldContainerToPath } from './worldContainer';
-import { Failable, isFailure } from 'app/src-electron/api/failable';
+import {
+  Failable,
+  failabilify,
+  isFailure,
+} from 'app/src-electron/api/failable';
 import { loadWorldJson, saveWorldJson } from '../settings/worldJson';
 import { getIconURI, setIconURI } from './icon';
 import { worldSettingsToWorld } from '../settings/converter';
@@ -244,6 +248,15 @@ export class WorldHandler {
     await saveWorldJson(savePath, settings);
 
     return withError(resultWorld, errors);
+  }
+
+  async delete(): Promise<WithError<Failable<undefined>>> {
+    console.log('THIS IS PATH', this.gatSavePath().path);
+    const result = await failabilify(() => this.gatSavePath().remove(true))();
+    console.log('THIS IS RESULT', result);
+    if (isFailure(result)) return withError(result);
+    delete WorldHandler.worldPathMap[this.id];
+    return withError(undefined);
   }
 }
 

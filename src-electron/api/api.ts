@@ -98,7 +98,7 @@ export interface API extends IAPI {
     /** Worldを生成 実際にディレクトリを生成し、リモートがある場合リモートも生成する */
     CreateWorld: (world: WorldEdited) => Promise<WithError<Failable<World>>>;
     /** Worldを削除 リモートがある場合でもリモートは削除しない */
-    DeleteWorld: (world: WorldID) => Promise<WithError<Failable<void>>>;
+    DeleteWorld: (world: WorldID) => Promise<WithError<Failable<undefined>>>;
 
     /** サーバーを起動 */
     RunServer: (world: WorldID) => Promise<WithError<Failable<World>>>;
