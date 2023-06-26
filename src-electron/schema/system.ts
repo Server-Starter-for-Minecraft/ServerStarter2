@@ -1,4 +1,4 @@
-import { ImageURI, WorldContainer } from './brands';
+import { ImageURI, PlayerUUID, WorldContainer } from './brands';
 import { Player, PlayerGroup } from './player';
 import { GithubRemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
@@ -58,7 +58,7 @@ export type WorldContainers = {
 
 export type SystemPlayerSetting = {
   groups: PlayerGroup[];
-  players: Player[];
+  players: PlayerUUID[];
 };
 
 export type SystemRemoteSetting = {

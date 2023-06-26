@@ -108,8 +108,15 @@ export interface API extends IAPI {
     /** サーバーを起動 */
     RunServer: (world: WorldID) => Promise<WithError<Failable<World>>>;
 
-    /** プレイヤーを名前またはUUIDで検索する(完全一致のみ) */
-    SearchPlayer: (nameOrUuid: string) => Promise<WithError<Failable<Player>>>;
+    /**
+     * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
+     * 検索したことのあるデータの取得は高速
+     * 注:プレイヤーのスキンを得る唯一の方法
+     */
+    GetPlayer: (
+      nameOrUuid: string,
+      mode: 'uuid' | 'name' | 'auto'
+    ) => Promise<WithError<Failable<Player>>>;
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (
