@@ -2,6 +2,7 @@
 // so you can safely delete all default props below
 
 export const japroperty = {
+  init: 'ServerStarter2を起動中',
   main:{
     search: 'プロパティを検索',
     resetAll: '全て戻す'
@@ -24,7 +25,12 @@ export const japroperty = {
   console:{
     boot: 'サーバーを起動',
   },
-
+  player:{
+    search: 'プレイヤーを検索',
+    registeredPlayer: '追加済みプレイヤー',
+    groupList: 'グループ一覧',
+    join: '登録済みのプレイヤーのみ参加可能'
+  },
   levelseed: 'ワールドのシード値',
 
 };

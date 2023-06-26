@@ -1,4 +1,5 @@
 export const enUSproperty = {
+  init: 'Booting ServerStarter2',
   main:{
     search: 'search properties',
     resetAll: 'reset all'
@@ -20,6 +21,12 @@ export const enUSproperty = {
   },
   console:{
     boot: 'boot server',
+  },
+  player:{
+    search: 'search players',
+    registeredPlayer: 'registered player',
+    groupList: 'group list',
+    join: 'only registered player'
   },
   levelseed: 'ワールドのシード値',
 };
