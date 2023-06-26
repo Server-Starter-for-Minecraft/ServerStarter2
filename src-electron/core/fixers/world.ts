@@ -28,7 +28,7 @@ import { fixVersion } from './version';
 import { fixRemote } from './remote';
 import { fixPlayer, fixPlayerSetting } from './player';
 import { fixMemorySettings } from './memory';
-import { DEFAULT_MEMORY } from '../const';
+import { DEFAULT_MEMORY, DEFAULT_SERVER_PROPERTIES } from '../const';
 import { fixServerProperties } from './serverproperty';
 import { fixFileData, fixFileOrNewData, fixNewData } from './filedata';
 
@@ -198,11 +198,11 @@ export const fixSystemWorldSettings = objectFixer<SystemWorldSettings>(
     /** Javaの実行時引数 */
     javaArguments: optionalFixer(stringFixer()),
 
-    memory: fixMemorySettings,
+    memory: defaultFixer(fixMemorySettings, DEFAULT_MEMORY),
 
-    properties: fixServerProperties,
+    properties: defaultFixer(fixServerProperties, DEFAULT_SERVER_PROPERTIES),
   },
-  false
+  true
 );
 
 /** サーバーCWD直下の設定系ファイルの情報 */

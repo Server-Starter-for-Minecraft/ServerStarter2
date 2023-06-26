@@ -2,6 +2,9 @@ import { app } from 'electron';
 import { Path } from '../util/path';
 import { MemorySettings } from '../schema/memory';
 import { WorldContainer } from '../schema/brands';
+import { ServerProperties } from '../schema/serverproperty';
+import { server_properties } from './settings/files/properties';
+import { objMap, objValueMap } from '../util/objmap';
 
 const userDataPath = (
   process.env.DEBUGGING || !app
@@ -28,6 +31,11 @@ export const DEFAULT_MEMORY: MemorySettings = {
   size: 2,
   unit: 'GB',
 } as const;
+
+export const DEFAULT_SERVER_PROPERTIES: ServerProperties = objValueMap(
+  server_properties.annotations,
+  (x) => x.default
+);
 
 export const DEFAULT_WORLD_CONTAINER = 'servers' as WorldContainer;
 
