@@ -6,6 +6,7 @@ import {
   WorldName,
 } from 'app/src-electron/schema/brands';
 import {
+  FAIL,
   Fixer,
   regexFixer,
   stringFixer,
@@ -22,7 +23,7 @@ export const fixWorldContainer = stringFixer<WorldContainer>();
 export const fixWorldName = stringFixer<WorldName>();
 
 /** プレイヤーのUUID文字列 */
-export const fixPlayerUUID = stringFixer<PlayerUUID>();
+export const fixPlayerUUID = fixUUID as Fixer<PlayerUUID | FAIL>;
 
 /** 画像のuri文字列 <img src={ここに挿入可能}> */
 export const fixImageURI = stringFixer<ImageURI>();

@@ -22,10 +22,10 @@ import { WorldContainer } from 'app/src-electron/schema/brands';
 import { fixWorldContainer } from './brands';
 import { fixGithubRemoteSetting } from './remote';
 import { fixFileData, fixFileOrNewData, fixNewData } from './filedata';
-import { DEFAULT_WORLD_CONTAINER } from '../const';
+import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
 
-export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], 'ja');
+export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], DEFAULT_LOCALE);
 
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {

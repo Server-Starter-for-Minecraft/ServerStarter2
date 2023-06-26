@@ -1,12 +1,7 @@
-import {
-  defaultServerProperties,
-  mergeServerProperties,
-  serverPropertiesHandler,
-} from './files/properties';
 import { Path } from '../../util/path';
 import { saveWorldJson } from './worldJson';
 import { systemSettings } from '../stores/system';
-import { asyncMap, objMap } from 'src-electron/util/objmap';
+import { asyncMap } from 'src-electron/util/objmap';
 import { opsHandler } from './files/ops';
 import { whitelistHandler } from './files/whitelist';
 import {
@@ -15,12 +10,9 @@ import {
   World,
   WorldSettings,
 } from 'src-electron/schema/world';
-import {
-  ServerProperties,
-  ServerProperty,
-} from 'src-electron/schema/serverproperty';
 import { constructOpsAndWhitelist, constructPleyerSettings } from './players';
 import { orDefault } from 'app/src-electron/api/failable';
+import { serverPropertiesHandler } from './files/properties';
 
 const handlers = [
   serverPropertiesHandler,
@@ -41,7 +33,7 @@ export async function saveWorldSettingsJson(world: World, serverCwdPath: Path) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     version: world.version,
-    remote: world.remote_pull,
+    remote: world.remote,
     last_date: world.last_date,
     last_user: world.last_user,
     using: world.using,
@@ -105,41 +97,6 @@ export async function foldSettings(serverCwdPath: Path): Promise<FoldSettings> {
 }
 // Javaの-Xmx,-Xmsのデフォルト値(Gb)
 const DEFAULT_JAVA_HEAP_SIZE = 2;
-
-// ワールド設定のデフォルト値を取得
-export async function getDefaultSettings(): Promise<SystemWorldSettings> {
-  const settings = systemSettings.get('world');
-
-  let prop = settings?.properties;
-  if (prop === undefined) prop = {};
-  const undefLessProps = Object.fromEntries(
-    Object.entries(prop)
-      .map(([k, v]): [string, ServerProperty | undefined] => {
-        if (v === undefined) return [k, v];
-        if (v.type === undefined) return [k, undefined];
-        if (v.value === undefined) return [k, undefined];
-        // TODO: 怪しいアップキャスト
-        return [k, v as ServerProperty];
-      })
-      .filter<[string, ServerProperty]>(
-        (value): value is [string, ServerProperty] => value[0] !== undefined
-      )
-  );
-
-  const properties = mergeServerProperties(
-    defaultServerProperties,
-    undefLessProps
-  );
-
-  const memory = settings?.memory ?? DEFAULT_JAVA_HEAP_SIZE;
-
-  const setting = { properties, memory };
-
-  // 保存
-  await setDefaultSettings(setting);
-
-  return setting;
-}
 
 // ワールド設定のデフォルト値を保存
 export async function setDefaultSettings(

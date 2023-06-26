@@ -19,7 +19,6 @@ import {
   getWorldContainers,
   setWorldContainers,
 } from '../core/world/worldContainer';
-import { getDefaultSettings } from '../core/settings/settings';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { genUUID } from 'src-electron/tools/uuid';
 import { validateNewWorldName } from '../core/world/name';

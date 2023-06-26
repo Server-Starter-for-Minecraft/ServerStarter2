@@ -1,5 +1,3 @@
-import { getDefaultSettings } from './settings';
-
 describe('vanillaVersion', async () => {
   test(
     '',
