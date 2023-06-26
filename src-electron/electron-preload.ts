@@ -106,9 +106,6 @@ const api: FrontAPI = {
   invokeGetSystemSettings: invoke('GetSystemSettings'),
   invokeSetSystemSettings: invoke('SetSystemSettings'),
 
-  invokeGetWorldContainers: invoke('GetWorldContainers'),
-  invokeSetWorldContainers: invoke('SetWorldContainers'),
-
   invokeGetWorldAbbrs: invoke('GetWorldAbbrs'),
 
   invokeGetWorld: invoke('GetWorld'),

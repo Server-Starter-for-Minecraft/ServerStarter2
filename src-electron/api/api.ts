@@ -82,13 +82,6 @@ export interface API extends IAPI {
     /** SystemSettingsを変更 */
     SetSystemSettings: (settings: SystemSettings) => Promise<SystemSettings>;
 
-    /** WorldContainersを(再)取得 */
-    GetWorldContainers: () => Promise<WorldContainers>;
-    /** WorldContainersを変更 */
-    SetWorldContainers: (
-      worldContainers: WorldContainers
-    ) => Promise<WorldContainers>;
-
     /** WorldAbbrの一覧を取得 */
     GetWorldAbbrs: (
       worldContainer: WorldContainer
