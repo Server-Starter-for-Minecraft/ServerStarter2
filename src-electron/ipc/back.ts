@@ -41,9 +41,6 @@ export const getBackListener = (
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,
 
-    GetWorldContainers: getWorldContainers,
-    SetWorldContainers: setWorldContainers,
-
     GetWorldAbbrs: getWorldAbbrs,
 
     GetWorld: getWorld,
@@ -60,14 +57,8 @@ export const getBackListener = (
 
     ValidateNewWorldName: validateNewWorldName,
 
-    GetRunningWorld: getRunningWorld,
+    PickDirectory: pickDirectory(windowGetter),
 
-    GetDefaultWorld: getDefaultWorld,
-    // UpdatetRunningWorld: updateRunningWorld,
-
-    SearchPlayer: searchPlayer,
-
-    GenUUID: async () => genUUID(),
     IWMTest: testHandle,
   },
 });

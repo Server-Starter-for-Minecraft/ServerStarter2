@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { BytesData } from './bytesData';
 import { Failable, isFailure } from '../api/failable';
+import { asyncForEach } from './objmap';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
@@ -127,6 +128,37 @@ export class Path {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
     await target.remove(true);
-    await fs.move(this.str(), target.str());
+
+    // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
+    async function recursiveMove(path: Path, target: Path) {
+      if (await path.isDirectory()) {
+        target.mkdir(true);
+        await asyncForEach(await path.iter(), async (child) => {
+          await recursiveMove(child, target.child(child.basename()));
+        });
+      } else {
+        await fs.move(path.str(), target.str());
+      }
+      await path.remove(true);
+    }
+    await recursiveMove(this, target);
+  }
+
+  async changePermission(premission: number) {
+    await changePermissionsRecursively(this.path, premission);
+  }
+}
+
+/** 再帰的にファイルの権限を書き換える */
+async function changePermissionsRecursively(basePath: string, mode: number) {
+  if (fs.existsSync(basePath)) {
+    await fs.chmod(basePath, mode);
+    if ((await fs.lstat(basePath)).isDirectory()) {
+      const files = await fs.readdir(basePath);
+      for (const file of files) {
+        const filePath = path.join(basePath, file);
+        await changePermissionsRecursively(filePath, mode);
+      }
+    }
   }
 }

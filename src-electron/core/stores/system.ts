@@ -1,26 +1,34 @@
 import Store from 'electron-store';
-import { DEFAULT_MEMORY, DEFAULT_WORLD_CONTAINER, mainPath } from '../const';
+import { mainPath } from '../const';
 import { SystemSettings } from 'src-electron/schema/system';
-import { fix } from 'src-electron/util/fix';
-import { objectFixer } from 'app/src-electron/util/detaFixer/fixer';
 import { fixSystemSettings } from '../fixers/system';
-
-export async function setSystemSettings(
-  settings: SystemSettings
-): Promise<SystemSettings> {
-  systemSettings.store = settings;
-  return settings;
-}
-
-export async function getSystemSettings(): Promise<SystemSettings> {
-  // jsonの中身を修復してから返す
-  const value = fixSystemSettings(systemSettings.store);
-  systemSettings.store = value;
-  return value;
-}
+import { updateWorldContainers } from '../world/worldContainer';
 
 export const systemSettings = new Store<SystemSettings>({
   cwd: mainPath.str(),
   name: 'serverstarter',
   fileExtension: 'json',
 });
+
+let systemSettingsValue = fixSystemSettings(systemSettings.store);
+systemSettings.store = systemSettingsValue;
+
+export async function getSystemSettings(): Promise<SystemSettings> {
+  return systemSettingsValue;
+}
+
+/** SystemSettingsを上書き */
+export async function setSystemSettings(
+  settings: SystemSettings
+): Promise<SystemSettings> {
+  // worldContainersの中身の変更に応じて、セーブデータを移動
+  settings.container = await updateWorldContainers(
+    systemSettingsValue.container,
+    settings.container
+  );
+
+  systemSettingsValue = settings;
+
+  systemSettings.store = settings;
+  return settings;
+}
