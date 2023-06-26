@@ -13,20 +13,11 @@ export const enUSproperty = {
     spawning: 'world spawn',
     world: 'world',
     network: 'network',
-    rconquery: 'RCON / Query',
+    'rcon-query': 'RCON / Query',
     command: 'command',
     resourcepack: 'resourcepack',
     security: 'security',
     other: 'others'
-  },
-  console:{
-    boot: 'boot server',
-  },
-  player:{
-    search: 'search players',
-    registeredPlayer: 'registered player',
-    groupList: 'group list',
-    join: 'only registered player'
   },
   levelseed: 'ワールドのシード値',
 };

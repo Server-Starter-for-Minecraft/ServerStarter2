@@ -17,20 +17,20 @@ const toggle1 = ref(true)
     <div class="row">
       <SsInput
         v-model="playerStore.searchName"
-        :label="$t('property.player.search')"
+        :label="$t('player.search')"
         class="q-py-md col"
         @clear="() => playerStore.searchName = ''"
       />
   
       <q-toggle
         v-model="toggle1"
-        :label="$t('property.player.join')"
+        :label="$t('player.join')"
         style="font-size: 1rem;"
       />
     </div>
   
     <div class="q-py-md fit">
-      <span class="text-caption">{{ $t("property.player.registeredPlayer") }}</span>
+      <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
       <div class="row items-start">
         <template v-for="player in playerStore.searchPlayers(mainStore.world().players)" :key="player">
           <PlayerCardView
@@ -42,7 +42,7 @@ const toggle1 = ref(true)
 
       <q-separator class="q-my-md"/>
 
-      <span class="text-caption">{{ $t("property.player.groupList") }}</span>
+      <span class="text-caption">{{ $t("player.groupList") }}</span>
       <div class="row items-start">
         <template v-for="group in playerStore.searchGroups()" :key="group">
           <GroupCardView

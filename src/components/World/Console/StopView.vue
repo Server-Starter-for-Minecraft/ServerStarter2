@@ -10,7 +10,7 @@ const consoleStore = useConsoleStore()
     class="justify-center row fit"
   >
     <q-btn
-      :label="$t('property.console.boot')"
+      :label="$t('console.boot')"
       size="1rem"
       icon="play_arrow"
       color="primary"
