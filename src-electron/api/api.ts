@@ -104,9 +104,8 @@ export interface API extends IAPI {
     CreateWorld: (world: WorldEdited) => Promise<WithError<Failable<World>>>;
     /** Worldを削除 リモートがある場合でもリモートは削除しない */
     DeleteWorld: (world: WorldID) => Promise<WithError<Failable<undefined>>>;
-
-    /** サーバーを起動 */
-    RunServer: (world: WorldID) => Promise<WithError<Failable<World>>>;
+    /** Worldを起動 */
+    RunWorld: (world: WorldID) => Promise<WithError<Failable<World>>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)

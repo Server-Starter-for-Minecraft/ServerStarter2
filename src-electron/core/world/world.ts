@@ -159,7 +159,7 @@ export async function deleteWorld(
 /**
  * ワールドを起動する
  */
-export async function runServer(
+export async function runWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);

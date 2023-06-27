@@ -114,7 +114,7 @@ const api: FrontAPI = {
   invokeCreateWorld: invoke('CreateWorld'),
   invokeDeleteWorld: invoke('DeleteWorld'),
 
-  invokeRunServer: invoke('RunServer'),
+  invokeRunWorld: invoke('RunWorld'),
 
   invokeGetPlayer: invoke('GetPlayer'),
 

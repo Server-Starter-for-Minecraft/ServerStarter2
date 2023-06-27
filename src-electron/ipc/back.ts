@@ -9,7 +9,7 @@ import {
   setWorld,
   createWorld,
   deleteWorld,
-  runServer,
+  runWorld,
   runCommand,
 } from '../core/world/world';
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
@@ -42,7 +42,7 @@ export const getBackListener = (
     CreateWorld: createWorld,
     DeleteWorld: deleteWorld,
 
-    RunServer: runServer,
+    RunServer: runWorld,
 
     SearchPlayer: searchPlayer,
 
