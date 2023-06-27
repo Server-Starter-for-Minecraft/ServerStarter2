@@ -8,7 +8,6 @@ import {
   isFailure,
 } from 'app/src-electron/api/failable';
 import { WithError, withError } from 'app/src-electron/api/witherror';
-import { installAdditionals } from '../installer/installer';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
 import { WorldSettings, serverJsonFile } from './files/json';
@@ -96,7 +95,7 @@ export class WorldHandler {
 
   private async pull() {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    let worldSettings = await this.loadLocalServerJson();
+    const worldSettings = await this.loadLocalServerJson();
     if (isFailure(worldSettings)) return worldSettings;
 
     // リモートが存在する場合Pull
@@ -111,7 +110,7 @@ export class WorldHandler {
 
   private async push() {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    let worldSettings = await this.loadLocalServerJson();
+    const worldSettings = await this.loadLocalServerJson();
     if (isFailure(worldSettings)) return worldSettings;
 
     // リモートが存在する場合Push
@@ -143,7 +142,7 @@ export class WorldHandler {
     if (isFailure(pullResult)) return withError(pullResult);
 
     // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
-    let worldSettings = await this.loadLocalServerJson();
+    const worldSettings = await this.loadLocalServerJson();
     if (isFailure(worldSettings)) return withError(worldSettings);
 
     // 使用中の場合、現状のデータを再読み込みして終了
@@ -197,7 +196,7 @@ export class WorldHandler {
     await savePath.mkdir(true);
 
     // ワールド設定Jsonをローカルに保存(これがないとエラーが出るため)
-    let worldSettings = constructWorldSettings(world);
+    const worldSettings = constructWorldSettings(world);
     // リモートの設定だけは消しておく(存在しないブランチからPullしないように)
     // 新規作成時にPull元を指定する場合はworld.remote_sourceを指定することで可能
     delete worldSettings.remote;

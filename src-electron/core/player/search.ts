@@ -18,7 +18,7 @@ export async function searchPlayer(
 
   if (isFailure(uuid)) {
     return new Error(
-      `player name must match /[a-zA-Z0-9_]{2,16}/ and uuid must match /[0-9_]{8}-[0-9_]{4}-[0-9_]{4}-[0-9_]{4}-[0-9_]{12}/`
+      'player name must match /[a-zA-Z0-9_]{2,16}/ and uuid must match /[0-9_]{8}-[0-9_]{4}-[0-9_]{4}-[0-9_]{4}-[0-9_]{12}/'
     );
   }
 

@@ -1,10 +1,9 @@
 import { ServerSettingFile } from './base';
-import { Failable, isFailure } from 'src-electron/api/failable';
+import { isFailure } from 'src-electron/api/failable';
 import {
   ServerProperties,
   ServerPropertiesAnnotation,
 } from 'app/src-electron/schema/serverproperty';
-import { Path } from 'app/src-electron/util/path';
 
 // TODO:stringの値のescape/unescape
 
@@ -206,7 +205,7 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
   async load(cwdPath) {
     const filePath = cwdPath.child(SERVER_PROPERTIES_PATH);
 
-    let data = await filePath.readText();
+    const data = await filePath.readText();
 
     if (isFailure(data)) return data;
 

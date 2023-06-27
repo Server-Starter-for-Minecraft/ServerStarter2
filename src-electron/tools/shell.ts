@@ -1,11 +1,10 @@
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { BrowserWindow, dialog, shell } from 'electron';
 
 export function openBrowser(url: string) {
   shell.openExternal(url);
 }
 
 export function openFolder(path: string) {
-  console.log("HELLOWORODASDAW")
   shell.showItemInFolder(path);
 }
 

@@ -8,18 +8,11 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
-import { serverSettingsFileName } from '../../settings/worldJson';
-import { LEVEL_NAME } from '../../const';
-import { GithubBlob, GithubTree } from './githubApi';
-import { worldSettingsToWorld } from '../../settings/converter';
 import { GithubRemote } from 'src-electron/schema/remote';
-import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
-import { WorldLocationMap } from '../../world/worldMap';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
   pushWorld,
-  getWorld,
 };
 
 const DEFAULT_REMOTE_NAME = 'serverstarter';
@@ -185,80 +178,4 @@ async function pushWorld(
   if (isFailure(pushResult)) return pushResult;
 
   return undefined;
-}
-
-async function getWorld(
-  id: WorldID,
-  remote: GithubRemote
-): Promise<Failable<World>> {
-  const location = WorldLocationMap.get(id);
-  if (isFailure(location)) return location;
-
-  const { container, name } = location;
-
-  // patを取得
-  const pat = await getGitPat(remote.owner, remote.repo);
-  // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
-  if (isFailure(pat)) return pat;
-
-  const root = await GithubTree.fromRepository(
-    remote.owner,
-    remote.repo,
-    remote.branch,
-    pat
-  );
-  if (isFailure(root)) return root;
-  const rootFiles = await root.files();
-  if (isFailure(rootFiles)) return rootFiles;
-
-  const settingFile = rootFiles[serverSettingsFileName];
-  const worldDir = rootFiles[LEVEL_NAME];
-
-  const [settings, avater_path] = await Promise.all([
-    getSettings(settingFile),
-    getIconURI(worldDir),
-  ]);
-
-  if (settings === undefined) {
-    return new Error(`failed to load & parse ${settingFile.url}`);
-  }
-
-  return worldSettingsToWorld({
-    id,
-    avater_path,
-    container,
-    name,
-    settings,
-  });
-}
-
-async function getSettings(settingsFile: GithubTree | GithubBlob) {
-  if (settingsFile === undefined) return undefined;
-  if (settingsFile instanceof GithubTree) return undefined;
-  const json = await settingsFile.loadJson<WorldSettings>();
-  if (isFailure(json)) return undefined;
-  return json;
-}
-
-async function getIconURI(worldDir: GithubTree | GithubBlob) {
-  // ディレクトリが存在しない場合
-  if (worldDir === undefined) return undefined;
-
-  // ディレクトリでない場合
-  if (worldDir instanceof GithubBlob) return undefined;
-
-  // icon.pngを取得
-  const files = await worldDir.files();
-  if (isFailure(files)) return undefined;
-  const iconFile = files['icon.png'];
-
-  // icon.pngが存在しない場合
-  if (iconFile === undefined) return undefined;
-  // icon.pngがファイルでない場合
-  if (iconFile instanceof GithubTree) return undefined;
-
-  // icon.pngの内容を読み込んでdata URIにエンコード
-  const bytes = await iconFile.loadBytes();
-  if (isFailure(bytes)) return undefined;
-  return await bytes.encodeURI('image/png');
 }

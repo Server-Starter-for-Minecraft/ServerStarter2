@@ -13,7 +13,7 @@ const DATAPACKS_PATH = LEVEL_NAME + '/datapacks';
 
 type Mcmeta = {
   pack: {
-    pack_format: Number;
+    pack_format: number;
     description: string;
   };
 };

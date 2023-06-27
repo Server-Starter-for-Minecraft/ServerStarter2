@@ -15,13 +15,12 @@ import {
   objectFixer,
   optionalFixer,
   recordFixer,
-  unionFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixPlayer, fixPlayerGroup } from './player';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { fixWorldContainer } from './brands';
 import { fixGithubRemoteSetting } from './remote';
-import { fixFileData, fixFileOrNewData, fixNewData } from './filedata';
+import { fixFileOrNewData } from './filedata';
 import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
 

@@ -3,7 +3,7 @@ import { Path } from 'src-electron/util/path';
 import { mainPath } from '../const';
 import { WorldContainer } from 'src-electron/schema/brands';
 import { WorldContainers } from 'app/src-electron/schema/system';
-import { asyncForEach, asyncMap, objMap } from 'app/src-electron/util/objmap';
+import { asyncForEach } from 'app/src-electron/util/objmap';
 
 // world.containerが相対パスの場合mainpathからの相対パスとして処理
 export function worldContainerToPath(worldContainer: WorldContainer): Path {

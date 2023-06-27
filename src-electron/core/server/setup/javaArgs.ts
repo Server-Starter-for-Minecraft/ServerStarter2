@@ -1,5 +1,4 @@
 import { Failable, isFailure } from 'app/src-electron/api/failable';
-import { World } from 'app/src-electron/schema/world';
 import { getSystemSettings } from '../../stores/system';
 import { parseCommandLine } from 'app/src-electron/util/commandLineParser';
 

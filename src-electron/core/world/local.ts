@@ -14,7 +14,7 @@ import { Whitelist, serverWhitelistFile } from './files/whitelist';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { serverAllAdditionalFiles } from './files/addtional/all';
-import { errorMessage, isErrorMessage, isValidValue } from '../error/construct';
+import { errorMessage, isValidValue } from '../error/construct';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -111,7 +111,7 @@ export async function loadLocalFiles(
   }
 
   // avater_pathが読み込めなかった場合は未設定にする
-  let avater_path = isSuccess(_avater_path) ? _avater_path : undefined;
+  const avater_path = isSuccess(_avater_path) ? _avater_path : undefined;
 
   // worldオブジェクトを生成
   const world: World = {
