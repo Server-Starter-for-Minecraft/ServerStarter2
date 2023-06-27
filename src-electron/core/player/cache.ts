@@ -4,14 +4,13 @@ import {
   Timestamp,
 } from 'app/src-electron/schema/brands';
 import {
-  FAIL,
   objectFixer,
   recordFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixImageURI, fixPlayerUUID, fixTimestamp } from '../fixers/brands';
 import { mainPath } from '../const';
-import { isFailure, isSuccess } from 'app/src-electron/api/failable';
+import { isSuccess } from 'app/src-electron/api/failable';
 import { Player } from 'app/src-electron/schema/player';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 
@@ -38,7 +37,7 @@ const fixPlayerCacheRecord = objectFixer(
 
 const fixPlayerCache = recordFixer(fixPlayerCacheRecord, true);
 
-const PLAYER_CACHE_PATH = mainPath.child('player_cache');
+const PLAYER_CACHE_PATH = mainPath.child('player_cache.json');
 
 let player_cache: undefined | PlayerCache = undefined;
 
@@ -52,6 +51,9 @@ export async function getPlayerCache() {
     result = fixPlayerCache(player_cache_value);
 
   await setPlayerCache(result);
+
+  player_cache = result;
+
   return result;
 }
 
