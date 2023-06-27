@@ -1,10 +1,4 @@
-import {
-  Failable,
-  failabilify,
-  isFailure,
-  isSuccess,
-  runOnSuccess,
-} from 'src-electron/api/failable';
+import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
 import { NEW_WORLD_NAME } from '../const';
@@ -15,8 +9,7 @@ import {
   WorldEdited,
   WorldID,
 } from 'src-electron/schema/world';
-import { genUUID } from 'src-electron/tools/uuid';
-import { WorldLocationMap, wroldLocationToPath } from './worldMap';
+import { WorldLocationMap } from './worldMap';
 import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
@@ -159,7 +152,26 @@ export async function deleteWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<undefined>>> {
   const handler = WorldHandler.get(worldID);
-  console.log(handler);
   if (isFailure(handler)) return withError(handler);
   return await handler.delete();
+}
+
+/**
+ * ワールドを起動する
+ */
+export async function runServer(
+  worldID: WorldID
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isFailure(handler)) return withError(handler);
+  return await handler.runServer();
+}
+
+/**
+ * コマンドを実行する
+ */
+export function runCommand(worldID: WorldID, command: string): void {
+  const handler = WorldHandler.get(worldID);
+  if (isFailure(handler)) return;
+  handler.runCommand(command);
 }

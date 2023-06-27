@@ -1,7 +1,7 @@
-import { Path } from '../../util/path';
-import { BytesData } from '../../util/bytesData';
-import { Failable, isFailure } from '../../api/failable';
-import { api } from '../api';
+import { Path } from '../../../util/path';
+import { BytesData } from '../../../util/bytesData';
+import { Failable, isFailure } from '../../../api/failable';
+import { api } from '../../api';
 import { Version } from 'src-electron/schema/version';
 
 const ver_17_18 = [
@@ -529,7 +529,8 @@ async function download_xml_7_11(serverPath: Path) {
 /** log4jに対応するファイルを生成し、Javaの実行時引数を返す */
 export async function getLog4jArg(
   serverPath: Path,
-  version: Version
+  version: Version,
+  logger: (value: string) => void
 ): Promise<Failable<string | null>> {
   // log4jの脆弱性に対応
   // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
@@ -541,14 +542,14 @@ export async function getLog4jArg(
 
   // 1.12-1.16.5
   if (version.id in ver_12_16) {
-    api.send.UpdateStatus('log4jの設定ファイルをダウウンロード中');
+    logger('log4jの設定ファイルをダウウンロード中');
     await download_xml_12_16(serverPath);
     return '-Dlog4j.configurationFile=log4j2_112-116.xml';
   }
 
   // 1.7-1.11.2
   if (version.id in ver_7_11) {
-    api.send.UpdateStatus('log4jの設定ファイルをダウウンロード中');
+    logger('log4jの設定ファイルをダウウンロード中');
     await download_xml_7_11(serverPath);
     return '-Dlog4j.configurationFile=log4j2_17-111.xml';
   }

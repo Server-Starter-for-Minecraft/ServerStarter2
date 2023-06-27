@@ -1,6 +1,6 @@
 import { MemorySettings } from 'app/src-electron/schema/memory';
-import { getSystemSettings } from '../stores/system';
-import { rootLoggerHierarchy } from '../logger';
+import { getSystemSettings } from '../../stores/system';
+import { rootLoggerHierarchy } from '../../logger';
 
 export async function getMemoryArguments(memory: MemorySettings | undefined) {
   const defaultMemory = (await getSystemSettings()).world.memory;

@@ -17,19 +17,24 @@ import {
   loadLocalFiles,
   saveLocalFiles,
 } from './local';
+import { RunServer, runServer } from '../server/server';
+import { getSystemSettings } from '../stores/system';
 
 export class WorldHandlerError extends Error {}
 
+/** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
   private static worldPathMap: Record<WorldID, WorldHandler> = {};
 
   name: WorldName;
   container: WorldContainer;
   id: WorldID;
+  run: RunServer | undefined;
   private constructor(id: WorldID, name: WorldName, container: WorldContainer) {
     this.id = id;
     this.name = name;
     this.container = container;
+    this.run = undefined;
   }
 
   /** WorldAbbr/WorldNewができた段階でここに登録し、idを生成 */
@@ -60,7 +65,7 @@ export class WorldHandler {
   }
 
   /** セーブデータを移動する*/
-  async move(name: WorldName, container: WorldContainer) {
+  private async move(name: WorldName, container: WorldContainer) {
     // 現在のワールドの保存場所
     const currentPath = this.getSavePath();
     // 変更される保存先
@@ -202,10 +207,104 @@ export class WorldHandler {
     return await this.save(world);
   }
 
+  /** ワールドを削除(リモ－トは削除しない) */
   async delete(): Promise<WithError<Failable<undefined>>> {
     const result = await failabilify(() => this.getSavePath().remove(true))();
     if (isFailure(result)) return withError(result);
     delete WorldHandler.worldPathMap[this.id];
     return withError(undefined);
+  }
+
+  /** データを同期して サーバーを起動 */
+  async runServer(): Promise<WithError<Failable<World>>> {
+    // 起動中の場合エラー
+    if (this.run !== undefined)
+      return withError(
+        new Error(`world ${this.container}/${this.name} is already running`)
+      );
+
+    // ワールド情報を取得
+    const loadResult = await this.load();
+
+    // 取得に失敗したらエラー
+    if (isFailure(loadResult.value)) return loadResult;
+
+    const beforeWorld = loadResult.value;
+
+    // 誰かが起動している場合エラー
+    if (beforeWorld.using)
+      return withError(
+        new Error(
+          `world ${this.container}/${this.name} is already running by ${
+            beforeWorld.last_user ?? '<anonymous>'
+          }`
+        )
+      );
+
+    const settings = constructWorldSettings(beforeWorld);
+    const savePath = this.getSavePath();
+
+    // 使用中フラグを立てて保存
+    beforeWorld.using = true;
+    beforeWorld.last_user = (await getSystemSettings()).user.owner;
+    // TODO: last_dateの設定
+    const saveResult = await this.save(beforeWorld);
+    // 保存に失敗したらエラー (ここでコンフリクト起きそう)
+    if (isFailure(saveResult.value)) {
+      // 使用中フラグを折って保存を試みる (無理なら諦める)
+      await serverJsonFile.save(savePath, settings);
+      return saveResult;
+    }
+
+    // サーバーの実行を開始
+    const runPromise = runServer(
+      savePath,
+      this.id,
+      settings,
+      this.container,
+      this.name
+    );
+
+    this.run = runPromise;
+
+    // サーバーの終了を待機
+    const serverResult = await runPromise;
+
+    this.run = undefined;
+
+    // サーバーの実行が失敗したらエラー
+    if (isFailure(serverResult)) {
+      // 使用中フラグを折って保存を試みる (無理なら諦める)
+      await serverJsonFile.save(savePath, settings);
+      return withError(serverResult);
+    }
+
+    // サーバー終了時にワールド情報を再取得
+    const afterRun = await this.load();
+
+    // 取得に失敗したらエラー
+    if (isFailure(afterRun.value)) {
+      // 使用中フラグを折って保存を試みる (無理なら諦める)
+      await serverJsonFile.save(savePath, settings);
+      return afterRun;
+    }
+
+    const afterWorld = afterRun.value;
+
+    // フラグを折って保存
+    afterWorld.using = false;
+    const afterSaveResult = await this.save(afterWorld);
+    if (isFailure(afterSaveResult.value)) {
+      // 使用中フラグを折って保存を試みる (無理なら諦める)
+      await serverJsonFile.save(savePath, settings);
+      return afterSaveResult;
+    }
+
+    return afterRun;
+  }
+
+  /** コマンドを実行 */
+  async runCommand(command: string) {
+    await this.run?.runCommand(command);
   }
 }

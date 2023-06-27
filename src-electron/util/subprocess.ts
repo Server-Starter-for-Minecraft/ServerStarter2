@@ -73,9 +73,10 @@ function promissifyProcess(
   const dispatch = onQuit(() => kill(), true);
 
   const write = (msg: string) =>
-    new Promise<void>((resolve) =>
-      process.stdin?.write(msg + '\n', () => resolve())
-    );
+    new Promise<void>((resolve) => {
+      if (process.stdin) process.stdin.write(msg + '\n', () => resolve());
+      else resolve();
+    });
   promise.kill = kill;
   promise.write = write;
 

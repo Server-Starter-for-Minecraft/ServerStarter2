@@ -1,8 +1,10 @@
-import { api } from '../api';
-import { Path } from '../../util/path';
-import { Failable, isFailure } from '../../api/failable';
-import { execProcess } from '../../util/subprocess';
+import { api } from '../../api';
+import { Path } from '../../../util/path';
+import { Failable, isFailure } from '../../../api/failable';
+import { execProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
+import { needEulaAgreement } from '../../version/version';
+import { Version } from 'app/src-electron/schema/version';
 
 /**
  * Eulaに同意したかどうかを返す

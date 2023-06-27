@@ -1,12 +1,6 @@
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
 import { BrowserWindow } from 'electron';
-import {
-  getRunningWorld,
-  runCommand,
-  runServer,
-  saveWorldSettings,
-} from '../core/server/server';
 import { getVersions } from '../core/version/version';
 import {
   newWorld,
@@ -15,6 +9,8 @@ import {
   setWorld,
   createWorld,
   deleteWorld,
+  runServer,
+  runCommand,
 } from '../core/world/world';
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';

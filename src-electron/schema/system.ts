@@ -38,7 +38,7 @@ export type SystemUserSetting = {
   // システム言語
   language: Locale;
   // 実行者情報
-  owner?: Player;
+  owner?: PlayerUUID;
   // 自動シャットダウン
   autoShutDown: boolean;
   //ローカルのワールドの保存先ディレクトリ一覧
