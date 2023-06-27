@@ -125,12 +125,6 @@ const api: FrontAPI = {
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 
   invokePickDirectory: invoke('PickDirectory'),
-
-  invokeIWMTest: invoke('IWMTest'),
-  onSMWTest: on('SMWTest'),
-  handleIMWTest: handle('IMWTest'),
-  sendSWMTest: send('SWMTest'),
-  // invokeUpdatetRunningWorld: invoke('UpdatetRunningWorld'),
 };
 
 contextBridge.exposeInMainWorld('API', api);

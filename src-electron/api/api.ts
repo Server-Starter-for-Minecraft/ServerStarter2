@@ -58,14 +58,10 @@ export interface API extends IAPI {
 
     /** mainプロセス側かでSystemSettingが変更された場合に走る */
     UpdateSystemSettings: (settings: SystemSettings) => void;
-
-    SMWTest: (value: string) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
     AgreeEula: (world: WorldID, url: string) => Promise<boolean>;
-
-    IMWTest: (value: string) => Promise<string>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る */
@@ -76,8 +72,6 @@ export interface API extends IAPI {
 
     /** pathをエクスプローラーで開く */
     OpenFolder: (path: string) => void;
-
-    SWMTest: (value: string) => void;
   };
   invokeWindowToMain: {
     /** Backend側から静的なデータを取得する */
@@ -115,13 +109,13 @@ export interface API extends IAPI {
     GetPlayer: (
       nameOrUuid: string,
       mode: 'uuid' | 'name' | 'auto'
-    ) => Promise<WithError<Failable<Player>>>;
+    ) => Promise<Failable<Player>>;
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (
       type: VersionType,
       useCache: boolean
-    ) => Promise<WithError<Failable<Version[]>>>;
+    ) => Promise<Failable<Version[]>>;
 
     /** ローカルのセーブデータ一覧を取得 */
     GetLocalSaveData: (
@@ -132,12 +126,10 @@ export interface API extends IAPI {
     ValidateNewWorldName: (
       worldContainer: WorldContainer,
       worldName: string
-    ) => Promise<WithError<Failable<WorldName>>>;
+    ) => Promise<Failable<WorldName>>;
 
     /** ディレクトリを選択する */
-    PickDirectory: () => Promise<WithError<Electron.OpenDialogReturnValue>>;
-
-    IWMTest: (value: string) => Promise<string>;
+    PickDirectory: () => Promise<Electron.OpenDialogReturnValue>;
   };
 }
 

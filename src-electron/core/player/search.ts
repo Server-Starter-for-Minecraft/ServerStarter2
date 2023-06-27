@@ -1,28 +1,14 @@
-import { formatUUID } from 'src-electron/tools/uuid';
 import { Failable, isFailure } from 'src-electron/api/failable';
 import { ImageURI, UUID } from 'src-electron/schema/brands';
 import { Player } from 'src-electron/schema/player';
 import { GetProfile, UsernameToUUID } from 'src-electron/tools/minecraftApi';
 
-export async function searchPlayer(
-  nameOrUuid: string
+export async function searchPlayerFromName(
+  name: string
 ): Promise<Failable<Player>> {
-  const namePattern = /^[a-zA-Z0-9_]{2,16}$/gm;
-  if (nameOrUuid.match(namePattern)) {
-    const res = await UsernameToUUID(nameOrUuid);
-    if (isFailure(res)) return res;
-    return await searchPlayerFromUUID(res.uuid);
-  }
-
-  const uuid = formatUUID(nameOrUuid);
-
-  if (isFailure(uuid)) {
-    return new Error(
-      'player name must match /[a-zA-Z0-9_]{2,16}/ and uuid must match /[0-9_]{8}-[0-9_]{4}-[0-9_]{4}-[0-9_]{4}-[0-9_]{12}/'
-    );
-  }
-
-  return await searchPlayerFromUUID(uuid);
+  const res = await UsernameToUUID(name);
+  if (isFailure(res)) return res;
+  return await searchPlayerFromUUID(res.uuid);
 }
 
 const steveB64 =
@@ -34,7 +20,9 @@ const alexB64 =
 const clearB64 =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAOSURBVChTYxgFQMDAAAABCAABwQSzUgAAAABJRU5ErkJggg==' as ImageURI;
 
-async function searchPlayerFromUUID(uuid: UUID): Promise<Failable<Player>> {
+export async function searchPlayerFromUUID(
+  uuid: UUID
+): Promise<Failable<Player>> {
   let avatar: ImageURI;
   let avatar_overlay: ImageURI;
 

@@ -15,9 +15,8 @@ import {
 import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { validateNewWorldName } from '../core/world/name';
-import { searchPlayer } from '../core/player/search';
 import { getStaticResoure } from '../core/resource';
-import { testHandle, testOn } from './test';
+import { getPlayer } from '../core/player/main';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -26,7 +25,6 @@ export const getBackListener = (
     Command: runCommand,
     OpenBrowser: openBrowser,
     OpenFolder: openFolder,
-    SWMTest: testOn,
   },
   handle: {
     GetStaticResouce: getStaticResoure,
@@ -42,16 +40,14 @@ export const getBackListener = (
     CreateWorld: createWorld,
     DeleteWorld: deleteWorld,
 
-    RunServer: runWorld,
+    RunWorld: runWorld,
 
-    SearchPlayer: searchPlayer,
+    GetPlayer: getPlayer,
 
     GetVersions: getVersions,
 
     ValidateNewWorldName: validateNewWorldName,
 
     PickDirectory: pickDirectory(windowGetter),
-
-    IWMTest: testHandle,
   },
 });

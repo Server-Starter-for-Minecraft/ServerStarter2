@@ -9,7 +9,7 @@ const crypto = require('crypto');
 //   return uuid
 // }
 /**UUIDの生成関数(フォーマット済み) */
-export const genUUID = (): UUID => crypto.randomUUID();
+export const genUUID = <U extends UUID>(): U => crypto.randomUUID();
 
 /**
  * uuidの文字列を正規化する
@@ -19,7 +19,7 @@ export const genUUID = (): UUID => crypto.randomUUID();
  *
  * -> 00000000-0000-0000-0000-000000000000
  */
-export function formatUUID(uuid: string): Failable<UUID> {
+export function formatUUID<U extends UUID>(uuid: string): Failable<U> {
   const hyphen_match = uuid.match(
     /([0-9a-f-]{1,8})-([0-9a-f-]{1,4})-([0-9a-f-]{1,4})-([0-9a-f-]{1,4})-([0-9a-f-]{1,12})/
   );
@@ -31,7 +31,7 @@ export function formatUUID(uuid: string): Failable<UUID> {
       hyphen_match[3].padEnd(4, '0'),
       hyphen_match[4].padEnd(4, '0'),
       hyphen_match[5].padEnd(12, '0'),
-    ].join('-') as UUID;
+    ].join('-') as U;
     return result;
   }
 
@@ -43,7 +43,7 @@ export function formatUUID(uuid: string): Failable<UUID> {
       uuid.slice(12, 16),
       uuid.slice(16, 20),
       uuid.slice(20, 32),
-    ].join('-') as UUID;
+    ].join('-') as U;
     return result;
   }
 

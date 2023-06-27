@@ -1,6 +1,7 @@
 import {
   ImageURI,
   PlayerUUID,
+  Timestamp,
   UUID,
   WorldContainer,
   WorldName,
@@ -8,6 +9,7 @@ import {
 import {
   FAIL,
   Fixer,
+  numberFixer,
   regexFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
@@ -27,3 +29,6 @@ export const fixPlayerUUID = fixUUID as Fixer<PlayerUUID | FAIL>;
 
 /** 画像のuri文字列 <img src={ここに挿入可能}> */
 export const fixImageURI = stringFixer<ImageURI>();
+
+/** 1970年1月1日00:00:00 UTCからの経過時間(ミリ秒) */
+export const fixTimestamp = numberFixer<Timestamp>();
