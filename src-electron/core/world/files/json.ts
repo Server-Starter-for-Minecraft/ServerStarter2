@@ -1,4 +1,4 @@
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { PlayerUUID, Timestamp } from 'app/src-electron/schema/brands';
 import { MemorySettings } from 'app/src-electron/schema/memory';
 import { Remote } from 'app/src-electron/schema/remote';
 import { Version } from 'app/src-electron/schema/version';
@@ -41,7 +41,7 @@ export type WorldSettings = {
    * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
    * new Dateの引数にすることで日付が得られる
    */
-  last_date?: number;
+  last_date?: Timestamp;
 
   /** 最終プレイ者 */
   last_user?: PlayerUUID;

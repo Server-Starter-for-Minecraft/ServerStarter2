@@ -46,7 +46,9 @@ export async function getPlayerFromName(
   name: string
 ): Promise<Failable<Player>> {
   const cache = await getPlayerCache();
-  const cacheValue = Object.values(cache).find((x) => x.name == name);
+  const cacheValue = Object.values(cache).find(
+    (x) => x.name.toLocaleLowerCase() == name.toLocaleLowerCase()
+  );
   if (cacheValue !== undefined) {
     // 最後の検索から一定時間が立っていた場合再検索する(待機しない)
     if (

@@ -9,7 +9,6 @@ import {
   WorldEdited,
   WorldID,
 } from 'src-electron/schema/world';
-import { WorldLocationMap } from './worldMap';
 import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
@@ -49,7 +48,6 @@ export async function getWorldAbbr(
     name,
     container,
   };
-  WorldLocationMap.set(id, { name, container });
 
   return result;
 }
