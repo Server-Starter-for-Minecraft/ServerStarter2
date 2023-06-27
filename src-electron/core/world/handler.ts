@@ -60,7 +60,7 @@ export class WorldHandler {
   }
 
   /** 現在のワールドの保存場所を返す */
-  private getSavePath() {
+  getSavePath() {
     return worldContainerToPath(this.container).child(this.name);
   }
 
@@ -146,7 +146,7 @@ export class WorldHandler {
     const worldSettings = await this.loadLocalServerJson();
     if (isFailure(worldSettings)) return withError(worldSettings);
 
-    // 使用中の場合、現状のデータを再読み込みして終了
+    // 使用中の場合、現状のデータを再読み込んで終了
     if (worldSettings.using) {
       errors.push(new WorldHandlerError(`world '${savePath.path}' is using`));
       const world = await this.loadLocal();
@@ -166,8 +166,44 @@ export class WorldHandler {
     return result;
   }
 
+  private async fix() {
+    const local = await this.loadLocal();
+    const world = local.value;
+    if (isFailure(world)) return local;
+
+    // フラグを折ってjsonに保存
+    world.using = false;
+    await serverJsonFile.save(
+      this.getSavePath(),
+      constructWorldSettings(world)
+    );
+
+    // リモートにpush
+    const push = await this.push();
+    if (isFailure(push)) return withError(push);
+
+    return local;
+  }
+
   /** サーバーのデータをロード */
   async load(): Promise<WithError<Failable<World>>> {
+    // ローカルに保存されたワールド設定Jsonを読み込む(実行中フラグの確認)
+    const worldSettings = await this.loadLocalServerJson();
+    if (isFailure(worldSettings)) return withError(worldSettings);
+
+    const owner = (await getSystemSettings()).user.owner;
+
+    // 自分が使用中かつプロセスが起動していない場合
+    // (前回の起動時に正常にサーバーが終了しなかった場合)
+    if (
+      worldSettings.using === true &&
+      worldSettings.last_user === owner &&
+      this.run === undefined
+    ) {
+      // フラグを折ってPush
+      return await this.fix();
+    }
+
     // リモートからpull
     const pullResult = await this.pull();
     if (isFailure(pullResult)) return withError(pullResult);
@@ -231,8 +267,11 @@ export class WorldHandler {
 
     const beforeWorld = loadResult.value;
 
-    // 誰かが起動している場合エラー
-    if (beforeWorld.using)
+    // serverstarterの実行者UUID
+    const selfOwner = (await getSystemSettings()).user.owner;
+
+    // 自分以外の誰かが起動している場合エラー
+    if (beforeWorld.using && beforeWorld.last_user !== selfOwner)
       return withError(
         new Error(
           `world ${this.container}/${this.name} is already running by ${
@@ -246,7 +285,7 @@ export class WorldHandler {
 
     // 使用中フラグを立てて保存
     beforeWorld.using = true;
-    beforeWorld.last_user = (await getSystemSettings()).user.owner;
+    beforeWorld.last_user = selfOwner;
     beforeWorld.last_date = getCurrentTimestamp();
     const saveResult = await this.save(beforeWorld);
     // 保存に失敗したらエラー (ここでコンフリクト起きそう)

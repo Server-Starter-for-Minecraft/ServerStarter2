@@ -28,9 +28,6 @@ export interface WorldAbbr {
 
   /** ワールドのID (ServerStarterが起動するごとに変わる) */
   id: WorldID;
-
-  /** アイコンのURI */
-  avater_path?: ImageURI;
 }
 
 /** ワールドごとの設定 */
@@ -65,6 +62,9 @@ export interface WorldBase extends WorldAbbr {
 
   /** プレイヤーの設定 */
   players: PlayerSetting[] | ErrorMessage;
+
+  /** アイコンのURI */
+  avater_path?: ImageURI;
 }
 
 export type WorldAdditional = {
