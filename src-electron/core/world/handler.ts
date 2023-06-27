@@ -11,8 +11,12 @@ import { WithError, withError } from 'app/src-electron/api/witherror';
 import { installAdditionals } from '../installer/installer';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
-import { serverJsonFile } from './files/json';
-import { loadLocalFiles, saveLocalFiles } from './local';
+import { WorldSettings, serverJsonFile } from './files/json';
+import {
+  constructWorldSettings,
+  loadLocalFiles,
+  saveLocalFiles,
+} from './local';
 
 export class WorldHandlerError extends Error {}
 
@@ -42,6 +46,7 @@ export class WorldHandler {
     return id;
   }
 
+  // worldIDからWorldHandlerを取得する
   static get(id: WorldID): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldPathMap)) {
       return new Error(`missing world data is:${id}`);
@@ -76,6 +81,12 @@ export class WorldHandler {
   private async loadLocalServerJson() {
     const savePath = this.getSavePath();
     return await serverJsonFile.load(savePath);
+  }
+
+  /** ワールド設定Jsonをローカルに保存 */
+  private async saveLocalServerJson(settings: WorldSettings) {
+    const savePath = this.getSavePath();
+    return await serverJsonFile.save(savePath, settings);
   }
 
   private async pull() {
@@ -139,6 +150,7 @@ export class WorldHandler {
     }
 
     // 変更をローカルに保存
+    // additionalの解決、custum_map,remote_sourceの導入も行う
     const result = saveLocalFiles(savePath, world);
     (await result).errors.push(...errors);
 
@@ -179,31 +191,15 @@ export class WorldHandler {
     // 保存先ディレクトリを作成
     await savePath.mkdir(true);
 
-    // remote_sourceが存在した場合にセーブデータをリモートからPull
-    if (world.remote_source) {
-      const pull = await pullRemoteWorld(savePath, world.remote_source);
-      // Pullに失敗した場合エラー
-      if (isFailure(pull)) return withError(pull);
-      delete world.remote_source;
-    }
+    // ワールド設定Jsonをローカルに保存(これがないとエラーが出るため)
+    let worldSettings = constructWorldSettings(world);
+    // リモートの設定だけは消しておく(存在しないブランチからPullしないように)
+    // 新規作成時にPull元を指定する場合はworld.remote_sourceを指定することで可能
+    delete worldSettings.remote;
+    await this.saveLocalServerJson(worldSettings);
 
-    // TODO: カスタムマップの導入処理
-    if (world.custom_map) {
-    }
-    delete world.custom_map;
-
-    // Datapack/Mod/Pluginの導入処理
-    const addtionalResult = await installAdditionals(
-      world.additional,
-      savePath
-    );
-    world.additional = addtionalResult.value;
-    errors.push(...addtionalResult.errors);
-
-    // 設定ファイルの保存
-    await saveLocalFiles(savePath, world);
-
-    return withError(world, errors);
+    // データを保存
+    return await this.save(world);
   }
 
   async delete(): Promise<WithError<Failable<undefined>>> {

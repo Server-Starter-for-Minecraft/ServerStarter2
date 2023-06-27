@@ -9,7 +9,7 @@ import {
 import { ErrorMessage } from './error';
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
-import { Player, PlayerSetting } from './player';
+import { PlayerSetting } from './player';
 import { Remote } from './remote';
 import { ServerProperties } from './serverproperty';
 import { Version } from './version';

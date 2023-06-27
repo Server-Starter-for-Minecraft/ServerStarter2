@@ -7,7 +7,6 @@ import {
 } from 'src-electron/api/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
-import { getWorldJsonPath } from '../settings/worldJson';
 import { NEW_WORLD_NAME } from '../const';
 import { worldContainerToPath } from './worldContainer';
 import {
@@ -24,6 +23,7 @@ import { getSystemSettings } from '../stores/system';
 import { WorldHandler } from './handler';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { validateNewWorldName } from './name';
+import { serverJsonFile } from './files/json';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -41,7 +41,7 @@ export async function getWorldAbbr(
 ): Promise<Failable<WorldAbbr>> {
   console.log(path.path);
   if (!path.isDirectory()) return new Error(`${path.str()} is not directory.`);
-  const jsonpath = getWorldJsonPath(path);
+  const jsonpath = serverJsonFile.path(path);
 
   if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
 
@@ -67,7 +67,7 @@ export async function getWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isFailure(handler)) return withError(handler);
-  return withError(await handler.load());
+  return await handler.load();
 }
 
 /** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
@@ -114,7 +114,11 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     javaArguments: systemSettings.world.javaArguments,
     properties: systemSettings.world.properties,
     players: [],
-    additional: {},
+    additional: {
+      datapacks: [],
+      plugins: [],
+      mods: [],
+    },
   };
 
   return withError(world);

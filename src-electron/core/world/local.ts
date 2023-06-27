@@ -139,15 +139,8 @@ export async function saveLocalFiles(
   savePath: Path,
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const worldSettings: WorldSettings = {
-    memory: world.memory,
-    javaArguments: world.javaArguments,
-    version: world.version,
-    remote: world.remote,
-    last_date: world.last_date,
-    last_user: world.last_user,
-    using: world.using,
-  };
+  const worldSettings = constructWorldSettings(world);
+
   const errors: Error[] = [];
 
   async function constructResult() {
@@ -202,4 +195,17 @@ export async function saveLocalFiles(
 
   // ローカルのデータを再読み込みして返却
   return constructResult();
+}
+
+export function constructWorldSettings(world: World) {
+  const worldSettings: WorldSettings = {
+    memory: world.memory,
+    javaArguments: world.javaArguments,
+    version: world.version,
+    remote: world.remote,
+    last_date: world.last_date,
+    last_user: world.last_user,
+    using: world.using,
+  };
+  return worldSettings;
 }
