@@ -59,6 +59,8 @@ export const fixPlayerSetting = objectFixer<PlayerSetting>(
   {
     /** プレイヤーのUUID */
     uuid: fixPlayerUUID,
+    /** プレイヤー名 */
+    name: stringFixer(),
     /** プレイヤーのop権限レベル */
     op: optionalFixer(fixOpSetting),
   },

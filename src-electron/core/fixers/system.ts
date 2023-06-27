@@ -1,5 +1,7 @@
 import {
   CacheContents,
+  LocalSave,
+  LocalSaveContainer,
   Locale,
   SystemPlayerSetting,
   SystemRemoteSetting,
@@ -15,16 +17,34 @@ import {
   objectFixer,
   optionalFixer,
   recordFixer,
+  stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { fixPlayer, fixPlayerGroup } from './player';
-import { WorldContainer } from 'app/src-electron/schema/brands';
-import { fixWorldContainer } from './brands';
+import { fixPlayerGroup } from './player';
+import { PlayerUUID, WorldContainer } from 'app/src-electron/schema/brands';
+import { fixImageURI, fixPlayerUUID, fixWorldContainer } from './brands';
 import { fixGithubRemoteSetting } from './remote';
 import { fixFileOrNewData } from './filedata';
 import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
+import { genUUID } from 'app/src-electron/tools/uuid';
 
 export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], DEFAULT_LOCALE);
+
+/** ローカルのワールドの保存先ディレクトリ */
+export const fixLocalSaveContainer = stringFixer<LocalSaveContainer>();
+
+/** ローカルのワールド */
+export const fixLocalSave = objectFixer<LocalSave>(
+  {
+    // 保存先ディレクトリ
+    container: fixLocalSaveContainer,
+    // ワールド名
+    name: stringFixer(),
+    // icon.png
+    avatar_path: optionalFixer(fixImageURI),
+  },
+  false
+);
 
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {
@@ -35,9 +55,11 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     // システム言語
     language: fixLocale,
     // 実行者情報
-    owner: optionalFixer(fixPlayer),
+    owner: defaultFixer(fixPlayerUUID, genUUID<PlayerUUID>()),
     // 自動シャットダウン
     autoShutDown: booleanFixer(false),
+    //ローカルのワールドの保存先ディレクトリ一覧
+    localSaveContainer: arrayFixer(fixLocalSaveContainer, true),
   },
   true
 );
@@ -60,7 +82,7 @@ export const fixWorldContainers = objectFixer<WorldContainers>(
 export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
   {
     groups: arrayFixer(fixPlayerGroup, true),
-    players: arrayFixer(fixPlayer, true),
+    players: arrayFixer(fixPlayerUUID, true),
   },
   true
 );

@@ -48,9 +48,6 @@ export const fixWorldAbbr = objectFixer<WorldAbbr>(
 
     /** ワールドのID (ServerStarterが起動するごとに変わる) */
     id: fixWorldID,
-
-    /** アイコンのURI */
-    avater_path: optionalFixer(stringFixer()),
   },
   false
 );
@@ -89,6 +86,9 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
 
     /** プレイヤーの設定 */
     players: arrayFixer(fixPlayerSetting, true),
+
+    /** アイコンのURI */
+    avater_path: optionalFixer(stringFixer()),
   },
   false
 );
