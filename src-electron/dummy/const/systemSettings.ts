@@ -14,7 +14,7 @@ export const playerAvatarOverlay =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABXSURBVChTY2Tg1/nPQA6YUy2MX+PP6w4IBfnBsv9x6oi204JLNKWhKvr778d/pidvP0O5DAyPHwtAWRDg5OiOsAvZJBh48eLpf4Zv3z5jtxsIvn37/B8A3fAn0FlZxgwAAAAASUVORK5CYII=' as ImageURI;
 
 export const player1: Player = {
-  name: 'player1',
+  name: 'player111111111',
   uuid: player1UUID,
   avatar: playerAvatar,
   avatar_overlay: playerAvatarOverlay,

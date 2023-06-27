@@ -81,7 +81,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       if (this.searchName !== '') {
         return players.filter(
-          player => playersData.filter(p => p.uuid === player.uuid)[0].name.match(this.searchName)
+          player => playersData[player.uuid].name.match(this.searchName)
         );
       }
       
@@ -95,7 +95,7 @@ export const usePlayerStore = defineStore('playerStore', {
       const groupsData = sysStore.systemSettings().player.groups
       
       if (this.searchName !== '') {
-        return groupsData.filter(g => g.name.match(this.searchName))
+        return Object.fromEntries(Object.entries(groupsData).filter(([k, v]) => k.match(this.searchName)))
       }
       
       return groupsData;
