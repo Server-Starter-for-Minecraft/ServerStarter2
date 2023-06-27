@@ -35,7 +35,7 @@ export const getBackListener = (
   },
   handle: {
     RunServer: runServer,
-    PickDirectory: pickDirectory(windowGetter),
+    OpenDialog: pickDirectory(windowGetter),
 
     DeleteWorld: deleteWorld,
 

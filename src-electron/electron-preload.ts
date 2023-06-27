@@ -124,7 +124,7 @@ const api: FrontAPI = {
 
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 
-  invokePickDirectory: invoke('PickDirectory'),
+  invokeOpenDialog: invoke('OpenDialog'),
 };
 
 contextBridge.exposeInMainWorld('API', api);

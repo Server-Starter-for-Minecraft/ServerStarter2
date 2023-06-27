@@ -12,7 +12,7 @@ import {
   runWorld,
   runCommand,
 } from '../core/world/world';
-import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
+import { openBrowser, openFolder, openDialog } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { validateNewWorldName } from '../core/world/name';
 import { getStaticResoure } from '../core/resource';
@@ -48,6 +48,6 @@ export const getBackListener = (
 
     ValidateNewWorldName: validateNewWorldName,
 
-    PickDirectory: pickDirectory(windowGetter),
+    OpenDialog: openDialog(windowGetter),
   },
 });

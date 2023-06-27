@@ -129,7 +129,9 @@ export interface API extends IAPI {
     ) => Promise<Failable<WorldName>>;
 
     /** ディレクトリを選択する */
-    PickDirectory: () => Promise<Electron.OpenDialogReturnValue>;
+    OpenDialog: (
+      options: Electron.OpenDialogOptions
+    ) => Promise<Electron.OpenDialogReturnValue>;
   };
 }
 
