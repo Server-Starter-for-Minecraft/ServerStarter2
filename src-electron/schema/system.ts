@@ -1,4 +1,4 @@
-import { WorldContainer } from './brands';
+import { PlayerUUID, WorldContainer } from './brands';
 import { Player, PlayerGroup } from './player';
 import { GithubRemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
@@ -41,8 +41,8 @@ export type WorldContainers = {
 };
 
 export type SystemPlayerSetting = {
-  groups: PlayerGroup[];
-  players: Player[];
+  groups: { [name: string]: PlayerGroup };
+  players: { [uuid: PlayerUUID]: Player };
 };
 
 export type SystemRemoteSetting = {
