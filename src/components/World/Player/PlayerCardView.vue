@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
-import { ref } from 'vue';
 
 interface Prop {
-  uuid: string
+  uuid: PlayerUUID
   opLevel?: 1 | 2 | 3 | 4
 }
 const prop = defineProps<Prop>()

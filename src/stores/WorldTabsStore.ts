@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { propertyClasses } from 'src/components/World/Property/classifications';
 import { useSystemStore } from './SystemStore';
 import { PlayerSetting } from 'app/src-electron/schema/player';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 
 export const usePropertyStore = defineStore('propertyStore', {
   state: () => {
@@ -13,6 +14,7 @@ export const usePropertyStore = defineStore('propertyStore', {
   actions: {
     /**
      * プロパティの検索
+     * TODO: otherグループが選択されたときの特例処理　＆　翻訳がない場合の特例処理
      */
     searchProperties(groupName?: string) {
       const propClassName = groupName ?? this.selectTab
@@ -64,7 +66,7 @@ export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
       searchName: '',
-      focusCards: [] as string[]
+      focusCards: [] as PlayerUUID[]
     }
   },
   actions: {
@@ -74,6 +76,8 @@ export const usePlayerStore = defineStore('playerStore', {
     searchPlayers(players: PlayerSetting[]) {
       const sysStore = useSystemStore()
       const playersData = sysStore.systemSettings().player.players
+
+      // TODO: Playersを名前でソート
 
       if (this.searchName !== '') {
         return players.filter(
