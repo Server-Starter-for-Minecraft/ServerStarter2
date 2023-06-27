@@ -1,10 +1,5 @@
-import {
-  World,
-  WorldAdditional,
-  WorldEdited,
-  WorldID,
-} from 'app/src-electron/schema/world';
-import { pullRemoteWorld } from '../remote/remote';
+import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { worldContainerToPath } from './worldContainer';
 import {
@@ -12,13 +7,11 @@ import {
   failabilify,
   isFailure,
 } from 'app/src-electron/api/failable';
-import { worldSettingsToWorld } from '../settings/converter';
-import { Remote } from 'app/src-electron/schema/remote';
 import { WithError, withError } from 'app/src-electron/api/witherror';
 import { installAdditionals } from '../installer/installer';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
-import { WorldSettings, serverJsonFile } from './files/json';
+import { serverJsonFile } from './files/json';
 import { loadLocalFiles, saveLocalFiles } from './local';
 
 export class WorldHandlerError extends Error {}
@@ -35,7 +28,7 @@ export class WorldHandler {
     this.container = container;
   }
 
-  /** WorldAbbrができた段階でここに登録し、idを生成 */
+  /** WorldAbbr/WorldNewができた段階でここに登録し、idを生成 */
   static register(name: WorldName, container: WorldContainer): WorldID {
     const registered = Object.entries(WorldHandler.worldPathMap).find(
       ([, value]) => value.container == container && value.name == name
@@ -57,7 +50,7 @@ export class WorldHandler {
   }
 
   /** 現在のワールドの保存場所を返す */
-  getSavePath() {
+  private getSavePath() {
     return worldContainerToPath(this.container).child(this.name);
   }
 
@@ -79,68 +72,91 @@ export class WorldHandler {
     this.container = container;
   }
 
-  private async pull(remote: Remote) {
+  /** ローカルに保存されたワールド設定Jsonを読み込む */
+  private async loadLocalServerJson() {
     const savePath = this.getSavePath();
-
-    // セーブデータをリモートからPull
-    const pull = await pullRemoteWorld(savePath, remote);
-
-    // Pullに失敗した場合エラー
-    return pull;
+    return await serverJsonFile.load(savePath);
   }
 
-  /** サーバーのデータを保存 */
-  async save(world: WorldEdited): Promise<WithError<Failable<World>>> {
-    // 現在のデータを読み込む
-    const currentWorld = await this.load();
-    if (isFailure(currentWorld)) return withError(currentWorld);
-
-    const errors: Error[] = [];
-
-    // セーブデータ移動
-    await this.move(world.name, world.container);
-    const savePath = this.getSavePath();
-    currentWorld.name = world.name;
-    currentWorld.container = world.container;
-
-    // 使用中の場合パスだけ変更して返す
-    if (currentWorld.using) {
-      errors.push(new WorldHandlerError(`world '${savePath.path}' is using`));
-      return withError(currentWorld, errors);
-    }
-
-    // 変更を各ファイル/ディレクトリに保存
-    const result = saveLocalFiles(savePath, world);
-    (await result).errors.push(...errors);
-    return result;
-  }
-
-  /** サーバーのデータをロード */
-  async load(): Promise<Failable<World>> {
-    const savePath = this.getSavePath();
-
-    // ローカルに保存されたワールド設定を読み込む
-    let worldSettings = await serverJsonFile.load(savePath);
+  private async pull() {
+    // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
+    let worldSettings = await this.loadLocalServerJson();
     if (isFailure(worldSettings)) return worldSettings;
 
-    // セーブデータをリモートからPull
+    // リモートが存在する場合Pull
     if (worldSettings.remote) {
-      // セーブデータをリモートからPull
+      const savePath = this.getSavePath();
       const pull = await pullRemoteWorld(savePath, worldSettings.remote);
 
       // Pullに失敗した場合エラー
       if (isFailure(pull)) return pull;
     }
+  }
 
+  private async push() {
+    // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
+    let worldSettings = await this.loadLocalServerJson();
+    if (isFailure(worldSettings)) return worldSettings;
+
+    // リモートが存在する場合Push
+    if (worldSettings.remote) {
+      const savePath = this.getSavePath();
+      const push = await pushRemoteWorld(savePath, worldSettings.remote);
+
+      // Pushに失敗した場合エラー
+      if (isFailure(push)) return push;
+    }
+  }
+
+  private async loadLocal() {
+    const savePath = this.getSavePath();
     // ローカルの設定ファイルを読み込む
-    const world = await loadLocalFiles(
-      savePath,
-      this.id,
-      this.name,
-      this.container
-    );
+    return await loadLocalFiles(savePath, this.id, this.name, this.container);
+  }
 
-    return world;
+  /** サーバーのデータを保存 */
+  async save(world: WorldEdited): Promise<WithError<Failable<World>>> {
+    const errors: Error[] = [];
+
+    // セーブデータを移動
+    await this.move(world.name, world.container);
+    const savePath = this.getSavePath();
+
+    // リモートからpull
+    const pullResult = await this.pull();
+    if (isFailure(pullResult)) return withError(pullResult);
+
+    // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
+    let worldSettings = await this.loadLocalServerJson();
+    if (isFailure(worldSettings)) return withError(worldSettings);
+
+    // 使用中の場合、現状のデータを再読み込みして終了
+    if (worldSettings.using) {
+      errors.push(new WorldHandlerError(`world '${savePath.path}' is using`));
+      const world = await this.loadLocal();
+      world.errors.push(...errors);
+      return world;
+    }
+
+    // 変更をローカルに保存
+    const result = saveLocalFiles(savePath, world);
+    (await result).errors.push(...errors);
+
+    // リモートにpush
+    const push = await this.push();
+    if (isFailure(push)) return withError(push, errors);
+
+    return result;
+  }
+
+  /** サーバーのデータをロード */
+  async load(): Promise<WithError<Failable<World>>> {
+    // リモートからpull
+    const pullResult = await this.pull();
+    if (isFailure(pullResult)) return withError(pullResult);
+
+    // ローカルデータをロード
+    return await this.loadLocal();
   }
 
   /** サーバーのデータを新規作成して保存 */

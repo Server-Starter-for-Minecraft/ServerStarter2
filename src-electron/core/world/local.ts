@@ -150,14 +150,30 @@ export async function saveLocalFiles(
   };
   const errors: Error[] = [];
 
+  async function constructResult() {
+    // ローカルのデータを再読み込み
+    const result = await loadLocalFiles(
+      savePath,
+      world.id,
+      world.name,
+      world.container
+    );
+    result.errors.push(...errors);
+    return result;
+  }
+
   // TODO: カスタムマップの導入処理
-  // ここでいい?
+  // カスタムマップが設定されている場合はその他のプロパティの上書きは同時に発生しない
   if (world.custom_map) {
+    // ローカルのデータを再読み込みして返却
+    return constructResult();
   }
 
   // TODO: リモートワールドの導入処理
-  // ここでいい?
+  // リモートワールドが設定されている場合はその他のプロパティの上書きは同時に発生しない
   if (world.remote_source) {
+    // ローカルのデータを再読み込みして返却
+    return constructResult();
   }
 
   const promisses: Promise<any>[] = [
@@ -184,13 +200,6 @@ export async function saveLocalFiles(
 
   await Promise.all(promisses);
 
-  // ローカルのデータを再読み込み
-  const result = await loadLocalFiles(
-    savePath,
-    world.id,
-    world.name,
-    world.container
-  );
-  result.errors.push(...errors);
-  return result;
+  // ローカルのデータを再読み込みして返却
+  return constructResult();
 }
