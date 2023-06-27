@@ -18,6 +18,7 @@ import {
 } from './local';
 import { RunServer, runServer } from '../server/server';
 import { getSystemSettings } from '../stores/system';
+import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 
 export class WorldHandlerError extends Error {}
 
@@ -246,7 +247,7 @@ export class WorldHandler {
     // 使用中フラグを立てて保存
     beforeWorld.using = true;
     beforeWorld.last_user = (await getSystemSettings()).user.owner;
-    // TODO: last_dateの設定
+    beforeWorld.last_date = getCurrentTimestamp();
     const saveResult = await this.save(beforeWorld);
     // 保存に失敗したらエラー (ここでコンフリクト起きそう)
     if (isFailure(saveResult.value)) {
@@ -271,35 +272,16 @@ export class WorldHandler {
 
     this.run = undefined;
 
+    // 使用中フラグを折って保存を試みる (無理なら諦める)
+    settings.using = false;
+    beforeWorld.last_date = getCurrentTimestamp();
+    await serverJsonFile.save(savePath, settings);
+
     // サーバーの実行が失敗したらエラー
-    if (isFailure(serverResult)) {
-      // 使用中フラグを折って保存を試みる (無理なら諦める)
-      await serverJsonFile.save(savePath, settings);
-      return withError(serverResult);
-    }
+    if (isFailure(serverResult)) return withError(serverResult);
 
-    // サーバー終了時にワールド情報を再取得
-    const afterRun = await this.load();
-
-    // 取得に失敗したらエラー
-    if (isFailure(afterRun.value)) {
-      // 使用中フラグを折って保存を試みる (無理なら諦める)
-      await serverJsonFile.save(savePath, settings);
-      return afterRun;
-    }
-
-    const afterWorld = afterRun.value;
-
-    // フラグを折って保存
-    afterWorld.using = false;
-    const afterSaveResult = await this.save(afterWorld);
-    if (isFailure(afterSaveResult.value)) {
-      // 使用中フラグを折って保存を試みる (無理なら諦める)
-      await serverJsonFile.save(savePath, settings);
-      return afterSaveResult;
-    }
-
-    return afterRun;
+    // ワールド情報を再取得
+    return await this.load();
   }
 
   /** コマンドを実行 */

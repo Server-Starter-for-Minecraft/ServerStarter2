@@ -38,6 +38,10 @@ const OPS_FILE = 'ops.json';
 export const serverOpsFile: ServerSettingFile<Ops> = {
   async load(cwdPath) {
     const filePath = cwdPath.child(OPS_FILE);
+
+    // ファイルが存在しない場合空リストを返す
+    if (!filePath.exists()) return [];
+
     const value = await filePath.readJson<Ops>();
     if (isFailure(value)) return value;
     const fixed = fixOps(value);

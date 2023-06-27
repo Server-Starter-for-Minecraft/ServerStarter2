@@ -31,9 +31,15 @@ export const WHILTELIST_FILE = 'whitelist.json';
 export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
   async load(cwdPath) {
     const filePath = cwdPath.child(WHILTELIST_FILE);
+
+    // ファイルが存在しない場合空リストを返す
+    if (!filePath.exists()) return [];
+
     const value = await filePath.readJson<Whitelist>();
+
     if (isFailure(value)) return value;
     const fixed = fixOps(value);
+
     if (fixed === FAIL) return new Error(`${filePath} is invalid ops file`);
     return fixed;
   },
