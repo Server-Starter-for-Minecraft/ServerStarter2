@@ -17,7 +17,7 @@ export type SystemSettings = {
 
 export type Locale = 'ja' | 'en-US';
 
-/** ローカルのワールドの保存先ディレクトリ */
+/** ローカルのワールドの保存先ディレクトリ (絶対パスのみ) */
 export type LocalSaveContainer = Brand<string, 'LocalSaveContainer'>;
 
 /** ローカルのワールド */

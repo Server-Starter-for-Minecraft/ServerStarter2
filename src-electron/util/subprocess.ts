@@ -65,7 +65,11 @@ function promissifyProcess(
     if (process.exitCode === null) {
       // killの前処理
       await Promise.any([beforeKill(promise), sleep(beforeKillTimeout)]);
-      process.kill(signal);
+      try {
+        process.kill(signal);
+      } catch (e) {
+        logger.warn('failed to kill process');
+      }
     }
   };
 

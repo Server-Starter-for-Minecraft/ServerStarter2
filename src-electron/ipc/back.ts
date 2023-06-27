@@ -17,6 +17,7 @@ import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { validateNewWorldName } from '../core/world/name';
 import { getStaticResoure } from '../core/resource';
 import { getPlayer } from '../core/player/main';
+import { getLocalSaveData } from '../core/user/localSave';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -47,6 +48,8 @@ export const getBackListener = (
     GetVersions: getVersions,
 
     ValidateNewWorldName: validateNewWorldName,
+
+    GetLocalSaveData: getLocalSaveData,
 
     OpenDialog: openDialog(windowGetter),
   },
