@@ -47,4 +47,7 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
   save(cwdPath, value) {
     return cwdPath.child(OPS_FILE).writeText(JSON.stringify(value));
   },
+  path(cwdPath) {
+    return cwdPath.child(OPS_FILE);
+  },
 };

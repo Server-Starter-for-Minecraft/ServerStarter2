@@ -109,21 +109,10 @@ export class WorldHandler {
       return withError(currentWorld, errors);
     }
 
-    // TODO: カスタムマップの導入処理
-    if (world.custom_map) {
-    }
-
-    // Datapack/Mod/Pluginの導入処理
-    const addtionalResult = await installAdditionals(
-      world.additional,
-      savePath
-    );
-    world.additional = addtionalResult.value;
-    errors.push(...addtionalResult.errors);
-
-    await saveLocalFiles(savePath, world);
-
-    return withError(world, errors);
+    // 変更を各ファイル/ディレクトリに保存
+    const result = saveLocalFiles(savePath, world);
+    (await result).errors.push(...errors);
+    return result;
   }
 
   /** サーバーのデータをロード */

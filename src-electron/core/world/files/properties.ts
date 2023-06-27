@@ -219,4 +219,7 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
 
     await filePath.writeText(stringify(value));
   },
+  path(cwdPath) {
+    return cwdPath.child(SERVER_PROPERTIES_PATH);
+  },
 };

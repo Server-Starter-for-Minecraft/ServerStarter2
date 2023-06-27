@@ -6,6 +6,7 @@ import {
   WorldContainer,
   WorldName,
 } from './brands';
+import { ErrorMessage } from './error';
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
 import { Player, PlayerSetting } from './player';
@@ -59,21 +60,21 @@ export interface WorldBase extends WorldAbbr {
   javaArguments?: string;
 
   /** server.propertiesの内容 */
-  properties: ServerProperties;
+  properties: ServerProperties | ErrorMessage;
 
   /** プレイヤーの設定 */
-  players: PlayerSetting[];
+  players: PlayerSetting[] | ErrorMessage;
 }
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
-  datapacks?: FileData[];
+  datapacks: FileData[] | ErrorMessage;
 
   /** 導入済みプラグイン */
-  plugins?: FileData[];
+  plugins: FileData[] | ErrorMessage;
 
   /** 導入済みMOD */
-  mods?: FileData[];
+  mods: FileData[] | ErrorMessage;
 };
 
 export interface World extends WorldBase {
@@ -83,13 +84,13 @@ export interface World extends WorldBase {
 
 export type WorldEditedAdditional = {
   /** 導入済みデータパック */
-  datapacks?: (FileData | NewData)[];
+  datapacks: (FileData | NewData)[] | ErrorMessage;
 
   /** 導入済みプラグイン */
-  plugins?: (FileData | NewData)[];
+  plugins: (FileData | NewData)[] | ErrorMessage;
 
   /** 導入済みMOD */
-  mods?: (FileData | NewData)[];
+  mods: (FileData | NewData)[] | ErrorMessage;
 };
 
 export interface WorldEdited extends WorldBase {

@@ -96,15 +96,15 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
 export const fixWorldAdditional = objectFixer<WorldAdditional>(
   {
     /** 導入済みデータパック */
-    datapacks: optionalFixer(arrayFixer(fixFileData, false)),
+    datapacks: arrayFixer(fixFileData, true),
 
     /** 導入済みプラグイン */
-    plugins: optionalFixer(arrayFixer(fixFileData, false)),
+    plugins: arrayFixer(fixFileData, true),
 
     /** 導入済みMOD */
-    mods: optionalFixer(arrayFixer(fixFileData, false)),
+    mods: arrayFixer(fixFileData, true),
   },
-  false
+  true
 );
 
 export const fixWorld = extendFixer<World, WorldBase>(
@@ -120,15 +120,15 @@ fixFileData;
 export const fixWorldEditedAdditional = objectFixer<WorldEditedAdditional>(
   {
     /** 導入済みデータパック */
-    datapacks: optionalFixer(arrayFixer(fixFileOrNewData, false)),
+    datapacks: arrayFixer(fixFileOrNewData, true),
 
     /** 導入済みプラグイン */
-    plugins: optionalFixer(arrayFixer(fixFileOrNewData, false)),
+    plugins: arrayFixer(fixFileOrNewData, true),
 
     /** 導入済みMOD */
-    mods: optionalFixer(arrayFixer(fixFileOrNewData, false)),
+    mods: arrayFixer(fixFileOrNewData, true),
   },
-  false
+  true
 );
 
 export const fixWorldEdited = extendFixer<WorldEdited, WorldBase>(
@@ -149,7 +149,7 @@ export const fixWorldEdited = extendFixer<WorldEdited, WorldBase>(
     remote_source: optionalFixer(fixRemote),
 
     /** 導入済み */
-    additional: defaultFixer(fixWorldEditedAdditional, {}),
+    additional: fixWorldEditedAdditional,
   },
   false
 );

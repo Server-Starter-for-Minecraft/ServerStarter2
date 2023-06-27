@@ -40,4 +40,7 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
   save(cwdPath, value) {
     return cwdPath.child(WHILTELIST_FILE).writeText(JSON.stringify(value));
   },
+  path(cwdPath) {
+    return cwdPath.child(WHILTELIST_FILE);
+  },
 };
