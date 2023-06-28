@@ -15,16 +15,19 @@ import { zip } from 'app/src-electron/util/zip';
 import { WorldHandler } from '../../handler';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { cachePath } from 'app/src-electron/core/const';
+import { api } from 'app/src-electron/core/api';
 
 export const ADDITIONALS_CACHE_PATH = cachePath.child('additionals');
 
 export class ServerAdditionalFiles<T extends Record<string, any>> {
   constructor(
+    type: 'datapack' | 'plugin' | 'mod',
     cachePath: Path,
     childPath: string,
     loader: (path: Path) => Promise<Failable<T | undefined>>,
     installer: (sourcePath: Path, targetPath: Path) => Promise<Failable<void>>
   ) {
+    this.type = type;
     this.cachePath = cachePath;
     this.childPath = childPath;
     this.loader = loader;
@@ -36,6 +39,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     sourcePath: Path,
     targetPath: Path
   ) => Promise<Failable<void>>;
+  private type: 'datapack' | 'plugin' | 'mod';
   private childPath: string;
   cachePath: Path;
 
@@ -73,8 +77,19 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         path: targetPath.path,
       });
     // 待機せずにキャッシュにインストール
-    // TODO: 失敗した場合エラーをAPIで送信("info")
-    this.installer(sourcePath, targetPath);
+    this.installer(sourcePath, targetPath).then((x) => {
+      // 失敗した場合エラーをAPIで送信
+      if (isError(x))
+        api.send.Error(
+          errorMessage.core.failCacheAddiltionalData(
+            {
+              type: this.type,
+              path: sourcePath.path,
+            },
+            'info'
+          )
+        );
+    });
   }
 
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {

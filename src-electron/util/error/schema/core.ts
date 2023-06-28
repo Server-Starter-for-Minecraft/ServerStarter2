@@ -50,4 +50,10 @@ export type CoreErrors = {
 
   // minecraftEulaに同意していない場合
   minecraftEULANotAccepted: ErrorMessageContent;
+
+  // Datapack/Plugin/Modのキャッシュに失敗した場合
+  failCacheAddiltionalData: ErrorMessageContent<{
+    type: 'datapack' | 'plugin' | 'mod';
+    path: string;
+  }>;
 };
