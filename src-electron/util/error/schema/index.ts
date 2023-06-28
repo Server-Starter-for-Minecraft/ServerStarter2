@@ -1,4 +1,4 @@
-import { FlattenErrors } from './base';
+import { ErrorTranslation, FlattenErrors } from './base';
 import { CoreErrors } from './core';
 import { DataErrors } from './data';
 import { SystemErrors } from './system';
@@ -12,3 +12,4 @@ export type ErrorMessageTypes = {
 };
 
 export type FlattenErrorMessageTypes = FlattenErrors<ErrorMessageTypes>;
+export type ErrorTranslationTypes = ErrorTranslation<ErrorMessageTypes>;
