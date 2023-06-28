@@ -6,6 +6,8 @@ import { Path } from 'app/src-electron/util/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { DATAPACK_CACHE_PATH } from 'app/src-electron/core/stores/cache';
+import { BytesData } from 'app/src-electron/util/bytesData';
+import { ZipFile } from 'app/src-electron/util/zipFile';
 
 const DATAPACKS_PATH = LEVEL_NAME + '/datapacks';
 
@@ -19,17 +21,30 @@ type Mcmeta = {
 const MCMETA_FILE = 'pack.mcmeta';
 
 async function loader(path: Path): Promise<Failable<DatapackData | undefined>> {
-  const mcmetaPath = path.child(MCMETA_FILE);
+  let mcmetaData: Failable<BytesData>;
 
-  if (!mcmetaPath.exists())
-    return errorMessage.data.path.notFound({
-      type: 'file',
-      path: mcmetaPath.path,
-    });
+  if (await path.isDirectory()) {
+    // ディレクトリの場合
+    mcmetaData = await BytesData.fromPath(path.child(MCMETA_FILE));
+  } else {
+    if (path.extname() !== '.zip') {
+      // zipでないファイル場合
+      return errorMessage.data.path.invalidContent.invalidDatapack({
+        type: 'file',
+        path: path.path,
+      });
+    }
+    // zipの場合
+    const zip = new ZipFile(path);
+    mcmetaData = await zip.getFile(MCMETA_FILE);
+  }
+  if (isError(mcmetaData)) return mcmetaData;
 
-  const mcmeta = await mcmetaPath.readJson<Mcmeta>();
+  // TODO: pack.mcmetaにdataFixerを付ける
+
+  const mcmeta = await mcmetaData.json<Mcmeta>();
   if (isError(mcmeta)) return mcmeta;
-  mcmeta.pack.description;
+
   return {
     kind: 'datapack',
     description: mcmeta.pack.description,

@@ -47,6 +47,9 @@ export type PathContentErrors = {
   // ファイルである必要がある
   mustBeFile: PathErrorContent;
 
+  // 不適なデータパックファイル
+  invalidDatapack: PathErrorContent;
+
   // 不適なプラグインファイル
   invalidPlugin: PathErrorContent;
 

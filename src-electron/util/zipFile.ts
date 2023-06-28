@@ -2,6 +2,7 @@ import { CentralDirectory, Open } from 'unzipper';
 import { Path } from './path';
 import { errorMessage } from './error/construct';
 import { BytesData } from './bytesData';
+import { Failable } from './error/failable';
 
 export class ZipFile {
   private promise: Promise<CentralDirectory>;
@@ -12,7 +13,7 @@ export class ZipFile {
     this.promise = Open.file(path.path);
   }
 
-  async getFile(path: string) {
+  async getFile(path: string): Promise<Failable<BytesData>> {
     const file = (await this.promise).files.find((d) => d.path == path);
     if (file === undefined)
       return errorMessage.data.path.notFound({
