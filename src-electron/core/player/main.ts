@@ -16,24 +16,16 @@ export async function getPlayer(
   switch (mode) {
     case 'name':
       if (!isName(nameOrUuid)) {
-        return errorMessage.invalidValue(
-          {
-            kind: 'playerName',
-            value: nameOrUuid,
-          },
-          'error'
-        );
+        return errorMessage.value.playerName({
+          value: nameOrUuid,
+        });
       }
       return await getPlayerFromName(nameOrUuid);
     case 'uuid':
       if (!isUUID(nameOrUuid)) {
-        return errorMessage.invalidValue(
-          {
-            kind: 'playerUUID',
-            value: nameOrUuid,
-          },
-          'error'
-        );
+        return errorMessage.value.playerUUID({
+          value: nameOrUuid,
+        });
       }
       return await getPlayerFromUUID(nameOrUuid);
     case 'auto':
@@ -42,13 +34,9 @@ export async function getPlayer(
       // autoの場合のみ 0-0-0-0-0 のような短縮UUIDやハイフンのないUUIDを許可する
       const uuid = formatUUID<PlayerUUID>(nameOrUuid);
       if (isError(uuid)) {
-        return errorMessage.invalidValue(
-          {
-            kind: 'playerNameOrUUID',
-            value: nameOrUuid,
-          },
-          'error'
-        );
+        return errorMessage.value.playerNameOrUUID({
+          value: nameOrUuid,
+        });
       }
 
       return await getPlayerFromUUID(uuid);

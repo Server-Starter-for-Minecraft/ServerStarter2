@@ -48,7 +48,7 @@ export function formatUUID<U extends UUID>(uuid: string): Failable<U> {
     return result;
   }
 
-  return errorMessage.runtime({
+  return errorMessage.system.runtime({
     type: 'UUIDFormat',
     message: uuid,
   });

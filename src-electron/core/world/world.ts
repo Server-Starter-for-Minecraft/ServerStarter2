@@ -35,18 +35,14 @@ export async function getWorldAbbr(
 ): Promise<Failable<WorldAbbr>> {
   console.log(path.path);
   if (!path.isDirectory())
-    return errorMessage.invalidPathContent({
+    return errorMessage.data.path.invalidContent.mustBeDirectory({
       type: 'file',
       path: path.path,
-      reason: {
-        key: 'mustBeDirectory',
-        attr: undefined,
-      },
     });
   const jsonpath = serverJsonFile.path(path);
 
   if (!jsonpath.exists())
-    return errorMessage.pathNotFound({
+    return errorMessage.data.path.notFound({
       type: 'file',
       path: jsonpath.path,
     });

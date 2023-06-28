@@ -15,7 +15,7 @@ export const serverIconFile: ServerSettingFile<ImageURI | undefined> = {
       if (isValid(data)) {
         return await data.encodeURI('image/png');
       }
-      return errorMessage.pathLoad({
+      return errorMessage.data.path.loadingFailed({
         type: 'file',
         path: iconpath.path,
       });

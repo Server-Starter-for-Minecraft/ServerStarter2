@@ -158,9 +158,9 @@ export const searchPlayer = async (
       avatar_overlay: playerAvatarOverlay,
     };
   }
-  return errorMessage.invalidValue({
-    "key":"playerName"
-  })
+  return errorMessage.value.playerName({
+    value: uuidOrName,
+  });
 };
 
 export const getDefaultWorld = async () => {

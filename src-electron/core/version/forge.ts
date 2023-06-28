@@ -104,30 +104,28 @@ async function installForgeVersion(
 async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
   // TODO: osに応じてrun.shに対応
+  let runPath: Path;
   if (osPlatform == 'windows-x64') {
     // windows
-    const batPath = serverCwdPath.child('run.bat');
-    if (batPath.exists()) {
+    runPath = serverCwdPath.child('run.bat');
+    if (runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromBat(batPath);
+      return await getProgramArgumentsFromBat(runPath);
     }
   } else {
     // UNIX(macOS,linux)
-    const shPath = serverCwdPath.child('run.sh');
-    if (shPath.exists()) {
+    runPath = serverCwdPath.child('run.sh');
+    if (runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromSh(shPath);
+      return await getProgramArgumentsFromSh(runPath);
     }
   }
 
   if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"'];
 
-  return errorMessage.pathNotFound({
+  return errorMessage.data.path.notFound({
     type: 'file',
-    path: {
-      mode: 'any',
-      values: ['run.bat', 'run.sh', '*.jar'],
-    },
+    path: runPath.path + '|' + jarpath.path,
   });
 }
 
@@ -146,13 +144,9 @@ async function getProgramArgumentsFromBat(batPath: Path) {
       return ['@user_jvm_args.txt', arg];
     }
   }
-  return errorMessage.invalidPathContent({
+  return errorMessage.data.path.invalidContent.missingJavaCommand({
     type: 'file',
     path: batPath.path,
-    reason: {
-      key: 'missingJavaCommand',
-      attr: undefined,
-    },
   });
 }
 
@@ -171,13 +165,9 @@ async function getProgramArgumentsFromSh(shPath: Path) {
       return ['@user_jvm_args.txt', arg];
     }
   }
-  return errorMessage.invalidPathContent({
+  return errorMessage.data.path.invalidContent.missingJavaCommand({
     type: 'file',
     path: shPath.path,
-    reason: {
-      key: 'missingJavaCommand',
-      attr: undefined,
-    },
   });
 }
 
@@ -257,7 +247,7 @@ export async function scrapeForgeVersions(
   id: string
 ): Promise<Failable<ForgeVersion[]>> {
   if (noInstallerVersionIds.has(id))
-    return errorMessage.forgeInstallerNotProvided({ version: id });
+    return errorMessage.core.version.forgeInstallerNotProvided({ version: id });
 
   const versionUrl = `https://files.minecraftforge.net/net/minecraftforge/forge/index_${id}.html`;
   const page = await BytesData.fromURL(versionUrl);

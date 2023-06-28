@@ -25,7 +25,7 @@ const MCMETA_FILE = 'pack.mcmeta';
 async function loadDatapack(path: Path): Promise<Failable<FileData>> {
   const mcmetaPath = path.child(MCMETA_FILE);
   if (!mcmetaPath.exists())
-    return errorMessage.pathNotFound({
+    return errorMessage.data.path.notFound({
       type: 'file',
       path: mcmetaPath.path,
     });
@@ -53,7 +53,7 @@ export const datapackFiles: ServerAdditionalFiles<FileData> = {
     const dirPath = datapackFiles.path(cwdPath);
     return loadAdditionalFiles(dirPath, loadDatapack);
   },
-  async save(cwdPath, value): Promise<WithError<Failable<void>>> {
+  async save(cwdPath, value): Promise<WithError<void>> {
     const dirPath = datapackFiles.path(cwdPath);
     return saveAdditionalFiles(dirPath, value, installDatapack, loadDatapack);
   },

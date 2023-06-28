@@ -166,15 +166,10 @@ async function buildSpigotVersion(
     else if (min <= 60 && 60 <= max) javaComponent = 'java-runtime-alpha';
     else if (min <= 61 && 61 <= max) javaComponent = 'java-runtime-gamma';
     else
-      return errorMessage.failSpigotBuild({
-        version: version.id,
-        reason: {
-          key: 'needJava',
-          attr: {
-            minVersion: `java-${min - 44}`,
-            maxVersion: `java-${max - 44}`,
-          },
-        },
+      return errorMessage.core.version.failSpigotBuild.javaNeeded({
+        spigotVersion: version.id,
+        minVersion: `java-${min - 44}`,
+        maxVersion: `java-${max - 44}`,
       });
   }
 

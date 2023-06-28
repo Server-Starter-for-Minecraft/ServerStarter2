@@ -10,8 +10,5 @@ export function parseCommandLine(commandLine: string): Failable<string[]> {
   if (match !== null) {
     return [...match];
   }
-  return errorMessage.invalidValue({
-    key: 'commandLineArgument',
-    attr: commandLine,
-  });
+  return errorMessage.value.commandLineArgument({ value: commandLine });
 }

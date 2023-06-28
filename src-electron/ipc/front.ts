@@ -16,7 +16,7 @@ export const invoke = <C extends string, T>(
     const win = window();
     if (win !== undefined) return ipcInvoke<C, T>(win, channel, ...args);
     else
-      return errorMessage.ipc({
+      return errorMessage.system.ipc({
         channel,
         type: 'invokeMainToWindow',
         message: 'window not exists',

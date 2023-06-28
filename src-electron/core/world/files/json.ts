@@ -98,13 +98,9 @@ export const serverJsonFile: ServerSettingFile<WorldSettings> = {
     const fixed = (await worldSettingsFixer())(data);
 
     if (fixed === FAIL)
-      return errorMessage.invalidPathContent({
+      return errorMessage.data.path.invalidContent.invalidWorldSettingJson({
         type: 'file',
         path: jsonPath.path,
-        reason: {
-          key: 'invalidSettingFile',
-          attr: 'worldSettingJson',
-        },
       });
 
     return fixed;

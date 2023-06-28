@@ -47,13 +47,9 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
     if (isError(value)) return value;
     const fixed = fixOps(value);
     if (fixed === FAIL)
-      return errorMessage.invalidPathContent({
+      return errorMessage.data.path.invalidContent.invalidOpsJson({
         type: 'file',
         path: filePath.path,
-        reason: {
-          key: 'invalidSettingFile',
-          attr: 'opsJson',
-        },
       });
     return fixed;
   },

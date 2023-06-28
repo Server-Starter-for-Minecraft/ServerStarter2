@@ -125,7 +125,7 @@ async function pushWorld(
 ): Promise<Failable<undefined>> {
   // ディレクトリが存在しない場合エラー
   if (!local.exists()) {
-    return errorMessage.pathNotFound({
+    return errorMessage.data.path.notFound({
       type: 'directory',
       path: local.path,
     });

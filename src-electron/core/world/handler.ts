@@ -51,7 +51,7 @@ export class WorldHandler {
   // worldIDからWorldHandlerを取得する
   static get(id: WorldID): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldPathMap))
-      return errorMessage.invalidWorldId({ id });
+      return errorMessage.core.world.invalidWorldId({ id });
     return WorldHandler.worldPathMap[id];
   }
 
@@ -145,7 +145,7 @@ export class WorldHandler {
     // 使用中の場合、現状のデータを再読み込んで終了
     if (worldSettings.using) {
       errors.push(
-        errorMessage.worldAleradyRunning({
+        errorMessage.core.world.worldAleradyRunning({
           container: this.container,
           name: this.name,
         })
@@ -257,7 +257,7 @@ export class WorldHandler {
     // 起動中の場合エラー
     if (this.run !== undefined)
       return withError(
-        errorMessage.worldAleradyRunning({
+        errorMessage.core.world.worldAleradyRunning({
           container: this.container,
           name: this.name,
         })
@@ -277,7 +277,7 @@ export class WorldHandler {
     // 自分以外の誰かが起動している場合エラー
     if (beforeWorld.using && beforeWorld.last_user !== selfOwner)
       return withError(
-        errorMessage.worldAleradyRunning({
+        errorMessage.core.world.worldAleradyRunning({
           container: this.container,
           name: this.name,
           owner: beforeWorld.last_user,

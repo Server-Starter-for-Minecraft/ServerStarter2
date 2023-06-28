@@ -19,13 +19,9 @@ async function loadPlugin(path: Path): Promise<Failable<FileData>> {
   // *.jarにマッチしたらプラグインファイルとみなす
   const match = fileName.match(PLUGIN_FILE_REGEX);
   if (match === null)
-    return errorMessage.invalidPathContent({
+    return errorMessage.data.path.invalidContent.invalidPlugin({
       type: 'file',
       path: path.path,
-      reason: {
-        key: 'invalidPlugin',
-        attr: undefined,
-      },
     });
 
   const pluginName = match[1];
@@ -49,7 +45,7 @@ export const pluginFiles: ServerAdditionalFiles<FileData> = {
     const dirPath = pluginFiles.path(cwdPath);
     return loadAdditionalFiles(dirPath, loadPlugin);
   },
-  async save(cwdPath, value): Promise<WithError<Failable<void>>> {
+  async save(cwdPath, value): Promise<WithError<void>> {
     const dirPath = pluginFiles.path(cwdPath);
     return saveAdditionalFiles(dirPath, value, installPlugin, loadPlugin);
   },

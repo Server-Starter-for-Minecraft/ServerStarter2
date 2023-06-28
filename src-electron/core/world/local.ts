@@ -65,7 +65,7 @@ export async function loadLocalFiles(
   // を並列読み込み
   const [
     worldSettings,
-    _properties,
+    properties,
     _avater_path,
     _ops,
     _whitelist,
@@ -85,14 +85,6 @@ export async function loadLocalFiles(
   // worldSettingsJsonが読み込めなかった場合はエラー
   if (isError(worldSettings)) return withError(worldSettings, errors);
 
-  // serverPropertiesが読み込めた場合はpropertiesを有効化
-  const properties = isValid(_properties)
-    ? _properties
-    : errorMessage.failLoading({
-        path: serverPropertiesFile.path(savePath).path,
-        contentType: 'properties',
-      });
-
   let players: World['players'];
 
   // opsとwhitelistが両方読み込めた場合のみplayersを有効化
@@ -100,14 +92,14 @@ export async function loadLocalFiles(
     players = toPlayers(_ops, _whitelist);
   } else {
     if (isError(_ops)) {
-      players = errorMessage.failLoading({
+      players = errorMessage.data.path.invalidContent.invalidOpsJson({
+        type: 'file',
         path: serverOpsFile.path(savePath).path,
-        contentType: 'ops',
       });
     } else {
-      players = errorMessage.failLoading({
+      players = errorMessage.data.path.invalidContent.invalidWhitelistJson({
+        type: 'file',
         path: serverWhitelistFile.path(savePath).path,
-        contentType: 'whitelist',
       });
     }
   }

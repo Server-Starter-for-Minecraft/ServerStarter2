@@ -18,13 +18,9 @@ async function loadMod(path: Path): Promise<Failable<FileData>> {
   // *.jarにマッチしたらModファイルとみなす
   const match = fileName.match(MOD_FILE_REGEX);
   if (match === null)
-    return errorMessage.invalidPathContent({
+    return errorMessage.data.path.invalidContent.invalidMod({
       type: 'file',
       path: path.path,
-      reason: {
-        key: 'invalidPlugin',
-        attr: undefined,
-      },
     });
 
   const pluginName = match[1];
@@ -48,7 +44,7 @@ export const modFiles: ServerAdditionalFiles<FileData> = {
     const dirPath = modFiles.path(cwdPath);
     return loadAdditionalFiles(dirPath, loadMod);
   },
-  async save(cwdPath, value): Promise<WithError<Failable<void>>> {
+  async save(cwdPath, value): Promise<WithError<void>> {
     const dirPath = modFiles.path(cwdPath);
     return saveAdditionalFiles(dirPath, value, installMod, loadMod);
   },

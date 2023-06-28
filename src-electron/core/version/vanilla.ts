@@ -110,7 +110,8 @@ export async function getVanillaVersionJson(
   const record = manifest.versions.find((version) => version.id === id);
 
   // 該当idのバージョンが存在しない場合
-  if (record === undefined) return errorMessage.vanillaVersionNotExists({ id });
+  if (record === undefined)
+    return errorMessage.core.version.vanillaVersionNotExists({ version: id });
 
   // jsonデータを取得
   const jsonData = await BytesData.fromUrlOrPath(jsonpath, record.url, {

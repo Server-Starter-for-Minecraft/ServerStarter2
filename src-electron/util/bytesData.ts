@@ -38,7 +38,7 @@ export class BytesData {
       const res = await (await fetch).default(url, { headers });
       if (res.status !== 200) {
         logger.fail({ status: res.status, statusText: res.statusText });
-        return errorMessage.fetchUrl({
+        return errorMessage.data.url.fetch({
           url: url,
           status: res.status,
           statusText: res.statusText,
@@ -59,7 +59,7 @@ export class BytesData {
 
       const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
       logger.fail(`${msg}`);
-      return errorMessage.hashNotMatch({
+      return errorMessage.data.hashNotMatch({
         hashtype: hash.type,
         type: 'url',
         path: url,
@@ -92,7 +92,7 @@ export class BytesData {
       }
       const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
       logger.fail(msg);
-      return errorMessage.hashNotMatch({
+      return errorMessage.data.hashNotMatch({
         hashtype: hash.type,
         type: 'file',
         path: path.str(),
@@ -201,11 +201,7 @@ export class BytesData {
       /^data:[0-9A-Za-z!#$%&'*+\.^_`|~/-]+;base64,([A-Za-z0-9+/]+=*)$/;
     const match = uri.match(regex);
 
-    if (match === null)
-      return errorMessage.invalidValue({
-        key: 'base64URI',
-        attr: uri,
-      });
+    if (match === null) return errorMessage.value.base64URI({ value: uri });
 
     return this.fromBase64(match[1]);
   }

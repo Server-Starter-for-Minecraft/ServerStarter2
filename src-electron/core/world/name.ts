@@ -11,24 +11,16 @@ export async function validateNewWorldName(
   console.log(worldContainer, worldName);
   const match = worldName.match(WORLDNAME_REGEX);
   if (match === null)
-    return errorMessage.invalidValue({
-      key: 'worldName',
-      attr: {
-        name: worldName,
-        reason: 'notMatchRegex',
-      },
+    return errorMessage.value.worldName.notMatchRegex({
+      value: worldName,
     });
 
   const path = worldContainerToPath(worldContainer).child(worldName);
 
   if (path.exists())
-    return errorMessage.invalidValue({
-      key: 'worldName',
-      attr: {
-        name: worldName,
-        reason: 'alreadyUsed',
-      },
+    return errorMessage.value.worldName.alreadyUsed({
+      value: worldName,
     });
 
-    return worldName as WorldName;
+  return worldName as WorldName;
 }

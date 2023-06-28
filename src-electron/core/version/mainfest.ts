@@ -44,7 +44,7 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
 /** ローカルから取得 */
 async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
   if (!versionManifestPath.exists())
-    return errorMessage.pathNotFound({
+    return errorMessage.data.path.notFound({
       type: 'file',
       path: versionManifestPath.path,
     });
@@ -55,7 +55,7 @@ async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
 
   const manifestSha1 = config.get('version_manifest_v2_sha1');
   if ((await manifestData.hash('sha1')) !== manifestSha1)
-    return errorMessage.hashNotMatch({
+    return errorMessage.data.hashNotMatch({
       hashtype: 'sha1',
       type: 'file',
       path: versionManifestPath.path,

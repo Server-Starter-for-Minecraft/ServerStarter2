@@ -42,13 +42,9 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
     const fixed = fixOps(value);
 
     if (fixed === FAIL)
-      return errorMessage.invalidPathContent({
+      return errorMessage.data.path.invalidContent.invalidWhitelistJson({
         type: 'file',
         path: filePath.path,
-        reason: {
-          key: 'invalidSettingFile',
-          attr: 'whitelistJson',
-        },
       });
     return fixed;
   },

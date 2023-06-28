@@ -1,4 +1,4 @@
-import type { ErrorMessageTypes } from '../util/error/schema';
+import type { FlattenErrorMessageTypes } from '../util/error/schema';
 
 export type ErrorLevel = 'info' | 'error';
 
@@ -6,10 +6,10 @@ export type ErrorLevel = 'info' | 'error';
  * keyはi18nのキーが入るかな？
  */
 export type ErrorMessage = {
-  [K in keyof ErrorMessageTypes]: {
+  [K in keyof FlattenErrorMessageTypes]: {
     type: 'error';
     level: ErrorLevel;
     key: K;
-    args: ErrorMessageTypes[K];
+    arg: FlattenErrorMessageTypes[K];
   };
-}[keyof ErrorMessageTypes];
+}[keyof FlattenErrorMessageTypes];

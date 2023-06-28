@@ -69,13 +69,13 @@ export interface WorldBase extends WorldAbbr {
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
-  datapacks: FileData[] | ErrorMessage;
+  datapacks: FileData[];
 
   /** 導入済みプラグイン */
-  plugins: FileData[] | ErrorMessage;
+  plugins: FileData[];
 
   /** 導入済みMOD */
-  mods: FileData[] | ErrorMessage;
+  mods: FileData[];
 };
 
 export interface World extends WorldBase {
@@ -85,13 +85,13 @@ export interface World extends WorldBase {
 
 export type WorldEditedAdditional = {
   /** 導入済みデータパック */
-  datapacks: (FileData | NewData)[] | ErrorMessage;
+  datapacks: (FileData | NewData)[];
 
   /** 導入済みプラグイン */
-  plugins: (FileData | NewData)[] | ErrorMessage;
+  plugins: (FileData | NewData)[];
 
   /** 導入済みMOD */
-  mods: (FileData | NewData)[] | ErrorMessage;
+  mods: (FileData | NewData)[];
 };
 
 export interface WorldEdited extends WorldBase {

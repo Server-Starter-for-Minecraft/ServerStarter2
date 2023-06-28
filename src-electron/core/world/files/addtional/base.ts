@@ -7,11 +7,11 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { ErrorMessage } from 'app/src-electron/schema/error';
 
 export type ServerAdditionalFiles<T extends FileData> = {
-  load(cwdPath: Path): Promise<WithError<Failable<T[]>>>;
+  load(cwdPath: Path): Promise<WithError<T[]>>;
   save(
     cwdPath: Path,
     value: (T & { path?: string })[]
-  ): Promise<WithError<Failable<void>>>;
+  ): Promise<WithError<void>>;
   path(cwdPath: Path): Path;
 };
 
@@ -49,9 +49,9 @@ export async function saveAdditionalFiles<T extends FileData>(
   errors.push(...loaded.filter(isError));
 
   // 削除すべきファイル一覧
-  const deletFiles = loaded.filter(isValid).filter(
-    (file) => value.find((x) => x.name === file.name) === undefined
-  );
+  const deletFiles = loaded
+    .filter(isValid)
+    .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
   // 非同期で削除
   await asyncForEach(deletFiles, (x) => dirPath.child(x.name).remove(true));

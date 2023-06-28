@@ -20,7 +20,7 @@ export async function getGitPat(
     }
   }
 
-  return errorMessage.missingPersonalAccessToken({
+  return errorMessage.core.missingPersonalAccessToken({
     owner,
     repo,
   });

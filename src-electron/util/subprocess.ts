@@ -30,7 +30,7 @@ function promissifyProcess(
 
   function onExit(code: number | null): Failable<undefined> {
     if (code === 0 || code === null) return undefined;
-    return errorMessage.subprocess({
+    return errorMessage.system.subprocess({
       processPath,
       args,
       exitcode: code,

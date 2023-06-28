@@ -14,9 +14,8 @@ export async function UsernameToUUID(
     `https://api.mojang.com/users/profiles/minecraft/${username}`
   );
   if (isError(res))
-    return errorMessage.invalidValue({
-      key: 'playerName',
-      attr: username,
+    return errorMessage.value.playerName({
+      value: username,
     });
   const jsonData = await res.json<{ name: string; id: PlayerUUID }>();
   if (isError(jsonData)) return jsonData;

@@ -115,6 +115,6 @@ async function assertEula(
 
   // Eulaに同意しなかった場合エラー
   if (!eulaAgreement) {
-    return errorMessage.minecraftEULANotAccepted(undefined);
+    return errorMessage.core.minecraftEULANotAccepted();
   }
 }

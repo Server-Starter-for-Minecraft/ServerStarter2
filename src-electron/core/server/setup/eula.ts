@@ -102,7 +102,7 @@ async function generateEula(
   if (isError(result)) return result;
 
   if (!eulaPath.exists()) {
-    return errorMessage.pathCreation({
+    return errorMessage.data.path.creationFiled({
       type: 'file',
       path: eulaPath.path,
     });

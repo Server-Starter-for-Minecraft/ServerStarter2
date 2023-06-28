@@ -22,38 +22,11 @@ export const serverAllAdditionalFiles = {
     ]);
     const errors = _datapacks.errors.concat(_plugins.errors, _mods.errors);
 
-    let datapacks: WorldAdditional['datapacks'];
-    if (isError(_datapacks.value)) {
-      errors.push(_datapacks.value);
-      datapacks = errorMessage.failLoading({
-        contentType: 'datapack',
-        path: datapackFiles.path(cwdPath).path,
-      });
-    } else {
-      datapacks = _datapacks.value;
-    }
+    const datapacks = _datapacks.value;
 
-    let plugins: WorldAdditional['plugins'];
-    if (isError(_plugins.value)) {
-      errors.push(_plugins.value);
-      plugins = errorMessage.failLoading({
-        contentType: 'plugin',
-        path: pluginFiles.path(cwdPath).path,
-      });
-    } else {
-      plugins = _plugins.value;
-    }
+    const plugins = _plugins.value;
 
-    let mods: WorldAdditional['mods'];
-    if (isError(_mods.value)) {
-      errors.push(_mods.value);
-      mods = errorMessage.failLoading({
-        contentType: 'mod',
-        path: modFiles.path(cwdPath).path,
-      });
-    } else {
-      mods = _mods.value;
-    }
+    const mods = _mods.value;
 
     return withError({ datapacks, plugins, mods }, errors);
   },
