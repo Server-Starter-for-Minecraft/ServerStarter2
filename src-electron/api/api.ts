@@ -78,6 +78,7 @@ export interface API extends IAPI {
 
     /** SystemSettingsを(再)取得 */
     GetSystemSettings: () => Promise<SystemSettings>;
+
     /** SystemSettingsを変更 */
     SetSystemSettings: (settings: SystemSettings) => Promise<SystemSettings>;
 
