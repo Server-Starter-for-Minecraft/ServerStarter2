@@ -9,6 +9,7 @@ import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { WithError } from 'app/src-electron/util/error/witherror';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const DATAPACKS_PATH = LEVEL_NAME + '/datapacks';
 
@@ -24,7 +25,10 @@ const MCMETA_FILE = 'pack.mcmeta';
 async function loadDatapack(path: Path): Promise<Failable<FileData>> {
   const mcmetaPath = path.child(MCMETA_FILE);
   if (!mcmetaPath.exists())
-    return new Error(`file not exists: ${mcmetaPath.path}`);
+    return errorMessage.pathNotFound({
+      type: 'file',
+      path: mcmetaPath.path,
+    });
   const mcmeta = await mcmetaPath.readJson<Mcmeta>();
   if (isError(mcmeta)) return mcmeta;
   mcmeta.pack.description;

@@ -17,6 +17,7 @@ import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { serverJsonFile } from './files/json';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -33,10 +34,22 @@ export async function getWorldAbbr(
   worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
   console.log(path.path);
-  if (!path.isDirectory()) return new Error(`${path.str()} is not directory.`);
+  if (!path.isDirectory())
+    return errorMessage.invalidPathContent({
+      type: 'file',
+      path: path.path,
+      reason: {
+        key: 'mustBeDirectory',
+        attr: undefined,
+      },
+    });
   const jsonpath = serverJsonFile.path(path);
 
-  if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
+  if (!jsonpath.exists())
+    return errorMessage.pathNotFound({
+      type: 'file',
+      path: jsonpath.path,
+    });
 
   const name = path.basename() as WorldName;
   const container = worldContainer as WorldContainer;
@@ -83,9 +96,8 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
 
   const systemSettings = await getSystemSettings();
 
-  if (latestRelease === undefined) {
-    return withError(new Error('Assertion: This error cannot occur'));
-  }
+  if (latestRelease === undefined)
+    throw new Error('Assertion: This error cannot occur');
 
   const container = systemSettings.container.default;
   const name = await getDefaultWorldName(container);

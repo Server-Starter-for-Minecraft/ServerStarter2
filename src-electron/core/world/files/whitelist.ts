@@ -8,6 +8,7 @@ import {
 } from 'app/src-electron/util/detaFixer/fixer';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export type WhitelistRecord = {
   uuid: PlayerUUID;
@@ -40,7 +41,15 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
     if (isError(value)) return value;
     const fixed = fixOps(value);
 
-    if (fixed === FAIL) return new Error(`${filePath} is invalid ops file`);
+    if (fixed === FAIL)
+      return errorMessage.invalidPathContent({
+        type: 'file',
+        path: filePath.path,
+        reason: {
+          key: 'invalidSettingFile',
+          attr: 'whitelistJson',
+        },
+      });
     return fixed;
   },
   save(cwdPath, value) {

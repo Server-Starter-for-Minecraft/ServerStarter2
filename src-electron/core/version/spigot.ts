@@ -16,6 +16,7 @@ import {
 } from './base';
 import { getVersionMainfest } from './mainfest';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 
@@ -165,11 +166,16 @@ async function buildSpigotVersion(
     else if (min <= 60 && 60 <= max) javaComponent = 'java-runtime-alpha';
     else if (min <= 61 && 61 <= max) javaComponent = 'java-runtime-gamma';
     else
-      return new Error(
-        `to build spigot-${version.id} java-${min - 44} ~ java-${
-          max - 44
-        } is needed`
-      );
+      return errorMessage.failSpigotBuild({
+        version: version.id,
+        reason: {
+          key: 'needJava',
+          attr: {
+            minVersion: `java-${min - 44}`,
+            maxVersion: `java-${max - 44}`,
+          },
+        },
+      });
   }
 
   const javapath = await readyJava(javaComponent, false);

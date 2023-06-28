@@ -10,6 +10,7 @@ import {
 } from './base';
 import { Path } from '../../util/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
@@ -96,6 +97,7 @@ export async function getJavaComponent(id: string) {
   return json.javaVersion?.component ?? 'jre-legacy';
 }
 
+// バージョンidでバニラのバージョンを検索
 export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
@@ -108,8 +110,7 @@ export async function getVanillaVersionJson(
   const record = manifest.versions.find((version) => version.id === id);
 
   // 該当idのバージョンが存在しない場合
-  if (record === undefined)
-    return new Error(`Vanilla version ${id} is not exists`);
+  if (record === undefined) return errorMessage.vanillaVersionNotExists({ id });
 
   // jsonデータを取得
   const jsonData = await BytesData.fromUrlOrPath(jsonpath, record.url, {

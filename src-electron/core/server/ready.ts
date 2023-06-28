@@ -15,25 +15,18 @@ import { Version } from 'app/src-electron/schema/version';
 import { checkEula } from './setup/eula';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
-
-class WorldUsingError extends Error {}
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 /** サーバー起動前の準備の内容 戻り値はJava実行時引数 */
 export async function readyRunServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  container: WorldContainer,
-  name: string,
   logger: (value: string) => void
-): Promise<Failable<{ javaArgs: string[]; javaPath: Path; }>> {
-  // ワールドが起動中の場合エラー
-  if (settings.using)
-    return new WorldUsingError(
-      `world ${container}/${name} is running by ${
-        settings.last_user ?? '<annonymous>'
-      }`
-    );
+): Promise<Failable<{ javaArgs: string[]; javaPath: Path }>> {
+  // ワールドが起動中の場合
+  // 致命的なエラー(この関数を呼ぶ時点でバリデーションを掛けておくこと)
+  if (settings.using) throw new Error();
 
   const javaArgs: string[] = [];
 
@@ -122,8 +115,6 @@ async function assertEula(
 
   // Eulaに同意しなかった場合エラー
   if (!eulaAgreement) {
-    return new Error(
-      'To start server, you need to agree to Minecraft EULA (https://aka.ms/MinecraftEULA)'
-    );
+    return errorMessage.minecraftEULANotAccepted(undefined);
   }
 }

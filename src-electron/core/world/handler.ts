@@ -2,10 +2,7 @@ import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { worldContainerToPath } from './worldContainer';
-import {
-  Failable,
-  failabilify,
-} from 'app/src-electron/util/error/failable';
+import { Failable, failabilify } from 'app/src-electron/util/error/failable';
 import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
@@ -19,8 +16,8 @@ import { RunServer, runServer } from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError } from 'app/src-electron/util/error/error';
-
-export class WorldHandlerError extends Error {}
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { ErrorMessage } from 'app/src-electron/schema/error';
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
@@ -53,9 +50,8 @@ export class WorldHandler {
 
   // worldIDからWorldHandlerを取得する
   static get(id: WorldID): Failable<WorldHandler> {
-    if (!(id in WorldHandler.worldPathMap)) {
-      return new Error(`missing world data is:${id}`);
-    }
+    if (!(id in WorldHandler.worldPathMap))
+      return errorMessage.invalidWorldId({ id });
     return WorldHandler.worldPathMap[id];
   }
 
@@ -132,7 +128,7 @@ export class WorldHandler {
 
   /** サーバーのデータを保存 */
   async save(world: WorldEdited): Promise<WithError<Failable<World>>> {
-    const errors: Error[] = [];
+    const errors: ErrorMessage[] = [];
 
     // セーブデータを移動
     await this.move(world.name, world.container);
@@ -148,7 +144,12 @@ export class WorldHandler {
 
     // 使用中の場合、現状のデータを再読み込んで終了
     if (worldSettings.using) {
-      errors.push(new WorldHandlerError(`world '${savePath.path}' is using`));
+      errors.push(
+        errorMessage.worldAleradyRunning({
+          container: this.container,
+          name: this.name,
+        })
+      );
       const world = await this.loadLocal();
       world.errors.push(...errors);
       return world;
@@ -218,7 +219,7 @@ export class WorldHandler {
     this.name = world.name;
     const savePath = this.getSavePath();
 
-    const errors: Error[] = [];
+    const errors: ErrorMessage[] = [];
 
     // ワールド名が使用不能だった場合(たぶん起こらない)
     const worldNameValidated = validateNewWorldName(
@@ -256,7 +257,10 @@ export class WorldHandler {
     // 起動中の場合エラー
     if (this.run !== undefined)
       return withError(
-        new Error(`world ${this.container}/${this.name} is already running`)
+        errorMessage.worldAleradyRunning({
+          container: this.container,
+          name: this.name,
+        })
       );
 
     // ワールド情報を取得
@@ -273,11 +277,11 @@ export class WorldHandler {
     // 自分以外の誰かが起動している場合エラー
     if (beforeWorld.using && beforeWorld.last_user !== selfOwner)
       return withError(
-        new Error(
-          `world ${this.container}/${this.name} is already running by ${
-            beforeWorld.last_user ?? '<anonymous>'
-          }`
-        )
+        errorMessage.worldAleradyRunning({
+          container: this.container,
+          name: this.name,
+          owner: beforeWorld.last_user,
+        })
       );
 
     const settings = constructWorldSettings(beforeWorld);

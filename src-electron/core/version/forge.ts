@@ -14,6 +14,7 @@ import { interactiveProcess } from '../../util/subprocess';
 import { readyJava } from '../../util/java/java';
 import { osPlatform } from '../../util/os';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const forgeVersionsPath = versionsCachePath.child('forge');
 
@@ -121,9 +122,13 @@ async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
 
   if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"'];
 
-  return new Error(
-    `run.bat or run.sh or server jar file is needed in ${serverCwdPath.str()}`
-  );
+  return errorMessage.pathNotFound({
+    type: 'file',
+    path: {
+      mode: 'any',
+      values: ['run.bat', 'run.sh', '*.jar'],
+    },
+  });
 }
 
 async function getProgramArgumentsFromBat(batPath: Path) {
@@ -141,7 +146,14 @@ async function getProgramArgumentsFromBat(batPath: Path) {
       return ['@user_jvm_args.txt', arg];
     }
   }
-  return new Error('missing java command in run.bat file');
+  return errorMessage.invalidPathContent({
+    type: 'file',
+    path: batPath.path,
+    reason: {
+      key: 'missingJavaCommand',
+      attr: undefined,
+    },
+  });
 }
 
 async function getProgramArgumentsFromSh(shPath: Path) {
@@ -159,7 +171,14 @@ async function getProgramArgumentsFromSh(shPath: Path) {
       return ['@user_jvm_args.txt', arg];
     }
   }
-  return new Error('missing java command in run.sh file');
+  return errorMessage.invalidPathContent({
+    type: 'file',
+    path: shPath.path,
+    reason: {
+      key: 'missingJavaCommand',
+      attr: undefined,
+    },
+  });
 }
 
 async function installForge(installerPath: Path): Promise<Failable<undefined>> {
@@ -238,7 +257,7 @@ export async function scrapeForgeVersions(
   id: string
 ): Promise<Failable<ForgeVersion[]>> {
   if (noInstallerVersionIds.has(id))
-    return new Error(`forge ${id} installer is not provided`);
+    return errorMessage.forgeInstallerNotProvided({ version: id });
 
   const versionUrl = `https://files.minecraftforge.net/net/minecraftforge/forge/index_${id}.html`;
   const page = await BytesData.fromURL(versionUrl);

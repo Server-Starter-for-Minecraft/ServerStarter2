@@ -16,6 +16,7 @@ import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { serverAllAdditionalFiles } from './files/addtional/all';
 import { errorMessage } from '../../util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ErrorMessage } from 'app/src-electron/schema/error';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -77,7 +78,7 @@ export async function loadLocalFiles(
     serverWhitelistFile.load(savePath),
     serverAllAdditionalFiles.load(savePath),
   ]);
-  const errors: Error[] = [];
+  const errors: ErrorMessage[] = [];
 
   errors.push(...additional.errors);
 
@@ -142,7 +143,7 @@ export async function saveLocalFiles(
 ): Promise<WithError<Failable<World>>> {
   const worldSettings = constructWorldSettings(world);
 
-  const errors: Error[] = [];
+  const errors: ErrorMessage[] = [];
 
   async function constructResult() {
     // ローカルのデータを再読み込み

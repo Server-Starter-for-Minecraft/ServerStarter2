@@ -7,9 +7,7 @@ import {
   WorldEditedAdditional,
 } from 'app/src-electron/schema/world';
 import { WithError, withError } from 'app/src-electron/util/error/witherror';
-import {
-  errorMessage,
-} from 'app/src-electron/util/error/construct';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 import { ServerAdditionalFiles } from './base';
 import { FileData } from 'app/src-electron/schema/filedata';
 import { ErrorMessage } from 'app/src-electron/schema/error';
@@ -64,7 +62,7 @@ export const serverAllAdditionalFiles = {
     cwdPath: Path,
     value: WorldEditedAdditional
   ): Promise<WithError<void>> {
-    const errors: Error[] = [];
+    const errors: ErrorMessage[] = [];
 
     async function saveEach<T extends FileData>(
       files: ServerAdditionalFiles<T>,

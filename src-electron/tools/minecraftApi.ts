@@ -4,6 +4,7 @@ import { BytesData } from '../util/bytesData';
 import { Png } from '../util/png';
 import { formatUUID } from './uuid';
 import { isError } from '../util/error/error';
+import { errorMessage } from '../util/error/construct';
 
 /** mojangのapiからプレイヤーの名前で検索(過去の名前も検索可能) 戻り値のnameは現在の名前 */
 export async function UsernameToUUID(
@@ -12,7 +13,11 @@ export async function UsernameToUUID(
   const res = await BytesData.fromURL(
     `https://api.mojang.com/users/profiles/minecraft/${username}`
   );
-  if (isError(res)) return new Error(`player ${username} not exists`);
+  if (isError(res))
+    return errorMessage.invalidValue({
+      key: 'playerName',
+      attr: username,
+    });
   const jsonData = await res.json<{ name: string; id: PlayerUUID }>();
   if (isError(jsonData)) return jsonData;
   return {
@@ -62,7 +67,7 @@ export async function GetProfile(id: string): Promise<Failable<PlayerProfile>> {
   const res = await BytesData.fromURL(
     `https://sessionserver.mojang.com/session/minecraft/profile/${id}`
   );
-  if (isError(res)) return new Error(`player ${id} not exists`);
+  if (isError(res)) return res;
 
   const profile = await res.json<Profile>();
   if (isError(profile)) return profile;

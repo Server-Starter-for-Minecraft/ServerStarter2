@@ -3,6 +3,7 @@ import { BytesData } from '../../util/bytesData';
 import { Failable } from '../../util/error/failable';
 import { versionManifestPath } from '../const';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export type ManifestRecord = {
   id: string;
@@ -43,7 +44,10 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
 /** ローカルから取得 */
 async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
   if (!versionManifestPath.exists())
-    return new Error('version_manifest_v2.json is missing');
+    return errorMessage.pathNotFound({
+      type: 'file',
+      path: versionManifestPath.path,
+    });
 
   const manifestData = await versionManifestPath.read();
 
@@ -51,7 +55,11 @@ async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
 
   const manifestSha1 = config.get('version_manifest_v2_sha1');
   if ((await manifestData.hash('sha1')) !== manifestSha1)
-    return new Error('sha1 not match for version_manifest_v2.json');
+    return errorMessage.hashNotMatch({
+      hashtype: 'sha1',
+      type: 'file',
+      path: versionManifestPath.path,
+    });
 
   return manifestData.json();
 }

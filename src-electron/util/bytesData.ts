@@ -7,10 +7,9 @@ import { Png } from './png';
 import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
+import { errorMessage } from './error/construct';
 
 const fetch = import('node-fetch');
-
-export class BytesDataError extends Error {}
 
 const loggers = utilLoggers.BytesData;
 
@@ -39,9 +38,11 @@ export class BytesData {
       const res = await (await fetch).default(url, { headers });
       if (res.status !== 200) {
         logger.fail({ status: res.status, statusText: res.statusText });
-        return new BytesDataError(
-          `failed to fetch ${url} status: ${res.status} ${res.statusText}`
-        );
+        return errorMessage.fetchUrl({
+          url: url,
+          status: res.status,
+          statusText: res.statusText,
+        });
       }
       const buffer = await res.arrayBuffer();
       const result = new BytesData(buffer);
@@ -58,7 +59,11 @@ export class BytesData {
 
       const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
       logger.fail(`${msg}`);
-      return new BytesDataError(msg);
+      return errorMessage.hashNotMatch({
+        hashtype: hash.type,
+        type: 'url',
+        path: url,
+      });
     } catch (e) {
       logger.fail();
       return fromRuntimeError(e);
@@ -87,7 +92,11 @@ export class BytesData {
       }
       const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
       logger.fail(msg);
-      return new BytesDataError(msg);
+      return errorMessage.hashNotMatch({
+        hashtype: hash.type,
+        type: 'file',
+        path: path.str(),
+      });
     } catch (e) {
       logger.fail();
       // TODO:黒魔術の解消
@@ -191,7 +200,13 @@ export class BytesData {
     const regex =
       /^data:[0-9A-Za-z!#$%&'*+\.^_`|~/-]+;base64,([A-Za-z0-9+/]+=*)$/;
     const match = uri.match(regex);
-    if (match === null) return new Error('value not matches to base64 uri');
+
+    if (match === null)
+      return errorMessage.invalidValue({
+        key: 'base64URI',
+        attr: uri,
+      });
+
     return this.fromBase64(match[1]);
   }
 

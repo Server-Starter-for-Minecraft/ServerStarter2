@@ -2,7 +2,10 @@ import { ErrorLevel, ErrorMessage } from 'app/src-electron/schema/error';
 import { ErrorMessageTypes } from './schema';
 
 type ErrorMessageConstructor = {
-  [K in keyof ErrorMessageTypes]: (arg: ErrorMessageTypes[K]) => ErrorMessage;
+  [K in keyof ErrorMessageTypes]: (
+    arg: ErrorMessageTypes[K],
+    level?: ErrorLevel
+  ) => ErrorMessage;
 };
 
 export const errorMessage: ErrorMessageConstructor = new Proxy(

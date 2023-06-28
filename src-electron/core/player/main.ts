@@ -6,6 +6,7 @@ import { searchPlayerFromName, searchPlayerFromUUID } from './search';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { formatUUID } from 'app/src-electron/tools/uuid';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 /** 名前またはUUIDからプレイヤーを取得 (キャッシュに存在する場合高速) */
 export async function getPlayer(
@@ -14,17 +15,41 @@ export async function getPlayer(
 ): Promise<Failable<Player>> {
   switch (mode) {
     case 'name':
-      if (!isName(nameOrUuid)) return new Error('無効なプレイヤー名');
+      if (!isName(nameOrUuid)) {
+        return errorMessage.invalidValue(
+          {
+            kind: 'playerName',
+            value: nameOrUuid,
+          },
+          'error'
+        );
+      }
       return await getPlayerFromName(nameOrUuid);
     case 'uuid':
-      if (!isUUID(nameOrUuid)) return new Error('無効なプレイヤーUUID');
+      if (!isUUID(nameOrUuid)) {
+        return errorMessage.invalidValue(
+          {
+            kind: 'playerUUID',
+            value: nameOrUuid,
+          },
+          'error'
+        );
+      }
       return await getPlayerFromUUID(nameOrUuid);
     case 'auto':
       if (isName(nameOrUuid)) return await getPlayerFromName(nameOrUuid);
 
       // autoの場合のみ 0-0-0-0-0 のような短縮UUIDやハイフンのないUUIDを許可する
       const uuid = formatUUID<PlayerUUID>(nameOrUuid);
-      if (isError(uuid)) return new Error('無効なプレイヤー名またはUUID');
+      if (isError(uuid)) {
+        return errorMessage.invalidValue(
+          {
+            kind: 'playerNameOrUUID',
+            value: nameOrUuid,
+          },
+          'error'
+        );
+      }
 
       return await getPlayerFromUUID(uuid);
   }

@@ -18,6 +18,7 @@ import { fixPlayerUUID } from '../../fixers/brands';
 import { ServerSettingFile } from './base';
 import { getSystemSettings } from '../../stores/system';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 /**
  * ワールドの設定
@@ -97,7 +98,14 @@ export const serverJsonFile: ServerSettingFile<WorldSettings> = {
     const fixed = (await worldSettingsFixer())(data);
 
     if (fixed === FAIL)
-      return new Error(`${jsonPath.path} is invalid setting file.`);
+      return errorMessage.invalidPathContent({
+        type: 'file',
+        path: jsonPath.path,
+        reason: {
+          key: 'invalidSettingFile',
+          attr: 'worldSettingJson',
+        },
+      });
 
     return fixed;
   },

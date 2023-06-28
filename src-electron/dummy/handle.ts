@@ -21,6 +21,7 @@ import {
 } from '../schema/brands';
 import { dummyWorldAbbrs, getNewWorld, worldMap } from './const/world';
 import { Player } from '../schema/player';
+import { errorMessage } from '../util/error/construct';
 
 const sleepTime = 500;
 
@@ -157,7 +158,9 @@ export const searchPlayer = async (
       avatar_overlay: playerAvatarOverlay,
     };
   }
-  return new Error(`Non existing player: ${uuidOrName}`);
+  return errorMessage.invalidValue({
+    "key":"playerName"
+  })
 };
 
 export const getDefaultWorld = async () => {

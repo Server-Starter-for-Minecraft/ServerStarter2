@@ -3,6 +3,7 @@ import { BytesData } from 'app/src-electron/util/bytesData';
 import { ServerSettingFile } from './base';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const ICON_PATH = LEVEL_NAME + '/icon.png';
 
@@ -14,7 +15,10 @@ export const serverIconFile: ServerSettingFile<ImageURI | undefined> = {
       if (isValid(data)) {
         return await data.encodeURI('image/png');
       }
-      return new Error(`failed to load ${iconpath.path}`);
+      return errorMessage.pathLoad({
+        type: 'file',
+        path: iconpath.path,
+      });
     }
     return undefined;
   },

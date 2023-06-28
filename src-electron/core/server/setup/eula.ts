@@ -4,6 +4,7 @@ import { Failable } from '../../../util/error/failable';
 import { execProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -98,11 +99,12 @@ async function generateEula(
     true
   );
 
-  if (isError(result)) {
-    return new Error('failed to generate eula.txt.');
-  }
+  if (isError(result)) return result;
 
   if (!eulaPath.exists()) {
-    return new Error('failed to generate eula.txt.');
+    return errorMessage.pathCreation({
+      type: 'file',
+      path: eulaPath.path,
+    });
   }
 }

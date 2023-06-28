@@ -4,6 +4,7 @@ import { utilLoggers } from './logger';
 import { sleep } from './sleep';
 import { onQuit } from '../lifecycle/lifecycle';
 import { fromRuntimeError } from './error/error';
+import { errorMessage } from './error/construct';
 
 const loggers = utilLoggers.subprocess;
 
@@ -15,13 +16,13 @@ export type ChildProcessPromise = Promise<Failable<undefined>> & {
 
 function promissifyProcess(
   process: child_process.ChildProcess,
-  processpath: string,
+  processPath: string,
   args: string[],
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ) {
   const logger = loggers.promissifyProcess({
-    command: processpath + ' ' + args.join(' '),
+    command: processPath + ' ' + args.join(' '),
   });
   logger.start();
 
@@ -29,10 +30,11 @@ function promissifyProcess(
 
   function onExit(code: number | null): Failable<undefined> {
     if (code === 0 || code === null) return undefined;
-    const command = processpath + ' ' + args.join(' ');
-    return new Error(
-      `error occured in running subprocess with exitcode:${code} command:${command}}`
-    );
+    return errorMessage.subprocess({
+      processPath,
+      args,
+      exitcode: code,
+    });
   }
 
   const executor: (

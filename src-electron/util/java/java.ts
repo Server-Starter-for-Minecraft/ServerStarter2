@@ -13,8 +13,6 @@ export type component =
   | 'java-runtime-gamma'
   | 'jre-legacy';
 
-export class JavaInstallError extends Error {}
-
 /**
  * 適切なjavaw.exeの実行パスを返す
  * 必要に応じてバイナリをダウンロードする
@@ -41,7 +39,7 @@ export async function readyJava(
     case 'mac-os-arm64':
       return path.child('jre.bundle/Contents/Home/bin/java');
     default:
-      return new Error(`Unknown OS:${osPlatform}`);
+      throw new Error(`Unknown OS:${osPlatform}`);
   }
 }
 
@@ -93,7 +91,7 @@ async function getAllJson(): Promise<Failable<AllJson>> {
     if (isError(json)) return json;
     return json;
   } catch (e) {
-    return fromRuntimeError(e)
+    return fromRuntimeError(e);
   }
 }
 

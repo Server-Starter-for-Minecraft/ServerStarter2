@@ -1,13 +1,11 @@
-import {
-  Failable,
-  failabilify
-} from 'app/src-electron/util/error/failable';
+import { Failable, failabilify } from 'app/src-electron/util/error/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
 import { GithubRemote } from 'src-electron/schema/remote';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
@@ -127,7 +125,10 @@ async function pushWorld(
 ): Promise<Failable<undefined>> {
   // ディレクトリが存在しない場合エラー
   if (!local.exists()) {
-    return new Error(`unable to push non-existing directory ${local}`);
+    return errorMessage.pathNotFound({
+      type: 'directory',
+      path: local.path,
+    });
   }
 
   // patを取得

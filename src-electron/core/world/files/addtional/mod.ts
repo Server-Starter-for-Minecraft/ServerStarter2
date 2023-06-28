@@ -7,6 +7,7 @@ import {
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { WithError } from 'app/src-electron/util/error/witherror';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const MODS_PATH = 'mods';
 const MOD_FILE_REGEX = /^([^\\/:*?\"<>|]+)\.jar$/;
@@ -17,7 +18,14 @@ async function loadMod(path: Path): Promise<Failable<FileData>> {
   // *.jarにマッチしたらModファイルとみなす
   const match = fileName.match(MOD_FILE_REGEX);
   if (match === null)
-    return new Error(`${path.path} is not valid plugin file.`);
+    return errorMessage.invalidPathContent({
+      type: 'file',
+      path: path.path,
+      reason: {
+        key: 'invalidPlugin',
+        attr: undefined,
+      },
+    });
 
   const pluginName = match[1];
   return {

@@ -1,6 +1,7 @@
 import { Failable } from 'app/src-electron/util/error/failable';
 import { systemSettings } from '../../stores/system';
 import { GithubAccountSetting } from 'src-electron/schema/remote';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 /** リポジトリを操作できる登録済みのPATを取得する。 */
 export async function getGitPat(
@@ -19,7 +20,10 @@ export async function getGitPat(
     }
   }
 
-  return new Error(`missing git personal access token for ${owner}.${repo}`);
+  return errorMessage.missingPersonalAccessToken({
+    owner,
+    repo,
+  });
 }
 
 /** リポジトリを操作できる登録済みのPATを取得する。

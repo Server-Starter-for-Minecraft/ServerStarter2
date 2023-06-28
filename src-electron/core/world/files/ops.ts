@@ -11,6 +11,7 @@ import {
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixOpLevel } from '../../fixers/player';
 import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export type OpRecord = {
   uuid: PlayerUUID;
@@ -45,7 +46,15 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
     const value = await filePath.readJson<Ops>();
     if (isError(value)) return value;
     const fixed = fixOps(value);
-    if (fixed === FAIL) return new Error(`${filePath} is invalid ops file`);
+    if (fixed === FAIL)
+      return errorMessage.invalidPathContent({
+        type: 'file',
+        path: filePath.path,
+        reason: {
+          key: 'invalidSettingFile',
+          attr: 'opsJson',
+        },
+      });
     return fixed;
   },
   save(cwdPath, value) {

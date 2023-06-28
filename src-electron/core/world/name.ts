@@ -2,6 +2,7 @@ import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { worldContainerToPath } from './worldContainer';
 import { WORLDNAME_REGEX } from '../const';
 import { Failable } from 'app/src-electron/util/error/failable';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export async function validateNewWorldName(
   worldContainer: WorldContainer,
@@ -10,12 +11,24 @@ export async function validateNewWorldName(
   console.log(worldContainer, worldName);
   const match = worldName.match(WORLDNAME_REGEX);
   if (match === null)
-    return new Error(
-      `${worldName} is not a valid WorldName. WorldName must match regex ${WORLDNAME_REGEX}`
-    );
+    return errorMessage.invalidValue({
+      key: 'worldName',
+      attr: {
+        name: worldName,
+        reason: 'notMatchRegex',
+      },
+    });
+
   const path = worldContainerToPath(worldContainer).child(worldName);
 
-  if (path.exists()) return new Error(`${path.str()} is alerady exists.`);
+  if (path.exists())
+    return errorMessage.invalidValue({
+      key: 'worldName',
+      attr: {
+        name: worldName,
+        reason: 'alreadyUsed',
+      },
+    });
 
-  return worldName as WorldName;
+    return worldName as WorldName;
 }

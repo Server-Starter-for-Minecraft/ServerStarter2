@@ -1,5 +1,6 @@
 import { Failable } from '../util/error/failable';
 import { UUID } from '../schema/brands';
+import { errorMessage } from '../util/error/construct';
 
 const crypto = require('crypto');
 //export const uuid:string = crypto.randomUUID()
@@ -47,5 +48,8 @@ export function formatUUID<U extends UUID>(uuid: string): Failable<U> {
     return result;
   }
 
-  return new Error('invalid uuid string');
+  return errorMessage.runtime({
+    type: 'UUIDFormat',
+    message: uuid,
+  });
 }
