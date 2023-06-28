@@ -145,11 +145,6 @@ async function buildSpigotVersion(
   targetpath: Path,
   javaComponent: JavaComponent
 ): Promise<Failable<undefined>> {
-  // TODO: ほんとにjava-runtime-gammaで大丈夫?
-  // if (javaComponent == 'jre-legacy') {
-  //   javaComponent = 'java-runtime-alpha';
-  // }
-
   const VERSION_URL = `https://hub.spigotmc.org/versions/${version.id}.json`;
 
   // spigotのデータを取得する(実行javaバージョンの確認するため)
