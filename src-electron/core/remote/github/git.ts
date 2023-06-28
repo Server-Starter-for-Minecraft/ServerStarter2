@@ -1,25 +1,15 @@
-import {
-  Failable,
-  failabilify,
-  isFailure,
-  isSuccess,
-} from 'src-electron/api/failable';
+import { Failable, failabilify } from 'app/src-electron/util/error/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { RemoteOperator } from '../base';
-import { serverSettingsFileName } from '../../settings/worldJson';
-import { LEVEL_NAME } from '../../const';
-import { GithubBlob, GithubTree } from './githubApi';
-import { worldSettingsToWorld } from '../../settings/converter';
 import { GithubRemote } from 'src-electron/schema/remote';
-import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
-import { WorldLocationMap } from '../../world/worldMap';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
   pushWorld,
-  getWorld,
 };
 
 const DEFAULT_REMOTE_NAME = 'serverstarter';
@@ -35,7 +25,7 @@ async function isGitRipository(git: SimpleGit, local: Path) {
   const topLevelStr = await failabilify((...args) => git.revparse(...args))([
     '--show-toplevel',
   ]);
-  if (isFailure(topLevelStr)) return topLevelStr;
+  if (isError(topLevelStr)) return topLevelStr;
   const topLevel = new Path(topLevelStr);
   return topLevel.str() === local.str();
 }
@@ -51,7 +41,7 @@ async function getRemoteName(
 ): Promise<Failable<string>> {
   const url = getRemoteUrl(remote, pat);
   const remotes = await failabilify(() => git.getRemotes(true))();
-  if (isFailure(remotes)) return remotes;
+  if (isError(remotes)) return remotes;
 
   const names = new Set<string>();
 
@@ -73,7 +63,7 @@ async function getRemoteName(
   }
 
   const result = await failabilify(() => git.addRemote(remotename, url))();
-  if (isFailure(result)) result;
+  if (isError(result)) result;
 
   return remotename;
 }
@@ -85,7 +75,7 @@ async function pullWorld(
   // patを取得
   const pat = await getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
-  if (isFailure(pat)) return pat;
+  if (isError(pat)) return pat;
 
   // ディレクトリが存在しない場合生成
   if (!local.exists()) local.mkdir(true);
@@ -96,13 +86,13 @@ async function pullWorld(
     // 該当のリモート名称を取得
     const remoteName = await getRemoteName(git, remote, pat);
     // 該当のリモート名称の取得に成功した場合
-    if (isSuccess(remoteName)) {
+    if (isValid(remoteName)) {
       // pullを実行
       const pullResult = await failabilify(() =>
         git.pull(remoteName, remote.branch)
       )();
       // pullに成功した場合
-      if (isSuccess(pullResult)) return undefined;
+      if (isValid(pullResult)) return undefined;
     }
   }
 
@@ -124,7 +114,7 @@ async function pullWorld(
     git.clone(url, local.str(), cloneOptions)
   )();
 
-  if (isFailure(cloneResult)) return cloneResult;
+  if (isError(cloneResult)) return cloneResult;
 
   return undefined;
 }
@@ -135,13 +125,16 @@ async function pushWorld(
 ): Promise<Failable<undefined>> {
   // ディレクトリが存在しない場合エラー
   if (!local.exists()) {
-    return new Error(`unable to push non-existing directory ${local}`);
+    return errorMessage.data.path.notFound({
+      type: 'directory',
+      path: local.path,
+    });
   }
 
   // patを取得
   const pat = await getGitPat(remote.owner, remote.repo);
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
-  if (isFailure(pat)) return pat;
+  if (isError(pat)) return pat;
 
   const git = simpleGit(local.str());
 
@@ -152,13 +145,13 @@ async function pushWorld(
     // 該当のリモート名称を取得
     const remoteName = await getRemoteName(git, remote, pat);
     // 該当のリモート名称の取得に成功した場合
-    if (isSuccess(remoteName)) {
+    if (isValid(remoteName)) {
       // pushを実行
       const pushResult = await failabilify(() =>
         git.push(remoteName, remote.branch)
       )();
       // pushに成功した場合
-      if (isSuccess(pushResult)) return undefined;
+      if (isValid(pushResult)) return undefined;
     }
   }
 
@@ -170,95 +163,19 @@ async function pushWorld(
   const initResult = await failabilify(() =>
     git.init(['-b', DEFAULT_REMOTE_NAME])
   )();
-  if (isFailure(initResult)) return initResult;
+  if (isError(initResult)) return initResult;
 
   // git commit
   const commitResult = await failabilify(() =>
     git.commit('message', undefined, { '-a': null })
   )();
-  if (isFailure(commitResult)) return commitResult;
+  if (isError(commitResult)) return commitResult;
 
   // git push
   const pushResult = await failabilify(() =>
     git.push(DEFAULT_REMOTE_NAME, remote.branch)
   )();
-  if (isFailure(pushResult)) return pushResult;
+  if (isError(pushResult)) return pushResult;
 
   return undefined;
-}
-
-async function getWorld(
-  id: WorldID,
-  remote: GithubRemote
-): Promise<Failable<World>> {
-  const location = WorldLocationMap.get(id);
-  if (isFailure(location)) return location;
-
-  const { container, name } = location;
-
-  // patを取得
-  const pat = await getGitPat(remote.owner, remote.repo);
-  // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
-  if (isFailure(pat)) return pat;
-
-  const root = await GithubTree.fromRepository(
-    remote.owner,
-    remote.repo,
-    remote.branch,
-    pat
-  );
-  if (isFailure(root)) return root;
-  const rootFiles = await root.files();
-  if (isFailure(rootFiles)) return rootFiles;
-
-  const settingFile = rootFiles[serverSettingsFileName];
-  const worldDir = rootFiles[LEVEL_NAME];
-
-  const [settings, avater_path] = await Promise.all([
-    getSettings(settingFile),
-    getIconURI(worldDir),
-  ]);
-
-  if (settings === undefined) {
-    return new Error(`failed to load & parse ${settingFile.url}`);
-  }
-
-  return worldSettingsToWorld({
-    id,
-    avater_path,
-    container,
-    name,
-    settings,
-  });
-}
-
-async function getSettings(settingsFile: GithubTree | GithubBlob) {
-  if (settingsFile === undefined) return undefined;
-  if (settingsFile instanceof GithubTree) return undefined;
-  const json = await settingsFile.loadJson<WorldSettings>();
-  if (isFailure(json)) return undefined;
-  return json;
-}
-
-async function getIconURI(worldDir: GithubTree | GithubBlob) {
-  // ディレクトリが存在しない場合
-  if (worldDir === undefined) return undefined;
-
-  // ディレクトリでない場合
-  if (worldDir instanceof GithubBlob) return undefined;
-
-  // icon.pngを取得
-  const files = await worldDir.files();
-  if (isFailure(files)) return undefined;
-  const iconFile = files['icon.png'];
-
-  // icon.pngが存在しない場合
-  if (iconFile === undefined) return undefined;
-  // icon.pngがファイルでない場合
-  if (iconFile instanceof GithubTree) return undefined;
-
-  // icon.pngの内容を読み込んでdata URIにエンコード
-  const bytes = await iconFile.loadBytes();
-  if (isFailure(bytes)) return undefined;
-  return await bytes.encodeURI('image/png');
 }

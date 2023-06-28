@@ -1,8 +1,16 @@
 import { Brand } from '../util/brand';
-import { UUID, WorldContainer, WorldName } from './brands';
+import {
+  ImageURI,
+  PlayerUUID,
+  Timestamp,
+  UUID,
+  WorldContainer,
+  WorldName,
+} from './brands';
+import { ErrorMessage } from './error';
 import { FileData, NewData } from './filedata';
 import { MemorySettings } from './memory';
-import { Player, PlayerSetting } from './player';
+import { PlayerSetting } from './player';
 import { Remote } from './remote';
 import { ServerProperties } from './serverproperty';
 import { Version } from './version';
@@ -20,9 +28,6 @@ export interface WorldAbbr {
 
   /** ワールドのID (ServerStarterが起動するごとに変わる) */
   id: WorldID;
-
-  /** アイコンのURI */
-  avater_path?: string;
 }
 
 /** ワールドごとの設定 */
@@ -41,10 +46,10 @@ export interface WorldBase extends WorldAbbr {
    * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
    * new Dateの引数にすることで日付が得られる
    */
-  last_date?: number;
+  last_date?: Timestamp;
 
   /** 最終プレイ者 */
-  last_user?: Player;
+  last_user?: PlayerUUID;
 
   /** 使用メモリ量 */
   memory: MemorySettings;
@@ -53,21 +58,24 @@ export interface WorldBase extends WorldAbbr {
   javaArguments?: string;
 
   /** server.propertiesの内容 */
-  properties: ServerProperties;
+  properties: ServerProperties | ErrorMessage;
 
   /** プレイヤーの設定 */
-  players: PlayerSetting[];
+  players: PlayerSetting[] | ErrorMessage;
+
+  /** アイコンのURI */
+  avater_path?: ImageURI;
 }
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
-  datapacks?: FileData[];
+  datapacks: FileData[];
 
   /** 導入済みプラグイン */
-  plugins?: FileData[];
+  plugins: FileData[];
 
   /** 導入済みMOD */
-  mods?: FileData[];
+  mods: FileData[];
 };
 
 export interface World extends WorldBase {
@@ -77,13 +85,13 @@ export interface World extends WorldBase {
 
 export type WorldEditedAdditional = {
   /** 導入済みデータパック */
-  datapacks?: (FileData | NewData)[];
+  datapacks: (FileData | NewData)[];
 
   /** 導入済みプラグイン */
-  plugins?: (FileData | NewData)[];
+  plugins: (FileData | NewData)[];
 
   /** 導入済みMOD */
-  mods?: (FileData | NewData)[];
+  mods: (FileData | NewData)[];
 };
 
 export interface WorldEdited extends WorldBase {
@@ -104,43 +112,6 @@ export interface WorldEdited extends WorldBase {
   /** 導入済み */
   additional: WorldEditedAdditional;
 }
-
-/**
- * ワールドの設定
- * server_settings.jsonの内容
- */
-export type WorldSettings = {
-  /** 使用メモリ量 */
-  memory: MemorySettings;
-
-  /** Javaの実行時引数 */
-  javaArguments?: string;
-
-  /** バージョン */
-  version: Version;
-
-  /** 同期先のリモートリポジトリ */
-  remote?: Remote;
-
-  /** 最終プレイ日
-   *
-   * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
-   * new Dateの引数にすることで日付が得られる
-   */
-  last_date?: number;
-
-  /** 最終プレイ者 */
-  last_user?: Player;
-
-  /** 起動中フラグ */
-  using?: boolean;
-
-  /** サーバープロパティ */
-  properties?: ServerProperties;
-
-  /** プレイヤーの設定 */
-  players: PlayerSetting[];
-};
 
 /** serverstarterのシステム設定内のワールド設定 */
 export type SystemWorldSettings = {

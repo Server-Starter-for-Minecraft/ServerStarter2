@@ -7,11 +7,11 @@ import { getFrontAPIListener, setFrontAPI } from './front';
 
 // バックエンド
 
-// import { setBackAPI } from '../core/api';
-// import { getBackListener } from './back';
+import { setBackAPI } from '../core/api';
+import { getBackListener } from './back';
 
-import { setBackAPI } from '../dummy/api';
-import { getBackListener } from './dummy_back';
+// import { setBackAPI } from '../dummy/api';
+// import { getBackListener } from './dummy_back';
 
 export function setupIPC(mainwindowGetter: () => BrowserWindow | undefined) {
   const { back, front } = linkIPC<API>(

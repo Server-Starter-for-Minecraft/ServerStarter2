@@ -5,13 +5,12 @@ import {
   LocalSave,
   LocalSaveContainer,
   SystemSettings,
-  WorldContainers,
 } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
-import { Failable } from './failable';
+import { Failable } from '../util/error/failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
-import { WithError } from './witherror';
+import { WithError } from '../util/error/witherror';
 
 /**
  * ## APIの利用方法
@@ -97,10 +96,9 @@ export interface API extends IAPI {
     /** Worldを生成 実際にディレクトリを生成し、リモートがある場合リモートも生成する */
     CreateWorld: (world: WorldEdited) => Promise<WithError<Failable<World>>>;
     /** Worldを削除 リモートがある場合でもリモートは削除しない */
-    DeleteWorld: (world: WorldID) => Promise<WithError<Failable<void>>>;
-
-    /** サーバーを起動 */
-    RunServer: (world: WorldID) => Promise<WithError<Failable<World>>>;
+    DeleteWorld: (world: WorldID) => Promise<WithError<Failable<undefined>>>;
+    /** Worldを起動 */
+    RunWorld: (world: WorldID) => Promise<WithError<Failable<World>>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
@@ -110,27 +108,29 @@ export interface API extends IAPI {
     GetPlayer: (
       nameOrUuid: string,
       mode: 'uuid' | 'name' | 'auto'
-    ) => Promise<WithError<Failable<Player>>>;
+    ) => Promise<Failable<Player>>;
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (
       type: VersionType,
       useCache: boolean
-    ) => Promise<WithError<Failable<Version[]>>>;
+    ) => Promise<Failable<Version[]>>;
 
     /** ローカルのセーブデータ一覧を取得 */
     GetLocalSaveData: (
       container: LocalSaveContainer
-    ) => Promise<WithError<Failable<LocalSave[]>>>;
+    ) => Promise<WithError<LocalSave[]>>;
 
     /** ワールド名が使用可能かどうかを検証する */
     ValidateNewWorldName: (
       worldContainer: WorldContainer,
       worldName: string
-    ) => Promise<WithError<Failable<WorldName>>>;
+    ) => Promise<Failable<WorldName>>;
 
     /** ディレクトリを選択する */
-    PickDirectory: () => Promise<WithError<Electron.OpenDialogReturnValue>>;
+    OpenDialog: (
+      options: Electron.OpenDialogOptions
+    ) => Promise<Electron.OpenDialogReturnValue>;
   };
 }
 

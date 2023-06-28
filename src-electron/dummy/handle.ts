@@ -11,7 +11,7 @@ import {
   serverWorldContainer,
 } from './const/systemSettings';
 import { Version, VersionType } from '../schema/version';
-import { Failable } from '../api/failable';
+import { Failable } from '../util/error/failable';
 import { dummyVersionMap } from './const/versions';
 import {
   ImageURI,
@@ -21,6 +21,7 @@ import {
 } from '../schema/brands';
 import { dummyWorldAbbrs, getNewWorld, worldMap } from './const/world';
 import { Player } from '../schema/player';
+import { errorMessage } from '../util/error/construct';
 
 const sleepTime = 500;
 
@@ -157,7 +158,9 @@ export const searchPlayer = async (
       avatar_overlay: playerAvatarOverlay,
     };
   }
-  return new Error(`Non existing player: ${uuidOrName}`);
+  return errorMessage.value.playerName({
+    value: uuidOrName,
+  });
 };
 
 export const getDefaultWorld = async () => {

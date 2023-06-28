@@ -1,5 +1,5 @@
 import { MohistmcVersion } from 'src-electron/schema/version';
-import { Failable, isFailure, isSuccess } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import {
   VersionComponent,
@@ -10,6 +10,7 @@ import {
 import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../util/path';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 const papermcVersionsPath = versionsCachePath.child('mohistmc');
 
@@ -31,10 +32,10 @@ async function readyMohistmcVersion(
 
   // 適切なjavaのバージョンを取得
   const component = await getJavaComponent(version.id);
-  if (isFailure(component)) return component;
+  if (isError(component)) return component;
 
   const result = await downloadMohistmcVersion(version, jarpath);
-  if (isFailure(result)) return result;
+  if (isError(result)) return result;
 
   return {
     programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
@@ -48,7 +49,7 @@ async function downloadMohistmcVersion(
 ): Promise<Failable<undefined>> {
   // jsonファイルをダウンロード
   const json = await getMohistmcVersionsJson(version.id);
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   const build = json[version.number.toString()];
 
@@ -59,7 +60,7 @@ async function downloadMohistmcVersion(
     { type: 'md5', value: build.md5 },
     true
   );
-  if (isFailure(jardata)) return jardata;
+  if (isError(jardata)) return jardata;
 }
 
 const VERSIONS_URL = 'https://mohistmc.com/api/versions';
@@ -72,7 +73,7 @@ async function getMohistmcVersionsJson(
     papermcVersionsPath.child(`mohistmc-${id}.json`),
     JSON_URL
   );
-  if (isFailure(jsondata)) return jsondata;
+  if (isError(jsondata)) return jsondata;
 
   const json = await jsondata.json<MohistmcApiVersion>();
   return json;
@@ -84,9 +85,9 @@ async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
     papermcVersionsPath.child('versions.json'),
     VERSIONS_URL
   );
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
   const json = await data.json<string[]>();
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   // それぞれのバージョンのビルド一覧を取得
   const promisses = json.reverse().map((id) => getMohistmcVersions(id));
@@ -95,7 +96,7 @@ async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
   const nestedVersion = await Promise.all(promisses);
 
   // flatMap
-  const versions = nestedVersion.filter(isSuccess).flatMap((x) => x);
+  const versions = nestedVersion.filter(isValid).flatMap((x) => x);
 
   return versions;
 }
@@ -104,7 +105,7 @@ async function getMohistmcVersions(
   id: string
 ): Promise<Failable<MohistmcVersion[]>> {
   const json = await getMohistmcVersionsJson(id);
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   return Object.values(json)
     .filter((v) => v.status === 'SUCCESS')

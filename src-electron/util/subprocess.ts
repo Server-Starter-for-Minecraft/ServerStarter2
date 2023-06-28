@@ -1,8 +1,10 @@
-import { Failable } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import * as child_process from 'child_process';
 import { utilLoggers } from './logger';
 import { sleep } from './sleep';
 import { onQuit } from '../lifecycle/lifecycle';
+import { fromRuntimeError } from './error/error';
+import { errorMessage } from './error/construct';
 
 const loggers = utilLoggers.subprocess;
 
@@ -14,24 +16,25 @@ export type ChildProcessPromise = Promise<Failable<undefined>> & {
 
 function promissifyProcess(
   process: child_process.ChildProcess,
-  processpath: string,
+  processPath: string,
   args: string[],
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ) {
   const logger = loggers.promissifyProcess({
-    command: processpath + ' ' + args.join(' '),
+    command: processPath + ' ' + args.join(' '),
   });
   logger.start();
 
   let isFinished = false;
 
-  function onExit(code: number | null) {
+  function onExit(code: number | null): Failable<undefined> {
     if (code === 0 || code === null) return undefined;
-    const command = processpath + ' ' + args.join(' ');
-    return new Error(
-      `error occured in running subprocess with exitcode:${code} command:${command}}`
-    );
+    return errorMessage.system.subprocess({
+      processPath,
+      args,
+      exitcode: code,
+    });
   }
 
   const executor: (
@@ -51,7 +54,7 @@ function promissifyProcess(
       isFinished = true;
       // プロセスkillの購読を解除
       dispatch();
-      resolve(err);
+      resolve(fromRuntimeError(err));
     });
   };
 
@@ -65,7 +68,11 @@ function promissifyProcess(
     if (process.exitCode === null) {
       // killの前処理
       await Promise.any([beforeKill(promise), sleep(beforeKillTimeout)]);
-      process.kill(signal);
+      try {
+        process.kill(signal);
+      } catch (e) {
+        logger.warn('failed to kill process');
+      }
     }
   };
 
@@ -73,9 +80,10 @@ function promissifyProcess(
   const dispatch = onQuit(() => kill(), true);
 
   const write = (msg: string) =>
-    new Promise<void>((resolve) =>
-      process.stdin?.write(msg + '\n', () => resolve())
-    );
+    new Promise<void>((resolve) => {
+      if (process.stdin) process.stdin.write(msg + '\n', () => resolve());
+      else resolve();
+    });
   promise.kill = kill;
   promise.write = write;
 

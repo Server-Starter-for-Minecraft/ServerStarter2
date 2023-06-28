@@ -114,7 +114,7 @@ const api: FrontAPI = {
   invokeCreateWorld: invoke('CreateWorld'),
   invokeDeleteWorld: invoke('DeleteWorld'),
 
-  invokeRunServer: invoke('RunServer'),
+  invokeRunWorld: invoke('RunWorld'),
 
   invokeGetPlayer: invoke('GetPlayer'),
 
@@ -124,7 +124,7 @@ const api: FrontAPI = {
 
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 
-  invokePickDirectory: invoke('PickDirectory'),
+  invokeOpenDialog: invoke('OpenDialog'),
 };
 
 contextBridge.exposeInMainWorld('API', api);

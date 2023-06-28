@@ -1,12 +1,8 @@
 import { objMap } from 'src-electron/util/objmap';
 import { deepcopy } from 'src-electron/util/deepcopy';
-import { World, WorldID, WorldSettings } from 'src-electron/schema/world';
-import {
-  ServerProperties,
-  ServerProperties,
-} from 'src-electron/schema/serverproperty';
-import { defaultServerProperties } from './files/properties';
+import { World, WorldID } from 'src-electron/schema/world';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
+import { WorldSettings } from '../world/files/json';
 
 type WorldSettingsPlus = {
   id: WorldID;
@@ -30,16 +26,14 @@ export function worldSettingsToWorld({
     avater_path,
     version: settings.version,
     using: settings.using,
-    remote_pull: settings.remote,
-    remote_push: settings.remote,
+    remote: settings.remote,
     last_date: settings.last_date,
     last_user: settings.last_user,
     memory: settings.memory,
-    properties: getServerProperties(settings.properties),
+    properties: settings.properties ?? {},
     additional: {},
     players: settings.players,
   };
-
   return deepcopy(result);
 }
 
@@ -52,33 +46,13 @@ export function worldToWorldSettings(world: World): WorldSettingsPlus {
     settings: {
       memory: world.memory,
       version: world.version,
-      remote: world.remote_pull,
+      remote: world.remote,
       last_date: world.last_date,
       last_user: world.last_user,
       using: world.using,
-      properties: getPropertiesMap(world.properties),
+      properties: world.properties,
       players: world.players,
     },
   };
   return deepcopy(result);
-}
-
-function getServerProperties(
-  map: ServerProperties | undefined
-): ServerProperties {
-  return objMap(map ?? {}, (k, value) => {
-    const defaultProp = defaultServerProperties[k];
-    if (defaultProp) {
-      if (typeof value === defaultProp.type) {
-        return [k, { ...defaultProp, value }];
-      }
-      return [k, { ...defaultProp }];
-    }
-    return [k, { type: typeof value, value }];
-  }) as ServerProperties;
-}
-
-function getPropertiesMap(serverProperties: ServerProperties | undefined) {
-  if (serverProperties === undefined) return undefined;
-  return objMap(serverProperties, (k, v) => [k, v.value]);
 }

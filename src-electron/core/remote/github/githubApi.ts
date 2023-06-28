@@ -1,4 +1,5 @@
-import { Failable, isFailure } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
+import { isError } from 'app/src-electron/util/error/error';
 import { BytesData } from 'src-electron/util/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 
@@ -19,13 +20,13 @@ export class GithubTree {
   ) {
     const commitURL = `https://api.github.com/repos/${owner}/${repo}/branches/${branch}`;
     const commitRes = await get<CommitRes>(commitURL, pat);
-    if (isFailure(commitRes)) return commitRes;
+    if (isError(commitRes)) return commitRes;
     return new GithubTree(commitRes.commit.commit.tree.url, pat);
   }
 
   async files() {
     const treeRes = await get<TreeRes>(this.url, this.pat);
-    if (isFailure(treeRes)) return treeRes;
+    if (isError(treeRes)) return treeRes;
     if (treeRes.tree === undefined)
       return new Error(`${this.url} is not tree.`);
 
@@ -53,7 +54,7 @@ export class GithubBlob {
 
   async loadBytes() {
     const blobRes = await get<BlobRes>(this.url, this.pat);
-    if (isFailure(blobRes)) return blobRes;
+    if (isError(blobRes)) return blobRes;
 
     switch (blobRes.encoding) {
       case 'utf-8':
@@ -69,14 +70,14 @@ export class GithubBlob {
 
   async loadText() {
     const blobRes = await get<BlobRes>(this.url, this.pat);
-    if (isFailure(blobRes)) return blobRes;
+    if (isError(blobRes)) return blobRes;
 
     switch (blobRes.encoding) {
       case 'utf-8':
         return blobRes.content;
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
-        if (isFailure(b64data)) return b64data;
+        if (isError(b64data)) return b64data;
         return await b64data.text();
       default:
         throw new Error(
@@ -87,14 +88,14 @@ export class GithubBlob {
 
   async loadJson<T>(): Promise<Failable<T>> {
     const blobRes = await get<BlobRes>(this.url, this.pat);
-    if (isFailure(blobRes)) return blobRes;
+    if (isError(blobRes)) return blobRes;
 
     switch (blobRes.encoding) {
       case 'utf-8':
         return JSON.parse(blobRes.content);
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
-        if (isFailure(b64data)) return b64data;
+        if (isError(b64data)) return b64data;
         return await b64data.json<T>();
       default:
         throw new Error(
@@ -111,7 +112,7 @@ async function get<T>(url: string, pat: string): Promise<Failable<T>> {
     Accept: 'application/vnd.github+json',
   };
   const responce = await BytesData.fromURL(url, undefined, requestHeader);
-  if (isFailure(responce)) return responce;
+  if (isError(responce)) return responce;
 
   // jsonを取得
   const json = await responce.json<T>();

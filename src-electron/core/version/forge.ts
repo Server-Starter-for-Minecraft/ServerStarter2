@@ -4,7 +4,7 @@ import {
   genGetAllVersions,
   needEulaAgreementVanilla,
 } from './base';
-import { Failable, isFailure, isSuccess } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { Path } from '../../util/path';
 import { getJavaComponent } from './vanilla';
 import { BytesData } from '../../util/bytesData';
@@ -13,6 +13,8 @@ import { versionsCachePath } from '../const';
 import { interactiveProcess } from '../../util/subprocess';
 import { readyJava } from '../../util/java/java';
 import { osPlatform } from '../../util/os';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const forgeVersionsPath = versionsCachePath.child('forge');
 
@@ -23,7 +25,7 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
   async readyVersion(version: ForgeVersion) {
     // 適切なjavaのバージョンを取得
     const component = await getJavaComponent(version.id);
-    if (isFailure(component)) return component;
+    if (isError(component)) return component;
 
     const versionPath = forgeVersionsPath.child(version.id);
     const serverCwdPath = versionPath;
@@ -33,18 +35,18 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
     let programArguments = await getProgramArguments(serverCwdPath, jarpath);
 
     // 実行可能なファイルが存在しなかった場合
-    if (isFailure(programArguments)) {
+    if (isError(programArguments)) {
       // インストール
       const install = await installForgeVersion(version, versionPath, jarpath);
 
       // インストールに失敗した場合エラー
-      if (isFailure(install)) return install;
+      if (isError(install)) return install;
 
       // 再び実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
       programArguments = await getProgramArguments(serverCwdPath, jarpath);
 
       // 実行可能なファイルが存在しなかった場合インストールに失敗したとみなしエラー
-      if (isFailure(programArguments)) return programArguments;
+      if (isError(programArguments)) return programArguments;
     }
 
     return {
@@ -76,14 +78,14 @@ async function installForgeVersion(
 
   // インストーラーを取得
   const serverData = await BytesData.fromURL(serverURL);
-  if (isFailure(serverData)) return serverData;
+  if (isError(serverData)) return serverData;
 
   // インストーラーを保存
   await installerPath.write(serverData);
 
   // インストーラーを実行
   const installResult = await installForge(installerPath);
-  if (isFailure(installResult)) return installResult;
+  if (isError(installResult)) return installResult;
 
   for (const file of await versionPath.iter()) {
     const filename = file.basename();
@@ -102,32 +104,34 @@ async function installForgeVersion(
 async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
   // TODO: osに応じてrun.shに対応
+  let runPath: Path;
   if (osPlatform == 'windows-x64') {
     // windows
-    const batPath = serverCwdPath.child('run.bat');
-    if (batPath.exists()) {
+    runPath = serverCwdPath.child('run.bat');
+    if (runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromBat(batPath);
+      return await getProgramArgumentsFromBat(runPath);
     }
   } else {
     // UNIX(macOS,linux)
-    const shPath = serverCwdPath.child('run.sh');
-    if (shPath.exists()) {
+    runPath = serverCwdPath.child('run.sh');
+    if (runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromSh(shPath);
+      return await getProgramArgumentsFromSh(runPath);
     }
   }
 
   if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"'];
 
-  return new Error(
-    `run.bat or run.sh or server jar file is needed in ${serverCwdPath.str()}`
-  );
+  return errorMessage.data.path.notFound({
+    type: 'file',
+    path: runPath.path + '|' + jarpath.path,
+  });
 }
 
 async function getProgramArgumentsFromBat(batPath: Path) {
   const data = await batPath.read();
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   // バッチフィルの中身を取得
   const txt = await data.text();
@@ -140,12 +144,15 @@ async function getProgramArgumentsFromBat(batPath: Path) {
       return ['@user_jvm_args.txt', arg];
     }
   }
-  return new Error('missing java command in run.bat file');
+  return errorMessage.data.path.invalidContent.missingJavaCommand({
+    type: 'file',
+    path: batPath.path,
+  });
 }
 
 async function getProgramArgumentsFromSh(shPath: Path) {
   const data = await shPath.read();
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   // シェルスクリプトの中身を取得
   const txt = await data.text();
@@ -158,14 +165,17 @@ async function getProgramArgumentsFromSh(shPath: Path) {
       return ['@user_jvm_args.txt', arg];
     }
   }
-  return new Error('missing java command in run.sh file');
+  return errorMessage.data.path.invalidContent.missingJavaCommand({
+    type: 'file',
+    path: shPath.path,
+  });
 }
 
 async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   // TODO: forgeのインストール時に使用するjavaのバージョン17で大丈夫？
   // jre-legacyだとエラー出たのでとりあえずこれを使っている
   const javaPath = await readyJava('java-runtime-gamma', false);
-  if (isFailure(javaPath)) return javaPath;
+  if (isError(javaPath)) return javaPath;
 
   const args = [
     '-jar',
@@ -194,7 +204,7 @@ export async function getForgeDownloadUrl(version: ForgeVersion) {
 export async function getAllForgeVersions() {
   const indexPage = await BytesData.fromURL(ForgeURL);
 
-  if (isFailure(indexPage)) return indexPage;
+  if (isError(indexPage)) return indexPage;
 
   const $ = cheerio.load(await indexPage.text());
 
@@ -209,7 +219,7 @@ export async function getAllForgeVersions() {
 
   // 各バージョン後ごとの全ビルドを並列取得してflat化
   const versions = (await Promise.all(ids.map(scrapeForgeVersions)))
-    .filter(isSuccess)
+    .filter(isValid)
     .flatMap((x) => x);
 
   return versions;
@@ -237,11 +247,11 @@ export async function scrapeForgeVersions(
   id: string
 ): Promise<Failable<ForgeVersion[]>> {
   if (noInstallerVersionIds.has(id))
-    return new Error(`forge ${id} installer is not provided`);
+    return errorMessage.core.version.forgeInstallerNotProvided({ version: id });
 
   const versionUrl = `https://files.minecraftforge.net/net/minecraftforge/forge/index_${id}.html`;
   const page = await BytesData.fromURL(versionUrl);
-  if (isFailure(page)) return page;
+  if (isError(page)) return page;
 
   const forge_versions: string[] = [];
 

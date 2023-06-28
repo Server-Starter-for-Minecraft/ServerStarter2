@@ -17,7 +17,7 @@ export type SystemSettings = {
 
 export type Locale = 'ja' | 'en-US';
 
-/** ローカルのワールドの保存先ディレクトリ */
+/** ローカルのワールドの保存先ディレクトリ (絶対パスのみ) */
 export type LocalSaveContainer = Brand<string, 'LocalSaveContainer'>;
 
 /** ローカルのワールド */
@@ -38,7 +38,8 @@ export type SystemUserSetting = {
   // システム言語
   language: Locale;
   // 実行者情報
-  owner?: Player;
+  // 存在しないプレイヤーのUUIDである可能性あり
+  owner: PlayerUUID;
   // 自動シャットダウン
   autoShutDown: boolean;
   //ローカルのワールドの保存先ディレクトリ一覧
@@ -62,7 +63,7 @@ export type SystemPlayerSetting = {
 };
 
 export type SystemRemoteSetting = {
-  github: GithubRemoteSetting;
+  github?: GithubRemoteSetting;
 };
 
 export type CacheContents = {

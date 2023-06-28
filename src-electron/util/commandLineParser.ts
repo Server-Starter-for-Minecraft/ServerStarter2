@@ -1,4 +1,5 @@
-import { Failable } from '../api/failable';
+import { errorMessage } from './error/construct';
+import { Failable } from './error/failable';
 
 /** コマンドライン引数をパースする */
 export function parseCommandLine(commandLine: string): Failable<string[]> {
@@ -9,5 +10,5 @@ export function parseCommandLine(commandLine: string): Failable<string[]> {
   if (match !== null) {
     return [...match];
   }
-  return new Error('failed to parse commandLine: ' + commandLine);
+  return errorMessage.value.commandLineArgument({ value: commandLine });
 }
