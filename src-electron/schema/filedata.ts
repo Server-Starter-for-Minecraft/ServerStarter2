@@ -6,6 +6,7 @@ export type WorldFileData<T extends Record<string, any>> = T & {
   id: WorldID;
   name: string;
   ext: string;
+  isFile: boolean;
 };
 
 /** 新しく導入する際のmod/plugin/datapackのデータを表す */
@@ -17,6 +18,8 @@ export type NewFileData<T extends Record<string, any>> = T & {
   ext: string;
   // 完全絶対パス
   path: string;
+  // ファイルorディレクトリ
+  isFile: boolean;
 };
 
 /** システムにキャッシュされたmod/plugin/datapackのデータ */
@@ -24,6 +27,7 @@ export type SystemFileData<T extends Record<string, any>> = T & {
   type: 'system';
   name: string;
   ext: string;
+  isFile: boolean;
 };
 
 export type AllFileData<T extends Record<string, any>> =

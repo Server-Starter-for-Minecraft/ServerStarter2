@@ -4,7 +4,11 @@ import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { ErrorMessage } from 'app/src-electron/schema/error';
-import { AllFileData, WorldFileData } from 'app/src-electron/schema/filedata';
+import {
+  AllFileData,
+  NewFileData,
+  WorldFileData,
+} from 'app/src-electron/schema/filedata';
 import { WorldID } from 'app/src-electron/schema/world';
 import { zip } from 'app/src-electron/util/zip';
 import { WorldHandler } from '../../handler';
@@ -14,13 +18,11 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   constructor(
     cachePath: Path,
     childPath: string,
-    type: 'file' | 'directory',
     loader: (path: Path) => Promise<Failable<T | undefined>>,
     installer: (sourcePath: Path, targetPath: Path) => Promise<Failable<void>>
   ) {
     this.cachePath = cachePath;
     this.childPath = childPath;
-    this.type = type;
     this.loader = loader;
     this.installer = installer;
   }
@@ -30,7 +32,6 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     sourcePath: Path,
     targetPath: Path
   ) => Promise<Failable<void>>;
-  private type: 'file' | 'directory';
   private childPath: string;
   cachePath: Path;
 
@@ -56,6 +57,22 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     return sourcePath;
   }
 
+  private installCache(
+    sourcePath: Path,
+    source: NewFileData<T>
+  ): Failable<undefined> {
+    const basename = source.name + source.ext;
+    const targetPath = this.cachePath.child(basename);
+    if (targetPath.exists())
+      return errorMessage.data.path.alreadyExists({
+        type: source.isFile ? 'file' : 'directory',
+        path: targetPath.path,
+      });
+    // 待機せずにキャッシュにインストール
+    // TODO: 失敗した場合エラーをAPIで送信("info")
+    this.installer(sourcePath, targetPath);
+  }
+
   async load(
     cwdPath: Path,
     id: WorldID
@@ -70,6 +87,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         ...v,
         type: 'world',
         id: id,
+        isFile: !p.isDirectory(),
         name: p.stemname(),
         ext: p.extname(),
       }));
@@ -85,31 +103,40 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       v.path !== undefined;
 
     // 新しいファイルをコピー
-    await asyncForEach(value.filter(isNew), async (x) => {
-      const srcPath = this.getSourcePath(x);
+    await asyncForEach(value.filter(isNew), async (source) => {
+      const srcPath = this.getSourcePath(source);
 
       if (isError(srcPath)) {
         errors.push(srcPath);
         return;
       }
 
+      // ソースが存在しない場合
       if (!srcPath.exists()) {
         errors.push(
           errorMessage.data.path.notFound({
-            type: this.type,
+            type: source.isFile ? 'file' : 'directory',
             path: srcPath.path,
           })
         );
         return;
       }
 
-      const tgtPath = dirPath.child(x.name);
+      // 同一のパスだった場合無視
+      const tgtPath = dirPath.child(source.name);
       if (tgtPath.path === srcPath.path) return;
 
+      // ソースが有効なデータかどうかを確認
       const loaded = await this.load(srcPath, '' as WorldID);
       if (isError(loaded.value)) return;
 
+      // インストール処理
       const result = await this.installer(srcPath, tgtPath);
+
+      if (source.type === 'new') {
+        this.installCache(srcPath, source);
+      }
+
       if (isError(result)) errors.push(result);
     });
 

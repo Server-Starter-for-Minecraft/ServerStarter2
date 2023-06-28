@@ -19,6 +19,9 @@ export type DataErrors = {
     // ファイル/ディレクトリの読み込みに失敗したときのエラー
     loadingFailed: PathErrorContent;
 
+    // ファイルまたはディレクトリがすでに存在する
+    alreadyExists: PathErrorContent;
+
     // ファイルまたはディレクトリが存在しない
     notFound: PathErrorContent;
 
