@@ -13,8 +13,10 @@ const PLUGINS_PATH = 'plugins';
 
 const PLUGIN_FILE_REGEX = /^([^\\/:*?\"<>|]+)\.jar$/;
 
-async function loadPlugin(path: Path): Promise<Failable<FileData>> {
+async function loadPlugin(path: Path): Promise<Failable<FileData | undefined>> {
   const fileName = path.basename();
+
+  if (await path.isDirectory()) return;
 
   // *.jarにマッチしたらプラグインファイルとみなす
   const match = fileName.match(PLUGIN_FILE_REGEX);

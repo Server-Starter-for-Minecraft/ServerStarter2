@@ -17,11 +17,14 @@ export type ServerAdditionalFiles<T extends FileData> = {
 
 export async function loadAdditionalFiles<T extends FileData>(
   dirPath: Path,
-  loader: (path: Path) => Promise<Failable<T>>
+  loader: (path: Path) => Promise<Failable<T | undefined>>
 ) {
   const loaded = await asyncMap(await dirPath.iter(), loader);
 
-  return withError(loaded.filter(isValid), loaded.filter(isError));
+  return withError(
+    loaded.filter((x): x is T => x !== undefined && isValid(x)),
+    loaded.filter(isError)
+  );
 }
 
 export async function saveAdditionalFiles<T extends FileData>(
@@ -31,7 +34,7 @@ export async function saveAdditionalFiles<T extends FileData>(
     path: Path,
     source: T & { path: string }
   ) => Promise<Failable<void>>,
-  loader: (path: Path) => Promise<Failable<T>>
+  loader: (path: Path) => Promise<Failable<T | undefined>>
 ) {
   const errors: ErrorMessage[] = [];
 
@@ -50,7 +53,7 @@ export async function saveAdditionalFiles<T extends FileData>(
 
   // 削除すべきファイル一覧
   const deletFiles = loaded
-    .filter(isValid)
+    .filter((x): x is T => x !== undefined && isValid(x))
     .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
   // 非同期で削除
