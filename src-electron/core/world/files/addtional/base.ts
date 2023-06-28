@@ -7,6 +7,7 @@ import { ErrorMessage } from 'app/src-electron/schema/error';
 import {
   AllFileData,
   NewFileData,
+  CacheFileData,
   WorldFileData,
 } from 'app/src-electron/schema/filedata';
 import { WorldID } from 'app/src-electron/schema/world';
@@ -40,7 +41,6 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     switch (source.type) {
       case 'new':
         sourcePath = new Path(source.path);
-        // この時だけデータをキャッシュする
         break;
       case 'world':
         const handler = WorldHandler.get(source.id);
@@ -57,6 +57,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     return sourcePath;
   }
 
+  /** キャッシュにインストールする */
   private installCache(
     sourcePath: Path,
     source: NewFileData<T>
@@ -71,6 +72,24 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     // 待機せずにキャッシュにインストール
     // TODO: 失敗した場合エラーをAPIで送信("info")
     this.installer(sourcePath, targetPath);
+  }
+
+  async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
+    const dirPath = this.cachePath.child(this.childPath);
+    const paths = await dirPath.iter();
+    const loaded = await asyncMap(paths, async (x) => this.loader(x));
+
+    const array = zip(paths, loaded)
+      .filter((x): x is [Path, T] => x[1] !== undefined && isValid(x[1]))
+      .map<CacheFileData<T>>(([p, v]) => ({
+        ...v,
+        type: 'system',
+        isFile: !p.isDirectory(),
+        name: p.stemname(),
+        ext: p.extname(),
+      }));
+
+    return withError(array, loaded.filter(isError));
   }
 
   async load(

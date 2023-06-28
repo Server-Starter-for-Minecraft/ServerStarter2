@@ -91,6 +91,7 @@ const api: FrontAPI = {
   onUpdateStatus: on('UpdateStatus'),
   onAddConsole: on('AddConsole'),
   onUpdateSystemSettings: on('UpdateSystemSettings'),
+  onError: on('Error'),
 
   // HANDLE
   handleAgreeEula: handle('AgreeEula'),
@@ -119,6 +120,8 @@ const api: FrontAPI = {
   invokeGetPlayer: invoke('GetPlayer'),
 
   invokeGetVersions: invoke('GetVersions'),
+
+  invokeGetCacheContents: invoke('GetCacheContents'),
 
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
 

@@ -23,7 +23,7 @@ export type NewFileData<T extends Record<string, any>> = T & {
 };
 
 /** システムにキャッシュされたmod/plugin/datapackのデータ */
-export type SystemFileData<T extends Record<string, any>> = T & {
+export type CacheFileData<T extends Record<string, any>> = T & {
   type: 'system';
   name: string;
   ext: string;
@@ -33,7 +33,7 @@ export type SystemFileData<T extends Record<string, any>> = T & {
 export type AllFileData<T extends Record<string, any>> =
   | WorldFileData<T>
   | NewFileData<T>
-  | SystemFileData<T>;
+  | CacheFileData<T>;
 
 /** Datapackのデータ */
 export type DatapackData = {

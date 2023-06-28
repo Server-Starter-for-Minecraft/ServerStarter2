@@ -21,7 +21,7 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
-): Promise<WithError<Failable<WorldAbbr[]>>> {
+): Promise<WithError<WorldAbbr[]>> {
   const subdir = await worldContainerToPath(worldContainer).iter();
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
