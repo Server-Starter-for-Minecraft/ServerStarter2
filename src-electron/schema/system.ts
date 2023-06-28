@@ -1,8 +1,14 @@
 import { ImageURI, PlayerUUID, WorldContainer } from './brands';
-import { Player, PlayerGroup } from './player';
+import { PlayerGroup } from './player';
 import { GithubRemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
-import { FileData, NewData } from './filedata';
+import {
+  AllFileData,
+  DatapackData,
+  ModData,
+  PluginData,
+  SystemFileData,
+} from './filedata';
 import { Brand } from '../util/brand';
 
 /** システム設定まとめてここに格納 */
@@ -13,6 +19,16 @@ export type SystemSettings = {
   player: SystemPlayerSetting;
   user: SystemUserSetting;
   cache: CacheContents;
+};
+
+/** 編集済みのシステム設定まとめてここに格納 */
+export type SystemSettingsEdited = {
+  container: WorldContainers;
+  world: SystemWorldSettings;
+  remote: SystemRemoteSetting;
+  player: SystemPlayerSetting;
+  user: SystemUserSetting;
+  cache: CacheContentsEdited;
 };
 
 export type Locale = 'ja' | 'en-US';
@@ -68,11 +84,22 @@ export type SystemRemoteSetting = {
 
 export type CacheContents = {
   /** 導入済みデータパック */
-  datapacks?: (FileData | NewData)[];
+  datapacks: SystemFileData<DatapackData>[];
 
   /** 導入済みプラグイン */
-  plugins?: (FileData | NewData)[];
+  plugins: SystemFileData<PluginData>[];
 
   /** 導入済みMOD */
-  mods?: (FileData | NewData)[];
+  mods: SystemFileData<ModData>[];
+};
+
+export type CacheContentsEdited = {
+  /** 導入済み/導入したいデータパック */
+  datapacks: AllFileData<DatapackData>[];
+
+  /** 導入済み/導入したいプラグイン */
+  plugins: AllFileData<PluginData>[];
+
+  /** 導入済み/導入したいMOD */
+  mods: AllFileData<ModData>[];
 };

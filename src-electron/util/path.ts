@@ -51,6 +51,12 @@ export class Path {
     return path.basename(this.path);
   }
 
+  /** ディレクトリ階層を除いたファイル名(拡張子なし)を返す ".../../file.txt" -> "file" */
+  stemname() {
+    return path.basename(this.path, this.extname());
+  }
+
+  /** 拡張子を返す ".../../file.txt" -> ".txt" */
   extname() {
     return path.extname(this.path);
   }

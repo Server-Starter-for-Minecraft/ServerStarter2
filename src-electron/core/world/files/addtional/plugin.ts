@@ -1,57 +1,30 @@
-import { FileData } from 'app/src-electron/schema/filedata';
-import {
-  ServerAdditionalFiles,
-  loadAdditionalFiles,
-  saveAdditionalFiles,
-} from './base';
+import { PluginData } from 'app/src-electron/schema/filedata';
+import { ServerAdditionalFiles } from './base';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { WithError } from 'app/src-electron/util/error/witherror';
+import { PLUGIN_CACHE_PATH } from 'app/src-electron/core/stores/cache';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 
-const PLUGINS_PATH = 'plugins';
-
-const PLUGIN_FILE_REGEX = /^([^\\/:*?\"<>|]+)\.jar$/;
-
-async function loadPlugin(path: Path): Promise<Failable<FileData | undefined>> {
-  const fileName = path.basename();
-
-  if (await path.isDirectory()) return;
-
-  // *.jarにマッチしたらプラグインファイルとみなす
-  const match = fileName.match(PLUGIN_FILE_REGEX);
-  if (match === null)
+async function loader(path: Path): Promise<Failable<PluginData | undefined>> {
+  if (path.extname() !== '.jar')
     return errorMessage.data.path.invalidContent.invalidPlugin({
-      type: 'file',
       path: path.path,
+      type: 'file',
     });
 
-  const pluginName = match[1];
   return {
-    name: pluginName,
+    kind: 'plugin',
   };
 }
 
-async function installPlugin(
-  dirPath: Path,
-  source: FileData & { path?: string }
-): Promise<void> {
-  if (source.path === undefined) return;
-  const sourcePath = new Path(source.path);
-  const targetPath = dirPath.child(source.name + '.jar');
+async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
   await sourcePath.copyTo(targetPath);
 }
 
-export const pluginFiles: ServerAdditionalFiles<FileData> = {
-  load(cwdPath) {
-    const dirPath = pluginFiles.path(cwdPath);
-    return loadAdditionalFiles(dirPath, loadPlugin);
-  },
-  async save(cwdPath, value): Promise<WithError<void>> {
-    const dirPath = pluginFiles.path(cwdPath);
-    return saveAdditionalFiles(dirPath, value, installPlugin, loadPlugin);
-  },
-  path(cwdPath) {
-    return cwdPath.child(PLUGINS_PATH);
-  },
-};
+export const pluginFiles = new ServerAdditionalFiles<PluginData>(
+  PLUGIN_CACHE_PATH,
+  'plugins',
+  'file',
+  loader,
+  installer
+);
