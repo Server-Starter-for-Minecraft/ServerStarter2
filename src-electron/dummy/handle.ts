@@ -11,7 +11,7 @@ import {
   serverWorldContainer,
 } from './const/systemSettings';
 import { Version, VersionType } from '../schema/version';
-import { Failable } from '../api/failable';
+import { Failable } from '../util/error/failable';
 import { dummyVersionMap } from './const/versions';
 import {
   ImageURI,

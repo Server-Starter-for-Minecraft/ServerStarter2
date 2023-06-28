@@ -15,9 +15,9 @@ import { fixMemorySettings } from '../../fixers/memory';
 import { fixVersion } from '../../fixers/version';
 import { fixRemote } from '../../fixers/remote';
 import { fixPlayerUUID } from '../../fixers/brands';
-import { isFailure } from 'app/src-electron/api/failable';
 import { ServerSettingFile } from './base';
 import { getSystemSettings } from '../../stores/system';
+import { isError } from 'app/src-electron/util/error/error';
 
 /**
  * ワールドの設定
@@ -92,7 +92,7 @@ export const serverJsonFile: ServerSettingFile<WorldSettings> = {
 
     const data = await jsonPath.readJson<WorldSettings>();
 
-    if (isFailure(data)) return data;
+    if (isError(data)) return data;
 
     const fixed = (await worldSettingsFixer())(data);
 

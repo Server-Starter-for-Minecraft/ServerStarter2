@@ -5,9 +5,10 @@ import {
   saveAdditionalFiles,
 } from './base';
 import { LEVEL_NAME } from 'app/src-electron/core/const';
-import { Failable, isFailure } from 'app/src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { WithError } from 'app/src-electron/api/witherror';
+import { WithError } from 'app/src-electron/util/error/witherror';
+import { isError } from 'app/src-electron/util/error/error';
 
 const DATAPACKS_PATH = LEVEL_NAME + '/datapacks';
 
@@ -25,7 +26,7 @@ async function loadDatapack(path: Path): Promise<Failable<FileData>> {
   if (!mcmetaPath.exists())
     return new Error(`file not exists: ${mcmetaPath.path}`);
   const mcmeta = await mcmetaPath.readJson<Mcmeta>();
-  if (isFailure(mcmeta)) return mcmeta;
+  if (isError(mcmeta)) return mcmeta;
   mcmeta.pack.description;
   return {
     name: path.basename(),

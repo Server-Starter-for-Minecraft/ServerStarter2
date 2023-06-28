@@ -1,8 +1,9 @@
-import { Failable } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import * as child_process from 'child_process';
 import { utilLoggers } from './logger';
 import { sleep } from './sleep';
 import { onQuit } from '../lifecycle/lifecycle';
+import { fromRuntimeError } from './error/error';
 
 const loggers = utilLoggers.subprocess;
 
@@ -26,7 +27,7 @@ function promissifyProcess(
 
   let isFinished = false;
 
-  function onExit(code: number | null) {
+  function onExit(code: number | null): Failable<undefined> {
     if (code === 0 || code === null) return undefined;
     const command = processpath + ' ' + args.join(' ');
     return new Error(
@@ -51,7 +52,7 @@ function promissifyProcess(
       isFinished = true;
       // プロセスkillの購読を解除
       dispatch();
-      resolve(err);
+      resolve(fromRuntimeError(err));
     });
   };
 

@@ -10,9 +10,9 @@ import {
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixImageURI, fixPlayerUUID, fixTimestamp } from '../fixers/brands';
 import { mainPath } from '../const';
-import { isSuccess } from 'app/src-electron/api/failable';
 import { Player } from 'app/src-electron/schema/player';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { isValid } from 'app/src-electron/util/error/error';
 
 export type PlayerCacheRecord = {
   uuid: PlayerUUID;
@@ -47,8 +47,7 @@ export async function getPlayerCache() {
   const player_cache_value = await PLAYER_CACHE_PATH.readJson<PlayerCache>();
 
   let result: PlayerCache = {};
-  if (isSuccess(player_cache_value))
-    result = fixPlayerCache(player_cache_value);
+  if (isValid(player_cache_value)) result = fixPlayerCache(player_cache_value);
 
   await setPlayerCache(result);
 

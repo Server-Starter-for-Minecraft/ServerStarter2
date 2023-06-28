@@ -1,5 +1,5 @@
+import { isError } from 'app/src-electron/util/error/error';
 import { ServerSettingFile } from './base';
-import { isFailure } from 'src-electron/api/failable';
 import {
   ServerProperties,
   ServerPropertiesAnnotation,
@@ -214,7 +214,7 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
 
     const data = await filePath.readText();
 
-    if (isFailure(data)) return data;
+    if (isError(data)) return data;
 
     const parsed = parse(data);
 

@@ -1,4 +1,3 @@
-import { isFailure } from 'app/src-electron/api/failable';
 import { ServerSettingFile } from './base';
 import { fixPlayerUUID } from '../../fixers/brands';
 import {
@@ -8,6 +7,7 @@ import {
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { isError } from 'app/src-electron/util/error/error';
 
 export type WhitelistRecord = {
   uuid: PlayerUUID;
@@ -37,7 +37,7 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
 
     const value = await filePath.readJson<Whitelist>();
 
-    if (isFailure(value)) return value;
+    if (isError(value)) return value;
     const fixed = fixOps(value);
 
     if (fixed === FAIL) return new Error(`${filePath} is invalid ops file`);

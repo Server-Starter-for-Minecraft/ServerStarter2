@@ -1,7 +1,8 @@
 import { Path } from '../../../util/path';
 import { BytesData } from '../../../util/bytesData';
-import { Failable, isFailure } from '../../../api/failable';
+import { Failable } from '../../../util/error/failable';
 import { Version } from 'src-electron/schema/version';
+import { isError } from 'app/src-electron/util/error/error';
 
 const ver_17_18 = [
   '1.18.1-rc2',
@@ -509,7 +510,7 @@ async function download_xml_12_16(serverPath: Path) {
     const data = await BytesData.fromURL(
       'https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml'
     );
-    if (isFailure(data)) return data;
+    if (isError(data)) return data;
     await xml.write(data);
   }
 }
@@ -520,7 +521,7 @@ async function download_xml_7_11(serverPath: Path) {
     const data = await BytesData.fromURL(
       'https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml'
     );
-    if (isFailure(data)) return data;
+    if (isError(data)) return data;
     await xml.write(data);
   }
 }

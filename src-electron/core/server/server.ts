@@ -5,8 +5,9 @@ import { WorldSettings } from '../world/files/json';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { api } from '../api';
 import { ServerProcess, serverProcess } from './process';
-import { Failable, isFailure } from 'app/src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { decoratePromise } from 'app/src-electron/util/promiseDecorator';
+import { isError } from 'app/src-electron/util/error/error';
 
 export type RunServer = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -30,7 +31,7 @@ export function runServer(
       name,
       (value: string) => api.send.UpdateStatus(id, value)
     );
-    if (isFailure(readyResult)) return readyResult;
+    if (isError(readyResult)) return readyResult;
 
     const { javaArgs, javaPath } = readyResult;
 

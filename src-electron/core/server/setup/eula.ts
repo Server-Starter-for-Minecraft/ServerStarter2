@@ -1,8 +1,9 @@
 import { api } from '../../api';
 import { Path } from '../../../util/path';
-import { Failable, isFailure } from '../../../api/failable';
+import { Failable } from '../../../util/error/failable';
 import { execProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
+import { isError } from 'app/src-electron/util/error/error';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -27,11 +28,11 @@ export async function checkEula(
       worldId
     );
     // 生成に失敗した場合エラー
-    if (isFailure(result)) return result;
+    if (isError(result)) return result;
   }
   // eulaの内容を読み取る
   const content = await eulaPath.read();
-  if (isFailure(content)) return content;
+  if (isError(content)) return content;
 
   const { eula, url, comments } = parseEula(await content.text());
   let agree = eula;
@@ -39,7 +40,7 @@ export async function checkEula(
   if (!agree) {
     const result = await api.invoke.AgreeEula(worldId, url);
     // mainWindowが存在しなかった場合エラーとなる
-    if (isFailure(result)) return result;
+    if (isError(result)) return result;
     agree = result;
   }
 
@@ -97,7 +98,7 @@ async function generateEula(
     true
   );
 
-  if (isFailure(result)) {
+  if (isError(result)) {
     return new Error('failed to generate eula.txt.');
   }
 

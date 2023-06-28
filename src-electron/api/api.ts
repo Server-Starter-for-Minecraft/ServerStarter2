@@ -8,9 +8,9 @@ import {
 } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
-import { Failable } from './failable';
+import { Failable } from '../util/error/failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
-import { WithError } from './witherror';
+import { WithError } from '../util/error/witherror';
 
 /**
  * ## APIの利用方法

@@ -1,4 +1,4 @@
-import { Failable } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { systemSettings } from '../../stores/system';
 import { GithubAccountSetting } from 'src-electron/schema/remote';
 

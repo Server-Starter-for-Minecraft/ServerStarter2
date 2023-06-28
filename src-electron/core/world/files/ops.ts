@@ -10,7 +10,7 @@ import {
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixOpLevel } from '../../fixers/player';
-import { isFailure } from 'app/src-electron/api/failable';
+import { isError } from 'app/src-electron/util/error/error';
 
 export type OpRecord = {
   uuid: PlayerUUID;
@@ -43,7 +43,7 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
     if (!filePath.exists()) return [];
 
     const value = await filePath.readJson<Ops>();
-    if (isFailure(value)) return value;
+    if (isError(value)) return value;
     const fixed = fixOps(value);
     if (fixed === FAIL) return new Error(`${filePath} is invalid ops file`);
     return fixed;

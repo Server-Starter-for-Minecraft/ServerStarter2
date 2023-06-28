@@ -1,7 +1,7 @@
 import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { worldContainerToPath } from './worldContainer';
 import { WORLDNAME_REGEX } from '../const';
-import { Failable } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 
 export async function validateNewWorldName(
   worldContainer: WorldContainer,

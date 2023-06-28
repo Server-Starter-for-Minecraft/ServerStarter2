@@ -5,9 +5,8 @@ import { worldContainerToPath } from './worldContainer';
 import {
   Failable,
   failabilify,
-  isFailure,
-} from 'app/src-electron/api/failable';
-import { WithError, withError } from 'app/src-electron/api/witherror';
+} from 'app/src-electron/util/error/failable';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
 import { WorldSettings, serverJsonFile } from './files/json';
@@ -19,6 +18,7 @@ import {
 import { RunServer, runServer } from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { isError } from 'app/src-electron/util/error/error';
 
 export class WorldHandlerError extends Error {}
 
@@ -97,7 +97,7 @@ export class WorldHandler {
   private async pull() {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
     const worldSettings = await this.loadLocalServerJson();
-    if (isFailure(worldSettings)) return worldSettings;
+    if (isError(worldSettings)) return worldSettings;
 
     // リモートが存在する場合Pull
     if (worldSettings.remote) {
@@ -105,14 +105,14 @@ export class WorldHandler {
       const pull = await pullRemoteWorld(savePath, worldSettings.remote);
 
       // Pullに失敗した場合エラー
-      if (isFailure(pull)) return pull;
+      if (isError(pull)) return pull;
     }
   }
 
   private async push() {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
     const worldSettings = await this.loadLocalServerJson();
-    if (isFailure(worldSettings)) return worldSettings;
+    if (isError(worldSettings)) return worldSettings;
 
     // リモートが存在する場合Push
     if (worldSettings.remote) {
@@ -120,7 +120,7 @@ export class WorldHandler {
       const push = await pushRemoteWorld(savePath, worldSettings.remote);
 
       // Pushに失敗した場合エラー
-      if (isFailure(push)) return push;
+      if (isError(push)) return push;
     }
   }
 
@@ -140,11 +140,11 @@ export class WorldHandler {
 
     // リモートからpull
     const pullResult = await this.pull();
-    if (isFailure(pullResult)) return withError(pullResult);
+    if (isError(pullResult)) return withError(pullResult);
 
     // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
     const worldSettings = await this.loadLocalServerJson();
-    if (isFailure(worldSettings)) return withError(worldSettings);
+    if (isError(worldSettings)) return withError(worldSettings);
 
     // 使用中の場合、現状のデータを再読み込んで終了
     if (worldSettings.using) {
@@ -161,7 +161,7 @@ export class WorldHandler {
 
     // リモートにpush
     const push = await this.push();
-    if (isFailure(push)) return withError(push, errors);
+    if (isError(push)) return withError(push, errors);
 
     return result;
   }
@@ -169,7 +169,7 @@ export class WorldHandler {
   private async fix() {
     const local = await this.loadLocal();
     const world = local.value;
-    if (isFailure(world)) return local;
+    if (isError(world)) return local;
 
     // フラグを折ってjsonに保存
     world.using = false;
@@ -180,7 +180,7 @@ export class WorldHandler {
 
     // リモートにpush
     const push = await this.push();
-    if (isFailure(push)) return withError(push);
+    if (isError(push)) return withError(push);
 
     return local;
   }
@@ -189,7 +189,7 @@ export class WorldHandler {
   async load(): Promise<WithError<Failable<World>>> {
     // ローカルに保存されたワールド設定Jsonを読み込む(実行中フラグの確認)
     const worldSettings = await this.loadLocalServerJson();
-    if (isFailure(worldSettings)) return withError(worldSettings);
+    if (isError(worldSettings)) return withError(worldSettings);
 
     const owner = (await getSystemSettings()).user.owner;
 
@@ -206,7 +206,7 @@ export class WorldHandler {
 
     // リモートからpull
     const pullResult = await this.pull();
-    if (isFailure(pullResult)) return withError(pullResult);
+    if (isError(pullResult)) return withError(pullResult);
 
     // ローカルデータをロード
     return await this.loadLocal();
@@ -225,7 +225,7 @@ export class WorldHandler {
       world.container,
       world.name
     );
-    if (isFailure(worldNameValidated)) {
+    if (isError(worldNameValidated)) {
       return withError(worldNameValidated, errors);
     }
 
@@ -246,7 +246,7 @@ export class WorldHandler {
   /** ワールドを削除(リモ－トは削除しない) */
   async delete(): Promise<WithError<Failable<undefined>>> {
     const result = await failabilify(() => this.getSavePath().remove(true))();
-    if (isFailure(result)) return withError(result);
+    if (isError(result)) return withError(result);
     delete WorldHandler.worldPathMap[this.id];
     return withError(undefined);
   }
@@ -263,7 +263,7 @@ export class WorldHandler {
     const loadResult = await this.load();
 
     // 取得に失敗したらエラー
-    if (isFailure(loadResult.value)) return loadResult;
+    if (isError(loadResult.value)) return loadResult;
 
     const beforeWorld = loadResult.value;
 
@@ -289,7 +289,7 @@ export class WorldHandler {
     beforeWorld.last_date = getCurrentTimestamp();
     const saveResult = await this.save(beforeWorld);
     // 保存に失敗したらエラー (ここでコンフリクト起きそう)
-    if (isFailure(saveResult.value)) {
+    if (isError(saveResult.value)) {
       // 使用中フラグを折って保存を試みる (無理なら諦める)
       await serverJsonFile.save(savePath, settings);
       return saveResult;
@@ -317,7 +317,7 @@ export class WorldHandler {
     await serverJsonFile.save(savePath, settings);
 
     // サーバーの実行が失敗したらエラー
-    if (isFailure(serverResult)) return withError(serverResult);
+    if (isError(serverResult)) return withError(serverResult);
 
     // ワールド情報を再取得
     return await this.load();

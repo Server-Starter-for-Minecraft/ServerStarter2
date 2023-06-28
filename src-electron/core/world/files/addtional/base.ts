@@ -1,8 +1,10 @@
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
-import { WithError, withError } from 'app/src-electron/api/witherror';
+import { Failable } from 'app/src-electron/util/error/failable';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { FileData } from 'app/src-electron/schema/filedata';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ErrorMessage } from 'app/src-electron/schema/error';
 
 export type ServerAdditionalFiles<T extends FileData> = {
   load(cwdPath: Path): Promise<WithError<Failable<T[]>>>;
@@ -19,7 +21,7 @@ export async function loadAdditionalFiles<T extends FileData>(
 ) {
   const loaded = await asyncMap(await dirPath.iter(), loader);
 
-  return withError(loaded.filter(isSuccess), loaded.filter(isFailure));
+  return withError(loaded.filter(isValid), loaded.filter(isError));
 }
 
 export async function saveAdditionalFiles<T extends FileData>(
@@ -31,7 +33,7 @@ export async function saveAdditionalFiles<T extends FileData>(
   ) => Promise<Failable<void>>,
   loader: (path: Path) => Promise<Failable<T>>
 ) {
-  const errors: Error[] = [];
+  const errors: ErrorMessage[] = [];
 
   const isNew = (v: T & { path?: string }): v is T & { path: string } =>
     v.path !== undefined;
@@ -40,14 +42,14 @@ export async function saveAdditionalFiles<T extends FileData>(
   const install = await asyncMap(value.filter(isNew), (x) =>
     installer(dirPath.child(x.name), x)
   );
-  errors.push(...install.filter(isFailure));
+  errors.push(...install.filter(isError));
 
   // 現状のファイル一覧を取得
   const loaded = await asyncMap(await dirPath.iter(), loader);
-  errors.push(...loaded.filter(isFailure));
+  errors.push(...loaded.filter(isError));
 
   // 削除すべきファイル一覧
-  const deletFiles = loaded.filter(
+  const deletFiles = loaded.filter(isValid).filter(
     (file) => value.find((x) => x.name === file.name) === undefined
   );
 

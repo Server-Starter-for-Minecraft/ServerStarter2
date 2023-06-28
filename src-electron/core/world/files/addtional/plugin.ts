@@ -4,9 +4,9 @@ import {
   loadAdditionalFiles,
   saveAdditionalFiles,
 } from './base';
-import { Failable } from 'app/src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { WithError } from 'app/src-electron/api/witherror';
+import { WithError } from 'app/src-electron/util/error/witherror';
 
 const PLUGINS_PATH = 'plugins';
 

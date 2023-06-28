@@ -1,4 +1,5 @@
-import { Failable, isFailure } from 'src-electron/api/failable';
+import { isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { ImageURI, UUID } from 'src-electron/schema/brands';
 import { Player } from 'src-electron/schema/player';
 import { GetProfile, UsernameToUUID } from 'src-electron/tools/minecraftApi';
@@ -7,7 +8,7 @@ export async function searchPlayerFromName(
   name: string
 ): Promise<Failable<Player>> {
   const res = await UsernameToUUID(name);
-  if (isFailure(res)) return res;
+  if (isError(res)) return res;
   return await searchPlayerFromUUID(res.uuid);
 }
 
@@ -27,7 +28,7 @@ export async function searchPlayerFromUUID(
   let avatar_overlay: ImageURI;
 
   const profile = await GetProfile(uuid);
-  if (isFailure(profile)) return profile;
+  if (isError(profile)) return profile;
   if (profile.skin) {
     const skin = profile.skin;
 
@@ -39,7 +40,7 @@ export async function searchPlayerFromUUID(
         height: 8,
       });
       const data = await crop.toBeyesData();
-      if (isFailure(data)) return data;
+      if (isError(data)) return data;
       return (await data.encodeURI('image/png')) as ImageURI;
     }
 
@@ -47,9 +48,9 @@ export async function searchPlayerFromUUID(
     const avatarOverlayPromise = crop(40);
 
     const _avatar = await avatarPromise;
-    if (isFailure(_avatar)) return _avatar;
+    if (isError(_avatar)) return _avatar;
     const _avatar_overlay = await avatarOverlayPromise;
-    if (isFailure(_avatar_overlay)) return _avatar_overlay;
+    if (isError(_avatar_overlay)) return _avatar_overlay;
     avatar_overlay = _avatar_overlay;
     avatar = _avatar;
   } else {

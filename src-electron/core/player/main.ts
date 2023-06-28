@@ -1,10 +1,11 @@
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Player } from 'app/src-electron/schema/player';
 import { EXPIRATION_SPAN, getPlayerCache, pushPlayerCache } from './cache';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { searchPlayerFromName, searchPlayerFromUUID } from './search';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { formatUUID } from 'app/src-electron/tools/uuid';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 /** 名前またはUUIDからプレイヤーを取得 (キャッシュに存在する場合高速) */
 export async function getPlayer(
@@ -23,7 +24,7 @@ export async function getPlayer(
 
       // autoの場合のみ 0-0-0-0-0 のような短縮UUIDやハイフンのないUUIDを許可する
       const uuid = formatUUID<PlayerUUID>(nameOrUuid);
-      if (isFailure(uuid)) return new Error('無効なプレイヤー名またはUUID');
+      if (isError(uuid)) return new Error('無効なプレイヤー名またはUUID');
 
       return await getPlayerFromUUID(uuid);
   }
@@ -87,13 +88,13 @@ export async function getPlayerFromUUID(
 // プレイヤーを検索してキャッシュを更新
 async function serchAndPushUUID(uuid: PlayerUUID) {
   const result = await searchPlayerFromUUID(uuid);
-  if (isSuccess(result)) pushPlayerCache(result);
+  if (isValid(result)) pushPlayerCache(result);
   return result;
 }
 
 // プレイヤーを検索してキャッシュを更新
 async function serchAndPushName(name: string) {
   const result = await searchPlayerFromName(name);
-  if (isSuccess(result)) pushPlayerCache(result);
+  if (isValid(result)) pushPlayerCache(result);
   return result;
 }

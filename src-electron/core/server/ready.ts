@@ -2,7 +2,6 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/path';
 import { WorldSettings } from '../world/files/json';
 import { WorldContainer } from 'app/src-electron/schema/brands';
-import { isFailure } from 'app/src-electron/api/failable';
 import {
   getAdditionalJavaArgument,
   javaEncodingToUtf8,
@@ -14,6 +13,8 @@ import { getLog4jArg } from './setup/log4j';
 import { VersionComponent } from '../version/base';
 import { Version } from 'app/src-electron/schema/version';
 import { checkEula } from './setup/eula';
+import { isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
 
 class WorldUsingError extends Error {}
 
@@ -25,7 +26,7 @@ export async function readyRunServer(
   container: WorldContainer,
   name: string,
   logger: (value: string) => void
-) {
+): Promise<Failable<{ javaArgs: string[]; javaPath: Path; }>> {
   // ワールドが起動中の場合エラー
   if (settings.using)
     return new WorldUsingError(
@@ -46,7 +47,7 @@ export async function readyRunServer(
   const additionalJavaArgument = await getAdditionalJavaArgument(
     settings.javaArguments
   );
-  if (isFailure(additionalJavaArgument)) {
+  if (isError(additionalJavaArgument)) {
     // TODO: エラーの伝達方法を変更
     logger(additionalJavaArgument.toString());
   } else {
@@ -59,19 +60,19 @@ export async function readyRunServer(
   );
   const server = await readyVersion(settings.version, cwdPath);
   // サーバーデータの用意ができなかった場合エラー
-  if (isFailure(server)) return server;
+  if (isError(server)) return server;
 
   // 実行javaを用意
   logger(`javaランタイムを準備中 (${server.component})`);
   const javaPath = await readyJava(server.component, true);
   // 実行javaが用意できなかった場合エラー
-  if (isFailure(javaPath)) return javaPath;
+  if (isError(javaPath)) return javaPath;
 
   // log4jの設定
   logger('log4jの引数を設定中');
   const log4jarg = await getLog4jArg(cwdPath, settings.version, logger);
   // log4jのファイルがダウンロードできなかった場合エラー
-  if (isFailure(log4jarg)) return log4jarg;
+  if (isError(log4jarg)) return log4jarg;
   // log4j引数を実行時引数に追加
   if (log4jarg) javaArgs.push(log4jarg);
 
@@ -84,7 +85,7 @@ export async function readyRunServer(
     javaPath,
     logger
   );
-  if (isFailure(eulaResult)) return eulaResult;
+  if (isError(eulaResult)) return eulaResult;
 
   // サーバーのjarファイル参照を実行時引数に追加
   javaArgs.push(...server.programArguments, '--nogui');
@@ -103,7 +104,7 @@ async function assertEula(
 ) {
   const needEula = needEulaAgreement(version);
   // Eulaチェックが必要かどうかの検証に失敗した場合エラー
-  if (isFailure(needEula)) return needEula;
+  if (isError(needEula)) return needEula;
 
   if (!needEula) return undefined;
 
@@ -117,7 +118,7 @@ async function assertEula(
   );
 
   // Eulaチェックに失敗した場合エラー
-  if (isFailure(eulaAgreement)) return eulaAgreement;
+  if (isError(eulaAgreement)) return eulaAgreement;
 
   // Eulaに同意しなかった場合エラー
   if (!eulaAgreement) {

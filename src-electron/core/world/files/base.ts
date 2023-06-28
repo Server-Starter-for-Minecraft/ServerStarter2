@@ -1,4 +1,4 @@
-import { Failable } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'src-electron/util/path';
 
 export type ServerSettingFile<T> = {

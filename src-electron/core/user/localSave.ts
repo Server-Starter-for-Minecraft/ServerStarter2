@@ -1,10 +1,13 @@
 import { LocalSave, LocalSaveContainer } from 'app/src-electron/schema/system';
 import { Path } from 'app/src-electron/util/path';
 import { asyncMap } from 'app/src-electron/util/objmap';
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
+import {
+  Failable
+} from 'app/src-electron/util/error/failable';
 import { BytesData } from 'app/src-electron/util/bytesData';
 import { ImageURI } from 'app/src-electron/schema/brands';
-import { WithError, withError } from 'app/src-electron/api/witherror';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 export async function getLocalSaveData(
   container: LocalSaveContainer
@@ -13,7 +16,7 @@ export async function getLocalSaveData(
   const result = await asyncMap(await path.iter(), (path) =>
     loadLocalSave(container, path)
   );
-  return withError(result.filter(isSuccess), result.filter(isFailure));
+  return withError(result.filter(isValid), result.filter(isError));
 }
 
 export async function loadLocalSave(
@@ -31,7 +34,7 @@ export async function loadLocalSave(
 export async function getImage(path: Path): Promise<ImageURI | undefined> {
   if (path.exists()) {
     const data = await BytesData.fromPath(path);
-    if (isSuccess(data)) {
+    if (isValid(data)) {
       return await data.encodeURI('image/png');
     }
   }

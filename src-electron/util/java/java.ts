@@ -3,8 +3,9 @@ import { config } from '../../core/stores/config';
 import { BytesData } from '../bytesData';
 import { osPlatform } from '../os';
 import { Path } from '../path';
-import { isFailure, Failable } from '../../api/failable';
+import { Failable } from '../error/failable';
 import { installManifest, Manifest } from './manifest';
+import { fromRuntimeError, isError } from '../error/error';
 
 export type component =
   | 'java-runtime-alpha'
@@ -24,7 +25,7 @@ export async function readyJava(
 ): Promise<Failable<Path>> {
   const json = await getAllJson();
 
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   const manifest = json[osPlatform][component][0].manifest;
 
@@ -86,14 +87,13 @@ async function getAllJson(): Promise<Failable<AllJson>> {
       true
     );
 
-    if (isFailure(data)) return data;
+    if (isError(data)) return data;
 
     const json = await data.json<AllJson>();
-    if (isFailure(json)) return json;
+    if (isError(json)) return json;
     return json;
   } catch (e) {
-    // TODO:黒魔術
-    return e as unknown as Error;
+    return fromRuntimeError(e)
   }
 }
 
@@ -110,10 +110,10 @@ async function getManifestJson(
     },
     true
   );
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   const json = await data.json<Manifest>();
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   return json;
 }

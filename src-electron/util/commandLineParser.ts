@@ -1,4 +1,4 @@
-import { Failable } from '../api/failable';
+import { Failable } from './error/failable';
 
 /** コマンドライン引数をパースする */
 export function parseCommandLine(commandLine: string): Failable<string[]> {

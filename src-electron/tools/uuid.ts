@@ -1,4 +1,4 @@
-import { Failable } from '../api/failable';
+import { Failable } from '../util/error/failable';
 import { UUID } from '../schema/brands';
 
 const crypto = require('crypto');

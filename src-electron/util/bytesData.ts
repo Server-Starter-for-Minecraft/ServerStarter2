@@ -2,10 +2,11 @@ import { createHash } from 'crypto';
 import { promises } from 'fs';
 import { utilLoggers } from './logger';
 import { Path } from './path';
-import { isSuccess, Failable, isFailure } from '../api/failable';
+import { Failable } from './error/failable';
 import { Png } from './png';
 import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
+import { fromRuntimeError, isError, isValid } from './error/error';
 
 const fetch = import('node-fetch');
 
@@ -60,7 +61,7 @@ export class BytesData {
       return new BytesDataError(msg);
     } catch (e) {
       logger.fail();
-      return e as Error;
+      return fromRuntimeError(e);
     }
   }
 
@@ -90,7 +91,7 @@ export class BytesData {
     } catch (e) {
       logger.fail();
       // TODO:黒魔術の解消
-      return e as unknown as Error;
+      return fromRuntimeError(e);
     }
   }
 
@@ -149,12 +150,12 @@ export class BytesData {
   ): Promise<Failable<BytesData>> {
     const remoteHash = compareHashOnFetch ? hash : undefined;
     let data = await BytesData.fromPath(path, hash);
-    if (isSuccess(data)) {
+    if (isValid(data)) {
       return data;
     }
 
     data = await BytesData.fromURL(url, remoteHash, headers);
-    if (isFailure(data)) {
+    if (isError(data)) {
       return data;
     }
 
@@ -173,7 +174,7 @@ export class BytesData {
   ): Promise<Failable<BytesData>> {
     const remoteHash = compareHashOnFetch ? hash : undefined;
     const data = await BytesData.fromURL(url, remoteHash, headers);
-    if (isSuccess(data)) {
+    if (isValid(data)) {
       await path.parent().mkdir(true);
       await data.write(path.str(), executable);
       return data;
@@ -214,8 +215,7 @@ export class BytesData {
         resolve(JSON.parse(text));
       });
     } catch (e) {
-      // TODO: 黒魔術の解消
-      return e as unknown as Error;
+      return fromRuntimeError(e);
     }
   }
 
@@ -223,8 +223,7 @@ export class BytesData {
     try {
       return new Png(sharp(this.data));
     } catch (e) {
-      // TODO: 黒魔術の解消
-      return e as unknown as Error;
+      return fromRuntimeError(e);
     }
   }
 

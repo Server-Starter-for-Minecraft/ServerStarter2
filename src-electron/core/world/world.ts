@@ -1,4 +1,4 @@
-import { Failable, isFailure, isSuccess } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
 import { NEW_WORLD_NAME } from '../const';
@@ -13,9 +13,10 @@ import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
 import { WorldHandler } from './handler';
-import { WithError, withError } from 'app/src-electron/api/witherror';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { serverJsonFile } from './files/json';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -24,7 +25,7 @@ export async function getWorldAbbrs(
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
   );
-  return withError(results.filter(isSuccess), results.filter(isFailure));
+  return withError(results.filter(isValid), results.filter(isError));
 }
 
 export async function getWorldAbbr(
@@ -57,7 +58,7 @@ export async function getWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
-  if (isFailure(handler)) return withError(handler);
+  if (isError(handler)) return withError(handler);
   return await handler.load();
 }
 
@@ -66,7 +67,7 @@ export async function setWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(world.id);
-  if (isFailure(handler)) return withError(handler);
+  if (isError(handler)) return withError(handler);
   return await handler.save(world);
 }
 
@@ -76,7 +77,7 @@ export async function setWorld(
  */
 export async function newWorld(): Promise<WithError<Failable<World>>> {
   const vanillaVersions = await vanillaVersionLoader.getAllVersions(true);
-  if (isFailure(vanillaVersions)) return withError(vanillaVersions);
+  if (isError(vanillaVersions)) return withError(vanillaVersions);
 
   const latestRelease = vanillaVersions.find((ver) => ver.release);
 
@@ -121,7 +122,7 @@ async function getDefaultWorldName(container: WorldContainer) {
 
   let result = await validateNewWorldName(container, worldName);
   let i = 0;
-  while (isFailure(result)) {
+  while (isError(result)) {
     worldName = `${NEW_WORLD_NAME}_${i}`;
     i += 1;
     console.log(99, result, worldName);
@@ -139,7 +140,7 @@ export async function createWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(world.id);
-  if (isFailure(handler)) return withError(handler);
+  if (isError(handler)) return withError(handler);
   return await handler.create(world);
 }
 
@@ -150,7 +151,7 @@ export async function deleteWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<undefined>>> {
   const handler = WorldHandler.get(worldID);
-  if (isFailure(handler)) return withError(handler);
+  if (isError(handler)) return withError(handler);
   return await handler.delete();
 }
 
@@ -161,7 +162,7 @@ export async function runWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
-  if (isFailure(handler)) return withError(handler);
+  if (isError(handler)) return withError(handler);
   return await handler.runServer();
 }
 
@@ -170,6 +171,6 @@ export async function runWorld(
  */
 export function runCommand(worldID: WorldID, command: string): void {
   const handler = WorldHandler.get(worldID);
-  if (isFailure(handler)) return;
+  if (isError(handler)) return;
   handler.runCommand(command);
 }

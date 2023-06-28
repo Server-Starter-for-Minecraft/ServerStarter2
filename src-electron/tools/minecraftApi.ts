@@ -1,8 +1,9 @@
-import { Failable, isFailure } from '../api/failable';
+import { Failable } from '../util/error/failable';
 import { PlayerUUID } from '../schema/brands';
 import { BytesData } from '../util/bytesData';
 import { Png } from '../util/png';
 import { formatUUID } from './uuid';
+import { isError } from '../util/error/error';
 
 /** mojangのapiからプレイヤーの名前で検索(過去の名前も検索可能) 戻り値のnameは現在の名前 */
 export async function UsernameToUUID(
@@ -11,9 +12,9 @@ export async function UsernameToUUID(
   const res = await BytesData.fromURL(
     `https://api.mojang.com/users/profiles/minecraft/${username}`
   );
-  if (isFailure(res)) return new Error(`player ${username} not exists`);
+  if (isError(res)) return new Error(`player ${username} not exists`);
   const jsonData = await res.json<{ name: string; id: PlayerUUID }>();
-  if (isFailure(jsonData)) return jsonData;
+  if (isError(jsonData)) return jsonData;
   return {
     name: jsonData.name,
     uuid: jsonData.id,
@@ -61,16 +62,16 @@ export async function GetProfile(id: string): Promise<Failable<PlayerProfile>> {
   const res = await BytesData.fromURL(
     `https://sessionserver.mojang.com/session/minecraft/profile/${id}`
   );
-  if (isFailure(res)) return new Error(`player ${id} not exists`);
+  if (isError(res)) return new Error(`player ${id} not exists`);
 
   const profile = await res.json<Profile>();
-  if (isFailure(profile)) return profile;
+  if (isError(profile)) return profile;
 
   const texturesB64 = await BytesData.fromBase64(profile.properties[0].value);
-  if (isFailure(texturesB64)) return texturesB64;
+  if (isError(texturesB64)) return texturesB64;
 
   const textures = await texturesB64.json<ProfileTextures>();
-  if (isFailure(textures)) return textures;
+  if (isError(textures)) return textures;
 
   const skin = textures.textures.SKIN;
 
@@ -83,9 +84,9 @@ export async function GetProfile(id: string): Promise<Failable<PlayerProfile>> {
   } else {
     const slim = skin.metadata?.model === 'slim';
     const skin_image = await BytesData.fromURL(skin.url);
-    if (isFailure(skin_image)) return skin_image;
+    if (isError(skin_image)) return skin_image;
     const skin_png = await skin_image.png();
-    if (isFailure(skin_png)) return skin_png;
+    if (isError(skin_png)) return skin_png;
     return { uuid, name, slim, skin: skin_png };
   }
 }

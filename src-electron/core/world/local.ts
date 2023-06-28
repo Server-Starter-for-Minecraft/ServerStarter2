@@ -1,5 +1,5 @@
 import { Path } from 'app/src-electron/util/path';
-import { Failable, isFailure, isSuccess } from 'app/src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import {
   PlayerUUID,
@@ -12,9 +12,10 @@ import { serverPropertiesFile } from './files/properties';
 import { Ops, serverOpsFile } from './files/ops';
 import { Whitelist, serverWhitelistFile } from './files/whitelist';
 import { PlayerSetting } from 'app/src-electron/schema/player';
-import { WithError, withError } from 'app/src-electron/api/witherror';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { serverAllAdditionalFiles } from './files/addtional/all';
-import { errorMessage, isValidValue } from '../error/construct';
+import { errorMessage } from '../../util/error/construct';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -81,10 +82,10 @@ export async function loadLocalFiles(
   errors.push(...additional.errors);
 
   // worldSettingsJsonが読み込めなかった場合はエラー
-  if (isFailure(worldSettings)) return withError(worldSettings, errors);
+  if (isError(worldSettings)) return withError(worldSettings, errors);
 
   // serverPropertiesが読み込めた場合はpropertiesを有効化
-  const properties = isSuccess(_properties)
+  const properties = isValid(_properties)
     ? _properties
     : errorMessage.failLoading({
         path: serverPropertiesFile.path(savePath).path,
@@ -94,10 +95,10 @@ export async function loadLocalFiles(
   let players: World['players'];
 
   // opsとwhitelistが両方読み込めた場合のみplayersを有効化
-  if (isSuccess(_ops) && isSuccess(_whitelist)) {
+  if (isValid(_ops) && isValid(_whitelist)) {
     players = toPlayers(_ops, _whitelist);
   } else {
-    if (isFailure(_ops)) {
+    if (isError(_ops)) {
       players = errorMessage.failLoading({
         path: serverOpsFile.path(savePath).path,
         contentType: 'ops',
@@ -111,7 +112,7 @@ export async function loadLocalFiles(
   }
 
   // avater_pathが読み込めなかった場合は未設定にする
-  const avater_path = isSuccess(_avater_path) ? _avater_path : undefined;
+  const avater_path = isValid(_avater_path) ? _avater_path : undefined;
 
   // worldオブジェクトを生成
   const world: World = {
@@ -178,7 +179,7 @@ export async function saveLocalFiles(
   ];
 
   // world.playersが正常値の場合ファイル(ops.json,whitelist.json)に保存
-  if (isValidValue(world.players)) {
+  if (isValid(world.players)) {
     const [ops, whitelist] = fromPlayers(world.players);
     promisses.push(
       serverOpsFile.save(savePath, ops),
@@ -187,7 +188,7 @@ export async function saveLocalFiles(
   }
 
   // world.propertiesが正常値の場合ファイル(server.properties)に保存
-  if (isValidValue(world.properties)) {
+  if (isValid(world.properties)) {
     promisses.push(serverPropertiesFile.save(savePath, world.properties));
   }
 

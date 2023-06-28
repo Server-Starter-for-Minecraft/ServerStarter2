@@ -1,7 +1,8 @@
 import { config } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
-import { Failable, isFailure, isSuccess } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { versionManifestPath } from '../const';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 export type ManifestRecord = {
   id: string;
@@ -26,7 +27,7 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
   // URLからデータを取得 (内容が変わっている可能性があるのでsha1チェックは行わない)
   const response = await BytesData.fromURL(MANIFEST_URL);
 
-  if (isSuccess(response)) {
+  if (isValid(response)) {
     // 成功した場合ローカルに保存
     config.set('version_manifest_v2_sha1', await response.hash('sha1'));
     versionManifestPath.write(response);
@@ -46,7 +47,7 @@ async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
 
   const manifestData = await versionManifestPath.read();
 
-  if (isFailure(manifestData)) return manifestData;
+  if (isError(manifestData)) return manifestData;
 
   const manifestSha1 = config.get('version_manifest_v2_sha1');
   if ((await manifestData.hash('sha1')) !== manifestSha1)

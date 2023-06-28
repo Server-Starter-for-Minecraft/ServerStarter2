@@ -1,5 +1,4 @@
 import { FabricVersion } from 'src-electron/schema/version';
-import { isFailure } from '../../api/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';
 import { versionsCachePath } from '../const';
@@ -9,6 +8,7 @@ import {
   needEulaAgreementVanilla,
 } from './base';
 import { Path } from '../../util/path';
+import { isError } from 'app/src-electron/util/error/error';
 
 const fabricVersionsPath = versionsCachePath.child('fabric');
 
@@ -31,10 +31,10 @@ async function readyVersion(version: FabricVersion, cwdPath: Path) {
 
   const result = await BytesData.fromPathOrUrl(jarpath, url, undefined, false);
 
-  if (isFailure(result)) return result;
+  if (isError(result)) return result;
 
   const javaComponent = await getJavaComponent(version.id);
-  if (isFailure(javaComponent)) return javaComponent;
+  if (isError(javaComponent)) return javaComponent;
 
   return {
     programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
@@ -49,9 +49,9 @@ async function getAllVersions() {
     getLoaders(),
     getInstallers(),
   ]);
-  if (isFailure(games)) return games;
-  if (isFailure(loaders)) return loaders;
-  if (isFailure(installers)) return installers;
+  if (isError(games)) return games;
+  if (isError(loaders)) return loaders;
+  if (isError(installers)) return installers;
 
   const versions: FabricVersion[] = games.flatMap(({ id, release }) =>
     loaders.flatMap((loader) =>
@@ -82,10 +82,10 @@ async function getLoaders() {
     fabricVersionsPath.child('loader.json'),
     URL
   );
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   const loaders = await data.json<Loader[]>();
-  if (isFailure(loaders)) return loaders;
+  if (isError(loaders)) return loaders;
 
   return loaders
     .filter(({ version }) => {
@@ -109,10 +109,10 @@ async function getInstallers() {
     fabricVersionsPath.child('installer.json'),
     URL
   );
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   const loaders = await data.json<Installer[]>();
-  if (isFailure(loaders)) return loaders;
+  if (isError(loaders)) return loaders;
 
   return loaders
     .filter(({ version }) => {
@@ -134,13 +134,13 @@ async function getGames() {
     fabricVersionsPath.child('game.json'),
     URL
   );
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   const games = await data.json<Game[]>();
-  if (isFailure(games)) return games;
+  if (isError(games)) return games;
 
   const vanilla = await vanillaVersionLoader.getAllVersions(undefined);
-  if (isFailure(vanilla)) return vanilla;
+  if (isError(vanilla)) return vanilla;
 
   return games
     .map(({ version }) => {

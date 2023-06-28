@@ -2,19 +2,18 @@ import { datapackFiles } from './datapack';
 import { pluginFiles } from './plugin';
 import { modFiles } from './mod';
 import { Path } from 'app/src-electron/util/path';
-import { isFailure } from 'app/src-electron/api/failable';
 import {
   WorldAdditional,
   WorldEditedAdditional,
 } from 'app/src-electron/schema/world';
-import { WithError, withError } from 'app/src-electron/api/witherror';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import {
   errorMessage,
-  isErrorMessage,
-} from 'app/src-electron/core/error/construct';
+} from 'app/src-electron/util/error/construct';
 import { ServerAdditionalFiles } from './base';
 import { FileData } from 'app/src-electron/schema/filedata';
 import { ErrorMessage } from 'app/src-electron/schema/error';
+import { isError } from 'app/src-electron/util/error/error';
 
 export const serverAllAdditionalFiles = {
   async load(cwdPath: Path): Promise<WithError<WorldAdditional>> {
@@ -26,7 +25,7 @@ export const serverAllAdditionalFiles = {
     const errors = _datapacks.errors.concat(_plugins.errors, _mods.errors);
 
     let datapacks: WorldAdditional['datapacks'];
-    if (isFailure(_datapacks.value)) {
+    if (isError(_datapacks.value)) {
       errors.push(_datapacks.value);
       datapacks = errorMessage.failLoading({
         contentType: 'datapack',
@@ -37,7 +36,7 @@ export const serverAllAdditionalFiles = {
     }
 
     let plugins: WorldAdditional['plugins'];
-    if (isFailure(_plugins.value)) {
+    if (isError(_plugins.value)) {
       errors.push(_plugins.value);
       plugins = errorMessage.failLoading({
         contentType: 'plugin',
@@ -48,7 +47,7 @@ export const serverAllAdditionalFiles = {
     }
 
     let mods: WorldAdditional['mods'];
-    if (isFailure(_mods.value)) {
+    if (isError(_mods.value)) {
       errors.push(_mods.value);
       mods = errorMessage.failLoading({
         contentType: 'mod',
@@ -71,10 +70,10 @@ export const serverAllAdditionalFiles = {
       files: ServerAdditionalFiles<T>,
       values: (T & { path?: string })[] | ErrorMessage
     ): Promise<void> {
-      if (isErrorMessage(values)) return;
+      if (isError(values)) return;
       const result = await files.save(cwdPath, values);
       errors.push(...result.errors);
-      if (isFailure(result.value)) errors.push(result.value);
+      if (isError(result.value)) errors.push(result.value);
     }
     await Promise.all([
       saveEach(datapackFiles, value.datapacks),
