@@ -5,7 +5,6 @@ import {
   LocalSave,
   LocalSaveContainer,
   SystemSettings,
-  WorldContainers,
 } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
