@@ -1,8 +1,7 @@
 import { PluginData } from 'app/src-electron/schema/filedata';
-import { ServerAdditionalFiles } from './base';
+import { ADDITIONALS_CACHE_PATH, ServerAdditionalFiles } from './base';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { PLUGIN_CACHE_PATH } from 'app/src-electron/core/stores/cache';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 
 async function loader(path: Path): Promise<Failable<PluginData | undefined>> {
@@ -22,9 +21,8 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 }
 
 export const pluginFiles = new ServerAdditionalFiles<PluginData>(
-  PLUGIN_CACHE_PATH,
+  ADDITIONALS_CACHE_PATH.child('mod'),
   'plugins',
-  'file',
   loader,
   installer
 );

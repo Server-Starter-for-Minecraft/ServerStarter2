@@ -1,8 +1,7 @@
 import { ModData } from 'app/src-electron/schema/filedata';
-import { ServerAdditionalFiles } from './base';
+import { ADDITIONALS_CACHE_PATH, ServerAdditionalFiles } from './base';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { MOD_CACHE_PATH } from 'app/src-electron/core/stores/cache';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 
 async function loader(path: Path): Promise<Failable<ModData | undefined>> {
@@ -22,9 +21,8 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 }
 
 export const modFiles = new ServerAdditionalFiles<ModData>(
-  MOD_CACHE_PATH,
+  ADDITIONALS_CACHE_PATH.child('mod'),
   'mods',
-  'file',
   loader,
   installer
 );

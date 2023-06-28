@@ -18,6 +18,7 @@ import { validateNewWorldName } from '../core/world/name';
 import { getStaticResoure } from '../core/resource';
 import { getPlayer } from '../core/player/main';
 import { getLocalSaveData } from '../core/user/localSave';
+import { getCacheContents } from '../core/stores/cache';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -46,6 +47,8 @@ export const getBackListener = (
     GetPlayer: getPlayer,
 
     GetVersions: getVersions,
+
+    GetCacheContents: getCacheContents,
 
     ValidateNewWorldName: validateNewWorldName,
 

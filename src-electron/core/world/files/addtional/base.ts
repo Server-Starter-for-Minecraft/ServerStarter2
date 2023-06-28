@@ -14,6 +14,9 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { zip } from 'app/src-electron/util/zip';
 import { WorldHandler } from '../../handler';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { cachePath } from 'app/src-electron/core/const';
+
+export const ADDITIONALS_CACHE_PATH = cachePath.child('additionals');
 
 export class ServerAdditionalFiles<T extends Record<string, any>> {
   constructor(

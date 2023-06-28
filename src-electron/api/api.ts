@@ -11,7 +11,12 @@ import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
 import { Failable } from '../util/error/failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 import { WithError } from '../util/error/witherror';
-import { DatapackData, CacheFileData, PluginData } from '../schema/filedata';
+import {
+  DatapackData,
+  CacheFileData,
+  PluginData,
+  ModData,
+} from '../schema/filedata';
 import { ErrorMessage } from '../schema/error';
 
 /**
@@ -119,9 +124,9 @@ export interface API extends IAPI {
     /** キャッシュされたデータを取得する */
     GetCacheContents: ((
       type: 'datapack'
-    ) => Promise<WithError<CacheFileData<DatapackData[]>>>) &
-      ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData[]>>>) &
-      ((type: 'mod') => Promise<WithError<CacheFileData<PluginData[]>>>);
+    ) => Promise<WithError<CacheFileData<DatapackData>[]>>) &
+      ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData>[]>>) &
+      ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (
