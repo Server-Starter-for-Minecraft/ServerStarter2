@@ -5,5 +5,5 @@ export function zip<T extends unknown[][]>(
 ): { [K in keyof T]: T[K] extends (infer V)[] ? V : never }[] {
   const minLength = Math.min(...args.map((arr) => arr.length));
   // @ts-expect-error This is too much for ts
-  return new Array(minLength).map((_, i) => args.map((arr) => arr[i]));
+  return new Array(minLength).fill(0).map((_, i) => args.map((arr) => arr[i]));
 }
