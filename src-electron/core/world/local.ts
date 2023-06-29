@@ -52,13 +52,15 @@ function fromPlayers(players: PlayerSetting[]): [Ops, Whitelist] {
   return [ops, whitelist];
 }
 
+export type LocalWorldResult = { world: World; other: WorldSettingsOther };
+
 // ローカルのサーバーディレクトリからWorld情報を取得
 export async function loadLocalFiles(
   savePath: Path,
   id: WorldID,
   name: WorldName,
   container: WorldContainer
-): Promise<WithError<Failable<World>>> {
+): Promise<WithError<Failable<LocalWorldResult>>> {
   // server_settings.json
   // server.properties
   // world/icon.png
@@ -107,6 +109,8 @@ export async function loadLocalFiles(
   // avater_pathが読み込めなかった場合は未設定にする
   const avater_path = isValid(_avater_path) ? _avater_path : undefined;
 
+  const other = constructWorldSettingsOther(worldSettings);
+
   // worldオブジェクトを生成
   const world: World = {
     id,
@@ -124,16 +128,17 @@ export async function loadLocalFiles(
     players,
   };
 
-  return withError(world, errors);
+  return withError({ world, other }, errors);
 }
 
 /** ローカルのサーバーディレクトリにWorld情報を保存
  * 戻り値は保存結果(保存の成否によって引数の値と異なる可能性あり) */
 export async function saveLocalFiles(
   savePath: Path,
-  world: WorldEdited
-): Promise<WithError<Failable<World>>> {
-  const worldSettings = constructWorldSettings(world);
+  world: WorldEdited,
+  other: WorldSettingsOther
+): Promise<WithError<Failable<LocalWorldResult>>> {
+  const worldSettings = constructWorldSettings(world, other);
 
   const errors: ErrorMessage[] = [];
 
@@ -191,8 +196,22 @@ export async function saveLocalFiles(
   return constructResult();
 }
 
-export function constructWorldSettings(world: World | WorldEdited) {
+// ワールド設定として存在するが、API経由で公開しない設定群
+export type WorldSettingsOther = Omit<
+  WorldSettings,
+  keyof (World & WorldEdited)
+>;
+
+export function getNewWorldSettingsOther(): WorldSettingsOther {
+  return {};
+}
+
+export function constructWorldSettings(
+  world: World | WorldEdited,
+  other: WorldSettingsOther
+) {
   const worldSettings: WorldSettings = {
+    ...other,
     memory: world.memory,
     javaArguments: world.javaArguments,
     version: world.version,
@@ -202,4 +221,12 @@ export function constructWorldSettings(world: World | WorldEdited) {
     using: world.using,
   };
   return worldSettings;
+}
+
+export function constructWorldSettingsOther(
+  settings: WorldSettings
+): WorldSettingsOther {
+  return {
+    directory: settings.directory,
+  };
 }

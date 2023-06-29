@@ -6,6 +6,7 @@ import {
   FAIL,
   booleanFixer,
   defaultFixer,
+  literalFixer,
   numberFixer,
   objectFixer,
   optionalFixer,
@@ -19,6 +20,13 @@ import { ServerSettingFile } from './base';
 import { getSystemSettings } from '../../stores/system';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+
+/**
+ * ワールドのディレクトリ構成
+ * vanilla : world { DIM-1 | DIM1}
+ * plugin  : world | world_nether | world_end
+ */
+export type WorldDirectoryTypes = 'vanilla' | 'plugin';
 
 /**
  * ワールドの設定
@@ -49,6 +57,9 @@ export type WorldSettings = {
 
   /** 起動中フラグ */
   using?: boolean;
+
+  /** ディレクトリ構成 "vanilla" | "plugin" */
+  directory?: WorldDirectoryTypes;
 };
 
 export async function worldSettingsFixer() {
@@ -79,6 +90,9 @@ export async function worldSettingsFixer() {
 
       /** 起動中フラグ */
       using: optionalFixer(booleanFixer()),
+
+      /** ディレクトリ構成 "vanilla" | "plugin" */
+      directory: optionalFixer(literalFixer(['vanilla', 'plugin'])),
     },
     false
   );
