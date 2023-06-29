@@ -5,7 +5,7 @@ import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
 import { File } from 'unzipper';
-import { unzipPath } from '../const';
+import { LEVEL_NAME, unzipPath } from '../const';
 import { WorldSettings, serverJsonFile } from './files/json';
 import {
   SERVER_PROPERTIES_PATH,
@@ -89,7 +89,7 @@ export async function importCustomMap(
   const importer = mapData.isFile ? importCustomMapDir : importCustomMapZip;
   const properties = await importer(
     new Path(mapData.path),
-    cwdPath.child(LEVEL_DAT)
+    cwdPath.child(LEVEL_NAME)
   );
   if (isError(properties)) return properties;
 
@@ -144,7 +144,7 @@ async function importCustomMapZip(
   // ワールドデータ内部にserver.propertiesが存在する場合
 
   // 必要なデータを移動
-  await unzipPath.child(innerPath).moveTo(worldPath);
+  await unzipPath.child(innerPath).parent().moveTo(worldPath);
 
   // 一時ディレクトリを削除
   await unzipPath.remove(true);
