@@ -12,13 +12,14 @@ import {
   runWorld,
   runCommand,
 } from '../core/world/world';
-import { openBrowser, openFolder, openDialog } from '../tools/shell';
+import { openBrowser, openFolder } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { validateNewWorldName } from '../core/world/name';
 import { getStaticResoure } from '../core/resource';
 import { getPlayer } from '../core/player/main';
 import { getLocalSaveData } from '../core/user/localSave';
 import { getCacheContents } from '../core/stores/cache';
+import { pickDialog } from '../core/world/dialog';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -54,6 +55,6 @@ export const getBackListener = (
 
     GetLocalSaveData: getLocalSaveData,
 
-    OpenDialog: openDialog(windowGetter),
+    PickDialog: pickDialog(windowGetter),
   },
 });

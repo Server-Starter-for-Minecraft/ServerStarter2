@@ -17,7 +17,7 @@ type Mcmeta = {
 
 const MCMETA_FILE = 'pack.mcmeta';
 
-async function loader(path: Path): Promise<Failable<DatapackData | undefined>> {
+async function loader(path: Path): Promise<Failable<DatapackData>> {
   let mcmetaData: Failable<BytesData>;
 
   if (await path.isDirectory()) {

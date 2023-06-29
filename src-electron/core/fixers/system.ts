@@ -1,5 +1,4 @@
 import {
-  CacheContents,
   LocalSave,
   LocalSaveContainer,
   Locale,
@@ -100,20 +99,6 @@ export const fixSystemRemoteSetting = objectFixer<SystemRemoteSetting>(
   true
 );
 
-export const fixCacheContents = objectFixer<CacheContents>(
-  {
-    /** 導入済みデータパック */
-    datapacks: optionalFixer(arrayFixer(fixFileOrNewData, false)),
-
-    /** 導入済みプラグイン */
-    plugins: optionalFixer(arrayFixer(fixFileOrNewData, false)),
-
-    /** 導入済みMOD */
-    mods: optionalFixer(arrayFixer(fixFileOrNewData, false)),
-  },
-  true
-);
-
 /** システム設定まとめてここに格納 */
 export const fixSystemSettings = objectFixer<SystemSettings>(
   {
@@ -122,7 +107,6 @@ export const fixSystemSettings = objectFixer<SystemSettings>(
     remote: fixSystemRemoteSetting,
     player: fixSystemPlayerSetting,
     user: fixSystemUserSetting,
-    cache: fixCacheContents,
   },
   true
 );
