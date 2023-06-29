@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -8,8 +7,6 @@ import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
-
-const toggle1 = ref(true)
 </script>
 
 <template>
@@ -23,7 +20,7 @@ const toggle1 = ref(true)
       />
   
       <q-toggle
-        v-model="toggle1"
+        v-model="mainStore.world().properties['white-list']"
         :label="$t('player.join')"
         style="font-size: 1rem;"
       />
