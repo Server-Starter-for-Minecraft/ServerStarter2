@@ -25,9 +25,18 @@ export const versionManifestPath = versionsCachePath.child(
   'vanilla/version_manifest_v2.json'
 );
 
-export const spigotBuildPath = mainPath.child('spigotBuild');
+export const tempPath = mainPath.child('temp');
+
+/** spigotをビルドするための一時パス */
+export const spigotBuildPath = tempPath.child('spigotBuild');
+
+/** zipファイルを展開するための一時パス */
+export const unzipPath = tempPath.child('zip');
 
 export const LEVEL_NAME = 'world' as const;
+
+export const PLUGIN_NETHER_LEVEL_NAME = 'world_nether' as const;
+export const PLUGIN_THE_END_LEVEL_NAME = 'world_the_end' as const;
 
 export const DEFAULT_MEMORY: MemorySettings = {
   size: 2,

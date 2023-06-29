@@ -22,8 +22,13 @@ import { errorMessage } from '../../util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { ErrorMessage } from 'app/src-electron/schema/error';
 import { Version } from 'app/src-electron/schema/version';
-import { LEVEL_NAME } from '../const';
-import { asyncMap } from 'app/src-electron/util/objmap';
+import {
+  LEVEL_NAME,
+  PLUGIN_NETHER_LEVEL_NAME,
+  PLUGIN_THE_END_LEVEL_NAME,
+} from '../const';
+import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
+import { importCustomMap } from './cusomMap';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -145,7 +150,7 @@ export async function saveLocalFiles(
   world: WorldEdited,
   other: WorldSettingsOther
 ): Promise<WithError<Failable<LocalWorldResult>>> {
-  const worldSettings = constructWorldSettings(world, other);
+  let worldSettings = constructWorldSettings(world, other);
 
   const errors: ErrorMessage[] = [];
 
@@ -161,18 +166,44 @@ export async function saveLocalFiles(
     return result;
   }
 
-  // TODO: カスタムマップの導入処理
-  // カスタムマップが設定されている場合はその他のプロパティの上書きは同時に発生しない
+  // カスタムマップの導入処理
+  // TODO: メソッドを分割すべき
   if (world.custom_map) {
-    // ローカルのデータを再読み込みして返却
-    return constructResult();
+    // ファイル削除待機
+    await asyncForEach(
+      [PLUGIN_NETHER_LEVEL_NAME, PLUGIN_THE_END_LEVEL_NAME],
+      (path) => savePath.child(path).remove()
+    );
+
+    // 導入待機
+    const importResult = await importCustomMap(
+      world.custom_map,
+      savePath.child(LEVEL_NAME),
+      worldSettings
+    );
+
+    // 導入に失敗した場合
+    if (isError(importResult)) errors.push(importResult);
+    else {
+      worldSettings = importResult.settings;
+      if (importResult.properties !== undefined) {
+        // 配布マップにserver.propertiesの情報が含まれていた場合
+        if (isValid(world.properties)) {
+          // 元のserver.propertiesとマージ
+          world.properties = {
+            ...world.properties,
+            ...importResult.properties,
+          };
+        } else {
+          // server.propertiesを上書き
+          world.properties = importResult.properties;
+        }
+      }
+    }
   }
 
   // TODO: リモートワールドの導入処理
-  // リモートワールドが設定されている場合はその他のプロパティの上書きは同時に発生しない
   if (world.remote_source) {
-    // ローカルのデータを再読み込みして返却
-    return constructResult();
   }
 
   const promisses: Promise<any>[] = [
