@@ -47,6 +47,7 @@ const toggle1 = ref(true)
         <template v-for="group in playerStore.searchGroups()" :key="group">
           <GroupCardView
             :name="group.name"
+            :color="group.color"
             :players="group.players"
           />
         </template>

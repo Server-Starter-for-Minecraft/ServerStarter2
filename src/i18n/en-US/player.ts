@@ -1,6 +1,6 @@
 export const enUSPlayer = {
   search: 'search players',
   registeredPlayer: 'registered player',
-  groupList: 'group list',
+  groupList: 'グループによる一括追加（英訳を当てる）',
   join: 'only registered player'
 };

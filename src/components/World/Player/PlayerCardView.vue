@@ -2,7 +2,8 @@
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
-import GroupBadgeView from './GroupBadgeView.vue';
+import GroupBadgeView from './utils/GroupBadgeView.vue';
+import PlayerHeadView from './utils/PlayerHeadView.vue';
 
 interface Prop {
   uuid: PlayerUUID
@@ -32,10 +33,7 @@ function onCardClicked() {
   >
     <q-item class="q-pa-md" style="height: 5.5rem;">
       <q-item-section avatar top>
-        <q-avatar square>
-          <q-img :src="playerData.avatar" class="avaterImg"/>
-          <q-img :src="playerData.avatar_overlay" class="avaterImg" style="width: 110%;"/>
-        </q-avatar>
+        <player-head-view :player="playerData" size="2.5rem"/>
       </q-item-section>
 
       <q-item-section top>
@@ -71,11 +69,6 @@ function onCardClicked() {
 }
 .card-active {
   border-color: $primary;
-}
-
-.avaterImg {
-  position: absolute;
-  image-rendering: pixelated;
 }
 
 .name {
