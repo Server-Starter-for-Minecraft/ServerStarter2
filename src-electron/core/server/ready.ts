@@ -1,7 +1,6 @@
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/path';
 import { WorldSettings } from '../world/files/json';
-import { WorldContainer } from 'app/src-electron/schema/brands';
 import {
   getAdditionalJavaArgument,
   javaEncodingToUtf8,
