@@ -178,7 +178,7 @@ export async function saveLocalFiles(
     // 導入待機
     const importResult = await importCustomMap(
       world.custom_map,
-      savePath.child(LEVEL_NAME),
+      savePath,
       worldSettings
     );
 
