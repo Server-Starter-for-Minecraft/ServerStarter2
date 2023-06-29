@@ -26,7 +26,17 @@ export async function loadCustomMap(
     }
     // zipの場合
     const zip = new ZipFile(path);
-    hasLevelDat = await zip.hasFile(LEVEL_DAT);
+    // ZIP内に ( level.dat | */level.dat ) があった場合OK
+    const levelDats = await zip.match(/^([^<>:;,?"*|/\\]+\/)?level\.dat$/);
+    if (levelDats.length > 1) {
+      return errorMessage.data.path.invalidContent.customMapZipWithMultipleLevelDat(
+        {
+          path: path.path,
+          innderPath: levelDats.map((x) => x.path),
+        }
+      );
+    }
+    hasLevelDat = levelDats.length > 0;
   }
 
   if (!hasLevelDat)

@@ -7,6 +7,8 @@ log4js.addLayout('custom', function (config: { max?: number }) {
     const state = logEvent.data[0];
     const args = logEvent.data[1];
 
+    console.log(logEvent.data)
+
     const data = logEvent.data
       .slice(2)
       .map((d) => {
