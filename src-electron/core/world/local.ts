@@ -172,7 +172,7 @@ export async function saveLocalFiles(
     // ファイル削除待機
     await asyncForEach(
       [PLUGIN_NETHER_LEVEL_NAME, PLUGIN_THE_END_LEVEL_NAME],
-      (path) => savePath.child(path).remove()
+      (path) => savePath.child(path).remove(true)
     );
 
     // 導入待機
