@@ -17,7 +17,6 @@ import {
   PluginData,
   ModData,
   NewFileData,
-  WorldFileData,
   CustomMapData,
 } from '../schema/filedata';
 import { ErrorMessage } from '../schema/error';

@@ -2,7 +2,6 @@ import { Path } from 'app/src-electron/util/path';
 import { readyRunServer } from './ready';
 import { WorldID } from 'app/src-electron/schema/world';
 import { WorldSettings } from '../world/files/json';
-import { WorldContainer } from 'app/src-electron/schema/brands';
 import { api } from '../api';
 import { ServerProcess, serverProcess } from './process';
 import { Failable } from 'app/src-electron/util/error/failable';

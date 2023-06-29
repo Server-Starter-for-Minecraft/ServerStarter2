@@ -62,6 +62,9 @@ export type PathContentErrors = {
   // 不適なModファイル
   invalidMod: PathErrorContent;
 
+  // 不適なカスタムマップ
+  invalidCustomMap: PathErrorContent;
+
   // 設定ファイルの要件を満たしていない
   invalidWorldSettingJson: PathErrorContent;
   invalidOpsJson: PathErrorContent;

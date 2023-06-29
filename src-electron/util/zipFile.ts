@@ -22,4 +22,9 @@ export class ZipFile {
       });
     return BytesData.fromBuffer(await file.buffer());
   }
+
+  async hasFile(path: string): Promise<boolean> {
+    const file = (await this.promise).files.find((d) => d.path == path);
+    return file !== undefined;
+  }
 }

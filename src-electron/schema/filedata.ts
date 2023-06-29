@@ -55,4 +55,5 @@ export type ModData = {
 export type CustomMapData = {
   kind: 'map';
   path: string;
+  isFile: boolean;
 };
