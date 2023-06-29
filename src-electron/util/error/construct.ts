@@ -17,7 +17,6 @@ function getErrorMessageConstructor<T extends object>(
     arg?: object | any[] | ErrorLevel,
     level: ErrorLevel = 'error'
   ) {
-    console.log('ppl', key);
     if (typeof arg === 'string') {
       return {
         type: arg,
@@ -37,7 +36,6 @@ function getErrorMessageConstructor<T extends object>(
 
   const handler: ProxyHandler<any> = {
     get: (_: object, k: string) => {
-      console.log(key, k);
       return getErrorMessageConstructor(key ? key + '.' + k : k);
     },
   };

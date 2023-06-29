@@ -33,7 +33,6 @@ export async function getWorldAbbr(
   path: Path,
   worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
-  console.log(path.path);
   if (!path.isDirectory())
     return errorMessage.data.path.invalidContent.mustBeDirectory({
       type: 'file',
@@ -133,9 +132,7 @@ async function getDefaultWorldName(container: WorldContainer) {
   while (isError(result)) {
     worldName = `${NEW_WORLD_NAME}_${i}`;
     i += 1;
-    console.log(99, result, worldName);
     result = await validateNewWorldName(container, worldName);
-    console.log(100, result);
   }
   return result;
 }

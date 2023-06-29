@@ -45,7 +45,6 @@ async function moveWorldContainer(
   // 現在のコンテナの中身を全部移動
   await asyncForEach(await currentPath.iter(), async (currentChild) => {
     const targetChild = nextPath.child(currentChild.basename());
-    console.log(currentChild, targetChild);
     // 移動先のファイル/ディレクトリが既に存在している場合削除して上書き
     if (targetChild.exists()) await targetChild.remove(true);
     await currentChild.moveTo(targetChild);
