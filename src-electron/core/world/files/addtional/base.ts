@@ -129,7 +129,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         ext: p.extname(),
       }));
 
-    return withError(array, loaded.filter(isError));
+      return withError(array, loaded.filter(isError));
   }
 
   async save(cwdPath: Path, value: AllFileData<T>[]): Promise<WithError<void>> {
@@ -177,15 +177,15 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     });
 
     // 現状のファイル一覧を取得
-    const loaded = await asyncMap(await dirPath.iter(), (x) => this.loader(x));
-    errors.push(...loaded.filter(isError));
+    const loaded = await this.load(cwdPath, '' as WorldID);
+    errors.push(...loaded.errors);
 
     // 削除すべきファイル一覧
-    const deletFiles = loaded
+    const deletFiles = loaded.value
       .filter((x): x is WorldFileData<T> => x !== undefined && isValid(x))
       .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
-    // 非同期で削除
+      // 非同期で削除
     await asyncForEach(deletFiles, (x) => dirPath.child(x.name).remove(true));
 
     return withError(undefined, errors);
