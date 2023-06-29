@@ -65,6 +65,14 @@ export type PathContentErrors = {
   // 不適なカスタムマップ
   invalidCustomMap: PathErrorContent;
 
+  // level.datが複数格納されたカスタムマップのzipファイル
+  customMapZipWithMultipleLevelDat: ErrorMessageContent<{
+    // .zipのパス
+    path: string;
+    // zipファイル内部のパス
+    innderPath: string[];
+  }>;
+
   // 設定ファイルの要件を満たしていない
   invalidWorldSettingJson: PathErrorContent;
   invalidOpsJson: PathErrorContent;

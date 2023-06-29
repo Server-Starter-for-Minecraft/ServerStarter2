@@ -13,6 +13,7 @@ import { datapackFiles } from './files/addtional/datapack';
 import { Path } from 'app/src-electron/util/path';
 import { pluginFiles } from './files/addtional/plugin';
 import { modFiles } from './files/addtional/mod';
+import { loadCustomMap } from './cusomMap';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -65,11 +66,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     // typeに応じて結果を変える
     switch (options.type) {
       case 'world':
-        const result: CustomMapData = {
-          kind: 'map',
-          path: path.path,
-        };
-        return result;
+        return loadCustomMap(path);
       case 'datapack':
         return datapackFiles.loadNew(path);
       case 'plugin':
