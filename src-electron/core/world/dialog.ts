@@ -65,10 +65,11 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     // typeに応じて結果を変える
     switch (options.type) {
       case 'world':
-        return {
+        const result: CustomMapData = {
           kind: 'map',
           path: path.path,
-        } satisfies CustomMapData;
+        };
+        return result;
       case 'datapack':
         return datapackFiles.loadNew(path);
       case 'plugin':

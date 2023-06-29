@@ -102,14 +102,15 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const loaded = await this.loader(path, true);
     if (isError(loaded)) return loaded;
 
-    return {
+    const result: NewFileData<T> = {
       ...loaded,
       type: 'new',
       name: path.stemname(),
       ext: path.extname(),
       path: path.path,
       isFile: !(await path.isDirectory()),
-    } satisfies NewFileData<T>;
+    };
+    return result;
   }
 
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
