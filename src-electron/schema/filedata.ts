@@ -54,6 +54,5 @@ export type ModData = {
 /** Modのデータ */
 export type CustomMapData = {
   kind: 'map';
-  name: string;
   path: string;
 };

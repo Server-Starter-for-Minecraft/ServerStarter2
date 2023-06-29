@@ -16,8 +16,12 @@ import {
   CacheFileData,
   PluginData,
   ModData,
+  NewFileData,
+  WorldFileData,
+  CustomMapData,
 } from '../schema/filedata';
 import { ErrorMessage } from '../schema/error';
+import { DialogOptions } from '../schema/dialog';
 
 /**
  * ## APIの利用方法
@@ -145,10 +149,24 @@ export interface API extends IAPI {
       worldName: string
     ) => Promise<Failable<WorldName>>;
 
-    /** ディレクトリを選択する */
-    OpenDialog: (
-      options: Electron.OpenDialogOptions
-    ) => Promise<Electron.OpenDialogReturnValue>;
+    /** ファイル/ディレクトリ を選択する */
+    PickDialog: ((
+      options: {
+        type: 'world';
+        isFile: boolean;
+      } & DialogOptions
+    ) => Promise<Failable<CustomMapData>>) &
+      ((
+        options: { type: 'datapack'; isFile: boolean } & DialogOptions
+      ) => Promise<Failable<NewFileData<DatapackData>>>) &
+      ((
+        options: {
+          type: 'plugin';
+        } & DialogOptions
+      ) => Promise<Failable<NewFileData<PluginData>>>) &
+      ((
+        options: { type: 'mod' } & DialogOptions
+      ) => Promise<Failable<NewFileData<ModData>>>);
   };
 }
 

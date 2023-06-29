@@ -30,6 +30,9 @@ export type DataErrors = {
 
     // ファイルまたはディレクトリの生成に失敗
     creationFiled: PathErrorContent;
+
+    // ファイル選択ウィンドウがキャンセルされた場合
+    dialogCanceled: ErrorMessageContent;
   };
 
   // hash値が合わない

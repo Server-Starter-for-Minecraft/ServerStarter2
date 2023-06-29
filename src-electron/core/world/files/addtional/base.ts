@@ -24,7 +24,8 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     type: 'datapack' | 'plugin' | 'mod',
     cachePath: Path,
     childPath: string,
-    loader: (path: Path) => Promise<Failable<T | undefined>>,
+    loader: ((path: Path, force: false) => Promise<Failable<T | undefined>>) &
+      ((path: Path, force: true) => Promise<Failable<T>>),
     installer: (sourcePath: Path, targetPath: Path) => Promise<Failable<void>>
   ) {
     this.type = type;
@@ -34,7 +35,11 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     this.installer = installer;
   }
 
-  private loader: (path: Path) => Promise<Failable<T | undefined>>;
+  private loader: ((
+    path: Path,
+    force: false
+  ) => Promise<Failable<T | undefined>>) &
+    ((path: Path, force: true) => Promise<Failable<T>>);
   private installer: (
     sourcePath: Path,
     targetPath: Path
@@ -92,10 +97,25 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     });
   }
 
+  /** パスからNewFileData<T>を得る */
+  async loadNew(path: Path): Promise<Failable<NewFileData<T>>> {
+    const loaded = await this.loader(path, true);
+    if (isError(loaded)) return loaded;
+
+    return {
+      ...loaded,
+      type: 'new',
+      name: path.stemname(),
+      ext: path.extname(),
+      path: path.path,
+      isFile: !(await path.isDirectory()),
+    } satisfies NewFileData<T>;
+  }
+
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
     const dirPath = this.cachePath.child(this.childPath);
     const paths = await dirPath.iter();
-    const loaded = await asyncMap(paths, async (x) => this.loader(x));
+    const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
 
     const array = zip(paths, loaded)
       .filter((x): x is [Path, T] => x[1] !== undefined && isValid(x[1]))
@@ -116,7 +136,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   ): Promise<WithError<WorldFileData<T>[]>> {
     const dirPath = cwdPath.child(this.childPath);
     const paths = await dirPath.iter();
-    const loaded = await asyncMap(paths, async (x) => this.loader(x));
+    const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
 
     const array = zip(paths, loaded)
       .filter((x): x is [Path, T] => x[1] !== undefined && isValid(x[1]))
@@ -129,7 +149,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         ext: p.extname(),
       }));
 
-      return withError(array, loaded.filter(isError));
+    return withError(array, loaded.filter(isError));
   }
 
   async save(cwdPath: Path, value: AllFileData<T>[]): Promise<WithError<void>> {
@@ -185,7 +205,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       .filter((x): x is WorldFileData<T> => x !== undefined && isValid(x))
       .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
-      // 非同期で削除
+    // 非同期で削除
     await asyncForEach(deletFiles, (x) => dirPath.child(x.name).remove(true));
 
     return withError(undefined, errors);

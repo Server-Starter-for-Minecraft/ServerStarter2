@@ -4,7 +4,7 @@ import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 
-async function loader(path: Path): Promise<Failable<ModData | undefined>> {
+async function loader(path: Path): Promise<Failable<ModData>> {
   if (path.extname() !== '.jar')
     return errorMessage.data.path.invalidContent.invalidMod({
       path: path.path,
