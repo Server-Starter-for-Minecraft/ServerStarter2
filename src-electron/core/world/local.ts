@@ -85,7 +85,7 @@ export async function loadLocalFiles(
     serverIconFile.load(savePath),
     serverOpsFile.load(savePath),
     serverWhitelistFile.load(savePath),
-    serverAllAdditionalFiles.load(savePath, id, id),
+    serverAllAdditionalFiles.load(savePath, id),
   ]);
   const errors: ErrorMessage[] = [];
 
