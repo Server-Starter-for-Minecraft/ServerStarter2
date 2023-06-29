@@ -136,8 +136,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const dirPath = cwdPath.child(this.childPath);
     const errors: ErrorMessage[] = [];
 
-    const isNew = (v: T & { path?: string }): v is T & { path: string } =>
-      v.path !== undefined;
+    const isNew = (v: AllFileData<T>): v is NewFileData<T> => v.type === 'new';
 
     // 新しいファイルをコピー
     await asyncForEach(value.filter(isNew), async (source) => {
