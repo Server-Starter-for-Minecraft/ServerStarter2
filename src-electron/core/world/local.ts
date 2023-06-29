@@ -76,7 +76,7 @@ export async function loadLocalFiles(
     serverIconFile.load(savePath),
     serverOpsFile.load(savePath),
     serverWhitelistFile.load(savePath),
-    serverAllAdditionalFiles.load(savePath),
+    serverAllAdditionalFiles.load(savePath, id),
   ]);
   const errors: ErrorMessage[] = [];
 
@@ -191,7 +191,7 @@ export async function saveLocalFiles(
   return constructResult();
 }
 
-export function constructWorldSettings(world: World) {
+export function constructWorldSettings(world: World | WorldEdited) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     javaArguments: world.javaArguments,

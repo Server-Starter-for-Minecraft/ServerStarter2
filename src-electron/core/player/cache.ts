@@ -9,7 +9,7 @@ import {
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixImageURI, fixPlayerUUID, fixTimestamp } from '../fixers/brands';
-import { mainPath } from '../const';
+import { cachePath } from '../const';
 import { Player } from 'app/src-electron/schema/player';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isValid } from 'app/src-electron/util/error/error';
@@ -37,9 +37,17 @@ const fixPlayerCacheRecord = objectFixer(
 
 const fixPlayerCache = recordFixer(fixPlayerCacheRecord, true);
 
-const PLAYER_CACHE_PATH = mainPath.child('player_cache.json');
+const PLAYER_CACHE_PATH = cachePath.child('player.json');
 
 let player_cache: undefined | PlayerCache = undefined;
+
+/** 期限の切れたレコードを削除 */
+function expirePlayers(cache: PlayerCache): PlayerCache {
+  const timestamp = getCurrentTimestamp();
+  return Object.fromEntries(
+    Object.entries(cache).filter(([, v]) => v.expire > timestamp)
+  );
+}
 
 /** PlayerCacheを取得 */
 export async function getPlayerCache() {
@@ -48,6 +56,8 @@ export async function getPlayerCache() {
 
   let result: PlayerCache = {};
   if (isValid(player_cache_value)) result = fixPlayerCache(player_cache_value);
+
+  result = expirePlayers(result);
 
   await setPlayerCache(result);
 

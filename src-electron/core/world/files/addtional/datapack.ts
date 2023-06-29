@@ -1,17 +1,12 @@
-import { FileData } from 'app/src-electron/schema/filedata';
-import {
-  ServerAdditionalFiles,
-  loadAdditionalFiles,
-  saveAdditionalFiles,
-} from './base';
+import { DatapackData } from 'app/src-electron/schema/filedata';
+import { ADDITIONALS_CACHE_PATH, ServerAdditionalFiles } from './base';
 import { LEVEL_NAME } from 'app/src-electron/core/const';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { WithError } from 'app/src-electron/util/error/witherror';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-
-const DATAPACKS_PATH = LEVEL_NAME + '/datapacks';
+import { BytesData } from 'app/src-electron/util/bytesData';
+import { ZipFile } from 'app/src-electron/util/zipFile';
 
 type Mcmeta = {
   pack: {
@@ -22,42 +17,45 @@ type Mcmeta = {
 
 const MCMETA_FILE = 'pack.mcmeta';
 
-async function loadDatapack(path: Path): Promise<Failable<FileData>> {
-  const mcmetaPath = path.child(MCMETA_FILE);
-  if (!mcmetaPath.exists())
-    return errorMessage.data.path.notFound({
-      type: 'file',
-      path: mcmetaPath.path,
-    });
-  const mcmeta = await mcmetaPath.readJson<Mcmeta>();
+async function loader(path: Path): Promise<Failable<DatapackData | undefined>> {
+  let mcmetaData: Failable<BytesData>;
+
+  if (await path.isDirectory()) {
+    // ディレクトリの場合
+    mcmetaData = await BytesData.fromPath(path.child(MCMETA_FILE));
+  } else {
+    if (path.extname() !== '.zip') {
+      // zipでないファイル場合
+      return errorMessage.data.path.invalidContent.invalidDatapack({
+        type: 'file',
+        path: path.path,
+      });
+    }
+    // zipの場合
+    const zip = new ZipFile(path);
+    mcmetaData = await zip.getFile(MCMETA_FILE);
+  }
+  if (isError(mcmetaData)) return mcmetaData;
+
+  // TODO: pack.mcmetaにdataFixerを付ける
+
+  const mcmeta = await mcmetaData.json<Mcmeta>();
   if (isError(mcmeta)) return mcmeta;
-  mcmeta.pack.description;
+
   return {
-    name: path.basename(),
+    kind: 'datapack',
     description: mcmeta.pack.description,
   };
 }
 
-async function installDatapack(
-  dirPath: Path,
-  source: FileData & { path?: string }
-): Promise<void> {
-  if (source.path === undefined) return;
-  const sourcePath = new Path(source.path);
-  const targetPath = dirPath.child(source.name);
+async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
   await sourcePath.copyTo(targetPath);
 }
 
-export const datapackFiles: ServerAdditionalFiles<FileData> = {
-  load(cwdPath) {
-    const dirPath = datapackFiles.path(cwdPath);
-    return loadAdditionalFiles(dirPath, loadDatapack);
-  },
-  async save(cwdPath, value): Promise<WithError<void>> {
-    const dirPath = datapackFiles.path(cwdPath);
-    return saveAdditionalFiles(dirPath, value, installDatapack, loadDatapack);
-  },
-  path(cwdPath) {
-    return cwdPath.child(DATAPACKS_PATH);
-  },
-};
+export const datapackFiles = new ServerAdditionalFiles<DatapackData>(
+  'datapack',
+  ADDITIONALS_CACHE_PATH.child('datapack'),
+  LEVEL_NAME + '/datapacks',
+  loader,
+  installer
+);

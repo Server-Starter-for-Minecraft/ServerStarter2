@@ -6,7 +6,7 @@ import {
   WorldAdditional,
   WorldBase,
   WorldEdited,
-  WorldEditedAdditional,
+  WorldAdditionalEdited,
   WorldID,
 } from 'app/src-electron/schema/world';
 import {
@@ -117,7 +117,7 @@ export const fixWorld = extendFixer<World, WorldBase>(
 );
 
 fixFileData;
-export const fixWorldEditedAdditional = objectFixer<WorldEditedAdditional>(
+export const fixWorldEditedAdditional = objectFixer<WorldAdditionalEdited>(
   {
     /** 導入済みデータパック */
     datapacks: arrayFixer(fixFileOrNewData, true),

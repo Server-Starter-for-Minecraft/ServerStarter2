@@ -16,9 +16,9 @@ export function getDefaultLocalSavePath(): LocalSaveContainer {
     case 'mac-os-arm64':
       return path.join(
         homePath,
-        'Library/Application Support'
+        'Library/Application Support/minecraft/saves'
       ) as LocalSaveContainer;
     case 'linux':
-      return path.join(homePath, '.minecraft') as LocalSaveContainer;
+      return path.join(homePath, '.minecraft/saves') as LocalSaveContainer;
   }
 }

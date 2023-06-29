@@ -38,13 +38,12 @@ function createWindow() {
   });
 
   mainWindow.loadURL(process.env.APP_URL);
-  // TODO: リリース時にコメントイン
-  // mainWindow.removeMenu()
 
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools();
   } else {
+    mainWindow.removeMenu();
     // we're on production; no access to devtools pls
     mainWindow.webContents.on('devtools-opened', () => {
       mainWindow?.webContents.closeDevTools();
@@ -62,10 +61,8 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', async () => {
-  if (platform !== 'darwin') {
-    await onQuit.invoke();
-    app.quit();
-  }
+  await onQuit.invoke();
+  app.quit();
 });
 
 // will-quitのタイミングで終了時処理を走らせる

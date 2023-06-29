@@ -1,8 +1,7 @@
 import { ImageURI, PlayerUUID, WorldContainer } from './brands';
-import { Player, PlayerGroup } from './player';
+import { PlayerGroup } from './player';
 import { GithubRemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
-import { FileData, NewData } from './filedata';
 import { Brand } from '../util/brand';
 
 /** システム設定まとめてここに格納 */
@@ -12,7 +11,15 @@ export type SystemSettings = {
   remote: SystemRemoteSetting;
   player: SystemPlayerSetting;
   user: SystemUserSetting;
-  cache: CacheContents;
+};
+
+/** 編集済みのシステム設定まとめてここに格納 */
+export type SystemSettingsEdited = {
+  container: WorldContainers;
+  world: SystemWorldSettings;
+  remote: SystemRemoteSetting;
+  player: SystemPlayerSetting;
+  user: SystemUserSetting;
 };
 
 export type Locale = 'ja' | 'en-US';
@@ -64,15 +71,4 @@ export type SystemPlayerSetting = {
 
 export type SystemRemoteSetting = {
   github?: GithubRemoteSetting;
-};
-
-export type CacheContents = {
-  /** 導入済みデータパック */
-  datapacks?: (FileData | NewData)[];
-
-  /** 導入済みプラグイン */
-  plugins?: (FileData | NewData)[];
-
-  /** 導入済みMOD */
-  mods?: (FileData | NewData)[];
 };

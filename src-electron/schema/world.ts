@@ -8,7 +8,14 @@ import {
   WorldName,
 } from './brands';
 import { ErrorMessage } from './error';
-import { FileData, NewData } from './filedata';
+import {
+  AllFileData,
+  CustomMapData,
+  DatapackData,
+  ModData,
+  PluginData,
+  WorldFileData,
+} from './filedata';
 import { MemorySettings } from './memory';
 import { PlayerSetting } from './player';
 import { Remote } from './remote';
@@ -69,13 +76,13 @@ export interface WorldBase extends WorldAbbr {
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
-  datapacks: FileData[];
+  datapacks: WorldFileData<DatapackData>[];
 
   /** 導入済みプラグイン */
-  plugins: FileData[];
+  plugins: WorldFileData<PluginData>[];
 
   /** 導入済みMOD */
-  mods: FileData[];
+  mods: WorldFileData<ModData>[];
 };
 
 export interface World extends WorldBase {
@@ -83,20 +90,20 @@ export interface World extends WorldBase {
   additional: WorldAdditional;
 }
 
-export type WorldEditedAdditional = {
+export type WorldAdditionalEdited = {
   /** 導入済みデータパック */
-  datapacks: (FileData | NewData)[];
+  datapacks: AllFileData<DatapackData>[];
 
   /** 導入済みプラグイン */
-  plugins: (FileData | NewData)[];
+  plugins: AllFileData<PluginData>[];
 
   /** 導入済みMOD */
-  mods: (FileData | NewData)[];
+  mods: AllFileData<ModData>[];
 };
 
 export interface WorldEdited extends WorldBase {
   /** カスタムマップを導入する場合 */
-  custom_map?: NewData;
+  custom_map?: CustomMapData;
 
   /** データの取得元のリモート(同期はしない)
    * リモート版カスタムマップ的な感じ
@@ -110,7 +117,7 @@ export interface WorldEdited extends WorldBase {
   remote_source?: Remote;
 
   /** 導入済み */
-  additional: WorldEditedAdditional;
+  additional: WorldAdditionalEdited;
 }
 
 /** serverstarterのシステム設定内のワールド設定 */

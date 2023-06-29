@@ -19,6 +19,9 @@ export type DataErrors = {
     // ファイル/ディレクトリの読み込みに失敗したときのエラー
     loadingFailed: PathErrorContent;
 
+    // ファイルまたはディレクトリがすでに存在する
+    alreadyExists: PathErrorContent;
+
     // ファイルまたはディレクトリが存在しない
     notFound: PathErrorContent;
 
@@ -46,6 +49,9 @@ export type PathContentErrors = {
   mustBeDirectory: PathErrorContent;
   // ファイルである必要がある
   mustBeFile: PathErrorContent;
+
+  // 不適なデータパックファイル
+  invalidDatapack: PathErrorContent;
 
   // 不適なプラグインファイル
   invalidPlugin: PathErrorContent;

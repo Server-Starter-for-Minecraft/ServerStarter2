@@ -11,6 +11,13 @@ import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
 import { Failable } from '../util/error/failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 import { WithError } from '../util/error/witherror';
+import {
+  DatapackData,
+  CacheFileData,
+  PluginData,
+  ModData,
+} from '../schema/filedata';
+import { ErrorMessage } from '../schema/error';
 
 /**
  * ## APIの利用方法
@@ -57,6 +64,9 @@ export interface API extends IAPI {
 
     /** mainプロセス側かでSystemSettingが変更された場合に走る */
     UpdateSystemSettings: (settings: SystemSettings) => void;
+
+    /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
+    Error: (error: ErrorMessage) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
@@ -78,13 +88,14 @@ export interface API extends IAPI {
 
     /** SystemSettingsを(再)取得 */
     GetSystemSettings: () => Promise<SystemSettings>;
+
     /** SystemSettingsを変更 */
     SetSystemSettings: (settings: SystemSettings) => Promise<SystemSettings>;
 
     /** WorldAbbrの一覧を取得 */
     GetWorldAbbrs: (
       worldContainer: WorldContainer
-    ) => Promise<WithError<Failable<WorldAbbr[]>>>;
+    ) => Promise<WithError<WorldAbbr[]>>;
 
     /** Worldの情報を(再)取得 リモートがある場合リモートから(再)取得 */
     GetWorld: (WorldId: WorldID) => Promise<WithError<Failable<World>>>;
@@ -109,6 +120,13 @@ export interface API extends IAPI {
       nameOrUuid: string,
       mode: 'uuid' | 'name' | 'auto'
     ) => Promise<Failable<Player>>;
+
+    /** キャッシュされたデータを取得する */
+    GetCacheContents: ((
+      type: 'datapack'
+    ) => Promise<WithError<CacheFileData<DatapackData>[]>>) &
+      ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData>[]>>) &
+      ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (

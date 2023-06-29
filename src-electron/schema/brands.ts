@@ -17,6 +17,3 @@ export type ImageURI = Brand<string, 'ImageURI'>;
 
 /** 1970年1月1日00:00:00 UTCからの経過時間(ミリ秒) */
 export type Timestamp = Brand<number, 'Timestamp'>;
-
-/** カラーコード */
-export type ColorCode = Brand<string, 'ColorCode'>;
