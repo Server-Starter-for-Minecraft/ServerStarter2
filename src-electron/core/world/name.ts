@@ -8,7 +8,6 @@ export async function validateNewWorldName(
   worldContainer: WorldContainer,
   worldName: string
 ): Promise<Failable<WorldName>> {
-  console.log(worldContainer, worldName);
   const match = worldName.match(WORLDNAME_REGEX);
   if (match === null)
     return errorMessage.value.worldName.notMatchRegex({
