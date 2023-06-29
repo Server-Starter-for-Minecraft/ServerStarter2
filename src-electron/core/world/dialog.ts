@@ -42,7 +42,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
 
     const props: Electron.OpenDialogOptions['properties'] = [];
 
-    const isFile = options.isFile ?? false;
+    const isFile = options.isFile ?? true;
     if (!isFile) props.push('openDirectory');
 
     const result = await dialog.showOpenDialog(window, {
@@ -54,7 +54,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     });
 
     // キャンセルされた場合
-    if (!result.canceled) return errorMessage.data.path.dialogCanceled();
+    if (result.canceled) return errorMessage.data.path.dialogCanceled();
 
     // 選択ファイル数が0である場合(たぶん起こらない)
     if (result.filePaths.length === 0)
