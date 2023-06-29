@@ -86,7 +86,7 @@ export async function importCustomMap(
     properties?: ServerProperties;
   }>
 > {
-  const importer = mapData.isFile ? importCustomMapDir : importCustomMapZip;
+  const importer = mapData.isFile ? importCustomMapZip : importCustomMapDir;
   const properties = await importer(
     new Path(mapData.path),
     cwdPath.child(LEVEL_NAME)
@@ -143,8 +143,16 @@ async function importCustomMapZip(
   }
   // ワールドデータ内部にserver.propertiesが存在する場合
 
-  // 必要なデータを移動
+  // ワールドデータを移動
   await unzipPath.child(innerPath).parent().moveTo(worldPath);
+
+  // ワールド以外のデータ(readmeとか?)も可能であれば移動
+  if (unzipPath.exists()) {
+    const targetPath = worldPath.parent().child(zipPath.stemname());
+    if (!targetPath.exists()) {
+      await unzipPath.moveTo(targetPath);
+    }
+  }
 
   // 一時ディレクトリを削除
   await unzipPath.remove(true);
