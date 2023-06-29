@@ -4,6 +4,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
+import BasePlayerCard from './utils/BasePlayerCard.vue';
 
 interface Prop {
   name: string
@@ -32,19 +33,18 @@ function onCardClicked() {
 </script>
 
 <template>
-  <q-card
-    flat
-    bordered
-    class="q-ma-xs fit card"
-  >
-    <q-card-section horizontal>
-      <q-separator vertical class="q-pa-md q-ma-none" :style="{'background-color': color}" />
-  
-      <q-card-section top>
+  <!-- TODO: グループ名やメンバーの編集、グループの削除ができるメニューボタンを表示する -->
+  <!-- 編集画面（グループ名とメンバー）はグループの新規作成時にも流用する -->
+  <base-player-card @click="onCardClicked">
+    <q-card-section horizontal style="overflow: hidden;">
+      <!-- TODO: 横線の下側のコーナーが丸くなっていない問題の修正 -->
+      <q-separator vertical size="1.5rem" :style="{'background-color': color}" />
+
+      <q-card-section class="q-pt-sm">
         <div class="groupName">{{ name }}</div>
         
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
-        <div class="row q-gutter-md">
+        <div class="row q-gutter-md q-pt-sm">
           <template v-for="uuid in players" :key="uuid">
             <player-head-view
               :player="sysStore.systemSettings().player.players[uuid]"
@@ -54,20 +54,10 @@ function onCardClicked() {
         </div>
       </q-card-section>
     </q-card-section>
-
-    <div class="absolute-top fit">
-      <q-btn flat color="transparent" @click="onCardClicked" class="fit"/>
-    </div>
-    
-  </q-card>
+  </base-player-card>
 </template>
 
 <style scoped lang="scss">
-.card {
-  min-width: 14rem;
-  max-width: 14rem;
-}
-
 .groupName {
   font-size: 1.5rem;
 }

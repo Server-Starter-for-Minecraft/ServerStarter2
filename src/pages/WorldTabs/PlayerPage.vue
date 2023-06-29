@@ -31,7 +31,7 @@ const toggle1 = ref(true)
   
     <div class="q-py-md fit">
       <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
-      <div class="row q-gutter-sm">
+      <div class="row q-gutter-sm q-pa-sm">
         <div v-for="player in playerStore.searchPlayers(mainStore.world().players)" :key="player.uuid" class="col-">
           <PlayerCardView
             :uuid="player.uuid"
@@ -43,7 +43,7 @@ const toggle1 = ref(true)
       <q-separator class="q-my-md"/>
 
       <span class="text-caption">{{ $t("player.groupList") }}</span>
-      <div class="row">
+      <div class="row q-gutter-sm q-pa-sm">
         <template v-for="group in playerStore.searchGroups()" :key="group">
           <GroupCardView
             :name="group.name"
