@@ -279,8 +279,8 @@ export async function formatWorldDirectory(
   const pluginNether = savePath.child(PLUGIN_NETHER_DIM);
   const pluginEnd = savePath.child(PLUGIN_THE_END_DIM);
 
-  switch ([current, next]) {
-    case ['vanilla', 'plugin']:
+  switch (true) {
+    case current === 'vanilla' && next === 'plugin':
       await asyncMap(
         [
           { from: vanillaNether, to: pluginNether },
@@ -289,7 +289,7 @@ export async function formatWorldDirectory(
         ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined);
-    case ['plugin', 'vanilla']:
+    case current === 'plugin' && next === 'vanilla':
       await asyncMap(
         [
           { from: pluginNether, to: vanillaNether },
