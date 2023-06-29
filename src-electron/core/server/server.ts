@@ -17,9 +17,7 @@ export type RunServer = Promise<Failable<undefined>> & {
 export function runServer(
   cwdPath: Path,
   id: WorldID,
-  settings: WorldSettings,
-  container: WorldContainer,
-  name: string
+  settings: WorldSettings
 ): RunServer {
   let process: ServerProcess | undefined = undefined;
   async function promise() {

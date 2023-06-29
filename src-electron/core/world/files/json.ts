@@ -59,7 +59,7 @@ export type WorldSettings = {
   using?: boolean;
 
   /** ディレクトリ構成 "vanilla" | "plugin" */
-  directory?: WorldDirectoryTypes;
+  directoryType?: WorldDirectoryTypes;
 };
 
 export async function worldSettingsFixer() {
@@ -92,7 +92,7 @@ export async function worldSettingsFixer() {
       using: optionalFixer(booleanFixer()),
 
       /** ディレクトリ構成 "vanilla" | "plugin" */
-      directory: optionalFixer(literalFixer(['vanilla', 'plugin'])),
+      directoryType: optionalFixer(literalFixer(['vanilla', 'plugin'])),
     },
     false
   );

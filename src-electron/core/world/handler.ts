@@ -11,6 +11,7 @@ import {
   LocalWorldResult,
   constructWorldSettings,
   constructWorldSettingsOther,
+  formatWorldDirectory,
   getNewWorldSettingsOther,
   loadLocalFiles,
   saveLocalFiles,
@@ -266,6 +267,7 @@ export class WorldHandler {
 
   /** データを同期して サーバーを起動 */
   async runServer(): Promise<WithError<Failable<World>>> {
+    const errors: ErrorMessage[] = [];
     // 起動中の場合エラー
     if (this.run !== undefined)
       return withError(
@@ -281,6 +283,8 @@ export class WorldHandler {
     // 取得に失敗したらエラー
     if (isError(loadResult.value)) return getWorld(loadResult);
 
+    errors.push(...loadResult.errors);
+
     const beforeWorld = loadResult.value.world;
     const beforeWorldOther = loadResult.value.other;
 
@@ -294,7 +298,8 @@ export class WorldHandler {
           container: this.container,
           name: this.name,
           owner: beforeWorld.last_user,
-        })
+        }),
+        errors
       );
 
     const settings = constructWorldSettings(beforeWorld, beforeWorldOther);
@@ -311,15 +316,18 @@ export class WorldHandler {
       await serverJsonFile.save(savePath, settings);
       return saveResult;
     }
+    errors.push(...saveResult.errors);
+
+    // pluginとvanillaでファイル構造を切り替える
+    const directoryFormatResult = await formatWorldDirectory(
+      savePath,
+      beforeWorldOther.directoryType,
+      settings.version
+    );
+    errors.push(...directoryFormatResult.errors);
 
     // サーバーの実行を開始
-    const runPromise = runServer(
-      savePath,
-      this.id,
-      settings,
-      this.container,
-      this.name
-    );
+    const runPromise = runServer(savePath, this.id, settings);
 
     this.run = runPromise;
 
