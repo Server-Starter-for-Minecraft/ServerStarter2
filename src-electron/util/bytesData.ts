@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { promises } from 'fs';
-import { utilLoggers } from './logger';
+import { utilLoggers } from './utilLogger';
 import { Path } from './path';
 import { Failable } from './error/failable';
 import { Png } from './png';

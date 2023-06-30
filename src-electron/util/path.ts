@@ -20,7 +20,7 @@ export class Path {
   }
 
   child(child: string) {
-    if (this.path) {
+    if (this.path !== '') {
       return new Path(path.join(this.path, child));
     }
     return new Path(child);
@@ -67,6 +67,11 @@ export class Path {
 
   async isDirectory() {
     return (await fs.stat(this.absolute().str())).isDirectory();
+  }
+
+  /** ファイルの最終更新時刻を取得 */
+  async lastUpdateTime(): Promise<Date> {
+    return (await fs.stat(this.str())).mtime;
   }
 
   async rename(newpath: Path) {
