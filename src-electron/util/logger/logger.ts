@@ -30,7 +30,7 @@ log4js.addLayout('custom', function (config: { max?: number }) {
 
 /** YYYY-MM-DD-HH */
 function formatDate(date: Date) {
-  function paddedNumber(n: Number, digit: number) {
+  function paddedNumber(n: number, digit: number) {
     return n.toString().padStart(digit, '0');
   }
   const YYYY = paddedNumber(date.getFullYear(), 4);
