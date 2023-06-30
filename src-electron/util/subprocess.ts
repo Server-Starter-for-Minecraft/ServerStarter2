@@ -1,6 +1,6 @@
 import { Failable } from 'app/src-electron/util/error/failable';
 import * as child_process from 'child_process';
-import { utilLoggers } from './logger';
+import { utilLoggers } from './utilLogger';
 import { sleep } from './sleep';
 import { onQuit } from '../lifecycle/lifecycle';
 import { fromRuntimeError } from './error/error';
