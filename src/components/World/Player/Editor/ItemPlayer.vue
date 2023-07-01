@@ -41,6 +41,7 @@ function removePlayer() {
 
     <q-item-section>{{ sysStore.systemSettings().player.players[uuid].name }}</q-item-section>
     
+    <!-- プレイヤー数が１より大きい時にはプレイヤーが削除されてもOKだが、1人の時は削除できないようにする -->
     <q-item-section side>
       <q-btn
         v-show="showDeleteBtn && membersModel.length > 1"

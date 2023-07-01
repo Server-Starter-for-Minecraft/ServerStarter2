@@ -33,7 +33,7 @@ const groupMembers = prop.groupName === void 0 ? playerStore.focusCards : sysSto
 function onRegisterClicked() {
   // グループの更新時は一度、元のグループを削除してグループを再登録する
   if (prop.groupName !== void 0) {
-    delete sysStore.systemSettings().player.groups[inputGroupName.value]
+    delete sysStore.systemSettings().player.groups[prop.groupName]
   }
 
   // グループの登録
