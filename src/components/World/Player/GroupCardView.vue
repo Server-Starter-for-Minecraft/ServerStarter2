@@ -36,10 +36,10 @@ function onCardClicked() {
   <!-- TODO: グループ名やメンバーの編集、グループの削除ができるメニューボタンを表示する -->
   <!-- 編集画面（グループ名とメンバー）はグループの新規作成時にも流用する -->
   <base-player-card @click="onCardClicked">
-    <q-card-section horizontal style="overflow: hidden;">
-      <!-- TODO: 横線の下側のコーナーが丸くなっていない問題の修正 -->
-      <q-separator vertical size="1.5rem" :style="{ 'background-color': color }" />
-
+    <q-card-section
+      horizontal
+      style="border-left: 1.5rem solid blue; border-radius: 15px;"
+    >
       <q-card-section class="q-pt-sm">
         <div class="groupName">{{ name }}</div>
 
