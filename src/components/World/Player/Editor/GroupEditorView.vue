@@ -1,56 +1,36 @@
 <script setup lang="ts">
-import { computed, ref, toRaw } from 'vue'
-import { useSystemStore } from 'src/stores/SystemStore'
-import { usePlayerStore } from 'src/stores/WorldTabsStore'
+import { ref } from 'vue'
+import { PlayerUUID } from 'app/src-electron/schema/brands'
+import { useDialogPluginComponent } from 'quasar'
+import { iEditorDialogProps, iEditorDialogReturns } from './editorDialog'
 import SsInput from 'src/components/util/base/ssInput.vue'
 import ItemPlayer from './ItemPlayer.vue'
 
-interface Prop {
-  modelValue: any
+// TODO: 外部で定義されたInterfaceを呼び出すためにVue3.3へのアップデートを検討
+export interface Props {
   groupName?: string
+  groupColor?: string
+  members: PlayerUUID[]
 }
+const prop = defineProps<Props>()
+defineEmits({...useDialogPluginComponent.emitsObject})
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 
-const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
+const inputName = ref(prop.groupName ?? '')
+const inputColorCode = ref(prop.groupColor ?? '')
+const editMembers = ref(prop.members)
 
-const model = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
-
-const sysStore = useSystemStore()
-const playerStore = usePlayerStore()
-const inputGroupName = ref(prop.groupName ?? '')
-const groupColorCode = ref(
-  prop.groupName === void 0 ? '' : sysStore.systemSettings().player.groups[prop.groupName].color
-)
-const groupMembers = prop.groupName === void 0 ? playerStore.focusCards : sysStore.systemSettings().player.groups[prop.groupName].players
-
-function onRegisterClicked() {
-  // グループの更新時は一度、元のグループを削除してグループを再登録する
-  if (prop.groupName !== void 0) {
-    delete sysStore.systemSettings().player.groups[prop.groupName]
-  }
-
-  // グループの登録
-  generateGroup()
-}
-
-function generateGroup() {
-  sysStore.systemSettings().player.groups[inputGroupName.value] = {
-    name: inputGroupName.value,
-    color: groupColorCode.value,
-    players: toRaw(groupMembers)
-  }
+function onOKClicked() {
+  onDialogOK({
+    name: inputName.value,
+    color: inputColorCode.value,
+    members: editMembers.value
+  } as iEditorDialogReturns)
 }
 </script>
 
 <template>
-  <q-dialog v-model="model">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card>
       <q-card-section>
         <div class="text-h6">{{ groupName !== void 0 ? 'グループの編集' : '新規グループの作成' }}</div>
@@ -59,14 +39,14 @@ function generateGroup() {
       <q-card-section class="q-pt-none">
         <!-- TODO: 既に存在するグループ名を指定できないようにする -->
         <ss-input
-          v-model="inputGroupName"
+          v-model="inputName"
           label="新規グループ名を入力"
-          @clear="inputGroupName = ''"
+          @clear="inputName = ''"
         />
 
         <div class="row items-center q-mt-md">
           <q-select 
-            v-model="groupColorCode"
+            v-model="inputColorCode"
             label="グループの色を選択"
             :options="[{ label: 'red', code: '#ff0000' }, { label: 'black', code: '#000000' }]" emit-value map-options
             option-label="label"
@@ -85,7 +65,7 @@ function generateGroup() {
             </template>
           </q-select>
 
-          <q-avatar icon="square" class="q-pt-xs" :style="{ 'color': groupColorCode }" />
+          <q-avatar icon="square" class="q-pt-xs" :style="{ 'color': inputColorCode }" />
         </div>
 
         <!-- TODO: グループメンバーを追加できるようにする（プレイヤー探索機能を実装した後） -->
@@ -94,22 +74,22 @@ function generateGroup() {
           <!-- ここに検索欄を実装？ -->
           <q-virtual-scroll
             style="max-height: 200px;"
-            :items="groupMembers"
+            :items="editMembers"
             separator
             v-slot="{ item, index }"
           >
-            <item-player v-model="groupMembers" :key="index" :uuid="item" />
+            <item-player v-model="editMembers" :key="index" :uuid="item" />
           </q-virtual-scroll>
         </div>
       </q-card-section>
 
       <q-card-actions align="right">
         <q-btn
-          :disable="inputGroupName === '' || groupColorCode === ''"
+          :disable="inputName === '' || inputColorCode === ''"
           label="登録"
           color="primary"
           v-close-popup
-          @click="onRegisterClicked"
+          @click="onOKClicked"
         />
       </q-card-actions>
     </q-card>

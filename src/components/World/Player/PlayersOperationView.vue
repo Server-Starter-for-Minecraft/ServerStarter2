@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
-import { OpLevel, OpSetting } from 'app/src-electron/schema/player';
+import { useQuasar } from 'quasar';
+import { OpSetting } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { generateGroup, iEditorDialogProps, iEditorDialogReturns } from './Editor/editorDialog';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import GroupEditorView from './Editor/GroupEditorView.vue';
 
@@ -11,9 +12,21 @@ interface Prop {
 }
 defineProps<Prop>()
 
+const $q = useQuasar()
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
-const groupEditor = ref(false)
+
+function openEditor() {
+  $q.dialog({
+    component: GroupEditorView,
+    componentProps: {
+      members: playerStore.focusCards
+    } as iEditorDialogProps
+  }).onOk((payload: iEditorDialogReturns) => {
+    // グループの登録
+    generateGroup(payload.name, payload.color, payload.members)
+  })
+}
 
 function removePlayer() {
   // フォーカスされているプレイヤーを削除
@@ -22,7 +35,6 @@ function removePlayer() {
       mainStore.world().players.map(p => p.uuid).indexOf(selectedPlayerUUID), 1
     )
   });
-
   // フォーカスのリセット
   playerStore.unFocus()
 }
@@ -68,7 +80,7 @@ function setOP() {
       color="primary"
       label="グループを作成"
       class="q-mx-md q-pa-sm"
-      @click="groupEditor = true"
+      @click="openEditor"
     />
 
     <q-btn
@@ -82,7 +94,4 @@ function setOP() {
       @click="removePlayer"
     />
   </div>
-
-  <!-- グループ編集画面 -->
-  <GroupEditorView v-model="groupEditor"/>
 </template>

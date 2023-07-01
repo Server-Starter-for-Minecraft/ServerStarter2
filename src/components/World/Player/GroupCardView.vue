@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { iEditorDialogReturns, generateGroup, iEditorDialogProps } from './Editor/editorDialog';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BasePlayerCard from './utils/BasePlayerCard.vue';
 import GroupEditorView from './Editor/GroupEditorView.vue';
@@ -16,12 +18,12 @@ interface Prop {
 }
 const prop = defineProps<Prop>()
 
+const $q = useQuasar()
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 const showMenuBtn = ref(false)
 const menuOpened = ref(false)
-const showEditor = ref(false)
 
 function onCardClicked() {
   prop.players.forEach(uuid => {
@@ -39,6 +41,23 @@ function onCardClicked() {
 
 function removeGroup() {
   delete sysStore.systemSettings().player.groups[prop.name]
+}
+
+function openEditor() {
+  $q.dialog({
+    component: GroupEditorView,
+    componentProps: {
+      groupName: prop.name,
+      groupColor: prop.color,
+      members: prop.players
+    } as iEditorDialogProps
+  }).onOk((payload: iEditorDialogReturns) => {
+    // グループを更新する際には、元のグループを削除してグループを再登録する
+    delete sysStore.systemSettings().player.groups[prop.name]
+
+    // グループの登録
+    generateGroup(payload.name, payload.color, payload.members)
+  })
 }
 </script>
 
@@ -80,16 +99,13 @@ function removeGroup() {
           self="top left"
         >
           <q-list dense>
-            <group-card-menu icon="edit" text="編集" @click="showEditor = true" />
+            <group-card-menu icon="edit" text="編集" @click="openEditor" />
             <group-card-menu icon="delete" text="削除" @click="removeGroup" />
           </q-list>
         </q-menu>
       </q-btn>
     </template>
   </base-player-card>
-
-  <!-- グループ編集画面 -->
-  <group-editor-view v-model="showEditor" :group-name="name" />
 </template>
 
 <style scoped lang="scss">
