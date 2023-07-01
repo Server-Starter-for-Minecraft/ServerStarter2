@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useMainStore } from 'src/stores/MainStore';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BasePlayerCard from './utils/BasePlayerCard.vue';
@@ -13,7 +12,6 @@ interface Prop {
 }
 const prop = defineProps<Prop>()
 
-const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 
@@ -38,7 +36,7 @@ function onCardClicked() {
   <base-player-card @click="onCardClicked">
     <q-card-section
       horizontal
-      style="border-left: 1.5rem solid blue; border-radius: 15px;"
+      :style="{'border-left': `1.5rem solid ${color}`, 'border-radius': '15px'}"
     >
       <q-card-section class="q-pt-sm">
         <div class="groupName">{{ name }}</div>
