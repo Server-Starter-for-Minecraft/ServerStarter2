@@ -14,7 +14,7 @@ defineProps<Prop>()
     <slot />
 
     <div class="absolute-top fit">
-      <q-btn flat color="transparent" @click="onClick" class="fit"/>
+      <q-btn flat color="transparent" @click="onClick" class="fit card"/>
     </div>
 
     <slot name="actions" />

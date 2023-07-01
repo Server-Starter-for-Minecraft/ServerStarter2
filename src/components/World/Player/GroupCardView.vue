@@ -38,18 +38,15 @@ function onCardClicked() {
   <base-player-card @click="onCardClicked">
     <q-card-section horizontal style="overflow: hidden;">
       <!-- TODO: 横線の下側のコーナーが丸くなっていない問題の修正 -->
-      <q-separator vertical size="1.5rem" :style="{'background-color': color}" />
+      <q-separator vertical size="1.5rem" :style="{ 'background-color': color }" />
 
       <q-card-section class="q-pt-sm">
         <div class="groupName">{{ name }}</div>
-        
+
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
         <div class="row q-gutter-md q-pt-sm">
           <template v-for="uuid in players" :key="uuid">
-            <player-head-view
-              :player="sysStore.systemSettings().player.players[uuid]"
-              size="1.5rem"
-            />
+            <player-head-view :uuid="uuid" size="1.5rem" />
           </template>
         </div>
       </q-card-section>

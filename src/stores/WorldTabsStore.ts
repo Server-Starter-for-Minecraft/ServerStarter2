@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { propertyClasses } from 'src/components/World/Property/classifications';
 import { useSystemStore } from './SystemStore';
-import { PlayerSetting } from 'app/src-electron/schema/player';
+import { OpLevel, PlayerSetting } from 'app/src-electron/schema/player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 
 export const usePropertyStore = defineStore('propertyStore', {
@@ -66,7 +66,8 @@ export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
       searchName: '',
-      focusCards: [] as PlayerUUID[]
+      focusCards: [] as PlayerUUID[],
+      selectedOP: undefined as OpLevel | 0 | undefined
     }
   },
   actions: {
@@ -99,6 +100,24 @@ export const usePlayerStore = defineStore('playerStore', {
       }
       
       return groupsData;
+    },
+    /**
+     * プレイヤーに対するフォーカスを解除
+     */
+    unFocus(uuid?: PlayerUUID) {
+      if (uuid !== void 0) {
+        this.focusCards.splice(this.focusCards.indexOf(uuid), 1)
+      }
+      else {
+        this.focusCards = []
+      }
+    },
+    /**
+     * プレイヤーに対するフォーカスを追加
+     */
+    addFocus(uuid: PlayerUUID) {
+      this.focusCards.push(uuid)
+      this.selectedOP = undefined
     },
   }
 });

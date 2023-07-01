@@ -6,6 +6,7 @@ interface Prop {
   options?: readonly any[]
   label?: string
   disable?: boolean
+  dense?: boolean
   optionLabel?: string
   optionValue?: string
 }
@@ -28,9 +29,12 @@ const model = computed({
     v-model="model"
     :options="options"
     :label="label"
+    :dense="dense"
     class="font"
     :popup-content-style="{fontSize: '0.9rem'}"
     :disable="disable"
+    emit-value
+    map-options
     :option-label="optionLabel"
     :option-value="optionValue"
   >

@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { Player } from 'app/src-electron/schema/player';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { useSystemStore } from 'src/stores/SystemStore';
 
 interface Prop {
-  player: Player
+  uuid: PlayerUUID
   size?: string
 }
-defineProps<Prop>()
+const prop = defineProps<Prop>()
+
+const sysStore = useSystemStore()
+const playerData = sysStore.systemSettings().player.players[prop.uuid]
 </script>
 
 <template>
   <q-avatar square :size="size">
-    <q-img :src="player.avatar" class="avaterImg"/>
-    <q-img :src="player.avatar_overlay" class="avaterImg" style="width: 110%;"/>
+    <q-img :src="playerData.avatar" class="avaterImg" />
+    <q-img :src="playerData.avatar_overlay" class="avaterImg" style="width: 110%;" />
   </q-avatar>
 </template>
 

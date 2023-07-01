@@ -18,25 +18,22 @@ const playerData = sysStore.systemSettings().player.players[prop.uuid]
 
 function onCardClicked() {
   if (playerStore.focusCards.includes(prop.uuid)) {
-    playerStore.focusCards.splice(playerStore.focusCards.indexOf(prop.uuid), 1)
+    playerStore.unFocus(prop.uuid)
   }
   else {
-    playerStore.focusCards.push(prop.uuid)
+    playerStore.addFocus(prop.uuid)
   }
 }
 </script>
 
 <template>
-  <BasePlayerCard
-    @click="onCardClicked"
-    :class="playerStore.focusCards.includes(prop.uuid) ? 'card-active' : ''"
-  >
+  <BasePlayerCard @click="onCardClicked" :class="playerStore.focusCards.includes(prop.uuid) ? 'card-active' : ''">
     <template #default>
       <q-item class="q-pa-md" style="height: 5.5rem;">
         <q-item-section avatar top>
-          <player-head-view :player="playerData" size="2.5rem"/>
+          <player-head-view :uuid="uuid" size="2.5rem" />
         </q-item-section>
-    
+
         <q-item-section top>
           <q-item-label class="name">{{ playerData.name }}</q-item-label>
           <q-item-label v-show="opLevel !== void 0" caption class="q-pt-xs" style="opacity: 0.7;">
@@ -44,7 +41,7 @@ function onCardClicked() {
           </q-item-label>
         </q-item-section>
         <q-item-section side top>
-          <q-icon :name="opLevel !== void 0 ? 'star' : ''"/>
+          <q-icon :name="opLevel !== void 0 ? 'star' : ''" />
         </q-item-section>
       </q-item>
     </template>
@@ -53,9 +50,9 @@ function onCardClicked() {
       <q-card-section class="q-py-none" style="width: max-content;">
         <span class="text-caption">所属グループ</span>
         <div class="q-gutter-sm q-py-xs" style="width: 12rem">
-          <group-badge-view group-name="test" color="green"/>
-          <group-badge-view group-name="testtesttesttest" color="green"/>
-          <group-badge-view group-name="test" color="green"/>
+          <group-badge-view group-name="test" color="green" />
+          <group-badge-view group-name="testtesttesttest" color="green" />
+          <group-badge-view group-name="test" color="green" />
         </div>
       </q-card-section>
     </template>
@@ -69,8 +66,8 @@ function onCardClicked() {
 
 .name {
   font-size: 1.5rem;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
