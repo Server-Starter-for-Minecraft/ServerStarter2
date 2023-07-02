@@ -2,6 +2,8 @@
 import { ValidationRule } from 'quasar/dist/types/api/validation'
 import { computed } from 'vue'
 
+// TODO: defineModel()の使用を検討
+// https://github.com/vuejs/rfcs/discussions/503
 interface Prop {
   modelValue: any
   label?: string
