@@ -7,6 +7,7 @@ import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
 import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
 import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
 import PlayersOperationView from 'src/components/World/Player/PlayersOperationView.vue';
+import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
@@ -41,11 +42,17 @@ const playerJoinToggle = computed({
       />
     </div>
 
+    
     <q-scroll-area
       class="full-height"
       style="flex: 1 1 0;"
     >
       <div class="q-py-md fit">
+        <div v-show="playerStore.searchName !== ''" class="q-pb-md">
+          <span class="text-caption">新規プレイヤー</span>
+          <SearchResultView />
+        </div>
+
         <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
         <div class="row q-gutter-sm q-pa-sm">
           <div v-for="player in playerStore.searchPlayers(mainStore.world().players)" :key="player.uuid" class="col-">
