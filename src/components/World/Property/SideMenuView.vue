@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { usePropertyStore } from 'src/stores/WorldTabsStore';
 import { thumbStyle } from '../scrollBar';
-import { propertyClasses } from './classifications';
 
 const propertyStore = usePropertyStore()
 
@@ -16,7 +15,7 @@ function groupClicked(selectedGroupName: string) {
       :thumb-style="thumbStyle"
       class="fit"
     >
-      <template v-for="groupKey in Object.keys(propertyClasses)" :key="groupKey">
+      <template v-for="groupKey in propertyStore.propertyTabs()" :key="groupKey">
         <q-item
           clickable
           :active="propertyStore.selectPropertyTab(groupKey)"
