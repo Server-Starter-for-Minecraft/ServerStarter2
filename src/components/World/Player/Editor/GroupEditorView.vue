@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { PlayerUUID } from 'app/src-electron/schema/brands'
 import { useDialogPluginComponent } from 'quasar'
 import { iEditorDialogProps, iEditorDialogReturns } from './editorDialog'
 import SsInput from 'src/components/util/base/ssInput.vue'
 import ItemPlayer from './ItemPlayer.vue'
 
-// TODO: 外部で定義されたInterfaceを呼び出すためにVue3.3へのアップデートを検討
-export interface Props {
-  groupName?: string
-  groupColor?: string
-  members: PlayerUUID[]
-}
-const prop = defineProps<Props>()
+const prop = defineProps<iEditorDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 
