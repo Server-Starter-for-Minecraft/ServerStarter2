@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -9,6 +10,17 @@ import PlayersOperationView from 'src/components/World/Player/PlayersOperationVi
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
+
+const playerJoinToggle = computed({
+  get() {
+    const worldProp = mainStore.world().properties;
+    return worldProp['white-list'] && worldProp['enforce-whitelist'];
+  },
+  set(newValue) {
+    mainStore.world().properties['white-list'] = newValue;
+    mainStore.world().properties['enforce-whitelist'] = newValue;
+  },
+})
 </script>
 
 <template>
@@ -23,7 +35,7 @@ const playerStore = usePlayerStore()
       />
   
       <q-toggle
-        v-model="mainStore.world().properties['white-list']"
+        v-model="playerJoinToggle"
         :label="$t('player.join')"
         style="font-size: 1rem;"
       />
