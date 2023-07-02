@@ -11,14 +11,15 @@ const propertyStore = usePropertyStore()
 <template>
   <div class="mainField">
     <div class="column fit">
-      <div class="row">
-        <SsInput
-          v-model="propertyStore.searchName"
-          label="プロパティを検索"
-          class="q-py-md col"
-          @clear="() => propertyStore.searchName = ''"
-        />
-      </div>
+      
+      <p class="q-pt-lg">新規ワールドの作成時などに使用するデフォルトのプロパティを設定</p>
+      
+      <SsInput
+        v-model="propertyStore.searchName"
+        label="プロパティを検索"
+        class="q-pb-md"
+        @clear="() => propertyStore.searchName = ''"
+      />
   
       <div class="row fit" style="flex: 1 1 0;">
         <SideMenuView/>
