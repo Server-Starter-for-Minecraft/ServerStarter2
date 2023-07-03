@@ -3,10 +3,10 @@ import { usePropertyStore } from 'src/stores/WorldTabsStore';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { isValid } from 'src/scripts/error';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
-import { isValid } from 'src/scripts/error';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()

@@ -1,10 +1,25 @@
 <script setup lang="ts">
-import { useMainStore } from 'src/stores/MainStore';
+import { computed } from 'vue';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { PlayerSetting } from 'app/src-electron/schema/player';
 import SearchResultItem from './utils/SearchResultItem.vue';
 
-const mainStore = useMainStore()
+interface Prop {
+  modelValue: PlayerSetting[]
+}
+const prop = defineProps<Prop>()
+const emit = defineEmits(['update:model-value'])
+
 const playerStore = usePlayerStore()
+
+const playerModel = computed({
+  get() {
+    return prop.modelValue;
+  },
+  set(newValue) {
+    emit('update:model-value', newValue);
+  },
+})
 </script>
 
 <template>
@@ -16,7 +31,7 @@ const playerStore = usePlayerStore()
         <!-- <SearchResultItem :uuid="" /> -->
         <!-- TODO: 本来はsearchPlayersの引数には登録済みのプレイヤー全てを含んだリストを入れるべき -->
         <!-- この時に，既にWorldに登録済みのプレイヤーは候補への表示から除外する -->
-        <template v-for="p in playerStore.searchPlayers(mainStore.world.players)" :key="p">
+        <template v-for="p in playerStore.searchPlayers(playerModel)" :key="p">
           <SearchResultItem :uuid="p.uuid" />
         </template>
       </q-list>

@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from './PlayerHeadView.vue';
-import { useSystemStore } from 'src/stores/SystemStore';
 
 interface Prop {
   uuid: PlayerUUID
   name?: string
 }
 const prop = defineProps<Prop>()
-const sysStore = useSystemStore()
-
-const showName  = prop.name ?? sysStore.systemSettings().player.players[prop.uuid].name
 
 function addPlayer() {
   // TODO: システムとWorldのPlayersに対して追加処理を記述
+}
+
+async function getName() {
+  if (prop.name !== void 0) {
+    return prop.name
+  }
+
+  const player = await window.API.invokeGetPlayer(prop.uuid, 'uuid')
+  return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
 }
 </script>
 
@@ -23,7 +29,7 @@ function addPlayer() {
       <PlayerHeadView :uuid="uuid" />
     </q-item-section>
     <q-item-section top>
-      <q-item-label class="name force-one-line">{{ showName }}</q-item-label>
+      <q-item-label class="name force-one-line">{{ getName() }}</q-item-label>
       <q-item-label caption class="q-pt-xs force-one-line" style="opacity: 0.7;">uuid: {{ uuid }}</q-item-label>
     </q-item-section>
     <q-item-section side>

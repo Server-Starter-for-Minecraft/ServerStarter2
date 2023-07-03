@@ -1,31 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { isValid } from 'src/scripts/error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
 import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
 import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
 import PlayersOperationView from 'src/components/World/Player/PlayersOperationView.vue';
 import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
+import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
-
-const playerJoinToggle = computed({
-  get() {
-    const worldProp = mainStore.world.properties;
-    return worldProp['white-list'] && worldProp['enforce-whitelist'];
-  },
-  set(newValue) {
-    mainStore.world.properties['white-list'] = newValue;
-    mainStore.world.properties['enforce-whitelist'] = newValue;
-  },
-})
 </script>
 
 <template>
-  <div class="column fit q-px-md">
+  <div v-if="isValid(mainStore.world.players)" class="column fit q-px-md">
     <div class="row">
       <SsInput
         v-model="playerStore.searchName"
@@ -34,11 +24,10 @@ const playerJoinToggle = computed({
         class="q-py-md col"
         @clear="() => playerStore.searchName = ''"
       />
-  
-      <q-toggle
-        v-model="playerJoinToggle"
-        :label="$t('player.join')"
-        style="font-size: 1rem;"
+
+      <PlayerJoinToggleView
+        v-if="isValid(mainStore.world.properties)"
+        v-model="mainStore.world.properties"
       />
     </div>
 
@@ -50,13 +39,14 @@ const playerJoinToggle = computed({
       <div class="q-py-md fit">
         <div v-show="playerStore.searchName !== ''" class="q-pb-md">
           <span class="text-caption">新規プレイヤー</span>
-          <SearchResultView />
+          <SearchResultView v-model="mainStore.world.players" />
         </div>
 
         <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
         <div class="row q-gutter-sm q-pa-sm">
           <div v-for="player in playerStore.searchPlayers(mainStore.world.players)" :key="player.uuid" class="col-">
             <PlayerCardView
+              v-model="mainStore.world.players"
               :uuid="player.uuid"
               :op-level="player.op?.level"
             />
@@ -69,6 +59,7 @@ const playerJoinToggle = computed({
         <div class="row q-gutter-sm q-pa-sm">
           <template v-for="group in playerStore.searchGroups()" :key="group">
             <GroupCardView
+              v-model="mainStore.world.players"
               :name="group.name"
               :color="group.color"
               :players="group.players"
@@ -82,5 +73,10 @@ const playerJoinToggle = computed({
 
     <SelectedPlayersView />
     <PlayersOperationView :disable="playerStore.focusCards.length === 0" />
+  </div>
+
+  <!-- TODO: 画面の調整 -->
+  <div v-else>
+    プレイヤー設定の読み込みに失敗しました
   </div>
 </template>

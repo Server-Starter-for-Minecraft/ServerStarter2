@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { PlayerSetting } from 'app/src-electron/schema/player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import { iEditorDialogReturns, generateGroup, iEditorDialogProps } from './Editor/editorDialog';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
@@ -12,24 +13,40 @@ import GroupEditorView from './Editor/GroupEditorView.vue';
 import GroupCardMenu from './utils/GroupCardMenu.vue';
 
 interface Prop {
+  modelValue: PlayerSetting[]
   name: string
   color: string
   players: PlayerUUID[]
 }
 const prop = defineProps<Prop>()
+const emit = defineEmits(['update:model-value'])
+
+const playerModel = computed({
+  get() {
+    return prop.modelValue;
+  },
+  set(newValue) {
+    emit('update:model-value', newValue);
+  },
+})
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
-const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 const showMenuBtn = ref(false)
 const menuOpened = ref(false)
 
-function onCardClicked() {
-  prop.players.forEach(uuid => {
+async function onCardClicked() {
+  async function getPlayerName(uuid: PlayerUUID) {
+    const player = await window.API.invokeGetPlayer(uuid, 'uuid')
+    return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
+  }
+  
+  prop.players.forEach(async (uuid) => {
     // プレイヤー一覧にグループメンバーが表示されていないときは一覧に追加
-    if (!mainStore.world.players.map(p => p.uuid).includes(uuid)) {
-      mainStore.world.players.push({ uuid: uuid })
+    if (!playerModel.value.map(p => p.uuid).includes(uuid)) {
+      const playerName = await getPlayerName(uuid)
+      playerModel.value.push({ uuid: uuid, name: playerName ?? 'No Player Name' })
     }
 
     // グループプレイヤー全員にFocusを当てる
