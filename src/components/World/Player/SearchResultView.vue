@@ -40,9 +40,13 @@ function addPlayer(name: string, uuid: PlayerUUID, addSystem = false) {
     uuid: uuid,
   })
 
+  // システムに登録する場合はAddSystemをTrueにする
   if (addSystem) {
     sysStore.systemSettings().player.players.push(uuid)
   }
+
+  // プレイヤーを追加した際には検索欄をリセット
+  playerStore.searchName = ''
 }
 </script>
 
@@ -55,10 +59,10 @@ function addPlayer(name: string, uuid: PlayerUUID, addSystem = false) {
     >
       <q-list separator>
         <!-- プレイヤー名からプレイヤーの検索を行う -->
-        <SearchResultItem v-if="newPlayerCandidate !== void 0" v-model="playerModel" :uuid="newPlayerCandidate?.uuid" :player-data="newPlayerCandidate" @add-player="addPlayer" />
+        <SearchResultItem v-if="newPlayerCandidate !== void 0" v-model="newPlayerCandidate" :uuid="newPlayerCandidate?.uuid" @add-player="addPlayer" />
         <!-- 過去に登録実績のあるプレイヤー一覧 -->
         <template v-for="uuid in sysStore.systemSettings().player.players.filter(uuid => playerModel.find(p => p.uuid === uuid) === undefined)" :key="uuid">
-          <SearchResultItem v-model="playerModel" :uuid="uuid" @add-player="addPlayer" />
+          <SearchResultItem :uuid="uuid" @add-player="addPlayer" />
         </template>
       </q-list>
     </q-card-section>

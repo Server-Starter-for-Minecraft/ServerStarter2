@@ -7,15 +7,14 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import PlayerHeadView from './PlayerHeadView.vue';
 
 interface Prop {
-  modelValue: PlayerSetting[]
+  modelValue?: Player
   uuid: PlayerUUID
-  playerData?: Player
   onAddPlayer: (name: string, uuid: PlayerUUID, addSystem: boolean) => void
 }
 const prop = defineProps<Prop>()
 const emit = defineEmits(['update:model-value'])
 
-const playerModel = computed({
+const newPlayerModel = computed({
   get() {
     return prop.modelValue;
   },
@@ -25,9 +24,10 @@ const playerModel = computed({
 })
 
 const sysStore = useSystemStore()
-const pData: Ref<Player | undefined> = ref()
 onMounted(async () => {
-  pData.value = prop.playerData ?? await getPlayer()
+  if (prop.modelValue === void 0) {
+    newPlayerModel.value = await getPlayer()
+  }
 })
 
 async function getPlayer() {
@@ -39,13 +39,13 @@ async function getPlayer() {
 <template>
   <!-- nameを指定するのは新規プレイヤーのみ -->
   <!-- 新規と仮定して検索したプレイヤーが登録実績のあるプレイヤーだった場合には表示しない -->
-  <q-item v-if="pData !== void 0">
+  <q-item>
     <q-item-section avatar>
-      <PlayerHeadView :uuid="uuid" :player-data="playerData" />
+      <PlayerHeadView v-model="newPlayerModel" :uuid="uuid" />
     </q-item-section>
     <q-item-section top>
-      <q-item-label class="name force-one-line">{{ pData.name }}</q-item-label>
-      <q-item-label caption class="q-pt-xs force-one-line" style="opacity: 0.7;">uuid: {{ pData.uuid }}</q-item-label>
+      <q-item-label class="name force-one-line">{{ newPlayerModel.name }}</q-item-label>
+      <q-item-label caption class="q-pt-xs force-one-line" style="opacity: 0.7;">uuid: {{ newPlayerModel.uuid }}</q-item-label>
     </q-item-section>
     <q-item-section side>
       <!-- playerDataが渡されるときは新プレイヤーの時のみのため -->
@@ -55,7 +55,7 @@ async function getPlayer() {
         label="このプレイヤーを追加"
         icon="add"
         color="primary"
-        @click="onAddPlayer(pData.name, pData.uuid, prop.playerData !== void 0)"
+        @click="onAddPlayer(newPlayerModel.name, newPlayerModel.uuid, modelValue !== void 0)"
       />
     </q-item-section>
   </q-item>
