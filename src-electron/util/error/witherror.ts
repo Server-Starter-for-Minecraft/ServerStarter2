@@ -1,9 +1,8 @@
-import { ErrorMessage } from '../../schema/error';
+import { ErrorMessage, WithError } from '../../schema/error';
 
 /**
  * 複数のエラーと正常値を同時に保持する型
  */
-export type WithError<T> = { value: T; errors: ErrorMessage[] };
 
 export function withError<T>(value: T, errors?: ErrorMessage[]): WithError<T> {
   return { value, errors: errors ?? [] };
@@ -22,3 +21,5 @@ export class WithErrorChain<T> {
     return withError(result.value, this.value.errors.concat(result.errors));
   }
 }
+
+export type { WithError };
