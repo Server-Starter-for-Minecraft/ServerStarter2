@@ -26,7 +26,7 @@ export function checkError<S>(
     else {
       if (errorDescription !== void 0) { useErrorStore().description = errorDescription }
       // TODO: check.arg, check.keyによってエラー文をi18nに登録する
-      useErrorStore().error = check.key
+      useErrorStore().error = JSON.stringify(check.arg)
 
       // TODO: エラー画面を表示するのはFailableではない未知のエラー（RuntimeError）の時のみとし、
       // Failableによるエラーは画面の左下に表示するだけ、などの処理に変更

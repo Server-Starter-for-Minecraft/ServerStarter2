@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 import { WorldID } from 'app/src-electron/schema/world';
 import { useProgressStore } from './ProgressStore';
 import { useMainStore } from './MainStore';
-import { toRaw } from 'vue';
 import { checkError } from 'src/components/Error/Error';
 
 interface WorldConsole {
@@ -72,7 +71,7 @@ export async function runServer() {
   const consoleStore = useConsoleStore()
 
   consoleStore.setProgress(mainStore.selectedWorldID, '1.19.4 / TestWorld を起動中')
-  const res = await window.API.invokeRunServer(toRaw(mainStore.world()));
+  const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
 
   checkError(res, console.log, 'サーバーが異常終了しました。')
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
@@ -23,7 +23,7 @@ async function startServer() {
   if (consoleStore.status()!=='Stop') { return }
 
   // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
-  window.API.invokeCreateWorld(mainStore.world())
+  window.API.invokeCreateWorld(toRaw(mainStore.world()))
   mainStore.newWorlds.splice(mainStore.newWorlds.indexOf(mainStore.selectedWorldID), 1)
 
   // サーバーの起動を開始

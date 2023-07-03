@@ -3,6 +3,7 @@ interface Prop {
   iconName: string
   label: string
   to?: string
+  onClick?: () => void
 }
 defineProps<Prop>()
 </script>

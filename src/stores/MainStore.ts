@@ -33,16 +33,6 @@ export const useMainStore = defineStore('mainStore', {
     world() {
       const currentSelectedIdx = this.selectedWorldID
       const world = this.worldList[this.selectedWorldID]
-
-      if (!this.newWorlds.includes(this.selectedWorldID)) {
-        window.API.invokeSetWorld(toRaw(world)).then(v => {
-          checkError(
-            v.value,
-            w => this.worldList[currentSelectedIdx] = w,
-            'ワールドの設定を保存できませんでした'
-          )
-        })
-      }
       
       return world
     },

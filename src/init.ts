@@ -3,7 +3,7 @@ import { checkError } from './components/Error/Error';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import { isValid } from './scripts/error';
-import { fromEntries } from './scripts/objFillter';
+import { fromEntries, keys } from './scripts/obj';
 
 export async function initWindow() {
   // storeの初期化
@@ -34,6 +34,9 @@ export async function initWindow() {
   if (Object.keys(mainStore.worldList).length === 0) {
     await mainStore.createNewWorld()
   }
+  else [
+    mainStore.selectedWorldID = keys(mainStore.worldList)[0]
+  ]
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく
   // mainStore.worldListを (worldAbbr | world) にする？

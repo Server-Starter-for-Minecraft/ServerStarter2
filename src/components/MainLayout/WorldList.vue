@@ -6,7 +6,7 @@ import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
 import { assets } from 'src/assets/assets';
 
-const store = useMainStore();
+const mainStore = useMainStore();
 const searchWorldName = ref('')
 const drawer = ref(true)
 const miniDrawer = ref(true)
@@ -38,13 +38,13 @@ function openHP() {
     
     <q-scroll-area class="fit col">
       <q-list>
-        <template v-for="(world, idx) in store.searchWorld(searchWorldName)" :key="world">
+        <template v-for="(world, idx) in mainStore.searchWorld(searchWorldName)" :key="world">
           <world-tab :world="world" :idx="idx"/>
         </template>
       </q-list>
     </q-scroll-area>
 
-    <icon-button-view icon-name="add" label="ワールドを追加"/>
+    <icon-button-view icon-name="add" label="ワールドを追加" @click="async () => await mainStore.createNewWorld()"/>
     <q-separator class="q-mx-xs"/>
     <icon-button-view icon-name="settings" label="システム設定" to="/system"/>
   </q-drawer>
