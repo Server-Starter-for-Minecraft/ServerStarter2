@@ -1,17 +1,17 @@
-export type StringServerProperty = {
+export type StringServerPropertyAnnotation = {
   type: 'string';
-  value: string;
+  default: string;
   enum?: string[];
 };
 
-export type BooleanServerProperty = {
+export type BooleanServerPropertyAnnotation = {
   type: 'boolean';
-  value: boolean;
+  default: boolean;
 };
 
-export type NumberServerProperty = {
+export type NumberServerPropertyAnnotation = {
   type: 'number';
-  value: number;
+  default: number;
 
   /** value % step == 0 */
   step?: number;
@@ -21,17 +21,17 @@ export type NumberServerProperty = {
   max?: number;
 };
 
-export type ServerProperty =
-  | StringServerProperty
-  | BooleanServerProperty
-  | NumberServerProperty;
+export type ServerPropertyAnnotation =
+  | StringServerPropertyAnnotation
+  | BooleanServerPropertyAnnotation
+  | NumberServerPropertyAnnotation;
 
-/** サーバープロパティ(注釈あり) */
-export type ServerProperties = {
-  [key in string]: ServerProperty;
+/** サーバープロパティのアノテーション */
+export type ServerPropertiesAnnotation = {
+  [key in string]: ServerPropertyAnnotation;
 };
 
-/** サーバープロパティ(注釈なし) */
-export type ServerPropertiesMap = {
+/** サーバープロパティのデータ */
+export type ServerProperties = {
   [key in string]: string | number | boolean;
 };

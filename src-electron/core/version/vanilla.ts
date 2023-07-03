@@ -1,6 +1,6 @@
 import { VanillaVersion } from 'src-electron/schema/version';
 import { getVersionMainfest } from './mainfest';
-import { Failable, isFailure } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import { versionsCachePath } from '../const';
 import {
@@ -9,6 +9,8 @@ import {
   needEulaAgreementVanilla,
 } from './base';
 import { Path } from '../../util/path';
+import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
@@ -39,7 +41,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 
     // versionのjsonを取得
     const json = await getVanillaVersionJson(version.id);
-    if (isFailure(json)) return json;
+    if (isError(json)) return json;
 
     // jarデータを取得
     const serverData = await BytesData.fromPathOrUrl(
@@ -53,7 +55,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
     );
 
     // serverデータがダウロードできなかった場合
-    if (isFailure(serverData)) return serverData;
+    if (isError(serverData)) return serverData;
 
     // serverデータをファイルに書き出し
     await jarpath.write(serverData);
@@ -72,7 +74,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 
 async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
   const manifest = await getVersionMainfest();
-  if (isFailure(manifest)) return manifest;
+  if (isError(manifest)) return manifest;
 
   // 1.2.5以前はマルチサーバーが存在しない
   const lastindex = manifest.versions.findIndex((x) => x.id === '1.2.5');
@@ -90,11 +92,12 @@ export async function getJavaComponent(id: string) {
   // versionのjsonを取得
   // TODO: serverがないバージョンまで選択されていると思うのでそれの排除
   const json = await getVanillaVersionJson(id);
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   return json.javaVersion?.component ?? 'jre-legacy';
 }
 
+// バージョンidでバニラのバージョンを検索
 export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
@@ -102,13 +105,13 @@ export async function getVanillaVersionJson(
   const manifest = await getVersionMainfest();
 
   // version manifestが取得できなかった場合
-  if (isFailure(manifest)) return manifest;
+  if (isError(manifest)) return manifest;
 
   const record = manifest.versions.find((version) => version.id === id);
 
   // 該当idのバージョンが存在しない場合
   if (record === undefined)
-    return new Error(`Vanilla version ${id} is not exists`);
+    return errorMessage.core.version.vanillaVersionNotExists({ version: id });
 
   // jsonデータを取得
   const jsonData = await BytesData.fromUrlOrPath(jsonpath, record.url, {
@@ -117,7 +120,7 @@ export async function getVanillaVersionJson(
   });
 
   // jsonデータが取得できなかった場合
-  if (isFailure(jsonData)) return jsonData;
+  if (isError(jsonData)) return jsonData;
 
   const json = await jsonData.json<VanillaVersionJson>();
 

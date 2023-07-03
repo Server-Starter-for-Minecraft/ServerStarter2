@@ -1,12 +1,13 @@
 import { Version, VersionType } from 'src-electron/schema/version';
 import { Path } from '../../util/path';
 import { JavaComponent } from './vanilla';
-import { Failable, isFailure, isSuccess } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { versionsCachePath } from '../const';
 import { config } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
 import { rootLoggerHierarchy } from '../logger';
 import { eulaUnnecessaryVersionIds } from './const';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 export const versionLoggers = rootLoggerHierarchy.server.version;
 
@@ -71,13 +72,13 @@ export const genGetAllVersions = <V extends Version>(
     }
 
     const versions = await getAllVersionsFromRemote();
-    if (isFailure(versions)) {
+    if (isError(versions)) {
       logger.fail(versions);
       return versions;
     }
 
     const data = await BytesData.fromText(JSON.stringify(versions));
-    if (isFailure(data)) {
+    if (isError(data)) {
       logger.fail(data);
       return data;
     }
@@ -101,12 +102,12 @@ export async function getAllLocalVersions<V extends Version>(
 
   const configSha1 = config.get(configkey);
   const data = await jsonpath.read();
-  if (isFailure(data)) return;
+  if (isError(data)) return;
 
   const dataSha1 = await data.hash('sha1');
 
   if (configSha1 !== dataSha1) return;
 
   const vers = await data.json<V[]>();
-  if (isSuccess(vers)) return vers;
+  if (isValid(vers)) return vers;
 }

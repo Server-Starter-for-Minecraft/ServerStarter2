@@ -21,6 +21,7 @@ import {
 import { getRunningWorld } from '../core/server/server';
 import { genUUID } from '../tools/uuid';
 import { runCommand, runServer } from '../dummy/server';
+import { testHandle, testOn } from './test';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -29,10 +30,12 @@ export const getBackListener = (
     Command: runCommand,
     OpenBrowser: openBrowser,
     OpenFolder: openFolder,
+
+    SWMTest: testOn,
   },
   handle: {
     RunServer: runServer,
-    PickDirectory: pickDirectory(windowGetter),
+    OpenDialog: pickDirectory(windowGetter),
 
     DeleteWorld: deleteWorld,
 
@@ -57,5 +60,7 @@ export const getBackListener = (
     GetDefaultWorld: getDefaultWorld,
 
     GenUUID: async () => genUUID(),
+
+    IWMTest: testHandle,
   },
 });

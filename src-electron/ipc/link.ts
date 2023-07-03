@@ -1,5 +1,5 @@
 import { IAPI } from 'src-electron/api/types';
-import { Failable } from '../api/failable';
+import { Failable } from '../util/error/failable';
 
 export type BackCaller<A extends IAPI> = {
   send: {

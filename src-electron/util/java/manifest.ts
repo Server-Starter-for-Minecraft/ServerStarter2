@@ -1,6 +1,7 @@
-import { Failable, isFailure } from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { BytesData } from '../bytesData';
 import { Path } from '../path';
+import { isError } from '../error/error';
 
 export type Manifest = {
   files: {
@@ -46,7 +47,7 @@ export async function installManifest(manifest: Manifest, path: Path) {
             undefined,
             v.executable
           );
-          if (isFailure(result)) return result;
+          if (isError(result)) return result;
         };
         promises.push(filePromise());
         break;

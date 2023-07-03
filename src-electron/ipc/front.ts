@@ -2,7 +2,8 @@ import { API } from 'src-electron/api/api';
 import { FrontListener, FrontCaller } from 'src-electron/ipc/link';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from 'src-electron/ipc/util';
 import { BrowserWindow } from 'electron';
-import { Failable } from '../api/failable';
+import { Failable } from '../util/error/failable';
+import { errorMessage } from '../util/error/construct';
 
 type ChanneledFunc<C, T extends (...args: any) => any> = { __channel__: C } & T;
 
@@ -14,7 +15,12 @@ export const invoke = <C extends string, T>(
   ((...args: any[]) => {
     const win = window();
     if (win !== undefined) return ipcInvoke<C, T>(win, channel, ...args);
-    else return new Error('window not exists');
+    else
+      return errorMessage.system.ipc({
+        channel,
+        type: 'invokeMainToWindow',
+        message: 'window not exists',
+      });
   }) as ChanneledFunc<C, (...args: any[]) => Promise<Failable<T>>>;
 
 /** MainからMainWindowの処理を同期で発火する */

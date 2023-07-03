@@ -1,5 +1,5 @@
 import { PapermcVersion } from 'src-electron/schema/version';
-import { Failable, isFailure, isSuccess } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent } from './vanilla';
 import { versionsCachePath } from '../const';
@@ -9,6 +9,7 @@ import {
   needEulaAgreementVanilla,
 } from './base';
 import { Path } from '../../util/path';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 
 const papermcVersionsPath = versionsCachePath.child('papermc');
 
@@ -32,16 +33,16 @@ export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
 async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
   const VERSION_LIST_URL = 'https://api.papermc.io/v2/projects/paper';
   const data = await BytesData.fromURL(VERSION_LIST_URL);
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   const json = await data.json<PapermcVersions>();
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   const promisses = json.versions.reverse().map(getPapermcBuilds);
 
   const results = await Promise.all(promisses);
 
-  return results.filter(isSuccess).flatMap((x) => x);
+  return results.filter(isValid).flatMap((x) => x);
 }
 
 type ApiBuilds = {
@@ -56,10 +57,10 @@ async function getPapermcBuilds(
 ): Promise<Failable<PapermcVersion[]>> {
   const url = `https://api.papermc.io/v2/projects/paper/versions/${version}`;
   const data = await BytesData.fromURL(url);
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
 
   const json = await data.json<ApiBuilds>();
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   return json.builds.map((build) => ({ id: version, type: 'papermc', build }));
 }
@@ -90,10 +91,10 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     `${version.id}/${version.build}.json`
   );
   const jsonResponse = await BytesData.fromUrlOrPath(jsonpath, buildURL);
-  if (isFailure(jsonResponse)) return jsonResponse;
+  if (isError(jsonResponse)) return jsonResponse;
 
   const json = await jsonResponse.json<ApiBuild>();
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   const { name, sha256 } = json.downloads.application;
 
@@ -105,11 +106,11 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
     { type: 'sha256', value: sha256 },
     true
   );
-  if (isFailure(jarResponse)) return jarResponse;
+  if (isError(jarResponse)) return jarResponse;
 
   // 適切なjavaのバージョンを取得
   const component = await getJavaComponent(version.id);
-  if (isFailure(component)) return component;
+  if (isError(component)) return component;
 
   return {
     programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
