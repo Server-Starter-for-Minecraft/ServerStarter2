@@ -19,6 +19,7 @@ import {
 } from '../schema/filedata';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
+import { Deleted, PlainProgress } from '../schema/progress';
 
 /**
  * ## APIの利用方法
@@ -53,7 +54,7 @@ export interface API extends IAPI {
     FinishServer: (world: WorldID) => void;
 
     /** サーバー実行(前|後)の進捗画面表示 未実装 */
-    Progress: (world: WorldID) => void;
+    Progress: (world: WorldID, progress: PlainProgress | Deleted) => void;
 
     /** コンソールに文字列を追加 */
     AddConsole: (world: WorldID, chunk: string) => void;

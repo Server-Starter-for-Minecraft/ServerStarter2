@@ -22,6 +22,7 @@ import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { ErrorMessage, Failable, WithError } from 'app/src-electron/schema/error';
+import { PlainProgressor } from '../progress/progress';
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
@@ -266,7 +267,7 @@ export class WorldHandler {
   }
 
   /** データを同期して サーバーを起動 */
-  async runServer(): Promise<WithError<Failable<World>>> {
+  async runServer(progress: PlainProgressor): Promise<WithError<Failable<World>>> {
     const errors: ErrorMessage[] = [];
     // 起動中の場合エラー
     if (this.run !== undefined)

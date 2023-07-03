@@ -24,7 +24,7 @@ export function runServer(
       cwdPath,
       id,
       settings,
-      (value: string) => api.send.UpdateStatus(id, value)
+      (value: string) => api.send.Progress(id, value)
     );
     if (isError(readyResult)) return readyResult;
 

@@ -18,6 +18,8 @@ import { serverJsonFile } from './files/json';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable, WithError } from 'app/src-electron/schema/error';
+import { PlainProgressor } from '../progress/progress';
+import { api } from '../api';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -167,9 +169,13 @@ export async function deleteWorld(
 export async function runWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
+  const progress = new PlainProgressor((progress) =>
+    api.send.Progress(worldID, progress)
+  );
+
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.runServer();
+  return await handler.runServer(progress);
 }
 
 /**
