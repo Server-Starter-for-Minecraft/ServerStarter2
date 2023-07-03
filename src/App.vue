@@ -66,6 +66,10 @@ async function firstProcess() {
 }
 
 function setSubscribe() {
+  // TODO: SetWorldの戻り値を反映する場合にはcurrentSelectedIDを利用して当該ワールドのデータを更新する
+  // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
+  const currentSelectedId = mainStore.selectedWorldID
+
   worldStore.$subscribe((mutation, state) => {
     if (!mainStore.newWorlds.includes(mainStore.selectedWorldID)) {
       window.API.invokeSetWorld(toRaw(mainStore.world())).then(v => {
