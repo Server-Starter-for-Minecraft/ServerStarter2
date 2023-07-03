@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { NumberServerProperty, StringServerProperty } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { NumberServerPropertyAnnotation, StringServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
@@ -14,7 +14,7 @@ const prop = defineProps<Prop>()
 const emit = defineEmits(['update:model-value'])
 
 const sysStore = useSystemStore()
-const defaultProperty = sysStore.systemSettings().world.properties[prop.propertyName]
+const defaultProperty = sysStore.staticResouces.properties[prop.propertyName]
 
 const model = computed({
   get() {
@@ -87,13 +87,13 @@ function validationMessage(min?:number, max?:number, step?:number) {
       :rules="[
         val => numberValidate(
           val,
-          (defaultProperty as NumberServerProperty)?.min,
-          (defaultProperty as NumberServerProperty)?.max,
-          (defaultProperty as NumberServerProperty)?.step
+          (defaultProperty as NumberServerPropertyAnnotation)?.min,
+          (defaultProperty as NumberServerPropertyAnnotation)?.max,
+          (defaultProperty as NumberServerPropertyAnnotation)?.step
           ) || validationMessage(
-          (defaultProperty as NumberServerProperty)?.min,
-          (defaultProperty as NumberServerProperty)?.max,
-          (defaultProperty as NumberServerProperty)?.step
+          (defaultProperty as NumberServerPropertyAnnotation)?.min,
+          (defaultProperty as NumberServerPropertyAnnotation)?.max,
+          (defaultProperty as NumberServerPropertyAnnotation)?.step
         )]"
     />
   </div>
@@ -108,6 +108,6 @@ function validationMessage(min?:number, max?:number, step?:number) {
   <SsSelect
     v-show="selectEditer()=='enum'"
     v-model="model"
-    :options="(defaultProperty as StringServerProperty)?.enum"
+    :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
   />
 </template>

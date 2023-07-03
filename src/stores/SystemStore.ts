@@ -1,8 +1,9 @@
+import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { version } from '../../package.json';
 import { Version, VersionType } from 'app/src-electron/schema/version';
 import { SystemSettings } from 'app/src-electron/schema/system';
-import { toRaw } from 'vue';
+import { StaticResouce } from 'app/src-electron/schema/static';
 
 export const useSystemStore = defineStore('systemStore', {
   state: () => {
@@ -11,6 +12,7 @@ export const useSystemStore = defineStore('systemStore', {
       publicIP: '000.111.222.333',
       privateIP: '192.168.000.111',
       serverVersions: new Map<VersionType, Version[] | undefined>(),
+      staticResouces: {} as StaticResouce,
       baseSystemSettings: {} as SystemSettings,
     };
   },

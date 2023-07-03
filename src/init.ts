@@ -11,6 +11,9 @@ export async function initWindow() {
   const mainStore = useMainStore();
   const worldStore = useWorldStore();
 
+  // static resourcesの読み込み
+  sysStore.staticResouces = await window.API.invokeGetStaticResouce()
+
   // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み
   await getAllVersion(true);
@@ -35,7 +38,7 @@ export async function initWindow() {
   if (Object.keys(worldStore.worldList).length === 0) {
     await mainStore.createNewWorld()
   }
-  else [
+  else[
     mainStore.selectedWorldID = keys(worldStore.worldList)[0]
   ]
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新

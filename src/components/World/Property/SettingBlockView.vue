@@ -1,45 +1,55 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
 import InputFieldView from './InputFieldView.vue';
 
+
 interface Prop {
+  modelValue: ServerProperties
   settingName: string
 }
 const prop = defineProps<Prop>()
+const emit = defineEmits(['update:model-value'])
 
-// TODO: MainStoreにて読み込むワールドオブジェクトを返す変数の作成後に詳細を作成
+const propertiesModel = computed({
+  get() {
+    return prop.modelValue;
+  },
+  set(newValue) {
+    emit('update:model-value', newValue);
+  },
+})
+
 
 const sysStore = useSystemStore()
-const mainStore = useMainStore()
 
-const defaultProperty = sysStore.systemSettings().world.properties[prop.settingName]
-const showCancel = () => mainStore.world().properties[prop.settingName] !== defaultProperty.value
+const defaultProperty = sysStore.staticResouces.properties[prop.settingName]
+const showCancel = () => propertiesModel.value[prop.settingName] !== defaultProperty.default
 
 /**
  * 設定を規定値に戻す
  */
- function cancelSettings() {
-  mainStore.world().properties[prop.settingName] = defaultProperty.value
+function cancelSettings() {
+  propertiesModel.value[prop.settingName] = defaultProperty.default
 }
-
 </script>
 
 <template>
   <q-item flat class="bg-transparent">
-    
+
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption">設定内容の説明</div>
       <template v-if="$router.currentRoute.value.path === '/system/property'">
         <InputFieldView
-          v-model="sysStore.systemSettings().world.properties[settingName].value"
+          v-model="sysStore.systemSettings().world.properties[settingName]"
           :property-name="settingName"
         />
       </template>
       <template v-else>
         <InputFieldView
-          v-model="mainStore.world().properties[settingName]"
+          v-model="propertiesModel[settingName]"
           :property-name="settingName"
         />
       </template>
@@ -56,7 +66,7 @@ const showCancel = () => mainStore.world().properties[prop.settingName] !== defa
         @click="cancelSettings"
       >
         <q-tooltip>
-          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty.value }}に設定を戻します</p>
+          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty.default }}に設定を戻します</p>
           <p class="text-caption q-ma-none">「システム設定」>「プロパティ」 より基本設定を変更できます</p>
         </q-tooltip>
       </q-btn>

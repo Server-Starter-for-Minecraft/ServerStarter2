@@ -6,6 +6,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
+import { isValid } from 'src/scripts/error';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
@@ -16,14 +17,16 @@ const propertyStore = usePropertyStore()
  */
 function resetAll() {
   Object.keys(sysStore.systemSettings().world.properties).map(key => {
-    mainStore.world().properties[key] = sysStore.systemSettings().world.properties[key].value
+    if (isValid(mainStore.world.properties)) {
+      mainStore.world.properties[key] = sysStore.systemSettings().world.properties[key]
+    }
   })
 }
 </script>
 
 <template>
   <div class="mainField">
-    <div class="column fit">
+    <div v-if="isValid(mainStore.world.properties)" class="column fit">
       <div class="row">
         <SsInput
           v-model="propertyStore.searchName"
@@ -53,10 +56,15 @@ function resetAll() {
             :thumb-style="thumbStyle"
             class="fit"
           >
-            <SettingsView/>
+            <SettingsView v-model="mainStore.world.properties"/>
           </q-scroll-area>
         </div>
       </div>
+    </div>
+
+    <!-- TODO: 画面の調整 -->
+    <div v-else>
+      Propertyが読み込めませんでした
     </div>
   </div>
 </template>
