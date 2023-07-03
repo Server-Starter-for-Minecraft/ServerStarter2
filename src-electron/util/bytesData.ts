@@ -8,21 +8,10 @@ import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
-import { LoggerHierarchy } from './logger/logger';
 
 const fetch = import('node-fetch');
 
 const loggers = utilLoggers.BytesData;
-
-
-let _loggers: LoggerHierarchy | undefined = undefined;
-async function getloggers() {
-  const { utilLoggers } = await import('./utilLogger');
-  if (_loggers === undefined) {
-    _loggers = utilLoggers.BytesData;
-  }
-  return _loggers;
-}
 
 export type Hash = {
   type: 'sha1' | 'md5' | 'sha256';
@@ -42,7 +31,7 @@ export class BytesData {
     hash: Hash | undefined = undefined,
     headers?: { [key in string]: string }
   ): Promise<Failable<BytesData>> {
-    const logger = (await getloggers()).fromURL({ url, hash });
+    const logger = loggers.fromURL({ url, hash });
     logger.start();
 
     try {
@@ -85,7 +74,7 @@ export class BytesData {
     path: Path,
     hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = (await getloggers()).fromPath({ path: path.str(), hash });
+    const logger = loggers.fromPath({ path: path.str(), hash });
     logger.start();
 
     try {
@@ -134,7 +123,7 @@ export class BytesData {
    * TODO: ファイルに出力
    */
   async write(path: string, executable?: boolean) {
-    const logger = (await getloggers()).write({ path });
+    const logger = loggers.write({ path });
     logger.start();
     // 実行権限を与えて保存
     const settings = executable ? { mode: 0o755 } : undefined;
