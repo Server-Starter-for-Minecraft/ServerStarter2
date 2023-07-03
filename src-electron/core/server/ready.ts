@@ -12,16 +12,17 @@ import { getLog4jArg } from './setup/log4j';
 import { VersionComponent } from '../version/base';
 import { Version } from 'app/src-electron/schema/version';
 import { checkEula } from './setup/eula';
-import { isError } from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { PlainProgressor } from '../progress/progress';
 
 /** サーバー起動前の準備の内容 戻り値はJava実行時引数 */
 export async function readyRunServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  logger: (value: string) => void
+  progress: PlainProgressor
 ): Promise<Failable<{ javaArgs: string[]; javaPath: Path }>> {
   // ワールドが起動中の場合
   // 致命的なエラー(この関数を呼ぶ時点でバリデーションを掛けておくこと)
@@ -32,41 +33,67 @@ export async function readyRunServer(
   // JAVAのstdioのエンコードをutf-8に
   javaArgs.push(...javaEncodingToUtf8());
 
-  // 実行メモリ量のJAVA引数
-  javaArgs.push(...(await getMemoryArguments(settings.memory)));
-
-  // ユーザー定義JAVA引数
-  const additionalJavaArgument = await getAdditionalJavaArgument(
-    settings.javaArguments
-  );
-  if (isError(additionalJavaArgument)) {
-    // TODO: エラーの伝達方法を変更
-    logger(additionalJavaArgument.toString());
-  } else {
-    javaArgs.push(...additionalJavaArgument);
+  async function memoryArg() {
+    // 実行メモリ量のJAVA引数
+    return await progress.withPlain(() => getMemoryArguments(settings.memory), {
+      title: {
+        key: 'server.java.memoryArguments',
+      },
+    });
   }
 
-  // サーバーデータ準備
-  logger(
-    `サーバーデータを準備中 ${settings.version.id} (${settings.version.type})`
-  );
-  const server = await readyVersion(settings.version, cwdPath);
-  // サーバーデータの用意ができなかった場合エラー
-  if (isError(server)) return server;
+  async function userArg() {
+    // ユーザー定義JAVA引数
+    const additionalJavaArgument = await progress.withPlain(
+      () => getAdditionalJavaArgument(settings.javaArguments),
+      {
+        title: {
+          key: 'server.java.userArguments',
+        },
+      }
+    );
+    if (isValid(additionalJavaArgument)) {
+      return additionalJavaArgument;
+    }
+    return [];
+  }
 
-  // 実行javaを用意
-  logger(`javaランタイムを準備中 (${server.component})`);
-  const javaPath = await readyJava(server.component, true);
-  // 実行javaが用意できなかった場合エラー
-  if (isError(javaPath)) return javaPath;
+  async function serverData() {
+    // サーバーデータ準備
+    const server = await readyVersion(settings.version, cwdPath);
+    // サーバーデータの用意ができなかった場合エラー
+    if (isError(server)) return server;
 
-  // log4jの設定
-  logger('log4jの引数を設定中');
-  const log4jarg = await getLog4jArg(cwdPath, settings.version, logger);
-  // log4jのファイルがダウンロードできなかった場合エラー
-  if (isError(log4jarg)) return log4jarg;
-  // log4j引数を実行時引数に追加
-  if (log4jarg) javaArgs.push(log4jarg);
+    // 実行javaを用意
+    const javaPath = await readyJava(server.component, true);
+    // 実行javaが用意できなかった場合エラー
+    if (isError(javaPath)) return javaPath;
+
+    return { server, javaPath };
+  }
+
+  async function log4jArg() {
+    // log4jの設定
+    const log4jarg = await getLog4jArg(cwdPath, settings.version, progress);
+    // log4jのファイルがダウンロードできなかった場合エラー
+    if (isError(log4jarg)) return log4jarg;
+    // log4j引数を実行時引数に追加
+    if (log4jarg === null) return [];
+    return [log4jarg];
+  }
+
+  const [memory, user, serverJava, log4j] = await Promise.all([
+    memoryArg(),
+    userArg(),
+    serverData(),
+    log4jArg(),
+  ]);
+  if (isError(serverJava)) return serverJava;
+  if (isError(log4j)) return log4j;
+
+  javaArgs.push(...memory, ...user, ...log4j);
+
+  const { server, javaPath } = serverJava;
 
   // Eulaの同意チェック
   const eulaResult = await assertEula(
@@ -75,7 +102,7 @@ export async function readyRunServer(
     server,
     settings.version,
     javaPath,
-    logger
+    progress
   );
   if (isError(eulaResult)) return eulaResult;
 
@@ -92,7 +119,7 @@ async function assertEula(
   server: VersionComponent,
   version: Version,
   javaPath: Path,
-  logger: (value: string) => void
+  progress: PlainProgressor
 ) {
   const needEula = needEulaAgreement(version);
   // Eulaチェックが必要かどうかの検証に失敗した場合エラー
@@ -101,12 +128,13 @@ async function assertEula(
   if (!needEula) return undefined;
 
   // Eulaチェック
-  logger('Eulaの同意状況を確認中');
-  const eulaAgreement = await checkEula(
-    id,
-    javaPath,
-    server.programArguments,
-    cwdPath
+  const eulaAgreement = await progress.withPlain(
+    () => checkEula(id, javaPath, server.programArguments, cwdPath, progress),
+    {
+      title: {
+        key: 'server.eula.title',
+      },
+    }
   );
 
   // Eulaチェックに失敗した場合エラー

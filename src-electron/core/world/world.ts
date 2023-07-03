@@ -169,17 +169,22 @@ export async function deleteWorld(
 export async function runWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
-  const progress = new PlainProgressor((progress) =>
-    api.send.Progress(worldID, progress),{
-      "title":{
-        "key",
-        "args"
-      }
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+
+  const progress = new PlainProgressor(
+    (progress) => api.send.Progress(worldID, progress),
+    {
+      title: {
+        key: 'server.preparing',
+        args: {
+          world: handler.name,
+          container: handler.container,
+        },
+      },
     }
   );
 
-  const handler = WorldHandler.get(worldID);
-  if (isError(handler)) return withError(handler);
   return await handler.runServer(progress);
 }
 

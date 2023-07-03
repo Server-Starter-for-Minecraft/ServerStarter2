@@ -1,8 +1,9 @@
 export const errorMessageContentSyembol = Symbol();
 export type ErrorMessageContentSyembol = typeof errorMessageContentSyembol;
 
-export type MessageContent<T extends object | any[] | undefined = undefined> =
-  () => T;
+export type MessageContent<
+  T extends Record<string, any> | any[] | undefined = undefined
+> = () => T;
 
 type WithIndex<T extends any[]> = T extends [...infer U, infer V]
   ? [...WithIndex<U>, [U['length'], V]]
@@ -48,24 +49,22 @@ type FlattenMessageKV<
     : never
   : never;
 
-type TupleToObject<T> = T extends [infer K, infer V]
-  ? K extends string
-    ? { [P in K]: V }
-    : never
-  : never;
-
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   k: infer I
 ) => void
   ? I
   : never;
 
-type Merge<T> = {
-  [K in keyof T]: T[K];
-};
+type TranslationPair<T> = T extends [infer K, infer V]
+  ? K extends string
+    ? V extends undefined
+      ? { key: K }
+      : { key: K; args: V }
+    : never
+  : never;
 
-export type FlattenMessages<T extends HierarchicalMessage> = Merge<
-  UnionToIntersection<TupleToObject<FlattenMessageKV<T>>>
+export type FlattenMessages<T extends HierarchicalMessage> = TranslationPair<
+  FlattenMessageKV<T>
 >;
 
 export type MessageTranslation<T extends HierarchicalMessage> = {

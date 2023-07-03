@@ -7,6 +7,7 @@ import { ServerProcess, serverProcess } from './process';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { decoratePromise } from 'app/src-electron/util/promiseDecorator';
 import { isError } from 'app/src-electron/util/error/error';
+import { PlainProgressor } from '../progress/progress';
 
 export type RunServer = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -16,16 +17,12 @@ export type RunServer = Promise<Failable<undefined>> & {
 export function runServer(
   cwdPath: Path,
   id: WorldID,
-  settings: WorldSettings
+  settings: WorldSettings,
+  progress: PlainProgressor
 ): RunServer {
   let process: ServerProcess | undefined = undefined;
   async function promise() {
-    const readyResult = await readyRunServer(
-      cwdPath,
-      id,
-      settings,
-      (value: string) => api.send.Progress(id, value)
-    );
+    const readyResult = await readyRunServer(cwdPath, id, settings, progress);
     if (isError(readyResult)) return readyResult;
 
     const { javaArgs, javaPath } = readyResult;
