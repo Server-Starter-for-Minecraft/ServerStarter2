@@ -72,7 +72,7 @@ function setSubscribe() {
 
   worldStore.$subscribe((mutation, state) => {
     if (!mainStore.newWorlds.includes(mainStore.selectedWorldID)) {
-      window.API.invokeSetWorld(toRaw(mainStore.world())).then(v => {
+      window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
         checkError(
           v.value,
           undefined,

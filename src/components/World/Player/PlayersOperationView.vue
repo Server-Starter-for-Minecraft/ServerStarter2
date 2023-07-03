@@ -31,8 +31,8 @@ function openEditor() {
 function removePlayer() {
   // フォーカスされているプレイヤーを削除
   playerStore.focusCards.forEach(selectedPlayerUUID => {
-    mainStore.world().players.splice(
-      mainStore.world().players.map(p => p.uuid).indexOf(selectedPlayerUUID), 1
+    mainStore.world.players.splice(
+      mainStore.world.players.map(p => p.uuid).indexOf(selectedPlayerUUID), 1
     )
   });
   // フォーカスのリセット
@@ -41,7 +41,7 @@ function removePlayer() {
 
 function setOP() {
   function setter(setVal?: OpSetting) {
-    mainStore.world().players.filter(
+    mainStore.world.players.filter(
       p => playerStore.focusCards.includes(p.uuid)
     ).forEach(p => {
       p.op = setVal

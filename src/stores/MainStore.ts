@@ -12,9 +12,9 @@ export const useMainStore = defineStore('mainStore', {
     };
   },
   getters: {
-    worldList() {
+    world(state) {
       const worldStore = useWorldStore()
-      return worldStore.worldList
+      return worldStore.worldList[state.selectedWorldID]
     }
   },
   actions: {
@@ -23,32 +23,26 @@ export const useMainStore = defineStore('mainStore', {
      * Textを指定しない場合は、システム上のワールド一覧を返す
      */
     searchWorld(text: string) {
+      const worldStore = useWorldStore()
+
       if (text !== '') {
         return recordKeyFillter(
-          this.worldList,
-          wId => this.worldList[wId].name.match(text) !== null
+          worldStore.worldList,
+          wId => worldStore.worldList[wId].name.match(text) !== null
         )
       }
-      return this.worldList;
-    },
-    /**
-     * このプロパティからWorldを呼び出すことで、
-     * ワールドオブジェクトに変更が入った場合、直ちに変更が保存される
-     */
-    world() {
-      const currentSelectedIdx = this.selectedWorldID
-      const world = this.worldList[this.selectedWorldID]
-      
-      return world
+      return worldStore.worldList;
     },
     /**
      * ワールドを新規作成する
      */
     async createNewWorld() {
+      const worldStore = useWorldStore()
+
       checkError(
         (await window.API.invokeNewWorld()).value,
         world => {
-          this.worldList[world.id] = toRaw(world)
+          worldStore.worldList[world.id] = toRaw(world)
           this.newWorlds.push(world.id)
           this.selectedWorldID = world.id
         },
@@ -59,7 +53,8 @@ export const useMainStore = defineStore('mainStore', {
      * 選択されているワールドを削除する
      */
     removeWorld() {
-      delete this.worldList[this.selectedWorldID]
+      const worldStore = useWorldStore()
+      delete worldStore.worldList[this.selectedWorldID]
     }
   },
 });

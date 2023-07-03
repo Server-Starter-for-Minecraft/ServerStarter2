@@ -28,10 +28,10 @@ const menuOpened = ref(false)
 function onCardClicked() {
   prop.players.forEach(uuid => {
     // プレイヤー一覧にグループメンバーが表示されていないときは一覧に追加
-    if (!mainStore.world().players.map(p => p.uuid).includes(uuid)) {
-      mainStore.world().players.push({ uuid: uuid })
+    if (!mainStore.world.players.map(p => p.uuid).includes(uuid)) {
+      mainStore.world.players.push({ uuid: uuid })
     }
-    
+
     // グループプレイヤー全員にFocusを当てる
     if (!playerStore.focusCards.includes(uuid)) {
       playerStore.focusCards.push(uuid)
@@ -74,7 +74,7 @@ function openEditor() {
       >
         <q-card-section class="q-pt-sm">
           <div class="groupName">{{ name }}</div>
-  
+
           <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
           <div class="row q-gutter-md q-pt-sm">
             <template v-for="uuid in players" :key="uuid">

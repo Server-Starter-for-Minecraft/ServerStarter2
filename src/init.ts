@@ -32,11 +32,11 @@ export async function initWindow() {
   const localWorlds = worlds.map(errorWorld => errorWorld.value).filter(isValid);
   worldStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
 
-  if (Object.keys(mainStore.worldList).length === 0) {
+  if (Object.keys(worldStore.worldList).length === 0) {
     await mainStore.createNewWorld()
   }
   else [
-    mainStore.selectedWorldID = keys(mainStore.worldList)[0]
+    mainStore.selectedWorldID = keys(worldStore.worldList)[0]
   ]
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく

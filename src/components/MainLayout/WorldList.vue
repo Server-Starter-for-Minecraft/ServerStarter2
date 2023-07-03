@@ -44,7 +44,7 @@ function openHP() {
       </q-list>
     </q-scroll-area>
 
-    <icon-button-view icon-name="add" label="ワールドを追加" @click="async () => await mainStore.createNewWorld()"/>
+    <icon-button-view icon-name="add" label="ワールドを追加" @click="mainStore.createNewWorld()"/>
     <q-separator class="q-mx-xs"/>
     <icon-button-view icon-name="settings" label="システム設定" to="/system"/>
   </q-drawer>

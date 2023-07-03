@@ -16,7 +16,7 @@ const playerStore = usePlayerStore()
         <!-- <SearchResultItem :uuid="" /> -->
         <!-- TODO: 本来はsearchPlayersの引数には登録済みのプレイヤー全てを含んだリストを入れるべき -->
         <!-- この時に，既にWorldに登録済みのプレイヤーは候補への表示から除外する -->
-        <template v-for="p in playerStore.searchPlayers(mainStore.world().players)" :key="p">
+        <template v-for="p in playerStore.searchPlayers(mainStore.world.players)" :key="p">
           <SearchResultItem :uuid="p.uuid" />
         </template>
       </q-list>

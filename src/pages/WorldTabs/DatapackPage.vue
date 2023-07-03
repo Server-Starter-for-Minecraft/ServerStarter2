@@ -10,7 +10,7 @@ const mainStore = useMainStore()
 <template>
   <ContentsView
     type="datapack"
-    :item-names="mainStore.world().additional.datapacks"
+    :item-names="mainStore.world.additional.datapacks"
     :candidate-items="sysStore.systemSettings().cache.datapacks"
   />
 </template>

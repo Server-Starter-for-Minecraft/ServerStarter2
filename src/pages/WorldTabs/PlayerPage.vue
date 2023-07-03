@@ -14,12 +14,12 @@ const playerStore = usePlayerStore()
 
 const playerJoinToggle = computed({
   get() {
-    const worldProp = mainStore.world().properties;
+    const worldProp = mainStore.world.properties;
     return worldProp['white-list'] && worldProp['enforce-whitelist'];
   },
   set(newValue) {
-    mainStore.world().properties['white-list'] = newValue;
-    mainStore.world().properties['enforce-whitelist'] = newValue;
+    mainStore.world.properties['white-list'] = newValue;
+    mainStore.world.properties['enforce-whitelist'] = newValue;
   },
 })
 </script>
@@ -55,16 +55,16 @@ const playerJoinToggle = computed({
 
         <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
         <div class="row q-gutter-sm q-pa-sm">
-          <div v-for="player in playerStore.searchPlayers(mainStore.world().players)" :key="player.uuid" class="col-">
+          <div v-for="player in playerStore.searchPlayers(mainStore.world.players)" :key="player.uuid" class="col-">
             <PlayerCardView
               :uuid="player.uuid"
               :op-level="player.op?.level"
             />
           </div>
         </div>
-  
-        <q-separator class="q-my-md"/>
-  
+
+        <q-separator class="q-my-md" />
+
         <span class="text-caption">{{ $t("player.groupList") }}</span>
         <div class="row q-gutter-sm q-pa-sm">
           <template v-for="group in playerStore.searchGroups()" :key="group">
@@ -77,10 +77,10 @@ const playerJoinToggle = computed({
         </div>
       </div>
     </q-scroll-area>
-  
+
     <q-separator />
-    
+
     <SelectedPlayersView />
-    <PlayersOperationView :disable="playerStore.focusCards.length === 0"/>
+    <PlayersOperationView :disable="playerStore.focusCards.length === 0" />
   </div>
 </template>

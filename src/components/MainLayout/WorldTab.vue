@@ -20,10 +20,10 @@ async function startServer() {
   selectWorldIdx()
 
   // Stop状態でない時にはサーバーを起動できないようにする
-  if (consoleStore.status()!=='Stop') { return }
+  if (consoleStore.status() !== 'Stop') { return }
 
   // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
-  window.API.invokeCreateWorld(toRaw(mainStore.world()))
+  window.API.invokeCreateWorld(toRaw(mainStore.world))
   mainStore.newWorlds.splice(mainStore.newWorlds.indexOf(mainStore.selectedWorldID), 1)
 
   // サーバーの起動を開始

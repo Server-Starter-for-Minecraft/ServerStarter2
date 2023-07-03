@@ -9,7 +9,7 @@ defineProps<Prop>()
 </script>
 
 <template>
-  <q-item clickable :to="to">
+  <q-item clickable :to="to" @click="onClick">
     <q-item-section avatar>
       <q-icon :name="iconName" size="2rem" class="q-py-sm"/>
     </q-item-section>
