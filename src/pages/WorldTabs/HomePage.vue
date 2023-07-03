@@ -2,11 +2,11 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { versionTypes } from 'app/src-electron/schema/version';
+import { isError } from 'src/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useDialogStore } from 'src/stores/DialogStore';
-import { isFailure } from 'app/src-electron/api/failable';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
@@ -46,7 +46,7 @@ function getAllVers() {
  */
 async function removeWorld() {
   const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-  if (!isFailure(res)) {
+  if (!isError(res)) {
     dialogStore.showDialog('home.error.title', 'home.error.failedDelete', { serverName: mainStore.world().name })
   }
   else {

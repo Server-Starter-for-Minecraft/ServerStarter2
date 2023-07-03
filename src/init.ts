@@ -2,8 +2,7 @@ import { versionTypes } from 'app/src-electron/schema/version';
 import { checkError } from './components/Error/Error';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
-import { isSuccess } from 'app/src-electron/api/failable';
-import { deepCopy } from './scripts/deepCopy';
+import { isValid } from './scripts/error';
 
 export async function initWindow() {
   // storeの初期化
@@ -12,23 +11,24 @@ export async function initWindow() {
 
   // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み
+  console.log('start get versions')
   await getAllVersion(true);
+  console.log('end get versions')
 
   // world読み込み
-  sysStore.worldContainers = await window.API.invokeGetWorldContainers();
   const paths = [
-    sysStore.worldContainers.default,
-    ...Object.values(sysStore.worldContainers.custom),
+    sysStore.systemSettings().container.default,
+    ...Object.values(sysStore.systemSettings().container.custom),
   ];
   const worldAbbrFailables = await Promise.all(
     paths.map((path) => window.API.invokeGetWorldAbbrs(path))
   );
   // TODO: container or world が読み込めなかった場合にPopupを表示する
-  const worldAbbrs = worldAbbrFailables.filter(isSuccess).flatMap((x) => x);
+  const worldAbbrs = worldAbbrFailables.filter(isValid).flatMap((x) => x);
   const worlds = await Promise.all(
-    worldAbbrs.map((abbr) => window.API.invokeGetWorld(abbr.id))
+    worldAbbrs.flatMap(errorAbbr => errorAbbr.value).map(abbr => window.API.invokeGetWorld(abbr.id))
   );
-  mainStore.worldList = worlds.filter(isSuccess);
+  mainStore.worldList = worlds.map(errorWorld => errorWorld.value).filter(isValid);
 
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく

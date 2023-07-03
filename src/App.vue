@@ -40,9 +40,6 @@ firstProcess()
 
 // ユーザー設定を反映する
 async function setUserSettings() {
-  // systemSettingsの読み込み
-  sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
-  
   // 言語設定
   $t.locale.value = sysStore.systemSettings().user.language
 
@@ -53,7 +50,13 @@ async function setUserSettings() {
 }
 
 async function firstProcess() {
+  // systemSettingsの読み込み
+  sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
+
+  // UserSettingsの読み込み
   await setUserSettings()
+
+  // 起動時処理の開始
   router.push('/init')
 }
 </script>
