@@ -1,9 +1,3 @@
-// 複数の選択肢の中のすべて/どれか一つを表す
-export type Options<T> = {
-  mode: 'all' | 'any';
-  values: T[];
-};
-
 export const errorMessageContentSyembol = Symbol();
 export type ErrorMessageContentSyembol = typeof errorMessageContentSyembol;
 

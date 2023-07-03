@@ -170,7 +170,12 @@ export async function runWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
   const progress = new PlainProgressor((progress) =>
-    api.send.Progress(worldID, progress)
+    api.send.Progress(worldID, progress),{
+      "title":{
+        "key",
+        "args"
+      }
+    }
   );
 
   const handler = WorldHandler.get(worldID);
