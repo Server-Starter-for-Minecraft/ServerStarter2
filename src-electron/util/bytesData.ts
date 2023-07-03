@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
+import { LoggerHierarchy } from './logger/logger';
 
 const fetch = import('node-fetch');
 
@@ -16,7 +17,7 @@ const loggers = utilLoggers.BytesData;
 
 let _loggers: LoggerHierarchy | undefined = undefined;
 async function getloggers() {
-  const { utilLoggers } = await import('./logger');
+  const { utilLoggers } = await import('./utilLogger');
   if (_loggers === undefined) {
     _loggers = utilLoggers.BytesData;
   }
