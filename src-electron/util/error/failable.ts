@@ -86,4 +86,5 @@ export class FailableChain<T> {
     return new FailableChain<U>(result);
   }
 }
-export { type Failable };
+export { Failable };
+
