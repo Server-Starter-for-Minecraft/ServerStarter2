@@ -1,8 +1,8 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import path from 'path';
-import os from 'os';
+import * as path from 'path';
+import * as os from 'os';
 import { setupIPC } from './ipc/setup';
 import { onQuit } from './lifecycle/lifecycle';
 
@@ -38,13 +38,12 @@ function createWindow() {
   });
 
   mainWindow.loadURL(process.env.APP_URL);
-  // TODO: リリース時にコメントイン
-  // mainWindow.removeMenu()
 
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools();
   } else {
+    mainWindow.removeMenu();
     // we're on production; no access to devtools pls
     mainWindow.webContents.on('devtools-opened', () => {
       mainWindow?.webContents.closeDevTools();

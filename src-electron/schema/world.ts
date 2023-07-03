@@ -1,10 +1,25 @@
 import { Brand } from '../util/brand';
-import { UUID, WorldContainer, WorldName } from './brands';
-import { FileData, NewData } from './filedata';
+import {
+  ImageURI,
+  PlayerUUID,
+  Timestamp,
+  UUID,
+  WorldContainer,
+  WorldName,
+} from './brands';
+import { ErrorMessage } from './error';
+import {
+  AllFileData,
+  CustomMapData,
+  DatapackData,
+  ModData,
+  PluginData,
+  WorldFileData,
+} from './filedata';
 import { MemorySettings } from './memory';
-import { Player, PlayerSetting } from './player';
+import { PlayerSetting } from './player';
 import { Remote } from './remote';
-import { ServerProperties, ServerPropertiesMap } from './serverproperty';
+import { ServerProperties } from './serverproperty';
 import { Version } from './version';
 
 export type WorldID = Brand<UUID, 'WorldID'>;
@@ -20,9 +35,6 @@ export interface WorldAbbr {
 
   /** ワールドのID (ServerStarterが起動するごとに変わる) */
   id: WorldID;
-
-  /** アイコンのURI */
-  avater_path?: string;
 }
 
 /** ワールドごとの設定 */
@@ -33,21 +45,18 @@ export interface WorldBase extends WorldAbbr {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** pull元のリモートリポジトリ */
-  remote_pull?: Remote;
-
-  /** push先のリモートリポジトリ */
-  remote_push?: Remote;
+  /** 同期先のリモート */
+  remote?: Remote;
 
   /** 最終プレイ日
    *
    * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
    * new Dateの引数にすることで日付が得られる
    */
-  last_date?: number;
+  last_date?: Timestamp;
 
   /** 最終プレイ者 */
-  last_user?: Player;
+  last_user?: PlayerUUID;
 
   /** 使用メモリ量 */
   memory: MemorySettings;
@@ -56,21 +65,24 @@ export interface WorldBase extends WorldAbbr {
   javaArguments?: string;
 
   /** server.propertiesの内容 */
-  properties: ServerPropertiesMap;
+  properties: ServerProperties | ErrorMessage;
 
   /** プレイヤーの設定 */
-  players: PlayerSetting[];
+  players: PlayerSetting[] | ErrorMessage;
+
+  /** アイコンのURI */
+  avater_path?: ImageURI;
 }
 
 export type WorldAdditional = {
   /** 導入済みデータパック */
-  datapacks?: FileData[];
+  datapacks: WorldFileData<DatapackData>[];
 
   /** 導入済みプラグイン */
-  plugins?: FileData[];
+  plugins: WorldFileData<PluginData>[];
 
   /** 導入済みMOD */
-  mods?: FileData[];
+  mods: WorldFileData<ModData>[];
 };
 
 export interface World extends WorldBase {
@@ -78,61 +90,35 @@ export interface World extends WorldBase {
   additional: WorldAdditional;
 }
 
-export type WorldEditedAdditional = {
+export type WorldAdditionalEdited = {
   /** 導入済みデータパック */
-  datapacks?: (FileData | NewData)[];
+  datapacks: AllFileData<DatapackData>[];
 
   /** 導入済みプラグイン */
-  plugins?: (FileData | NewData)[];
+  plugins: AllFileData<PluginData>[];
 
   /** 導入済みMOD */
-  mods?: (FileData | NewData)[];
+  mods: AllFileData<ModData>[];
 };
 
-export type WorldEdited = WorldBase & {
+export interface WorldEdited extends WorldBase {
   /** カスタムマップを導入する場合 */
-  custom_map?: NewData;
+  custom_map?: CustomMapData;
+
+  /** データの取得元のリモート(同期はしない)
+   * リモート版カスタムマップ的な感じ
+   * 新規ワールドで既存リモートを読み込むときくらいにしか使わないと思う
+   * {
+   *   remote_source:A
+   *   remote:B
+   * }
+   * とした場合 Aからワールドのデータを取得して Bと同期する
+   */
+  remote_source?: Remote;
 
   /** 導入済み */
-  additional: WorldEditedAdditional;
-};
-
-/**
- * ワールドの設定
- * server_settings.jsonの内容
- */
-export type WorldSettings = {
-  /** 使用メモリ量 */
-  memory: MemorySettings;
-
-  /** Javaの実行時引数 */
-  javaArguments?: string;
-
-  /** バージョン */
-  version: Version;
-
-  /** リモートリポジトリ */
-  remote?: Remote;
-
-  /** 最終プレイ日
-   *
-   * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
-   * new Dateの引数にすることで日付が得られる
-   */
-  last_date?: number;
-
-  /** 最終プレイ者 */
-  last_user?: Player;
-
-  /** 起動中フラグ */
-  using?: boolean;
-
-  /** サーバープロパティ */
-  properties?: ServerPropertiesMap;
-
-  /** プレイヤーの設定 */
-  players: PlayerSetting[];
-};
+  additional: WorldAdditionalEdited;
+}
 
 /** serverstarterのシステム設定内のワールド設定 */
 export type SystemWorldSettings = {
@@ -146,6 +132,6 @@ export type SystemWorldSettings = {
 
 /** サーバーCWD直下の設定系ファイルの情報 */
 export type FoldSettings = {
-  properties: ServerPropertiesMap;
+  properties: ServerProperties;
   players: PlayerSetting[];
 };

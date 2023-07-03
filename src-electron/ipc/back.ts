@@ -1,23 +1,25 @@
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
-import {
-  getRunningWorld,
-  runCommand,
-  runServer,
-  saveWorldSettings,
-} from '../core/server/server';
-import { getVersions } from '../core/version/version';
-import { deleteWorld, getWorld, getWorldAbbrs } from '../core/world/world';
-import { openBrowser, openFolder, pickDirectory } from '../tools/shell';
-import {
-  getWorldContainers,
-  setWorldContainers,
-} from '../core/world/worldContainer';
-import { getDefaultSettings } from '../core/settings/settings';
-import { getSystemSettings, setSystemSettings } from '../core/stores/system';
-import { genUUID } from 'src-electron/tools/uuid';
-import { validateNewWorldName } from '../core/world/name';
 import { BrowserWindow } from 'electron';
+import { getVersions } from '../core/version/version';
+import {
+  newWorld,
+  getWorld,
+  getWorldAbbrs,
+  setWorld,
+  createWorld,
+  deleteWorld,
+  runWorld,
+  runCommand,
+} from '../core/world/world';
+import { openBrowser, openFolder } from '../tools/shell';
+import { getSystemSettings, setSystemSettings } from '../core/stores/system';
+import { validateNewWorldName } from '../core/world/name';
+import { getStaticResoure } from '../core/resource';
+import { getPlayer } from '../core/player/main';
+import { getLocalSaveData } from '../core/user/localSave';
+import { getCacheContents } from '../core/stores/cache';
+import { pickDialog } from '../core/world/dialog';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -28,28 +30,31 @@ export const getBackListener = (
     OpenFolder: openFolder,
   },
   handle: {
-    RunServer: runServer,
-    PickDirectory: pickDirectory(windowGetter),
-
-    DeleteWorld: deleteWorld,
-
-    SaveWorldSettings: saveWorldSettings,
+    GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,
 
-    GetDefaultSettings: getDefaultSettings,
-    GetVersions: getVersions,
-    GetWorldContainers: getWorldContainers,
-    SetWorldContainers: setWorldContainers,
     GetWorldAbbrs: getWorldAbbrs,
+
     GetWorld: getWorld,
+    SetWorld: setWorld,
+    NewWorld: newWorld,
+    CreateWorld: createWorld,
+    DeleteWorld: deleteWorld,
+
+    RunWorld: runWorld,
+
+    GetPlayer: getPlayer,
+
+    GetVersions: getVersions,
+
+    GetCacheContents: getCacheContents,
 
     ValidateNewWorldName: validateNewWorldName,
 
-    GetRunningWorld: getRunningWorld,
-    // UpdatetRunningWorld: updateRunningWorld,
+    GetLocalSaveData: getLocalSaveData,
 
-    GenUUID: async () => genUUID(),
+    PickDialog: pickDialog(windowGetter),
   },
 });

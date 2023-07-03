@@ -1,4 +1,4 @@
-import { ServerSettingHandler } from './base';
+import { ServerSettingFile } from '../../world/files/base';
 
 export type BannedPlayer = {
   uuid: string;
@@ -23,7 +23,7 @@ export type BannedPlayers = BannedPlayer[];
 
 const FILENAME = 'banned-players.json';
 
-export const bannedPlayersHandler: ServerSettingHandler<BannedPlayers> = {
+export const bannedPlayersHandler: ServerSettingFile<BannedPlayers> = {
   load(cwdPath) {
     return cwdPath.child(FILENAME).readJson<BannedPlayers>();
   },

@@ -1,6 +1,6 @@
 import { SpigotVersion } from 'src-electron/schema/version';
 import { Path } from '../../util/path';
-import { Failable, isFailure } from '../../api/failable';
+import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import { JavaComponent, getJavaComponent } from './vanilla';
 import { config } from '../stores/config';
@@ -15,6 +15,8 @@ import {
   needEulaAgreementVanilla,
 } from './base';
 import { getVersionMainfest } from './mainfest';
+import { isError } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 
@@ -37,17 +39,17 @@ async function readySpigotVersion(
 
   // 適切なjavaのバージョンを取得
   const component = await getJavaComponent(version.id);
-  if (isFailure(component)) return component;
+  if (isError(component)) return component;
 
   // server.jarが存在しなかった場合の処理
   if (!jarpath.exists()) {
     // ビルドツールのダウンロード
     const buildTool = await readySpigotBuildTool();
-    if (isFailure(buildTool)) return buildTool;
+    if (isError(buildTool)) return buildTool;
 
     // ビルドの実行
     const buildResult = await buildSpigotVersion(version, jarpath, component);
-    if (isFailure(buildResult)) return buildResult;
+    if (isError(buildResult)) return buildResult;
   }
 
   return {
@@ -61,7 +63,7 @@ const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 /** バージョン一覧の取得 */
 async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
   const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
-  if (isFailure(result)) return result;
+  if (isError(result)) return result;
 
   const ids: string[] = [];
 
@@ -77,7 +79,7 @@ async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
 
   const manifest = await getVersionMainfest();
 
-  if (isFailure(manifest)) return manifest;
+  if (isError(manifest)) return manifest;
 
   const entries: [string, number][] = manifest.versions.map(
     (version, index) => [version.id, index]
@@ -105,7 +107,7 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   let buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 
   // ビルドツールのダウンロードに失敗した場合ローカルにあるデータを使う
-  if (isFailure(buildtool)) {
+  if (isError(buildtool)) {
     // ハッシュ値をコンフィグから読み込む
     const sha1 = config.get('spigot_buildtool_sha1');
     if (sha1) {
@@ -117,7 +119,7 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   }
 
   // ビルドツールが用意できなかった場合エラー
-  if (isFailure(buildtool)) return buildtool;
+  if (isError(buildtool)) return buildtool;
 
   // ハッシュ値をコンフィグに保存
   config.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
@@ -143,19 +145,14 @@ async function buildSpigotVersion(
   targetpath: Path,
   javaComponent: JavaComponent
 ): Promise<Failable<undefined>> {
-  // TODO: ほんとにjava-runtime-gammaで大丈夫?
-  // if (javaComponent == 'jre-legacy') {
-  //   javaComponent = 'java-runtime-alpha';
-  // }
-
   const VERSION_URL = `https://hub.spigotmc.org/versions/${version.id}.json`;
 
   // spigotのデータを取得する(実行javaバージョンの確認するため)
   const data = await BytesData.fromURL(VERSION_URL);
-  if (isFailure(data)) return data;
+  if (isError(data)) return data;
   const json = await data.json<SpigotVersionData>();
 
-  if (isFailure(json)) return json;
+  if (isError(json)) return json;
 
   const versionTuple = json.javaVersions;
   if (versionTuple) {
@@ -164,15 +161,15 @@ async function buildSpigotVersion(
     else if (min <= 60 && 60 <= max) javaComponent = 'java-runtime-alpha';
     else if (min <= 61 && 61 <= max) javaComponent = 'java-runtime-gamma';
     else
-      return new Error(
-        `to build spigot-${version.id} java-${min - 44} ~ java-${
-          max - 44
-        } is needed`
-      );
+      return errorMessage.core.version.failSpigotBuild.javaNeeded({
+        spigotVersion: version.id,
+        minVersion: `java-${min - 44}`,
+        maxVersion: `java-${max - 44}`,
+      });
   }
 
   const javapath = await readyJava(javaComponent, false);
-  if (isFailure(javapath)) return javapath;
+  if (isError(javapath)) return javapath;
 
   // ビルドの開始
   const process = interactiveProcess(
@@ -187,7 +184,7 @@ async function buildSpigotVersion(
   const result = await process;
 
   // ビルド失敗した場合エラー
-  if (isFailure(result)) return result;
+  if (isError(result)) return result;
 
   // 移動先のディレクトリを作成
   targetpath.parent().mkdir(true);

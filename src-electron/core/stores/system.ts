@@ -1,49 +1,34 @@
 import Store from 'electron-store';
-import { DEFAULT_MEMORY, DEFAULT_WORLD_CONTAINER, mainPath } from '../const';
+import { mainPath } from '../const';
 import { SystemSettings } from 'src-electron/schema/system';
-import { fix } from 'src-electron/util/fix';
-import { defaultServerProperties } from '../settings/files/properties';
+import { fixSystemSettings } from '../fixers/system';
+import { updateWorldContainers } from '../world/worldContainer';
 
-export async function setSystemSettings(
-  settings: SystemSettings
-): Promise<undefined> {
-  systemSettings.store = settings;
-  return undefined;
-}
-
-export async function getSystemSettings(): Promise<SystemSettings> {
-  return systemSettings.store;
-}
-
-export function fixSystemSettings() {
-  const store = systemSettings.store;
-
-  //console.log(store);
-
-  const fixed = fix<SystemSettings>(store, {
-    container: { default: DEFAULT_WORLD_CONTAINER, custom: {} },
-    player: { players: [], groups: [] },
-    remote: { github: { accounts: [] } },
-    world: {
-      memory: DEFAULT_MEMORY,
-      properties: defaultServerProperties,
-    },
-    user: {
-      autoShutDown: false,
-      eula: false,
-      // デフォルト言語 ja で OK?
-      language: 'ja',
-      owner: undefined,
-    },
-  });
-
-  systemSettings.store = fixed;
-}
 export const systemSettings = new Store<SystemSettings>({
   cwd: mainPath.str(),
   name: 'serverstarter',
   fileExtension: 'json',
 });
 
-// 足りない情報を補完する
-fixSystemSettings();
+let systemSettingsValue = fixSystemSettings(systemSettings.store);
+systemSettings.store = systemSettingsValue;
+
+export async function getSystemSettings(): Promise<SystemSettings> {
+  return systemSettingsValue;
+}
+
+/** SystemSettingsを上書き */
+export async function setSystemSettings(
+  settings: SystemSettings
+): Promise<SystemSettings> {
+  // worldContainersの中身の変更に応じて、セーブデータを移動
+  settings.container = await updateWorldContainers(
+    systemSettingsValue.container,
+    settings.container
+  );
+
+  systemSettingsValue = settings;
+
+  systemSettings.store = settings;
+  return settings;
+}

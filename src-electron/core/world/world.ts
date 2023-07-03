@@ -1,115 +1,181 @@
-import {
-  Failable,
-  failabilify,
-  isFailure,
-  isSuccess,
-  runOnSuccess,
-} from 'src-electron/api/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
-import { getWorldJsonPath, loadWorldJson } from '../settings/worldJson';
-import { BytesData } from '../../util/bytesData';
-import { LEVEL_NAME } from '../const';
-import { getRemoteWorld } from '../remote/remote';
+import { NEW_WORLD_NAME } from '../const';
 import { worldContainerToPath } from './worldContainer';
-import { worldSettingsToWorld } from '../settings/converter';
-import { World, WorldAbbr, WorldID } from 'src-electron/schema/world';
-import { genUUID } from 'app/src-electron/tools/uuid';
-import { WorldLocationMap, wroldLocationToPath } from './worldMap';
-import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
-
-export async function deleteWorld(worldID: WorldID) {
-  const cwd = runOnSuccess(wroldLocationToPath)(WorldLocationMap.get(worldID));
-  if (isFailure(cwd)) return cwd;
-
-  const result = await failabilify(cwd.remove)();
-  if (isFailure(result)) return result;
-
-  WorldLocationMap.delete(worldID);
-  return;
-}
+import {
+  World,
+  WorldAbbr,
+  WorldEdited,
+  WorldID,
+} from 'src-electron/schema/world';
+import { WorldContainer, WorldName } from 'src-electron/schema/brands';
+import { vanillaVersionLoader } from '../version/vanilla';
+import { getSystemSettings } from '../stores/system';
+import { WorldHandler } from './handler';
+import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { validateNewWorldName } from './name';
+import { serverJsonFile } from './files/json';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
-): Promise<Failable<WorldAbbr[]>> {
+): Promise<WithError<WorldAbbr[]>> {
   const subdir = await worldContainerToPath(worldContainer).iter();
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
   );
-  return results.filter(isSuccess);
+  return withError(results.filter(isValid), results.filter(isError));
 }
 
 export async function getWorldAbbr(
   path: Path,
   worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
-  if (!path.isDirectory()) return new Error(`${path.str()} is not directory.`);
-  const jsonpath = getWorldJsonPath(path);
+  if (!path.isDirectory())
+    return errorMessage.data.path.invalidContent.mustBeDirectory({
+      type: 'file',
+      path: path.path,
+    });
+  const jsonpath = serverJsonFile.path(path);
 
-  if (!jsonpath.exists()) return new Error(`${jsonpath.str()} not exists.`);
+  if (!jsonpath.exists())
+    return errorMessage.data.path.notFound({
+      type: 'file',
+      path: jsonpath.path,
+    });
 
-  const id = genUUID() as WorldID;
   const name = path.basename() as WorldName;
   const container = worldContainer as WorldContainer;
+
+  // WorldHandlerに登録
+  const id = WorldHandler.register(name, container);
+
   const result: WorldAbbr = {
     id,
     name,
     container,
   };
-  WorldLocationMap.set(id, { name, container });
+
   return result;
 }
 
-export async function getWorld(worldID: WorldID): Promise<Failable<World>> {
-  const location = WorldLocationMap.get(worldID);
-  if (isFailure(location)) return location;
-  const { name, container } = location;
+/** WorldIDからワールドデータ取得 (リモートが存在する場合リモートから読み込む) */
+export async function getWorld(
+  worldID: WorldID
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+  return await handler.load();
+}
 
-  const cwd = wroldLocationToPath(location);
-  if (isFailure(cwd)) return cwd;
+/** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
+export async function setWorld(
+  world: WorldEdited
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(world.id);
+  if (isError(handler)) return withError(handler);
+  return await handler.save(world);
+}
 
-  const settings = await loadWorldJson(cwd);
-  if (isFailure(settings)) return settings;
+/**
+ * ワールドデータを新規生成して返す
+ * ワールドのidは呼び出すたびに新しくなる
+ */
+export async function newWorld(): Promise<WithError<Failable<World>>> {
+  const vanillaVersions = await vanillaVersionLoader.getAllVersions(true);
+  if (isError(vanillaVersions)) return withError(vanillaVersions);
 
-  // リモートが存在する場合リモートからデータを取得
-  if (settings.remote !== undefined) {
-    const result = await getRemoteWorld(worldID, settings.remote);
-    return result;
-  }
+  const latestRelease = vanillaVersions.find((ver) => ver.release);
 
-  // リモートが存在しない場合ローカルのデータを使用
+  const systemSettings = await getSystemSettings();
 
-  // アバターの読み込み
-  const avater_path = await getIconURI(cwd);
+  if (latestRelease === undefined)
+    throw new Error('Assertion: This error cannot occur');
 
-  settings.properties ?? {};
-  const world = worldSettingsToWorld({
-    id: worldID,
+  const container = systemSettings.container.default;
+  const name = await getDefaultWorldName(container);
+
+  // WorldHandlerに登録
+  const id = WorldHandler.register(name, container);
+
+  const world: World = {
     name,
     container,
-    avater_path,
-    settings,
-  });
-  return world;
+    id,
+    version: latestRelease,
+    using: false,
+    remote: undefined,
+    last_date: undefined,
+    last_user: undefined,
+    memory: systemSettings.world.memory,
+    javaArguments: systemSettings.world.javaArguments,
+    properties: systemSettings.world.properties,
+    players: [],
+    additional: {
+      datapacks: [],
+      plugins: [],
+      mods: [],
+    },
+  };
+
+  return withError(world);
 }
 
-async function getIconURI(cwd: Path) {
-  let iconURI: string | undefined = undefined;
-  const iconpath = cwd.child(LEVEL_NAME + '/icon.png');
-  if (iconpath.exists()) {
-    const data = await BytesData.fromPath(iconpath);
-    if (isSuccess(data)) {
-      iconURI = await data.encodeURI('image/png');
-    }
+/** 新規作成する際のワールド名を取得 */
+async function getDefaultWorldName(container: WorldContainer) {
+  let worldName = NEW_WORLD_NAME;
+
+  let result = await validateNewWorldName(container, worldName);
+  let i = 0;
+  while (isError(result)) {
+    worldName = `${NEW_WORLD_NAME}_${i}`;
+    i += 1;
+    result = await validateNewWorldName(container, worldName);
   }
-  return iconURI;
+  return result;
 }
 
-// const demoWorldSettings: WorldSettings = {
-//   avater_path: 'https://cdn.quasar.dev/img/parallax2.jpg',
-//   version: {
-//     id: '1.19.2',
-//     type: 'vanilla',
-//     release: true,
-//   },
-// };
+/**
+ * ワールドデータ(ディレクトリとfile)を生成する
+ * 注：newWorld()によって生成されたものに限る
+ */
+export async function createWorld(
+  world: WorldEdited
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(world.id);
+  if (isError(handler)) return withError(handler);
+  return await handler.create(world);
+}
+
+/**
+ * ワールドデータを削除する
+ */
+export async function deleteWorld(
+  worldID: WorldID
+): Promise<WithError<Failable<undefined>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+  return await handler.delete();
+}
+
+/**
+ * ワールドを起動する
+ */
+export async function runWorld(
+  worldID: WorldID
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+  return await handler.runServer();
+}
+
+/**
+ * コマンドを実行する
+ */
+export function runCommand(worldID: WorldID, command: string): void {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return;
+  handler.runCommand(command);
+}

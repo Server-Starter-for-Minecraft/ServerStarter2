@@ -1,16 +1,17 @@
 import { createHash } from 'crypto';
 import { promises } from 'fs';
-//import { utilLoggers } from './logger';
+import { utilLoggers } from './utilLogger';
 import { Path } from './path';
-import { isSuccess, Failable, isFailure } from '../api/failable';
-
-import { LoggerHierarchy } from '../core/logger';
+import { Failable } from './error/failable';
+import { Png } from './png';
+import sharp from 'sharp';
+import { ImageURI } from '../schema/brands';
+import { fromRuntimeError, isError, isValid } from './error/error';
+import { errorMessage } from './error/construct';
 
 const fetch = import('node-fetch');
 
-export class BytesDataError extends Error {}
-
-//const loggers = utilLoggers.BytesData;
+const loggers = utilLoggers.BytesData;
 
 
 let _loggers: LoggerHierarchy | undefined = undefined;
@@ -34,6 +35,7 @@ export class BytesData {
     this.data = data;
   }
 
+  /** URLからデータを取得. ステータスコードが200でない場合はすべてエラーとみなす */
   static async fromURL(
     url: string,
     hash: Hash | undefined = undefined,
@@ -44,11 +46,13 @@ export class BytesData {
 
     try {
       const res = await (await fetch).default(url, { headers });
-      if (!res.ok) {
+      if (res.status !== 200) {
         logger.fail({ status: res.status, statusText: res.statusText });
-        return new BytesDataError(
-          `failed to fetch ${url} status: ${res.status} ${res.statusText}`
-        );
+        return errorMessage.data.url.fetch({
+          url: url,
+          status: res.status,
+          statusText: res.statusText,
+        });
       }
       const buffer = await res.arrayBuffer();
       const result = new BytesData(buffer);
@@ -65,10 +69,14 @@ export class BytesData {
 
       const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
       logger.fail(`${msg}`);
-      return new BytesDataError(msg);
+      return errorMessage.data.hashNotMatch({
+        hashtype: hash.type,
+        type: 'url',
+        path: url,
+      });
     } catch (e) {
       logger.fail();
-      return e as Error;
+      return fromRuntimeError(e);
     }
   }
 
@@ -94,11 +102,15 @@ export class BytesData {
       }
       const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
       logger.fail(msg);
-      return new BytesDataError(msg);
+      return errorMessage.data.hashNotMatch({
+        hashtype: hash.type,
+        type: 'file',
+        path: path.str(),
+      });
     } catch (e) {
       logger.fail();
       // TODO:黒魔術の解消
-      return e as unknown as Error;
+      return fromRuntimeError(e);
     }
   }
 
@@ -110,6 +122,11 @@ export class BytesData {
   /** base64の形式でByteDataに変換 */
   static async fromBase64(base64: string): Promise<Failable<BytesData>> {
     return new BytesData(Buffer.from(base64, 'base64'));
+  }
+
+  /** base64の形式でByteDataに変換 */
+  static async fromBuffer(buffer: Buffer): Promise<Failable<BytesData>> {
+    return new BytesData(buffer);
   }
 
   /**
@@ -152,12 +169,12 @@ export class BytesData {
   ): Promise<Failable<BytesData>> {
     const remoteHash = compareHashOnFetch ? hash : undefined;
     let data = await BytesData.fromPath(path, hash);
-    if (isSuccess(data)) {
+    if (isValid(data)) {
       return data;
     }
 
     data = await BytesData.fromURL(url, remoteHash, headers);
-    if (isFailure(data)) {
+    if (isError(data)) {
       return data;
     }
 
@@ -176,13 +193,27 @@ export class BytesData {
   ): Promise<Failable<BytesData>> {
     const remoteHash = compareHashOnFetch ? hash : undefined;
     const data = await BytesData.fromURL(url, remoteHash, headers);
-    if (isSuccess(data)) {
+    if (isValid(data)) {
       await path.parent().mkdir(true);
       await data.write(path.str(), executable);
       return data;
     }
     const result = await BytesData.fromPath(path, hash);
     return result;
+  }
+
+  /** data:{mimetype};base64,... の形式でデコード
+   *
+   * mimetypeの例 "image/png"
+   */
+  static async fromBase64URI(uri: string): Promise<Failable<BytesData>> {
+    const regex =
+      /^data:[0-9A-Za-z!#$%&'*+\.^_`|~/-]+;base64,([A-Za-z0-9+/]+=*)$/;
+    const match = uri.match(regex);
+
+    if (match === null) return errorMessage.value.base64URI({ value: uri });
+
+    return this.fromBase64(match[1]);
   }
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
@@ -205,8 +236,15 @@ export class BytesData {
         resolve(JSON.parse(text));
       });
     } catch (e) {
-      // TODO: 黒魔術の解消
-      return e as unknown as Error;
+      return fromRuntimeError(e);
+    }
+  }
+
+  async png(): Promise<Failable<Png>> {
+    try {
+      return new Png(sharp(this.data));
+    } catch (e) {
+      return fromRuntimeError(e);
     }
   }
 
@@ -214,10 +252,10 @@ export class BytesData {
    *
    * mimetypeの例 "image/png"
    */
-  async encodeURI(mimetype: string) {
+  async encodeURI(mimetype: string): Promise<ImageURI> {
     // ArrayBufferからbase64に変換
     const base64uri = Buffer.from(this.data).toString('base64');
 
-    return `data:${mimetype};base64,${base64uri}`;
+    return `data:${mimetype};base64,${base64uri}` as ImageURI;
   }
 }

@@ -1,5 +1,3 @@
-class OsPlatformError extends Error {}
-
 export type OsPlatform = 'linux' | 'mac-os' | 'mac-os-arm64' | 'windows-x64';
 
 function getOsPlatform(): OsPlatform {
@@ -19,7 +17,7 @@ function getOsPlatform(): OsPlatform {
     case 'linux':
       return 'linux';
     default:
-      throw new OsPlatformError(`${platform} is unavailable os platform`);
+      throw new Error(`${platform} is unavailable os platform`);
   }
 }
 

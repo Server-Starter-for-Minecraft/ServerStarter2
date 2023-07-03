@@ -1,10 +1,17 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { BytesData } from './bytesData';
-import { Failable, isFailure } from '../api/failable';
+import type { BytesData } from './bytesData';
+import { Failable } from './error/failable';
+import { asyncForEach } from './objmap';
+import { isError } from './error/error';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
+}
+
+const _bytesData = import('./bytesData');
+async function loadBytesData() {
+  return (await _bytesData).BytesData;
 }
 
 export class Path {
@@ -18,7 +25,7 @@ export class Path {
   }
 
   child(child: string) {
-    if (this.path) {
+    if (this.path !== '') {
       return new Path(path.join(this.path, child));
     }
     return new Path(child);
@@ -49,6 +56,12 @@ export class Path {
     return path.basename(this.path);
   }
 
+  /** ディレクトリ階層を除いたファイル名(拡張子なし)を返す ".../../file.txt" -> "file" */
+  stemname() {
+    return path.basename(this.path, this.extname());
+  }
+
+  /** 拡張子を返す ".../../file.txt" -> ".txt" */
   extname() {
     return path.extname(this.path);
   }
@@ -59,6 +72,11 @@ export class Path {
 
   async isDirectory() {
     return (await fs.stat(this.absolute().str())).isDirectory();
+  }
+
+  /** ファイルの最終更新時刻を取得 */
+  async lastUpdateTime(): Promise<Date> {
+    return (await fs.stat(this.str())).mtime;
   }
 
   async rename(newpath: Path) {
@@ -84,19 +102,24 @@ export class Path {
     await fs.writeFile(this.path, content);
   }
 
+  async writeJson<T>(content: T) {
+    this.parent().mkdir(true);
+    await fs.writeFile(this.path, JSON.stringify(content));
+  }
+
   async read(): Promise<Failable<BytesData>> {
-    return await BytesData.fromPath(this);
+    return await (await loadBytesData()).fromPath(this);
   }
 
   async readJson<T>(): Promise<Failable<T>> {
-    const data = await BytesData.fromPath(this);
-    if (isFailure(data)) return data;
+    const data = await (await loadBytesData()).fromPath(this);
+    if (isError(data)) return data;
     return await data.json();
   }
 
   async readText(): Promise<Failable<string>> {
-    const data = await BytesData.fromPath(this);
-    if (isFailure(data)) return data;
+    const data = await (await loadBytesData()).fromPath(this);
+    if (isError(data)) return data;
     return await data.text();
   }
 
@@ -127,6 +150,37 @@ export class Path {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
     await target.remove(true);
-    await fs.move(this.str(), target.str());
+
+    // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
+    async function recursiveMove(path: Path, target: Path) {
+      if (await path.isDirectory()) {
+        target.mkdir(true);
+        await asyncForEach(await path.iter(), async (child) => {
+          await recursiveMove(child, target.child(child.basename()));
+        });
+      } else {
+        await fs.move(path.str(), target.str());
+      }
+      await path.remove(true);
+    }
+    await recursiveMove(this, target);
+  }
+
+  async changePermission(premission: number) {
+    await changePermissionsRecursively(this.path, premission);
+  }
+}
+
+/** 再帰的にファイルの権限を書き換える */
+async function changePermissionsRecursively(basePath: string, mode: number) {
+  if (fs.existsSync(basePath)) {
+    await fs.chmod(basePath, mode);
+    if ((await fs.lstat(basePath)).isDirectory()) {
+      const files = await fs.readdir(basePath);
+      for (const file of files) {
+        const filePath = path.join(basePath, file);
+        await changePermissionsRecursively(filePath, mode);
+      }
+    }
   }
 }
