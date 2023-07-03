@@ -11,11 +11,8 @@ const router = useRouter()
 
 // 起動時処理
 async function asyncProcess() {
-  console.log('process is started')
   await initWindow()
-  console.log('init process is end')
   afterWindow()
-  console.log('after process is end')
   
   await router.push('/')
   progressStore.initProgress()

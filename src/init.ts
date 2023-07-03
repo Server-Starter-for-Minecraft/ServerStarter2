@@ -11,9 +11,7 @@ export async function initWindow() {
 
   // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み
-  console.log('start get versions')
   await getAllVersion(true);
-  console.log('end get versions')
 
   // world読み込み
   const paths = [
