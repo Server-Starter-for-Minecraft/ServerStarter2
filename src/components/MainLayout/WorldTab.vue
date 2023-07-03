@@ -8,7 +8,6 @@ import { assets } from 'src/assets/assets';
 
 interface Props {
   world: WorldEdited;
-  idx: number;
 }
 const prop = defineProps<Props>();
 
@@ -20,8 +19,12 @@ async function startServer() {
   // 選択されているワールドを更新
   selectWorldIdx()
 
-  // Stop状態のでない時にはサーバーを起動できないようにする
+  // Stop状態でない時にはサーバーを起動できないようにする
   if (consoleStore.status()!=='Stop') { return }
+
+  // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
+  window.API.invokeCreateWorld(mainStore.world())
+  mainStore.newWorlds.splice(mainStore.newWorlds.indexOf(mainStore.selectedWorldID), 1)
 
   // サーバーの起動を開始
   await router.push('/console');
@@ -38,7 +41,7 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
  * ワールドを選択した際に行うワールド関連の初期化
  */
 function selectWorldIdx() {
-  mainStore.selectedIdx = prop.idx
+  mainStore.selectedWorldID = prop.world.id
   consoleStore.initTab()
 }
 </script>
@@ -46,8 +49,8 @@ function selectWorldIdx() {
 <template>
   <q-item
     clickable
-    :active="(clicked = mainStore.selectedIdx == idx && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
-    :focused="(clicked = mainStore.selectedIdx == idx && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
+    :active="(clicked = mainStore.selectedWorldID == world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
+    :focused="(clicked = mainStore.selectedWorldID == world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
     @click="selectWorldIdx"
     to="/"
     v-on:dblclick="startServer"

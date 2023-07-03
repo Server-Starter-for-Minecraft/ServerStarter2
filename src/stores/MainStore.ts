@@ -1,23 +1,28 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { WorldEdited } from 'app/src-electron/schema/world';
+import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { checkError } from 'src/components/Error/Error';
+import { recordKeyFillter } from 'src/scripts/objFillter';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
-      selectedIdx: 0,
-      worldList: [] as WorldEdited[],
+      selectedWorldID: '' as WorldID,
+      worldList: {} as Record<WorldID, WorldEdited>,
+      newWorlds: [] as WorldID[]
     };
   },
-  getters: {
-    selectedWorldID(state) {
-      return state.worldList[state.selectedIdx].id
-    }
-  },
   actions: {
+    /**
+     * 指定したTextをワールド名に含むワールド一覧を取得する
+     * Textを指定しない場合は、システム上のワールド一覧を返す
+     */
     searchWorld(text: string) {
       if (text !== '') {
-        return this.worldList.filter((world) => world.name.match(text));
+        return recordKeyFillter(
+          this.worldList,
+          wId => this.worldList[wId].name.match(text) !== null
+        )
       }
       return this.worldList;
     },
@@ -26,15 +31,40 @@ export const useMainStore = defineStore('mainStore', {
      * ワールドオブジェクトに変更が入った場合、直ちに変更が保存される
      */
     world() {
-      const world = this.worldList[this.selectedIdx]
-      window.API.invokeSetWorld(toRaw(world))
+      const currentSelectedIdx = this.selectedWorldID
+      const world = this.worldList[this.selectedWorldID]
+
+      if (!this.newWorlds.includes(this.selectedWorldID)) {
+        window.API.invokeSetWorld(toRaw(world)).then(v => {
+          checkError(
+            v.value,
+            w => this.worldList[currentSelectedIdx] = w,
+            'ワールドの設定を保存できませんでした'
+          )
+        })
+      }
+      
       return world
+    },
+    /**
+     * ワールドを新規作成する
+     */
+    async createNewWorld() {
+      checkError(
+        (await window.API.invokeNewWorld()).value,
+        world => {
+          this.worldList[world.id] = toRaw(world)
+          this.newWorlds.push(world.id)
+          this.selectedWorldID = world.id
+        },
+        '新規ワールドをの作成に失敗しました'
+      )
     },
     /**
      * 選択されているワールドを削除する
      */
     removeWorld() {
-      this.worldList.splice(this.selectedIdx, 1)
+      delete this.worldList[this.selectedWorldID]
     }
   },
 });

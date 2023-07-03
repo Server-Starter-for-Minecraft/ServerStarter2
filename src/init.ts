@@ -3,6 +3,7 @@ import { checkError } from './components/Error/Error';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import { isValid } from './scripts/error';
+import { fromEntries } from './scripts/objFillter';
 
 export async function initWindow() {
   // storeの初期化
@@ -26,8 +27,13 @@ export async function initWindow() {
   const worlds = await Promise.all(
     worldAbbrs.flatMap(errorAbbr => errorAbbr.value).map(abbr => window.API.invokeGetWorld(abbr.id))
   );
-  mainStore.worldList = worlds.map(errorWorld => errorWorld.value).filter(isValid);
 
+  const localWorlds = worlds.map(errorWorld => errorWorld.value).filter(isValid);
+  mainStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
+
+  if (Object.keys(mainStore.worldList).length === 0) {
+    await mainStore.createNewWorld()
+  }
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく
   // mainStore.worldListを (worldAbbr | world) にする？

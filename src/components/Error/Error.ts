@@ -1,4 +1,4 @@
-import { Failable } from 'app/src-electron/schema/error';
+import { Failable, WithError } from 'app/src-electron/schema/error';
 import { isValid } from 'src/scripts/error';
 import { useErrorStore } from 'src/stores/ErrorStore';
 import { Router } from 'vue-router';
@@ -27,6 +27,9 @@ export function checkError<S>(
       if (errorDescription !== void 0) { useErrorStore().description = errorDescription }
       // TODO: check.arg, check.keyによってエラー文をi18nに登録する
       useErrorStore().error = check.key
+
+      // TODO: エラー画面を表示するのはFailableではない未知のエラー（RuntimeError）の時のみとし、
+      // Failableによるエラーは画面の左下に表示するだけ、などの処理に変更
       _router.replace('/error')
     }
   }
