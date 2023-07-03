@@ -13,3 +13,10 @@ export type ErrorMessage = {
     arg: FlattenErrorMessageTypes[K];
   };
 }[keyof FlattenErrorMessageTypes];
+
+export type Failable<T> = T | ErrorMessage;
+
+/**
+ * 複数のエラーと正常値を同時に保持する型
+ */
+export type WithError<T> = { value: T; errors: ErrorMessage[] };

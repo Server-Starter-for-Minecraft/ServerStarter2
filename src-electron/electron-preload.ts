@@ -88,9 +88,8 @@ const api: FrontAPI = {
   // ON
   onStartServer: on('StartServer'),
   onFinishServer: on('FinishServer'),
-  onUpdateStatus: on('UpdateStatus'),
+  onProgress: on('Progress'),
   onAddConsole: on('AddConsole'),
-  onUpdateSystemSettings: on('UpdateSystemSettings'),
   onError: on('Error'),
 
   // HANDLE

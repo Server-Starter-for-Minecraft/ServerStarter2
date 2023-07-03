@@ -1,7 +1,5 @@
-import { ErrorMessage } from '../../schema/error';
+import { ErrorMessage, Failable } from '../../schema/error';
 import { fromRuntimeError, isValid } from './error';
-
-export type Failable<T> = T | ErrorMessage;
 
 // 失敗値の場合デフォルト値で上書きする
 export const orDefault = <T>(value: Failable<T>, defaultValue: T): T =>
@@ -88,3 +86,4 @@ export class FailableChain<T> {
     return new FailableChain<U>(result);
   }
 }
+export { type Failable };

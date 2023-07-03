@@ -1,4 +1,4 @@
-import { Failable } from 'app/src-electron/util/error/failable';
+import { Failable } from 'app/src-electron/schema/error';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/path';
 import { decoratePromise } from 'app/src-electron/util/promiseDecorator';

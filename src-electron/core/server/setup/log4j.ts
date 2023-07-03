@@ -3,6 +3,7 @@ import { BytesData } from '../../../util/bytesData';
 import { Failable } from '../../../util/error/failable';
 import { Version } from 'src-electron/schema/version';
 import { isError } from 'app/src-electron/util/error/error';
+import { PlainProgressor } from '../../progress/progress';
 
 const ver_17_18 = [
   '1.18.1-rc2',
@@ -504,8 +505,9 @@ const ver_7_11 = [
   '1.7',
 ];
 
+const xml_12_16 = 'log4j2_112-116.xml';
 async function download_xml_12_16(serverPath: Path) {
-  const xml = serverPath.child('log4j2_112-116.xml');
+  const xml = serverPath.child(xml_12_16);
   if (!xml.exists()) {
     const data = await BytesData.fromURL(
       'https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml'
@@ -515,8 +517,9 @@ async function download_xml_12_16(serverPath: Path) {
   }
 }
 
+const xml_7_11 = 'log4j2_17-111.xml';
 async function download_xml_7_11(serverPath: Path) {
-  const xml = serverPath.child('log4j2_17-111.xml');
+  const xml = serverPath.child(xml_7_11);
   if (!xml.exists()) {
     const data = await BytesData.fromURL(
       'https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml'
@@ -530,7 +533,7 @@ async function download_xml_7_11(serverPath: Path) {
 export async function getLog4jArg(
   serverPath: Path,
   version: Version,
-  logger: (value: string) => void
+  progress: PlainProgressor
 ): Promise<Failable<string | null>> {
   // log4jの脆弱性に対応
   // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
@@ -542,15 +545,27 @@ export async function getLog4jArg(
 
   // 1.12-1.16.5
   if (version.id in ver_12_16) {
-    logger('log4jの設定ファイルをダウウンロード中');
-    await download_xml_12_16(serverPath);
+    await progress.withPlain(() => download_xml_12_16(serverPath), {
+      title: {
+        key: 'server.version.getLog4jSettingFile',
+        args: {
+          path: xml_12_16,
+        },
+      },
+    });
     return '-Dlog4j.configurationFile=log4j2_112-116.xml';
   }
 
   // 1.7-1.11.2
   if (version.id in ver_7_11) {
-    logger('log4jの設定ファイルをダウウンロード中');
-    await download_xml_7_11(serverPath);
+    await progress.withPlain(() => download_xml_7_11(serverPath), {
+      title: {
+        key: 'server.version.getLog4jSettingFile',
+        args: {
+          path: xml_7_11,
+        },
+      },
+    });
     return '-Dlog4j.configurationFile=log4j2_17-111.xml';
   }
 

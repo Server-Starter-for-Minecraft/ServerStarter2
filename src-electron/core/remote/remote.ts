@@ -1,8 +1,8 @@
 import { RemoteOperator } from './base';
-import { Failable } from 'app/src-electron/util/error/failable';
 import { githubRemoteOperator } from './github/git';
 import { Path } from 'src-electron/util/path';
 import { Remote } from 'src-electron/schema/remote';
+import { Failable } from 'app/src-electron/schema/error';
 
 export const remoteOperators: {
   [R in Remote as R['type']]: RemoteOperator<Remote>;
