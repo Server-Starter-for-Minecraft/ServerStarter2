@@ -13,3 +13,7 @@ export type ErrorMessage = {
     arg: FlattenErrorMessageTypes[K];
   };
 }[keyof FlattenErrorMessageTypes];
+
+export type Failable<T> = T | ErrorMessage;
+
+export type WithError<T> = { value: T; errors: ErrorMessage[] };
