@@ -1,12 +1,12 @@
 import { LocalSave, LocalSaveContainer } from 'app/src-electron/schema/system';
 import { Path } from 'app/src-electron/util/path';
 import { asyncMap } from 'app/src-electron/util/objmap';
-import { Failable } from 'app/src-electron/util/error/failable';
 import { BytesData } from 'app/src-electron/util/bytesData';
 import { ImageURI } from 'app/src-electron/schema/brands';
-import { WithError, withError } from 'app/src-electron/util/error/witherror';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { Failable, WithError } from 'app/src-electron/schema/error';
+import { withError } from 'app/src-electron/util/error/witherror';
 
 export async function getLocalSaveData(
   container: LocalSaveContainer

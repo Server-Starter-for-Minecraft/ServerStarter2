@@ -2,8 +2,8 @@ import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { worldContainerToPath } from './worldContainer';
-import { Failable, failabilify } from 'app/src-electron/util/error/failable';
-import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { failabilify } from 'app/src-electron/util/error/failable';
+import { withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { genUUID } from 'app/src-electron/tools/uuid';
 import { WorldSettings, serverJsonFile } from './files/json';
@@ -21,7 +21,7 @@ import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { ErrorMessage } from 'app/src-electron/schema/error';
+import { ErrorMessage, Failable, WithError } from 'app/src-electron/schema/error';
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {

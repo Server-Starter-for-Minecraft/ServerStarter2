@@ -1,4 +1,3 @@
-import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from '../../util/path';
 import { asyncMap } from '../../util/objmap';
 import { NEW_WORLD_NAME } from '../const';
@@ -13,12 +12,12 @@ import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
 import { WorldHandler } from './handler';
-import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { serverJsonFile } from './files/json';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { ProgressChannel } from 'app/src-electron/schema/progress';
+import { Failable, WithError } from 'app/src-electron/schema/error';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -88,6 +87,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
   const vanillaVersions = await vanillaVersionLoader.getAllVersions(true);
   if (isError(vanillaVersions)) return withError(vanillaVersions);
 
+  // TODO: なぜかFailableが消えない
   const latestRelease = vanillaVersions.find((ver) => ver.release);
 
   const systemSettings = await getSystemSettings();
@@ -165,8 +165,7 @@ export async function deleteWorld(
  * ワールドを起動する
  */
 export async function runWorld(
-  worldID: WorldID,
-  channel: ProgressChannel
+  worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);

@@ -8,9 +8,7 @@ import {
 } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
-import { Failable } from '../util/error/failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
-import { WithError } from '../util/error/witherror';
 import {
   DatapackData,
   CacheFileData,
@@ -19,9 +17,8 @@ import {
   NewFileData,
   CustomMapData,
 } from '../schema/filedata';
-import { ErrorMessage } from '../schema/error';
+import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
-import { GroupProgress } from '../schema/progress';
 
 /**
  * ## APIの利用方法
@@ -55,8 +52,8 @@ export interface API extends IAPI {
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;
 
-    /** サーバー実行(前|後)の進捗画面表示 */
-    Progress: (world: WorldID, options: GroupProgress) => void;
+    /** サーバー実行(前|後)の進捗画面表示 未実装 */
+    Progress: (world: WorldID) => void;
 
     /** コンソールに文字列を追加 */
     AddConsole: (world: WorldID, chunk: string) => void;
