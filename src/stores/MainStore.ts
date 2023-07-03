@@ -8,9 +8,14 @@ export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
       selectedWorldID: '' as WorldID,
-      worldList: {} as Record<WorldID, WorldEdited>,
       newWorlds: [] as WorldID[]
     };
+  },
+  getters: {
+    worldList() {
+      const worldStore = useWorldStore()
+      return worldStore.worldList
+    }
   },
   actions: {
     /**
@@ -47,7 +52,7 @@ export const useMainStore = defineStore('mainStore', {
           this.newWorlds.push(world.id)
           this.selectedWorldID = world.id
         },
-        '新規ワールドをの作成に失敗しました'
+        '新規ワールドの作成に失敗しました'
       )
     },
     /**
@@ -58,3 +63,15 @@ export const useMainStore = defineStore('mainStore', {
     }
   },
 });
+
+/**
+ * Worldの変更を検知するためのStore
+ * TODO: mainStoreに統合するための方法を検討
+ */
+export const useWorldStore = defineStore('worldStore', {
+  state: () => {
+    return {
+      worldList: {} as Record<WorldID, WorldEdited>,
+    }
+  }
+})

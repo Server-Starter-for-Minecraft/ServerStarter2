@@ -1,6 +1,6 @@
 import { versionTypes } from 'app/src-electron/schema/version';
 import { checkError } from './components/Error/Error';
-import { useMainStore } from './stores/MainStore';
+import { useMainStore, useWorldStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import { isValid } from './scripts/error';
 import { fromEntries, keys } from './scripts/obj';
@@ -9,6 +9,7 @@ export async function initWindow() {
   // storeの初期化
   const sysStore = useSystemStore();
   const mainStore = useMainStore();
+  const worldStore = useWorldStore();
 
   // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み
@@ -29,7 +30,7 @@ export async function initWindow() {
   );
 
   const localWorlds = worlds.map(errorWorld => errorWorld.value).filter(isValid);
-  mainStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
+  worldStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
 
   if (Object.keys(mainStore.worldList).length === 0) {
     await mainStore.createNewWorld()

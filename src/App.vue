@@ -1,14 +1,18 @@
 <script setup lang="ts">
+import { toRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
-import { setRouter } from './components/Error/Error';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { useSystemStore } from './stores/SystemStore';
+import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { checkError, setRouter } from 'src/components/Error/Error';
 import { deepCopy } from './scripts/deepCopy';
 import PopupDialog from './components/util/popupDialog.vue';
 
 const sysStore = useSystemStore();
+const mainStore = useMainStore()
+const worldStore = useWorldStore()
 const consoleStore = useConsoleStore()
 
 // routerを定義
@@ -36,6 +40,7 @@ window.API.onUpdateSystemSettings((_event, settings) => {
 
 // Windowの起動時処理
 firstProcess()
+setSubscribe()
 
 
 // ユーザー設定を反映する
@@ -58,6 +63,20 @@ async function firstProcess() {
 
   // 起動時処理の開始
   router.push('/init')
+}
+
+function setSubscribe() {
+  worldStore.$subscribe((mutation, state) => {
+    if (!mainStore.newWorlds.includes(mainStore.selectedWorldID)) {
+      window.API.invokeSetWorld(toRaw(mainStore.world())).then(v => {
+        checkError(
+          v.value,
+          undefined,
+          'ワールドの設定を保存できませんでした'
+        )
+      })
+    }
+  })
 }
 </script>
 
