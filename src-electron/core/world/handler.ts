@@ -27,7 +27,6 @@ import {
   WithError,
 } from 'app/src-electron/schema/error';
 import { PlainProgressor, genWithPlain } from '../progress/progress';
-import { PlainProgress, deleted } from 'app/src-electron/schema/progress';
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
@@ -104,7 +103,9 @@ export class WorldHandler {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
     const withPlain = genWithPlain(progress);
 
-    const worldSettings = await withPlain(this.loadLocalServerJson, {
+    const loadLocalServerJson = () => this.loadLocalServerJson();
+
+    const worldSettings = await withPlain(loadLocalServerJson, {
       title: {
         key: 'server.remote.check',
       },
@@ -133,7 +134,9 @@ export class WorldHandler {
     const withPlain = genWithPlain(progress);
 
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    const worldSettings = await withPlain(this.loadLocalServerJson, {
+    const loadLocalServerJson = () => this.loadLocalServerJson();
+
+    const worldSettings = await withPlain(loadLocalServerJson, {
       title: {
         key: 'server.remote.check',
       },
@@ -189,8 +192,10 @@ export class WorldHandler {
     const pullResult = this.pull(progress);
     if (isError(pullResult)) return withError(pullResult);
 
+    const loadLocalServerJson = () => this.loadLocalServerJson();
+
     // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
-    const worldSettings = await withPlain(this.loadLocalServerJson, {
+    const worldSettings = await withPlain(loadLocalServerJson, {
       title: {
         key: 'server.local.checkUsing',
       },
@@ -344,7 +349,8 @@ export class WorldHandler {
       );
 
     // ワールド情報を取得
-    const loadResult = await progress.withPlain(this.loadAsLocalWorld, {
+    const loadAsLocalWorld = () => this.loadAsLocalWorld();
+    const loadResult = await progress.withPlain(loadAsLocalWorld, {
       title: { key: 'server.local.loading' },
     });
 
@@ -412,7 +418,7 @@ export class WorldHandler {
     this.run = runPromise;
 
     // タイトルを削除
-    progress.title = deleted;
+    progress.title = null;
 
     // サーバーの終了を待機
     const serverResult = await runPromise;
@@ -440,7 +446,8 @@ export class WorldHandler {
     if (isError(serverResult)) return withError(serverResult);
 
     // ワールド情報を再取得
-    return await progress.withPlain(this.load, {
+    const load = () => this.load();
+    return await progress.withPlain(load, {
       title: {
         key: 'server.local.reloading',
       },

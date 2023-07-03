@@ -6,7 +6,6 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { PlainProgressor } from '../../progress/progress';
-import { deleted } from 'app/src-electron/schema/progress';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -34,7 +33,7 @@ export async function checkEula(
       serverCwdPath,
       worldId
     );
-    progress.description = deleted;
+    progress.description = null;
     // 生成に失敗した場合エラー
     if (isError(result)) return result;
   }
