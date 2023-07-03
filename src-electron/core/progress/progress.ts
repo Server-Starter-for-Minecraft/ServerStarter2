@@ -1,14 +1,12 @@
 import { genUUID } from 'app/src-electron/tools/uuid';
 import {
   ConsoleProgress,
-  Deleted,
   NumericProgress,
   PlainProgress,
   Progress,
-  deleted,
 } from '../../schema/progress';
 
-type ProgressorHandler<T extends Progress> = (value: T | Deleted) => void;
+type ProgressorHandler<T extends Progress> = (value: T | null) => void;
 
 abstract class IProgressor<T extends Progress> {
   handler: ProgressorHandler<T>;
@@ -41,14 +39,14 @@ abstract class IProgressor<T extends Progress> {
   }
 
   end() {
-    this.handler(deleted);
+    this.handler(null);
   }
 
   private subProgressor<T extends Progress, S extends IProgressor<T>>(
     gen: (handler: ProgressorHandler<T>) => S
   ): S {
     const id = genUUID();
-    const update = this.update;
+    const update = (key: any, value: T[any]) => this.update(key, value);
     const subHandler: ProgressorHandler<T> = (value) => {
       // TODO: あやしいas
       const sub: T['sub'] = { [id]: value } as T['sub'];
