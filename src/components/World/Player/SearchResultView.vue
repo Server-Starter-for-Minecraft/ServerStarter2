@@ -9,7 +9,8 @@ const playerStore = usePlayerStore()
 
 <template>
   <q-card flat bordered class="card q-ma-sm">
-    <q-card-section class="q-pa-sm">
+    <!-- TODO: v-ifに候補が0でないことの条件式を入れる -->
+    <q-card-section v-if="false" class="q-pa-sm">
       <q-list separator>
         <!-- ここのUUIDには外部Serverから検索してきた結果のUUIDを入力する（UUIDではなく，直接名前とアバターを指定する？） -->
         <!-- <SearchResultItem :uuid="" /> -->
@@ -19,6 +20,9 @@ const playerStore = usePlayerStore()
           <SearchResultItem :uuid="p.uuid" />
         </template>
       </q-list>
+    </q-card-section>
+    <q-card-section v-else>
+      <p class="q-my-xs text-center">検索結果無し</p>
     </q-card-section>
   </q-card>
 </template>
