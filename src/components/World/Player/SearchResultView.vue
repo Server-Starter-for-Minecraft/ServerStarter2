@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { Ref, computed, onMounted, ref } from 'vue';
+import { Player, PlayerSetting } from 'app/src-electron/schema/player';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
-import { PlayerSetting } from 'app/src-electron/schema/player';
+import { isValid } from 'src/scripts/error';
 import SearchResultItem from './utils/SearchResultItem.vue';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 
 interface Prop {
   modelValue: PlayerSetting[]
@@ -10,7 +13,10 @@ interface Prop {
 const prop = defineProps<Prop>()
 const emit = defineEmits(['update:model-value'])
 
+const sysStore = useSystemStore()
 const playerStore = usePlayerStore()
+
+const newPlayerCandidate: Ref<Player | undefined> = ref()
 
 const playerModel = computed({
   get() {
@@ -20,19 +26,39 @@ const playerModel = computed({
     emit('update:model-value', newValue);
   },
 })
+
+async function getNewPlayer(searchName: string) {
+  const player = await window.API.invokeGetPlayer(searchName, 'name')
+  newPlayerCandidate.value = isValid(player) ? player : undefined
+  return newPlayerCandidate.value
+}
+
+function addPlayer(name: string, uuid: PlayerUUID, addSystem = false) {
+  // worldのプレイヤー一覧に追加
+  playerModel.value.push({
+    name: name,
+    uuid: uuid,
+  })
+
+  if (addSystem) {
+    sysStore.systemSettings().player.players.push(uuid)
+  }
+}
 </script>
 
 <template>
   <q-card flat bordered class="card q-ma-sm">
     <!-- TODO: v-ifに候補が0でないことの条件式を入れる -->
-    <q-card-section v-if="false" class="q-pa-sm">
+    <q-card-section
+      v-if="(sysStore.systemSettings().player.players.filter(uuid => playerModel.find(p => p.uuid === uuid) === undefined).length + (getNewPlayer(playerStore.searchName) !== void 0 ? 1 : 0)) !== 0"
+      class="q-pa-sm"
+    >
       <q-list separator>
-        <!-- ここのUUIDには外部Serverから検索してきた結果のUUIDを入力する（UUIDではなく，直接名前とアバターを指定する？） -->
-        <!-- <SearchResultItem :uuid="" /> -->
-        <!-- TODO: 本来はsearchPlayersの引数には登録済みのプレイヤー全てを含んだリストを入れるべき -->
-        <!-- この時に，既にWorldに登録済みのプレイヤーは候補への表示から除外する -->
-        <template v-for="p in playerStore.searchPlayers(playerModel)" :key="p">
-          <SearchResultItem :uuid="p.uuid" />
+        <!-- プレイヤー名からプレイヤーの検索を行う -->
+        <SearchResultItem v-if="newPlayerCandidate !== void 0" v-model="playerModel" :uuid="newPlayerCandidate?.uuid" :player-data="newPlayerCandidate" @add-player="addPlayer" />
+        <!-- 過去に登録実績のあるプレイヤー一覧 -->
+        <template v-for="uuid in sysStore.systemSettings().player.players.filter(uuid => playerModel.find(p => p.uuid === uuid) === undefined)" :key="uuid">
+          <SearchResultItem v-model="playerModel" :uuid="uuid" @add-player="addPlayer" />
         </template>
       </q-list>
     </q-card-section>

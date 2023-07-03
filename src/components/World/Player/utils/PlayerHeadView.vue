@@ -5,14 +5,15 @@ import { Player } from 'app/src-electron/schema/player';
 import { checkError } from 'src/components/Error/Error';
 
 interface Prop {
-  uuid: PlayerUUID
   size?: string
+  uuid: PlayerUUID
+  playerData?: Player
 }
 const prop = defineProps<Prop>()
-let playerData: Ref<Player | undefined> = ref()
+const pData: Ref<Player | undefined> = ref()
 
 onMounted(async () => {
-  playerData.value = await getPlayerName()
+  pData.value = prop.playerData ?? await getPlayerName()
 })
 
 async function getPlayerName() {
@@ -23,8 +24,8 @@ async function getPlayerName() {
 
 <template>
   <q-avatar square :size="size">
-    <q-img :src="playerData?.avatar" class="avaterImg" />
-    <q-img :src="playerData?.avatar_overlay" class="avaterImg" style="width: 110%;" />
+    <q-img :src="pData?.avatar" class="avaterImg" />
+    <q-img :src="pData?.avatar_overlay" class="avaterImg" style="width: 110%;" />
   </q-avatar>
 </template>
 

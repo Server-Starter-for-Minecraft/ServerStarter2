@@ -3,6 +3,7 @@ import { propertyClasses } from 'src/components/World/Property/classifications';
 import { useSystemStore } from './SystemStore';
 import { OpLevel, PlayerSetting } from 'app/src-electron/schema/player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { checkError } from 'src/components/Error/Error';
 
 export const usePropertyStore = defineStore('propertyStore', {
   state: () => {
@@ -75,14 +76,15 @@ export const usePlayerStore = defineStore('playerStore', {
      * プレイヤーの検索
      */
     searchPlayers(players: PlayerSetting[]) {
-      const sysStore = useSystemStore()
-      const playersData = sysStore.systemSettings().player.players
-
+      async function getPlayerName(uuid: PlayerUUID) {
+        const player = await window.API.invokeGetPlayer(uuid, 'uuid')
+        return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name ?? ''
+      }
+      
       // TODO: Playersを名前でソート
-
       if (this.searchName !== '') {
         return players.filter(
-          player => playersData[player.uuid].name.match(this.searchName)
+          async (player) => (await getPlayerName(player.uuid)).match(this.searchName)
         );
       }
       
