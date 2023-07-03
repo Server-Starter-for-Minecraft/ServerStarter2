@@ -22,7 +22,6 @@ import { fixPlayerGroup } from './player';
 import { PlayerUUID, WorldContainer } from 'app/src-electron/schema/brands';
 import { fixImageURI, fixPlayerUUID, fixWorldContainer } from './brands';
 import { fixGithubRemoteSetting } from './remote';
-import { fixFileOrNewData } from './filedata';
 import {
   DEFAULT_LOCALE,
   DEFAULT_LOCAL_SAVE_CONTAINER,
@@ -86,7 +85,7 @@ export const fixWorldContainers = objectFixer<WorldContainers>(
 
 export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
   {
-    groups: arrayFixer(fixPlayerGroup, true),
+    groups: recordFixer(fixPlayerGroup, true),
     players: arrayFixer(fixPlayerUUID, true),
   },
   true
