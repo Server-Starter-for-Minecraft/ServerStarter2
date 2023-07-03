@@ -18,6 +18,7 @@ import { validateNewWorldName } from './name';
 import { serverJsonFile } from './files/json';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { ProgressChannel } from 'app/src-electron/schema/progress';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -164,7 +165,8 @@ export async function deleteWorld(
  * ワールドを起動する
  */
 export async function runWorld(
-  worldID: WorldID
+  worldID: WorldID,
+  channel: ProgressChannel
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);

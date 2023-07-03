@@ -20,6 +20,7 @@ import { getPlayer } from '../core/player/main';
 import { getLocalSaveData } from '../core/user/localSave';
 import { getCacheContents } from '../core/stores/cache';
 import { pickDialog } from '../core/world/dialog';
+import { getProgressChannel } from '../core/progress/progress';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -56,5 +57,7 @@ export const getBackListener = (
     GetLocalSaveData: getLocalSaveData,
 
     PickDialog: pickDialog(windowGetter),
+
+    GetProgressChannel: getProgressChannel,
   },
 });

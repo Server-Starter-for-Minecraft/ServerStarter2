@@ -27,8 +27,8 @@ export const versionManifestPath = versionsCachePath.child(
 
 export const tempPath = mainPath.child('temp');
 
-/** spigotをビルドするための一時パス */
-export const spigotBuildPath = tempPath.child('spigotBuild');
+/** spigotをビルドするためのキャッシュパス */
+export const spigotBuildPath = cachePath.child('spigotBuild');
 
 /** zipファイルを展開するための一時パス */
 export const unzipPath = tempPath.child('zip');

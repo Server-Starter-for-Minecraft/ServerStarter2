@@ -21,6 +21,7 @@ import {
 } from '../schema/filedata';
 import { ErrorMessage } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
+import { GroupProgress } from '../schema/progress';
 
 /**
  * ## APIの利用方法
@@ -54,19 +55,11 @@ export interface API extends IAPI {
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;
 
-    /** サーバー実行(前|後)の画面表示 */
-    UpdateStatus: (
-      world: WorldID,
-      message: string,
-      current?: number,
-      total?: number
-    ) => void;
+    /** サーバー実行(前|後)の進捗画面表示 */
+    Progress: (world: WorldID, options: GroupProgress) => void;
 
     /** コンソールに文字列を追加 */
     AddConsole: (world: WorldID, chunk: string) => void;
-
-    /** mainプロセス側かでSystemSettingが変更された場合に走る */
-    UpdateSystemSettings: (settings: SystemSettings) => void;
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;

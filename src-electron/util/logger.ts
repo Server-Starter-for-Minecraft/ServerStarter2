@@ -1,6 +1,6 @@
 import log4js from 'log4js';
-import { Path } from '../path';
-import { asyncForEach } from '../objmap';
+import { Path } from './path';
+import { asyncForEach } from './objmap';
 
 const LATEST = 'latest';
 
@@ -41,7 +41,7 @@ function formatDate(date: Date) {
   return `${YYYY}-${MM}-${DD}-${HH}`;
 }
 
-export async function archive(logDir: Path) {
+async function archive(logDir: Path) {
   // .latestを移動
   const latestLog = logDir.child(LATEST);
   if (latestLog.exists()) {
