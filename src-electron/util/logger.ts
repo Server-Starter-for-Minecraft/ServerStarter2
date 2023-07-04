@@ -1,6 +1,8 @@
 import log4js from 'log4js';
 import { Path } from './path';
 import { asyncForEach } from './objmap';
+import { createGzip } from 'zlib';
+import { createReadStream, createWriteStream } from 'fs';
 
 const LATEST = 'latest.log';
 
@@ -44,7 +46,7 @@ function formatDate(date: Date) {
 function getArchivePath(logDir: Path, time: Date) {
   let i = 0;
   while (true) {
-    const path = logDir.child(formatDate(time) + `-${i}.log`);
+    const path = logDir.child(formatDate(time) + `-${i}.log.gz`);
     if (!path.exists()) {
       return path;
     }
@@ -53,12 +55,17 @@ function getArchivePath(logDir: Path, time: Date) {
 }
 
 async function archive(logDir: Path) {
-  // .latestを移動
+  // .latestを圧縮してアーカイブ
   const latestLog = logDir.child(LATEST);
   if (latestLog.exists()) {
-    await latestLog.moveTo(
-      getArchivePath(logDir, await latestLog.lastUpdateTime())
+    const archivePath = getArchivePath(
+      logDir,
+      await latestLog.lastUpdateTime()
     );
+    const gzip = createGzip();
+    const input = createReadStream(latestLog.path);
+    const output = createWriteStream(archivePath.path);
+    input.pipe(gzip).pipe(output);
   }
 
   // 一週間前の日付
@@ -67,7 +74,7 @@ async function archive(logDir: Path) {
 
   await asyncForEach(await logDir.iter(), async (path) => {
     // 最終更新が一週間以上前のYYY-MM-DD-HH-I.logを削除する
-    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}-\d+.log/);
+    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}-\d+.log.gz/);
     if (match) {
       const updateDate = await path.lastUpdateTime();
       if (updateDate < thresholdDate) {
@@ -91,7 +98,6 @@ export function getRootLogger(logDir: Path): {
         type: 'file',
         filename: logDir.child(LATEST).str(),
         layout: { type: 'custom', max: 500 },
-        compress: true,
       },
       out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
       file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
