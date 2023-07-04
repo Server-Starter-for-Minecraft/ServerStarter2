@@ -30,6 +30,7 @@ import { PlainProgressor, genWithPlain } from '../progress/progress';
 import { sleep } from 'app/src-electron/util/sleep';
 import { api } from '../api';
 import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
+import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -464,6 +465,8 @@ export class WorldHandler {
 
     // シャットダウンがキャンセルされた時何もせずに終了
     if (!doShutDown) return;
+
+    onQuit(() => console.log('QUIIITQETTETQTTETQEQ'), true);
 
     // アプリケーションを終了
     closeServerStarterAndShutDown();

@@ -1,19 +1,13 @@
-import { api } from '../core/api';
-import { fromRuntimeError } from '../util/error/error';
 import { shutdown } from '../util/shutdown';
+import { onQuit } from './lifecycle';
 
 /**
  * アプリケーションを終了してPCをシャットダウン
  */
 export async function closeServerStarterAndShutDown() {
-  // これほんとに同期的に処理される？
-  _app.quit();
-  const result = await shutdown();
-  if (result !== null) {
-    // シャットダウンに失敗したらエラーをフロントに送ろうとする
-    // ...けどこの時点でフロント画面が存在しないと思う
-    api.send.Error(fromRuntimeError(result));
-  }
+  await onQuit.invoke();
+  _app.exit();
+  await shutdown();
 }
 
 let _app: Electron.App;

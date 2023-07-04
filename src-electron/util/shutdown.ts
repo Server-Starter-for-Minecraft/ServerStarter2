@@ -16,7 +16,7 @@ export function shutdown() {
 
 function promiseProcess(command: string) {
   return new Promise<ExecException | null>((resolve) => {
-    exec('shutdown /s /t 0', (error) => {
+    exec(command, (error) => {
       resolve(error);
     });
   });
