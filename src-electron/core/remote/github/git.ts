@@ -1,4 +1,4 @@
-import { Failable, failabilify } from 'app/src-electron/util/error/failable';
+import { failabilify } from 'app/src-electron/util/error/failable';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
@@ -6,6 +6,7 @@ import { RemoteOperator } from '../base';
 import { GithubRemote } from 'src-electron/schema/remote';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { Failable } from 'app/src-electron/schema/error';
 
 export const githubRemoteOperator: RemoteOperator<GithubRemote> = {
   pullWorld,
