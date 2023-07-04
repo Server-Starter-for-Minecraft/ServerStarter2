@@ -124,6 +124,8 @@ const api: FrontAPI = {
 
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
 
+  invokeGetGlobalIP: invoke('GetGlobalIP'),
+
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 
   invokePickDialog: invoke('PickDialog'),

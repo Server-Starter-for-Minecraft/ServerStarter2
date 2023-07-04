@@ -185,7 +185,12 @@ export async function runWorld(
     }
   );
 
-  return await handler.run(progress);
+  const result = await handler.run(progress);
+
+  // プログレスを削除
+  api.send.Progress(worldID, null);
+
+  return result;
 }
 
 /**
