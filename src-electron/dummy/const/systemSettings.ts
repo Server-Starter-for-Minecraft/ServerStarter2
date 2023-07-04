@@ -64,13 +64,18 @@ export const dummySystemSettings: SystemSettings = {
     },
   },
   player: {
-    groups: [
-      {
+    groups: {
+      'testGroup': {
         name: 'testGroup',
+        color: '#ff0000',
         players: [player1UUID, player2UUID, player3UUID],
       },
-    ],
-    players: [player1, player2, player3],
+    },
+    players: {
+      [player1UUID]: player1,
+      [player2UUID]: player2,
+      [player3UUID]: player3,
+    },
   },
   user: {
     eula: true,

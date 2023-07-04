@@ -85,7 +85,7 @@ export const fixWorldContainers = objectFixer<WorldContainers>(
 
 export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
   {
-    groups: arrayFixer(fixPlayerGroup, true),
+    groups: recordFixer(fixPlayerGroup, true),
     players: arrayFixer(fixPlayerUUID, true),
   },
   true

@@ -65,7 +65,7 @@ export type WorldContainers = {
 };
 
 export type SystemPlayerSetting = {
-  groups: PlayerGroup[];
+  groups: { [name: string]: PlayerGroup };
   players: PlayerUUID[];
 };
 

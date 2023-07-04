@@ -1,4 +1,4 @@
-import { config } from '../stores/config';
+import { versionConfig } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
 import { Failable } from '../../util/error/failable';
 import { versionManifestPath } from '../const';
@@ -30,7 +30,7 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
 
   if (isValid(response)) {
     // 成功した場合ローカルに保存
-    config.set('version_manifest_v2_sha1', await response.hash('sha1'));
+    versionConfig.set('version_manifest_v2_sha1', await response.hash('sha1'));
     versionManifestPath.write(response);
   } else {
     // 失敗した場合ローカルから取得
@@ -53,7 +53,7 @@ async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
 
   if (isError(manifestData)) return manifestData;
 
-  const manifestSha1 = config.get('version_manifest_v2_sha1');
+  const manifestSha1 = versionConfig.get('version_manifest_v2_sha1');
   if ((await manifestData.hash('sha1')) !== manifestSha1)
     return errorMessage.data.hashNotMatch({
       hashtype: 'sha1',
