@@ -1,20 +1,33 @@
 import log4js from 'log4js';
 import { Path } from './path';
 import { asyncForEach } from './objmap';
-import { createGzip } from 'zlib';
-import { createReadStream, createWriteStream } from 'fs';
 import { c } from 'tar';
 
 const LATEST = 'latest.log';
 
-function compressArchive(sourcePath: Path, targetPath: Path) {
-  return c(
+// ログファイルをtar.gzに圧縮して保存
+async function compressArchive(logDir: Path, latestLog: Path) {
+  const [logName, archivePath] = getArchivePath(
+    logDir,
+    await latestLog.lastUpdateTime()
+  );
+
+  const newlogPath = logDir.child(logName);
+  await newlogPath.remove(true);
+
+  await latestLog.moveTo(newlogPath);
+
+  await c(
     {
       gzip: true,
-      file: targetPath.path,
+      file: archivePath.path,
+      cwd: logDir.path,
     },
-    [sourcePath.path]
+    [logName]
   );
+  await latestLog.moveTo(logDir.child(logName));
+
+  await newlogPath.remove();
 }
 
 log4js.addLayout('custom', function (config: { max?: number }) {
@@ -56,10 +69,11 @@ function formatDate(date: Date) {
 
 function getArchivePath(logDir: Path, time: Date) {
   let i = 0;
+  const format = formatDate(time);
   while (true) {
-    const path = logDir.child(formatDate(time) + `-${i}.tar.gz`);
+    const path = logDir.child(`${format}-${i}.tar.gz`);
     if (!path.exists()) {
-      return path;
+      return [`${format}-${i}.log`, path] as const;
     }
     i += 1;
   }
@@ -69,11 +83,7 @@ async function archive(logDir: Path) {
   // .latestを圧縮してアーカイブ
   const latestLog = logDir.child(LATEST);
   if (latestLog.exists()) {
-    const archivePath = getArchivePath(
-      logDir,
-      await latestLog.lastUpdateTime()
-    );
-    await compressArchive(latestLog, archivePath);
+    await compressArchive(logDir, latestLog);
   }
 
   // 一週間前の日付
