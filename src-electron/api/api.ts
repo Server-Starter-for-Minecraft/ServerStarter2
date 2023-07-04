@@ -65,6 +65,16 @@ export interface API extends IAPI {
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
     AgreeEula: (world: WorldID, url: string) => Promise<boolean>;
+
+    /**
+     * PC本体をシャットダウンするかどうかのチェック
+     * すべてのサーバーが停止&自動シャットダウンがONのときに発火
+     * タイムアウトを設けてresolveすることを想定
+     *
+     * true : ServerStarterを終了し、本体を即時シャットダウン
+     * false : ServerStarterの起動を継続し、シャットダウンしない
+     */
+    ChechShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る */
