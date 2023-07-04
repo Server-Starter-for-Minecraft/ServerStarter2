@@ -18,7 +18,7 @@ export const mainPath = userDataPath;
 
 export const cachePath = mainPath.child('cache');
 
-export const runtimePath = mainPath.child('bin/runtime');
+export const runtimePath = cachePath.child('bin/runtime');
 export const versionsCachePath = cachePath.child('versions');
 
 export const versionManifestPath = versionsCachePath.child(
