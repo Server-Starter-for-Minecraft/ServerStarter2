@@ -63,6 +63,7 @@ async function removeWorld() {
     <SsInput
       v-model="mainStore.world.name"
       :label="$t('home.worldName.enterName')"
+      :debounce="200"
     />
 
     <!-- TODO: バージョン一覧の取得 -->

@@ -17,11 +17,11 @@ const playerStore = usePlayerStore()
 <template>
   <div v-if="isValid(mainStore.world.players)" class="column fit q-px-md">
     <div class="row">
-      <!-- TODO: 勢いよく入力した場合に新規プレイヤーが表示されない問題 -->
       <SsInput
         v-model="playerStore.searchName"
         dense
         :label="$t('player.search')"
+        :debounce="200"
         class="q-py-md col"
         @clear="() => playerStore.searchName = ''"
       />

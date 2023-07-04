@@ -9,6 +9,7 @@ interface Prop {
   label?: string
   dense?: boolean
   autofocus?: boolean
+  debounce?: number
   rules?: ValidationRule[]
   onClear?: (value: string) => void
 }
@@ -33,6 +34,7 @@ const model = computed({
     :dense="dense"
     :autofocus="autofocus"
     :rules="rules"
+    :debounce="debounce"
     clearable
     @clear="onClear"
     class="font"
