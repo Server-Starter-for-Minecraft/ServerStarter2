@@ -27,6 +27,9 @@ import {
   WithError,
 } from 'app/src-electron/schema/error';
 import { PlainProgressor, genWithPlain } from '../progress/progress';
+import { sleep } from 'app/src-electron/util/sleep';
+import { api } from '../api';
+import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -105,7 +108,7 @@ class PromiseSpooler {
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
-  private static worldPathMap: Record<WorldID, WorldHandler> = {};
+  private static worldHandlerMap: Record<WorldID, WorldHandler> = {};
 
   promiseSpooler: PromiseSpooler;
   name: WorldName;
@@ -121,9 +124,16 @@ export class WorldHandler {
     this.runner = undefined;
   }
 
+  /** 起動中のワールドが一つでもあるかどうか */
+  private static runningWorldExists() {
+    return Object.values(WorldHandler.worldHandlerMap).some(
+      (x) => x.runner !== undefined
+    );
+  }
+
   /** WorldAbbr/WorldNewができた段階でここに登録し、idを生成 */
   static register(name: WorldName, container: WorldContainer): WorldID {
-    const registered = Object.entries(WorldHandler.worldPathMap).find(
+    const registered = Object.entries(WorldHandler.worldHandlerMap).find(
       ([, value]) => value.container == container && value.name == name
     );
     // 既に登録済みの場合登録されたidを返す
@@ -131,15 +141,15 @@ export class WorldHandler {
       return registered[0] as WorldID;
     }
     const id = genUUID() as WorldID;
-    WorldHandler.worldPathMap[id] = new WorldHandler(id, name, container);
+    WorldHandler.worldHandlerMap[id] = new WorldHandler(id, name, container);
     return id;
   }
 
   // worldIDからWorldHandlerを取得する
   static get(id: WorldID): Failable<WorldHandler> {
-    if (!(id in WorldHandler.worldPathMap))
+    if (!(id in WorldHandler.worldHandlerMap))
       return errorMessage.core.world.invalidWorldId({ id });
-    return WorldHandler.worldPathMap[id];
+    return WorldHandler.worldHandlerMap[id];
   }
 
   /** 現在のワールドの保存場所を返す */
@@ -433,13 +443,40 @@ export class WorldHandler {
   private async deleteExec(): Promise<WithError<Failable<undefined>>> {
     const result = await failabilify(() => this.getSavePath().remove(true))();
     if (isError(result)) return withError(result);
-    delete WorldHandler.worldPathMap[this.id];
+    delete WorldHandler.worldHandlerMap[this.id];
     return withError(undefined);
+  }
+
+  /** すべてのサーバーが終了した場合のみシャットダウン */
+  private async shutdown() {
+    // TODO: この実装ひどい
+    await sleep(1);
+
+    // 他のサーバーが実行中の時何もせずに終了
+    if (WorldHandler.runningWorldExists()) return;
+
+    // autoShutDown:false の時何もせずに終了
+    const sys = await getSystemSettings();
+    if (!sys.user.autoShutDown) return;
+
+    // フロントエンドにシャットダウンするかどうかを問い合わせる
+    const doShutDown = await api.invoke.ChechShutdown();
+
+    // シャットダウンがキャンセルされた時何もせずに終了
+    if (!doShutDown) return;
+
+    // アプリケーションを終了
+    closeServerStarterAndShutDown();
   }
 
   async run(progress: PlainProgressor): Promise<WithError<Failable<World>>> {
     const func = () => this.runExec(progress);
-    return await this.promiseSpooler.spool(func);
+    const result = await this.promiseSpooler.spool(func);
+
+    // サーバーの実行に成功した場合のみシャットダウン(シャットダウンしないこともある)
+    if (isValid(result)) this.shutdown();
+
+    return result;
   }
 
   /** データを同期して サーバーを起動 */

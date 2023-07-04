@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { setupIPC } from './ipc/setup';
 import { onQuit } from './lifecycle/lifecycle';
+import { setServerStarterApp } from './lifecycle/exit';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -81,3 +82,6 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+/** exitをどこからでも呼べるように登録する */
+setServerStarterApp(app);
