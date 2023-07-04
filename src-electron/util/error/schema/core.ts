@@ -56,4 +56,6 @@ export type CoreErrors = {
     type: 'datapack' | 'plugin' | 'mod';
     path: string;
   }>;
+
+  failGetGlobalIP: ErrorMessageContent;
 };
