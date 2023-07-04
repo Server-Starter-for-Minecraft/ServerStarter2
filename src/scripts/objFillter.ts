@@ -18,3 +18,8 @@ export function recordKeyFillter<K extends string, V>(
   const entries = toEntries(rec).filter(([k,]) => predicate(k))
   return fromEntries(entries)
 }
+
+export async function asyncFilter<T>(array: T[], asyncCallback:(v: T) => Promise<boolean>) {
+  const bits = await Promise.all(array.map(asyncCallback));
+  return array.filter((_, i) => bits[i]);
+}

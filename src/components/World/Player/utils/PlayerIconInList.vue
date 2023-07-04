@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { useSystemStore } from 'src/stores/SystemStore';
+import { checkError } from 'src/components/Error/Error';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import PlayerHeadView from './PlayerHeadView.vue';
 
@@ -9,10 +10,15 @@ interface Prop {
 }
 const prop = defineProps<Prop>()
 
-const sysStore = useSystemStore()
 const playerStore = usePlayerStore()
 
-const playerData = sysStore.systemSettings().player.players[prop.uuid]
+const playerName = ref('')
+onMounted(async () => playerName.value = (await getPlayerName()) ?? '')
+
+async function getPlayerName() {
+  const player = await window.API.invokeGetPlayer(prop.uuid, 'uuid')
+  return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
+}
 </script>
 
 <template>
@@ -23,7 +29,7 @@ const playerData = sysStore.systemSettings().player.players[prop.uuid]
         <q-btn flat rounded dense icon="cancel" size="10px" @click="playerStore.unFocus(uuid)" class="cancelBtn" />
       </q-avatar>
       <q-item-label caption class="text-center q-pt-sm">
-        {{ playerData.name }}
+        {{ playerName }}
       </q-item-label>
     </q-item-section>
   </q-item>

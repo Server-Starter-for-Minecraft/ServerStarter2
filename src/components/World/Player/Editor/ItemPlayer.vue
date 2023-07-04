@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { useSystemStore } from 'src/stores/SystemStore';
+import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from '../utils/PlayerHeadView.vue';
 
 interface Prop {
@@ -21,11 +21,18 @@ const membersModel = computed({
   },
 })
 
-const sysStore = useSystemStore()
 const showDeleteBtn = ref(false)
+
+const playerName = ref('')
+onMounted(async () => playerName.value = (await getPlayerName()) ?? '')
 
 function removePlayer() {
   membersModel.value.splice(membersModel.value.indexOf(prop.uuid), 1)
+}
+
+async function getPlayerName() {
+  const player = await window.API.invokeGetPlayer(prop.uuid, 'uuid')
+  return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
 }
 </script>
 
@@ -39,7 +46,7 @@ function removePlayer() {
       <PlayerHeadView :uuid="uuid" size="1.5rem"/>
     </q-item-section>
 
-    <q-item-section>{{ sysStore.systemSettings().player.players[uuid].name }}</q-item-section>
+    <q-item-section>{{ playerName }}</q-item-section>
     
     <!-- プレイヤー数が１より大きい時にはプレイヤーが削除されてもOKだが、1人の時は削除できないようにする -->
     <q-item-section side>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import { isValid } from 'src/scripts/error';
@@ -9,9 +10,20 @@ import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView
 import PlayersOperationView from 'src/components/World/Player/PlayersOperationView.vue';
 import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
 import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
+import { PlayerSetting } from 'app/src-electron/schema/player';
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
+
+const searchedPlayers = ref([] as PlayerSetting[])
+onMounted(updatePlayers)
+
+async function updatePlayers() {
+  if (isValid(mainStore.world.players)) {
+    searchedPlayers.value = await playerStore.searchPlayers(mainStore.world.players)
+    console.log(searchedPlayers.value)
+  }
+}
 </script>
 
 <template>
@@ -19,6 +31,7 @@ const playerStore = usePlayerStore()
     <div class="row">
       <SsInput
         v-model="playerStore.searchName"
+        @update:model-value="updatePlayers"
         dense
         :label="$t('player.search')"
         :debounce="200"
@@ -45,7 +58,7 @@ const playerStore = usePlayerStore()
 
         <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
         <div class="row q-gutter-sm q-pa-sm">
-          <div v-for="player in playerStore.searchPlayers(mainStore.world.players)" :key="player.uuid" class="col-">
+          <div v-for="player in searchedPlayers" :key="player.uuid" class="col-">
             <PlayerCardView
               v-model="mainStore.world.players"
               :uuid="player.uuid"
@@ -73,7 +86,7 @@ const playerStore = usePlayerStore()
     <q-separator />
 
     <SelectedPlayersView />
-    <PlayersOperationView :disable="playerStore.focusCards.length === 0" />
+    <PlayersOperationView v-model="mainStore.world.players" :disable="playerStore.focusCards.length === 0" />
   </div>
 
   <!-- TODO: 画面の調整 -->

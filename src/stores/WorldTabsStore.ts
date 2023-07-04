@@ -4,6 +4,7 @@ import { useSystemStore } from './SystemStore';
 import { OpLevel, PlayerSetting } from 'app/src-electron/schema/player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { checkError } from 'src/components/Error/Error';
+import { asyncFilter } from 'src/scripts/objFillter';
 
 export const usePropertyStore = defineStore('propertyStore', {
   state: () => {
@@ -75,7 +76,7 @@ export const usePlayerStore = defineStore('playerStore', {
     /**
      * プレイヤーの検索
      */
-    searchPlayers(players: PlayerSetting[]) {
+    async searchPlayers(players: PlayerSetting[]) {
       async function getPlayerName(uuid: PlayerUUID) {
         const player = await window.API.invokeGetPlayer(uuid, 'uuid')
         return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name ?? ''
@@ -83,9 +84,7 @@ export const usePlayerStore = defineStore('playerStore', {
       
       // TODO: Playersを名前でソート
       if (this.searchName !== '') {
-        return players.filter(
-          async (player) => (await getPlayerName(player.uuid)).match(this.searchName)
-        );
+        return await asyncFilter(players, async p => (await getPlayerName(p.uuid)).toLowerCase().match(this.searchName) !== null)
       }
       
       return players;

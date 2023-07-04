@@ -1,19 +1,29 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { OpSetting } from 'app/src-electron/schema/player';
+import { OpSetting, PlayerSetting } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
-import { useMainStore } from 'src/stores/MainStore';
 import { generateGroup, iEditorDialogProps, iEditorDialogReturns } from './Editor/editorDialog';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import GroupEditorView from './Editor/GroupEditorView.vue';
 
 interface Prop {
+  modelValue: PlayerSetting[]
   disable: boolean
 }
-defineProps<Prop>()
+const prop = defineProps<Prop>()
+const emit = defineEmits(['update:model-value'])
+
+const playerModel = computed({
+  get() {
+    return prop.modelValue;
+  },
+  set(newValue) {
+    emit('update:model-value', newValue);
+  },
+})
 
 const $q = useQuasar()
-const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 
 function openEditor() {
@@ -31,8 +41,8 @@ function openEditor() {
 function removePlayer() {
   // フォーカスされているプレイヤーを削除
   playerStore.focusCards.forEach(selectedPlayerUUID => {
-    mainStore.world.players.splice(
-      mainStore.world.players.map(p => p.uuid).indexOf(selectedPlayerUUID), 1
+    playerModel.value.splice(
+      playerModel.value.map(p => p.uuid).indexOf(selectedPlayerUUID), 1
     )
   });
   // フォーカスのリセット
@@ -41,7 +51,7 @@ function removePlayer() {
 
 function setOP() {
   function setter(setVal?: OpSetting) {
-    mainStore.world.players.filter(
+    playerModel.value.filter(
       p => playerStore.focusCards.includes(p.uuid)
     ).forEach(p => {
       p.op = setVal

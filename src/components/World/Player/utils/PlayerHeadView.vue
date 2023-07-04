@@ -35,14 +35,13 @@ async function getPlayerName() {
 </script>
 
 <template>
-  <!-- TODO: 登録済みプレイヤーの画像が表示されない問題の修正 -->
-  <q-avatar square :size="size">
+  <q-avatar v-if="playerModel !== void 0" square :size="size">
     <q-img :src="playerModel?.avatar" class="avaterImg" />
     <q-img :src="playerModel?.avatar_overlay" class="avaterImg" style="width: 110%;" />
-    <!-- <div v-else>
-      <q-img :src="player.avatar" class="avaterImg" />
-      <q-img :src="player.avatar_overlay" class="avaterImg" style="width: 110%;" />
-    </div> -->
+  </q-avatar>
+  <q-avatar v-else square :size="size">
+    <q-img :src="player?.avatar" class="avaterImg" />
+    <q-img :src="player?.avatar_overlay" class="avaterImg" style="width: 110%;" />
   </q-avatar>
 </template>
 

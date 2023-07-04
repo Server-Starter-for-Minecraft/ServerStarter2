@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Ref, computed, onMounted, ref } from 'vue';
+import { Ref, computed, ref } from 'vue';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player, PlayerSetting } from 'app/src-electron/schema/player';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import { isValid } from 'src/scripts/error';
 import SearchResultItem from './utils/SearchResultItem.vue';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
 
 interface Prop {
   modelValue: PlayerSetting[]
@@ -33,20 +33,29 @@ async function getNewPlayer(searchName: string) {
   return newPlayerCandidate.value
 }
 
-function addPlayer(name: string, uuid: PlayerUUID, addSystem = false) {
+/**
+ * 以前に登録したことのあるプレイヤーをワールドのプレイヤー一覧に追加
+ */
+function addRegisteredPlayer(name: string, uuid: PlayerUUID) {
   // worldのプレイヤー一覧に追加
   playerModel.value.push({
     name: name,
     uuid: uuid,
   })
 
-  // システムに登録する場合はAddSystemをTrueにする
-  if (addSystem) {
-    sysStore.systemSettings().player.players.push(uuid)
-  }
-
   // プレイヤーを追加した際には検索欄をリセット
   playerStore.searchName = ''
+}
+
+/**
+ * 以前に登録したことのない新規プレイヤーをプレイヤー一覧に追加
+ */
+function addNewPlayer(name: string, uuid: PlayerUUID) {
+  // プレイヤーをワールドに追加
+  addRegisteredPlayer(name, uuid)
+
+  // 未登録の新規プレイヤーをシステムに登録
+  sysStore.systemSettings().player.players.push(uuid)
 }
 </script>
 
@@ -59,11 +68,11 @@ function addPlayer(name: string, uuid: PlayerUUID, addSystem = false) {
     >
       <q-list separator>
         <!-- プレイヤー名からプレイヤーの検索を行う -->
-        <SearchResultItem v-if="newPlayerCandidate !== void 0" v-model="newPlayerCandidate" :uuid="newPlayerCandidate?.uuid" @add-player="addPlayer" />
+        <SearchResultItem v-if="newPlayerCandidate !== void 0" v-model="newPlayerCandidate" :uuid="newPlayerCandidate?.uuid" @add-player="addNewPlayer" />
         <!-- 過去に登録実績のあるプレイヤー一覧 -->
-        <template v-for="uuid in sysStore.systemSettings().player.players.filter(uuid => playerModel.find(p => p.uuid === uuid) === undefined)" :key="uuid">
-          <SearchResultItem :uuid="uuid" @add-player="addPlayer" />
-        </template>
+        <!-- <template v-for="p in playerStore.searchPlayers(playerModel)" :key="p">
+          <SearchResultItem :uuid="p.uuid" @add-player="addRegisteredPlayer" />
+        </template> -->
       </q-list>
     </q-card-section>
     <q-card-section v-else>
