@@ -44,12 +44,17 @@ class PromiseSpooler {
   }
 
   async pushItem<T>(
+    spoolingQueue: [
+      () => Promise<any>,
+      (value: any) => void,
+      string | undefined
+    ][],
     process: () => Promise<T>,
     resolve: (value: T | PromiseLike<T>) => void,
     channel: string | undefined
   ) {
     if (channel !== undefined) {
-      const lastItem = this.spoolingQueue[this.spoolingQueue.length - 1];
+      const lastItem = spoolingQueue[spoolingQueue.length - 1];
       if (lastItem !== undefined) {
         const [, lastResolve, lastChannel] = lastItem;
         if (lastChannel === channel) {
@@ -66,12 +71,17 @@ class PromiseSpooler {
       }
     }
     // それ以外の場合処理を追加
-    this.spoolingQueue.push([process, resolve, channel]);
+    spoolingQueue.push([process, resolve, channel]);
   }
 
   /** channelを指定すると同じchannelの処理は連続せず上書きされる */
   async spool<T>(spollingItem: () => Promise<T>, channel?: string) {
-    const pushItem = this.pushItem;
+    const pushItem = (
+      process: () => Promise<T>,
+      resolve: (value: T | PromiseLike<T>) => void,
+      channel: string | undefined
+    ) => this.pushItem(this.spoolingQueue, process, resolve, channel);
+
     const resultPromise = new Promise<T>((resolve) => {
       pushItem(spollingItem, resolve, channel);
     });
