@@ -185,7 +185,7 @@ export async function runWorld(
     }
   );
 
-  return await handler.runServer(progress);
+  return await handler.run(progress);
 }
 
 /**

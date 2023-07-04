@@ -28,19 +28,87 @@ import {
 } from 'app/src-electron/schema/error';
 import { PlainProgressor, genWithPlain } from '../progress/progress';
 
+/** 複数の処理を並列で受け取って直列で処理 */
+class PromiseSpooler {
+  /** 待機中の処理のQueue */
+  spoolingQueue: [
+    () => Promise<any>,
+    (value: any | PromiseLike<any>) => void,
+    undefined | string
+  ][];
+  running: boolean;
+
+  constructor() {
+    this.spoolingQueue = [];
+    this.running = false;
+  }
+
+  async pushItem<T>(
+    process: () => Promise<T>,
+    resolve: (value: T | PromiseLike<T>) => void,
+    channel: string | undefined
+  ) {
+    if (channel !== undefined) {
+      const lastItem = this.spoolingQueue[this.spoolingQueue.length - 1];
+      if (lastItem !== undefined) {
+        const [, lastResolve, lastChannel] = lastItem;
+        if (lastChannel === channel) {
+          const newResolve = (value: T) => {
+            lastResolve(value);
+            resolve(value);
+          };
+          // チャンネルが同じ場合は処理を上書き
+          // resolveは統合
+          lastItem[0] = process;
+          lastItem[1] = newResolve;
+          return;
+        }
+      }
+    }
+    // それ以外の場合処理を追加
+    this.spoolingQueue.push([process, resolve, channel]);
+  }
+
+  /** channelを指定すると同じchannelの処理は連続せず上書きされる */
+  async spool<T>(spollingItem: () => Promise<T>, channel?: string) {
+    const self = this;
+    const resultPromise = new Promise<T>((resolve) => {
+      self.pushItem(spollingItem, resolve, channel);
+    });
+    this.start();
+    return resultPromise;
+  }
+
+  private async start() {
+    if (this.running) return;
+    this.running = true;
+    while (true) {
+      const item = this.spoolingQueue.shift();
+      if (item === undefined) break;
+      const [process, resolve] = item;
+      const result = await process();
+      resolve(result);
+    }
+    this.running = false;
+  }
+}
+
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
   private static worldPathMap: Record<WorldID, WorldHandler> = {};
 
+  promiseSpooler: PromiseSpooler;
   name: WorldName;
   container: WorldContainer;
   id: WorldID;
-  run: RunServer | undefined;
+  runner: RunServer | undefined;
+
   private constructor(id: WorldID, name: WorldName, container: WorldContainer) {
+    this.promiseSpooler = new PromiseSpooler();
     this.id = id;
     this.name = name;
     this.container = container;
-    this.run = undefined;
+    this.runner = undefined;
   }
 
   /** WorldAbbr/WorldNewができた段階でここに登録し、idを生成 */
@@ -168,8 +236,16 @@ export class WorldHandler {
     return await loadLocalFiles(savePath, this.id, this.name, this.container);
   }
 
-  /** サーバーのデータを保存 */
   async save(
+    world: WorldEdited,
+    progress?: PlainProgressor
+  ): Promise<WithError<Failable<World>>> {
+    const func = () => this.saveExec(world, progress);
+    return await this.promiseSpooler.spool(func, 'SAVE');
+  }
+
+  /** サーバーのデータを保存 */
+  private async saveExec(
     world: WorldEdited,
     progress?: PlainProgressor
   ): Promise<WithError<Failable<World>>> {
@@ -275,7 +351,7 @@ export class WorldHandler {
     if (
       worldSettings.using === true &&
       worldSettings.last_user === owner &&
-      this.run === undefined
+      this.runner === undefined
     ) {
       // フラグを折ってPush
       return await this.fix();
@@ -288,13 +364,25 @@ export class WorldHandler {
     return await this.loadLocal();
   }
 
-  /** サーバーのデータをロード */
   async load(): Promise<WithError<Failable<World>>> {
+    const func = () => this.loadExec();
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** サーバーのデータをロード */
+  private async loadExec(): Promise<WithError<Failable<World>>> {
     return getWorld(await this.loadAsLocalWorld());
   }
 
-  /** サーバーのデータを新規作成して保存 */
   async create(world: WorldEdited): Promise<WithError<Failable<World>>> {
+    const func = () => this.createExec(world);
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** サーバーのデータを新規作成して保存 */
+  private async createExec(
+    world: WorldEdited
+  ): Promise<WithError<Failable<World>>> {
     this.container = world.container;
     this.name = world.name;
     const savePath = this.getSavePath();
@@ -323,24 +411,34 @@ export class WorldHandler {
     await this.saveLocalServerJson(worldSettings);
 
     // データを保存
-    return await this.save(world);
+    return await this.saveExec(world);
+  }
+
+  async delete(): Promise<WithError<Failable<undefined>>> {
+    const func = () => this.deleteExec();
+    return await this.promiseSpooler.spool(func);
   }
 
   /** ワールドを削除(リモ－トは削除しない) */
-  async delete(): Promise<WithError<Failable<undefined>>> {
+  private async deleteExec(): Promise<WithError<Failable<undefined>>> {
     const result = await failabilify(() => this.getSavePath().remove(true))();
     if (isError(result)) return withError(result);
     delete WorldHandler.worldPathMap[this.id];
     return withError(undefined);
   }
 
+  async run(progress: PlainProgressor): Promise<WithError<Failable<World>>> {
+    const func = () => this.runExec(progress);
+    return await this.promiseSpooler.spool(func);
+  }
+
   /** データを同期して サーバーを起動 */
-  async runServer(
+  private async runExec(
     progress: PlainProgressor
   ): Promise<WithError<Failable<World>>> {
     const errors: ErrorMessage[] = [];
     // 起動中の場合エラー
-    if (this.run !== undefined)
+    if (this.runner !== undefined)
       return withError(
         errorMessage.core.world.worldAleradyRunning({
           container: this.container,
@@ -389,7 +487,7 @@ export class WorldHandler {
     beforeWorld.using = true;
     beforeWorld.last_user = selfOwner;
     beforeWorld.last_date = getCurrentTimestamp();
-    const saveResult = await this.save(beforeWorld, progress);
+    const saveResult = await this.saveExec(beforeWorld, progress);
 
     // 保存に失敗したらエラー (ここでコンフリクト起きそう)
     if (isError(saveResult.value)) {
@@ -415,7 +513,7 @@ export class WorldHandler {
     // サーバーの実行を開始
     const runPromise = runServer(savePath, this.id, settings, progress);
 
-    this.run = runPromise;
+    this.runner = runPromise;
 
     // タイトルを削除
     progress.title = null;
@@ -423,7 +521,7 @@ export class WorldHandler {
     // サーバーの終了を待機
     const serverResult = await runPromise;
 
-    this.run = undefined;
+    this.runner = undefined;
 
     progress.title = {
       key: 'server.postProcessing',
@@ -446,7 +544,7 @@ export class WorldHandler {
     if (isError(serverResult)) return withError(serverResult);
 
     // ワールド情報を再取得
-    const load = () => this.load();
+    const load = () => this.loadExec();
     return await progress.withPlain(load, {
       title: {
         key: 'server.local.reloading',
@@ -456,7 +554,7 @@ export class WorldHandler {
 
   /** コマンドを実行 */
   async runCommand(command: string) {
-    await this.run?.runCommand(command);
+    await this.runner?.runCommand(command);
   }
 }
 
