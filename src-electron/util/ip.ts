@@ -21,7 +21,7 @@ export async function getGlobalIP(): Promise<Failable<string>> {
   // https://ipv4.icanhazip.com から取得
   const icanhazip = await BytesData.fromURL('https://ipv4.icanhazip.com');
   if (isValid(icanhazip)) {
-    return await icanhazip.text();
+    return (await icanhazip.text()).trim();
   }
 
   // フォールバック
@@ -38,7 +38,7 @@ export async function getGlobalIP(): Promise<Failable<string>> {
   // https://api.ipify.org から取得
   const ipify = await BytesData.fromURL('https://api.ipify.org');
   if (isValid(ipify)) {
-    return await ipify.text();
+    return (await ipify.text()).trim();
   }
 
   return errorMessage.core.failGetGlobalIP();
