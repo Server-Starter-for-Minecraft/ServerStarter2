@@ -6,7 +6,7 @@ import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
 import { File } from 'unzipper';
 import { LEVEL_NAME, unzipPath } from '../const';
-import { WorldSettings, serverJsonFile } from './files/json';
+import { WorldSettings } from './files/json';
 import {
   SERVER_PROPERTIES_PATH,
   serverPropertiesFile,

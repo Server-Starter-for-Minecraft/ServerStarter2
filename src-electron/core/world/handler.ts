@@ -71,9 +71,9 @@ class PromiseSpooler {
 
   /** channelを指定すると同じchannelの処理は連続せず上書きされる */
   async spool<T>(spollingItem: () => Promise<T>, channel?: string) {
-    const self = this;
+    const pushItem = this.pushItem;
     const resultPromise = new Promise<T>((resolve) => {
-      self.pushItem(spollingItem, resolve, channel);
+      pushItem(spollingItem, resolve, channel);
     });
     this.start();
     return resultPromise;
