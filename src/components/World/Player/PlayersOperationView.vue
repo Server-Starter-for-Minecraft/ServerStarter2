@@ -30,7 +30,7 @@ function openEditor() {
   $q.dialog({
     component: GroupEditorView,
     componentProps: {
-      members: playerStore.focusCards
+      members: Array.from(playerStore.focusCards)
     } as iEditorDialogProps
   }).onOk((payload: iEditorDialogReturns) => {
     // グループの登録
@@ -52,7 +52,7 @@ function removePlayer() {
 function setOP() {
   function setter(setVal?: OpSetting) {
     playerModel.value.filter(
-      p => playerStore.focusCards.includes(p.uuid)
+      p => playerStore.focusCards.has(p.uuid)
     ).forEach(p => {
       p.op = setVal
     });

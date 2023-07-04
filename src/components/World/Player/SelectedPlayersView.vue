@@ -9,7 +9,7 @@ const playerStore = usePlayerStore()
   <q-card flat class="q-my-md">
     <q-card-section horizontal>          
       <q-card-section class="row col q-pa-none">
-        <div v-if="playerStore.focusCards.length === 0" class="row items-center">
+        <div v-if="playerStore.focusCards.size === 0" class="row items-center">
           <p class="col q-my-none q-ml-sm text-caption text-grey">
             プレイヤーを上記から選択してください
           </p>
@@ -23,7 +23,7 @@ const playerStore = usePlayerStore()
         <q-btn
           outline
           label="選択解除"
-          :disable="playerStore.focusCards.length === 0"
+          :disable="playerStore.focusCards.size === 0"
           @click="playerStore.unFocus()"
         />
       </q-card-actions>

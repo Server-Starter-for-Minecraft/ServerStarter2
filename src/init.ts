@@ -4,6 +4,7 @@ import { useMainStore, useWorldStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import { isValid } from './scripts/error';
 import { fromEntries, keys } from './scripts/obj';
+import { usePlayerStore } from './stores/WorldTabsStore';
 
 export async function initWindow() {
   // storeの初期化
@@ -49,6 +50,9 @@ export async function initWindow() {
 export async function afterWindow() {
   // バージョンの読み込み
   getAllVersion(false);
+
+  // システムに登録済みのプレイヤーデータを取得しておく
+  getChachePlayers();
 }
 
 /**
@@ -70,4 +74,15 @@ async function getAllVersion(useCache: boolean) {
         checkError(ver.value)
       );
   });
+}
+
+/**
+ * プレイヤーデータの取得を行っておき、キャッシュデータの作成を行う
+ */
+async function getChachePlayers() {
+  const sysStore = useSystemStore();
+  const playerStore = usePlayerStore();
+  const playerUUIDs = sysStore.systemSettings().player.players
+  const failablePlayers = await Promise.all(playerUUIDs.map(uuid => window.API.invokeGetPlayer(uuid, 'uuid')))
+  failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）`))
 }

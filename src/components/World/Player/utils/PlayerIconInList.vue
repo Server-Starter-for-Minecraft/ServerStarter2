@@ -11,25 +11,31 @@ interface Prop {
 const prop = defineProps<Prop>()
 
 const playerStore = usePlayerStore()
+const player = ref(playerStore.cachePlayers[prop.uuid])
 
-const playerName = ref('')
-onMounted(async () => playerName.value = (await getPlayerName()) ?? '')
-
-async function getPlayerName() {
-  const player = await window.API.invokeGetPlayer(prop.uuid, 'uuid')
-  return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
-}
+// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
+onMounted(async () => {
+  if (player.value === void 0) {
+    checkError(
+      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
+      p => {
+        player.value = p
+        playerStore.addPlayer(p)
+      }
+    )
+  }
+})
 </script>
 
 <template>
   <q-item>
     <q-item-section>
       <q-avatar square size="2rem" class="full-width">
-        <PlayerHeadView :uuid="uuid" size="1.9rem" />
+        <PlayerHeadView v-model="player" size="1.9rem" />
         <q-btn flat rounded dense icon="cancel" size="10px" @click="playerStore.unFocus(uuid)" class="cancelBtn" />
       </q-avatar>
       <q-item-label caption class="text-center q-pt-sm">
-        {{ playerName }}
+        {{ player.name }}
       </q-item-label>
     </q-item-section>
   </q-item>

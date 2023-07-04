@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { PlayerSetting } from 'app/src-electron/schema/player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import { iEditorDialogReturns, generateGroup, iEditorDialogProps } from './Editor/editorDialog';
@@ -13,22 +11,11 @@ import GroupEditorView from './Editor/GroupEditorView.vue';
 import GroupCardMenu from './utils/GroupCardMenu.vue';
 
 interface Prop {
-  modelValue: PlayerSetting[]
   name: string
   color: string
   players: PlayerUUID[]
 }
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const playerModel = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
@@ -36,24 +23,10 @@ const playerStore = usePlayerStore()
 const showMenuBtn = ref(false)
 const menuOpened = ref(false)
 
-async function onCardClicked() {
-  async function getPlayerName(uuid: PlayerUUID) {
-    const player = await window.API.invokeGetPlayer(uuid, 'uuid')
-    return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
-  }
-  
-  prop.players.forEach(async (uuid) => {
-    // プレイヤー一覧にグループメンバーが表示されていないときは一覧に追加
-    if (!playerModel.value.map(p => p.uuid).includes(uuid)) {
-      const playerName = await getPlayerName(uuid)
-      playerModel.value.push({ uuid: uuid, name: playerName ?? 'No Player Name' })
-    }
+const cachePlayers = ref(playerStore.cachePlayers)
 
-    // グループプレイヤー全員にFocusを当てる
-    if (!playerStore.focusCards.includes(uuid)) {
-      playerStore.focusCards.push(uuid)
-    }
-  });
+async function onCardClicked() {
+  playerStore.selectGroup(prop.name)
 }
 
 function removeGroup() {
@@ -95,7 +68,7 @@ function openEditor() {
           <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
           <div class="row q-gutter-md q-pt-sm">
             <template v-for="uuid in players" :key="uuid">
-              <player-head-view :uuid="uuid" size="1.5rem" />
+              <player-head-view v-model="cachePlayers[uuid]" size="1.5rem" />
             </template>
           </div>
         </q-card-section>

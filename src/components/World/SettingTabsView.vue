@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import IconTabView from './utils/IconTabView.vue';
 import IconTabDropdownView from './utils/IconTabDropdownView.vue';
+
+const playerStore = usePlayerStore()
 </script>
 
 <template>

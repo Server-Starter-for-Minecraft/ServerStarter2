@@ -11,7 +11,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 
 const inputName = ref(prop.groupName ?? '')
 const inputColorCode = ref(prop.groupColor ?? '')
-const editMembers = ref(prop.members)
+const editMembers = ref(Array.from(prop.members))
 
 function onOKClicked() {
   onDialogOK({

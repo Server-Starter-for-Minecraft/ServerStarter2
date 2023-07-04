@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { usePlayerStore } from 'src/stores/WorldTabsStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from '../utils/PlayerHeadView.vue';
 
@@ -23,16 +24,25 @@ const membersModel = computed({
 
 const showDeleteBtn = ref(false)
 
-const playerName = ref('')
-onMounted(async () => playerName.value = (await getPlayerName()) ?? '')
+const playerStore = usePlayerStore()
+const player = ref(playerStore.cachePlayers[prop.uuid])
+
+// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
+onMounted(async () => {
+  if (player.value === void 0) {
+    checkError(
+      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
+      p => {
+        player.value = p
+        playerStore.addPlayer(p)
+      }
+    )
+  }
+})
 
 function removePlayer() {
+  // TODO: 削除対象のプレイヤーにバグがあるため修正
   membersModel.value.splice(membersModel.value.indexOf(prop.uuid), 1)
-}
-
-async function getPlayerName() {
-  const player = await window.API.invokeGetPlayer(prop.uuid, 'uuid')
-  return checkError(player, undefined, 'プレイヤーの取得に失敗しました')?.name
 }
 </script>
 
@@ -43,10 +53,10 @@ async function getPlayerName() {
     @mouseout="showDeleteBtn = false"
   >
     <q-item-section avatar>
-      <PlayerHeadView :uuid="uuid" size="1.5rem"/>
+      <PlayerHeadView v-model="player" size="1.5rem"/>
     </q-item-section>
 
-    <q-item-section>{{ playerName }}</q-item-section>
+    <q-item-section>{{ player.name }}</q-item-section>
     
     <!-- プレイヤー数が１より大きい時にはプレイヤーが削除されてもOKだが、1人の時は削除できないようにする -->
     <q-item-section side>
