@@ -2,7 +2,7 @@ import log4js from 'log4js';
 import { Path } from './path';
 import { asyncForEach } from './objmap';
 
-const LATEST = 'latest';
+const LATEST = 'latest.log';
 
 log4js.addLayout('custom', function (config: { max?: number }) {
   return function (logEvent) {
@@ -41,15 +41,24 @@ function formatDate(date: Date) {
   return `${YYYY}-${MM}-${DD}-${HH}`;
 }
 
+function getArchivePath(logDir: Path, time: Date) {
+  let i = 0;
+  while (true) {
+    const path = logDir.child(formatDate(time) + `-${i}.log`);
+    if (!path.exists()) {
+      return path;
+    }
+    i += 1;
+  }
+}
+
 async function archive(logDir: Path) {
   // .latestを移動
   const latestLog = logDir.child(LATEST);
   if (latestLog.exists()) {
-    logDir
-      .child(LATEST)
-      .moveTo(
-        logDir.child(formatDate(await latestLog.lastUpdateTime()) + '.log')
-      );
+    await latestLog.moveTo(
+      getArchivePath(logDir, await latestLog.lastUpdateTime())
+    );
   }
 
   // 一週間前の日付
@@ -57,8 +66,8 @@ async function archive(logDir: Path) {
   thresholdDate.setDate(thresholdDate.getDate() - 7);
 
   await asyncForEach(await logDir.iter(), async (path) => {
-    // 最終更新が一週間以上前の0000-00-00-0.logを削除する
-    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}.log/);
+    // 最終更新が一週間以上前のYYY-MM-DD-HH-I.logを削除する
+    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}-\d+.log/);
     if (match) {
       const updateDate = await path.lastUpdateTime();
       if (updateDate < thresholdDate) {
@@ -82,6 +91,7 @@ export function getRootLogger(logDir: Path): {
         type: 'file',
         filename: logDir.child(LATEST).str(),
         layout: { type: 'custom', max: 500 },
+        compress: true,
       },
       out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
       file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
