@@ -159,6 +159,9 @@ export const usePlayerStore = defineStore('playerStore', {
         // プレイヤーのキャッシュデータに新規プレイヤーを追加
         this.cachePlayers[player.uuid] = player
       }
+
+      // 検索欄をリセット
+      this.searchName = ''
     }
   }
 });
