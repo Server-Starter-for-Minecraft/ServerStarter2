@@ -53,7 +53,7 @@ async function getNewPlayer(searchName: string) {
         <template v-for="p in playerStore.searchPlayers(
             Object.values(playerStore.cachePlayers).filter(cp => {
               if (isValid(mainStore.world.players)) {
-                return !mainStore.world.players.some(p => p.uuid === cp.uuid)
+                return !(mainStore.world.players.some(p => p.uuid === cp.uuid) || cp.name === playerStore.searchName)
               }
               else {
                 return true
