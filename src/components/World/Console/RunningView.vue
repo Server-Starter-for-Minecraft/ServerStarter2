@@ -15,6 +15,8 @@ function scroll2End() {
 }
 
 // コンソール表示
+// TODO: 時々発生するConsoleが重複する問題はここでイベントの登録を行っていることが原因？
+// App.vueにイベントの登録を移動する
 window.API.onAddConsole((_event, worldID, chunk) => {
   // TODO: センスのある記法求む
   consoleStore.setConsole(worldID, chunk);
