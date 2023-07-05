@@ -62,17 +62,16 @@ function onOKClicked() {
         </div>
 
         <!-- TODO: グループメンバーを追加できるようにする（プレイヤー探索機能を実装した後） -->
-        <div class="q-pt-lg">
+        <div class="q-pt-lg" style="height: 200px;">
           <p class="q-ma-none">グループメンバー</p>
           <!-- ここに検索欄を実装？ -->
-          <q-virtual-scroll
-            style="max-height: 200px;"
-            :items="editMembers"
-            separator
-            v-slot="{ item, index }"
-          >
-            <item-player v-model="editMembers" :key="index" :uuid="item" />
-          </q-virtual-scroll>
+          <q-scroll-area class="fit q-my-sm">
+            <q-list separator>
+              <template v-for="uuid in editMembers" :key="uuid">
+                <item-player v-model="editMembers" :uuid="uuid" />
+              </template>
+            </q-list>
+          </q-scroll-area>
         </div>
       </q-card-section>
 

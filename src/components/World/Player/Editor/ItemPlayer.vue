@@ -7,7 +7,6 @@ import PlayerHeadView from '../utils/PlayerHeadView.vue';
 
 interface Prop {
   modelValue: PlayerUUID[]
-  index?: number
   uuid: PlayerUUID
 }
 const prop = defineProps<Prop>()
@@ -41,14 +40,12 @@ onMounted(async () => {
 })
 
 function removePlayer() {
-  // TODO: 削除対象のプレイヤーにバグがあるため修正
   membersModel.value.splice(membersModel.value.indexOf(prop.uuid), 1)
 }
 </script>
 
 <template>
   <q-item
-    :key="index"
     @mouseover="showDeleteBtn = true"
     @mouseout="showDeleteBtn = false"
   >
