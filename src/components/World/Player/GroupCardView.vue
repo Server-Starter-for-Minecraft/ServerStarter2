@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { iEditorDialogReturns, generateGroup, iEditorDialogProps } from './Editor/editorDialog';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BasePlayerCard from './utils/BasePlayerCard.vue';

@@ -2,7 +2,7 @@
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BasePlayerCard from './utils/BasePlayerCard.vue';
@@ -51,7 +51,10 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
 </script>
 
 <template>
-  <BasePlayerCard v-if="player !== void 0" @click="onCardClicked" :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''">
+  <BasePlayerCard
+    v-if="player !== void 0" @click="onCardClicked"
+    :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''"
+  >
     <template #default>
       <q-item class="q-pa-md" style="height: 5.5rem;">
         <q-item-section avatar top>
@@ -71,7 +74,11 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
     </template>
 
     <template #actions>
-      <q-card-section v-show="getGroups(sysStore.systemSettings().player.groups).length > 0" class="q-py-none" style="width: max-content;">
+      <q-card-section
+        v-show="getGroups(sysStore.systemSettings().player.groups).length > 0"
+        class="q-py-none"
+        style="width: max-content;"
+      >
         <span class="text-caption">所属グループ</span>
         <div class="q-gutter-sm q-py-xs" style="width: 12rem">
           <template v-for="g in getGroups(sysStore.systemSettings().player.groups)" :key="g">

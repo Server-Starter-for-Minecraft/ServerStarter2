@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { checkError } from 'src/components/Error/Error';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerHeadView from './PlayerHeadView.vue';
 
 interface Prop {

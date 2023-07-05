@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import { isValid } from 'src/scripts/error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';

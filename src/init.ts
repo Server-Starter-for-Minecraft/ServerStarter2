@@ -2,9 +2,9 @@ import { versionTypes } from 'app/src-electron/schema/version';
 import { checkError } from './components/Error/Error';
 import { useMainStore, useWorldStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
+import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
 import { isValid } from './scripts/error';
 import { fromEntries, keys } from './scripts/obj';
-import { usePlayerStore } from './stores/WorldTabsStore';
 
 export async function initWindow() {
   // storeの初期化

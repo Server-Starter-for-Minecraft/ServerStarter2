@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from '../utils/PlayerHeadView.vue';
 
@@ -53,11 +53,11 @@ function removePlayer() {
     @mouseout="showDeleteBtn = false"
   >
     <q-item-section avatar>
-      <PlayerHeadView v-model="player" size="1.5rem"/>
+      <PlayerHeadView v-model="player" size="1.5rem" />
     </q-item-section>
 
     <q-item-section>{{ player.name }}</q-item-section>
-    
+
     <!-- プレイヤー数が１より大きい時にはプレイヤーが削除されてもOKだが、1人の時は削除できないようにする -->
     <q-item-section side>
       <q-btn

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 
 interface Prop {
   groupName: string
@@ -30,7 +30,7 @@ async function onCardClicked() {
 .name {
   max-width: 12rem;
   white-space: nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

@@ -33,3 +33,10 @@ export function checkError<S>(
     _router.replace('/error')
   }
 }
+
+/**
+ * フロントからエラーを発生させたい場合にコメント付きで実行するとエラーを表示する
+ */
+export function sendError(errorDescription: string) {
+  // TODO: 実装
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerIconInList from './utils/PlayerIconInList.vue';
 
 const playerStore = usePlayerStore()
@@ -7,7 +7,7 @@ const playerStore = usePlayerStore()
 
 <template>
   <q-card flat class="q-my-md">
-    <q-card-section horizontal>          
+    <q-card-section horizontal>
       <q-card-section class="row col q-pa-none">
         <div v-if="playerStore.focusCards.size === 0" class="row items-center">
           <p class="col q-my-none q-ml-sm text-caption text-grey">

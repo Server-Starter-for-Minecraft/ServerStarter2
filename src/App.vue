@@ -6,6 +6,7 @@ import { useQuasar } from 'quasar';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { useSystemStore } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setRouter } from 'src/components/Error/Error';
 import { deepCopy } from './scripts/deepCopy';
 import PopupDialog from './components/util/popupDialog.vue';
@@ -13,6 +14,7 @@ import PopupDialog from './components/util/popupDialog.vue';
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
 const worldStore = useWorldStore()
+const playerStore = usePlayerStore()
 const consoleStore = useConsoleStore()
 
 // routerを定義
@@ -81,6 +83,8 @@ function setSubscribe() {
       })
     }
   })
+
+  setPlayerSearchSubscriber(playerStore)
 }
 </script>
 

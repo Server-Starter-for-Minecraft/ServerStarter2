@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { OpSetting, PlayerSetting } from 'app/src-electron/schema/player';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { generateGroup, iEditorDialogProps, iEditorDialogReturns } from './Editor/editorDialog';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import GroupEditorView from './Editor/GroupEditorView.vue';

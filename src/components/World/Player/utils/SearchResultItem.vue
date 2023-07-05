@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Player } from 'app/src-electron/schema/player';
-import { usePlayerStore } from 'src/stores/WorldTabsStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerHeadView from './PlayerHeadView.vue';
 
 interface Prop {
