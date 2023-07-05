@@ -23,8 +23,6 @@ const playerModel = computed({
 </script>
 
 <template>
-  <!-- nameを指定するのは新規プレイヤーのみ -->
-  <!-- 新規と仮定して検索したプレイヤーが登録実績のあるプレイヤーだった場合には表示しない -->
   <q-item>
     <q-item-section avatar>
       <PlayerHeadView v-model="playerModel" />
