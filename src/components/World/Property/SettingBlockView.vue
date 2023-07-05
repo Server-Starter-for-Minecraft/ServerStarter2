@@ -41,18 +41,10 @@ function cancelSettings() {
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption">設定内容の説明</div>
-      <template v-if="$router.currentRoute.value.path === '/system/property'">
-        <InputFieldView
-          v-model="sysStore.systemSettings().world.properties[settingName]"
-          :property-name="settingName"
-        />
-      </template>
-      <template v-else>
-        <InputFieldView
-          v-model="propertiesModel[settingName]"
-          :property-name="settingName"
-        />
-      </template>
+      <InputFieldView
+        v-model="propertiesModel[settingName]"
+        :property-name="settingName"
+      />
     </q-item-section>
 
     <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>

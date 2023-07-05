@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePropertyStore } from 'src/stores/WorldTabsStore';
+import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
 import { thumbStyle } from 'src/components/World/scrollBar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -45,18 +45,15 @@ function resetAll() {
           @click="resetAll"
         />
       </div>
-  
+
       <div class="row fit" style="flex: 1 1 0;">
-        <SideMenuView/>
-        
-        <q-separator vertical inset/>
+        <SideMenuView />
+
+        <q-separator vertical inset />
 
         <div class="col">
-          <q-scroll-area
-            :thumb-style="thumbStyle"
-            class="fit"
-          >
-            <SettingsView v-model="mainStore.world.properties"/>
+          <q-scroll-area :thumb-style="thumbStyle" class="fit">
+            <SettingsView v-model="mainStore.world.properties" />
           </q-scroll-area>
         </div>
       </div>

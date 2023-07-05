@@ -48,13 +48,3 @@ export const usePropertyStore = defineStore('propertyStore', {
     }
   }
 });
-
-
-export const useConsoleStore = defineStore('consoleStore', {
-  state: () => {
-    return {
-      consoleLines: new Array<string>()
-    }
-  }
-});
-
