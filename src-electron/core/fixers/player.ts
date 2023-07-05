@@ -1,6 +1,7 @@
 import {
   arrayFixer,
   booleanFixer,
+  defaultFixer,
   literalFixer,
   objectFixer,
   optionalFixer,
@@ -32,11 +33,15 @@ export const fixPlayer = objectFixer<Player>(
   false
 );
 
+const WhiteColorCode = '#FFFFFF';
+
 /** システムのプレイヤーグループ設定 */
 export const fixPlayerGroup = objectFixer<PlayerGroup>(
   {
     /** グループ名 */
     name: stringFixer(),
+    /** グループのカラー(#入りコード) */
+    color: defaultFixer(stringFixer(), WhiteColorCode),
     /** 所属するプレイヤーのUUIDのリスト */
     players: arrayFixer(fixPlayerUUID, true),
   },
