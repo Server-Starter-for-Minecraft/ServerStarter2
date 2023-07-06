@@ -33,6 +33,10 @@ window.API.onStartServer((_event, worldID) => {
 window.API.onFinishServer((_event, worldID) => {
   consoleStore.setProgress(worldID, '')
 })
+// サーバーに送信されたコンソールの処理
+window.API.onAddConsole((_event, worldID, chunk) => {
+  consoleStore.setConsole(worldID, chunk);
+})
 
 // System設定変更時に設定を反映
 const $t = useI18n()

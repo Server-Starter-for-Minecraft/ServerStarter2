@@ -13,15 +13,13 @@ const virtualListRef: Ref<null | QVirtualScroll> = ref(null)
 function scroll2End() {
   virtualListRef.value?.scrollTo(consoleStore.console().length, 'start-force')
 }
+setTimeout(scroll2End, 0)
 
 // コンソール表示
-// TODO: 時々発生するConsoleが重複する問題はここでイベントの登録を行っていることが原因？
-// App.vueにイベントの登録を移動する
-window.API.onAddConsole((_event, worldID, chunk) => {
+consoleStore.$subscribe((mutation, state) => {
   // TODO: センスのある記法求む
-  consoleStore.setConsole(worldID, chunk);
   setTimeout(scroll2End, 0)
-});
+})
 </script>
 
 <template>

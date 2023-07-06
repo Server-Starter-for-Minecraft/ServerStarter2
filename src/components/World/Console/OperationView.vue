@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import iconButton from 'src/components/util/iconButton.vue';
 import { useMainStore } from 'src/stores/MainStore';
+import iconButton from 'src/components/util/iconButton.vue';
 
 interface Prop {
   disable?: boolean
@@ -9,6 +9,8 @@ interface Prop {
 defineProps<Prop>()
 
 const mainStore = useMainStore()
+// TODO: inputCommandsがComponentの再読み込みによってリセットされる問題の修正
+// inputCommandsはWorldごとに分けずに全体で１つのみ宣言
 let showIdx = 0
 const inputCommands = [] as string[]
 const command = ref('');
@@ -17,10 +19,12 @@ const command = ref('');
  * コマンドの送信
  */
 function sendCommand(sendCommand: string) {
-  inputCommands.push(sendCommand);
-  showIdx = inputCommands.length
-  window.API.sendCommand(mainStore.selectedWorldID, sendCommand);
-  command.value = '';
+  if (sendCommand !== '') {
+    inputCommands.push(sendCommand);
+    showIdx = inputCommands.length
+    window.API.sendCommand(mainStore.selectedWorldID, sendCommand);
+    command.value = '';
+  }
 }
 
 function upKey() {
