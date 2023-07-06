@@ -1,8 +1,34 @@
 import log4js from 'log4js';
-import { Path } from '../path';
-import { asyncForEach } from '../objmap';
+import { Path } from './path';
+import { asyncForEach } from './objmap';
+import { c } from 'tar';
 
-const LATEST = 'latest';
+const LATEST = 'latest.log';
+
+// ログファイルをtar.gzに圧縮して保存
+async function compressArchive(logDir: Path, latestLog: Path) {
+  const [logName, archivePath] = getArchivePath(
+    logDir,
+    await latestLog.lastUpdateTime()
+  );
+
+  const newlogPath = logDir.child(logName);
+  await newlogPath.remove(true);
+
+  await latestLog.moveTo(newlogPath);
+
+  await c(
+    {
+      gzip: true,
+      file: archivePath.path,
+      cwd: logDir.path,
+    },
+    [logName]
+  );
+  await latestLog.moveTo(logDir.child(logName));
+
+  await newlogPath.remove();
+}
 
 log4js.addLayout('custom', function (config: { max?: number }) {
   return function (logEvent) {
@@ -41,15 +67,23 @@ function formatDate(date: Date) {
   return `${YYYY}-${MM}-${DD}-${HH}`;
 }
 
-export async function archive(logDir: Path) {
-  // .latestを移動
+function getArchivePath(logDir: Path, time: Date) {
+  let i = 0;
+  const format = formatDate(time);
+  while (true) {
+    const path = logDir.child(`${format}-${i}.tar.gz`);
+    if (!path.exists()) {
+      return [`${format}-${i}.log`, path] as const;
+    }
+    i += 1;
+  }
+}
+
+async function archive(logDir: Path) {
+  // .latestを圧縮してアーカイブ
   const latestLog = logDir.child(LATEST);
   if (latestLog.exists()) {
-    logDir
-      .child(LATEST)
-      .moveTo(
-        logDir.child(formatDate(await latestLog.lastUpdateTime()) + '.log')
-      );
+    await compressArchive(logDir, latestLog);
   }
 
   // 一週間前の日付
@@ -57,8 +91,8 @@ export async function archive(logDir: Path) {
   thresholdDate.setDate(thresholdDate.getDate() - 7);
 
   await asyncForEach(await logDir.iter(), async (path) => {
-    // 最終更新が一週間以上前の0000-00-00-0.logを削除する
-    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}.log/);
+    // 最終更新が一週間以上前のYYY-MM-DD-HH-I.logを削除する
+    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}-\d+.tar.gz/);
     if (match) {
       const updateDate = await path.lastUpdateTime();
       if (updateDate < thresholdDate) {

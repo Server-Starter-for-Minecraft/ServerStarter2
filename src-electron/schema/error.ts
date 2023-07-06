@@ -16,4 +16,7 @@ export type ErrorMessage = {
 
 export type Failable<T> = T | ErrorMessage;
 
+/**
+ * 複数のエラーと正常値を同時に保持する型
+ */
 export type WithError<T> = { value: T; errors: ErrorMessage[] };

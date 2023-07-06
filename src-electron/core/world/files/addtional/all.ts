@@ -7,9 +7,9 @@ import {
   WorldAdditionalEdited,
   WorldID,
 } from 'app/src-electron/schema/world';
-import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { withError } from 'app/src-electron/util/error/witherror';
 import { ServerAdditionalFiles } from './base';
-import { ErrorMessage } from 'app/src-electron/schema/error';
+import { ErrorMessage, WithError } from 'app/src-electron/schema/error';
 import { isError } from 'app/src-electron/util/error/error';
 import { AllFileData } from 'app/src-electron/schema/filedata';
 

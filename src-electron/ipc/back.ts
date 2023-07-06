@@ -20,7 +20,7 @@ import { getPlayer } from '../core/player/main';
 import { getLocalSaveData } from '../core/user/localSave';
 import { getCacheContents } from '../core/stores/cache';
 import { pickDialog } from '../core/world/dialog';
-
+import { getGlobalIP } from '../util/ip';
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({
@@ -50,6 +50,8 @@ export const getBackListener = (
     GetVersions: getVersions,
 
     GetCacheContents: getCacheContents,
+
+    GetGlobalIP :getGlobalIP,
 
     ValidateNewWorldName: validateNewWorldName,
 

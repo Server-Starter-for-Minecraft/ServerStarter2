@@ -58,12 +58,13 @@ export function getFrontAPIListener(
     on: {
       StartServer: send('StartServer', window),
       FinishServer: send('FinishServer', window),
-      UpdateStatus: send('UpdateStatus', window),
+      Progress: send('Progress', window),
       AddConsole: send('AddConsole', window),
-      UpdateSystemSettings: send('UpdateSystemSettings', window),
+      Error: send('Error', window),
     },
     handle: {
       AgreeEula: invoke('AgreeEula', window),
+      ChechShutdown: invoke('ChechShutdown', window),
     },
   };
   return result;

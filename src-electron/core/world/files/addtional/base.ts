@@ -1,9 +1,8 @@
-import { Failable } from 'app/src-electron/util/error/failable';
-import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { ErrorMessage } from 'app/src-electron/schema/error';
+import { ErrorMessage, Failable, WithError } from 'app/src-electron/schema/error';
 import {
   AllFileData,
   NewFileData,

@@ -1,7 +1,7 @@
-import { Failable } from 'app/src-electron/util/error/failable';
 import { isError } from 'app/src-electron/util/error/error';
 import { BytesData } from 'src-electron/util/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
+import { Failable } from 'app/src-electron/schema/error';
 
 export class GithubTree {
   url: string;

@@ -4,10 +4,10 @@ import {
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
-import { WithError } from 'app/src-electron/util/error/witherror';
 import { datapackFiles } from '../world/files/addtional/datapack';
 import { pluginFiles } from '../world/files/addtional/plugin';
 import { modFiles } from '../world/files/addtional/mod';
+import { WithError } from 'app/src-electron/schema/error';
 
 const filesMap = {
   datapack: datapackFiles,

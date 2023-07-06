@@ -88,13 +88,13 @@ const api: FrontAPI = {
   // ON
   onStartServer: on('StartServer'),
   onFinishServer: on('FinishServer'),
-  onUpdateStatus: on('UpdateStatus'),
+  onProgress: on('Progress'),
   onAddConsole: on('AddConsole'),
-  onUpdateSystemSettings: on('UpdateSystemSettings'),
   onError: on('Error'),
 
   // HANDLE
   handleAgreeEula: handle('AgreeEula'),
+  handleChechShutdown: handle('ChechShutdown'),
 
   // SEND
   sendCommand: send('Command'),
@@ -124,6 +124,8 @@ const api: FrontAPI = {
   invokeGetCacheContents: invoke('GetCacheContents'),
 
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
+
+  invokeGetGlobalIP: invoke('GetGlobalIP'),
 
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
 

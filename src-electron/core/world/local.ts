@@ -1,5 +1,4 @@
 import { Path } from 'app/src-electron/util/path';
-import { Failable } from 'app/src-electron/util/error/failable';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import {
   PlayerUUID,
@@ -16,11 +15,15 @@ import { serverPropertiesFile } from './files/properties';
 import { Ops, serverOpsFile } from './files/ops';
 import { Whitelist, serverWhitelistFile } from './files/whitelist';
 import { PlayerSetting } from 'app/src-electron/schema/player';
-import { WithError, withError } from 'app/src-electron/util/error/witherror';
+import { withError } from 'app/src-electron/util/error/witherror';
 import { serverAllAdditionalFiles } from './files/addtional/all';
 import { errorMessage } from '../../util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { ErrorMessage } from 'app/src-electron/schema/error';
+import {
+  ErrorMessage,
+  Failable,
+  WithError,
+} from 'app/src-electron/schema/error';
 import { Version } from 'app/src-electron/schema/version';
 import {
   LEVEL_NAME,
@@ -29,6 +32,8 @@ import {
 } from '../const';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { importCustomMap } from './cusomMap';
+import { PlainProgress } from 'app/src-electron/schema/progress';
+import { PlainProgressor, genWithPlain } from '../progress/progress';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -290,8 +295,11 @@ function estimateWorldDirectoryType(savePath: Path): WorldDirectoryTypes {
 export async function formatWorldDirectory(
   savePath: Path,
   current: WorldDirectoryTypes | undefined,
-  version: Version
+  version: Version,
+  progress?: PlainProgressor
 ): Promise<WithError<undefined>> {
+  const withPlain = genWithPlain(progress);
+
   const directoryTypeMap: Record<Version['type'], WorldDirectoryTypes> = {
     vanilla: 'vanilla',
     spigot: 'plugin',
@@ -312,21 +320,37 @@ export async function formatWorldDirectory(
 
   switch (true) {
     case current === 'vanilla' && next === 'plugin':
-      await asyncMap(
-        [
-          { from: vanillaNether, to: pluginNether },
-          { from: vanillaEnd, to: pluginEnd },
-        ],
-        ({ from, to }) => from.moveTo(to)
+      await withPlain(
+        () =>
+          asyncMap(
+            [
+              { from: vanillaNether, to: pluginNether },
+              { from: vanillaEnd, to: pluginEnd },
+            ],
+            ({ from, to }) => from.moveTo(to)
+          ),
+        {
+          title: {
+            key: 'server.local.formatWorldDirectory',
+          },
+        }
       );
       return withError(undefined);
     case current === 'plugin' && next === 'vanilla':
-      await asyncMap(
-        [
-          { from: pluginNether, to: vanillaNether },
-          { from: pluginEnd, to: vanillaEnd },
-        ],
-        ({ from, to }) => from.moveTo(to)
+      await withPlain(
+        () =>
+          asyncMap(
+            [
+              { from: pluginNether, to: vanillaNether },
+              { from: pluginEnd, to: vanillaEnd },
+            ],
+            ({ from, to }) => from.moveTo(to)
+          ),
+        {
+          title: {
+            key: 'server.local.formatWorldDirectory',
+          },
+        }
       );
       return withError(undefined);
     default:

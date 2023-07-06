@@ -26,7 +26,7 @@ export const mainPath = userDataPath;
 
 export const cachePath = mainPath.child('cache');
 
-export const runtimePath = mainPath.child('bin/runtime');
+export const runtimePath = cachePath.child('bin/runtime');
 export const versionsCachePath = cachePath.child('versions');
 
 export const versionManifestPath = versionsCachePath.child(
@@ -35,8 +35,8 @@ export const versionManifestPath = versionsCachePath.child(
 
 export const tempPath = mainPath.child('temp');
 
-/** spigotをビルドするための一時パス */
-export const spigotBuildPath = tempPath.child('spigotBuild');
+/** spigotをビルドするためのキャッシュパス */
+export const spigotBuildPath = cachePath.child('spigotBuild');
 
 /** zipファイルを展開するための一時パス */
 export const unzipPath = tempPath.child('zip');

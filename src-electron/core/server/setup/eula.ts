@@ -5,6 +5,7 @@ import { execProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { PlainProgressor } from '../../progress/progress';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -16,29 +17,42 @@ export async function checkEula(
   worldId: WorldID,
   javaPath: Path,
   programArgunets: string[],
-  serverCwdPath: Path
+  serverCwdPath: Path,
+  progress: PlainProgressor
 ): Promise<Failable<boolean>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // eula.txtが存在しない場合生成
   if (!eulaPath.exists()) {
+    progress.description = {
+      key: 'server.eula.generating',
+    };
     const result = await generateEula(
       javaPath,
       programArgunets,
       serverCwdPath,
       worldId
     );
+    progress.description = null;
     // 生成に失敗した場合エラー
     if (isError(result)) return result;
   }
   // eulaの内容を読み取る
+
+  progress.description = {
+    key: 'server.eula.loading',
+  };
   const content = await eulaPath.read();
+
   if (isError(content)) return content;
 
   const { eula, url, comments } = parseEula(await content.text());
   let agree = eula;
 
   if (!agree) {
+    progress.description = {
+      key: 'server.eula.asking',
+    };
     const result = await api.invoke.AgreeEula(worldId, url);
     // mainWindowが存在しなかった場合エラーとなる
     if (isError(result)) return result;
@@ -48,6 +62,9 @@ export async function checkEula(
   const txt = stringifyEula(agree, comments);
 
   // eulaの内容を書き込む
+  progress.description = {
+    key: 'server.eula.saving',
+  };
   await eulaPath.writeText(txt);
 
   return agree;
@@ -87,8 +104,6 @@ async function generateEula(
   serverCwdPath: Path,
   worldId: WorldID
 ): Promise<Failable<undefined>> {
-  api.send.UpdateStatus(worldId, 'eula.txtを生成中');
-
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // サーバーを仮起動

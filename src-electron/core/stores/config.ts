@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { mainPath } from '../const';
+import { versionsCachePath } from '../const';
 import { VersionType } from 'src-electron/schema/version';
 
 export type Config = {
@@ -13,8 +13,8 @@ export type Config = {
   };
 };
 // const store = new Store({encryptionKey: '7fb0fce6-ea98-48cb-b7d2-989f15ad20e8'})
-export const config = new Store<Config>({
-  cwd: mainPath.str(),
+export const versionConfig = new Store<Config>({
+  cwd: versionsCachePath.str(),
   name: 'config',
   fileExtension: 'json',
 });

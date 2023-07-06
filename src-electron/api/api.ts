@@ -8,9 +8,7 @@ import {
 } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
-import { Failable } from '../util/error/failable';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
-import { WithError } from '../util/error/witherror';
 import {
   DatapackData,
   CacheFileData,
@@ -19,8 +17,9 @@ import {
   NewFileData,
   CustomMapData,
 } from '../schema/filedata';
-import { ErrorMessage } from '../schema/error';
+import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
+import { PlainProgress } from '../schema/progress';
 
 /**
  * ## APIの利用方法
@@ -54,19 +53,11 @@ export interface API extends IAPI {
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;
 
-    /** サーバー実行(前|後)の画面表示 */
-    UpdateStatus: (
-      world: WorldID,
-      message: string,
-      current?: number,
-      total?: number
-    ) => void;
+    /** サーバー実行(前|後)の進捗画面表示 未実装 */
+    Progress: (world: WorldID, progress: PlainProgress | null) => void;
 
     /** コンソールに文字列を追加 */
     AddConsole: (world: WorldID, chunk: string) => void;
-
-    /** mainプロセス側かでSystemSettingが変更された場合に走る */
-    UpdateSystemSettings: (settings: SystemSettings) => void;
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
@@ -74,6 +65,16 @@ export interface API extends IAPI {
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
     AgreeEula: (world: WorldID, url: string) => Promise<boolean>;
+
+    /**
+     * PC本体をシャットダウンするかどうかのチェック
+     * すべてのサーバーが停止&自動シャットダウンがONのときに発火
+     * タイムアウトを設けてresolveすることを想定
+     *
+     * true : ServerStarterを終了し、本体を即時シャットダウン
+     * false : ServerStarterの起動を継続し、シャットダウンしない
+     */
+    ChechShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る */
@@ -147,6 +148,9 @@ export interface API extends IAPI {
       worldContainer: WorldContainer,
       worldName: string
     ) => Promise<Failable<WorldName>>;
+
+    /** ワールド名が使用可能かどうかを検証する */
+    GetGlobalIP: () => Promise<Failable<string>>;
 
     /** ファイル/ディレクトリ を選択する */
     PickDialog: ((

@@ -1,5 +1,5 @@
 import { onQuit } from '../lifecycle/lifecycle';
-import { getRootLogger } from '../util/logger/logger';
+import { getRootLogger } from '../util/logger';
 import { mainPath } from './const';
 
 const dirPath = mainPath.child('log/serverstarter');

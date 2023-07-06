@@ -1,7 +1,7 @@
-import { Failable } from 'app/src-electron/util/error/failable';
 import { systemSettings } from '../../stores/system';
 import { GithubAccountSetting } from 'src-electron/schema/remote';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { Failable } from 'app/src-electron/schema/error';
 
 /** リポジトリを操作できる登録済みのPATを取得する。 */
 export async function getGitPat(

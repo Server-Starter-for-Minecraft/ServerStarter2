@@ -3,7 +3,7 @@ import { Path } from '../../util/path';
 import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import { JavaComponent, getJavaComponent } from './vanilla';
-import { config } from '../stores/config';
+import { versionConfig } from '../stores/config';
 import { spigotBuildPath, versionsCachePath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../util/subprocess';
@@ -109,7 +109,7 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   // ビルドツールのダウンロードに失敗した場合ローカルにあるデータを使う
   if (isError(buildtool)) {
     // ハッシュ値をコンフィグから読み込む
-    const sha1 = config.get('spigot_buildtool_sha1');
+    const sha1 = versionConfig.get('spigot_buildtool_sha1');
     if (sha1) {
       buildtool = await BytesData.fromPath(buildToolPath.absolute(), {
         type: 'sha1',
@@ -122,7 +122,7 @@ async function readySpigotBuildTool(): Promise<Failable<undefined>> {
   if (isError(buildtool)) return buildtool;
 
   // ハッシュ値をコンフィグに保存
-  config.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
+  versionConfig.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
 
   await buildToolPath.write(buildtool);
 }

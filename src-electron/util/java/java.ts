@@ -1,5 +1,5 @@
 import { runtimePath } from '../../core/const';
-import { config } from '../../core/stores/config';
+import { versionConfig } from '../../core/stores/config';
 import { BytesData } from '../bytesData';
 import { osPlatform } from '../os';
 import { Path } from '../path';
@@ -75,7 +75,7 @@ type AllJson = {
 
 async function getAllJson(): Promise<Failable<AllJson>> {
   try {
-    const allJsonSha1 = config.get('sha1')?.runtime;
+    const allJsonSha1 = versionConfig.get('sha1')?.runtime;
     const data = await BytesData.fromUrlOrPath(
       runtimePath.child('all.json'),
       'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',

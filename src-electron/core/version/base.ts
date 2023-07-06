@@ -3,7 +3,7 @@ import { Path } from '../../util/path';
 import { JavaComponent } from './vanilla';
 import { Failable } from '../../util/error/failable';
 import { versionsCachePath } from '../const';
-import { config } from '../stores/config';
+import { versionConfig } from '../stores/config';
 import { BytesData } from '../../util/bytesData';
 import { rootLoggerHierarchy } from '../logger';
 import { eulaUnnecessaryVersionIds } from './const';
@@ -85,7 +85,7 @@ export const genGetAllVersions = <V extends Version>(
 
     // 結果をローカルに保存
     await jsonpath.write(data);
-    config.set(configkey, await data.hash('sha1'));
+    versionConfig.set(configkey, await data.hash('sha1'));
 
     allVersionsReloadedMap[type] = true;
 
@@ -100,7 +100,7 @@ export async function getAllLocalVersions<V extends Version>(
 ) {
   if (!jsonpath.exists()) return;
 
-  const configSha1 = config.get(configkey);
+  const configSha1 = versionConfig.get(configkey);
   const data = await jsonpath.read();
   if (isError(data)) return;
 
