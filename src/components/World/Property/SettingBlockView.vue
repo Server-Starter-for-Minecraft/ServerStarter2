@@ -24,14 +24,15 @@ const propertiesModel = computed({
 
 const sysStore = useSystemStore()
 
-const defaultProperty = sysStore.staticResouces.properties[prop.settingName]
-const showCancel = () => propertiesModel.value[prop.settingName] !== defaultProperty.default
+const staticDefaultProperty = sysStore.staticResouces.properties[prop.settingName]
+const defaultProperty = sysStore.systemSettings().world.properties[prop.settingName] ?? staticDefaultProperty.default
+const showCancel = () => propertiesModel.value[prop.settingName] !== defaultProperty
 
 /**
  * 設定を規定値に戻す
  */
 function cancelSettings() {
-  propertiesModel.value[prop.settingName] = defaultProperty.default
+  propertiesModel.value[prop.settingName] = defaultProperty
 }
 </script>
 
@@ -58,7 +59,7 @@ function cancelSettings() {
         @click="cancelSettings"
       >
         <q-tooltip>
-          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty.default }}に設定を戻します</p>
+          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty }}に設定を戻します</p>
           <p class="text-caption q-ma-none">「システム設定」>「プロパティ」 より基本設定を変更できます</p>
         </q-tooltip>
       </q-btn>
