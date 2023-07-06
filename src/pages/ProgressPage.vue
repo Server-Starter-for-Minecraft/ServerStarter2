@@ -11,8 +11,9 @@ window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID) => {
   return await promise;
 });
 
-window.API.onUpdateStatus((_event, worldID, message , current, total) => {
-  progressStore.setProgress(message, current=current, total=total, worldID=worldID)
+window.API.onProgress((_event, worldID, progress) => {
+  // TODO: onProgressに対応
+  // progressStore.setProgress(progress. message, current=current, total=total, worldID=worldID)
 });
 </script>
 

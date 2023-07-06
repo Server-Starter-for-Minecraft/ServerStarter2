@@ -40,9 +40,9 @@ window.API.onAddConsole((_event, worldID, chunk) => {
 
 // System設定変更時に設定を反映
 const $t = useI18n()
-window.API.onUpdateSystemSettings((_event, settings) => {
-  $t.locale.value = settings.user.language
-})
+// window.API.onUpdateSystemSettings((_event, settings) => {
+//   $t.locale.value = settings.user.language
+// })
 
 // Windowの起動時処理
 firstProcess()
