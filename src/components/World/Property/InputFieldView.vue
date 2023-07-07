@@ -76,7 +76,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
     />
   </div>
   
-  <div v-if="selectEditer()=='number'" class="row" style="width: 100%;">
+  <div v-else-if="selectEditer()=='number'" class="row" style="width: 100%;">
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
       v-model="model"
@@ -99,14 +99,14 @@ function validationMessage(min?:number, max?:number, step?:number) {
   </div>
   
   <q-toggle
-    v-show="selectEditer()=='boolean'"
+    v-else-if="selectEditer()=='boolean'"
     v-model="model"
     :label="model?.toString()"
     style="font-size: 1rem;"
   />
   
   <SsSelect
-    v-show="selectEditer()=='enum'"
+    v-else-if="selectEditer()=='enum'"
     v-model="model"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
   />
