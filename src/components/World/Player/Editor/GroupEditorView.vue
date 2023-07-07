@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useSystemStore } from 'src/stores/SystemStore'
 import { useDialogPluginComponent } from 'quasar'
 import { iEditorDialogProps, iEditorDialogReturns } from './editorDialog'
+import { keys } from 'src/scripts/obj'
 import SsInput from 'src/components/util/base/ssInput.vue'
 import ItemPlayer from './ItemPlayer.vue'
 
 const prop = defineProps<iEditorDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
+
+const sysStore = useSystemStore()
+const colorOps = keys(sysStore.staticResouces.minecraftColors).map(k => {
+  return { label: k, code: sysStore.staticResouces.minecraftColors[k] }
+})
 
 const inputName = ref(prop.groupName ?? '')
 const inputColorCode = ref(prop.groupColor ?? '')
@@ -41,9 +48,11 @@ function onOKClicked() {
           <q-select 
             v-model="inputColorCode"
             label="グループの色を選択"
-            :options="[{ label: 'red', code: '#ff0000' }, { label: 'black', code: '#000000' }]" emit-value map-options
+            :options="colorOps"
             option-label="label"
             option-value="code"
+            emit-value
+            map-options
             class="col"
           >
             <template v-slot:option="scope">
