@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Prop {
-  onClick: () => void
+  onClick?: () => void
 }
 defineProps<Prop>()
 </script>
@@ -13,7 +13,7 @@ defineProps<Prop>()
   >
     <slot />
 
-    <div class="absolute-top fit">
+    <div v-if="onClick !== void 0" class="absolute-top fit">
       <q-btn flat color="transparent" @click="onClick" class="fit card"/>
     </div>
 

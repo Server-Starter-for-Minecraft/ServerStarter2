@@ -6,9 +6,9 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { iEditorDialogReturns, generateGroup, iEditorDialogProps } from './Editor/editorDialog';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
-import BasePlayerCard from './utils/BasePlayerCard.vue';
 import GroupEditorView from './Editor/GroupEditorView.vue';
 import GroupCardMenu from './utils/GroupCardMenu.vue';
+import BaseActionsCard from '../utils/BaseActionsCard.vue';
 
 interface Prop {
   name: string
@@ -52,7 +52,7 @@ function openEditor() {
 </script>
 
 <template>
-  <base-player-card
+  <BaseActionsCard
     @mouseover="showMenuBtn = true"
     @mouseout="showMenuBtn  = false"
     @click="onCardClicked"
@@ -95,7 +95,7 @@ function openEditor() {
         </q-menu>
       </q-btn>
     </template>
-  </base-player-card>
+  </BaseActionsCard>
 </template>
 
 <style scoped lang="scss">

@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { checkError } from 'src/components/Error/Error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
-import BasePlayerCard from './utils/BasePlayerCard.vue';
-import { onMounted, ref } from 'vue';
-import { checkError } from 'src/components/Error/Error';
+import BaseActionsCard from '../utils/BaseActionsCard.vue';
 
 interface Prop {
   uuid: PlayerUUID
@@ -51,7 +51,7 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
 </script>
 
 <template>
-  <BasePlayerCard
+  <BaseActionsCard
     v-if="player !== void 0" @click="onCardClicked"
     :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''"
   >
@@ -87,7 +87,7 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
         </div>
       </q-card-section>
     </template>
-  </BasePlayerCard>
+  </BaseActionsCard>
 </template>
 
 <style scoped lang="scss">
