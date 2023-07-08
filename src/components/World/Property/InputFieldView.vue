@@ -1,29 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { NumberServerPropertyAnnotation, StringServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
-  modelValue: string | number | boolean
   propertyName: string
   autofocus?: boolean
 }
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
+const model = defineModel<string | number | boolean>({ required: true })
 
 const sysStore = useSystemStore()
 const defaultProperty = sysStore.staticResouces.properties[prop.propertyName]
-
-const model = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
 
 /**
  * Propertyの編集に使用するEditerを指定
@@ -66,7 +55,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
 </script>
 
 <template>
-  <div v-if="selectEditer()=='string'" class="row">
+  <div v-if="typeof model === 'string' && selectEditer()=='string'" class="row">
     <SsInput
       v-model="model"
       dense
@@ -76,7 +65,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
     />
   </div>
   
-  <div v-else-if="selectEditer()=='number'" class="row" style="width: 100%;">
+  <div v-else-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()=='number'" class="row" style="width: 100%;">
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
       v-model="model"

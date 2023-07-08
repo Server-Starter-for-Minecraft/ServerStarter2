@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ValidationRule } from 'quasar/dist/types/api/validation'
-import { computed } from 'vue'
 
-// TODO: defineModel()の使用を検討
-// https://github.com/vuejs/rfcs/discussions/503
 interface Prop {
-  modelValue: any
   label?: string
   dense?: boolean
   autofocus?: boolean
@@ -15,16 +11,7 @@ interface Prop {
 }
 
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const model = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
+const model = defineModel<string | number>()
 </script>
 
 <template>

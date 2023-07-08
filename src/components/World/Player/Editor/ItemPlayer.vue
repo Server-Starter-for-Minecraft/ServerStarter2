@@ -1,25 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from '../utils/PlayerHeadView.vue';
 
 interface Prop {
-  modelValue: PlayerUUID[]
   uuid: PlayerUUID
 }
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const membersModel = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
+const membersModel = defineModel<PlayerUUID[]>({ required: true })
 
 const showDeleteBtn = ref(false)
 

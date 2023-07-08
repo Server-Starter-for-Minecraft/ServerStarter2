@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { OpSetting, PlayerSetting } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -8,20 +7,10 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import GroupEditorView from './Editor/GroupEditorView.vue';
 
 interface Prop {
-  modelValue: PlayerSetting[]
   disable: boolean
 }
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const playerModel = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
+const playerModel = defineModel<PlayerSetting[]>({ required: true })
 
 const $q = useQuasar()
 const playerStore = usePlayerStore()

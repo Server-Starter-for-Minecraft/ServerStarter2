@@ -2,28 +2,15 @@
 import { computed } from 'vue';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 
-interface Prop {
-  modelValue: ServerProperties
-}
-const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const propertiesModel = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
+const model = defineModel<ServerProperties>({ required: true })
 
 const playerJoinToggle = computed({
   get() {
-    return propertiesModel.value['white-list'] && propertiesModel.value['enforce-whitelist'];
+    return model.value['white-list'] && model.value['enforce-whitelist'];
   },
   set(newValue) {
-    propertiesModel.value['white-list'] = newValue;
-    propertiesModel.value['enforce-whitelist'] = newValue;
+    model.value['white-list'] = newValue;
+    model.value['enforce-whitelist'] = newValue;
   },
 })
 </script>

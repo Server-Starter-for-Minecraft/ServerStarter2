@@ -1,26 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import InputFieldView from './InputFieldView.vue';
 
-
 interface Prop {
-  modelValue: ServerProperties
   settingName: string
 }
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const propertiesModel = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
-
+const propertiesModel = defineModel<ServerProperties>({ required: true })
 
 const sysStore = useSystemStore()
 

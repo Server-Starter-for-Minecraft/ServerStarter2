@@ -1,25 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerHeadView from './PlayerHeadView.vue';
 
-interface Prop {
-  modelValue: Player
-}
-const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
 const playerStore = usePlayerStore()
-
-const playerModel = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
+const playerModel = defineModel<Player>({ required: true })
 </script>
 
 <template>

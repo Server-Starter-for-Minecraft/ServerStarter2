@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 
 interface Prop {
-  modelValue: any
   options?: readonly any[]
   label?: string
   disable?: boolean
@@ -12,16 +10,7 @@ interface Prop {
 }
 
 const prop = defineProps<Prop>()
-const emit = defineEmits(['update:model-value'])
-
-const model = computed({
-  get() {
-    return prop.modelValue;
-  },
-  set(newValue) {
-    emit('update:model-value', newValue);
-  },
-})
+const model = defineModel()
 </script>
 
 <template>
