@@ -57,13 +57,13 @@ const playerStore = usePlayerStore()
 
         <span class="text-caption">{{ $t("player.groupList") }}</span>
         <div class="row q-gutter-sm q-pa-sm">
-          <template v-for="group in playerStore.searchGroups()" :key="group">
+          <div v-for="group in playerStore.searchGroups()" :key="group.name" class="col-">
             <GroupCardView
               :name="group.name"
               :color="group.color"
               :players="group.players"
             />
-          </template>
+          </div>
         </div>
       </div>
     </q-scroll-area>

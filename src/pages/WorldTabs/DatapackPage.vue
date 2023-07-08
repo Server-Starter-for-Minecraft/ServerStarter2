@@ -8,9 +8,39 @@ const mainStore = useMainStore()
 </script>
 
 <template>
+  <!-- <ContentsView
+    type-name="データパック"
+    :item-names="mainStore.world.additional.datapacks"
+    :candidate-items="sysStore.cacheContents.datapacks"
+  /> -->
   <ContentsView
     type="datapack"
     :item-names="mainStore.world.additional.datapacks"
-    :candidate-items="sysStore.systemSettings().cache.datapacks"
+    :candidate-items="[
+      {
+        kind: 'datapack',
+        'description': 'これはテストデータパックこれはテストデータパック',
+        'type': 'system',
+        'name': 'testPack',
+        'ext': '',
+        'isFile': true,
+      },
+      {
+        kind: 'datapack',
+        'description': 'これはテストデータパック',
+        'type': 'system',
+        'name': 'testPack',
+        'ext': '',
+        'isFile': true,
+      },
+      {
+        kind: 'datapack',
+        'description': 'これはテストデータパック',
+        'type': 'system',
+        'name': 'testPack',
+        'ext': '',
+        'isFile': true,
+      },
+    ]"
   />
 </template>

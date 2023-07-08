@@ -1,37 +1,42 @@
 <script setup lang="ts">
+import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import CardBtn from './CardBtn.vue';
+
 interface Prop {
   name: string
   desc?: string
-  actionType: 'delete' | 'add'
+  actionType?: 'delete' | 'add'
   color?: string
+  onClick?: () => void
 }
 defineProps<Prop>()
 </script>
 
 <template>
-  <q-card flat class="card" :style="{'background': color}">
-    <q-card-section>
-      <h1 class="q-py-none q-my-none title-text">{{ name }}</h1>
-      <div v-if="desc !== void 0" class="text-caption q-pt-md">{{ desc }}</div>
-    </q-card-section>
-    <div class="text-h5 absolute-bottom text-right">
-      <q-btn v-show="actionType === 'delete'" flat color="grey" size="1.1rem" icon="delete"/>
-      <q-btn v-show="actionType === 'add'" flat color="grey" size="1.1rem" icon="add"/>
-    </div>
-  </q-card>
+  <BaseActionsCard @click="onClick" :style="{'background-color': color}">
+    <template #default>
+      <!-- TODO: heightの定数指定を解消 -->
+      <q-item class="q-pt-md" style="height: 5rem; padding-right: 2rem;">
+        <q-item-section top>
+          <q-item-label class="contentsName text-omit">{{ name }}</q-item-label>
+          <q-item-label v-if="desc !== void 0" class="text-omit" style="opacity: .7;">
+            {{ desc }}
+          </q-item-label>
+        </q-item-section>
+      </q-item>
+    </template>
+
+    <template #actions>
+      <div v-if="actionType !== void 0" class="absolute-bottom-right">
+        <CardBtn v-if="actionType === 'delete'" icon="delete" />
+        <CardBtn v-else-if="actionType === 'add'" icon="add" />
+      </div>
+    </template>
+  </BaseActionsCard>
 </template>
 
 <style scoped lang="scss">
-h1 {
-  font-size: 2rem;
-}
-
-.card {
-  width: 100%;
-  max-width: 280px;
-}
-
-.title-text {
-  overflow-wrap: break-word;
+.contentsName {
+  font-size: 1.5rem;
 }
 </style>

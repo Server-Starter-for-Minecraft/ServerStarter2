@@ -52,7 +52,10 @@ export async function afterWindow() {
   getAllVersion(false);
 
   // システムに登録済みのプレイヤーデータを取得しておく
-  getChachePlayers();
+  getCachePlayers();
+
+  // datapackなどのCacheコンテンツの取得
+  getCacheContents();
 }
 
 /**
@@ -79,10 +82,17 @@ async function getAllVersion(useCache: boolean) {
 /**
  * プレイヤーデータの取得を行っておき、キャッシュデータの作成を行う
  */
-async function getChachePlayers() {
+async function getCachePlayers() {
   const sysStore = useSystemStore();
   const playerStore = usePlayerStore();
   const playerUUIDs = sysStore.systemSettings().player.players
   const failablePlayers = await Promise.all(playerUUIDs.map(uuid => window.API.invokeGetPlayer(uuid, 'uuid')))
   failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）`))
+}
+
+async function getCacheContents() {
+  const sysStore = useSystemStore();
+  sysStore.cacheContents.datapacks = (await window.API.invokeGetCacheContents('datapack')).value
+  sysStore.cacheContents.plugins = (await window.API.invokeGetCacheContents('plugin')).value
+  sysStore.cacheContents.mods = (await window.API.invokeGetCacheContents('mod')).value
 }

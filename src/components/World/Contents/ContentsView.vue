@@ -1,43 +1,74 @@
-<script setup lang="ts">
-import { FileData, NewData } from 'app/src-electron/schema/filedata';
+<script setup lang="ts" generic="T extends Record<string, any>">
+import { AllFileData, CacheFileData } from 'app/src-electron/schema/filedata';
+import { useMainStore } from 'src/stores/MainStore';
 import ItemCardView from './itemCardView.vue';
+import { checkError } from 'src/components/Error/Error';
 
 interface Prop {
   type: 'datapack' | 'plugin' | 'mod'
-  itemNames?: (FileData | NewData)[]
-  candidateItems?: (FileData | NewData)[]
+  itemNames: AllFileData<T>[]
+  candidateItems: CacheFileData<T>[]
 }
-defineProps<Prop>()
+const prop = defineProps<Prop>()
+
+const mainStore = useMainStore()
+
+
+function addContent2World(content: AllFileData<T>) {
+  // TODO: cacheFileDataへの登録もフロントで行うのか？
+  (mainStore.world.additional[`${prop.type}s`] as AllFileData<T>[]).push(content)
+}
+
+async function importNewContent() {
+  switch (prop.type) {
+    case 'datapack':
+      // TODO: 導入するデータパックについて、isFile = false|true を選択できるUIの提供
+      // TODO: 翻訳時にtypeのアルファベットは全て日本語（or 適切な表現）に変換する
+      // TODO: 何もファイルを選択せずに修了した場合もエラー扱いとなるため、翻訳時にそのことを含意する文言に修正
+      checkError(
+        await window.API.invokePickDialog({type: 'datapack', isFile: true}),
+        c => addContent2World(c),
+        `${prop.type}の導入に失敗しました`
+      )
+      break;
+    case 'plugin':
+      checkError(
+        await window.API.invokePickDialog({type: 'plugin'}),
+        c => addContent2World(c),
+        `${prop.type}の導入に失敗しました`
+      )
+      break;
+    case 'mod':
+      checkError(
+        await window.API.invokePickDialog({type: 'mod'}),
+        c => addContent2World(c),
+        `${prop.type}の導入に失敗しました`
+      )
+    default:
+      break;
+  }
+}
 </script>
 
 <template>
-  <div class="q-pl-xl">
-    <h1>{{ type }}管理</h1>
+  <div class="q-px-md">
+    <h1 class="q-py-xs">{{ type }}管理</h1>
   
-    <h2>導入済み{{ type }}</h2>
-    <div class="q-pa-md row items-start q-gutter-md">
-      <template v-for="item in itemNames" :key="item">
+    <span class="text-caption">導入済み{{ type }}</span>
+    <div class="row q-gutter-md q-pa-sm">
+      <div v-for="item in itemNames" :key="item.id" class="col-">
         <ItemCardView :name="item.name" :desc="item.description" action-type="delete" />
-      </template>
+      </div>
     </div>
+
+    <q-separator class="q-my-md" />
     
-    <h2>{{ type }}を追加</h2>
-    <div class="q-pa-md row items-start q-gutter-md">
-      <ItemCardView name="新規" action-type="add" color="red"/>
-      <template v-for="item in candidateItems" :key="item">
+    <span class="text-caption">{{ type }}を追加</span>
+    <div class="row q-gutter-sm q-pa-sm col-">
+      <ItemCardView name="新規導入" color="#2E5F19" @click="importNewContent"/>
+      <template v-for="item in candidateItems" :key="item.id">
         <ItemCardView :name="item.name" :desc="item.description" action-type="add" />
       </template>
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-h1 {
-  margin-top: 0;
-  font-size: 2.5rem;
-}
-
-h2 {
-  font-size: 2rem;
-}
-</style>
