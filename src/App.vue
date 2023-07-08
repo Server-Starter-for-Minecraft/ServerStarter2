@@ -20,6 +20,8 @@ const consoleStore = useConsoleStore()
 
 // routerを定義
 const router = useRouter()
+// 言語設定を定義
+const $t = useI18n()
 
 // 仮のテーマを適用する
 const $q = useQuasar();
@@ -45,18 +47,15 @@ setOpenDialogFunc((args) => {
   })
 })
 
-// System設定変更時に設定を反映
-const $t = useI18n()
-// window.API.onUpdateSystemSettings((_event, settings) => {
-//   $t.locale.value = settings.user.language
-// })
 
 // Windowの起動時処理
 firstProcess()
 setSubscribe()
 
 
-// ユーザー設定を反映する
+/**
+ * ユーザー設定を反映する
+ */
 async function setUserSettings() {
   // 言語設定
   $t.locale.value = sysStore.systemSettings().user.language
@@ -67,6 +66,9 @@ async function setUserSettings() {
   $q.dark.set(isAuto ? 'auto' : isDark)
 }
 
+/**
+ * システム設定を読み込んだ後、起動時処理を行う
+ */
 async function firstProcess() {
   // systemSettingsの読み込み
   sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
@@ -78,6 +80,9 @@ async function firstProcess() {
   router.push('/init')
 }
 
+/**
+ * 変数の変更に合わせて処理を入れるためのSubscriberを定義する
+ */
 function setSubscribe() {
   // TODO: SetWorldの戻り値を反映する場合にはcurrentSelectedIDを利用して当該ワールドのデータを更新する
   // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
