@@ -7,9 +7,10 @@ import { useConsoleStore } from './stores/ConsoleStore';
 import { useSystemStore } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { checkError, setRouter } from 'src/components/Error/Error';
+import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
 import { deepCopy } from './scripts/deepCopy';
 import PopupDialog from './components/util/popupDialog.vue';
+import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
@@ -19,7 +20,6 @@ const consoleStore = useConsoleStore()
 
 // routerを定義
 const router = useRouter()
-setRouter(router)
 
 // 仮のテーマを適用する
 const $q = useQuasar();
@@ -36,6 +36,13 @@ window.API.onFinishServer((_event, worldID) => {
 // サーバーに送信されたコンソールの処理
 window.API.onAddConsole((_event, worldID, chunk) => {
   consoleStore.setConsole(worldID, chunk);
+})
+// エラーが発生した際にDialogを表示
+setOpenDialogFunc((args) => {
+  $q.dialog({
+    component: ErrorDialogView,
+    componentProps: args
+  })
 })
 
 // System設定変更時に設定を反映
