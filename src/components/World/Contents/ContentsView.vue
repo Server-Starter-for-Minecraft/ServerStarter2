@@ -6,7 +6,6 @@ import { checkError } from 'src/components/Error/Error';
 
 interface Prop {
   type: 'datapack' | 'plugin' | 'mod'
-  itemNames: AllFileData<T>[]
   candidateItems: CacheFileData<T>[]
 }
 const prop = defineProps<Prop>()
@@ -28,21 +27,21 @@ async function importNewContent() {
       checkError(
         await window.API.invokePickDialog({type: 'datapack', isFile: true}),
         c => addContent2World(c),
-        `${prop.type}の導入に失敗しました`
+        `${prop.type}の導入は行われませんでした`
       )
       break;
     case 'plugin':
       checkError(
         await window.API.invokePickDialog({type: 'plugin'}),
         c => addContent2World(c),
-        `${prop.type}の導入に失敗しました`
+        `${prop.type}の導入は行われませんでした`
       )
       break;
     case 'mod':
       checkError(
         await window.API.invokePickDialog({type: 'mod'}),
         c => addContent2World(c),
-        `${prop.type}の導入に失敗しました`
+        `${prop.type}の導入は行われませんでした`
       )
     default:
       break;
@@ -56,8 +55,9 @@ async function importNewContent() {
   
     <span class="text-caption">導入済み{{ type }}</span>
     <div class="row q-gutter-md q-pa-sm">
-      <div v-for="item in itemNames" :key="item.id" class="col-">
-        <ItemCardView :name="item.name" :desc="item.description" action-type="delete" />
+      <div v-for="item in mainStore.world.additional[`${type}s`]" :key="item.name" class="col-">
+        <ItemCardView v-if="'description' in item" :name="item.name" :desc="item.description" action-type="delete" />
+        <ItemCardView v-else :name="item.name" action-type="delete" />
       </div>
     </div>
 
@@ -66,6 +66,8 @@ async function importNewContent() {
     <span class="text-caption">{{ type }}を追加</span>
     <div class="row q-gutter-sm q-pa-sm col-">
       <ItemCardView name="新規導入" color="#2E5F19" @click="importNewContent"/>
+      <!-- TODO: 導入済みのコンテンツは表示しない -->
+      <!-- TODO: 上記と同じようにcandidateItemsを引数として受けずにSysStoreから直接取得？ -->
       <template v-for="item in candidateItems" :key="item.id">
         <ItemCardView :name="item.name" :desc="item.description" action-type="add" />
       </template>
