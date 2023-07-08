@@ -40,7 +40,7 @@ const playerStore = usePlayerStore()
       <div class="q-py-md fit">
         <div v-show="playerStore.searchName !== ''" class="q-pb-md">
           <span class="text-caption">新規プレイヤー</span>
-          <SearchResultView v-model="mainStore.world.players" />
+          <SearchResultView />
         </div>
 
         <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
@@ -59,7 +59,6 @@ const playerStore = usePlayerStore()
         <div class="row q-gutter-sm q-pa-sm">
           <template v-for="group in playerStore.searchGroups()" :key="group">
             <GroupCardView
-              v-model="mainStore.world.players"
               :name="group.name"
               :color="group.color"
               :players="group.players"
