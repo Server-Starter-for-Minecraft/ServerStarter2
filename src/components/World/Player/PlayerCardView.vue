@@ -62,7 +62,7 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
         </q-item-section>
 
         <q-item-section top>
-          <q-item-label class="name">{{ player.name }}</q-item-label>
+          <q-item-label class="name text-omit">{{ player.name }}</q-item-label>
           <q-item-label v-show="opLevel !== void 0" caption class="q-pt-xs" style="opacity: 0.7;">
             権限レベル {{ opLevel }}
           </q-item-label>
@@ -97,8 +97,5 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
 
 .name {
   font-size: 1.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

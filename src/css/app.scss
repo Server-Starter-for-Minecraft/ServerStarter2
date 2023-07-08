@@ -10,6 +10,13 @@ h1 {
   padding-bottom: 0rem;
 }
 
+// テキストを１行に制限してはみ出した分は省略する
+.text-omit {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // スクロールバー
 html {
     overflow: overlay; 
