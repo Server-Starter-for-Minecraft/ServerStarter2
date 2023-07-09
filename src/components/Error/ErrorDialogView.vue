@@ -7,12 +7,13 @@ const prop = defineProps<iErrorDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 
+const animationSpeed  = 200
 const timeCounter = ref(0)
 closeCounter()
 
 function closeCounter() {
   timeCounter.value += 0.01
-  if (timeCounter.value < 1) {
+  if (timeCounter.value < 1 + animationSpeed / 10000) {
     setTimeout(closeCounter, 100)
   }
   else {
@@ -33,7 +34,7 @@ function closeCounter() {
     <q-card class="dialogCard fixed-bottom-right q-my-md">
       <q-linear-progress
         :value="timeCounter"
-        animation-speed="200"
+        :animation-speed="animationSpeed"
         color="primary"
       />
 
