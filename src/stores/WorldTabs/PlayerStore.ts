@@ -1,11 +1,10 @@
-import { StoreDefinition, defineStore } from 'pinia';
-import { useSystemStore } from '../SystemStore';
-import { OpLevel, Player, PlayerSetting } from 'app/src-electron/schema/player';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { sendError } from 'src/components/Error/Error';
-import { useMainStore } from '../MainStore';
-import { isValid } from 'src/scripts/error';
 import { watch } from 'vue';
+import { defineStore } from 'pinia';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { OpLevel, Player, PlayerSetting } from 'app/src-electron/schema/player';
+import { isValid } from 'src/scripts/error';
+import { useSystemStore } from '../SystemStore';
+import { useMainStore } from '../MainStore';
 
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
@@ -88,11 +87,8 @@ export const usePlayerStore = defineStore('playerStore', {
       // プレイヤーをワールドに追加
       // TODO: 実装の最適化（PlayersをSet型にする？）
       if (isValid(mainStore.world.players)) {
-        if (!mainStore.world.players.map(p => p.uuid).includes(player.uuid)) {
+        if (!mainStore.world.players.find(p => p.uuid === player.uuid)) {
           mainStore.world.players.push(player)
-        }
-        else {
-          sendError(`${player.name}はすでに登録されているため、登録処理が行われませんでした`)
         }
       }
     
