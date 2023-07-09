@@ -1,21 +1,26 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
 import { versionTypes } from 'app/src-electron/schema/version';
+import { assets } from 'src/assets/assets';
 import { isError } from 'src/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useDialogStore } from 'src/stores/DialogStore';
+import { iIconSelectReturns } from 'src/components/World/HOME/IconSelect'
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
+import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 const sysStore = useSystemStore()
 const dialogStore = useDialogStore()
+const $q = useQuasar()
 const { t } = useI18n()
 
 const customWorldPath = ref(null)
@@ -53,18 +58,43 @@ async function removeWorld() {
     mainStore.removeWorld()
   }
 }
+
+function openIconSelecter() {
+  $q.dialog({
+    component: IconSelectView,
+  }).onOk((payload: iIconSelectReturns) => {
+    mainStore.world.avater_path = payload.afterImg
+  })
+}
 </script>
 
 <template>
   <div class="mainField">
-    <!-- TODO: 入力欄のバリデーション -->
-    <!-- TODO: 入力をWorldに即座に反映せず、入力終了時に反映する -->
-    <h1 class="q-mt-none">{{ $t("home.worldName.title") }}</h1>
-    <SsInput
-      v-model="mainStore.world.name"
-      :label="$t('home.worldName.enterName')"
-      :debounce="200"
-    />
+    <q-item class="q-pa-none">
+      <q-item-section>
+        <!-- TODO: 入力欄のバリデーション -->
+        <!-- TODO: 入力をWorldに即座に反映せず、入力終了時に反映する -->
+        <h1 class="q-mt-none">{{ $t("home.worldName.title") }}</h1>
+        <SsInput
+          v-model="mainStore.world.name"
+          :label="$t('home.worldName.enterName')"
+          :debounce="200"
+        />
+      </q-item-section>
+      <q-item-section side>
+        <q-avatar size="5rem" class="q-ml-lg">
+          <q-img :src="mainStore.world.avater_path ?? assets.svg.defaultWorldIcon" />
+          <q-btn
+            dense
+            outline
+            size="2.5rem"
+            icon=""
+            @click="openIconSelecter"
+            class="absolute-center"
+          />
+        </q-avatar>
+      </q-item-section>
+    </q-item>
 
     <!-- TODO: バージョン一覧の取得 -->
     <h1>{{ $t("home.version.title") }}</h1>
