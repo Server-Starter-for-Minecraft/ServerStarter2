@@ -58,14 +58,14 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     switch (options.type) {
       case 'image':
         filters.push({
-          extensions: ['.png'],
+          extensions: ['png'],
           name: 'image',
         });
         break;
       case 'mod':
       case 'plugin':
         filters.push({
-          extensions: ['.jar'],
+          extensions: ['jar'],
           name: 'jar',
         });
         break;
@@ -73,7 +73,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
       case 'world':
         if (options.isFile) {
           filters.push({
-            extensions: ['.zip'],
+            extensions: ['zip'],
             name: 'zip',
           });
         }
