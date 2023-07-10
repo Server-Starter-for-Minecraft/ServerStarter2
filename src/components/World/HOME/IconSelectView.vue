@@ -1,30 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { iIconSelectReturns } from './IconSelect';
 import { assets } from 'src/assets/assets';
-import Cropper from 'cropperjs';
-import "cropperjs/dist/cropper.css";
-import ClipImg from './ClipImg.vue';
-
+import { useMainStore } from 'src/stores/MainStore';
+import ClipImg from './IconSelecter/ClipImg.vue';
+import IconBtn from './IconSelecter/IconBtn.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 
 const tab = ref('defaultIcon')
-const cropper = ref()
-const resultImg = ref()
-
-function onOKClicked() {
-  onDialogOK({
-
-  } as iIconSelectReturns)
-}
-
-function getImg() {
-  console.log(cropper.value)
-  console.log(cropper.value.getCropBoxData())
-}
+const mainStore = useMainStore()
+mainStore.iconCandidate = mainStore.world.avater_path ?? assets.svg.defaultWorldIcon
 </script>
 
 <template>
@@ -53,23 +40,12 @@ function getImg() {
             <q-tab-panel name="defaultIcon">
               <div class="row fit q-gutter-md">
                 <template v-for="n in 15" :key="n">
-                  <q-avatar square size="2rem" class="q-pb-sm" >
-                    <q-img :src="assets.svg.systemLogo" :ratio="1" />
-                    <q-btn
-                      dense
-                      flat
-                      outline
-                      size="1rem"
-                      icon=""
-                      class="absolute-center"
-                    />
-                  </q-avatar>
+                  <IconBtn :logo="assets.svg.systemLogo" />
                 </template>
               </div>
             </q-tab-panel>
 
             <q-tab-panel name="customImg">
-              <!-- TOOD: 画像切り出しの実装 -->
               <ClipImg />
             </q-tab-panel>
           </q-tab-panels>
@@ -78,10 +54,14 @@ function getImg() {
         <q-item-section side>
           <p class="text-caption full-width q-ma-none">プレビュー</p>
           <q-avatar square size="5rem">
-            <q-img src="https://cdn.quasar.dev/img/linux-avatar.png" />
+            <q-img :src="mainStore.iconCandidate" />
           </q-avatar>
         </q-item-section>
       </q-item>
+
+      <q-card-actions>
+        <q-btn color="primary" label="登録" @click="onDialogOK" />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>

@@ -9,7 +9,6 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useDialogStore } from 'src/stores/DialogStore';
-import { iIconSelectReturns } from 'src/components/World/HOME/IconSelect'
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
@@ -62,8 +61,8 @@ async function removeWorld() {
 function openIconSelecter() {
   $q.dialog({
     component: IconSelectView,
-  }).onOk((payload: iIconSelectReturns) => {
-    mainStore.world.avater_path = payload.afterImg
+  }).onOk(() => {
+    mainStore.world.avater_path = mainStore.iconCandidate
   })
 }
 </script>
@@ -82,7 +81,7 @@ function openIconSelecter() {
         />
       </q-item-section>
       <q-item-section side>
-        <q-avatar size="5rem" class="q-ml-lg">
+        <q-avatar square size="5rem" class="q-ml-lg">
           <q-img :src="mainStore.world.avater_path ?? assets.svg.defaultWorldIcon" />
           <q-btn
             dense

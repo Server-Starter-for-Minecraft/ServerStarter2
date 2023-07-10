@@ -1,5 +1,6 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { ImageURI } from 'app/src-electron/schema/brands';
 import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter } from 'src/scripts/objFillter';
@@ -8,7 +9,8 @@ export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
       selectedWorldID: '' as WorldID,
-      newWorlds: [] as WorldID[]
+      newWorlds: [] as WorldID[],
+      iconCandidate: undefined as ImageURI | undefined
     };
   },
   getters: {
