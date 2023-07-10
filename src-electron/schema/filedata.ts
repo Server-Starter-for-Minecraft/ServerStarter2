@@ -1,3 +1,4 @@
+import { ImageURI } from './brands';
 import { WorldID } from './world';
 
 /** ワールドに保存されたmod/plugin/datapackのデータを表す */
@@ -56,4 +57,11 @@ export type CustomMapData = {
   kind: 'map';
   path: string;
   isFile: boolean;
+};
+
+/** 画像データ(ImageURI) */
+export type ImageURIData = {
+  kind: 'image';
+  path: string;
+  data: ImageURI;
 };
