@@ -36,7 +36,18 @@ def writeTS(svgDict:dict[str, str], pngDict:dict[str, str]):
 // このファイルは'encodeAssets.py'による自動生成
 // Assetsが増えた場合には上記のPythonを実行することでAssetsを更新する
 
-export const assets = {
+import { ImageURI } from "app/src-electron/schema/brands"
+
+interface iAssets {
+  svg: {
+    [key: string]: ImageURI
+  },
+  png: {
+    [key: string]: ImageURI
+  },
+}
+
+export const assets: iAssets = {
   svg: {
 """
 
