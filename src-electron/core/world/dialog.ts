@@ -52,15 +52,44 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
 
     const props: Electron.OpenDialogOptions['properties'] = [];
 
+    const filters: Electron.FileFilter[] = [];
+
+    // 拡張子制約を設ける
+    switch (options.type) {
+      case 'image':
+        filters.push({
+          extensions: ['.png'],
+          name: 'image',
+        });
+        break;
+      case 'mod':
+      case 'plugin':
+        filters.push({
+          extensions: ['.jar'],
+          name: 'jar',
+        });
+        break;
+      case 'datapack':
+      case 'world':
+        if (options.isFile) {
+          filters.push({
+            extensions: ['.zip'],
+            name: 'zip',
+          });
+        }
+    }
+
     const isFile = options.isFile ?? true;
     if (!isFile) props.push('openDirectory');
 
+    // ファイル選択ダイアログを開く
     const result = await dialog.showOpenDialog(window, {
       properties: props,
       title: options.title,
       defaultPath: options.defaultPath,
       buttonLabel: options.buttonLabel,
       message: options.message,
+      filters,
     });
 
     // キャンセルされた場合
