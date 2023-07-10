@@ -3,8 +3,9 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useMainStore } from 'src/stores/MainStore';
-import ClipImg from './IconSelecter/ClipImg.vue';
+import { checkError } from 'src/components/Error/Error';
 import IconBtn from './IconSelecter/IconBtn.vue';
+import ClipImg from './IconSelecter/ClipImg.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
@@ -12,6 +13,20 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 const tab = ref('defaultIcon')
 const mainStore = useMainStore()
 mainStore.iconCandidate = mainStore.world.avater_path ?? assets.svg.defaultWorldIcon
+
+const uploaded = ref(false)
+async function onUpload() {
+  const failableImg = await window.API.invokePickDialog({ type: 'image' })
+  
+  checkError(
+    failableImg,
+    async (img) => {
+      mainStore.iconCandidate = img.data
+      uploaded.value = true
+    },
+    '画像の取得に失敗しました'
+  )
+}
 </script>
 
 <template>
@@ -46,7 +61,8 @@ mainStore.iconCandidate = mainStore.world.avater_path ?? assets.svg.defaultWorld
             </q-tab-panel>
 
             <q-tab-panel name="customImg">
-              <ClipImg />
+              <q-btn color="blue" label="画像を選択" @click="onUpload" />
+              <ClipImg v-if="uploaded" :is="uploaded" />
             </q-tab-panel>
           </q-tab-panels>
         </q-item-section>

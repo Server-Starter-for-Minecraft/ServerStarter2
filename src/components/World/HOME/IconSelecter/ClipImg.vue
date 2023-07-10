@@ -4,13 +4,11 @@ import imageCompression from 'browser-image-compression';
 import "cropperjs/dist/cropper.css";
 import Cropper from 'cropperjs';
 import { ImageURI } from 'app/src-electron/schema/brands';
-import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
 
-const defaultImg = ref()
+const mainStore = useMainStore()
 const cropImg = ref()
 let cropper: Cropper | undefined = undefined
-const mainStore = useMainStore()
 
 function onClicked() {
   // Cropper.jsの出力をcanvas要素形式で受け取る
@@ -33,15 +31,6 @@ function onClicked() {
   });
 }
 
-// async function onUpload() {
-//   const failableImg = await window.API.invokePickDialog()
-//   checkError(
-//     failableImg,
-//     img => defaultImg.value = img,
-//     '画像の取得に失敗しました'
-//   )
-// }
-
 onMounted(() => {
   cropper = new Cropper(cropImg.value, {
     aspectRatio: 1,
@@ -54,18 +43,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <img ref="cropImg" width="200" height="200" alt="Vue logo" src="https://cdn.quasar.dev/img/linux-avatar.png">
-  <q-btn color="orange" label="プレビュー" @click="onClicked" />
-  <!-- <q-btn v-if="defaultImg === void 0" color="blue" label="画像を選択" @click="onUpload" />
-  <q-card v-else flat>
+  <q-card flat>
     <q-card-section>
-      <img ref="cropImg" width="200" height="200" alt="Vue logo" :src="defaultImg">
+      <img ref="cropImg" width="200" height="200" alt="Vue logo" :src="mainStore.iconCandidate">
     </q-card-section>
     <q-card-actions>
-      <q-btn color="blue" label="画像を選択" @click="onUpload" />
       <q-btn color="orange" label="プレビュー" @click="onClicked" />
     </q-card-actions>
-  </q-card> -->
+  </q-card>
 </template>
 
 <style scoped lang="scss">
