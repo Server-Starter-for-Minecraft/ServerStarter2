@@ -4,6 +4,7 @@ import { Failable } from '../../util/error/failable';
 import {
   CustomMapData,
   DatapackData,
+  ImageURIData,
   ModData,
   NewFileData,
   PluginData,
@@ -14,6 +15,7 @@ import { Path } from 'app/src-electron/util/path';
 import { pluginFiles } from './files/addtional/plugin';
 import { modFiles } from './files/addtional/mod';
 import { loadCustomMap } from './cusomMap';
+import { pickImage } from '../misc/pickImage';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -29,12 +31,19 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     options: { type: 'mod' } & DialogOptions
   ): Promise<Failable<NewFileData<ModData>>>;
   async function result(
+    options: { type: 'image' } & DialogOptions
+  ): Promise<Failable<ImageURIData>>;
+  async function result(
     options: {
-      type: 'datapack' | 'world' | 'plugin' | 'mod';
+      type: 'datapack' | 'world' | 'plugin' | 'mod' | 'image';
       isFile?: boolean;
     } & DialogOptions
   ): Promise<
-    Failable<NewFileData<DatapackData | PluginData | ModData> | CustomMapData>
+    Failable<
+      | NewFileData<DatapackData | PluginData | ModData>
+      | CustomMapData
+      | ImageURIData
+    >
   > {
     const window = windowGetter();
 
@@ -73,6 +82,8 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         return pluginFiles.loadNew(path);
       case 'mod':
         return modFiles.loadNew(path);
+      case 'image':
+        return pickImage(path);
     }
   }
   return result;
