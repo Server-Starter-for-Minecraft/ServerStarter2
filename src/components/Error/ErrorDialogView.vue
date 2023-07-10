@@ -12,7 +12,7 @@ const timeCounter = ref(0)
 closeCounter()
 
 function closeCounter() {
-  timeCounter.value += 0.01
+  timeCounter.value += 0.02
   if (timeCounter.value < 1 + animationSpeed / 10000) {
     setTimeout(closeCounter, 100)
   }
@@ -32,12 +32,6 @@ function closeCounter() {
     transition-hide="slide-right"
   >
     <q-card class="dialogCard fixed-bottom-right q-my-md">
-      <q-linear-progress
-        :value="timeCounter"
-        :animation-speed="animationSpeed"
-        color="primary"
-      />
-
       <q-card-section horizontal>
         <q-card-section class="row items-center no-wrap">
           <!-- TODO: check.arg, check.keyによってエラー文をi18nに登録する -->
@@ -55,6 +49,12 @@ function closeCounter() {
           <q-btn dense round icon="close" size=".8rem" @click="onDialogCancel" />
         </q-card-actions>
       </q-card-section>
+
+      <q-linear-progress
+        :value="timeCounter"
+        :animation-speed="animationSpeed"
+        color="primary"
+      />
     </q-card> 
   </q-dialog>
 </template>
