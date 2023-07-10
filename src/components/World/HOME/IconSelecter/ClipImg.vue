@@ -45,7 +45,7 @@ onMounted(() => {
 <template>
   <q-card flat>
     <q-card-section>
-      <img ref="cropImg" width="200" height="200" alt="Vue logo" :src="mainStore.iconCandidate">
+      <img ref="cropImg" alt="Vue logo" :src="mainStore.iconCandidate">
     </q-card-section>
     <q-card-actions>
       <q-btn color="orange" label="プレビュー" @click="onClicked" />
