@@ -461,7 +461,7 @@ export class WorldHandler {
     if (!sys.user.autoShutDown) return;
 
     // フロントエンドにシャットダウンするかどうかを問い合わせる
-    const doShutDown = await api.invoke.ChechShutdown();
+    const doShutDown = await api.invoke.CheckShutdown();
 
     // シャットダウンがキャンセルされた時何もせずに終了
     if (!doShutDown) return;

@@ -75,7 +75,7 @@ export interface API extends IAPI {
      * true : ServerStarterを終了し、本体を即時シャットダウン
      * false : ServerStarterの起動を継続し、シャットダウンしない
      */
-    ChechShutdown: () => Promise<boolean>;
+    CheckShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る */
