@@ -64,7 +64,7 @@ export function getFrontAPIListener(
     },
     handle: {
       AgreeEula: invoke('AgreeEula', window),
-      ChechShutdown: invoke('ChechShutdown', window),
+      CheckShutdown: invoke('CheckShutdown', window),
     },
   };
   return result;
