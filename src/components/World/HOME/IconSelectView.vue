@@ -16,6 +16,7 @@ mainStore.iconCandidate = mainStore.world.avater_path ?? assets.svg.defaultWorld
 
 const uploaded = ref(false)
 async function onUpload() {
+  uploaded.value = false
   const failableImg = await window.API.invokePickDialog({ type: 'image' })
   
   checkError(
@@ -27,30 +28,35 @@ async function onUpload() {
     '画像の取得に失敗しました'
   )
 }
+
+function onTabChanged() {
+  if (tab.value === 'customImg') {
+    onUpload()
+  }
+}
 </script>
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card>
       <h1 class="q-pa-none q-ml-md" style="font-size: 1.2rem;">サーバーアイコンの設定</h1>
+      <q-tabs
+        v-model="tab"
+        @update:model-value="onTabChanged"
+        dense
+        class="text-grey"
+        active-color="primary"
+        indicator-color="primary"
+        align="justify"
+        narrow-indicator
+      >
+        <q-tab name="defaultIcon" label="基本アイコン" />
+        <q-tab name="customImg" label="画像から選択" />
+      </q-tabs>
+
       <q-separator />
       <q-item class="q-pl-none">
         <q-item-section>
-          <q-tabs
-            v-model="tab"
-            dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
-            align="justify"
-            narrow-indicator
-          >
-            <q-tab name="defaultIcon" label="基本アイコン" />
-            <q-tab name="customImg" label="画像から選択" />
-          </q-tabs>
-
-          <q-separator />
-
           <q-tab-panels v-model="tab" animated>
             <q-tab-panel name="defaultIcon">
               <div class="row fit q-gutter-md">
@@ -60,7 +66,7 @@ async function onUpload() {
               </div>
             </q-tab-panel>
 
-            <q-tab-panel name="customImg">
+            <q-tab-panel name="customImg" class="q-pr-none">
               <q-btn color="blue" label="画像を選択" @click="onUpload" />
               <ClipImg v-if="uploaded" :is="uploaded" />
             </q-tab-panel>
@@ -68,15 +74,19 @@ async function onUpload() {
         </q-item-section>
 
         <q-item-section side>
-          <p class="text-caption full-width q-ma-none">プレビュー</p>
-          <q-avatar square size="5rem">
-            <q-img :src="mainStore.iconCandidate" />
-          </q-avatar>
+          <q-space />
+          <div class="q-py-md">
+            <p class="text-caption full-width q-ma-none">プレビュー</p>
+            <q-avatar square size="5rem">
+              <q-img :src="mainStore.iconCandidate" />
+            </q-avatar>
+          </div>
+          <q-space />
+          <q-btn color="primary" label="登録" @click="onDialogOK" />
         </q-item-section>
       </q-item>
 
       <q-card-actions>
-        <q-btn color="primary" label="登録" @click="onDialogOK" />
       </q-card-actions>
     </q-card>
   </q-dialog>

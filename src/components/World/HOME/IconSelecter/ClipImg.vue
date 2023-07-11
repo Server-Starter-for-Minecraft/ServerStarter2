@@ -10,7 +10,7 @@ const mainStore = useMainStore()
 const cropImg = ref()
 let cropper: Cropper | undefined = undefined
 
-function onClicked() {
+function updateImg() {
   // Cropper.jsの出力をcanvas要素形式で受け取る
   var canvas = cropper?.getCroppedCanvas();
 
@@ -34,22 +34,33 @@ function onClicked() {
 onMounted(() => {
   cropper = new Cropper(cropImg.value, {
     aspectRatio: 1,
-    background: false,
-    modal: false,
+    viewMode: 3,
+    dragMode: 'move',
+    autoCropArea: 1,
+    restore: false,
+    guides: false,
     highlight: false,
-    viewMode: 1
+    cropBoxMovable: false,
+    cropBoxResizable: false,
+    toggleDragModeOnDblclick: false,
+    ready: () => {
+      updateImg()
+    },
+    cropend: () => {
+      updateImg()
+    },
+    zoom: () => {
+      updateImg()
+    }
   });
 })
 </script>
 
 <template>
   <q-card flat>
-    <q-card-section>
+    <q-card-section class="q-px-none">
       <img ref="cropImg" alt="Vue logo" :src="mainStore.iconCandidate">
     </q-card-section>
-    <q-card-actions>
-      <q-btn color="orange" label="プレビュー" @click="onClicked" />
-    </q-card-actions>
   </q-card>
 </template>
 
