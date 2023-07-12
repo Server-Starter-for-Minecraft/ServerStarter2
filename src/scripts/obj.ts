@@ -11,3 +11,6 @@ export const fromEntries = <T extends Record<PropertyKey, any>>(
 
 export const keys = <K extends string | number | symbol, V>(object: Record<K, V>): K[] =>
   Object.keys(object) as K[];
+
+export const values = <K extends string | number | symbol, V>(object: Record<K, V>): V[] =>
+  Object.values(object) as V[];

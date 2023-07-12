@@ -17,7 +17,6 @@ function openHP() {
 <template>
   <q-img :src="assets.png.mainImage" class="img">
     <div class="absolute-full">
-      <!-- TODO: 画像が読み込まれない問題の修正 -->
       <q-img
         :src="assets.svg.systemLogo_text_dark"
         fit="contain"

@@ -41,7 +41,7 @@ const versionName = `${prop.world.version.id} (${prop.world.version.type})`
  * ワールドを選択した際に行うワールド関連の初期化
  */
 function selectWorldIdx() {
-  mainStore.selectedWorldID = prop.world.id
+  mainStore.setWorld(prop.world)
   consoleStore.initTab()
 }
 </script>
@@ -49,8 +49,8 @@ function selectWorldIdx() {
 <template>
   <q-item
     clickable
-    :active="(clicked = mainStore.selectedWorldID == world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
-    :focused="(clicked = mainStore.selectedWorldID == world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
+    :active="(clicked = mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
+    :focused="(clicked = mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
     @click="selectWorldIdx"
     to="/"
     v-on:dblclick="startServer"
