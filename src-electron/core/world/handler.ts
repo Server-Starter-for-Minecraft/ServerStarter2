@@ -270,16 +270,30 @@ export class WorldHandler {
     const withPlain = genWithPlain(progress);
     const errors: ErrorMessage[] = [];
 
-    // セーブデータを移動
-    await withPlain(() => this.move(world.name, world.container), {
-      title: {
-        key: 'server.local.movingSaveData',
-        args: {
-          world: world.name,
-          container: world.container,
-        },
-      },
-    });
+    // ワールド名に変更があった場合正常な名前かどうかを確認して変更
+    const worldNameHasChanged =
+      this.container !== world.container || this.name !== world.name;
+    if (worldNameHasChanged) {
+      const newWorldName = await validateNewWorldName(
+        world.container,
+        world.name
+      );
+      if (isValid(newWorldName)) {
+        // セーブデータを移動
+        await withPlain(() => this.move(world.name, world.container), {
+          title: {
+            key: 'server.local.movingSaveData',
+            args: {
+              world: world.name,
+              container: world.container,
+            },
+          },
+        });
+      } else {
+        errors.push(newWorldName);
+      }
+    }
+
     const savePath = this.getSavePath();
 
     // リモートからpull
