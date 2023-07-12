@@ -16,6 +16,7 @@ import {
   ModData,
   NewFileData,
   CustomMapData,
+  ImageURIData,
 } from '../schema/filedata';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
@@ -74,7 +75,7 @@ export interface API extends IAPI {
      * true : ServerStarterを終了し、本体を即時シャットダウン
      * false : ServerStarterの起動を継続し、シャットダウンしない
      */
-    ChechShutdown: () => Promise<boolean>;
+    CheckShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る */
@@ -169,7 +170,10 @@ export interface API extends IAPI {
       ) => Promise<Failable<NewFileData<PluginData>>>) &
       ((
         options: { type: 'mod' } & DialogOptions
-      ) => Promise<Failable<NewFileData<ModData>>>);
+      ) => Promise<Failable<NewFileData<ModData>>>) &
+      ((
+        options: { type: 'image' } & DialogOptions
+      ) => Promise<Failable<ImageURIData>>);
   };
 }
 

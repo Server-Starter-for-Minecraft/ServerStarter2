@@ -4,6 +4,7 @@ import { Failable } from '../../util/error/failable';
 import {
   CustomMapData,
   DatapackData,
+  ImageURIData,
   ModData,
   NewFileData,
   PluginData,
@@ -14,6 +15,7 @@ import { Path } from 'app/src-electron/util/path';
 import { pluginFiles } from './files/addtional/plugin';
 import { modFiles } from './files/addtional/mod';
 import { loadCustomMap } from './cusomMap';
+import { pickImage } from '../misc/pickImage';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -29,12 +31,19 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     options: { type: 'mod' } & DialogOptions
   ): Promise<Failable<NewFileData<ModData>>>;
   async function result(
+    options: { type: 'image' } & DialogOptions
+  ): Promise<Failable<ImageURIData>>;
+  async function result(
     options: {
-      type: 'datapack' | 'world' | 'plugin' | 'mod';
+      type: 'datapack' | 'world' | 'plugin' | 'mod' | 'image';
       isFile?: boolean;
     } & DialogOptions
   ): Promise<
-    Failable<NewFileData<DatapackData | PluginData | ModData> | CustomMapData>
+    Failable<
+      | NewFileData<DatapackData | PluginData | ModData>
+      | CustomMapData
+      | ImageURIData
+    >
   > {
     const window = windowGetter();
 
@@ -43,15 +52,44 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
 
     const props: Electron.OpenDialogOptions['properties'] = [];
 
+    const filters: Electron.FileFilter[] = [];
+
+    // 拡張子制約を設ける
+    switch (options.type) {
+      case 'image':
+        filters.push({
+          extensions: ['png'],
+          name: 'image',
+        });
+        break;
+      case 'mod':
+      case 'plugin':
+        filters.push({
+          extensions: ['jar'],
+          name: 'jar',
+        });
+        break;
+      case 'datapack':
+      case 'world':
+        if (options.isFile) {
+          filters.push({
+            extensions: ['zip'],
+            name: 'zip',
+          });
+        }
+    }
+
     const isFile = options.isFile ?? true;
     if (!isFile) props.push('openDirectory');
 
+    // ファイル選択ダイアログを開く
     const result = await dialog.showOpenDialog(window, {
       properties: props,
       title: options.title,
       defaultPath: options.defaultPath,
       buttonLabel: options.buttonLabel,
       message: options.message,
+      filters,
     });
 
     // キャンセルされた場合
@@ -73,6 +111,8 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         return pluginFiles.loadNew(path);
       case 'mod':
         return modFiles.loadNew(path);
+      case 'image':
+        return pickImage(path);
     }
   }
   return result;

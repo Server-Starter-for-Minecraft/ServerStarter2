@@ -51,7 +51,7 @@ export const getBackListener = (
 
     GetCacheContents: getCacheContents,
 
-    GetGlobalIP :getGlobalIP,
+    GetGlobalIP: getGlobalIP,
 
     ValidateNewWorldName: validateNewWorldName,
 

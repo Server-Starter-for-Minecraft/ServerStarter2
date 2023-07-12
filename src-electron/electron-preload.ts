@@ -94,7 +94,7 @@ const api: FrontAPI = {
 
   // HANDLE
   handleAgreeEula: handle('AgreeEula'),
-  handleChechShutdown: handle('ChechShutdown'),
+  handleCheckShutdown: handle('CheckShutdown'),
 
   // SEND
   sendCommand: send('Command'),
