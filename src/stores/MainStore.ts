@@ -1,7 +1,7 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { ImageURI } from 'app/src-electron/schema/brands';
-import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
+import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter } from 'src/scripts/objFillter';
 
@@ -9,6 +9,7 @@ export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
       selectedWorldID: '' as WorldID,
+      inputWorldName: '' as WorldName,
       newWorlds: [] as WorldID[],
       iconCandidate: undefined as ImageURI | undefined
     };
@@ -46,7 +47,7 @@ export const useMainStore = defineStore('mainStore', {
         world => {
           worldStore.worldList[world.id] = toRaw(world)
           this.newWorlds.push(world.id)
-          this.selectedWorldID = world.id
+          this.setWorld(world)
         },
         '新規ワールドの作成に失敗しました'
       )
@@ -57,6 +58,13 @@ export const useMainStore = defineStore('mainStore', {
     removeWorld() {
       const worldStore = useWorldStore()
       delete worldStore.worldList[this.selectedWorldID]
+    },
+    /**
+     * ワールドIDで設定したワールドを表示する
+     */
+    setWorld(world: World | WorldEdited) {
+      this.selectedWorldID = world.id
+      this.inputWorldName = world.name
     }
   },
 });
