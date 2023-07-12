@@ -15,6 +15,8 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
+import { values } from 'src/scripts/obj';
+import { useWorldStore } from 'src/stores/MainStore';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -50,12 +52,21 @@ function getAllVers() {
  * 選択されているワールドを削除する
  */
 async function removeWorld() {
-  const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-  if (!isError(res)) {
-    dialogStore.showDialog('home.error.title', 'home.error.failedDelete', { serverName: mainStore.world.name })
+  const worldStore = useWorldStore()
+  
+  if (mainStore.newWorlds.includes(mainStore.world.id)) {
+    mainStore.removeWorld()
+    mainStore.setWorld(values(worldStore.worldList)[0])
   }
   else {
-    mainStore.removeWorld()
+    const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
+    if (!isError(res)) {
+      dialogStore.showDialog('home.error.title', 'home.error.failedDelete', { serverName: mainStore.world.name })
+    }
+    else {
+      mainStore.removeWorld()
+      mainStore.setWorld(values(worldStore.worldList)[0])
+    }
   }
 }
 
