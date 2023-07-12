@@ -12,7 +12,7 @@ export async function getGitPat(
     'remote.github.accounts'
   );
 
-  for (const account of gitAccounts) {
+  for (const account of (gitAccounts ?? [])) {
     const matchOwner = owner === account.owner;
     const matchRepository = repo === account.repo;
     if (matchOwner && matchRepository) {
