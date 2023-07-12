@@ -323,6 +323,11 @@ export class WorldHandler {
     });
     result.errors.push(...errors);
 
+    // サーバー実行中の場合&&リロードフラグが有効な場合、即時リロード
+    if (world.reload && this.runner) {
+      this.runCommand('reload');
+    }
+
     // リモートにpush
     const push = await this.push(progress);
     if (isError(push)) return withError(push, errors);

@@ -116,6 +116,9 @@ export interface WorldEdited extends WorldBase {
    */
   remote_source?: Remote;
 
+  /** ワールドが実行中の場合にreloadコマンドを実行するかどうか */
+  reload?: boolean;
+
   /** 導入済み */
   additional: WorldAdditionalEdited;
 }
