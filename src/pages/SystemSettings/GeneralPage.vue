@@ -47,7 +47,7 @@ function changeTheme(colorTheme: ColorTheme) {
     />
 
     <h1>自動シャットダウン</h1>
-    <q-toggle
+    <q-checkbox
       v-model="sysStore.systemSettings().user.autoShutDown"
       label="サーバー終了後に自動でPCをシャットダウンする"
       style="font-size: 1rem;"
