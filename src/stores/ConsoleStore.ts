@@ -70,6 +70,12 @@ export async function runServer() {
   const mainStore = useMainStore()
   const consoleStore = useConsoleStore()
 
+  // 新規ワールドの時にサーバーのディレクトリを生成する
+  if (mainStore.newWorlds.includes(mainStore.world.id)) {
+    const res = await window.API.invokeCreateWorld(mainStore.world)
+    checkError(res, undefined, 'ワールドの生成に失敗しました')
+  }
+
   consoleStore.setProgress(mainStore.selectedWorldID, '1.19.4 / TestWorld を起動中')
   const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
 
