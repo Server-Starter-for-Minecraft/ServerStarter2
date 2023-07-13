@@ -18,7 +18,7 @@ const propertyStore = usePropertyStore()
 
       <SsInput
         v-model="propertyStore.searchName"
-        label="プロパティを検索"
+        :label="$t('property.main.search')"
         class="q-pb-md"
         @clear="() => propertyStore.searchName = ''"
       />
