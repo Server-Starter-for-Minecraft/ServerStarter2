@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
 
+const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 </script>
 
@@ -14,6 +16,7 @@ const consoleStore = useConsoleStore()
       size="1rem"
       icon="play_arrow"
       color="primary"
+      :disable="mainStore.errorWorlds.has(mainStore.world.id)"
       style="margin: auto 0;"
       @click="runServer()"
     />

@@ -15,16 +15,19 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore()
 
 const router = useRouter()
-async function startServer() {
+async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore) {
+  // エラーを含むワールドの場合は実行しない
+  if (mStore.errorWorlds.has(prop.world.id)) { return }
+
   // 選択されているワールドを更新
   selectWorldIdx()
 
   // Stop状態でない時にはサーバーを起動できないようにする
-  if (consoleStore.status() !== 'Stop') { return }
+  if (cStore.status() !== 'Stop') { return }
 
   // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
-  await window.API.invokeCreateWorld(toRaw(mainStore.world))
-  mainStore.newWorlds.splice(mainStore.newWorlds.indexOf(mainStore.selectedWorldID), 1)
+  await window.API.invokeCreateWorld(toRaw(mStore.world))
+  mStore.newWorlds.splice(mStore.newWorlds.indexOf(mStore.selectedWorldID), 1)
 
   // サーバーの起動を開始
   await router.push('/console');
@@ -69,8 +72,8 @@ function selectWorldIdx() {
           :ratio="1"
         />
         <q-btn
-          v-show="consoleStore.status(world.id)==='Stop' && (clicked || runBtnHovered)"
-          @click="startServer"
+          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && (clicked || runBtnHovered)"
+          @click="() => startServer(mainStore, consoleStore)"
           flat
           dense
           size="2rem"
