@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 import WorldList from 'src/components/MainLayout/WorldList.vue';
 import WorldPage from 'src/pages/WorldPage.vue';
 
+const $q = useQuasar()
 const miniChangeWidth = 200
 const drawer = ref(true)
-const splitterModel = ref(300)
+const splitterModel = ref($q.screen.gt.md ? 300 : 100)
 </script>
 
 <template>

@@ -19,6 +19,7 @@ function addContent2World(content: AllFileData<T>) {
 }
 
 async function importNewContent() {
+  // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
   switch (prop.type) {
     case 'datapack':
       // TODO: 導入するデータパックについて、isFile = false|true を選択できるUIの提供
