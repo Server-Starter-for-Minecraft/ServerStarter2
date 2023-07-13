@@ -31,19 +31,27 @@ def writeTS(svgDict:dict[str, str], pngDict:dict[str, str]):
   """
   TypeScript（Assets.ts）に書き込む
   """
-  header = \
+  separator: str = "\' | \'"
+
+  header1 = \
 """
 // このファイルは'encodeAssets.py'による自動生成
 // Assetsが増えた場合には上記のPythonを実行することでAssetsを更新する
 
 import { ImageURI } from "app/src-electron/schema/brands"
 
+"""
+  svgFiles = f"type svgFiles = \'{separator.join(list(svgDict.keys()))}\'\n"
+  pngFiles = f"type pngFiles = \'{separator.join(list(pngDict.keys()))}\'"
+  header2 = \
+"""
+
 interface iAssets {
   svg: {
-    [key: string]: ImageURI
+    [key in svgFiles]: ImageURI
   },
   png: {
-    [key: string]: ImageURI
+    [key in pngFiles]: ImageURI
   },
 }
 
@@ -51,11 +59,14 @@ export const assets: iAssets = {
   svg: {
 """
 
-  svgTxt = [f"    {key}: \"{val}\",\n" for key, val in svgDict.items()]
-  pngTxt = [f"    {key}: \"{val}\",\n" for key, val in pngDict.items()]
+  svgTxt = [f"    {key}: \"{val}\" as ImageURI,\n" for key, val in svgDict.items()]
+  pngTxt = [f"    {key}: \"{val}\" as ImageURI,\n" for key, val in pngDict.items()]
 
   with open(Path(__file__).parent/'assets.ts', 'w', encoding='utf-8') as f:
-    f.write(header)
+    f.write(header1)
+    f.write(svgFiles)
+    f.write(pngFiles)
+    f.write(header2)
     f.writelines(svgTxt)
     f.writelines(['  },\n', '  png: {\n'])
     f.writelines(pngTxt)
