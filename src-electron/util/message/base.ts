@@ -74,15 +74,3 @@ export type MessageTranslation<T extends HierarchicalMessage> = {
     ? MessageTranslation<T[K]>
     : never;
 };
-
-type NamedFunction<T> = {
-  [K in keyof T]: (x: K) => T[K];
-}[keyof T];
-
-type MyType = { a: number; b: string };
-type MyNamedFunction = UnionToIntersection<NamedFunction<MyType>>;
-// (x: "a") => number & (x: "b") => string
-
-type a = {
-  (a: number): number;
-};
