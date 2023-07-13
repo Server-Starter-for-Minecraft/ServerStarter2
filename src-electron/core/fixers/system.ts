@@ -13,6 +13,7 @@ import {
   booleanFixer,
   defaultFixer,
   literalFixer,
+  numberFixer,
   objectFixer,
   optionalFixer,
   recordFixer,
@@ -64,6 +65,7 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     localSaveContainer: defaultFixer(arrayFixer(fixLocalSaveContainer, false), [
       DEFAULT_LOCAL_SAVE_CONTAINER,
     ]),
+    drawerWidth: optionalFixer(numberFixer()),
   },
   true
 );

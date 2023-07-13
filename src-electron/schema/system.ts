@@ -55,6 +55,8 @@ export type SystemUserSetting = {
   autoShutDown: boolean;
   //ローカルのワールドの保存先ディレクトリ一覧
   localSaveContainer: LocalSaveContainer[];
+  // ワールドリストの幅
+  drawerWidth?: number;
 };
 
 /**
