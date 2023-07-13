@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { ValidationRule } from 'quasar/dist/types/api/validation'
 
 interface Prop {
@@ -12,10 +13,15 @@ interface Prop {
 
 const prop = defineProps<Prop>()
 const model = defineModel<string | number>()
+const input = ref()
+
+// 読み込み時にバリデーションが実行されるようにする
+onMounted(() => { input.value.validate() })
 </script>
 
 <template>
   <q-input
+    ref="input"
     v-model="model"
     :label="label"
     :dense="dense"

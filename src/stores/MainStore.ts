@@ -11,6 +11,7 @@ export const useMainStore = defineStore('mainStore', {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
       newWorlds: [] as WorldID[],
+      errorWorlds: new Set<WorldID>(),
       iconCandidate: undefined as ImageURI | undefined
     };
   },

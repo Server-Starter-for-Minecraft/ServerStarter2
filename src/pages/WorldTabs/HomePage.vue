@@ -53,7 +53,7 @@ function getAllVers() {
  */
 async function removeWorld() {
   const worldStore = useWorldStore()
-  
+
   if (mainStore.newWorlds.includes(mainStore.world.id)) {
     mainStore.removeWorld()
     mainStore.setWorld(values(worldStore.worldList)[0])
@@ -87,9 +87,11 @@ function openIconSelecter() {
 async function validateWorldName(name: WorldName) {
   const res = await window.API.invokeValidateNewWorldName(mainStore.world.container, name)
   if (isError(res) && mainStore.world.name !== name) {
+    mainStore.errorWorlds.add(mainStore.world.id)
     return res.key
   }
   else {
+    mainStore.errorWorlds.delete(mainStore.world.id)
     mainStore.world.name = name
     return true
   }
@@ -100,8 +102,6 @@ async function validateWorldName(name: WorldName) {
   <div class="mainField">
     <q-item class="q-pa-none">
       <q-item-section>
-        <!-- TODO: 入力欄のバリデーション -->
-        <!-- TODO: 入力をWorldに即座に反映せず、入力終了時に反映する -->
         <h1 class="q-mt-none">{{ $t("home.worldName.title") }}</h1>
         <SsInput
           v-model="mainStore.inputWorldName"
