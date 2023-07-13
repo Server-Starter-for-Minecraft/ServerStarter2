@@ -2,7 +2,7 @@ import type {
   ErrorMessageTypes,
   FlattenErrorMessageTypes,
 } from '../util/error/schema';
-import { ErrorTranslation } from '../util/error/schema/base';
+import { MessageTranslation } from '../util/message/base';
 
 export type ErrorLevel = 'info' | 'error';
 
@@ -25,4 +25,4 @@ export type Failable<T> = T | ErrorMessage;
  */
 export type WithError<T> = { value: T; errors: ErrorMessage[] };
 
-export type ErrorTranslationTypes = ErrorTranslation<ErrorMessageTypes>;
+export type ErrorTranslationTypes = MessageTranslation<ErrorMessageTypes>;
