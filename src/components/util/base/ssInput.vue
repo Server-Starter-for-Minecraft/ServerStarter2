@@ -23,6 +23,7 @@ onMounted(() => { input.value.validate() })
   <q-input
     ref="input"
     v-model="model"
+    filled
     :label="label"
     :dense="dense"
     :autofocus="autofocus"
@@ -33,7 +34,7 @@ onMounted(() => { input.value.validate() })
     class="font"
   >
     <template v-slot:label>
-      <p class="q-pb-sm">{{ label }}</p>
+      <p class="text-caption">{{ label }}</p>
     </template>
   </q-input>
 </template>
