@@ -91,4 +91,6 @@ export const enUSproperty = {
     'enforce-whitelist': 'Deny participation to non-whitelisted players',
     'white-list': 'Manage player login by the white list',
   },
+  resetProperty:'Reset setting to default setting \"{defaultProperty}\"',
+  resetProperty2:'You can change basic settings from "System Settings" > "Properties".',
 };

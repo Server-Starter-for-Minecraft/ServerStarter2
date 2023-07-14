@@ -46,8 +46,8 @@ function cancelSettings() {
         @click="cancelSettings"
       >
         <q-tooltip>
-          <p class="text-caption q-ma-none">基本設定の{{ defaultProperty }}に設定を戻します</p>
-          <p class="text-caption q-ma-none">「システム設定」>「プロパティ」 より基本設定を変更できます</p>
+          <p class="text-caption q-ma-none">{{ $t('property.resetProperty',{defaultProperty: defaultProperty}) }}</p>
+          <p class="text-caption q-ma-none">{{ $t('property.resetProperty2') }}</p>
         </q-tooltip>
       </q-btn>
     </q-item-section>
