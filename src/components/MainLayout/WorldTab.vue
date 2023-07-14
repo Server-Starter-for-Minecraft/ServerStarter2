@@ -62,7 +62,7 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
-    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? '.5rem solid #7CBB00' : ''}"
+    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? '.3rem solid #7CBB00' : '.3rem solid transparent'}"
   >
     <q-item-section
       avatar
