@@ -17,6 +17,7 @@ export const jaPlayer = {
   belongingGroup: '所属グループ',
   groupMember: 'グループメンバー',
   opLevel: '権限レベル',
+  addPlayer: 'このプレイヤーを追加',
   opDesc: {
     0: 'OP権限を与えない',
     1: 'OPレベル１（説明文）',

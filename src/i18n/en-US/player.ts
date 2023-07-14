@@ -17,6 +17,7 @@ export const enUSPlayer = {
   belongingGroup: 'Belonging group',
   groupMember: 'Group member',
   opLevel: 'Permission level',
+  addPlayer: 'Register this player',
   opDesc: {
     0: 'Don\'t give OP',
     1: 'OP level１（説明文）',

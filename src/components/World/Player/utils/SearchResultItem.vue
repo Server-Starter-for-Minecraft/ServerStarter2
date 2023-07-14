@@ -20,7 +20,7 @@ const playerModel = defineModel<Player>({ required: true })
       <q-btn
         outline
         rounded
-        label="このプレイヤーを追加"
+        :label="$t('player.addPlayer')"
         icon="add"
         color="primary"
         @click="playerStore.addPlayer(playerModel)"
