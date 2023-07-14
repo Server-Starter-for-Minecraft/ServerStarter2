@@ -26,7 +26,7 @@ function openHP() {
     :breakpoint="0"
     :mini="sysStore.systemSettings().user.drawerWidth < miniChangeWidth"
     :mini-width="Math.min(miniChangeWidth, sysStore.systemSettings().user.drawerWidth)"
-    :class="`column ${$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'}`"
+    class="column"
     style="height: 100vh;"
   >
     <q-img :src="assets.png.mainImage" class="img">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDialogStore } from 'src/stores/DialogStore'
+import SsBtn from './base/ssBtn.vue';
 
 interface Prop {
   title: string
@@ -38,19 +39,14 @@ function dialog() {
 </script>
 
 <template>
-  <div class="q-py-xl">
-    <q-card flat bordered class="full-width bg-transparent dangerCard">
-      <q-card-section horizontal>
-        <div class="col q-pa-md">
-          <h1>{{ title }}</h1>
-          <p v-html="$t(i18nKey)"/>
-        </div>
-  
-        <q-card-actions vertical class="justify-around">
-          <q-btn color="red" :label="btnText" size="1rem" @click="dialog" class="q-mr-sm"/>
-        </q-card-actions>
-      </q-card-section>
-    </q-card>
+  <div class="q-py-lg">
+    <h1 class="q-pt-sm">{{ title }}</h1>
+    <p v-html="$t(i18nKey)" class="text-caption"/>
+    <SsBtn
+      :label="btnText"
+      color="red"
+      @click="dialog"
+    />
   </div>
 </template>
 
@@ -58,13 +54,6 @@ function dialog() {
 .dangerCard {
   border-radius: 10px;
   border-color: red;
-}
-
-h1 {
-  font-size: 1.3rem;
-  font-weight: bold;
-  padding: 0;
-  padding-bottom: 10px;
 }
 
 p {

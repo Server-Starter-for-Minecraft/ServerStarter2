@@ -27,6 +27,7 @@ const model = defineModel()
     map-options
     :option-label="optionLabel"
     :option-value="optionValue"
+    style="font-size: 1rem;"
   >
   </q-select>
 </template>
