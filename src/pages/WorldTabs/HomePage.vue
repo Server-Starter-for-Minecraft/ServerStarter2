@@ -55,7 +55,7 @@ function getAllVers() {
 async function removeWorld() {
   const worldStore = useWorldStore()
 
-  if (mainStore.newWorlds.includes(mainStore.world.id)) {
+  if (mainStore.newWorlds.has(mainStore.world.id)) {
     mainStore.removeWorld()
     mainStore.setWorld(values(worldStore.worldList)[0])
   }

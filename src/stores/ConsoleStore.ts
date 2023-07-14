@@ -71,7 +71,7 @@ export async function runServer() {
   const consoleStore = useConsoleStore()
 
   // 新規ワールドの時にサーバーのディレクトリを生成する
-  if (mainStore.newWorlds.includes(mainStore.world.id)) {
+  if (mainStore.newWorlds.has(mainStore.world.id)) {
     const res = await window.API.invokeCreateWorld(mainStore.world)
     checkError(res, undefined, 'ワールドの生成に失敗しました')
   }

@@ -10,7 +10,7 @@ export const useMainStore = defineStore('mainStore', {
     return {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
-      newWorlds: [] as WorldID[],
+      newWorlds: new Set<WorldID>(),
       errorWorlds: new Set<WorldID>(),
       iconCandidate: undefined as ImageURI | undefined
     };
@@ -47,7 +47,7 @@ export const useMainStore = defineStore('mainStore', {
         (await window.API.invokeNewWorld()).value,
         world => {
           worldStore.worldList[world.id] = toRaw(world)
-          this.newWorlds.push(world.id)
+          this.newWorlds.add(world.id)
           this.setWorld(world)
         },
         '新規ワールドの作成に失敗しました'

@@ -29,7 +29,7 @@ async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore
 
   // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
   await window.API.invokeCreateWorld(toRaw(mStore.world))
-  mStore.newWorlds.splice(mStore.newWorlds.indexOf(mStore.selectedWorldID), 1)
+  mStore.newWorlds.delete(mStore.selectedWorldID)
 
   // サーバーの起動を開始
   await router.push('/console');
