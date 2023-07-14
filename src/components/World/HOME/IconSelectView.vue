@@ -14,6 +14,38 @@ const tab = ref('defaultIcon')
 const mainStore = useMainStore()
 mainStore.iconCandidate = mainStore.world.avater_path ?? assets.svg.defaultWorldIcon
 
+const imgs = [
+  'bamboo_block',
+  'bedrock',
+  'bookshelf',
+  'brain_coral_block',
+  'bricks',
+  'cherry_leaves',
+  'cherry_planks',
+  'chiseled_sandstone',
+  'cobblestone',
+  'command_block_back',
+  'crafting_table_front',
+  'diamond_block',
+  'dirt',
+  'emerald_block',
+  'end_stone',
+  'flowering_azalea_leaves',
+  'furnace_front_on',
+  'glowstone',
+  'grass_block_side',
+  'netherrack',
+  'oak_log_top',
+  'oak_planks',
+  'obsidian',
+  'prismarine',
+  'redstone_block',
+  'redstone_lamp_on',
+  'stone_bricks',
+  'tnt_side',
+  'tube_coral_block'
+] as const
+
 const uploaded = ref(false)
 async function onUpload() {
   uploaded.value = false
@@ -40,7 +72,15 @@ function onTabChanged() {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card>
       <h1 class="q-pa-none q-ml-md" style="font-size: 1.2rem;">サーバーアイコンの設定</h1>
-      <q-tabs
+      <q-card-section>
+        <div class="q-gutter-md">
+          <q-btn dense outline icon="add" size="1.33rem" />
+          <template v-for="imgName in imgs" :key="imgName">
+            <IconBtn :logo="assets.png[imgName]" @close-event="onDialogOK" />
+          </template>
+        </div>
+      </q-card-section>
+      <!-- <q-tabs
         v-model="tab"
         @update:model-value="onTabChanged"
         dense
@@ -84,10 +124,7 @@ function onTabChanged() {
           <q-space />
           <q-btn color="primary" label="登録" @click="onDialogOK" />
         </q-item-section>
-      </q-item>
-
-      <q-card-actions>
-      </q-card-actions>
+      </q-item> -->
     </q-card>
   </q-dialog>
 </template>

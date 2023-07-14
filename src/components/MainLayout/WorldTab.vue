@@ -73,6 +73,7 @@ function selectWorldIdx() {
         <q-img
           :src="world.avater_path ?? assets.svg.defaultWorldIcon"
           :ratio="1"
+          style="image-rendering: pixelated;"
         />
         <q-btn
           v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && runBtnHovered && sysStore.systemSettings().user.drawerWidth > 200"
