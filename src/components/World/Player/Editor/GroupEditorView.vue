@@ -33,21 +33,21 @@ function onOKClicked() {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card>
       <q-card-section>
-        <div class="text-h6">{{ groupName !== void 0 ? 'グループの編集' : '新規グループの作成' }}</div>
+        <div class="text-h6">{{ groupName !== void 0 ? $t('player.editGroup') : $t('player.makeNewGroup') }}</div>
       </q-card-section>
 
       <q-card-section class="q-pt-none">
         <!-- TODO: 既に存在するグループ名を指定できないようにする -->
         <ss-input
           v-model="inputName"
-          label="新規グループ名を入力"
+          :label="$t('player.newGroupName')"
           @clear="inputName = ''"
         />
 
         <div class="row items-center q-mt-md">
           <q-select 
             v-model="inputColorCode"
-            label="グループの色を選択"
+            :label="$t('player.groupColor')"
             :options="colorOps"
             option-label="label"
             option-value="code"
@@ -72,7 +72,7 @@ function onOKClicked() {
 
         <!-- TODO: グループメンバーを追加できるようにする（プレイヤー探索機能を実装した後） -->
         <div class="q-pt-lg" style="height: 200px;">
-          <p class="q-ma-none">グループメンバー</p>
+          <p class="q-ma-none">{{ $t('player.groupMember') }}</p>
           <!-- ここに検索欄を実装？ -->
           <q-scroll-area class="fit q-my-sm">
             <q-list separator>

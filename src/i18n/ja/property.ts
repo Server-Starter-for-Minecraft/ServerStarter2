@@ -37,27 +37,28 @@ export const jaProperty = {
     'level-type': 'ワールドの生成タイプ',
     'level-seed': 'ワールドのシード値',
     'allow-nether': 'ネザーに移動可能',
-    'generate-structures': '',
-    'generator-settings': '',
+    'generate-structures': '構造物（村など）の生成をする',
+    'generator-settings': 'ワールド生成のカスタマイズ(JSON)',
     'max-build-height': '建築限界の高さ(仮)',
     'max-world-size': 'ワールドのサイズを半径で指定',
     'spawn-animals': '動物が出現する',
     'spawn-monsters': '敵MOBが出現する',
     'spawn-npcs': '村人が出現する',
-    'spawn-protection': '\
-      ブロック・オブジェクトの設置・破壊が禁止される範囲をスポーン中心からの半径で指定（整数値）<br>\
+    'spawn-protection':'\
+      ブロック・オブジェクトの設置・破壊が禁止される範囲をスポーン中心からの半径で指定（整数値）\
       ただし，OP権限を有するプレイヤーには無効',
     'view-distance': 'チャンク単位の描画距離',
     'allow-flight': '5秒以上の飛行を許可',
     'entity-broadcast-range-percentage':
       '初期値を100とした際にエンティティの描画をどの範囲で行うかを割合で設定する',
-    'simulation-distance': '',
-    'max-chained-neighbor-updates': '',
+    'simulation-distance':
+      'サーバー上でエンティティをシミュレーションする範囲を設定する',
+    'max-chained-neighbor-updates':
+      'スキップが発生する前に連続する隣接更新の数を制限する',
     'sync-chunk-writes': 'チャンクの書き込みを同期的に処理する',
     'rate-limit': 'クライアントが１秒間に送信できる最大パケット量を指定',
     'network-compression-threshold': 'ネットワークの圧縮度合いを整数で指定',
-    'prevent-proxy-connections':
-      'falseの時にVPNやプロキシからの接続を許可する',
+    'prevent-proxy-connections': 'falseの時にVPNやプロキシからの接続を許可する',
     'online-mode':
       '接続してきたプレイヤーが正規のアカウントを持ったプレイヤーか照合する',
     'server-ip': 'サーバーを立てるIPアドレス',
@@ -73,8 +74,8 @@ export const jaProperty = {
       'リモートコントロールからコマンドが入力された際に，OP権限を有するプレイヤーに通知する',
     'broadcast-console-to-ops':
       'サーバーコンソールからコマンドが入力された際に，OP権限を有するプレイヤーに通知する',
-    'initial-disabled-packs': '',
-    'initial-enabled-packs': '',
+    'initial-disabled-packs': 'ワールド生成時に自動的に有効にしないデータパック',
+    'initial-enabled-packs': 'ワールド生成時に有効にするデータパック',
     'max-tick-time':
       'サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定',
     'enable-command-block': 'コマンドブロックの実行を許可',
@@ -85,8 +86,10 @@ export const jaProperty = {
     'resource-pack-sha1': 'サーバーリソースパックのハッシュ値',
     'require-resource-pack':
       'サーバーリソースパックの導入を強制し，導入しない場合はワールドに接続できない',
-    'enforce-secure-profile': '',
+    'enforce-secure-profile': 'Mojang署名の公開鍵を持っているプレイヤーにのみ接続を許可する',
     'enforce-whitelist': 'ホワイトリストによる管理を強制する',
     'white-list': 'ホワイトリストによるプレイヤーのログイン管理を行う',
   },
+  resetProperty:'基本設定の{defaultProperty}に設定を戻します',
+  resetProperty2:'「システム設定」>「プロパティ」 より基本設定を変更できます',
 };

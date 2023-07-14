@@ -64,7 +64,7 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
         <q-item-section top>
           <q-item-label class="name text-omit">{{ player.name }}</q-item-label>
           <q-item-label v-show="opLevel !== void 0" caption class="q-pt-xs" style="opacity: 0.7;">
-            権限レベル {{ opLevel }}
+            {{ $t('player.opLevel') }} {{ opLevel }}
           </q-item-label>
         </q-item-section>
         <q-item-section side top>
@@ -79,7 +79,7 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
         class="q-py-none"
         style="width: max-content;"
       >
-        <span class="text-caption">所属グループ</span>
+        <span class="text-caption">{{ $t("player.belongingGroup") }}</span>
         <div class="q-gutter-sm q-py-xs" style="width: 12rem">
           <template v-for="g in getGroups(sysStore.systemSettings().player.groups)" :key="g">
             <group-badge-view :group-name="g.name" :color="g.color" />

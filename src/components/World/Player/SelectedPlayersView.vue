@@ -11,7 +11,7 @@ const playerStore = usePlayerStore()
       <q-card-section class="row col q-pa-none">
         <div v-if="playerStore.focusCards.size === 0" class="row items-center">
           <p class="col q-my-none q-ml-sm text-caption text-grey">
-            プレイヤーを上記から選択してください
+            {{ $t("player.selectPlayer") }}
           </p>
         </div>
         <template v-else v-for="uuid in playerStore.focusCards" :key="uuid">
@@ -22,7 +22,7 @@ const playerStore = usePlayerStore()
       <q-card-actions class="q-px-md">
         <q-btn
           outline
-          label="選択解除"
+          :label="$t('player.deselect')"
           :disable="playerStore.focusCards.size === 0"
           @click="playerStore.unFocus()"
         />

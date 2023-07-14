@@ -1,6 +1,28 @@
 export const enUSPlayer = {
-  search: 'search players',
-  registeredPlayer: 'registered player',
-  groupList: 'グループによる一括追加（英訳を当てる）',
-  join: 'only registered player'
+  search: 'Search players',
+  registeredPlayer: 'Registered player',
+  groupList: 'Bulk registration by group ',
+  join: 'Only registered player',
+  edit: 'Edit',
+  delete: 'Delete',
+  changeOP: 'Change OP level',
+  makeGroup: 'Make group',
+  deletePlayer: 'Delete player',
+  editGroup: 'Edit group',
+  makeNewGroup: 'Make new group',
+  newGroupName: 'Enter new group name',
+  groupColor: 'Select group color',
+  selectPlayer:' Select player(s) from above',
+  deselect: 'Deselect',
+  belongingGroup: 'Belonging group',
+  groupMember: 'Group member',
+  opLevel: 'Permission level',
+  addPlayer: 'Register this player',
+  opDesc: {
+    0: 'Don\'t give OP',
+    1: 'OP level１（説明文）',
+    2: 'OP level２（説明文）',
+    3: 'OP level３（説明文）',
+    4: 'OP level４（説明文）',
+  }
 };
