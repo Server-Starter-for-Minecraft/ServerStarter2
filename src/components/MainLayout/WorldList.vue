@@ -29,24 +29,6 @@ function openHP() {
     class="column"
     style="height: 100vh;"
   >
-    <q-img :src="assets.png.mainImage" class="img">
-      <div class="absolute-full">
-        <q-img
-          :src="assets.svg.systemLogo_text_dark"
-          fit="contain"
-          class="q-mini-drawer-hide"
-          style="height: 100%;"
-        />
-        <q-img
-          :src="assets.svg.systemLogo"
-          fit="contain"
-          class="q-mini-drawer-only"
-          style="height: 100%;"
-        />
-        <q-btn class="absolute-full" @click="openHP"/>
-      </div>
-    </q-img>
-
     <div class="q-mini-drawer-only">
       <q-item clickable @click="sysStore.systemSettings().user.drawerWidth = 300">
         <q-avatar size="2rem" >
@@ -60,7 +42,8 @@ function openHP() {
       @click="sysStore.systemSettings().user.drawerWidth = 100"
       class="q-mini-drawer-hide"
     />
-    <!-- <search-world-view v-model="searchWorldName"/> -->
+
+    <search-world-view v-model="searchWorldName"/>
     
     <q-scroll-area class="fit col">
       <q-list>

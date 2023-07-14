@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
@@ -11,6 +12,7 @@ interface Props {
 }
 const prop = defineProps<Props>();
 
+const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore()
 
@@ -60,6 +62,7 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
+    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? '.5rem solid #7CBB00' : ''}"
   >
     <q-item-section
       avatar
@@ -72,7 +75,7 @@ function selectWorldIdx() {
           :ratio="1"
         />
         <q-btn
-          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && (clicked || runBtnHovered)"
+          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && runBtnHovered && sysStore.systemSettings().user.drawerWidth > 200"
           @click="() => startServer(mainStore, consoleStore)"
           flat
           dense
