@@ -129,7 +129,7 @@ async function validateWorldName(name: WorldName) {
       <q-item-section side top>
         <q-avatar square size="10rem" class="q-ml-lg">
           <q-img
-            :src="mainStore.world.avater_path ?? assets.svg.defaultWorldIcon"
+            :src="mainStore.world.avater_path ?? assets.png.unset"
             style="image-rendering: pixelated;"
           />
           <q-btn

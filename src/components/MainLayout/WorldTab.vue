@@ -71,7 +71,7 @@ function selectWorldIdx() {
     >
       <q-avatar square size="4rem">
         <q-img
-          :src="world.avater_path ?? assets.svg.defaultWorldIcon"
+          :src="world.avater_path ?? assets.png.unset"
           :ratio="1"
           style="image-rendering: pixelated;"
         />
