@@ -65,7 +65,8 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     localSaveContainer: defaultFixer(arrayFixer(fixLocalSaveContainer, false), [
       DEFAULT_LOCAL_SAVE_CONTAINER,
     ]),
-    drawerWidth: optionalFixer(numberFixer()),
+    // World Listの横幅
+    drawerWidth: numberFixer(300),
   },
   true
 );
