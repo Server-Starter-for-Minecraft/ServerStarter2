@@ -141,6 +141,13 @@ async function validateWorldName(name: WorldName) {
             class="absolute-center"
           />
         </q-avatar>
+
+        <SsBtn
+          label="アイコンを変更"
+          width="10rem"
+          @click="openIconSelecter"
+          class="q-mt-lg"
+        />
       </q-item-section>
     </q-item>
 

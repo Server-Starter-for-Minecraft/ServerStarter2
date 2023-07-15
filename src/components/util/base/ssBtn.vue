@@ -2,7 +2,7 @@
 interface Prop {
   label: string
   color?: string
-  width?: number
+  width?: string
   onClick: () => void
 }
 defineProps<Prop>()
