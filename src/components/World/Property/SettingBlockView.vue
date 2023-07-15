@@ -28,7 +28,7 @@ function cancelSettings() {
 
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
-      <div class="text-caption">{{ $t(`property.description['${settingName}']`) }}</div>
+      <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`) }}</div>
       <InputFieldView
         v-model="propertiesModel[settingName]"
         :property-name="settingName"
@@ -37,7 +37,7 @@ function cancelSettings() {
 
     <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>
       <q-btn
-        v-show="showCancel()"
+        v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()"
         flat
         dense
         icon="do_not_disturb_on"

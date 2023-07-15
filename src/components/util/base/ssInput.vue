@@ -35,15 +35,12 @@ onMounted(() => { input.value.validate() })
     @clear="onClear"
     class="font"
   >
-    <template v-slot:label>
-      <p class="text-caption">{{ label }}</p>
-    </template>
   </q-input>
 </template>
 
 <style scoped lang="scss">
 .font {
-  font-size: 1.1rem;
+  font-size: .9rem;
 }
 
 ::v-deep ::placeholder {

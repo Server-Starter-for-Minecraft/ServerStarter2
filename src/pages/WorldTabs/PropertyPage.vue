@@ -7,6 +7,7 @@ import { isValid } from 'src/scripts/error';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
@@ -27,22 +28,23 @@ function resetAll() {
 <template>
   <div class="mainField">
     <div v-if="isValid(mainStore.world.properties)" class="column fit">
-      <div class="row">
+      <div class="row q-py-md">
         <SsInput
+          dense
           v-model="propertyStore.searchName"
-          :label="$t('property.main.search')"
-          class="q-py-md col"
+          :placeholder="$t('property.main.search')"
+          class="col"
           @clear="() => propertyStore.searchName = ''"
         />
   
-        <q-btn
+        <SsBtn
           dense
-          icon="do_not_disturb_on_total_silence"
           :label="$t('property.main.resetAll')"
+          icon="do_not_disturb_on_total_silence"
           color="red"
-          class="q-my-lg q-ml-lg q-pa-sm"
-          style="font-size: 1rem;"
+          width="6rem"
           @click="resetAll"
+          class="q-ml-md"
         />
       </div>
 
