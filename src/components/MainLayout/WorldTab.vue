@@ -93,6 +93,15 @@ function selectWorldIdx() {
         <p class="versionName">{{ versionName }}</p>
       </div>
     </q-item-section>
+
+    <q-tooltip
+      v-if="sysStore.systemSettings().user.drawerWidth < 200"
+      anchor="center middle"
+      self="top middle"
+      class="text-body2"
+    >
+      {{ world.name }}
+    </q-tooltip>
   </q-item>
 </template>
 
