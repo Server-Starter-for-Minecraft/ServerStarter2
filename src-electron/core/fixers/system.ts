@@ -53,7 +53,7 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     // ServerStarterの利用規約同意状況
     eula: booleanFixer(false),
     // カラーテーマ Light/Dark
-    theme: literalFixer(['auto', 'light', 'dark'], 'auto'),
+    theme: literalFixer(['light', 'auto', 'dark'], 'auto'),
     // システム言語
     language: fixLocale,
     // 実行者情報
