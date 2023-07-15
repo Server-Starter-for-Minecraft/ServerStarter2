@@ -12,5 +12,5 @@ export const enUS: MessageSchema = {
   property:enUSproperty,
   console:enUSConsole,
   player:enUSPlayer,
-  systemsettings:enUSSystemSetting
+  systemsetting:enUSSystemSetting
 };

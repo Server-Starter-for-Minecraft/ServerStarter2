@@ -143,7 +143,7 @@ async function validateWorldName(name: WorldName) {
         </q-avatar>
 
         <SsBtn
-          label="アイコンを変更"
+          :label="$t('home.icon')"
           width="10rem"
           @click="openIconSelecter"
           class="q-mt-lg"
@@ -155,14 +155,14 @@ async function validateWorldName(name: WorldName) {
     <!-- TODO: 配布ワールドだけでなく、既存の個人ワールドについても.minecraftがある場合は導入できるようにする？ -->
     <!-- 個人ワールドのデフォルトパスは変更できるようにする -->
     <h1>{{ $t('home.useWorld.title') }}</h1>
-    <p class="text-caption">zip形式の配布ワールドやシングルプレイのワールドを導入する</p>
+    <p class="text-caption">{{ $t('home.useWorld.description') }}</p>
     <SsBtn
-      label="ワールドデータを選択"
+      :label="$t('home.useWorld.selectWorld')"
       @click="() => {}"
     />
 
-    <ExpansionView title="ワールドフォルダ">
-      <p class="text-caption">ワールドデータの保存フォルダを選択</p>
+    <ExpansionView :title="$t('home.saveWorld.title')">
+      <p class="text-caption">{{ $t('home.saveWorld.description') }}</p>
     </ExpansionView>
 
     <!-- TODO: memoryがsizeとunitのpropertyを有していないバグをバックに報告 -->

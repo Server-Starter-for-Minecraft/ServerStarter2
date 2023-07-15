@@ -11,19 +11,19 @@ export const jaHome = {
     serverType: 'サーバーの種類を選択',
     versionType: 'バージョンを選択',
   },
+  icon: 'アイコンを変更',
   useWorld: {
     title: '既存ワールドの導入',
-    solo: '個人ワールドを導入する',
-    descSolo: 'このPC上にあるMinecraftの個人ワールドを導入する',
-    pickSolo: '個人ワールドを選択',
-    custom: '配布ワールドをZipファイルより導入する',
-    descCustom: 'インターネットよりダウンロードしたワールド（配布ワールド）を導入する',
-    pickCustom: '配布ワールド(.zip)を選択',
+    description: 'zip形式の配布ワールドやシングルプレイのワールドを導入する',
+    selectWorld: 'ワールドデータを選択',
+  },
+  saveWorld: {
+    title: 'ワールドフォルダ',
+    description: 'ワールドデータの保存フォルダを選択'
   },
   setting: {
     title: '起動設定',
     memSize: 'メモリサイズ',
-    unit: '単位',
     jvmArgument: 'JVM引数'
   },
   deleteWorld: {

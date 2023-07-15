@@ -11,19 +11,19 @@ export const enUSHome: MessageSchema["home"] = {
     serverType: 'Select the Server Type',
     versionType: 'Select the Server Version',
   },
+  icon: 'Change server picture',
   useWorld: {
     title: 'Import existing world',
-    solo: 'Import your single world',
-    descSolo: 'Import Minecraft single world stored on your computer',
-    pickSolo: 'Select your Minecraft single world',
-    custom: 'Import the downloaded world by zip file',
-    descCustom: 'Import the world downloaded from the Internet',
-    pickCustom: 'Select the downloaded world(zip file format)',
+    description: 'Import single world or zip format destribution world',
+    selectWorld: 'Select your world data'
+  },
+  saveWorld: {
+    title: 'World folder',
+    description: 'Select your folder to save world data'
   },
   setting: {
     title: 'Start up settings',
     memSize: 'memory size',
-    unit: 'unit',
     jvmArgument: 'Minecraft JVM arguments'
   },
   deleteWorld: {
