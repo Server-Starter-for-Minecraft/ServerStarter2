@@ -17,6 +17,7 @@ import DangerView from 'src/components/util/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import { values } from 'src/scripts/obj';
 import { useWorldStore } from 'src/stores/MainStore';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -54,7 +55,7 @@ function getAllVers() {
 async function removeWorld() {
   const worldStore = useWorldStore()
 
-  if (mainStore.newWorlds.includes(mainStore.world.id)) {
+  if (mainStore.newWorlds.has(mainStore.world.id)) {
     mainStore.removeWorld()
     mainStore.setWorld(values(worldStore.worldList)[0])
   }
@@ -100,9 +101,9 @@ async function validateWorldName(name: WorldName) {
 
 <template>
   <div class="mainField">
-    <q-item class="q-pa-none">
+    <q-item class="q-pa-none q-pt-lg">
       <q-item-section>
-        <h1 class="q-mt-none">{{ $t("home.worldName.title") }}</h1>
+        <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
         <SsInput
           v-model="mainStore.inputWorldName"
           :label="$t('home.worldName.enterName')"
@@ -110,74 +111,71 @@ async function validateWorldName(name: WorldName) {
           :rules="[val => validateWorldName(val)]"
           @clear="() => { mainStore.inputWorldName = '' as WorldName }"
         />
+        <!-- TODO: バージョン一覧の取得 -->
+        <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
+        <SsSelect
+          v-model="mainStore.world.version.type"
+          @update:model-value="getAllVers"
+          :options="versionTypes"
+          :label="$t('home.version.serverType')"
+          class="q-pb-md"
+        />
+        <SsSelect
+          v-model="mainStore.world.version.id"
+          :options="sysStore.serverVersions.get(mainStore.world.version.type)?.map(ver => ver.id)"
+          :label="$t('home.version.versionType')"
+        />
       </q-item-section>
-      <q-item-section side>
-        <q-avatar square size="5rem" class="q-ml-lg">
-          <q-img :src="mainStore.world.avater_path ?? assets.svg.defaultWorldIcon" />
+      <q-item-section side top>
+        <q-avatar square size="10rem" class="q-ml-lg">
+          <q-img
+            :src="mainStore.world.avater_path ?? assets.png.unset"
+            style="image-rendering: pixelated;"
+          />
           <q-btn
             dense
-            outline
-            size="2.5rem"
+            flat
+            size="4.4rem"
             icon=""
             @click="openIconSelecter"
             class="absolute-center"
           />
         </q-avatar>
+
+        <SsBtn
+          label="アイコンを変更"
+          width="10rem"
+          @click="openIconSelecter"
+          class="q-mt-lg"
+        />
       </q-item-section>
     </q-item>
-
-    <!-- TODO: バージョン一覧の取得 -->
-    <h1>{{ $t("home.version.title") }}</h1>
-    <div class="row">
-      <SsSelect
-        v-model="mainStore.world.version.type"
-        @update:model-value="getAllVers"
-        :options="versionTypes"
-        :label="$t('home.version.serverType')"
-        class="col-5 q-pr-md"
-      />
-      <SsSelect
-        v-model="mainStore.world.version.id"
-        :options="sysStore.serverVersions.get(mainStore.world.version.type)?.map(ver => ver.id)"
-        :label="$t('home.version.versionType')"
-        class="col"
-      />
-    </div>
 
     <!-- TODO: 配布ワールドは新規World以外でも導入できるようにするのか？ -->
     <!-- TODO: 配布ワールドだけでなく、既存の個人ワールドについても.minecraftがある場合は導入できるようにする？ -->
     <!-- 個人ワールドのデフォルトパスは変更できるようにする -->
-    <ExpansionView :title="$t('home.useWorld.title')">
-      <q-toggle v-model="showSoloWorld" :label="showSoloWorld ? $t('home.useWorld.solo') : $t('home.useWorld.custom')"/>
-      <p v-show="!showSoloWorld" class="text-caption q-ma-none q-mt-md">{{ $t("home.useWorld.descCustom") }}</p>
-      <p v-show="showSoloWorld" class="text-caption q-ma-none q-mt-md">{{ $t("home.useWorld.descSolo") }}</p>
-      <q-file
-        v-show="!showSoloWorld"
-        v-model="customWorldPath"
-        :label="$t('home.useWorld.pickCustom')"
-        clearable
-        accept=".zip"
-      >
-        <template v-slot:prepend>
-          <q-icon name="attach_file" />
-        </template>
-      </q-file>
-      <SsSelect v-show="showSoloWorld" v-model="soloWorldName" />
+    <h1>{{ $t('home.useWorld.title') }}</h1>
+    <p class="text-caption">zip形式の配布ワールドやシングルプレイのワールドを導入する</p>
+    <SsBtn
+      label="ワールドデータを選択"
+      @click="() => {}"
+    />
+
+    <ExpansionView title="ワールドフォルダ">
+      <p class="text-caption">ワールドデータの保存フォルダを選択</p>
     </ExpansionView>
-    <!-- <input type="file" webkitdirectory directory multiple/> -->
 
     <!-- TODO: memoryがsizeとunitのpropertyを有していないバグをバックに報告 -->
     <ExpansionView :title="$t('home.setting.title')">
-      <div class="row" style="max-width: 300px;">
+      <div class="row" style="max-width: 350px;">
         <SsInput
           v-model="mainStore.world.memory.size"
           :label="$t('home.setting.memSize')"
-          class="col q-pr-md"
+          class="col-5 q-pr-md"
         />
         <SsSelect
           v-model="mainStore.world.memory.unit"
           :options="['MB', 'GB', 'TB']"
-          :label="$t('home.setting.unit')"
           class="col-3"
         />
       </div>

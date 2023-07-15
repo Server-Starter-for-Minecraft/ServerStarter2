@@ -14,6 +14,10 @@ const model = defineModel<string | number | boolean>({ required: true })
 const sysStore = useSystemStore()
 const defaultProperty = sysStore.staticResouces.properties[prop.propertyName]
 
+if (model.value === void 0) {
+  model.value = defaultProperty.default
+}
+
 /**
  * Propertyの編集に使用するEditerを指定
  */
@@ -55,7 +59,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
 </script>
 
 <template>
-  <div v-if="typeof model === 'string' && selectEditer()=='string'" class="row">
+  <div v-if="typeof model === 'string' && selectEditer()==='string'" class="row">
     <SsInput
       v-model="model"
       dense
@@ -65,7 +69,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
     />
   </div>
   
-  <div v-else-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()=='number'" class="row" style="width: 100%;">
+  <div v-else-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()==='number'" class="row" style="width: 100%;">
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
       v-model="model"
@@ -73,6 +77,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
       style="width: 100%;"
       dense
       :autofocus="autofocus"
+      @clear="model = ''"
       :rules="[
         val => numberValidate(
           val,
@@ -88,14 +93,15 @@ function validationMessage(min?:number, max?:number, step?:number) {
   </div>
   
   <q-toggle
-    v-else-if="selectEditer()=='boolean'"
+    v-else-if="selectEditer()==='boolean'"
     v-model="model"
     :label="model?.toString()"
     style="font-size: 1rem;"
   />
   
   <SsSelect
-    v-else-if="selectEditer()=='enum'"
+    v-else-if="selectEditer()==='enum'"
+    dense
     v-model="model"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
   />

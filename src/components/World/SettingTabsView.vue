@@ -16,12 +16,12 @@ import IconTabDropdownView from './utils/IconTabDropdownView.vue';
   >
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <icon-tab-view path="" icon="home" label="ホーム" />
-      <icon-tab-view path="console" icon="dns" label="サーバー本体" />
-      <icon-tab-view path="property" icon="list_alt" label="プロパティ" />
-      <icon-tab-view path="player" icon="group" label="プレイヤー管理" />
+      <icon-tab-view path="console" icon="terminal" label="サーバー" />
+      <icon-tab-view path="property" icon="list" label="プロパティ" />
+      <icon-tab-view path="player" icon="person" label="プレイヤー" />
       <icon-tab-dropdown-view
         path="contents"
-        icon="library_add"
+        icon="extension"
         label="追加コンテンツ"
         :btns = "[
           { path: 'datapack', label: 'データパック' },
@@ -29,12 +29,14 @@ import IconTabDropdownView from './utils/IconTabDropdownView.vue';
           { path: 'mod', label: 'MOD' },
         ]"
       />
-      <icon-tab-view path="share-world" icon="share" label="ワールド共有" />
+      <icon-tab-view path="share-world" icon="cloud" label="ワールド共有" />
     </template>
     <template v-else>
       <icon-tab-view path="system" icon="home" label="共有設定" />
       <icon-tab-view path="system/property" icon="list_alt" label="既定プロパティ" />
-      <icon-tab-view path="system/remote" icon="share" label="リモート" />
+      <icon-tab-view path="system/remote" icon="cloud" label="リモート" />
+      <icon-tab-view path="system/folder" icon="folder" label="ワールドフォルダ" />
+      <icon-tab-view path="system/info" icon="info" label="システム情報" />
     </template> 
   </q-tabs>
 

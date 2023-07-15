@@ -89,8 +89,8 @@ function openEditor() {
           self="top left"
         >
           <q-list dense>
-            <group-card-menu icon="edit" text="編集" @click="openEditor" />
-            <group-card-menu icon="delete" text="削除" @click="removeGroup" />
+            <group-card-menu icon="edit" :text="$t('player.edit')" @click="openEditor" />
+            <group-card-menu icon="delete" :text="$t('player.delete')" @click="removeGroup" />
           </q-list>
         </q-menu>
       </q-btn>

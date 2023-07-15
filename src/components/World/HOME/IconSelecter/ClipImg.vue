@@ -34,12 +34,11 @@ function updateImg() {
 onMounted(() => {
   cropper = new Cropper(cropImg.value, {
     aspectRatio: 1,
-    viewMode: 3,
+    background: false,
+    viewMode: 1,
     dragMode: 'move',
     autoCropArea: 1,
-    restore: false,
     guides: false,
-    highlight: false,
     cropBoxMovable: false,
     cropBoxResizable: false,
     toggleDragModeOnDblclick: false,
@@ -58,15 +57,17 @@ onMounted(() => {
 
 <template>
   <q-card flat>
-    <q-card-section class="q-px-none">
-      <img ref="cropImg" alt="Vue logo" :src="mainStore.iconCandidate">
-    </q-card-section>
+    <img ref="cropImg" alt="Vue logo" :src="mainStore.iconCandidate">
   </q-card>
 </template>
 
 <style scoped lang="scss">
 img {
   display: block;
+
+  min-width: 300px;
+  min-height: 300px;
+  aspect-ratio: 1;
 
   /* This rule is very important, please don't ignore this */
   max-width: 100%;

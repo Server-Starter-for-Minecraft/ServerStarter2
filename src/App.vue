@@ -89,7 +89,7 @@ function setSubscribe() {
   const currentSelectedId = mainStore.selectedWorldID
 
   worldStore.$subscribe((mutation, state) => {
-    if (!mainStore.newWorlds.includes(mainStore.selectedWorldID)) {
+    if (!mainStore.newWorlds.has(mainStore.selectedWorldID)) {
       window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
         checkError(
           v.value,

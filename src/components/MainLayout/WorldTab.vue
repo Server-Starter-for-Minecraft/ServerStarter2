@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
@@ -11,6 +12,7 @@ interface Props {
 }
 const prop = defineProps<Props>();
 
+const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore()
 
@@ -27,7 +29,7 @@ async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore
 
   // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
   await window.API.invokeCreateWorld(toRaw(mStore.world))
-  mStore.newWorlds.splice(mStore.newWorlds.indexOf(mStore.selectedWorldID), 1)
+  mStore.newWorlds.delete(mStore.selectedWorldID)
 
   // サーバーの起動を開始
   await router.push('/console');
@@ -60,6 +62,7 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
+    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? '.3rem solid #7CBB00' : '.3rem solid transparent'}"
   >
     <q-item-section
       avatar
@@ -68,11 +71,12 @@ function selectWorldIdx() {
     >
       <q-avatar square size="4rem">
         <q-img
-          :src="world.avater_path ?? assets.svg.defaultWorldIcon"
+          :src="world.avater_path ?? assets.png.unset"
           :ratio="1"
+          style="image-rendering: pixelated;"
         />
         <q-btn
-          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && (clicked || runBtnHovered)"
+          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && runBtnHovered && sysStore.systemSettings().user.drawerWidth > 200"
           @click="() => startServer(mainStore, consoleStore)"
           flat
           dense
@@ -89,6 +93,15 @@ function selectWorldIdx() {
         <p class="versionName">{{ versionName }}</p>
       </div>
     </q-item-section>
+
+    <q-tooltip
+      v-if="sysStore.systemSettings().user.drawerWidth < 200"
+      anchor="center middle"
+      self="top middle"
+      class="text-body2"
+    >
+      {{ world.name }}
+    </q-tooltip>
   </q-item>
 </template>
 

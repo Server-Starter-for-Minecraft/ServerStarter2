@@ -26,10 +26,8 @@ function createWindow() {
    */
   mainWindow = new BrowserWindow({
     icon: path.resolve(__dirname, 'icons/icon.png'), // tray icon
-    width: 700,
-    height: 750,
-    minWidth: 550,
-    minHeight: 600,
+    minWidth: 650,
+    minHeight: 650,
     useContentSize: true,
     webPreferences: {
       contextIsolation: true,
@@ -39,6 +37,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(process.env.APP_URL);
+  mainWindow.maximize()
 
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled

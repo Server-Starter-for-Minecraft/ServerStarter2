@@ -22,10 +22,10 @@ export type SystemSettingsEdited = {
   user: SystemUserSetting;
 };
 
-export const locales = ['ja', 'en-US'] as const
+export const locales = ['ja', 'en-US'] as const;
 export type Locale = (typeof locales)[number];
 
-export const colorThemes = ['auto', 'light', 'dark'] as const
+export const colorThemes = ['auto', 'light', 'dark'] as const;
 export type ColorTheme = (typeof colorThemes)[number];
 
 /** ローカルのワールドの保存先ディレクトリ (絶対パスのみ) */
@@ -55,6 +55,8 @@ export type SystemUserSetting = {
   autoShutDown: boolean;
   //ローカルのワールドの保存先ディレクトリ一覧
   localSaveContainer: LocalSaveContainer[];
+  // ワールドリストの幅
+  drawerWidth: number;
 };
 
 /**

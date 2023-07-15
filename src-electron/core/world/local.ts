@@ -32,8 +32,8 @@ import {
 } from '../const';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { importCustomMap } from './cusomMap';
-import { PlainProgress } from 'app/src-electron/schema/progress';
 import { PlainProgressor, genWithPlain } from '../progress/progress';
+import { pullRemoteWorld } from '../remote/remote';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -68,16 +68,13 @@ function fromPlayers(players: PlayerSetting[]): [Ops, Whitelist] {
 
   return [ops, whitelist];
 }
-
-export type LocalWorldResult = { world: World; other: WorldSettingsOther };
-
 // ローカルのサーバーディレクトリからWorld情報を取得
 export async function loadLocalFiles(
   savePath: Path,
   id: WorldID,
   name: WorldName,
   container: WorldContainer
-): Promise<WithError<Failable<LocalWorldResult>>> {
+): Promise<WithError<Failable<World>>> {
   // server_settings.json
   // server.properties
   // world/icon.png
@@ -126,8 +123,6 @@ export async function loadLocalFiles(
   // avater_pathが読み込めなかった場合は未設定にする
   const avater_path = isValid(_avater_path) ? _avater_path : undefined;
 
-  const other = constructWorldSettingsOther(worldSettings);
-
   // worldオブジェクトを生成
   const world: World = {
     id,
@@ -145,17 +140,16 @@ export async function loadLocalFiles(
     players,
   };
 
-  return withError({ world, other }, errors);
+  return withError(world, errors);
 }
 
 /** ローカルのサーバーディレクトリにWorld情報を保存
  * 戻り値は保存結果(保存の成否によって引数の値と異なる可能性あり) */
 export async function saveLocalFiles(
   savePath: Path,
-  world: WorldEdited,
-  other: WorldSettingsOther
-): Promise<WithError<Failable<LocalWorldResult>>> {
-  let worldSettings = constructWorldSettings(world, other);
+  world: WorldEdited
+): Promise<WithError<Failable<World>>> {
+  let worldSettings = constructWorldSettings(world);
 
   const errors: ErrorMessage[] = [];
 
@@ -207,8 +201,10 @@ export async function saveLocalFiles(
     }
   }
 
-  // TODO: リモートワールドの導入処理
+  // リモートワールドの導入処理
   if (world.remote_source) {
+    const pull = await pullRemoteWorld(savePath, world.remote_source);
+    if (isError(pull)) errors.push(pull);
   }
 
   const promisses: Promise<any>[] = [
@@ -239,22 +235,8 @@ export async function saveLocalFiles(
   return constructResult();
 }
 
-// ワールド設定として存在するが、API経由で公開しない設定群
-export type WorldSettingsOther = Omit<
-  WorldSettings,
-  keyof (World & WorldEdited)
->;
-
-export function getNewWorldSettingsOther(): WorldSettingsOther {
-  return {};
-}
-
-export function constructWorldSettings(
-  world: World | WorldEdited,
-  other: WorldSettingsOther
-) {
+export function constructWorldSettings(world: World | WorldEdited) {
   const worldSettings: WorldSettings = {
-    ...other,
     memory: world.memory,
     javaArguments: world.javaArguments,
     version: world.version,
@@ -264,14 +246,6 @@ export function constructWorldSettings(
     using: world.using,
   };
   return worldSettings;
-}
-
-export function constructWorldSettingsOther(
-  settings: WorldSettings
-): WorldSettingsOther {
-  return {
-    directoryType: settings.directoryType,
-  };
 }
 
 const VANILLA_NETHER_DIM = LEVEL_NAME + '/DIM-1';
@@ -294,7 +268,6 @@ function estimateWorldDirectoryType(savePath: Path): WorldDirectoryTypes {
 /** 起動するVersion(type)に合わせてワールドのセーブデータの構成を変更する */
 export async function formatWorldDirectory(
   savePath: Path,
-  current: WorldDirectoryTypes | undefined,
   version: Version,
   progress?: PlainProgressor
 ): Promise<WithError<undefined>> {
@@ -310,7 +283,7 @@ export async function formatWorldDirectory(
   };
   const next = directoryTypeMap[version.type];
 
-  current = current ?? estimateWorldDirectoryType(savePath);
+  const current = estimateWorldDirectoryType(savePath);
   if (current === next) return withError(undefined);
 
   const vanillaNether = savePath.child(VANILLA_NETHER_DIM);

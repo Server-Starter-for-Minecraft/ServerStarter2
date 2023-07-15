@@ -45,7 +45,3 @@ type Merge<T> = {
 export type FlattenErrors<T extends Errors> = Merge<
   UnionToIntersection<TupleToObject<FlattenErrorKV<T>>>
 >;
-
-export type ErrorTranslation<T> = {
-  [K in keyof T]: T [K] extends Function? string: ErrorTranslation<T [K]>
-}

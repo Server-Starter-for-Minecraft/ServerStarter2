@@ -16,6 +16,7 @@ const model = defineModel()
 <template>
   <q-select
     v-model="model"
+    filled
     :options="options"
     :label="label"
     :dense="dense"
@@ -26,15 +27,7 @@ const model = defineModel()
     map-options
     :option-label="optionLabel"
     :option-value="optionValue"
+    style="font-size: .9rem;"
   >
-    <template v-slot:label>
-      <p class="font q-pb-sm">{{ label }}</p>
-    </template>
   </q-select>
 </template>
-
-<style scoped lang="scss">
-.font {
-  font-size: 1rem;
-}
-</style>

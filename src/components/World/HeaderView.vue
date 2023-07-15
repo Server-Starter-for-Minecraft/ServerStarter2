@@ -9,7 +9,7 @@ const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 function getStatus(worldID: WorldID) {
-  return mainStore.newWorlds.includes(worldID) ? 'NewWorld' : consoleStore.status(worldID)
+  return mainStore.newWorlds.has(worldID) ? 'NewWorld' : consoleStore.status(worldID)
 }
 </script>
 

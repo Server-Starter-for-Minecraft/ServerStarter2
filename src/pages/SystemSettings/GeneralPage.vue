@@ -3,7 +3,9 @@ import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { colorThemes, ColorTheme, locales, Locale } from 'app/src-electron/schema/system';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { assets } from 'src/assets/assets';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
+import ColorThemeBtn from 'src/components/SystemSettings/General/ColorThemeBtn.vue';
 
 const sysStore = useSystemStore()
 const t = useI18n()
@@ -14,6 +16,10 @@ function changeLocale(loc: Locale) {
 }
 
 function changeTheme(colorTheme: ColorTheme) {
+  // システム設定に登録
+  sysStore.systemSettings().user.theme = colorTheme
+  
+  // 設定を画面に反映
   switch (colorTheme) {
     case 'auto':
       q.dark.set('auto');
@@ -32,6 +38,7 @@ function changeTheme(colorTheme: ColorTheme) {
   <div class="mainField">
     <h1 class="q-mt-none">{{ $t("systemsetting.general.lang") }}</h1>
     <SsSelect
+      dense
       v-model="sysStore.systemSettings().user.language"
       @update:model-value="newVal => changeLocale(newVal)"
       :options="locales"
@@ -39,12 +46,22 @@ function changeTheme(colorTheme: ColorTheme) {
     />
 
     <h1>{{ $t("systemsetting.general.colorMode") }}</h1>
-    <SsSelect
+    <div class="row q-gutter-lg">
+      <template v-for="theme in colorThemes" :key="theme">
+        <ColorThemeBtn
+          :src="assets.svg[theme]"
+          :active="sysStore.systemSettings().user.theme === theme"
+          :label="theme"
+          @click="() => changeTheme(theme)"
+        />
+      </template>
+    </div>
+    <!-- <SsSelect
       v-model="sysStore.systemSettings().user.theme"
       @update:model-value="newVal => changeTheme(newVal)"
       :options="colorThemes"
-      :label="$t('systemsetting.general.langDesc')"
-    />
+      label="ServerStarterの配色モードを選択してください"
+    /> -->
 
     <h1>{{ $t("systemsetting.general.autoShutdown") }}</h1>
     <q-checkbox

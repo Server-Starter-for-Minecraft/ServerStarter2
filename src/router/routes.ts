@@ -21,6 +21,8 @@ const routes: RouteRecordRaw[] = [
           { path: '', component: () => import('src/pages/SystemSettings/GeneralPage.vue') },
           { path: 'property', component: () => import('src/pages/SystemSettings/PropertyPage.vue') },
           { path: 'remote', component: () => import('src/pages/SystemSettings/RemotePage.vue') },
+          { path: 'folder', component: () => import('src/pages/SystemSettings/FolderPage.vue') },
+          { path: 'info', component: () => import('src/pages/SystemSettings/InfoPage.vue') },
         ]
       }
     ]

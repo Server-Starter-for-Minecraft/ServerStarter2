@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
-import iconButton from 'src/components/util/iconButton.vue';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 interface Prop {
   disable?: boolean
@@ -11,10 +11,27 @@ const consoleOpeStore = useConsoleOpeStore()
 </script>
 
 <template>
-  <div class="row q-pa-md">
-    <iconButton icon="stop_circle" @click="consoleOpeStore.sendCommand('stop')" color="red" text="stop" :disable="disable"/>
-    <iconButton icon="restart_alt" @click="consoleOpeStore.sendCommand('reboot')" color="blue" text="reboot" :disable="disable"/>
+  <div class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+    <SsBtn
+      dense
+      icon="stop"
+      label="stop"
+      color="red"
+      width="100px"
+      :disable="disable"
+      @click="consoleOpeStore.sendCommand('stop')"
+    />
+    <SsBtn
+      dense
+      icon="restart_alt"
+      label="reboot"
+      width="100px"
+      :disable="disable"
+      @click="consoleOpeStore.sendCommand('reboot')"
+      class="q-mx-sm"
+    />
     <q-input
+      dense
       filled
       clearable
       :disable="disable"
@@ -22,9 +39,19 @@ const consoleOpeStore = useConsoleOpeStore()
       v-on:keydown.enter="() => consoleOpeStore.sendCommand()"
       v-on:keydown.up="consoleOpeStore.upKey()"
       v-on:keydown.down="consoleOpeStore.downKey()"
-      label="Command"
+      placeholder="Command"
       class="col"
-    />
-    <iconButton icon="send" @click="consoleOpeStore.sendCommand" color="primary" text="send" :disable="disable"/>
+    >
+      <template #append>
+        <q-btn
+          dense
+          flat
+          icon="send"
+          color="primary"
+          :disable="disable"
+          @click="() => consoleOpeStore.sendCommand()"
+        />
+      </template>
+    </q-input>
   </div>
 </template>

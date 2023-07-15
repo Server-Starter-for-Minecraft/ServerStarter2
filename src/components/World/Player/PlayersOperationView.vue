@@ -62,7 +62,7 @@ function setOP() {
       v-model="playerStore.selectedOP"
       @update:model-value="setOP"
       :disable="disable"
-      label="OPレベルの変更"
+      :label="$t('player.changeOP')"
       :options="[...Array(5)].map((_, i) => {
         return { label: $t(`player.opDesc.${i}`), value: i }
       })"
@@ -77,7 +77,7 @@ function setOP() {
       dense
       size=".8rem"
       color="primary"
-      label="グループを作成"
+      :label="$t('player.makeGroup')"
       class="q-mx-md q-pa-sm"
       @click="openEditor"
     />
@@ -87,7 +87,7 @@ function setOP() {
       dense
       size=".8rem"
       color="red"
-      label="プレイヤーを削除"
+      :label="$t('player.deletePlayer')"
       icon-right="delete"
       class="q-pa-sm"
       @click="removePlayer"
