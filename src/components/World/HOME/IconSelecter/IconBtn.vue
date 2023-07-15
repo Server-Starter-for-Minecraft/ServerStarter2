@@ -9,7 +9,7 @@ interface Prop {
 const prop = defineProps<Prop>()
 
 const mainStore = useMainStore()
-const btnSize = 3
+const btnSize = 4
 
 function setIcon() {
   mainStore.iconCandidate = prop.logo
