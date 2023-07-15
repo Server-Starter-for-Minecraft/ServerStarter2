@@ -4,6 +4,7 @@ import { ValidationRule } from 'quasar/dist/types/api/validation'
 
 interface Prop {
   label?: string
+  placeholder?: string
   dense?: boolean
   autofocus?: boolean
   debounce?: number
@@ -25,6 +26,7 @@ onMounted(() => { input.value.validate() })
     v-model="model"
     filled
     :label="label"
+    :placeholder="placeholder"
     :dense="dense"
     :autofocus="autofocus"
     :rules="rules"
@@ -42,5 +44,9 @@ onMounted(() => { input.value.validate() })
 <style scoped lang="scss">
 .font {
   font-size: 1.1rem;
+}
+
+::v-deep ::placeholder {
+  font-size: 0.7rem;
 }
 </style>
