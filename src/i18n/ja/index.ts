@@ -4,10 +4,12 @@ import { jaProperty } from "src/i18n/ja/property"
 import { jaHome } from "src/i18n/ja/home"
 import { jaConsole } from "./console";
 import { jaPlayer } from "./player";
+import { jaSystemSetting } from "./systemsetting";
 
 export const ja = {
   home:jaHome,
   property:jaProperty,
   console:jaConsole,
-  player:jaPlayer
+  player:jaPlayer,
+  systemsetting:jaSystemSetting
 };

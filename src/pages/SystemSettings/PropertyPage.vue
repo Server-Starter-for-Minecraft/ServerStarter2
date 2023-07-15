@@ -14,12 +14,12 @@ const propertyStore = usePropertyStore()
   <div class="mainField">
     <div class="column fit">
 
-      <p class="q-my-sm text-body2" style="opacity: .5;">新規ワールドの作成時などに使用するデフォルトのプロパティを設定</p>
+      <p class="q-my-sm text-body2" style="opacity: .5;">{{ $t("systemsetting.property.description")}}</p>
 
       <SsInput
         dense
         v-model="propertyStore.searchName"
-        :placeholder="$t('property.main.search')"
+        :placeholder="$t('systemsetting.property.search')"
         class="q-pb-md"
         @clear="() => propertyStore.searchName = ''"
       />

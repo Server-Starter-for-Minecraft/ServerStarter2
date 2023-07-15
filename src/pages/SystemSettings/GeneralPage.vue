@@ -36,15 +36,16 @@ function changeTheme(colorTheme: ColorTheme) {
 
 <template>
   <div class="mainField">
-    <h1 class="q-mt-none">言語</h1>
+    <h1 class="q-mt-none">{{ $t("systemsetting.general.lang") }}</h1>
     <SsSelect
       dense
       v-model="sysStore.systemSettings().user.language"
       @update:model-value="newVal => changeLocale(newVal)"
       :options="locales"
+      :label="$t('systemsetting.general.langDesc')"
     />
 
-    <h1>配色テーマ</h1>
+    <h1>{{ $t("systemsetting.general.colorMode") }}</h1>
     <div class="row q-gutter-lg">
       <template v-for="theme in colorThemes" :key="theme">
         <ColorThemeBtn
@@ -62,10 +63,10 @@ function changeTheme(colorTheme: ColorTheme) {
       label="ServerStarterの配色モードを選択してください"
     /> -->
 
-    <h1>自動シャットダウン</h1>
+    <h1>{{ $t("systemsetting.general.autoShutdown") }}</h1>
     <q-checkbox
       v-model="sysStore.systemSettings().user.autoShutDown"
-      label="サーバー終了後に自動でPCをシャットダウンする"
+      :label="$t('systemsetting.general.shutdownDesc')"
       style="font-size: 1rem;"
     />
   </div>
