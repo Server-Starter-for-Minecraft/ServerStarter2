@@ -53,16 +53,17 @@ export type SystemUserSetting = {
   localSaveContainer: LocalSaveContainer[];
 };
 
+export type WorldContainerSetting = {
+  container: WorldContainer;
+  visible: boolean;
+  name: string;
+};
+
 /**
  * GetWorldContainersの戻り値
  * SetWorldContainersの引数
  */
-export type WorldContainers = {
-  default: WorldContainer;
-  custom: {
-    [name in string]: WorldContainer;
-  };
-};
+export type WorldContainers = WorldContainerSetting[];
 
 export type SystemPlayerSetting = {
   groups: { [name: string]: PlayerGroup };

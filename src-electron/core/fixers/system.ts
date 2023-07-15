@@ -6,9 +6,11 @@ import {
   SystemRemoteSetting,
   SystemSettings,
   SystemUserSetting,
+  WorldContainerSetting,
   WorldContainers,
 } from 'app/src-electron/schema/system';
 import {
+  applyFixer,
   arrayFixer,
   booleanFixer,
   defaultFixer,
@@ -68,19 +70,31 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   true
 );
 
+export const fixWorldContainerSetting = objectFixer<WorldContainerSetting>(
+  {
+    container: fixWorldContainer,
+    name: stringFixer('UnNamed'),
+    visible: booleanFixer(true),
+  },
+  false
+);
+
 /**
  * GetWorldContainersの戻り値
  * SetWorldContainersの引数
  */
-export const fixWorldContainers = objectFixer<WorldContainers>(
-  {
-    default: defaultFixer(
-      fixWorldContainer,
-      DEFAULT_WORLD_CONTAINER as WorldContainer
-    ),
-    custom: recordFixer(fixWorldContainer, true),
-  },
-  true
+export const fixWorldContainers = applyFixer(
+  arrayFixer<WorldContainerSetting>(fixWorldContainerSetting, true),
+  (containers) => {
+    if (containers.length === 0) {
+      containers.push({
+        container: DEFAULT_WORLD_CONTAINER,
+        name: 'default',
+        visible: true,
+      });
+    }
+    return containers;
+  }
 );
 
 export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
