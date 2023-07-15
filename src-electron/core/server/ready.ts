@@ -24,10 +24,6 @@ export async function readyRunServer(
   settings: WorldSettings,
   progress: PlainProgressor
 ): Promise<Failable<{ javaArgs: string[]; javaPath: Path }>> {
-  // ワールドが起動中の場合
-  // 致命的なエラー(この関数を呼ぶ時点でバリデーションを掛けておくこと)
-  if (settings.using) throw new Error();
-
   const javaArgs: string[] = [];
 
   // JAVAのstdioのエンコードをutf-8に
