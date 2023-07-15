@@ -74,8 +74,7 @@ const playerStore = usePlayerStore()
     <PlayersOperationView v-model="mainStore.world.players" :disable="playerStore.focusCards.size === 0" />
   </div>
 
-  <!-- TODO: 画面の調整 -->
-  <div v-else>
-    プレイヤー設定の読み込みに失敗しました
+  <div v-else class="justify-center row fit">
+    <p style="margin: auto 0;">プレイヤー設定の読み込みに失敗しました</p>
   </div>
 </template>

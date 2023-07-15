@@ -60,6 +60,7 @@ function openEditor() {
     <template #default>
       <q-card-section
         horizontal
+        class="fit"
         :style="{'border-left': `1.5rem solid ${color}`, 'border-radius': '15px'}"
       >
         <q-card-section class="q-pt-sm">

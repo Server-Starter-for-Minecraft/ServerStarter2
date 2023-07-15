@@ -61,9 +61,8 @@ function resetAll() {
       </div>
     </div>
 
-    <!-- TODO: 画面の調整 -->
-    <div v-else>
-      Propertyが読み込めませんでした
+    <div v-else class="justify-center row fit">
+      <p style="margin: auto 0;">Propertyが読み込めませんでした</p>
     </div>
   </div>
 </template>
