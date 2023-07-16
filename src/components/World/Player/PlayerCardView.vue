@@ -8,6 +8,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import { assets } from 'src/assets/assets';
 
 interface Prop {
   uuid: PlayerUUID
@@ -56,19 +57,21 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
     :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''"
   >
     <template #default>
-      <q-item class="q-pa-md" style="height: 5.5rem;">
+      <q-item style="height: 5rem; padding: 14px;">
         <q-item-section avatar top>
           <player-head-view v-model="player" size="2.5rem" />
         </q-item-section>
 
         <q-item-section top>
           <q-item-label class="name text-omit">{{ player.name }}</q-item-label>
-          <q-item-label v-show="opLevel !== void 0" caption class="q-pt-xs" style="opacity: 0.7;">
+          <q-item-label v-show="opLevel !== void 0" caption style="opacity: 0.7;">
             {{ $t('player.opLevel') }} {{ opLevel }}
           </q-item-label>
         </q-item-section>
         <q-item-section side top>
-          <q-icon :name="opLevel !== void 0 ? 'star' : ''" />
+          <q-avatar square size="2rem" class="q-ma-none">
+            <q-img :src="assets.svg[`level${opLevel ?? 0}`]" />
+          </q-avatar>
         </q-item-section>
       </q-item>
     </template>
@@ -79,8 +82,7 @@ function getGroups(groups: {[name: string]: PlayerGroup}) {
         class="q-py-none"
         style="width: max-content;"
       >
-        <span class="text-caption">{{ $t("player.belongingGroup") }}</span>
-        <div class="q-gutter-sm q-py-xs" style="width: 12rem">
+        <div class="q-gutter-xs q-pb-sm" style="width: 13.5rem">
           <template v-for="g in getGroups(sysStore.systemSettings().player.groups)" :key="g">
             <group-badge-view :group-name="g.name" :color="g.color" />
           </template>

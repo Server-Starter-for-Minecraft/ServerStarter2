@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerIconInList from './utils/PlayerIconInList.vue';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const playerStore = usePlayerStore()
 </script>
 
 <template>
-  <q-card flat class="q-my-md">
-    <q-card-section horizontal>
-      <q-card-section class="row col q-pa-none">
+  <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0;">
+    <p class="q-pa-sm q-ma-none text-body2">{{ `${playerStore.focusCards.size} 人を選択中` }}</p>
+    
+    <q-card-actions align="center">
+      <SsBtn
+        :label="`${playerStore.focusCards.size} 人の選択を解除`"
+        :disable="playerStore.focusCards.size === 0"
+        width="9rem"
+        @click="playerStore.unFocus()"
+      />
+    </q-card-actions>
+    
+    <q-scroll-area
+      style="flex: 1 1 0;"
+    >
+      <div class="row">
         <div v-if="playerStore.focusCards.size === 0" class="row items-center">
           <p class="col q-my-none q-ml-sm text-caption text-grey">
             {{ $t("player.selectPlayer") }}
@@ -17,16 +31,7 @@ const playerStore = usePlayerStore()
         <template v-else v-for="uuid in playerStore.focusCards" :key="uuid">
           <PlayerIconInList :uuid="uuid" />
         </template>
-      </q-card-section>
-
-      <q-card-actions class="q-px-md">
-        <q-btn
-          outline
-          :label="$t('player.deselect')"
-          :disable="playerStore.focusCards.size === 0"
-          @click="playerStore.unFocus()"
-        />
-      </q-card-actions>
-    </q-card-section>
+      </div>
+    </q-scroll-area>
   </q-card>
 </template>

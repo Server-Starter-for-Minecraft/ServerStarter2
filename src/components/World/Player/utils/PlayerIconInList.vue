@@ -34,7 +34,7 @@ onMounted(async () => {
         <PlayerHeadView v-model="player" size="1.9rem" />
         <q-btn flat rounded dense icon="cancel" size="10px" @click="playerStore.unFocus(uuid)" class="cancelBtn" />
       </q-avatar>
-      <q-item-label caption class="text-center q-pt-sm">
+      <q-item-label class="text-center q-pt-xs">
         {{ player.name }}
       </q-item-label>
     </q-item-section>

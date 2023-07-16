@@ -19,7 +19,8 @@ async function onCardClicked() {
     square
     dense
     outline
-    clickable @click="onCardClicked"
+    clickable
+    @click="onCardClicked"
   >
     <q-icon name="circle" :style="{'color': color}" />
     <span class="name">{{ groupName }}</span>
