@@ -8,11 +8,11 @@ const playerStore = usePlayerStore()
 
 <template>
   <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0;">
-    <p class="q-pa-sm q-ma-none text-body2">{{ `${playerStore.focusCards.size} 人を選択中` }}</p>
+    <p class="q-pa-sm q-ma-none text-body2">{{ $t('player.select', playerStore.focusCards.size) }}</p>
     
     <q-card-actions align="center">
       <SsBtn
-        :label="`${playerStore.focusCards.size} 人の選択を解除`"
+        :label="$t('player.deselect',playerStore.focusCards.size)"
         :disable="playerStore.focusCards.size === 0"
         width="9rem"
         @click="playerStore.unFocus()"
@@ -25,7 +25,7 @@ const playerStore = usePlayerStore()
       <div class="row">
         <div v-if="playerStore.focusCards.size === 0" class="row items-center">
           <p class="col q-my-none q-ml-sm text-caption text-grey">
-            {{ $t("player.selectPlayer") }}
+            {{ $t('player.selectPlayer') }}
           </p>
         </div>
         <template v-else v-for="uuid in playerStore.focusCards" :key="uuid">

@@ -7,6 +7,9 @@ import { enUSConsole } from "./console";
 import { enUSPlayer } from "./player";
 import { enUSSystemSetting } from "./systemsetting";
 import { enUSUtils } from "./utils";
+import { enAdditionalContents } from "./additionalContents";
+import { enUSError } from "./error";
+import { enUSProgress } from "./progress";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
@@ -14,5 +17,8 @@ export const enUS: MessageSchema = {
   console:enUSConsole,
   player:enUSPlayer,
   systemsetting:enUSSystemSetting,
-  utils:enUSUtils
+  utils:enUSUtils,
+  additionalContents:enAdditionalContents,
+  error:enUSError,
+  progress:enUSProgress
 };

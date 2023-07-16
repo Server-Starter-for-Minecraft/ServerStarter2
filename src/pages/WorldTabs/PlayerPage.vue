@@ -60,7 +60,7 @@ function openGroupEditor(group?: PlayerGroup) {
         
         <div class="q-py-md fit">
           <div v-show="playerStore.searchName !== ''" class="q-pb-md">
-            <span class="text-caption">新規プレイヤー</span>
+            <span class="text-caption">{{ $t('player.newPlayer') }}</span>
             <!-- TODO: 検索結果UIを更新 -->
             <SearchResultView />
           </div>
@@ -116,6 +116,6 @@ function openGroupEditor(group?: PlayerGroup) {
   </div>
 
   <div v-else class="justify-center row fit">
-    <p style="margin: auto 0;">プレイヤー設定の読み込みに失敗しました</p>
+    <p style="margin: auto 0;">{{ $t('player.failed') }}</p>
   </div>
 </template>
