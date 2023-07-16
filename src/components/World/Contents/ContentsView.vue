@@ -52,9 +52,9 @@ async function importNewContent() {
 
 <template>
   <div class="q-px-md">
-    <h1 class="q-py-xs">{{ type }}管理</h1>
+    <h1 class="q-py-xs">{{$t('additionalContents.management',{ type: prop.type })}}</h1>
   
-    <span class="text-caption">導入済み{{ type }}</span>
+    <span class="text-caption">{{$t('additionalContents.installed',{ type: prop.type })}}</span>
     <div class="row q-gutter-md q-pa-sm">
       <div v-for="item in mainStore.world.additional[`${type}s`]" :key="item.name" class="col-">
         <ItemCardView v-if="'description' in item" :name="item.name" :desc="item.description" action-type="delete" />
@@ -64,9 +64,9 @@ async function importNewContent() {
 
     <q-separator class="q-my-md" />
     
-    <span class="text-caption">{{ type }}を追加</span>
+    <span class="text-caption">{{$t('additionalContents.add',{ type: prop.type })}}</span>
     <div class="row q-gutter-sm q-pa-sm col-">
-      <ItemCardView name="新規導入" color="#2E5F19" @click="importNewContent"/>
+      <ItemCardView :name="$t('additionalContents.newInstall')" color="#2E5F19" @click="importNewContent"/>
       <!-- TODO: 導入済みのコンテンツは表示しない -->
       <!-- TODO: 上記と同じようにcandidateItemsを引数として受けずにSysStoreから直接取得？ -->
       <template v-for="item in candidateItems" :key="item.id">
