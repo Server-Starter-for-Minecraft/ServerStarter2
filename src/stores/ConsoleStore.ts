@@ -3,6 +3,7 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { useProgressStore } from './ProgressStore';
 import { useMainStore } from './MainStore';
 import { checkError } from 'src/components/Error/Error';
+import { assets } from 'src/assets/assets';
 
 interface WorldConsole {
   [id: WorldID]: {
@@ -74,6 +75,11 @@ export async function runServer() {
   if (mainStore.newWorlds.has(mainStore.world.id)) {
     const res = await window.API.invokeCreateWorld(mainStore.world)
     checkError(res, undefined, 'ワールドの生成に失敗しました')
+  }
+
+  // 画像が入っていない場合は既定のアイコンを適用する
+  if (mainStore.world.avater_path === void 0) {
+    mainStore.world.avater_path = assets.png.unset
   }
 
   consoleStore.setProgress(mainStore.selectedWorldID, '1.19.4 / TestWorld を起動中')
