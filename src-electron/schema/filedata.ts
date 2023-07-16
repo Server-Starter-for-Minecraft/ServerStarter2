@@ -57,6 +57,10 @@ export type CustomMapData = {
   kind: 'map';
   path: string;
   isFile: boolean;
+  levelName: string;
+  icon?: ImageURI;
+  // level.dat の中身の Data.Version.Name の値 バニラの時しか意味ないかも? TODO: 要検証
+  versionName: string;
 };
 
 /** 画像データ(ImageURI) */

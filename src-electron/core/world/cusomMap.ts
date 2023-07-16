@@ -1,7 +1,7 @@
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { Failable } from 'app/src-electron/util/error/failable';
+import { Failable, FailableChain } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
 import { File } from 'unzipper';
@@ -12,6 +12,8 @@ import {
   serverPropertiesFile,
 } from './files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { BytesData } from 'app/src-electron/util/bytesData';
+import { LevelDat } from './misc/levelDat';
 
 const LEVEL_DAT = 'level.dat';
 
@@ -35,21 +37,44 @@ async function findLevelDatInZip(zip: ZipFile): Promise<Failable<File>> {
   return levelDats[0];
 }
 
+async function findIconPngInZip(zip: ZipFile): Promise<File | undefined> {
+  // ZIP内に ( icon.png | */icon.png ) があった場合OK
+  const levelDats = await zip.match(/^([^<>:;,?"*|/\\]+\/)?icon\.png$/);
+  return levelDats[0];
+}
+
 /** パスを受け適切なマップ形式だった場合CustomMapを返す */
 export async function loadCustomMap(
   path: Path
 ): Promise<Failable<CustomMapData>> {
   const isDirectory = await path.isDirectory();
 
+  /** level.dat の内容 */
+  let dat: Failable<BytesData>;
+
+  /** icon.png の内容 */
+  let icon: BytesData | undefined;
+
   if (isDirectory) {
     // ディレクトリの場合
-    if (!path.child(LEVEL_DAT).exists())
+
+    // level.dat の読み込み
+    const datPath = path.child(LEVEL_DAT);
+    if (!datPath.exists()) {
       // /level.dat がない場合エラー
       return errorMessage.data.path.invalidContent.invalidCustomMap({
         type: isDirectory ? 'directory' : 'file',
         path: path.path,
       });
+    }
+    dat = await BytesData.fromPath(datPath);
+
+    // /icon.pngを読み込み
+    const iconPath = path.child('icon.png');
+    const iconData = await iconPath.read();
+    icon = isValid(iconData) ? iconData : undefined;
   } else {
+    // zipの場合
     if (path.extname() !== '.zip') {
       // zipでないファイル場合エラー
       return errorMessage.data.path.invalidContent.invalidCustomMap({
@@ -63,11 +88,28 @@ export async function loadCustomMap(
     // /level.dat が取得できない場合エラー
     const datFile = await findLevelDatInZip(zip);
     if (isError(datFile)) return datFile;
+
+    dat = await BytesData.fromBuffer(await datFile.buffer());
+
+    // /icon.pngを読み込み
+    const iconFile = await findIconPngInZip(zip);
+    if (iconFile !== undefined) {
+      dat = await BytesData.fromBuffer(await iconFile.buffer());
+    }
   }
+
+  if (isError(dat)) return dat;
+  const datContent = await dat.nbt<LevelDat>('gzip');
+  if (isError(datContent)) return datContent;
+
+  let iconURI = await icon?.encodeURI('image/png');
 
   return {
     kind: 'map',
     path: path.path,
+    levelName: datContent.Data.LevelName,
+    versionName: datContent.Data.Version.Name,
+    icon: iconURI,
     isFile: !isDirectory,
   };
 }
