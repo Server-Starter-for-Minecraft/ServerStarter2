@@ -8,6 +8,8 @@ import { enUSPlayer } from "./player";
 import { enUSSystemSetting } from "./systemsetting";
 import { enUSUtils } from "./utils";
 import { enAdditionalContents } from "./additionalContents";
+import { enUSError } from "./error";
+import { enUSProgress } from "./progress";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
@@ -16,5 +18,7 @@ export const enUS: MessageSchema = {
   player:enUSPlayer,
   systemsetting:enUSSystemSetting,
   utils:enUSUtils,
-  additionalContents:enAdditionalContents
+  additionalContents:enAdditionalContents,
+  error:enUSError,
+  progress:enUSProgress
 };

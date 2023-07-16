@@ -7,6 +7,8 @@ import { jaPlayer } from "./player";
 import { jaSystemSetting } from "./systemsetting";
 import { jaUtils } from "./utils";
 import { jaAdditionalContents } from "./additionalContents";
+import { jaError } from "./error";
+import { jaProgress } from "./progress";
 
 export const ja = {
   home:jaHome,
@@ -15,5 +17,7 @@ export const ja = {
   player:jaPlayer,
   systemsetting:jaSystemSetting,
   utils:jaUtils,
-  additionalContents:jaAdditionalContents
+  additionalContents:jaAdditionalContents,
+  error:jaError,
+  progress:jaProgress
 };

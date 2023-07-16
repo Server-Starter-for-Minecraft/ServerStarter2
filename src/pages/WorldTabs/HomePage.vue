@@ -89,7 +89,7 @@ async function validateWorldName(name: WorldName) {
   const res = await window.API.invokeValidateNewWorldName(mainStore.world.container, name)
   if (isError(res) && mainStore.world.name !== name) {
     mainStore.errorWorlds.add(mainStore.world.id)
-    return t(res.key)
+    return t(`error.${res.key}`)
   }
   else {
     mainStore.errorWorlds.delete(mainStore.world.id)

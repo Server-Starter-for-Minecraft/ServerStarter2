@@ -4,13 +4,13 @@ import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 
 export const jaError: ErrorTranslationTypes = {
   system: {
-    runtime: '',
-    ipc: '',
+    runtime: 'ランタイムエラーが発生しました',
+    ipc: 'IPC通信でエラーが発生しました',
     subprocess: '',
   },
   data: {
     url: {
-      fetch: '',
+      fetch: '{url}からのデータを取得するのに失敗しました',
     },
     path: {
       loadingFailed: 'ファイル、またはディレクトリの読み込みに失敗しました',
@@ -24,7 +24,7 @@ export const jaError: ErrorTranslationTypes = {
         invalidPlugin: '不敵なプラグインファイルが選択されました。正しいものであるかをもう一度確認してください。',
         invalidMod: '不敵なModファイルが選択されました。正しいものであるかをもう一度確認してください。',
         invalidCustomMap: '不敵なカスタムマップが選択されました。正しいものであるかをもう一度確認してください。',
-        customMapZipWithMultipleLevelDat: '',
+        customMapZipWithMultipleLevelDat: '{path}のカスタムマップにはlevel.datが複数格納されています',
         invalidWorldSettingJson: '',
         invalidOpsJson: '',
         invalidWhitelistJson: '',
@@ -48,18 +48,18 @@ export const jaError: ErrorTranslationTypes = {
   core: {
     world: {
       invalidWorldId: '{id}に対応するワールドが存在しません',
-      worldAleradyRunning: '',
+      worldAleradyRunning: '{container}/{name}に保存されているワールドは既に起動してあります',
     },
     version: {
-      forgeInstallerNotProvided: '',
+      forgeInstallerNotProvided: '{version}のforgeのインストーラは提供されていません',
       failSpigotBuild: {
-        javaNeeded: '',
+        javaNeeded: '{version}のspiotのビルドに失敗しました、{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります',
       },
-      vanillaVersionNotExists: '',
+      vanillaVersionNotExists: 'バージョン{version}のvanillaは存在しません',
     },
-    missingPersonalAccessToken: '',
-    minecraftEULANotAccepted: '',
-    failCacheAddiltionalData: '',
+    missingPersonalAccessToken: 'https://github.com/{owner}/{repo}のパーソナルアクセストークンが存在しません',
+    minecraftEULANotAccepted: '{type}のキャッシュに失敗しました。',
+    failCacheAddiltionalData: 'グローバルIPの取得に失敗しました',
     failGetGlobalIP: '',
   },
 };
