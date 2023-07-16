@@ -106,6 +106,9 @@ function showImgClipper() {
               <q-avatar square size="4rem">
                 <q-img :src="mainStore.iconCandidate" style="image-rendering: pixelated;"/>
               </q-avatar>
+              <p class="text-right full-width q-ma-none" style="font-size: .5rem;">
+                64 x 64 px
+              </p>
             </div>
             <q-space />
             <SelectorBtn
