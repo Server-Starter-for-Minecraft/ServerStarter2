@@ -140,7 +140,7 @@ export interface API extends IAPI {
     ) => Promise<Failable<Version[]>>;
 
     /** ローカルのセーブデータ一覧を取得 */
-    GetLocalSaveData: () => Promise<WithError<Failable<LocalSave[]>>>;
+    GetLocalSaveData: () => Promise<WithError<Failable<CustomMapData[]>>>;
 
     /** ワールド名が使用可能かどうかを検証する */
     ValidateNewWorldName: (

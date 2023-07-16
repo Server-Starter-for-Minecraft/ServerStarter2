@@ -30,7 +30,6 @@ import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
-import { objMap } from 'app/src-electron/util/objmap';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {

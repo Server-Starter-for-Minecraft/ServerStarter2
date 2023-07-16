@@ -1,7 +1,7 @@
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { Failable, FailableChain } from 'app/src-electron/util/error/failable';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
 import { File } from 'unzipper';
@@ -102,7 +102,7 @@ export async function loadCustomMap(
   const datContent = await dat.nbt<LevelDat>('gzip');
   if (isError(datContent)) return datContent;
 
-  let iconURI = await icon?.encodeURI('image/png');
+  const iconURI = await icon?.encodeURI('image/png');
 
   return {
     kind: 'map',

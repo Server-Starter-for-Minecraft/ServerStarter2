@@ -1,4 +1,3 @@
-import { Awaitable } from 'vitest';
 import { ErrorMessage, Failable } from '../../schema/error';
 import { fromRuntimeError, isValid } from './error';
 

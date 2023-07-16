@@ -8,7 +8,8 @@ import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
-import * as NBT from 'nbtify';
+
+const nbt = import('nbtify');
 
 const fetch = import('node-fetch');
 
@@ -213,7 +214,9 @@ export class BytesData {
     compression?: 'deflate' | 'deflate-raw' | 'gzip' | null
   ): Promise<Failable<BytesData>> {
     try {
-      const result = await NBT.write(data, {
+      const result = await (
+        await nbt
+      ).write(data, {
         endian: 'big',
         compression: compression,
       });
@@ -260,7 +263,9 @@ export class BytesData {
     complesstion?: 'deflate' | 'deflate-raw' | 'gzip' | null
   ): Promise<Failable<T>> {
     try {
-      const result = await NBT.read(this.data, {
+      const result = await (
+        await nbt
+      ).read(this.data, {
         endian: 'big',
         compression: complesstion,
       });

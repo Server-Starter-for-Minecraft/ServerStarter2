@@ -29,13 +29,11 @@ export async function getLocalSaveContainers() {
 
   if (isError(json)) return json;
 
-  const defaultLocalSaveContainer = launcherPath
-    .child('saves')
-    .str() as LocalSaveContainer;
+  const defaultLocalSaveContainer = launcherPath.child('saves');
 
   return new Set(
-    Object.values(json.profiles).map(
-      (v) => v.gameDir ?? defaultLocalSaveContainer
+    Object.values(json.profiles).map((v) =>
+      v.gameDir ? new Path(v.gameDir).child('saves') : defaultLocalSaveContainer
     )
   );
 }
