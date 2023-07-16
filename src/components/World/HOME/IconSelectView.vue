@@ -118,7 +118,7 @@ function showImgClipper() {
         </q-item>
       </q-card-section>
 
-      <div class="absolute-right">
+      <div class="absolute-top-right">
         <q-btn dense flat round icon="close" size="1rem" class="q-ma-sm" @click="onDialogCancel" />
       </div>
     </q-card>
