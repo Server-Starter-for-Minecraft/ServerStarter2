@@ -93,5 +93,5 @@ export const enUSproperty = {
   },
   resetProperty:'Reset setting to default setting \"{defaultProperty}\"',
   resetProperty2:'You can change basic settings from "System Settings" > "Properties".',
-  failed: 'Property could not be loaded',
+  failed: 'Failed to load properties',
 };
