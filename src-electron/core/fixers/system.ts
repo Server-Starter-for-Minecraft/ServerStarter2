@@ -7,7 +7,6 @@ import {
   SystemSettings,
   SystemUserSetting,
   WorldContainerSetting,
-  WorldContainers,
 } from 'app/src-electron/schema/system';
 import {
   applyFixer,
@@ -21,14 +20,10 @@ import {
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixPlayerGroup } from './player';
-import { PlayerUUID, WorldContainer } from 'app/src-electron/schema/brands';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { fixImageURI, fixPlayerUUID, fixWorldContainer } from './brands';
 import { fixGithubRemoteSetting } from './remote';
-import {
-  DEFAULT_LOCALE,
-  DEFAULT_LOCAL_SAVE_CONTAINER,
-  DEFAULT_WORLD_CONTAINER,
-} from '../const';
+import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
 import { genUUID } from 'app/src-electron/tools/uuid';
 
@@ -62,10 +57,6 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     owner: defaultFixer(fixPlayerUUID, genUUID<PlayerUUID>()),
     // 自動シャットダウン
     autoShutDown: booleanFixer(false),
-    //ローカルのワールドの保存先ディレクトリ一覧
-    localSaveContainer: defaultFixer(arrayFixer(fixLocalSaveContainer, false), [
-      DEFAULT_LOCAL_SAVE_CONTAINER,
-    ]),
   },
   true
 );

@@ -5,8 +5,32 @@ import { BytesData } from 'app/src-electron/util/bytesData';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { Failable, WithError } from 'app/src-electron/schema/error';
+import {
+  ErrorMessage,
+  Failable,
+  WithError,
+} from 'app/src-electron/schema/error';
 import { withError } from 'app/src-electron/util/error/witherror';
+import { getLocalSaveContainers } from './launcherProfile';
+
+export async function getAllLocalSaveData(): Promise<
+  WithError<Failable<LocalSave[]>>
+> {
+  const containers = await getLocalSaveContainers();
+  if (isError(containers)) return withError(containers);
+
+  const savedatas = await asyncMap(Array.from(containers), getLocalSaveData);
+
+  const errors: ErrorMessage[] = [];
+  const values: LocalSave[] = [];
+
+  savedatas.forEach((v) => {
+    errors.push(...v.errors);
+    values.push(...v.value);
+  });
+
+  return withError(values, errors);
+}
 
 export async function getLocalSaveData(
   container: LocalSaveContainer

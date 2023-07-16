@@ -49,8 +49,6 @@ export type SystemUserSetting = {
   owner: PlayerUUID;
   // 自動シャットダウン
   autoShutDown: boolean;
-  //ローカルのワールドの保存先ディレクトリ一覧
-  localSaveContainer: LocalSaveContainer[];
 };
 
 export type WorldContainerSetting = {
