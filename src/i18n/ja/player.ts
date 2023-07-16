@@ -18,6 +18,8 @@ export const jaPlayer = {
   groupMember: 'グループメンバー',
   opLevel: '権限レベル',
   addPlayer: 'このプレイヤーを追加',
+  newPlayer: '新規プレイヤー',
+  failed: 'プレイヤー設定の読み込みに失敗しました',
   opDesc: {
     0: 'OP権限を与えない',
     1: 'OPレベル１（説明文）',

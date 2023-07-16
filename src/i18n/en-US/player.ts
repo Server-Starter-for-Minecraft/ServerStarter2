@@ -18,6 +18,8 @@ export const enUSPlayer = {
   groupMember: 'Group member',
   opLevel: 'OP level',
   addPlayer: 'Register this player',
+  newPlayer: 'New player',
+  failed: 'Failed to load player settings',
   opDesc: {
     0: 'Don\'t give OP',
     1: 'OP level１（説明文）',
