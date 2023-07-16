@@ -12,7 +12,7 @@ export const jaPlayer = {
   makeNewGroup: '新規グループの作成',
   newGroupName: '新規グループ名を入力',
   groupColor: 'グループの色を選択',
-  selectPlayer: 'プレイヤーを左記から選択してください',
+  selectPlayer: 'プレイヤーを左から選択してください',
   belongingGroup: '所属グループ',
   groupMember: 'グループメンバー',
   opLevel: '権限レベル',
