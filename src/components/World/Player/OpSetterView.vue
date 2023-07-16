@@ -52,20 +52,20 @@ function removePlayer() {
     <p class="q-pa-sm q-ma-none text-body2">{{ `${playerStore.focusCards.size} 人の設定を編集` }}</p>
     
     <q-scroll-area style="flex: 1 1 0;">
-      <template v-for="opLevel in ([0, 1, 2, 3, 4] as const)" :key="opLevel">
-        <OpLevelBtn
-          :src="assets.svg[`level${opLevel}`]"
-          :label="opLevel !== 0 ? `権限レベル${opLevel}` : '権限なし'"
-          @click="() => setOP(opLevel)"
-        />
-      </template>
-      <q-separator inset class="q-my-sm" />
       <OpLevelBtn
         icon="close"
         label="プレイヤーを削除"
         color="red"
         @click="removePlayer"
       />
+      <q-separator inset />
+      <template v-for="opLevel in ([4, 3, 2, 1, 0] as const)" :key="opLevel">
+        <OpLevelBtn
+          :src="assets.svg[`level${opLevel}`]"
+          :label="opLevel !== 0 ? `権限レベル${opLevel}` : '権限なし'"
+          @click="() => setOP(opLevel)"
+        />
+      </template>
     </q-scroll-area>
   </q-card>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import { isValid } from 'src/scripts/error';
@@ -9,9 +10,14 @@ import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
 import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
 import OpSetterView from 'src/components/World/Player/OpSetterView.vue';
 import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
+import { generateGroup, iEditorDialogProps, iEditorDialogReturns } from 'src/components/World/Player/Editor/editorDialog';
+import AddContentsCard from 'src/components/util/AddContentsCard.vue';
+
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
+
+const openGroupEditor = ref(false)
 </script>
 
 <template>
@@ -54,13 +60,22 @@ const playerStore = usePlayerStore()
           <q-separator class="q-my-md" />
 
           <span class="text-caption">{{ $t("player.groupList") }}</span>
-          <div class="row q-gutter-sm q-pa-sm">
-            <div v-for="group in playerStore.searchGroups()" :key="group.name" class="col-">
-              <GroupCardView
-                :name="group.name"
-                :color="group.color"
-                :players="group.players"
-              />
+          <div class="row q-pa-sm">
+            <div class="row q-gutter-sm col-">
+              <div>
+                <AddContentsCard
+                  label="グループを作成"
+                  min-height="100px"
+                  @click="generateGroup('kusakusa', '#ffffff', Array.from(playerStore.focusCards))"
+                />
+              </div>
+              <div v-for="group in playerStore.searchGroups()" :key="group.name">
+                <GroupCardView
+                  :name="group.name"
+                  :color="group.color"
+                  :players="group.players"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -68,6 +83,7 @@ const playerStore = usePlayerStore()
 
       <div class="column q-ml-md">
         <OpSetterView class="q-my-md"/>
+        
         <SelectedPlayersView />
       </div>
     </div>
