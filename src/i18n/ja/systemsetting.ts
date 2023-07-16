@@ -1,4 +1,5 @@
 export const jaSystemSetting = {
+    title: 'システム設定',
     general: {
         lang: '言語',
         langDesc: '言語を選択してください',

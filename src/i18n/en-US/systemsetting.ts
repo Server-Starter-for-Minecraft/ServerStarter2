@@ -1,13 +1,14 @@
 export const enUSSystemSetting = {
+    title: 'Settings',
     general: {
         lang: 'Language',
         langDesc: 'Select your language',
         colorMode: 'Appearance',
         autoShutdown: 'Auto-Shutdown',
-        shutdownDesc: 'Shutdown your PC after you close the server'
+        shutdownDesc: 'Allow to shutdown your PC after you close the server'
     },
     property: {
-        description: 'Set the default setting for create new world',
+        description: 'Set the default setting for creating new world',
         search: 'Search the setting'
     },
     remote: {
