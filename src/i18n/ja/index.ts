@@ -6,6 +6,7 @@ import { jaConsole } from "./console";
 import { jaPlayer } from "./player";
 import { jaSystemSetting } from "./systemsetting";
 import { jaUtils } from "./utils";
+import { jaAdditionalContents } from "./additionalContents";
 
 export const ja = {
   home:jaHome,
@@ -13,5 +14,6 @@ export const ja = {
   console:jaConsole,
   player:jaPlayer,
   systemsetting:jaSystemSetting,
-  utils:jaUtils
+  utils:jaUtils,
+  additionalContents:jaAdditionalContents
 };
