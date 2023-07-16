@@ -8,11 +8,11 @@ const playerStore = usePlayerStore()
 
 <template>
   <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0;">
-    <p class="q-pa-sm q-ma-none text-body2">{{ $t('player.select',{size: playerStore.focusCards.size}) }}</p>
+    <p class="q-pa-sm q-ma-none text-body2">{{ $t('player.select', playerStore.focusCards.size) }}</p>
     
     <q-card-actions align="center">
       <SsBtn
-        :label="$t('player.deselect',{size: playerStore.focusCards.size})"
+        :label="$t('player.deselect',playerStore.focusCards.size)"
         :disable="playerStore.focusCards.size === 0"
         width="9rem"
         @click="playerStore.unFocus()"
