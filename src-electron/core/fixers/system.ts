@@ -1,6 +1,4 @@
 import {
-  LocalSave,
-  LocalSaveContainer,
   Locale,
   SystemPlayerSetting,
   SystemRemoteSetting,
@@ -28,22 +26,6 @@ import { fixSystemWorldSettings } from './world';
 import { genUUID } from 'app/src-electron/tools/uuid';
 
 export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], DEFAULT_LOCALE);
-
-/** ローカルのワールドの保存先ディレクトリ */
-export const fixLocalSaveContainer = stringFixer<LocalSaveContainer>();
-
-/** ローカルのワールド */
-export const fixLocalSave = objectFixer<LocalSave>(
-  {
-    // 保存先ディレクトリ
-    container: fixLocalSaveContainer,
-    // ワールド名
-    name: stringFixer(),
-    // icon.png
-    avatar_path: optionalFixer(fixImageURI),
-  },
-  false
-);
 
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {

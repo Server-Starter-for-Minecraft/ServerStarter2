@@ -22,20 +22,8 @@ export type SystemSettingsEdited = {
   user: SystemUserSetting;
 };
 
+/** 言語 */
 export type Locale = 'ja' | 'en-US';
-
-/** ローカルのワールドの保存先ディレクトリ (絶対パスのみ) */
-export type LocalSaveContainer = Brand<string, 'LocalSaveContainer'>;
-
-/** ローカルのワールド */
-export type LocalSave = {
-  // 保存先ディレクトリ
-  container: LocalSaveContainer;
-  // ワールド名
-  name: string;
-  // icon.png
-  avatar_path?: ImageURI;
-};
 
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
