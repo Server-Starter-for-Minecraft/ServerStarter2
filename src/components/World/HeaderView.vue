@@ -22,7 +22,7 @@ function getStatus(worldID: WorldID) {
           <span class="text-red">{{ getStatus(mainStore.world.id) }}</span>
         </template>
         <template v-else>
-          <span class="title q-pr-md">システム設定</span>
+          <span class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
         </template>
       </div>
     </q-item-section>

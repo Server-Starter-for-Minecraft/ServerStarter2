@@ -11,7 +11,7 @@ export const enUSHome: MessageSchema["home"] = {
     serverType: 'Select the Server Type',
     versionType: 'Select the Server Version',
   },
-  icon: 'Change server picture',
+  icon: 'Change server icon',
   useWorld: {
     title: 'Import existing world',
     description: 'Import single world or zip format destribution world',

@@ -6,11 +6,13 @@ import { enUSproperty } from "src/i18n/en-US/property";
 import { enUSConsole } from "./console";
 import { enUSPlayer } from "./player";
 import { enUSSystemSetting } from "./systemsetting";
+import { enUSUtils } from "./utils";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
   property:enUSproperty,
   console:enUSConsole,
   player:enUSPlayer,
-  systemsetting:enUSSystemSetting
+  systemsetting:enUSSystemSetting,
+  utils:enUSUtils
 };
