@@ -4084,6 +4084,11 @@ natural-compare@^1.4.0:
   resolved "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
+nbtify@^1.60.2:
+  version "1.60.2"
+  resolved "https://registry.yarnpkg.com/nbtify/-/nbtify-1.60.2.tgz#15633d25d5828295848bcb70e3c0bb0ac126a0ff"
+  integrity sha512-p63A4g7b01SMStSNyK2/QFRfTTW9IC3PSPy3SscHOAMr1BSL+UIcm65bQweI8AWost/igfWBkXFExVHldyBfrw==
+
 negotiator@0.6.3:
   version "0.6.3"
   resolved "https://registry.npmjs.org/negotiator/-/negotiator-0.6.3.tgz"
