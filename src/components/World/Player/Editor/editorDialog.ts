@@ -1,6 +1,7 @@
 import { toRaw } from "vue";
 import { PlayerUUID } from "app/src-electron/schema/brands";
 import { useSystemStore } from "src/stores/SystemStore";
+import { PlayerGroup } from "app/src-electron/schema/player";
 
 export interface iEditorDialogProps {
   groupName?: string
@@ -17,11 +18,11 @@ export interface iEditorDialogReturns {
 /**
  * グループの新規作成時に使用する作成器 
  */
-export function generateGroup(name: string, colorCode: string, members: PlayerUUID[]) {
+export function generateGroup(group: PlayerGroup) {
   const sysStore = useSystemStore()
-  sysStore.systemSettings().player.groups[name] = {
-    name: name,
-    color: colorCode,
-    players: toRaw(members)
+  sysStore.systemSettings().player.groups[group.name] = {
+    name: group.name,
+    color: group.color,
+    players: toRaw(group.players)
   }
 }

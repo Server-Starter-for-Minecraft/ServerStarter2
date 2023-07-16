@@ -1,24 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useQuasar } from 'quasar';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { iEditorDialogReturns, generateGroup, iEditorDialogProps } from './Editor/editorDialog';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
-import GroupEditorView from './Editor/GroupEditorView.vue';
-import GroupCardMenu from './utils/GroupCardMenu.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 interface Prop {
   name: string
   color: string
   players: PlayerUUID[]
+  onEdit: () => void
 }
 const prop = defineProps<Prop>()
 
-const $q = useQuasar()
-const sysStore = useSystemStore()
 const playerStore = usePlayerStore()
 const showMenuBtn = ref(false)
 const menuOpened = ref(false)
@@ -27,27 +22,6 @@ const cachePlayers = ref(playerStore.cachePlayers)
 
 async function onCardClicked() {
   playerStore.selectGroup(prop.name)
-}
-
-function removeGroup() {
-  delete sysStore.systemSettings().player.groups[prop.name]
-}
-
-function openEditor() {
-  $q.dialog({
-    component: GroupEditorView,
-    componentProps: {
-      groupName: prop.name,
-      groupColor: prop.color,
-      members: prop.players
-    } as iEditorDialogProps
-  }).onOk((payload: iEditorDialogReturns) => {
-    // グループを更新する際には、元のグループを削除してグループを再登録する
-    delete sysStore.systemSettings().player.groups[prop.name]
-
-    // グループの登録
-    generateGroup(payload.name, payload.color, payload.members)
-  })
 }
 </script>
 
@@ -61,9 +35,9 @@ function openEditor() {
       <q-card-section
         horizontal
         class="fit"
-        :style="{'border-left': `1.5rem solid ${color}`, 'border-radius': '15px'}"
+        :style="{'border-left': `1rem solid ${color}`, 'border-radius': '15px'}"
       >
-        <q-card-section class="q-pt-sm">
+        <q-card-section class="q-pt-sm q-pr-none" style="width: calc(100% - 3.5rem);">
           <div class="groupName">{{ name }}</div>
 
           <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
@@ -77,24 +51,14 @@ function openEditor() {
     </template>
 
     <template #actions>
-      <q-btn
+      <SsBtn
         v-show="showMenuBtn || menuOpened"
-        flat
         dense
-        icon="more_vert"
+        label="編集"
+        width="3rem"
         class="q-mt-sm q-mr-sm absolute-top-right"
-      >
-        <q-menu
-          v-model="menuOpened"
-          anchor="top right"
-          self="top left"
-        >
-          <q-list dense>
-            <group-card-menu icon="edit" :text="$t('player.edit')" @click="openEditor" />
-            <group-card-menu icon="delete" :text="$t('player.delete')" @click="removeGroup" />
-          </q-list>
-        </q-menu>
-      </q-btn>
+        @click="onEdit"
+      />
     </template>
   </BaseActionsCard>
 </template>
@@ -102,5 +66,8 @@ function openEditor() {
 <style scoped lang="scss">
 .groupName {
   font-size: 1.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

@@ -11,7 +11,7 @@ defineProps<Prop>()
 
 <template>
   <BaseActionsCard
-    class="card"
+    class="card bg-transparent"
     :style="{'min-height': minHeight}"
     @click="onClick"
   >

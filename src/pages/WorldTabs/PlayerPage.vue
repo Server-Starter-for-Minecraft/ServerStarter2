@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { PlayerGroup } from 'app/src-electron/schema/player';
+import { deepCopy } from 'src/scripts/deepCopy';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import { isValid } from 'src/scripts/error';
@@ -10,14 +11,30 @@ import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
 import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
 import OpSetterView from 'src/components/World/Player/OpSetterView.vue';
 import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
-import { generateGroup, iEditorDialogProps, iEditorDialogReturns } from 'src/components/World/Player/Editor/editorDialog';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
-
+import GroupEditorView from 'src/components/World/Player/GroupEditorView.vue';
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 
-const openGroupEditor = ref(false)
+function openGroupEditor(group?: PlayerGroup) {
+  // 情報を登録
+  if (group === void 0) {
+    playerStore.selectedGroup = {
+      name: 'NewGroup',
+      color: '#ffffff',
+      players: Array.from(playerStore.focusCards),
+      isNew: true
+    }
+  }
+  else {
+    playerStore.focusCards = new Set(group.players)
+    playerStore.selectedGroup = deepCopy(Object.assign(group, { isNew: false }))
+  }
+  
+  // Editorを開く
+  playerStore.openGroupEditor = true
+}
 </script>
 
 <template>
@@ -44,6 +61,7 @@ const openGroupEditor = ref(false)
         <div class="q-py-md fit">
           <div v-show="playerStore.searchName !== ''" class="q-pb-md">
             <span class="text-caption">新規プレイヤー</span>
+            <!-- TODO: 検索結果UIを更新 -->
             <SearchResultView />
           </div>
 
@@ -66,14 +84,16 @@ const openGroupEditor = ref(false)
                 <AddContentsCard
                   label="グループを作成"
                   min-height="100px"
-                  @click="generateGroup('kusakusa', '#ffffff', Array.from(playerStore.focusCards))"
+                  @click="() => openGroupEditor()"
                 />
               </div>
+              <!-- TODO: グループをソート -->
               <div v-for="group in playerStore.searchGroups()" :key="group.name">
                 <GroupCardView
                   :name="group.name"
                   :color="group.color"
                   :players="group.players"
+                  @edit="() => openGroupEditor(group)"
                 />
               </div>
             </div>
@@ -81,9 +101,15 @@ const openGroupEditor = ref(false)
         </div>
       </q-scroll-area>
 
+      <!-- TODO: OpSetterの高さを調整 -->
       <div class="column q-ml-md">
-        <OpSetterView class="q-my-md"/>
-        
+        <!-- グループ設定は動的に読み込む -->
+        <GroupEditorView
+          v-if="playerStore.openGroupEditor"
+          :is="playerStore.openGroupEditor"
+          class="q-my-md"
+        />
+        <OpSetterView v-else class="q-my-md"/>
         <SelectedPlayersView />
       </div>
     </div>

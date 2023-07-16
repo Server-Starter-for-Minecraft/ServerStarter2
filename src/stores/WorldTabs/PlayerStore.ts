@@ -1,10 +1,12 @@
 import { watch } from 'vue';
 import { defineStore } from 'pinia';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { OpLevel, Player, PlayerSetting } from 'app/src-electron/schema/player';
+import { OpLevel, Player, PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { isValid } from 'src/scripts/error';
 import { useSystemStore } from '../SystemStore';
 import { useMainStore } from '../MainStore';
+
+type GroupSettings = PlayerGroup & { isNew: boolean }
 
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
@@ -13,7 +15,9 @@ export const usePlayerStore = defineStore('playerStore', {
       cachePlayers: {} as Record<PlayerUUID, Player>,
       focusCards: new Set<PlayerUUID>(),
       selectedOP: undefined as OpLevel | 0 | undefined,
-      newPlayerCandidate: undefined as Player | undefined
+      newPlayerCandidate: undefined as Player | undefined,
+      selectedGroup: {} as GroupSettings,
+      openGroupEditor: false
     }
   },
   actions: {
