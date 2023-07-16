@@ -92,4 +92,5 @@ export const jaProperty = {
   },
   resetProperty:'基本設定の{defaultProperty}に設定を戻します',
   resetProperty2:'「システム設定」>「プロパティ」 より基本設定を変更できます',
+  failed: 'Propertyが読み込めませんでした',
 };

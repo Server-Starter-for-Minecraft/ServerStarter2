@@ -62,7 +62,7 @@ function resetAll() {
     </div>
 
     <div v-else class="justify-center row fit">
-      <p style="margin: auto 0;">Propertyが読み込めませんでした</p>
+      <p style="margin: auto 0;">{{ $t('property.failed') }}</p>
     </div>
   </div>
 </template>
