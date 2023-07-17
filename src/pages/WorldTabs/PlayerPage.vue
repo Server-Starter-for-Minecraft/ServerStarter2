@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
+import { isValid } from 'src/scripts/error';
 import { deepCopy } from 'src/scripts/deepCopy';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
-import { isValid } from 'src/scripts/error';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
@@ -141,7 +142,15 @@ function openGroupEditor(group?: PlayerGroup) {
     </div>
   </div>
 
-  <div v-else class="justify-center row fit">
-    <p style="margin: auto 0;">{{ $t('player.failed') }}</p>
+  <div v-else class="fit" style="position: relative;">
+    <div class="absolute-center">
+      <p>{{ $t('player.failed') }}</p>
+      <SsBtn
+        label="プレイヤー設定をリセット"
+        color="primary"
+        @click="mainStore.world.players = []"
+        class="full-width"
+      />
+    </div>
   </div>
 </template>

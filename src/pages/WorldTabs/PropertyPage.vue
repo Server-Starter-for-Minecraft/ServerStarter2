@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
+import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { isValid } from 'src/scripts/error';
+import { fromEntries, toEntries } from 'src/scripts/obj';
 import { thumbStyle } from 'src/components/World/scrollBar';
+import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { isValid } from 'src/scripts/error';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
@@ -12,6 +14,9 @@ import SsBtn from 'src/components/util/base/ssBtn.vue';
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const propertyStore = usePropertyStore()
+
+// システムが規定するデフォルトプロパティ
+const initProperty: ServerProperties = fromEntries(toEntries(sysStore.staticResouces.properties).map(keyVal =>[keyVal[0], keyVal[1].default]))
 
 /**
  * 全てのServer Propertyを基本設定に戻す
@@ -61,8 +66,16 @@ function resetAll() {
       </div>
     </div>
 
-    <div v-else class="justify-center row fit">
-      <p style="margin: auto 0;">{{ $t('property.failed') }}</p>
+    <div v-else class="fit" style="position: relative;">
+      <div class="absolute-center">
+        <p>{{ $t('property.failed') }}</p>
+        <SsBtn
+          label="プロパティ設定をリセット"
+          color="primary"
+          @click="mainStore.world.properties = initProperty"
+          class="full-width"
+        />
+      </div>
     </div>
   </div>
 </template>
