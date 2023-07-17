@@ -17,9 +17,10 @@ const playerStore = usePlayerStore()
   <q-item
     clickable
     v-ripple
+    dense
     :disable="playerStore.focusCards.size === 0"
     @click="onClick"
-    class="q-py-none"
+    class="q-py-xs"
   >
     <q-item-section avatar>
       <q-avatar v-if="icon === void 0" size="2rem">
