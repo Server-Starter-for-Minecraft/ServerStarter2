@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { OpLevel, Player, PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { isValid } from 'src/scripts/error';
+import { strSort } from 'src/scripts/objSort';
 import { useSystemStore } from '../SystemStore';
 import { useMainStore } from '../MainStore';
 
@@ -26,12 +27,15 @@ export const usePlayerStore = defineStore('playerStore', {
      * プレイヤーの検索
      */
     searchPlayers<P extends PlayerSetting | Player>(players: P[]) {
-      // TODO: Playersを名前でソート
+      let returnPlayers = players
+
       if (this.searchName !== '') {
-        return players.filter(p => p.name.toLowerCase().match(this.searchName))
+        returnPlayers = players.filter(
+          p => p.name.toLowerCase().match(this.searchName)
+        )
       }
 
-      return players;
+      return returnPlayers.sort((a, b) => strSort(a.name, b.name));
     },
     /**
      * プレイヤーグループの検索

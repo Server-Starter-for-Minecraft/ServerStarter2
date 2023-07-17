@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { deepCopy } from 'src/scripts/deepCopy';
+import { sort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import { isValid } from 'src/scripts/error';
@@ -21,7 +22,7 @@ function openGroupEditor(group?: PlayerGroup) {
   // 情報を登録
   if (group === void 0) {
     playerStore.selectedGroup = {
-      name: 'NewGroup',
+      name: '',
       color: '#ffffff',
       players: Array.from(playerStore.focusCards),
       isNew: true
@@ -88,8 +89,7 @@ function openGroupEditor(group?: PlayerGroup) {
                   @click="() => openGroupEditor()"
                 />
               </div>
-              <!-- TODO: グループをソート -->
-              <div v-for="group in playerStore.searchGroups()" :key="group.name">
+              <div v-for="group in sort(playerStore.searchGroups())" :key="group.name">
                 <GroupCardView
                   :name="group.name"
                   :color="group.color"

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { assets } from 'src/assets/assets';
+import { keys } from 'src/scripts/obj';
+import { strSort } from 'src/scripts/objSort';
 import { checkError } from 'src/components/Error/Error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
@@ -8,7 +11,6 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
-import { assets } from 'src/assets/assets';
 
 interface Prop {
   uuid: PlayerUUID
@@ -42,11 +44,13 @@ function onCardClicked() {
   }
 }
 
-function getGroups(groups: {[name: string]: PlayerGroup}) {
-  return Object.keys(groups).filter(
+function getGroups(groups: Record<string, PlayerGroup>) {
+  return keys(groups).filter(
     name => groups[name].players.includes(prop.uuid)
   ).map(
     name => { return { name: name, color: groups[name].color } }
+  ).sort(
+    (a, b) => strSort(a.name, b.name)
   )
 }
 </script>
