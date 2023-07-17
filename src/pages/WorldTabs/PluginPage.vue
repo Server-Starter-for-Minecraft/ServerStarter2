@@ -8,9 +8,6 @@ const mainStore = useMainStore()
 </script>
 
 <template>
-  <ContentsView
-    type="plugin"
-    :item-names="mainStore.world.additional.plugins"
-    :candidate-items="sysStore.cacheContents.plugins"
-  />
+  <ContentsView contentType="plugin" :item-names="mainStore.world.additional.plugins"
+    :candidate-items="sysStore.cacheContents.plugins" />
 </template>

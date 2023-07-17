@@ -8,33 +8,30 @@ import ContentsView from 'src/components/World/Contents/ContentsView.vue';
     :item-names="mainStore.world.additional.datapacks"
     :candidate-items="sysStore.cacheContents.datapacks"
   /> -->
-  <ContentsView
-    type="datapack"
-    :candidate-items="[
-      {
-        kind: 'datapack',
-        'description': 'これはテストデータパックこれはテストデータパック',
-        'type': 'system',
-        'name': 'testPack',
-        'ext': '',
-        'isFile': true,
-      },
-      {
-        kind: 'datapack',
-        'description': 'これはテストデータパック',
-        'type': 'system',
-        'name': 'testPack',
-        'ext': '',
-        'isFile': true,
-      },
-      {
-        kind: 'datapack',
-        'description': 'これはテストデータパック',
-        'type': 'system',
-        'name': 'testPack',
-        'ext': '',
-        'isFile': true,
-      },
-    ]"
-  />
+  <ContentsView contentType="datapack" :candidate-items="[
+    {
+      kind: 'datapack',
+      'description': 'これはテストデータパックこれはテストデータパック',
+      'type': 'system',
+      'name': 'testPack',
+      'ext': '',
+      'isFile': true,
+    },
+    {
+      kind: 'datapack',
+      'description': 'これはテストデータパック',
+      'type': 'system',
+      'name': 'testPack',
+      'ext': '',
+      'isFile': true,
+    },
+    {
+      kind: 'datapack',
+      'description': 'これはテストデータパック',
+      'type': 'system',
+      'name': 'testPack',
+      'ext': '',
+      'isFile': true,
+    },
+  ]" />
 </template>

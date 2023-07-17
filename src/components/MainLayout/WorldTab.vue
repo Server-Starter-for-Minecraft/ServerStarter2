@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
+import { getCssVar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
@@ -62,7 +63,7 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
-    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? '.3rem solid #7CBB00' : '.3rem solid transparent'}"
+    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent'}"
   >
     <q-item-section
       avatar

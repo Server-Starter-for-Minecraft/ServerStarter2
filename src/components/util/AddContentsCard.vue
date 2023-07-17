@@ -4,6 +4,7 @@ import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
 interface Prop {
   label: string
   minHeight: string
+  cardStyle?: Record<string, string | null>
   onClick: () => void
 }
 defineProps<Prop>()
@@ -12,7 +13,7 @@ defineProps<Prop>()
 <template>
   <BaseActionsCard
     class="card bg-transparent"
-    :style="{'min-height': minHeight}"
+    :style="{...cardStyle, 'min-height': minHeight}"
     @click="onClick"
   >
     <template #default>
