@@ -1,32 +1,33 @@
 <script setup lang="ts">
 import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import PlayerHeadView from './PlayerHeadView.vue';
+import PlayerCardBase from './PlayerCardBase.vue';
+
+interface Prop {
+  player: Player
+}
+defineProps<Prop>()
 
 const playerStore = usePlayerStore()
-const playerModel = defineModel<Player>({ required: true })
 </script>
 
 <template>
-  <q-item>
-    <q-item-section avatar>
-      <PlayerHeadView v-model="playerModel" />
-    </q-item-section>
-    <q-item-section top>
-      <q-item-label class="name force-one-line">{{ playerModel.name }}</q-item-label>
-      <q-item-label caption class="q-pt-xs force-one-line" style="opacity: 0.7;">uuid: {{ playerModel.uuid }}</q-item-label>
-    </q-item-section>
-    <q-item-section side>
-      <q-btn
-        outline
-        rounded
-        :label="$t('player.addPlayer')"
-        icon="add"
-        color="primary"
-        @click="playerStore.addPlayer(playerModel)"
-      />
-    </q-item-section>
-  </q-item>
+  <PlayerCardBase
+    :player="player"
+    :label="player.uuid"
+    :label-style="{'font-size': '.45rem'}"
+    @click="playerStore.addPlayer(player)"
+  >
+    <template #title>
+      <div class="row text-primary">
+        <span class="force-one-line q-pr-xs" style="max-width: 5rem;">{{ player.name }}</span>
+        <span class="text-caption" style="margin-top: auto;">を追加</span>
+      </div>
+    </template>
+    <template #rightIcon>
+      <q-icon name="add" size="2rem" />
+    </template>
+  </PlayerCardBase>
 </template>
 
 <style scoped lang="scss">
@@ -34,9 +35,5 @@ const playerModel = defineModel<Player>({ required: true })
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.name {
-  font-size: 1.3rem;
 }
 </style>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { assets } from 'src/assets/assets';
 import { keys } from 'src/scripts/obj';
 import { strSort } from 'src/scripts/objSort';
 import { checkError } from 'src/components/Error/Error';
@@ -11,6 +10,8 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import PlayerCardBase from './utils/PlayerCardBase.vue';
+import { assets } from 'src/assets/assets';
 
 interface Prop {
   uuid: PlayerUUID
@@ -56,28 +57,17 @@ function getGroups(groups: Record<string, PlayerGroup>) {
 </script>
 
 <template>
-  <BaseActionsCard
-    v-if="player !== void 0" @click="onCardClicked"
+  <PlayerCardBase
+    :player="player"
+    :label="opLevel ? `${$t('player.opLevel')} ${opLevel}` : undefined"
+    height="5rem"
+    @click="onCardClicked"
     :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''"
   >
-    <template #default>
-      <q-item style="height: 5rem; padding: 14px;">
-        <q-item-section avatar top>
-          <player-head-view v-model="player" size="2.5rem" />
-        </q-item-section>
-
-        <q-item-section top>
-          <q-item-label class="name text-omit">{{ player.name }}</q-item-label>
-          <q-item-label v-show="opLevel !== void 0" caption style="opacity: 0.7;">
-            {{ $t('player.opLevel') }} {{ opLevel }}
-          </q-item-label>
-        </q-item-section>
-        <q-item-section side top>
-          <q-avatar square size="2rem" class="q-ma-none">
-            <q-img :src="assets.svg[`level${opLevel ?? 0}`]" />
-          </q-avatar>
-        </q-item-section>
-      </q-item>
+    <template #rightIcon>
+      <q-avatar square size="2rem" class="q-ma-xs">
+        <q-img :src="assets.svg[`level${opLevel ?? 0}`]" />
+      </q-avatar>
     </template>
 
     <template #actions>
@@ -93,15 +83,11 @@ function getGroups(groups: Record<string, PlayerGroup>) {
         </div>
       </q-card-section>
     </template>
-  </BaseActionsCard>
+  </PlayerCardBase>
 </template>
 
 <style scoped lang="scss">
 .card-active {
   border-color: $primary;
-}
-
-.name {
-  font-size: 1.5rem;
 }
 </style>

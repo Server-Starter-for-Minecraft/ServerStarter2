@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
+import { assets } from 'src/assets/assets';
 import { deepCopy } from 'src/scripts/deepCopy';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
@@ -99,7 +100,13 @@ function openGroupEditor(group?: PlayerGroup) {
               <PlayerCardView
                 :uuid="player.uuid"
                 :op-level="player.op?.level"
-              />
+              >
+                <template #avatar>
+                  <q-avatar square size="2rem" class="q-ma-none">
+                    <q-img :src="assets.svg[`level${player.op?.level ?? 0}`]" />
+                  </q-avatar>
+                </template>
+              </PlayerCardView>
             </div>
           </div>
 

@@ -31,7 +31,7 @@ onMounted(async () => {
   <q-item>
     <q-item-section>
       <q-avatar square size="2rem" class="full-width">
-        <PlayerHeadView v-model="player" size="1.9rem" />
+        <PlayerHeadView :player="player" size="1.9rem" />
         <q-btn flat rounded dense icon="cancel" size="10px" @click="playerStore.unFocus(uuid)" class="cancelBtn" />
       </q-avatar>
       <q-item-label class="text-center q-pt-xs">
