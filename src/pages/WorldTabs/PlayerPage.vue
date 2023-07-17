@@ -65,7 +65,7 @@ function openGroupEditor(group?: PlayerGroup) {
         <SsInput
           v-model="playerStore.searchName"
           dense
-          :label="$t('player.search')"
+          :placeholder="$t('player.search')"
           :debounce="200"
           class="q-py-md col"
           @clear="() => playerStore.searchName = ''"
