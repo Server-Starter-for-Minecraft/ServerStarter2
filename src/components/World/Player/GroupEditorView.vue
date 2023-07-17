@@ -9,11 +9,25 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 const sysStore = useSystemStore()
 const playerStore = usePlayerStore()
 
-const inputName = ref(playerStore.selectedGroup.name)
 const colorOps = keys(sysStore.staticResouces.minecraftColors).map(k => {
   return { label: k, code: sysStore.staticResouces.minecraftColors[k] }
 })
 
+/**
+ * 入力グループ名の入力欄におけるバリデーション
+ */
+function validateInputGroupName(name: string) {
+  return name === playerStore.selectedGroupName || validateGroupName(name)
+}
+/**
+ * 入力グループ名が適切かどうかの判定
+ */
+function validateGroupName(name: string) {
+  return !keys(playerStore.searchGroups()).includes(name) && name !== ''
+}
+function validateMessage(name: string) {
+  return name !== '' ? `${name}は既に存在します` : 'グループ名を入力してください'
+}
 
 /**
  * グループの新規作成時に使用する作成器 
@@ -36,7 +50,6 @@ function updateGroup() {
 
   // 新しいグループを作成
   const newGroup = playerStore.selectedGroup
-  newGroup.name = inputName.value
   newGroup.players = Array.from(playerStore.focusCards)
   generateGroup(newGroup)
 }
@@ -46,7 +59,7 @@ function updateGroup() {
  */
 function removeGroup() {
   // 削除処理
-  delete sysStore.systemSettings().player.groups[playerStore.selectedGroup.name]
+  delete sysStore.systemSettings().player.groups[playerStore.selectedGroupName]
 
   // グループ編集カードを閉じる
   playerStore.openGroupEditor = false
@@ -57,10 +70,10 @@ function removeGroup() {
   <q-card
     flat
     class="column card"
-    :style="{'height': playerStore.selectedGroup.isNew ? '300px' : '350px'}"
+    :style="{'height': playerStore.selectedGroup.isNew ? '300px' : '385px'}"
   >
     <p class="q-py-sm q-pl-md q-ma-none text-body2">
-      {{ playerStore.selectedGroup.isNew ? 'グループを作成' : `${playerStore.selectedGroup.name}を編集` }}
+      {{ playerStore.selectedGroup.isNew ? 'グループを作成' : `${playerStore.selectedGroupName}を編集` }}
     </p>
 
     <div class="absolute-top-right">
@@ -75,10 +88,11 @@ function removeGroup() {
     <q-scroll-area style="flex: 1 1 0">
       <q-card-section class="q-pt-xs q-pb-none">
         <span class="text-caption">グループ名</span>
-        <!-- TODO: 既に存在するグループ名を指定できないようにする -->
         <SsInput
-          v-model="inputName"
+          v-model="playerStore.selectedGroup.name"
           dense
+          :rules="[val => validateInputGroupName(val) || validateMessage(val)]"
+          @clear="playerStore.selectedGroup.name = ''"
         />
       </q-card-section>
   
@@ -116,8 +130,8 @@ function removeGroup() {
       <q-card-section class="q-pb-sm">
         <q-btn
           outline
-          :label="`${playerStore.selectedGroup.name}を${playerStore.selectedGroup.isNew ? '作成' : '更新'}`"
-          :disable="playerStore.focusCards.size === 0"
+          :label="playerStore.selectedGroup.isNew ? `${playerStore.selectedGroup.name}を作成` : `${playerStore.selectedGroupName}を更新`"
+          :disable="playerStore.focusCards.size === 0 || !validateGroupName(playerStore.selectedGroup.name)"
           color="primary"
           @click="updateGroup"
           class="full-width"
@@ -135,7 +149,7 @@ function removeGroup() {
           {{
             playerStore.selectedGroup.isNew
             ? `選択中の${playerStore.focusCards.size}人をメンバーとする${playerStore.selectedGroup.name}を作成します`
-            : `${playerStore.selectedGroup.name}のメンバーを選択中の${playerStore.focusCards.size}人で更新します`
+            : `${playerStore.selectedGroupName}のメンバーを選択中の${playerStore.focusCards.size}人で更新します`
           }}
         </span>
       </q-card-section>
@@ -144,11 +158,10 @@ function removeGroup() {
   
       <q-card-section
         v-show="!playerStore.selectedGroup.isNew"
-        class="q-pb-sm"
       >
         <q-btn
           outline
-          :label="`${playerStore.selectedGroup.name}を削除`"
+          :label="`${playerStore.selectedGroupName}を削除`"
           color="red"
           @click="removeGroup"
           class="full-width"

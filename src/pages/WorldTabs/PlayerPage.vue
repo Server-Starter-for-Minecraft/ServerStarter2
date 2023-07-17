@@ -30,6 +30,7 @@ function openGroupEditor(group?: PlayerGroup) {
   else {
     playerStore.focusCards = new Set(group.players)
     playerStore.selectedGroup = deepCopy(Object.assign(group, { isNew: false }))
+    playerStore.selectedGroupName = group.name
   }
   
   // Editorを開く

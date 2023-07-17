@@ -17,6 +17,7 @@ export const usePlayerStore = defineStore('playerStore', {
       selectedOP: undefined as OpLevel | 0 | undefined,
       newPlayerCandidate: undefined as Player | undefined,
       selectedGroup: {} as GroupSettings,
+      selectedGroupName: '',
       openGroupEditor: false
     }
   },

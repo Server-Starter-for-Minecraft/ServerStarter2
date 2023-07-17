@@ -33,20 +33,21 @@ async function onCardClicked() {
   >
     <template #default>
       <q-card-section
-        horizontal
-        class="fit"
+        class="fit q-pt-xs"
         :style="{'border-left': `1rem solid ${color}`, 'border-radius': '15px'}"
       >
-        <q-card-section class="q-pt-sm q-pr-none" style="width: calc(100% - 3.5rem);">
+        <div v-if="showMenuBtn || menuOpened" style="width: calc(100% - 3.5rem);">
           <div class="groupName">{{ name }}</div>
-
-          <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
-          <div class="row q-gutter-md q-pt-sm">
-            <template v-for="uuid in players" :key="uuid">
-              <player-head-view v-model="cachePlayers[uuid]" size="1.5rem" />
-            </template>
-          </div>
-        </q-card-section>
+        </div>
+        <div v-else>
+          <div class="groupName">{{ name }}</div>
+        </div>
+        <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
+        <div class="row q-gutter-md q-pt-sm">
+          <template v-for="uuid in players" :key="uuid">
+            <player-head-view v-model="cachePlayers[uuid]" size="1.5rem" />
+          </template>
+        </div>
       </q-card-section>
     </template>
 
