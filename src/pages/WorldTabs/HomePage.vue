@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { isError } from 'src/scripts/error';
+import { values } from 'src/scripts/obj';
+import { useWorldStore } from 'src/stores/MainStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -15,8 +16,6 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
-import { values } from 'src/scripts/obj';
-import { useWorldStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore()
@@ -25,10 +24,6 @@ const sysStore = useSystemStore()
 const dialogStore = useDialogStore()
 const $q = useQuasar()
 const { t } = useI18n()
-
-const customWorldPath = ref(null)
-const soloWorldName = ref(t('home.useWorld.solo'))
-const showSoloWorld = ref(false)
 
 /**
  * バージョンの一覧を取得する
@@ -97,6 +92,14 @@ async function validateWorldName(name: WorldName) {
     return true
   }
 }
+
+function clearNewName() {
+  // 空文字列を入れる
+  mainStore.inputWorldName = '' as WorldName
+
+  // 空文字列のワールドは起動できないため、エラー扱い
+  mainStore.errorWorlds.add(mainStore.world.id)
+}
 </script>
 
 <template>
@@ -109,7 +112,7 @@ async function validateWorldName(name: WorldName) {
           :label="$t('home.worldName.enterName')"
           :debounce="200"
           :rules="[val => validateWorldName(val)]"
-          @clear="() => { mainStore.inputWorldName = '' as WorldName }"
+          @clear="clearNewName"
         />
         <!-- TODO: バージョン一覧の取得 -->
         <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
