@@ -1,11 +1,14 @@
-<script setup lang="ts" generic="T extends Record<string, any>">
+<script setup lang="ts">
 import { getCssVar } from 'quasar';
-import { AllFileData, CacheFileData } from 'app/src-electron/schema/filedata';
+import { AllFileData, CacheFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCardView from './itemCardView.vue';
+import { getCacheContents } from 'src/init';
+
+type T = DatapackData | PluginData | ModData
 
 interface Prop {
   contentType: 'datapack' | 'plugin' | 'mod'
@@ -19,9 +22,9 @@ const mainStore = useMainStore()
 /**
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
  */
-function getNewContents(contents: AllFileData<T>[]) {
-  return contents.filter(
-    c => mainStore.world.additional[`${prop.contentType}s`].map(a => a.name).includes(c.name)
+function getNewContents(worldContents: AllFileData<T>[]) {
+  return (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<DatapackData | PluginData | ModData>[]).filter(
+    c => worldContents.map(wc => wc.name).includes(c.name)
   )
 }
 
@@ -64,7 +67,7 @@ async function importNewContent() {
  */
 function addContent2World(content: AllFileData<T>) {
   (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(content);
-  (sysStore.cacheContents[`${prop.contentType}s`] as AllFileData<T>[]).push(content);
+  getCacheContents()
 }
 </script>
 
@@ -76,8 +79,7 @@ function addContent2World(content: AllFileData<T>) {
     <div class="row q-gutter-md q-pa-sm">
       <template v-if="mainStore.world.additional[`${contentType}s`].length > 0">
         <div v-for="item in mainStore.world.additional[`${contentType}s`]" :key="item.name" class="col-">
-          <ItemCardView v-if="'description' in item" :content-type="contentType" is-delete :name="item.name" :desc="item.description" />
-          <ItemCardView v-else :content-type="contentType" is-delete :name="item.name" />
+          <ItemCardView :content-type="contentType" is-delete :content="item" />
         </div>
       </template>
       <div v-else class="full-width">
@@ -101,9 +103,8 @@ function addContent2World(content: AllFileData<T>) {
         }"
         class="text-primary"
       />
-      <template v-for="item in getNewContents(sysStore.cacheContents[`${contentType}s`])" :key="item.id">
-        <ItemCardView v-if="'description' in item" :content-type="contentType" :name="item.name" :desc="item.description" />
-        <ItemCardView v-else :content-type="contentType" :name="item.name" />
+      <template v-for="item in getNewContents(mainStore.world.additional[`${prop.contentType}s`])" :key="item.name">
+        <ItemCardView :content-type="contentType" :content="item" />
       </template>
     </div>
   </div>

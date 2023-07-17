@@ -1,39 +1,42 @@
 <script setup lang="ts">
+import { AllFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
 import { useMainStore } from 'src/stores/MainStore';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
 
+type T = DatapackData | ModData | PluginData
+
 interface Prop {
   contentType: 'datapack' | 'plugin' | 'mod'
-  name: string
-  desc?: string
+  content: AllFileData<T>
   isDelete?: boolean
   color?: string
 }
-defineProps<Prop>()
+const prop = defineProps<Prop>()
 
 const mainStore = useMainStore()
 
 function addContent() {
+  (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(prop.content)
 }
 
 function deleteContent() {
-
+  mainStore.world.additional[`${prop.contentType}s`].splice(
+    mainStore.world.additional[`${prop.contentType}s`].map(c => c.name).indexOf(prop.content.name), 1
+  )
 }
 </script>
 
 <template>
-  <BaseActionsCard
-    :style="{
-      'border-radius': '6px',
-      'background-color': color
-    }"
-  >
+  <BaseActionsCard :style="{
+    'border-radius': '6px',
+    'background-color': color
+  }">
     <template #default>
       <q-item class="q-pr-sm">
         <q-item-section>
-          <q-item-label class="contentsName text-omit">{{ name }}</q-item-label>
-          <q-item-label v-if="desc !== void 0" class="text-omit" style="opacity: .7;">
-            {{ desc }}
+          <q-item-label class="contentsName text-omit">{{ content.name }}</q-item-label>
+          <q-item-label v-if="'description' in content" class="text-omit" style="opacity: .7;">
+            {{ content.description }}
           </q-item-label>
         </q-item-section>
 
@@ -45,8 +48,10 @@ function deleteContent() {
             color="red"
             icon="close"
             size="1rem"
+            @click="deleteContent"
           >
-            <div class="text-red text-center full-width" style="font-size: .8rem;">削除</div>
+            <div class="text-red text-center full-width" style="font-size: .8rem;">
+              削除</div>
           </q-btn>
         </q-item-section>
         <q-item-section v-else side>
@@ -58,8 +63,11 @@ function deleteContent() {
             icon="add"
             size="1rem"
             class="q-pa-none"
+            @click="addContent"
           >
-            <div class="text-primary text-center full-width" style="font-size: .8rem;">導入</div>
+            <div class="text-primary text-center full-width" style="font-size: .8rem;">
+              導入
+            </div>
           </q-btn>
         </q-item-section>
       </q-item>

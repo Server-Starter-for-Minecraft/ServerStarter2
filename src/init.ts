@@ -90,7 +90,10 @@ async function getCachePlayers() {
   failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）`))
 }
 
-async function getCacheContents() {
+/**
+ * Datapack / Plugin / MODのキャッシュデータを取得する
+ */
+export async function getCacheContents() {
   const sysStore = useSystemStore();
   sysStore.cacheContents.datapacks = (await window.API.invokeGetCacheContents('datapack')).value
   sysStore.cacheContents.plugins = (await window.API.invokeGetCacheContents('plugin')).value
