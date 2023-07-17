@@ -71,15 +71,15 @@ export async function runServer() {
   const mainStore = useMainStore()
   const consoleStore = useConsoleStore()
 
+  // 画像が入っていない場合は既定のアイコンを適用する
+  if (mainStore.world.avater_path === void 0) {
+    mainStore.world.avater_path = assets.png.unset
+  }
+
   // 新規ワールドの時にサーバーのディレクトリを生成する
   if (mainStore.newWorlds.has(mainStore.world.id)) {
     const res = await window.API.invokeCreateWorld(mainStore.world)
     checkError(res, undefined, 'ワールドの生成に失敗しました')
-  }
-
-  // 画像が入っていない場合は既定のアイコンを適用する
-  if (mainStore.world.avater_path === void 0) {
-    mainStore.world.avater_path = assets.png.unset
   }
 
   consoleStore.setProgress(mainStore.selectedWorldID, '1.19.4 / TestWorld を起動中')
