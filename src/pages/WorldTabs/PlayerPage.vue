@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { PlayerGroup } from 'app/src-electron/schema/player';
+import { Ref, ref } from 'vue';
+import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { deepCopy } from 'src/scripts/deepCopy';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import { isValid } from 'src/scripts/error';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import SsSelect from 'src/components/util/base/ssSelect.vue';
 import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
 import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
 import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
@@ -18,6 +20,19 @@ import GroupEditorView from 'src/components/World/Player/GroupEditorView.vue';
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 
+const orderTypes = ['name', 'op'] as const
+const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name')
+function playerSortFunc(orderType: (typeof orderTypes)[number]): (a: PlayerSetting, b: PlayerSetting) => number {
+  switch (orderType) {
+    case 'name':
+      return (a: PlayerSetting, b: PlayerSetting) => strSort(a.name, b.name)
+    case 'op':
+      return (a: PlayerSetting, b: PlayerSetting) => {
+        return (b.op?.level ?? 0) - (a.op?.level ?? 0)
+      }
+  }
+}
+
 function openGroupEditor(group?: PlayerGroup) {
   // 情報を登録
   if (group === void 0) {
@@ -27,6 +42,7 @@ function openGroupEditor(group?: PlayerGroup) {
       players: Array.from(playerStore.focusCards),
       isNew: true
     }
+    playerStore.selectedGroupName = ''
   }
   else {
     playerStore.focusCards = new Set(group.players)
@@ -67,9 +83,19 @@ function openGroupEditor(group?: PlayerGroup) {
             <SearchResultView />
           </div>
 
-          <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
+          <div class="row full-width items-center">
+            <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
+            <q-space />
+            <SsSelect
+              dense
+              v-model="playerOrder"
+              :options="orderTypes"
+              label="並べ替え"
+              style="width: 6.5rem; margin-right: 10px;"
+            />
+          </div>
           <div class="row q-gutter-sm q-pa-sm">
-            <div v-for="player in playerStore.searchPlayers(mainStore.world.players).sort((a, b) => strSort(a.name, b.name))" :key="player.uuid" class="col-">
+            <div v-for="player in playerStore.searchPlayers(mainStore.world.players).sort(playerSortFunc(playerOrder))" :key="player.uuid" class="col-">
               <PlayerCardView
                 :uuid="player.uuid"
                 :op-level="player.op?.level"
@@ -102,7 +128,6 @@ function openGroupEditor(group?: PlayerGroup) {
         </div>
       </q-scroll-area>
 
-      <!-- TODO: OpSetterの高さを調整 -->
       <div class="column q-ml-md">
         <!-- グループ設定は動的に読み込む -->
         <GroupEditorView
