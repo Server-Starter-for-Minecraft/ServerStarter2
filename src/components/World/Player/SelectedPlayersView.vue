@@ -1,20 +1,30 @@
 <script setup lang="ts">
+import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { strSort } from 'src/scripts/objSort';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerIconInList from './utils/PlayerIconInList.vue';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const playerStore = usePlayerStore()
+
+function getOrderedFocusCards(cards: Set<PlayerUUID>) {
+  return Array.from(cards).sort((a, b) => {
+    const aName = playerStore.cachePlayers[a].name
+    const bName = playerStore.cachePlayers[b].name
+    return strSort(aName, bName)
+  })
+}
 </script>
 
 <template>
   <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0;">
-    <p class="q-pa-sm q-ma-none text-body2">{{ $t('player.select', playerStore.focusCards.size) }}</p>
+    <p class="q-pt-sm q-pl-sm q-pa-none q-ma-none text-body2">{{ $t('player.select', playerStore.focusCards.size) }}</p>
     
-    <q-card-actions align="center">
-      <SsBtn
+    <q-card-actions style="margin-left: 10px; margin-right: 10px;">
+      <q-btn
+        outline
         :label="$t('player.deselect',playerStore.focusCards.size)"
         :disable="playerStore.focusCards.size === 0"
-        width="9rem"
+        class="full-width q-my-xs"
         @click="playerStore.unFocus()"
       />
     </q-card-actions>
@@ -23,12 +33,12 @@ const playerStore = usePlayerStore()
       style="flex: 1 1 0;"
     >
       <div class="row">
-        <div v-if="playerStore.focusCards.size === 0" class="row items-center">
+        <div v-if="playerStore.focusCards.size === 0">
           <p class="col q-my-none q-ml-sm text-caption text-grey">
             {{ $t('player.selectPlayer') }}
           </p>
         </div>
-        <template v-else v-for="uuid in playerStore.focusCards" :key="uuid">
+        <template v-else v-for="uuid in getOrderedFocusCards(playerStore.focusCards)" :key="uuid">
           <PlayerIconInList :uuid="uuid" />
         </template>
       </div>

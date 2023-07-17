@@ -1,8 +1,8 @@
 import { fromEntries, toEntries } from "./obj";
 
 export function strSort(a: string, b: string) {
-  if(a[0].toLowerCase() < b[0].toLowerCase()) return -1;
-  else if(a[0].toLowerCase() > b[0].toLowerCase()) return 1;
+  if(a.toLowerCase() < b.toLowerCase()) return -1;
+  else if(a.toLowerCase() > b.toLowerCase()) return 1;
   return 0;
 }
 

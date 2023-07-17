@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { deepCopy } from 'src/scripts/deepCopy';
-import { sort } from 'src/scripts/objSort';
+import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import { isValid } from 'src/scripts/error';
@@ -69,7 +69,7 @@ function openGroupEditor(group?: PlayerGroup) {
 
           <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
           <div class="row q-gutter-sm q-pa-sm">
-            <div v-for="player in playerStore.searchPlayers(mainStore.world.players)" :key="player.uuid" class="col-">
+            <div v-for="player in playerStore.searchPlayers(mainStore.world.players).sort((a, b) => strSort(a.name, b.name))" :key="player.uuid" class="col-">
               <PlayerCardView
                 :uuid="player.uuid"
                 :op-level="player.op?.level"
