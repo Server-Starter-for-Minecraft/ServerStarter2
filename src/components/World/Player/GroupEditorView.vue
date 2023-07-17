@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
+import { PlayerGroup } from 'app/src-electron/schema/player';
 import { keys } from 'src/scripts/obj';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { generateGroup } from './Editor/editorDialog';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
@@ -14,6 +14,22 @@ const colorOps = keys(sysStore.staticResouces.minecraftColors).map(k => {
   return { label: k, code: sysStore.staticResouces.minecraftColors[k] }
 })
 
+
+/**
+ * グループの新規作成時に使用する作成器 
+ */
+function generateGroup(group: PlayerGroup) {
+  const sysStore = useSystemStore()
+  sysStore.systemSettings().player.groups[group.name] = {
+    name: group.name,
+    color: group.color,
+    players: toRaw(group.players)
+  }
+}
+
+/**
+ * グループの更新を行う
+ */
 function updateGroup() {
   // 一旦元のグループを削除する
   removeGroup()
@@ -21,14 +37,18 @@ function updateGroup() {
   // 新しいグループを作成
   const newGroup = playerStore.selectedGroup
   newGroup.name = inputName.value
+  newGroup.players = Array.from(playerStore.focusCards)
   generateGroup(newGroup)
-
-  // グループ編集カードを閉じる
-  playerStore.openGroupEditor = false
 }
 
+/**
+ * 選択されたグループを削除
+ */
 function removeGroup() {
+  // 削除処理
   delete sysStore.systemSettings().player.groups[playerStore.selectedGroup.name]
+
+  // グループ編集カードを閉じる
   playerStore.openGroupEditor = false
 }
 </script>
