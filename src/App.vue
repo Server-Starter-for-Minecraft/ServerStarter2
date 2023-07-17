@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { toRaw } from 'vue';
+import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useQuasar } from 'quasar';
+import { setCssVar, useQuasar } from 'quasar';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { useSystemStore } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
@@ -26,6 +26,11 @@ const $t = useI18n()
 // 仮のテーマを適用する
 const $q = useQuasar();
 $q.dark.set('auto');
+
+// primaryの色を定義
+watch(() => $q.dark.isActive, val => {
+  setPrimary(val)
+})
 
 // サーバー起動時に画面遷移
 window.API.onStartServer((_event, worldID) => {
@@ -64,6 +69,9 @@ async function setUserSettings() {
   const isAuto = sysStore.systemSettings().user.theme === 'auto'
   const isDark = sysStore.systemSettings().user.theme === 'dark'
   $q.dark.set(isAuto ? 'auto' : isDark)
+
+  // primaryの色を定義
+  setPrimary($q.dark.isActive)
 }
 
 /**
@@ -101,6 +109,18 @@ function setSubscribe() {
   })
 
   setPlayerSearchSubscriber(playerStore)
+}
+
+/**
+ * primaryの色を定義
+ */
+function setPrimary(isDark: boolean) {
+  if (isDark) {
+    setCssVar('primary', '#7FFF00')
+  }
+  else {
+    setCssVar('primary', '#1EB000')
+  }
 }
 </script>
 
