@@ -14,7 +14,7 @@ defineProps<Prop>()
     <slot />
 
     <div v-if="onClick !== void 0" class="absolute-top fit">
-      <q-btn flat color="transparent" @click="onClick" class="fit card"/>
+      <q-btn flat color="transparent" @click="onClick" class="fit"/>
     </div>
 
     <slot name="actions" />

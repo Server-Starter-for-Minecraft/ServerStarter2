@@ -5,6 +5,7 @@ interface Prop {
   color?: string
   width?: string
   disable?: boolean
+  isCapital?: boolean
   onClick: () => void
 }
 defineProps<Prop>()
@@ -17,6 +18,7 @@ defineProps<Prop>()
     :label="label"
     :color="color"
     :disable="disable"
+    :no-caps="!isCapital"
     @click="onClick"
     :style="{ 'width': width ?? '13rem' }"
   />
