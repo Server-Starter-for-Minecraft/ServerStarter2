@@ -14,6 +14,7 @@ const prop = defineProps<Prop>()
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
+const sysKey = `${prop.remote.owner}/${prop.remote.repo}`
 
 function openPatEditor() {
   $q.dialog({
@@ -25,8 +26,7 @@ function openPatEditor() {
       oldPat: prop.remote.pat
     } as updatePatProp
   }).onOk((payload: updatePatDialogReturns) => {
-    // TODO: patの更新方法を確立
-    sysStore.remoteSettings().github[`${prop.remote.owner}/${prop.remote.repo}`].pat = payload.newPat
+    sysStore.remoteSettings().github[sysKey].pat = payload.newPat
   })
 }
 
@@ -35,16 +35,14 @@ function checkUnlinkRepo() {
     component: UnlinkRepoDialog,
     componentProps: {
       overline: 'GitHub',
-      title: `${prop.remote.owner}/${prop.remote.repo} を解除`,
+      title: `${sysKey} を解除`,
       okBtnTxt: '登録を解除',
       color: 'red',
       owner: prop.remote.owner,
       repo: prop.remote.repo
     } as unlinkRepoProp
   }).onOk(() => {
-    // TODO: patの更新方法を確立
-    // prop.remote.pat = payload.newPat
-
+    delete sysStore.remoteSettings().github[sysKey]
   })
 }
 </script>

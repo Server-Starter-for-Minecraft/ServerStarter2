@@ -6,6 +6,9 @@ import { values } from 'src/scripts/obj';
 
 const sysStore = useSystemStore()
 
+// TEMP
+sysStore.remoteSettings().github['CivilTT/共有世界'] = { owner: 'CivilTT', repo: '共有世界', pat: 'abcde' }
+
 function addRemote() {
   console.log('### TODO: ここに登録処理を実装 ###')
 }
@@ -33,7 +36,6 @@ function addRemote() {
         <div v-for="remoteData in values(sysStore.remoteSettings().github)" :key="remoteData.owner">
           <GithubCard :remote="remoteData" />
         </div>
-        <GithubCard :remote="{ owner: 'CivilTT', repo: '共有世界', pat: 'abcde' }" />
       </div>
     </div>
   </div>
