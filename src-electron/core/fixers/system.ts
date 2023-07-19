@@ -80,7 +80,7 @@ export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
 
 export const fixSystemRemoteSetting = objectFixer<SystemRemoteSetting>(
   {
-    github: optionalFixer(fixGithubRemoteSetting),
+    github: fixGithubRemoteSetting,
   },
   true
 );

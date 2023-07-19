@@ -38,5 +38,5 @@ export const fixGithubRemoteSetting = objectFixer<GithubRemoteSetting>(
   {
     accounts: arrayFixer(fixGithubAccountSetting, true),
   },
-  false
+  true
 );

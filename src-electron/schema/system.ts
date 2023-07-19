@@ -57,5 +57,5 @@ export type SystemPlayerSetting = {
 };
 
 export type SystemRemoteSetting = {
-  github?: GithubRemoteSetting;
+  github: GithubRemoteSetting;
 };
