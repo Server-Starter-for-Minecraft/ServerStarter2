@@ -11,6 +11,7 @@ import {
   deleteWorld,
   runWorld,
   runCommand,
+  reboot,
 } from '../core/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
@@ -30,6 +31,8 @@ export const getBackListener = (
     OpenFolder: openFolder,
   },
   handle: {
+    Reboot: reboot,
+
     GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,

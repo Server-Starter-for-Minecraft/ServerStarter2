@@ -102,6 +102,8 @@ const api: FrontAPI = {
   sendOpenFolder: send('OpenFolder'),
 
   // INVOKE
+  invokeReboot: invoke('Reboot'),
+
   invokeGetStaticResouce: invoke('GetStaticResouce'),
 
   invokeGetSystemSettings: invoke('GetSystemSettings'),

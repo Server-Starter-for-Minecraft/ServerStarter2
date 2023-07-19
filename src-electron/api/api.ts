@@ -78,8 +78,7 @@ export interface API extends IAPI {
      *  Command("run any command")
      *  Command("reboot",true)
      */
-    Command: ((world: WorldID, command: string) => void) &
-      ((world: WorldID, command: 'reboot', systemCommand: true) => void);
+    Command: (world: WorldID, command: string) => void;
 
     /** URLをブラウザで開く */
     OpenBrowser: (url: string) => void;
@@ -88,6 +87,9 @@ export interface API extends IAPI {
     OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
+    /** 実行中のサーバーを再起動 */
+    Reboot: (world: WorldID) => Promise<void>;
+
     /** Backend側から静的なデータを取得する */
     GetStaticResouce: () => Promise<StaticResouce>;
 
