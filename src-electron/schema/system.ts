@@ -22,20 +22,8 @@ export type SystemSettingsEdited = {
   user: SystemUserSetting;
 };
 
+/** 言語 */
 export type Locale = 'ja' | 'en-US';
-
-/** ローカルのワールドの保存先ディレクトリ (絶対パスのみ) */
-export type LocalSaveContainer = Brand<string, 'LocalSaveContainer'>;
-
-/** ローカルのワールド */
-export type LocalSave = {
-  // 保存先ディレクトリ
-  container: LocalSaveContainer;
-  // ワールド名
-  name: string;
-  // icon.png
-  avatar_path?: ImageURI;
-};
 
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
@@ -49,20 +37,19 @@ export type SystemUserSetting = {
   owner: PlayerUUID;
   // 自動シャットダウン
   autoShutDown: boolean;
-  //ローカルのワールドの保存先ディレクトリ一覧
-  localSaveContainer: LocalSaveContainer[];
+};
+
+export type WorldContainerSetting = {
+  container: WorldContainer;
+  visible: boolean;
+  name: string;
 };
 
 /**
  * GetWorldContainersの戻り値
  * SetWorldContainersの引数
  */
-export type WorldContainers = {
-  default: WorldContainer;
-  custom: {
-    [name in string]: WorldContainer;
-  };
-};
+export type WorldContainers = WorldContainerSetting[];
 
 export type SystemPlayerSetting = {
   groups: { [name: string]: PlayerGroup };

@@ -186,6 +186,24 @@ export function defaultFixer<T>(
   };
 }
 
+export function applyFixer<T, U>(
+  fixer: Fixer<T>,
+  apply: (arg: T) => U
+): Fixer<U>;
+export function applyFixer<T, U>(
+  fixer: Fixer<T | FAIL>,
+  apply: (arg: T) => U | FAIL
+): Fixer<U | FAIL>;
+export function applyFixer<T, U>(
+  fixer: Fixer<T | FAIL>,
+  apply: (arg: T) => U | FAIL
+): Fixer<U | FAIL> {
+  return (arg: any) => {
+    const r = fixer(arg);
+    return r === FAIL ? FAIL : apply(r);
+  };
+}
+
 export function unionFixer<A, B>(
   a: Fixer<A>,
   b: Fixer<B>

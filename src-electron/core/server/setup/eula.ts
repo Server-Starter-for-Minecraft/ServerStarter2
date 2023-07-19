@@ -27,12 +27,7 @@ export async function checkEula(
     progress.description = {
       key: 'server.eula.generating',
     };
-    const result = await generateEula(
-      javaPath,
-      programArgunets,
-      serverCwdPath,
-      worldId
-    );
+    const result = await generateEula(javaPath, programArgunets, serverCwdPath);
     progress.description = null;
     // 生成に失敗した場合エラー
     if (isError(result)) return result;
@@ -101,8 +96,7 @@ function parseEula(txt: string): {
 async function generateEula(
   javaPath: Path,
   programArgunets: string[],
-  serverCwdPath: Path,
-  worldId: WorldID
+  serverCwdPath: Path
 ): Promise<Failable<undefined>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 

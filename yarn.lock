@@ -3856,6 +3856,11 @@ natural-compare-lite@^1.4.0:
   "resolved" "https://registry.npmjs.org/napi-build-utils/-/napi-build-utils-1.0.2.tgz"
   "version" "1.0.2"
 
+nbtify@^1.60.2:
+  version "1.60.2"
+  resolved "https://registry.yarnpkg.com/nbtify/-/nbtify-1.60.2.tgz#15633d25d5828295848bcb70e3c0bb0ac126a0ff"
+  integrity sha512-p63A4g7b01SMStSNyK2/QFRfTTW9IC3PSPy3SscHOAMr1BSL+UIcm65bQweI8AWost/igfWBkXFExVHldyBfrw==
+
 "natural-compare-lite@^1.4.0":
   "integrity" "sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g=="
   "resolved" "https://registry.npmjs.org/natural-compare-lite/-/natural-compare-lite-1.4.0.tgz"
