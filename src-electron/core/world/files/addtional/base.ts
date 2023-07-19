@@ -162,7 +162,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const isNew = (v: AllFileData<T>): v is NewFileData<T> => v.type === 'new';
 
     // 新しいファイルをコピー
-    await asyncForEach(value.filter(isNew), async (source) => {
+    await asyncForEach(value, async (source) => {
       const srcPath = this.getSourcePath(source);
 
       if (isError(srcPath)) {
@@ -192,6 +192,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       // インストール処理
       const result = await this.installer(srcPath, tgtPath);
 
+      // 新規ファイルだった場合キャッシュにコピー
       if (source.type === 'new') {
         this.installCache(srcPath, source);
       }
@@ -209,7 +210,9 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
     // 非同期で削除
-    await asyncForEach(deletFiles, (x) => dirPath.child(x.name).remove(true));
+    await asyncForEach(deletFiles, (x) =>
+      dirPath.child(`${x.name}${x.ext}`).remove(true)
+    );
 
     return withError(undefined, errors);
   }
