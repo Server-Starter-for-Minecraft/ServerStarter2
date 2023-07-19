@@ -74,8 +74,12 @@ export interface API extends IAPI {
     CheckShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
-    /** 実行中のサーバーにコマンドを送る */
-    Command: (world: WorldID, command: string) => void;
+    /** 実行中のサーバーにコマンドを送る
+     *  Command("run any command")
+     *  Command("reboot",true)
+     */
+    Command: ((world: WorldID, command: string) => void) &
+      ((world: WorldID, command: 'reboot', systemCommand: true) => void);
 
     /** URLをブラウザで開く */
     OpenBrowser: (url: string) => void;
