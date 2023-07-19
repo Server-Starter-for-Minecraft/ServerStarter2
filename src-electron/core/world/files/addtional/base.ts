@@ -2,7 +2,11 @@ import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { ErrorMessage, Failable, WithError } from 'app/src-electron/schema/error';
+import {
+  ErrorMessage,
+  Failable,
+  WithError,
+} from 'app/src-electron/schema/error';
 import {
   AllFileData,
   NewFileData,
@@ -113,8 +117,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   }
 
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
-    const dirPath = this.cachePath.child(this.childPath);
-    const paths = await dirPath.iter();
+    const paths = await this.cachePath.iter();
     const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
 
     const array = zip(paths, loaded)
