@@ -33,7 +33,7 @@ async function setupGit(local: Path, remote: GithubRemote) {
   const pat = await getGitPat(remote.owner, remote.repo);
 
   if (isError(pat)) return pat;
-  
+
   const url = getRemoteUrl(remote);
   // ディレクトリがなければ作成
   await local.mkdir(true);
@@ -46,7 +46,6 @@ async function setupGit(local: Path, remote: GithubRemote) {
       ).toString('base64')}`,
     ],
   });
-
 
   try {
     // ローカルリポジトリに指定のリモートが登録されているかをチェック
@@ -76,7 +75,7 @@ async function pullWorld(
   try {
     await git.fetch(DEFAULT_REMOTE_NAME, remote.branch);
     // リモートの内容をチェックアウト
-    await git.checkout(`${DEFAULT_REMOTE_NAME}/${remote.branch}`,["-f"]);
+    await git.checkout(`${DEFAULT_REMOTE_NAME}/${remote.branch}`, ['-f']);
   } catch (e: any) {
     if (e.message === `fatal: couldn't find remote ref ${remote.branch}\n`) {
       // ブランチが存在しない場合何もせず終了
@@ -103,6 +102,6 @@ async function pushWorld(
   else message = `<ANONYMOUS>(${uuid})`;
 
   await git.add('-A');
-  await git.commit('TEST MESSAGE');
+  await git.commit(message);
   await git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.branch}`, '-f']);
 }

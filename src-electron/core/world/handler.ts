@@ -13,7 +13,12 @@ import {
   loadLocalFiles,
   saveLocalFiles,
 } from './local';
-import { RunServer, runServer } from '../server/server';
+import {
+  RunRebootableServer,
+  RunServer,
+  runRebootableServer,
+  runServer,
+} from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -28,6 +33,8 @@ import { sleep } from 'app/src-electron/util/sleep';
 import { api } from '../api';
 import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
+import { getOpDiff } from './players';
+import { includes } from 'app/src-electron/util/array';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -112,7 +119,7 @@ export class WorldHandler {
   name: WorldName;
   container: WorldContainer;
   id: WorldID;
-  runner: RunServer | undefined;
+  runner: RunRebootableServer | undefined;
 
   private constructor(id: WorldID, name: WorldName, container: WorldContainer) {
     this.promiseSpooler = new PromiseSpooler();
@@ -261,16 +268,29 @@ export class WorldHandler {
     const func = () => this.saveExec(world, progress);
     return await this.promiseSpooler.spool(func, 'SAVE');
   }
-
   /** サーバーのデータを保存 */
   private async saveExec(
+    world: WorldEdited,
+    progress?: PlainProgressor
+  ): Promise<WithError<Failable<World>>> {
+    if (this.runner === undefined) {
+      // 起動中に設定を反映
+      return this.saveExecNonRunning(world, progress);
+    } else {
+      // 非起動中に設定を反映
+      return this.saveExecRunning(world);
+    }
+  }
+
+  /** 起動していないサーバーのデータを保存 */
+  private async saveExecNonRunning(
     world: WorldEdited,
     progress?: PlainProgressor
   ): Promise<WithError<Failable<World>>> {
     const withPlain = genWithPlain(progress);
     const errors: ErrorMessage[] = [];
 
-    // ワールド名に変更があった場合正常な名前かどうかを確認して変更
+    // ワールド名に変更があった場合正常な名前かどうかを確認してワールドの保存場所を変更
     const worldNameHasChanged =
       this.container !== world.container || this.name !== world.name;
     if (worldNameHasChanged) {
@@ -340,6 +360,73 @@ export class WorldHandler {
     // リモートにpush
     const push = await this.push(progress);
     if (isError(push)) return withError(push, errors);
+
+    return result;
+  }
+
+  /** 起動しているサーバーのデータを保存 */
+  private async saveExecRunning(
+    world: WorldEdited
+  ): Promise<WithError<Failable<World>>> {
+    const errors: ErrorMessage[] = [];
+
+    // ワールド名に変更があった場合エラーに追加
+    const worldNameHasChanged =
+      this.container !== world.container || this.name !== world.name;
+    if (worldNameHasChanged) {
+      errors.push(
+        errorMessage.core.world.cannotChangeRunningWorldName({
+          container: this.container,
+          name: this.name,
+        })
+      );
+    }
+
+    const savePath = this.getSavePath();
+
+    // 現状のサーバー設定データ
+    const current = await this.loadLocal();
+
+    // 変更をローカルに保存
+    // additionalの解決、custum_map,remote_sourceの導入も行う
+    const result = await saveLocalFiles(savePath, world);
+    result.errors.push(...errors);
+
+    // リロード
+    await this.runCommand('reload');
+
+    // プレイヤー周りの設定を反映
+    // TODO: どこかに実装を移動
+    if (
+      isValid(current.value) &&
+      isValid(current.value.players) &&
+      isValid(world.players)
+    ) {
+      const diff = getOpDiff(current.value.players, world.players);
+      const hasDiff = Object.values(diff).some((x) => x.length > 0);
+      if (diff[0].length > 0)
+        await this.runCommand('deop ' + diff[0].join(' '));
+
+      if (isValid(current.value.properties)) {
+        const opPermissionLevel =
+          current.value.properties['op-permission-level'];
+
+        if (includes([1, 2, 3, 4] as const, opPermissionLevel)) {
+          const diffs = diff[opPermissionLevel];
+          // op-permission-levelと同じopになるプレイヤーにopをあたえる
+          if (diffs.length > 0) await this.runCommand('op ' + diffs.join(' '));
+          ([1, 2, 3, 4] as const).forEach((i) => {
+            if (i !== opPermissionLevel && diff[i].length > 0) {
+              errorMessage.core.world.failedChangingOp({
+                users: diff[i],
+                op: i,
+              });
+            }
+          });
+        }
+      }
+      if (hasDiff) await this.runCommand('whitelist reload');
+    }
 
     return result;
   }
@@ -559,7 +646,12 @@ export class WorldHandler {
     errors.push(...directoryFormatResult.errors);
 
     // サーバーの実行を開始
-    const runPromise = runServer(savePath, this.id, settings, progress);
+    const runPromise = runRebootableServer(
+      savePath,
+      this.id,
+      settings,
+      progress
+    );
 
     this.runner = runPromise;
 
@@ -606,5 +698,10 @@ export class WorldHandler {
   /** コマンドを実行 */
   async runCommand(command: string) {
     await this.runner?.runCommand(command);
+  }
+
+  /** サーバーを再起動 */
+  async reboot() {
+    await this.runner?.reboot();
   }
 }

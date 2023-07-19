@@ -97,7 +97,13 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
   if (latestRelease === undefined)
     throw new Error('Assertion: This error cannot occur');
 
-  const container = systemSettings.container.default;
+  // ワールドを配置するデフォルトのコンテナを指定
+  const containerSetting = systemSettings.container[0];
+  if (containerSetting === undefined) {
+    return withError(errorMessage.core.container.noContainerSubscribed());
+  }
+  const container = containerSetting.container;
+
   const name = await getDefaultWorldName(container);
 
   // WorldHandlerに登録
@@ -200,4 +206,13 @@ export function runCommand(worldID: WorldID, command: string): void {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return;
   handler.runCommand(command);
+}
+
+/**
+ * サーバーを再起動
+ */
+export async function reboot(worldID: WorldID): Promise<void> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return;
+  await handler.reboot();
 }

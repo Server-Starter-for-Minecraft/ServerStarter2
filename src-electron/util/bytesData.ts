@@ -9,6 +9,8 @@ import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
 
+const nbt = import('nbtify');
+
 const fetch = import('node-fetch');
 
 const loggers = utilLoggers.BytesData;
@@ -206,6 +208,24 @@ export class BytesData {
     return this.fromBase64(match[1]);
   }
 
+  /** objectをJavaNBTの形でエンコード */
+  static async fromNbtData(
+    data: object,
+    compression?: 'deflate' | 'deflate-raw' | 'gzip' | null
+  ): Promise<Failable<BytesData>> {
+    try {
+      const result = await (
+        await nbt
+      ).write(data, {
+        endian: 'big',
+        compression: compression,
+      });
+      return new BytesData(result.buffer);
+    } catch (e) {
+      return fromRuntimeError(e);
+    }
+  }
+
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
     const sha1 = createHash(algorithm);
     sha1.update(Buffer.from(this.data));
@@ -233,6 +253,23 @@ export class BytesData {
   async png(): Promise<Failable<Png>> {
     try {
       return new Png(sharp(this.data));
+    } catch (e) {
+      return fromRuntimeError(e);
+    }
+  }
+
+  /** バイト列をjava NBTに変換 */
+  async nbt<T extends object>(
+    complesstion?: 'deflate' | 'deflate-raw' | 'gzip' | null
+  ): Promise<Failable<T>> {
+    try {
+      const result = await (
+        await nbt
+      ).read(this.data, {
+        endian: 'big',
+        compression: complesstion,
+      });
+      return result.data;
     } catch (e) {
       return fromRuntimeError(e);
     }

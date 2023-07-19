@@ -1,14 +1,13 @@
 import {
-  LocalSave,
-  LocalSaveContainer,
   Locale,
   SystemPlayerSetting,
   SystemRemoteSetting,
   SystemSettings,
   SystemUserSetting,
-  WorldContainers,
+  WorldContainerSetting,
 } from 'app/src-electron/schema/system';
 import {
+  applyFixer,
   arrayFixer,
   booleanFixer,
   defaultFixer,
@@ -20,34 +19,14 @@ import {
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixPlayerGroup } from './player';
-import { PlayerUUID, WorldContainer } from 'app/src-electron/schema/brands';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { fixImageURI, fixPlayerUUID, fixWorldContainer } from './brands';
 import { fixGithubRemoteSetting } from './remote';
-import {
-  DEFAULT_LOCALE,
-  DEFAULT_LOCAL_SAVE_CONTAINER,
-  DEFAULT_WORLD_CONTAINER,
-} from '../const';
+import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
 import { genUUID } from 'app/src-electron/tools/uuid';
 
 export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], DEFAULT_LOCALE);
-
-/** ローカルのワールドの保存先ディレクトリ */
-export const fixLocalSaveContainer = stringFixer<LocalSaveContainer>();
-
-/** ローカルのワールド */
-export const fixLocalSave = objectFixer<LocalSave>(
-  {
-    // 保存先ディレクトリ
-    container: fixLocalSaveContainer,
-    // ワールド名
-    name: stringFixer(),
-    // icon.png
-    avatar_path: optionalFixer(fixImageURI),
-  },
-  false
-);
 
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {
@@ -61,29 +40,37 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     owner: defaultFixer(fixPlayerUUID, genUUID<PlayerUUID>()),
     // 自動シャットダウン
     autoShutDown: booleanFixer(false),
-    //ローカルのワールドの保存先ディレクトリ一覧
-    localSaveContainer: defaultFixer(arrayFixer(fixLocalSaveContainer, false), [
-      DEFAULT_LOCAL_SAVE_CONTAINER,
-    ]),
     // World Listの横幅
     drawerWidth: numberFixer(300),
   },
   true
 );
 
+export const fixWorldContainerSetting = objectFixer<WorldContainerSetting>(
+  {
+    container: fixWorldContainer,
+    name: stringFixer('UnNamed'),
+    visible: booleanFixer(true),
+  },
+  false
+);
+
 /**
  * GetWorldContainersの戻り値
  * SetWorldContainersの引数
  */
-export const fixWorldContainers = objectFixer<WorldContainers>(
-  {
-    default: defaultFixer(
-      fixWorldContainer,
-      DEFAULT_WORLD_CONTAINER as WorldContainer
-    ),
-    custom: recordFixer(fixWorldContainer, true),
-  },
-  true
+export const fixWorldContainers = applyFixer(
+  arrayFixer<WorldContainerSetting>(fixWorldContainerSetting, true),
+  (containers) => {
+    if (containers.length === 0) {
+      containers.push({
+        container: DEFAULT_WORLD_CONTAINER,
+        name: 'default',
+        visible: true,
+      });
+    }
+    return containers;
+  }
 );
 
 export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
@@ -96,7 +83,7 @@ export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
 
 export const fixSystemRemoteSetting = objectFixer<SystemRemoteSetting>(
   {
-    github: optionalFixer(fixGithubRemoteSetting),
+    github: fixGithubRemoteSetting,
   },
   true
 );

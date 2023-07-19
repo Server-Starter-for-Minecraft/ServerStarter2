@@ -23,23 +23,11 @@ export type SystemSettingsEdited = {
 };
 
 export const locales = ['ja', 'en-US'] as const;
+/** 言語 */
 export type Locale = (typeof locales)[number];
 
 export const colorThemes = ['light', 'auto', 'dark'] as const;
 export type ColorTheme = (typeof colorThemes)[number];
-
-/** ローカルのワールドの保存先ディレクトリ (絶対パスのみ) */
-export type LocalSaveContainer = Brand<string, 'LocalSaveContainer'>;
-
-/** ローカルのワールド */
-export type LocalSave = {
-  // 保存先ディレクトリ
-  container: LocalSaveContainer;
-  // ワールド名
-  name: string;
-  // icon.png
-  avatar_path?: ImageURI;
-};
 
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
@@ -53,22 +41,21 @@ export type SystemUserSetting = {
   owner: PlayerUUID;
   // 自動シャットダウン
   autoShutDown: boolean;
-  //ローカルのワールドの保存先ディレクトリ一覧
-  localSaveContainer: LocalSaveContainer[];
   // ワールドリストの幅
   drawerWidth: number;
+};
+
+export type WorldContainerSetting = {
+  container: WorldContainer;
+  visible: boolean;
+  name: string;
 };
 
 /**
  * GetWorldContainersの戻り値
  * SetWorldContainersの引数
  */
-export type WorldContainers = {
-  default: WorldContainer;
-  custom: {
-    [name in string]: WorldContainer;
-  };
-};
+export type WorldContainers = WorldContainerSetting[];
 
 export type SystemPlayerSetting = {
   groups: { [name: string]: PlayerGroup };
@@ -76,5 +63,5 @@ export type SystemPlayerSetting = {
 };
 
 export type SystemRemoteSetting = {
-  github?: GithubRemoteSetting;
+  github: GithubRemoteSetting;
 };

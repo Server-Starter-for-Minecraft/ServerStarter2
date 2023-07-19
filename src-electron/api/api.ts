@@ -1,11 +1,7 @@
 import { WorldContainer, WorldName } from '../schema/brands';
 import { Player } from '../schema/player';
 import { StaticResouce } from '../schema/static';
-import {
-  LocalSave,
-  LocalSaveContainer,
-  SystemSettings,
-} from '../schema/system';
+import { SystemSettings } from '../schema/system';
 import { Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
@@ -78,7 +74,10 @@ export interface API extends IAPI {
     CheckShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
-    /** 実行中のサーバーにコマンドを送る */
+    /** 実行中のサーバーにコマンドを送る
+     *  Command("run any command")
+     *  Command("reboot",true)
+     */
     Command: (world: WorldID, command: string) => void;
 
     /** URLをブラウザで開く */
@@ -88,6 +87,9 @@ export interface API extends IAPI {
     OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
+    /** 実行中のサーバーを再起動 */
+    Reboot: (world: WorldID) => Promise<void>;
+
     /** Backend側から静的なデータを取得する */
     GetStaticResouce: () => Promise<StaticResouce>;
 
@@ -140,9 +142,7 @@ export interface API extends IAPI {
     ) => Promise<Failable<Version[]>>;
 
     /** ローカルのセーブデータ一覧を取得 */
-    GetLocalSaveData: (
-      container: LocalSaveContainer
-    ) => Promise<WithError<LocalSave[]>>;
+    GetLocalSaveData: () => Promise<WithError<Failable<CustomMapData[]>>>;
 
     /** ワールド名が使用可能かどうかを検証する */
     ValidateNewWorldName: (

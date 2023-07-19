@@ -1,3 +1,4 @@
+import { OpLevel } from 'app/src-electron/schema/player';
 import { ErrorMessageContent } from './base';
 
 // ServerStarterの内部的なその他のエラー
@@ -8,6 +9,12 @@ export type CoreErrors = {
       id: string;
     }>;
 
+    // 実行中のワールド名/ワールドフォルダは変更できない
+    cannotChangeRunningWorldName: ErrorMessageContent<{
+      name: string;
+      container: string;
+    }>;
+
     // ワールドがすでに起動中
     worldAleradyRunning: ErrorMessageContent<{
       // ワールドのパス = {container}/{name}
@@ -16,6 +23,18 @@ export type CoreErrors = {
       // 起動している人のUUID
       owner?: string;
     }>;
+
+    // opの権限の設定に失敗した場合
+    failedChangingOp: ErrorMessageContent<{
+      users: string[];
+      op: OpLevel;
+    }>;
+  };
+
+  // WorldContainer系のエラーまとめ
+  container: {
+    // WorldContainerが一つも登録されていない
+    noContainerSubscribed: ErrorMessageContent;
   };
 
   // バージョン系のエラーまとめ

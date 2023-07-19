@@ -53,3 +53,39 @@ export function runServer(
 
   return decoratePromise(promiseValue, { runCommand });
 }
+
+export type RunRebootableServer = Promise<Failable<undefined>> & {
+  runCommand: (command: string) => Promise<void>;
+  reboot: () => Promise<void>;
+};
+
+/** サーバーを起動する */
+export function runRebootableServer(
+  cwdPath: Path,
+  id: WorldID,
+  settings: WorldSettings,
+  progress: PlainProgressor
+) {
+  let promise: RunServer;
+
+  let needRun = true;
+
+  const resultPromise = async (): Promise<Failable<undefined>> => {
+    while (needRun) {
+      needRun = false;
+      promise = runServer(cwdPath, id, settings, progress);
+      const promiseValue = await promise;
+      if (isError(promiseValue)) return promiseValue;
+    }
+  };
+
+  const reboot = async () => {
+    needRun = true;
+    promise.runCommand('stop');
+    await promise;
+  };
+
+  const runCommand = (command: string) => promise?.runCommand(command);
+
+  return decoratePromise(resultPromise(), { reboot, runCommand });
+}

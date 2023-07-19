@@ -11,13 +11,14 @@ import {
   deleteWorld,
   runWorld,
   runCommand,
+  reboot,
 } from '../core/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { validateNewWorldName } from '../core/world/name';
 import { getStaticResoure } from '../core/resource';
 import { getPlayer } from '../core/player/main';
-import { getLocalSaveData } from '../core/user/localSave';
+import { getAllLocalSaveData } from '../core/user/launcher/localSave';
 import { getCacheContents } from '../core/stores/cache';
 import { pickDialog } from '../core/world/dialog';
 import { getGlobalIP } from '../util/ip';
@@ -30,6 +31,8 @@ export const getBackListener = (
     OpenFolder: openFolder,
   },
   handle: {
+    Reboot: reboot,
+
     GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,
@@ -55,7 +58,7 @@ export const getBackListener = (
 
     ValidateNewWorldName: validateNewWorldName,
 
-    GetLocalSaveData: getLocalSaveData,
+    GetLocalSaveData: getAllLocalSaveData,
 
     PickDialog: pickDialog(windowGetter),
   },
