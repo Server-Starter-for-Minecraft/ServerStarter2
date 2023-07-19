@@ -1,5 +1,5 @@
 export interface baseDialogProp {
-  isOKClickable: boolean
+  disable?: boolean
   overline: string
   title: string
   okBtnTxt: string
@@ -12,8 +12,13 @@ interface updatePatDialogProp {
   oldPat: string
 }
 
+interface unlinkDialogProp {
+  owner: string
+  repo: string
+}
+
 export type updatePatProp = baseDialogProp & updatePatDialogProp
-export type unlinkRepoProp = baseDialogProp
+export type unlinkRepoProp = baseDialogProp & unlinkDialogProp
 
 export interface updatePatDialogReturns {
   newPat: string

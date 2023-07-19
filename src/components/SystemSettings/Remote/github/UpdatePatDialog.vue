@@ -6,7 +6,7 @@ import baseDialogCard from '../baseDialog/baseDialogCard.vue'
 import SsInput from 'src/components/util/base/ssInput.vue';
 
 const prop = defineProps<updatePatProp>()
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const inputPat = ref(prop.oldPat)
@@ -15,7 +15,7 @@ const inputPat = ref(prop.oldPat)
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <baseDialogCard
-      :isOKClickable="inputPat !== ''"
+      :disable="inputPat === ''"
       :title="title"
       :color="color"
       :overline="overline"

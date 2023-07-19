@@ -2,6 +2,7 @@
 import { useSystemStore } from 'src/stores/SystemStore';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
+import { values } from 'src/scripts/obj';
 
 const sysStore = useSystemStore()
 
@@ -29,7 +30,7 @@ function addRemote() {
             style="min-width: calc(13rem + 24px * 2);"
           />
         </div>
-        <div v-for="remoteData in sysStore.systemSettings().remote.github?.accounts" :key="remoteData.owner">
+        <div v-for="remoteData in values(sysStore.remoteSettings().github)" :key="remoteData.owner">
           <GithubCard :remote="remoteData" />
         </div>
         <GithubCard :remote="{ owner: 'CivilTT', repo: '共有世界', pat: 'abcde' }" />

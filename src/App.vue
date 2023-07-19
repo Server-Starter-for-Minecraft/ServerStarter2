@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { setCssVar, useQuasar } from 'quasar';
 import { useConsoleStore } from './stores/ConsoleStore';
-import { useSystemStore } from './stores/SystemStore';
+import { setInitRemoteSettings, useSystemStore } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
@@ -80,6 +80,7 @@ async function setUserSettings() {
 async function firstProcess() {
   // systemSettingsの読み込み
   sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
+  setInitRemoteSettings()
 
   // UserSettingsの読み込み
   await setUserSettings()

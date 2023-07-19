@@ -4,6 +4,8 @@ import { GithubAccountSetting } from 'app/src-electron/schema/remote';
 import { updatePatProp, unlinkRepoProp, updatePatDialogReturns } from '../baseDialog/iBaseDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import UpdatePatDialog from './UpdatePatDialog.vue';
+import UnlinkRepoDialog from './UnlinkRepoDialog.vue';
+import { useSystemStore } from 'src/stores/SystemStore';
 
 interface Prop {
   remote: GithubAccountSetting
@@ -11,6 +13,7 @@ interface Prop {
 const prop = defineProps<Prop>()
 
 const $q = useQuasar()
+const sysStore = useSystemStore()
 
 function openPatEditor() {
   $q.dialog({
@@ -23,21 +26,25 @@ function openPatEditor() {
     } as updatePatProp
   }).onOk((payload: updatePatDialogReturns) => {
     // TODO: patの更新方法を確立
-    // prop.remote.pat = payload.newPat
+    sysStore.remoteSettings().github[`${prop.remote.owner}/${prop.remote.repo}`].pat = payload.newPat
   })
 }
 
 function checkUnlinkRepo() {
   $q.dialog({
-    component: UpdatePatDialog,
+    component: UnlinkRepoDialog,
     componentProps: {
       overline: 'GitHub',
-      title: 'Personal Access Tokenを更新',
-      okBtnTxt: 'Tokenを更新'
+      title: `${prop.remote.owner}/${prop.remote.repo} を解除`,
+      okBtnTxt: '登録を解除',
+      color: 'red',
+      owner: prop.remote.owner,
+      repo: prop.remote.repo
     } as unlinkRepoProp
   }).onOk(() => {
     // TODO: patの更新方法を確立
     // prop.remote.pat = payload.newPat
+
   })
 }
 </script>

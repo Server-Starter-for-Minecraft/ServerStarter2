@@ -18,7 +18,7 @@ defineProps<baseDialogProp>()
 
     <q-card-actions align="right">
       <ss-btn
-        :disable="!isOKClickable"
+        :disable="disable"
         :label="okBtnTxt"
         :color="color ?? 'primary'"
         @click="onOkClick"
