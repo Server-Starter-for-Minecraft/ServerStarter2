@@ -33,7 +33,7 @@ export const useSystemStore = defineStore('systemStore', {
       return this.baseSystemSettings
     },
     remoteSettings() {
-      this.systemSettings().remote.github?.accounts = values(this.baseRemotes.github)
+      this.systemSettings().remote.github.accounts = values(this.baseRemotes.github).map(v => toRaw(v))
       return this.baseRemotes
     }
   }
@@ -41,7 +41,7 @@ export const useSystemStore = defineStore('systemStore', {
 
 export function setInitRemoteSettings() {
   const sysStore = useSystemStore()
-  sysStore.baseSystemSettings.remote.github?.accounts.forEach(val => {
+  sysStore.baseSystemSettings.remote.github.accounts.forEach(val => {
     sysStore.baseRemotes.github[`${val.owner}/${val.repo}`] = val
   })
 }

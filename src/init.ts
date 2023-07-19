@@ -20,10 +20,7 @@ export async function initWindow() {
   await getAllVersion(true);
 
   // world読み込み
-  const paths = [
-    sysStore.systemSettings().container.default,
-    ...Object.values(sysStore.systemSettings().container.custom),
-  ];
+  const paths = sysStore.systemSettings().container.map(c => c.container)
   const worldAbbrFailables = await Promise.all(
     paths.map((path) => window.API.invokeGetWorldAbbrs(path))
   );
