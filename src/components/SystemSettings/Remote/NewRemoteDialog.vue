@@ -21,7 +21,7 @@ const pat = ref('')
  */
 function checkRegister() {
   if (accountType.value === 'github') {
-    return ![ownerName.value, repoName.value, pat.value].includes('')
+    return [ownerName.value, repoName.value, pat.value].includes('')
   }
 }
 
@@ -44,7 +44,7 @@ function okClick() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      :disable="checkRegister"
+      :disable="[ownerName, repoName, pat].includes('')"
       title="新規ShareWorldの登録"
       ok-btn-txt="登録"
       @ok-click="okClick"
@@ -65,6 +65,7 @@ function okClick() {
         <SsInput
           dense
           v-model="ownerName"
+          :rules="[val => val !== '' || '値を入力してください']"
         />
       </div>
       <div v-show="accountType === 'github'">
@@ -73,13 +74,16 @@ function okClick() {
           <SsInput
             dense
             v-model="repoName"
+            :rules="[val => val !== '' || '値を入力してください']"
           />
         </div>
         <div class="q-py-sm">
           <div class="caption" style="opacity: .6;">Personal Access Token</div>
           <SsInput
             dense
+            secret
             v-model="pat"
+            :rules="[val => val !== '' || '値を入力してください']"
           />
         </div>
       </div>

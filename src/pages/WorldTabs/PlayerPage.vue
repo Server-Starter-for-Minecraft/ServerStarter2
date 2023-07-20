@@ -69,7 +69,6 @@ function openGroupEditor(group?: PlayerGroup) {
           :placeholder="$t('player.search')"
           :debounce="200"
           class="q-py-md col"
-          @clear="() => playerStore.searchName = ''"
         />
 
         <PlayerJoinToggleView

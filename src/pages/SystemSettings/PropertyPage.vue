@@ -21,7 +21,6 @@ const propertyStore = usePropertyStore()
         v-model="propertyStore.searchName"
         :placeholder="$t('systemsetting.property.search')"
         class="q-pb-md"
-        @clear="() => propertyStore.searchName = ''"
       />
   
       <div class="row fit" style="flex: 1 1 0;">
