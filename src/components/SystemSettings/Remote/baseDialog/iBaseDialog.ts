@@ -1,6 +1,6 @@
 export interface baseDialogProp {
   disable?: boolean
-  overline: string
+  overline?: string
   title: string
   okBtnTxt: string
   color?: string

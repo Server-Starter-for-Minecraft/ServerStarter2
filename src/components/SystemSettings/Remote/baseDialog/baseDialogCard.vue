@@ -8,11 +8,11 @@ defineProps<baseDialogProp>()
 <template>
   <q-card flat class="q-py-sm q-px-md">
     <q-card-section class="q-pt-xs">
-      <div class="caption q-pb-sm">GitHub</div>
+      <div class="caption q-pb-sm">{{ overline }}</div>
       <div class="title" :class="color !== void 0 ? `text-${color}` : ''">{{ title }}</div>
     </q-card-section>
 
-    <q-card-section>
+    <q-card-section class="q-pt-none">
       <slot />
     </q-card-section>
 

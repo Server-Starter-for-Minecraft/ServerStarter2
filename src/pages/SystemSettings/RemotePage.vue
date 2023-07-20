@@ -1,16 +1,18 @@
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
+import { values } from 'src/scripts/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
-import { values } from 'src/scripts/obj';
+import NewRemoteDialog from 'src/components/SystemSettings/Remote/NewRemoteDialog.vue';
 
+const $q = useQuasar()
 const sysStore = useSystemStore()
 
-// TEMP
-sysStore.remoteSettings().github['CivilTT/共有世界'] = { owner: 'CivilTT', repo: '共有世界', pat: 'abcde' }
-
 function addRemote() {
-  console.log('### TODO: ここに登録処理を実装 ###')
+  $q.dialog({
+    component: NewRemoteDialog
+  })
 }
 </script>
 
