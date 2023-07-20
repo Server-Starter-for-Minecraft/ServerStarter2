@@ -1,6 +1,10 @@
 export const enAdditionalContents = {
+  datapack: 'datapack',
+  mod: 'MOD',
+  plugin: 'plugin',
   management: '{type} management',
   installed: 'Installed {type}',
   newInstall: 'Install new',
-  add: 'Install {type}'
+  add: 'Install {type}',
+  notInstalled: 'No {type} installed',
 }

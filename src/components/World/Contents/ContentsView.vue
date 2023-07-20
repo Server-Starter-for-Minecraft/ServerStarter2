@@ -41,6 +41,7 @@ async function importNewContent() {
       checkError(
         await window.API.invokePickDialog({type: 'datapack', isFile: true}),
         c => addContent2World(c),
+        //"$t('additionalContents.installFailed')"
         `${prop.contentType}の導入は行われませんでした`
       )
       break;
@@ -73,9 +74,9 @@ function addContent2World(content: AllFileData<T>) {
 
 <template>
   <div class="q-px-md">
-    <h1 class="q-py-xs">{{ $t('additionalContents.management', { type: prop.contentType }) }}</h1>
+    <h1 class="q-py-xs">{{ $t('additionalContents.management', { type: $t(`additionalContents.${prop.contentType}` )}) }}</h1>
 
-    <span class="text-caption">{{ $t('additionalContents.installed', { type: prop.contentType }) }}</span>
+    <span class="text-caption">{{ $t('additionalContents.installed', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
     <div class="row q-gutter-md q-pa-sm">
       <template v-if="mainStore.world.additional[`${contentType}s`].length > 0">
         <div v-for="item in mainStore.world.additional[`${contentType}s`]" :key="item.name" class="col-">
@@ -84,17 +85,17 @@ function addContent2World(content: AllFileData<T>) {
       </template>
       <div v-else class="full-width">
         <p class="q-my-lg text-center text-h5" style="opacity: .6;">
-          {{ `導入された${contentType}はありません` }}
+          {{ $t('additionalContents.notInstalled', { type: $t(`additionalContents.${prop.contentType}` )}) }}
         </p>
       </div>
     </div>
 
     <q-separator class="q-my-md" />
 
-    <span class="text-caption">{{ $t('additionalContents.add', { type: prop.contentType }) }}</span>
+    <span class="text-caption">{{ $t('additionalContents.add', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
     <div class="row q-gutter-sm q-pa-sm col-">
       <AddContentsCard
-        label="新規導入"
+        :label="$t('additionalContents.newInstall')"
         min-height="4rem"
         @click="importNewContent"
         :card-style="{
