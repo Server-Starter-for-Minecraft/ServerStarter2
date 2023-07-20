@@ -20,7 +20,6 @@ function addRemote() {
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
       ワールド共有機能（ShareWorld）を利用するためのデータ保管場所を登録します<br>
-      ShareWorldは複数人でサーバーを開く際に、誰が開いても常に最新のワールドを遊べるようにするための機能です。
     </p>
   
     <div class="row">

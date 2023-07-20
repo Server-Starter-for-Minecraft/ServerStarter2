@@ -40,7 +40,7 @@ function dialog() {
 
 <template>
   <div class="q-py-lg">
-    <h1 class="q-pt-sm">{{ title }}</h1>
+    <h1 class="q-pt-sm text-red">{{ title }}</h1>
     <p v-html="$t(i18nKey)" class="text-caption"/>
     <SsBtn
       :label="btnText"

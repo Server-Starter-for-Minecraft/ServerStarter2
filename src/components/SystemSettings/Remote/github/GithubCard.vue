@@ -9,6 +9,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 
 interface Prop {
   remote: GithubAccountSetting
+  onRegisterClick?: () => void
 }
 const prop = defineProps<Prop>()
 
@@ -52,11 +53,11 @@ function checkUnlinkRepo() {
     <q-card-section class="q-pt-xs">
       <div class="caption q-pb-sm">GitHub</div>
       <div class="q-py-sm">
-        <div class="caption" style="opacity: .6;">ユーザー</div>
+        <div class="caption">ユーザー</div>
         <div class="dataText">{{ remote.owner }}</div>
       </div>
       <div class="q-py-sm">
-        <div class="caption" style="opacity: .6;">リポジトリ</div>
+        <div class="caption">リポジトリ</div>
         <div class="dataText">{{ remote.repo }}</div>
       </div>
     </q-card-section>
@@ -68,9 +69,16 @@ function checkUnlinkRepo() {
         class="q-mb-sm"
       />
       <SsBtn
+        v-if="onRegisterClick === void 0"
         label="リモートの登録を解除"
         color="red"
         @click="checkUnlinkRepo"
+      />
+      <SsBtn
+        v-else
+        label="このリモートを利用する"
+        color="primary"
+        @click="onRegisterClick"
       />
     </q-card-actions>
   </q-card>
