@@ -64,7 +64,6 @@ function validationMessage(min?:number, max?:number, step?:number) {
       v-model="model"
       dense
       :autofocus="autofocus"
-      @clear="model = ''"
       style="width: 100%;"
     />
   </div>
@@ -77,7 +76,6 @@ function validationMessage(min?:number, max?:number, step?:number) {
       style="width: 100%;"
       dense
       :autofocus="autofocus"
-      @clear="model = ''"
       :rules="[
         val => numberValidate(
           val,

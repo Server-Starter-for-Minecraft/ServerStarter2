@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SsInput from '../util/base/ssInput.vue';
 
+
 const model = defineModel<string | number>()
 </script>
 
@@ -10,7 +11,7 @@ const model = defineModel<string | number>()
       <q-icon name="search" size="2rem" class="q-py-sm"/>
     </q-item-section>
     <q-item-section>
-      <ss-input v-model="model" label="ワールドを検索" @clear="() => model = ''"/>
+      <ss-input v-model="model" label="ワールドを検索"/>
     </q-item-section>
   </q-item>
 </template>

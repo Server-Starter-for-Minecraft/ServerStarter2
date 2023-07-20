@@ -17,7 +17,7 @@ const colorOps = keys(sysStore.staticResouces.minecraftColors).map(k => {
  * 入力グループ名のバリデーション
  */
 function validateGroupName(name: string) {
-  return name === playerStore.selectedGroupName || (!keys(playerStore.searchGroups()).includes(name) && name !== '')
+  return name !== '' && !(name !== playerStore.selectedGroupName && keys(playerStore.searchGroups()).includes(name))
 }
 function validateMessage(name: string) {
   return name !== '' ? `${name}は既に存在します` : 'グループ名を入力してください'
@@ -86,7 +86,6 @@ function removeGroup() {
           v-model="playerStore.selectedGroup.name"
           dense
           :rules="[val => validateGroupName(val) || validateMessage(val)]"
-          @clear="playerStore.selectedGroup.name = ''"
         />
       </q-card-section>
   
@@ -122,13 +121,12 @@ function removeGroup() {
       <q-separator inset />
   
       <q-card-section
-        v-show="playerStore.selectedGroup.name !== ''"
         class="q-pb-sm"
       >
         <q-btn
           outline
-          :label="playerStore.selectedGroup.isNew ? `${playerStore.selectedGroup.name}を作成` : `${playerStore.selectedGroupName}を更新`"
-          :disable="playerStore.focusCards.size === 0 || !validateGroupName(playerStore.selectedGroup.name)"
+          :label="playerStore.selectedGroup.isNew ? `${playerStore.selectedGroup.name === '' ? '新グループ' : playerStore.selectedGroup.name }を作成` : `${playerStore.selectedGroupName}を更新`"
+          :disable="(playerStore.focusCards.size === 0 || !validateGroupName(playerStore.selectedGroup.name))"
           color="primary"
           @click="updateGroup"
           class="full-width"

@@ -29,7 +29,6 @@ const inputPat = ref(prop.oldPat)
         autofocus
         v-model="inputPat"
         placeholder="Personal Access Token を入力"
-        @clear="inputPat = ''"
       />
     </baseDialogCard>
   </q-dialog>

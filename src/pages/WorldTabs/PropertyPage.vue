@@ -39,7 +39,6 @@ function resetAll() {
           v-model="propertyStore.searchName"
           :placeholder="$t('property.main.search')"
           class="col"
-          @clear="() => propertyStore.searchName = ''"
         />
   
         <SsBtn

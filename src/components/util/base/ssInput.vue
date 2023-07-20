@@ -35,7 +35,7 @@ onMounted(() => { input.value.validate() })
     :rules="rules"
     :debounce="debounce"
     :clearable="!secret"
-    @clear="onClear"
+    @clear="onClear ?? (model = '')"
     class="font"
   >
     <template v-slot:append>
