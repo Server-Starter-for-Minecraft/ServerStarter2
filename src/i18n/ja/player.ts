@@ -16,11 +16,13 @@ export const jaPlayer = {
   belongingGroup: '所属グループ',
   groupMember: 'グループメンバー',
   opLevel: '権限レベル',
+  noOp: '権限なし',
   addPlayer: 'このプレイヤーを追加',
   newPlayer: '新規プレイヤー',
   failed: 'プレイヤー設定の読み込みに失敗しました',
   select: '{n} 人を選択中|{n} 人を選択中|{n} 人を選択中',
   deselect: '{n} 人の選択を解除|{n} 人の選択を解除',
+  editPlayer: '{n} 人の設定を編集|{n} 人の設定を編集',
   opDesc: {
     0: 'OP権限を与えない',
     1: 'OPレベル１（説明文）',
