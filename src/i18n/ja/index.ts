@@ -9,6 +9,8 @@ import { jaUtils } from "./utils";
 import { jaAdditionalContents } from "./additionalContents";
 import { jaError } from "./error";
 import { jaProgress } from "./progress";
+import { jaWorldList } from "./worldList";
+import { jaIcon } from "./icon";
 
 export const ja = {
   home:jaHome,
@@ -19,5 +21,7 @@ export const ja = {
   utils:jaUtils,
   additionalContents:jaAdditionalContents,
   error:jaError,
-  progress:jaProgress
+  progress:jaProgress,
+  worldList:jaWorldList,
+  icon:jaIcon
 };

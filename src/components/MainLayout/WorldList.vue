@@ -38,7 +38,7 @@ function openHP() {
     </div>
     <icon-button-view
       :icon-src="assets.svg.menuicon_open"
-      label="ワールド一覧"
+      :label="$t('worldList.allWorld')"
       @click="sysStore.systemSettings().user.drawerWidth = 100"
       class="q-mini-drawer-hide"
     />
@@ -53,9 +53,9 @@ function openHP() {
       </q-list>
     </q-scroll-area>
 
-    <icon-button-view icon-name="add" label="ワールドを追加" @click="mainStore.createNewWorld()"/>
+    <icon-button-view icon-name="add" :label="$t('worldList.addWorld')" @click="mainStore.createNewWorld()"/>
     <q-separator class="q-mx-xs"/>
-    <icon-button-view icon-name="settings" label="システム設定" to="/system"/>
+    <icon-button-view icon-name="settings" :label="$t('worldList.systemSetting')" to="/system"/>
   </q-drawer>
 </template>
 
