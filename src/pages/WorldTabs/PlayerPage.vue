@@ -63,12 +63,16 @@ function openGroupEditor(group?: PlayerGroup) {
         class="full-height"
         style="flex: 1 1 0;"
       >
+        <p class="q-pt-md text-body2" style="opacity: .6;">
+          プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います
+        </p>
+
         <SsInput
           v-model="playerStore.searchName"
           dense
           :placeholder="$t('player.search')"
           :debounce="200"
-          class="q-py-md col"
+          class="q-pb-md col"
         />
 
         <PlayerJoinToggleView
