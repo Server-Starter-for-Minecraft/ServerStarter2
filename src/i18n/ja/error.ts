@@ -48,18 +48,27 @@ export const jaError: ErrorTranslationTypes = {
   core: {
     world: {
       invalidWorldId: '{id}に対応するワールドが存在しません',
+      cannotChangeRunningWorldName: '\
+        実行中のワールドの名前、保存フォルダは変更できません<br>\
+        ワールドを閉じてから再度試してください',
       worldAleradyRunning: '{container}/{name}に保存されているワールドは既に起動してあります',
+      failedChangingOp: '\
+        {users}のop権限の変更に失敗しました<br>\
+        現在の{users}のopレベルは{op}です'
+    },
+    container: {
+      noContainerSubscribed: 'WorldContainerが登録されていません、もう一度ご確認ください'
     },
     version: {
       forgeInstallerNotProvided: '{version}のforgeのインストーラは提供されていません',
       failSpigotBuild: {
-        javaNeeded: '{version}のspiotのビルドに失敗しました、{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります',
+        javaNeeded: '{version}のspiotのビルドに失敗しました、{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります'
       },
       vanillaVersionNotExists: 'バージョン{version}のvanillaは存在しません',
     },
     missingPersonalAccessToken: 'https://github.com/{owner}/{repo}のパーソナルアクセストークンが存在しません',
-    minecraftEULANotAccepted: '{type}のキャッシュに失敗しました。',
-    failCacheAddiltionalData: 'グローバルIPの取得に失敗しました',
-    failGetGlobalIP: '',
+    minecraftEULANotAccepted: 'Minecraftのeulaに同意していません',
+    failCacheAddiltionalData: '{type}のキャッシュに失敗しました。',
+    failGetGlobalIP: 'グローバルIPの取得に失敗しました',
   },
 };

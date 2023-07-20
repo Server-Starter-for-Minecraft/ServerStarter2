@@ -48,7 +48,12 @@ export const enUSError: ErrorTranslationTypes = {
     core: {
         world: {
           invalidWorldId: '',
-          worldAleradyRunning: ''
+          cannotChangeRunningWorldName: '',
+          worldAleradyRunning: '',
+          failedChangingOp: '',
+        },
+        container: {
+          noContainerSubscribed: ''
         },
         version: {
           forgeInstallerNotProvided: '',

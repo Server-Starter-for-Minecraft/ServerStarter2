@@ -72,14 +72,14 @@ function showImgClipper() {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card >
       <h1 class="q-pa-none q-ml-md q-pt-sm">
-        サーバーアイコンの設定
+        {{ $t("icon.setIcon") }}
       </h1>
 
       <q-card-section v-if="!isImgClipper">
         <div class="q-gutter-md">
           <SelectorBtn
             icon="add"
-            label="画像を選択"
+            :label="$t('icon.selcIcon')"
             @click="showImgClipper"
           />
           <template v-for="imgName in imgs" :key="imgName">
@@ -96,12 +96,12 @@ function showImgClipper() {
           <q-item-section side>
             <SelectorBtn
               icon="add"
-              label="画像を選択"
+              :label="$t('icon.selcIcon')"
               @click="onUpload"
             />
             <div class="q-py-md">
               <p class="text-center full-width q-ma-none" style="font-size: .6rem;">
-                プレビュー
+                {{ $t("icon.prev") }}
               </p>
               <q-avatar square size="4rem">
                 <q-img :src="mainStore.iconCandidate" style="image-rendering: pixelated;"/>
@@ -113,7 +113,7 @@ function showImgClipper() {
             <q-space />
             <SelectorBtn
               icon="check"
-              label="登録"
+              :label="$t('icon.reg')"
               color="primary"
               @click="onDialogOK"
             />
