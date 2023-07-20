@@ -23,6 +23,8 @@ export const jaPlayer = {
   select: '{n} 人を選択中|{n} 人を選択中|{n} 人を選択中',
   deselect: '{n} 人の選択を解除|{n} 人の選択を解除',
   editPlayer: '{n} 人の設定を編集|{n} 人の設定を編集',
+  sort: '並べ替え',
+  resetPlayerSettings: 'プレイヤー設定をリセット',
   opDesc: {
     0: 'OP権限を与えない',
     1: 'OPレベル１（説明文）',

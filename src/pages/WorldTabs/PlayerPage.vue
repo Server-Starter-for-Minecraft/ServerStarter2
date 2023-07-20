@@ -91,7 +91,7 @@ function openGroupEditor(group?: PlayerGroup) {
               dense
               v-model="playerOrder"
               :options="orderTypes"
-              label="並べ替え"
+              :label="$t('player.sort')"
               style="width: 6.5rem; margin-right: 10px;"
             />
           </div>
@@ -111,7 +111,7 @@ function openGroupEditor(group?: PlayerGroup) {
             <div class="row q-gutter-sm col-">
               <div>
                 <AddContentsCard
-                  label="グループを作成"
+                  :label="$t('player.makeGroup')"
                   min-height="100px"
                   @click="() => openGroupEditor()"
                 />
@@ -146,7 +146,7 @@ function openGroupEditor(group?: PlayerGroup) {
     <div class="absolute-center">
       <p>{{ $t('player.failed') }}</p>
       <SsBtn
-        label="プレイヤー設定をリセット"
+        :label="$t('player.resetPlayerSettings')"
         color="primary"
         @click="mainStore.world.players = []"
         class="full-width"

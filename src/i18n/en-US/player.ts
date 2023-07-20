@@ -23,6 +23,8 @@ export const enUSPlayer = {
   select: ' Not selected | {n} player selected | {n} players selected',
   deselect: 'Deselect {n} player | Deselect {n} players',
   editPlayer: 'Editing OP level for {n} player|Editing OP level for {n} players',
+  sort: 'sort',
+  resetPlayerSettings: 'Reset Player settings',
   opDesc: {
     0: 'Don\'t give OP',
     1: 'OP level１（説明文）',
