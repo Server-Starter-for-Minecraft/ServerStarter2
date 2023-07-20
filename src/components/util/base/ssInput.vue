@@ -7,6 +7,7 @@ interface Prop {
   placeholder?: string
   dense?: boolean
   autofocus?: boolean
+  secret?: boolean
   debounce?: number
   rules?: ValidationRule[]
   onClear?: (value: string) => void
@@ -15,6 +16,7 @@ interface Prop {
 const prop = defineProps<Prop>()
 const model = defineModel<string | number>()
 const input = ref()
+const isPwd = ref(prop.secret)
 
 // 読み込み時にバリデーションが実行されるようにする
 onMounted(() => { input.value.validate() })
@@ -29,12 +31,21 @@ onMounted(() => { input.value.validate() })
     :placeholder="placeholder"
     :dense="dense"
     :autofocus="autofocus"
+    :type="isPwd ? 'password' : 'text'"
     :rules="rules"
     :debounce="debounce"
-    clearable
+    :clearable="!secret"
     @clear="onClear"
     class="font"
   >
+    <template v-slot:append>
+      <q-icon
+        v-show="secret"
+        :name="isPwd ? 'visibility_off' : 'visibility'"
+        class="cursor-pointer"
+        @click="isPwd = !isPwd"
+      />
+    </template>
   </q-input>
 </template>
 
@@ -43,7 +54,7 @@ onMounted(() => { input.value.validate() })
   font-size: .9rem;
 }
 
-::v-deep ::placeholder {
+:deep(::placeholder) {
   font-size: 0.7rem;
 }
 </style>
