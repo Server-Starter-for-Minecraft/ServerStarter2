@@ -12,7 +12,6 @@ type T = DatapackData | PluginData | ModData
 
 interface Prop {
   contentType: 'datapack' | 'plugin' | 'mod'
-  candidateItems: CacheFileData<T>[]
 }
 const prop = defineProps<Prop>()
 
@@ -23,8 +22,8 @@ const mainStore = useMainStore()
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
  */
 function getNewContents(worldContents: AllFileData<T>[]) {
-  return (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<DatapackData | PluginData | ModData>[]).filter(
-    c => worldContents.map(wc => wc.name).includes(c.name)
+  return (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).filter(
+    c => !worldContents.map(wc => wc.name).includes(c.name)
   )
 }
 
@@ -93,20 +92,22 @@ function addContent2World(content: AllFileData<T>) {
     <q-separator class="q-my-md" />
 
     <span class="text-caption">{{ $t('additionalContents.add', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
-    <div class="row q-gutter-sm q-pa-sm col-">
-      <AddContentsCard
-        :label="$t('additionalContents.newInstall')"
-        min-height="4rem"
-        @click="importNewContent"
-        :card-style="{
-          'border-radius': '6px',
-          'border-color': getCssVar('primary')
-        }"
-        class="text-primary"
-      />
-      <template v-for="item in getNewContents(mainStore.world.additional[`${prop.contentType}s`])" :key="item.name">
+    <div class="row q-gutter-sm q-pa-sm">
+      <div>
+        <AddContentsCard
+          :label="$t('additionalContents.newInstall')"
+          min-height="4rem"
+          @click="importNewContent"
+          :card-style="{
+            'border-radius': '6px',
+            'border-color': getCssVar('primary')
+          }"
+          class="text-primary"
+        />
+      </div>
+      <div v-for="item in getNewContents(mainStore.world.additional[`${prop.contentType}s`])" :key="item.name">
         <ItemCardView :content-type="contentType" :content="item" />
-      </template>
+      </div>
     </div>
   </div>
 </template>

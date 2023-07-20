@@ -62,7 +62,6 @@ function deleteContent() {
             color="primary"
             icon="add"
             size="1rem"
-            class="q-pa-none"
             @click="addContent"
           >
             <div class="text-primary text-center full-width" style="font-size: .8rem;">
