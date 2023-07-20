@@ -15,8 +15,8 @@ export const jaPlayer = {
   selectPlayer: 'プレイヤーを左から選択してください',
   belongingGroup: '所属グループ',
   groupMember: 'グループメンバー',
-  opLevel: '権限レベル',
-  noOp: '権限なし',
+  opLevel: 'OPレベル',
+  noOp: 'OP権限なし',
   addPlayer: 'このプレイヤーを追加',
   newPlayer: '新規プレイヤー',
   failed: 'プレイヤー設定の読み込みに失敗しました',
@@ -25,11 +25,4 @@ export const jaPlayer = {
   editPlayer: '{n} 人の設定を編集|{n} 人の設定を編集',
   sort: '並べ替え',
   resetPlayerSettings: 'プレイヤー設定をリセット',
-  opDesc: {
-    0: 'OP権限を与えない',
-    1: 'OPレベル１（説明文）',
-    2: 'OPレベル２（説明文）',
-    3: 'OPレベル３（説明文）',
-    4: 'OPレベル４（説明文）',
-  }
 };
