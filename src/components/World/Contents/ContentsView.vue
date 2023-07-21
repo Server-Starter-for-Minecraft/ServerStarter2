@@ -20,6 +20,7 @@ const mainStore = useMainStore()
 
 /**
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
+ * TODO: contentsを新規導入した場合に当該contentsを削除しても導入候補に表示されない
  */
 function getNewContents(worldContents: AllFileData<T>[]) {
   return (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).filter(
@@ -67,6 +68,8 @@ async function importNewContent() {
  */
 function addContent2World(content: AllFileData<T>) {
   (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(content);
+    
+  // TODO: 上記の問題に対応するために、ここではSysStoreのデータを直接更新するのみにとどめてフォルダの再読み込みは行わない
   getCacheContents()
 }
 </script>
