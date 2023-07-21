@@ -41,7 +41,7 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 
 export const pluginFiles = new ServerAdditionalFiles<PluginData>(
   'plugin',
-  ADDITIONALS_CACHE_PATH.child('plugin'),
+  ADDITIONALS_CACHE_PATH.child('plugins'),
   'plugins',
   loader,
   installer
