@@ -159,8 +159,6 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const dirPath = cwdPath.child(this.childPath);
     const errors: ErrorMessage[] = [];
 
-    const isNew = (v: AllFileData<T>): v is NewFileData<T> => v.type === 'new';
-
     // 新しいファイルをコピー
     await asyncForEach(value, async (source) => {
       const srcPath = this.getSourcePath(source);
@@ -182,7 +180,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       }
 
       // 同一のパスだった場合無視
-      const tgtPath = dirPath.child(source.name);
+      const tgtPath = dirPath.child(source.name + source.ext);
       if (tgtPath.path === srcPath.path) return;
 
       // ソースが有効なデータかどうかを確認
