@@ -5,6 +5,7 @@ import { keys } from 'src/scripts/obj';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import { useI18n } from 'vue-i18n';
 
 const sysStore = useSystemStore()
 const playerStore = usePlayerStore()
@@ -13,6 +14,8 @@ const colorOps = keys(sysStore.staticResouces.minecraftColors).map(k => {
   return { label: k, code: sysStore.staticResouces.minecraftColors[k] }
 })
 
+const { t } = useI18n()
+
 /**
  * 入力グループ名のバリデーション
  */
@@ -20,7 +23,7 @@ function validateGroupName(name: string) {
   return name !== '' && !(name !== playerStore.selectedGroupName && keys(playerStore.searchGroups()).includes(name))
 }
 function validateMessage(name: string) {
-  return name !== '' ? `${name}は既に存在します` : 'グループ名を入力してください'
+  return name !== '' ? t('player.groupNameDuplicate',{group: name}) : t('player.insertGroupName')
 }
 
 /**
