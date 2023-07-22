@@ -67,7 +67,7 @@ function removeGroup() {
     :style="{'height': playerStore.selectedGroup.isNew ? '315px' : '385px'}"
   >
     <p class="q-py-sm q-pl-md q-ma-none text-body2">
-      {{ playerStore.selectedGroup.isNew ? 'グループを作成' : `${playerStore.selectedGroupName}を編集` }}
+      {{ playerStore.selectedGroup.isNew ? $t('player.makeNewGroup',{group: $t('player.newGroup')}) : $t('player.editGroup', { group: playerStore.selectedGroupName }) }}
     </p>
 
     <div class="absolute-top-right">
@@ -81,7 +81,7 @@ function removeGroup() {
     
     <q-scroll-area style="flex: 1 1 0">
       <q-card-section class="q-pt-xs q-pb-none">
-        <span class="text-caption">グループ名</span>
+        <span class="text-caption">{{ $t('player.groupName') }}</span>
         <SsInput
           v-model="playerStore.selectedGroup.name"
           dense
@@ -90,7 +90,7 @@ function removeGroup() {
       </q-card-section>
   
       <q-card-section class="column q-pb-xs">
-        <span class="text-caption">カラー</span>
+        <span class="text-caption">{{ $t('player.groupColor') }}</span>
         <q-btn-dropdown
           dense
           icon="circle"
@@ -125,7 +125,7 @@ function removeGroup() {
       >
         <q-btn
           outline
-          :label="playerStore.selectedGroup.isNew ? `${playerStore.selectedGroup.name === '' ? '新グループ' : playerStore.selectedGroup.name }を作成` : `${playerStore.selectedGroupName}を更新`"
+          :label="playerStore.selectedGroup.isNew ? $t('player.makeNewGroup', {group:  playerStore.selectedGroup.name === '' ? $t('player.newGroup') : playerStore.selectedGroup.name }) : $t('player.updateGroup', {group: playerStore.selectedGroup.name})"
           :disable="(playerStore.focusCards.size === 0 || !validateGroupName(playerStore.selectedGroup.name))"
           color="primary"
           @click="updateGroup"
@@ -139,13 +139,13 @@ function removeGroup() {
         style="font-size: .7rem;"
       >
         <span v-if="playerStore.focusCards.size === 0">
-          プレイヤーを選択してください
+          {{ $t('player.selectPlayer') }}
         </span>
         <span v-else>
           {{
             playerStore.selectedGroup.isNew
-            ? `選択中の${playerStore.focusCards.size}人をメンバーとする${playerStore.selectedGroup.name}を作成します`
-            : `${playerStore.selectedGroupName}のメンバーを選択中の${playerStore.focusCards.size}人で更新します`
+            ? $t('player.makeNewGroupDecide',{group: playerStore.selectedGroup.name,n: playerStore.focusCards.size})
+            : $t('player.updateGroupDecide',{group: playerStore.selectedGroup.name,n: playerStore.focusCards.size})
           }}
         </span>
       </q-card-section>
@@ -157,7 +157,7 @@ function removeGroup() {
       >
         <q-btn
           outline
-          :label="`${playerStore.selectedGroupName}を削除`"
+          :label="$t('player.deleteGroup',{group: playerStore.selectedGroupName})"
           color="red"
           @click="removeGroup"
           class="full-width"
