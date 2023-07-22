@@ -1,4 +1,5 @@
 export const enUSPlayer = {
+  description: 'You can set the server\'s OP and players who can enter and leave the server.',
   search: 'Search players',
   registeredPlayer: 'Registered player',
   groupList: 'Bulk registration by group ',
@@ -21,6 +22,7 @@ export const enUSPlayer = {
   makeNewGroup: 'Make {group}',
   updateGroup: 'Update {group}',
   deleteGroup: 'Delete {group}',
+  groupNameDuplicate: '{group} already exists',
   makeNewGroupDecide: 'Make new group {group} with selected {n} player | Make new group {group} with selected {n} players',
   updateGroupDecide: 'Update {group} with selected {n} player | Update {group} with selected {n} players',
   opLevel: 'OP level',

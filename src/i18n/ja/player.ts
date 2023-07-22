@@ -1,4 +1,5 @@
 export const jaPlayer = {
+  description: 'プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います',
   search: 'プレイヤーを検索',
   registeredPlayer: '追加済みプレイヤー',
   groupList: 'グループによる一括追加',
@@ -21,6 +22,7 @@ export const jaPlayer = {
   makeNewGroup: '{group}を作成',
   updateGroup: '{group}を更新',
   deleteGroup: '{group}を削除',
+  groupNameDuplicate: '{group}はすでに存在します',
   makeNewGroupDecide: '選択中の{n}人をメンバーとする{group}を作成します|選択中の{n}人をメンバーとする{group}を作成します',
   updateGroupDecide: '{group}のメンバーを選択中の{n}人で更新します|{group}のメンバーを選択中の{n}人で更新します',
   opLevel: 'OPレベル',
