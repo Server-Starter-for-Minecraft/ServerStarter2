@@ -7,9 +7,8 @@ export function setOpenDialogFunc(func: (args: iErrorDialogProps) => void) {
 }
 
 export interface iErrorDialogProps {
-  title?: string
-  key: string
-  arg?: ErrorMessage['arg']
+  title: string
+  desc?: string
 }
 
 /**
@@ -21,18 +20,20 @@ export interface iErrorDialogProps {
 export function checkError<S>(
   check: Failable<S>,
   successProcess?: (checked: S) => void,
-  errorDescription?: string
+  errorDescription?: (error: ErrorMessage) => { title: string, desc?: string }
 ) {
   if (isValid(check)) {
     if (successProcess !== void 0) successProcess(check)
     return check
   }
   else {
-    _openDialogFunc({
-      title: errorDescription,
-      key: check.key,
-      arg: check.arg
-    })
+    if (errorDescription !== void 0) {
+      const errorMessage = errorDescription(check)
+      _openDialogFunc({
+        title: errorMessage.title,
+        desc: errorMessage.desc
+      })
+    }
 
     // TODO: エラー画面を表示するのはFailableではない未知のエラー（RuntimeError）の時のみとし、
     // Failableによるエラーは画面の左下に表示するだけ、などの処理に変更

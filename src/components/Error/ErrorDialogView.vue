@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar'
 import { iErrorDialogProps } from './Error'
-import { ref } from 'vue';
 
 const prop = defineProps<iErrorDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -37,8 +37,8 @@ function closeCounter() {
           <!-- TODO: check.arg, check.keyによってエラー文をi18nに登録する -->
           <!-- TODO: 最終的にはKeyに付随する説明文をTitleにすることでTitle引数を削除する？（Keyの存在しないエラーが起きた場合は？） -->
           <div>
-            <div class="text-weight-bold">{{ title ?? key }}</div>
-            <div class="text-grey">{{ arg }}</div>
+            <div class="text-weight-bold">{{ title }}</div>
+            <div class="text-grey">{{ desc }}</div>
           </div>
         </q-card-section>
 

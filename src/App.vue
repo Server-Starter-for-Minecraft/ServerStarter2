@@ -103,7 +103,7 @@ function setSubscribe() {
         checkError(
           v.value,
           undefined,
-          'ワールドの設定を保存できませんでした'
+          () => { return { title: 'ワールドの設定を保存できませんでした' } }
         )
       })
     }
