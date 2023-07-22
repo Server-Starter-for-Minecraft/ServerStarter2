@@ -64,7 +64,7 @@ function openGroupEditor(group?: PlayerGroup) {
         style="flex: 1 1 0;"
       >
         <p class="q-pt-md text-body2" style="opacity: .6;">
-          プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います
+          {{ $t('player.description') }}
         </p>
 
         <SsInput
