@@ -35,7 +35,7 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
       <div class="row">
         <div v-if="playerStore.focusCards.size === 0">
           <p class="col q-my-none q-ml-sm text-caption text-grey">
-            {{ $t('player.selectPlayer') }}
+            {{ $t('player.selectPlayerFromLeft') }}
           </p>
         </div>
         <template v-else v-for="uuid in getOrderedFocusCards(playerStore.focusCards)" :key="uuid">
