@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { getCssVar } from 'quasar';
-import { AllFileData, CacheFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
+import { AllFileData, CacheFileData, DatapackData, ModData, NewFileData, PluginData } from 'app/src-electron/schema/filedata';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCardView from './itemCardView.vue';
-import { getCacheContents } from 'src/init';
 
 type T = DatapackData | PluginData | ModData
 
@@ -20,7 +19,6 @@ const mainStore = useMainStore()
 
 /**
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
- * TODO: contentsを新規導入した場合に当該contentsを削除しても導入候補に表示されない
  */
 function getNewContents(worldContents: AllFileData<T>[]) {
   return (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).filter(
@@ -66,11 +64,30 @@ async function importNewContent() {
 /**
  * コンテンツを各種データベースに登録
  */
-function addContent2World(content: AllFileData<T>) {
+function addContent2World(content: NewFileData<T>) {
+  function NewFile2CacheFile(): CacheFileData<T> {
+    if (content.kind === 'datapack') {
+      return {
+        kind: 'datapack',
+        description: content.description,
+        type: 'system',
+        name: content.name,
+        ext: content.ext,
+        isFile: content.isFile
+      }
+    }
+    else {
+      return {
+        kind: content.kind,
+        type: 'system',
+        name: content.name,
+        ext: content.ext,
+        isFile: content.isFile
+      }
+    }
+  }
   (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(content);
-    
-  // TODO: 上記の問題に対応するために、ここではSysStoreのデータを直接更新するのみにとどめてフォルダの再読み込みは行わない
-  getCacheContents()
+  (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).push(NewFile2CacheFile())
 }
 </script>
 
