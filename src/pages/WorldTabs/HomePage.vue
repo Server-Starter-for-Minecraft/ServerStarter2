@@ -56,7 +56,7 @@ async function removeWorld() {
   }
   else {
     const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-    if (!isError(res)) {
+    if (isError(res)) {
       dialogStore.showDialog('home.error.title', 'home.error.failedDelete', { serverName: mainStore.world.name })
     }
     else {
