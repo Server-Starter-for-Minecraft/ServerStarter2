@@ -4,6 +4,7 @@ import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
+import { checkError } from 'src/components/Error/Error';
 import { isError } from 'src/scripts/error';
 import { values } from 'src/scripts/obj';
 import { useWorldStore } from 'src/stores/MainStore';
@@ -17,6 +18,7 @@ import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import { toRaw } from 'vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -93,9 +95,24 @@ async function validateWorldName(name: WorldName) {
   }
 }
 
+/**
+ * ワールド名の入力欄で取り消しボタンが押された際に、ワールドを起動できなくするためのエラー処理
+ */
 function clearNewName() {
   // 空文字列のワールドは起動できないため、エラー扱い
   mainStore.errorWorlds.add(mainStore.world.id)
+}
+
+/**
+ * NewWorldを保存する
+ */
+async function saveNewWorld() {
+  const res = await window.API.invokeCreateWorld(toRaw(mainStore.world))
+  checkError(
+    res.value,
+    w => mainStore.newWorlds.delete(w.id),
+    () => { return { title: 'ワールドの保存に失敗しました' }}
+  )
 }
 </script>
 
@@ -103,6 +120,14 @@ function clearNewName() {
   <div class="mainField">
     <q-item class="q-pa-none q-pt-lg">
       <q-item-section>
+        <div
+          v-show="mainStore.newWorlds.has(mainStore.world.id)"
+          class="row justify-between full-width q-pb-md"
+        >
+          <SsBtn label="ワールドの設定を保存" color="primary" width="48%" @click="saveNewWorld" />
+          <SsBtn label="ワールドの設定を破棄" color="red" width="48%" @click="removeWorld" />
+        </div>
+
         <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
         <SsInput
           v-model="mainStore.inputWorldName"
