@@ -42,21 +42,21 @@ async function importNewContent() {
         await window.API.invokePickDialog({type: 'datapack', isFile: true}),
         c => addContent2World(c),
         //"$t('additionalContents.installFailed')"
-        `${prop.contentType}の導入は行われませんでした`
+        () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
       break;
     case 'plugin':
       checkError(
         await window.API.invokePickDialog({type: 'plugin'}),
         c => addContent2World(c),
-        `${prop.contentType}の導入は行われませんでした`
+        () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
       break;
     case 'mod':
       checkError(
         await window.API.invokePickDialog({type: 'mod'}),
         c => addContent2World(c),
-        `${prop.contentType}の導入は行われませんでした`
+        () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
     default:
       break;

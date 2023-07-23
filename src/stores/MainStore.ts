@@ -50,7 +50,7 @@ export const useMainStore = defineStore('mainStore', {
           this.newWorlds.add(world.id)
           this.setWorld(world)
         },
-        '新規ワールドの作成に失敗しました'
+        () => { return { title: '新規ワールドの作成に失敗しました' }}
       )
     },
     /**

@@ -79,13 +79,13 @@ export async function runServer() {
   // 新規ワールドの時にサーバーのディレクトリを生成する
   if (mainStore.newWorlds.has(mainStore.world.id)) {
     const res = await window.API.invokeCreateWorld(mainStore.world)
-    checkError(res, undefined, 'ワールドの生成に失敗しました')
+    checkError(res, undefined, () => { return { title: 'ワールドの生成に失敗しました' }})
   }
 
   consoleStore.setProgress(mainStore.selectedWorldID, '1.19.4 / TestWorld を起動中')
   const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
 
-  checkError(res, console.log, 'サーバーが異常終了しました。')
+  checkError(res, console.log, () => { return { title: 'サーバーが異常終了しました' }})
 
   // サーバータブをリセット
   consoleStore.initTab(true)

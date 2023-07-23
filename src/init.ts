@@ -84,7 +84,7 @@ async function getCachePlayers() {
   const playerStore = usePlayerStore();
   const playerUUIDs = sysStore.systemSettings().player.players
   const failablePlayers = await Promise.all(playerUUIDs.map(uuid => window.API.invokeGetPlayer(uuid, 'uuid')))
-  failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）`))
+  failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, () => { return { title : `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）`}}))
 }
 
 /**
