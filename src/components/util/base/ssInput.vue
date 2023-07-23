@@ -10,7 +10,7 @@ interface Prop {
   secret?: boolean
   debounce?: number
   rules?: ValidationRule[]
-  onClear?: (value: string) => void
+  onClear?: (value: string | number) => void
 }
 
 const prop = defineProps<Prop>()
@@ -20,6 +20,16 @@ const isPwd = ref(prop.secret)
 
 // 読み込み時にバリデーションが実行されるようにする
 onMounted(() => { input.value.validate() })
+
+function onClearClick() {
+  // modelの値をリセット
+  model.value = ''
+
+  // 特殊な処理がある場合は実行
+  if (prop.onClear !== void 0) {
+    prop.onClear(model.value)
+  }
+}
 </script>
 
 <template>
@@ -35,7 +45,7 @@ onMounted(() => { input.value.validate() })
     :rules="rules"
     :debounce="debounce"
     :clearable="!secret"
-    @clear="onClear ?? (model = '')"
+    @clear="onClearClick"
     class="font"
   >
     <template v-slot:append>

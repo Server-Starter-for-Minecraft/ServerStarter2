@@ -94,9 +94,6 @@ async function validateWorldName(name: WorldName) {
 }
 
 function clearNewName() {
-  // 空文字列を入れる
-  mainStore.inputWorldName = '' as WorldName
-
   // 空文字列のワールドは起動できないため、エラー扱い
   mainStore.errorWorlds.add(mainStore.world.id)
 }
