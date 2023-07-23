@@ -1,4 +1,4 @@
 export const enUSConsole = {
-  boot: 'boot server',
+  boot: 'BOOT {name}',
   abnormalEnd:'Terminated abnormally'
 }
