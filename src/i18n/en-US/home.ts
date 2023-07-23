@@ -42,8 +42,6 @@ export const enUSHome: MessageSchema["home"] = {
       failedGetVersion: '\
         Failed to get the version {serverVersion}.<br>\
         You can not choose this server./',
-      failedDelete: '\
-        Selected server {serverName} does not exist.<br>\
-        Failed to delete the world data.'
+      failedDelete: 'Failed to delete {serverName} which does not exist.'
   },
 };

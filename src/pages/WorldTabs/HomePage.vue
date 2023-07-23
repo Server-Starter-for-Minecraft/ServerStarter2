@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
@@ -18,7 +19,6 @@ import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import { toRaw } from 'vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -35,6 +35,7 @@ function getAllVers() {
   const versionList = sysStore.serverVersions.get(version.type);
 
   // versionListがundefinedの時にエラー処理
+  // TODO: showDialogを廃止するため、これをcheckError系列の処理に置き換える
   if (versionList === void 0) {
     dialogStore.showDialog('home.error.title', 'home.error.failedGetVersion', { serverVersion: mainStore.world.version });
     mainStore.world.version.type = 'vanilla';
@@ -50,21 +51,23 @@ function getAllVers() {
  * 選択されているワールドを削除する
  */
 async function removeWorld() {
-  const worldStore = useWorldStore()
-
-  if (mainStore.newWorlds.has(mainStore.world.id)) {
+  /** 描画の更新 */
+  function updateView() {
+    const worldStore = useWorldStore()
     mainStore.removeWorld()
     mainStore.setWorld(values(worldStore.worldList)[0])
   }
+
+  if (mainStore.newWorlds.has(mainStore.world.id)) {
+    updateView()
+  }
   else {
     const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-    if (isError(res)) {
-      dialogStore.showDialog('home.error.title', 'home.error.failedDelete', { serverName: mainStore.world.name })
-    }
-    else {
-      mainStore.removeWorld()
-      mainStore.setWorld(values(worldStore.worldList)[0])
-    }
+    checkError(
+      res.value,
+      updateView,
+      () => { return { title: t('home.error.failedDelete', { serverName: mainStore.world.name }) } }
+    )
   }
 }
 
