@@ -5,7 +5,7 @@ import { Remote } from 'app/src-electron/schema/remote';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import BaseDialogCard from './baseDialog/baseDialogCard.vue';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()

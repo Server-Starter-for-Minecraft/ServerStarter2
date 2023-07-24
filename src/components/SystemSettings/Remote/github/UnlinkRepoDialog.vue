@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { unlinkRepoProp } from '../baseDialog/iBaseDialog';
-import baseDialogCard from '../baseDialog/baseDialogCard.vue'
+import { unlinkRepoProp } from './iGitHubDialog';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 
 defineProps<unlinkRepoProp>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -10,15 +10,15 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <baseDialogCard
+    <BaseDialogCard
       :title="title"
-      :color="color"
-      :overline="overline"
-      :ok-btn-txt="okBtnTxt"
+      color="red"
+      overline="GitHub"
+      ok-btn-txt="登録を解除"
       @ok-click="onDialogOK"
       @close="onDialogCancel"
     >
-      <p style="font-size: .8rem; opacity: .8;">
+      <p class="q-my-none" style="font-size: .8rem; opacity: .8;">
         ServerStarter2 から 「{{ owner }} / {{ repo }}」の登録を解除します。<br>
         GitHub上のリポジトリは削除されませんが、「{{ owner }} / {{ repo }}」を用いてワールドを再共有することはできません。
       </p>

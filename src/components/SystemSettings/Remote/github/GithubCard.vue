@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { GithubAccountSetting } from 'app/src-electron/schema/remote';
-import { updatePatProp, unlinkRepoProp, updatePatDialogReturns } from '../baseDialog/iBaseDialog';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { updatePatProp, unlinkRepoProp, updatePatDialogReturns } from './iGitHubDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import UpdatePatDialog from './UpdatePatDialog.vue';
 import UnlinkRepoDialog from './UnlinkRepoDialog.vue';
-import { useSystemStore } from 'src/stores/SystemStore';
 
 interface Prop {
   remote: GithubAccountSetting
@@ -21,9 +21,6 @@ function openPatEditor() {
   $q.dialog({
     component: UpdatePatDialog,
     componentProps: {
-      overline: 'GitHub',
-      title: 'Personal Access Tokenを更新',
-      okBtnTxt: 'Tokenを更新',
       oldPat: prop.remote.pat
     } as updatePatProp
   }).onOk((payload: updatePatDialogReturns) => {
@@ -35,10 +32,7 @@ function checkUnlinkRepo() {
   $q.dialog({
     component: UnlinkRepoDialog,
     componentProps: {
-      overline: 'GitHub',
       title: `${sysKey} を解除`,
-      okBtnTxt: '登録を解除',
-      color: 'red',
       owner: prop.remote.owner,
       repo: prop.remote.repo
     } as unlinkRepoProp

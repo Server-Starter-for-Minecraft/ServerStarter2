@@ -40,3 +40,13 @@ export function checkError<S>(
     // _router.replace('/error')
   }
 }
+
+/**
+ * フロントエンドから右下のエラー表示を出したい場合に呼び出す
+ */
+export function sendError(title: string, desc?: string) {
+  _openDialogFunc({
+    title: title,
+    desc: desc
+  })
+}

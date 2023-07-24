@@ -1,0 +1,23 @@
+<script setup lang="ts">
+import { useDialogPluginComponent } from 'quasar';
+import { dangerDialogProp } from './iDangerDialog';
+import BaseDialogCard from '../baseDialog/baseDialogCard.vue';
+
+defineProps<dangerDialogProp>()
+defineEmits({ ...useDialogPluginComponent.emitsObject })
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+</script>
+
+<template>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <BaseDialogCard
+      :title="dialogTitle"
+      color="red"
+      :ok-btn-txt="okBtnTxt"
+      @ok-click="onDialogOK"
+      @close="onDialogCancel"
+    >
+      <p v-html="dialogDesc" class="q-my-none" style="font-size: .8rem; opacity: .8;" />
+    </BaseDialogCard>
+  </q-dialog>
+</template>

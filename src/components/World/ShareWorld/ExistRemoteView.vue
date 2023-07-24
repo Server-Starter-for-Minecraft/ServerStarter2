@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
-import DangerView from 'src/components/util/dangerView.vue';
+import DangerView from 'src/components/util/danger/dangerView.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
@@ -46,16 +46,20 @@ function openURL(url: string) {
   <q-separator class="q-mt-lg" />
 
   <DangerView
-    title="ワールドの同期を解除"
-    i18n-key="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
-    btn-text="同期を解除"
+    view-title="ワールドの同期を解除"
+    view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
+    open-dialog-btn-text="同期を解除"
+    dialog-title="リモートとの同期を解除します"
+    dialog-desc="リモートとの同期を解除すると、これ以降にこのサーバーで遊んだ内容で共有相手がサーバーを起動できなくなります。<br>共有を解除して本当によろしいですか？"
     @action="mainStore.world.remote = undefined"
   />
 
   <DangerView
-    title="リモートアカウントの登録を解除"
-    i18n-key="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
-    btn-text="登録を解除"
+    view-title="リモートデータを削除する"
+    view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
+    open-dialog-btn-text="登録を解除"
+    dialog-title="リモートデータを削除します"
+    dialog-desc="このワールドはリモート上のデータが削除されるため、共有相手も同期が解除されます。<br>本当にこのワールドのリモート上のデータを削除しますか？"
     @action="delete sysStore.remoteSettings().github[remoteKey]"
   />
 </template>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { updatePatProp, updatePatDialogReturns } from '../baseDialog/iBaseDialog';
-import baseDialogCard from '../baseDialog/baseDialogCard.vue'
+import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
 const prop = defineProps<updatePatProp>()
@@ -14,12 +14,11 @@ const inputPat = ref(prop.oldPat)
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <baseDialogCard
+    <BaseDialogCard
       :disable="inputPat === ''"
-      :title="title"
-      :color="color"
-      :overline="overline"
-      :ok-btn-txt="okBtnTxt"
+      title="Personal Access Tokenを更新"
+      overline="GitHub"
+      ok-btn-txt="Tokenを更新"
       @ok-click="onDialogOK({ newPat: inputPat } as updatePatDialogReturns)"
       @close="onDialogCancel"
     >
@@ -30,6 +29,6 @@ const inputPat = ref(prop.oldPat)
         v-model="inputPat"
         placeholder="Personal Access Token を入力"
       />
-    </baseDialogCard>
+    </BaseDialogCard>
   </q-dialog>
 </template>

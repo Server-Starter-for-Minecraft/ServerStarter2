@@ -9,7 +9,6 @@ import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
 import { deepCopy } from './scripts/deepCopy';
-import PopupDialog from './components/util/popupDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 
 const sysStore = useSystemStore();

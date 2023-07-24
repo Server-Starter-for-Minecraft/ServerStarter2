@@ -5,25 +5,23 @@ import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
-import { checkError } from 'src/components/Error/Error';
+import { checkError, sendError } from 'src/components/Error/Error';
 import { isError } from 'src/scripts/error';
 import { values } from 'src/scripts/obj';
 import { useWorldStore } from 'src/stores/MainStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { useDialogStore } from 'src/stores/DialogStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
-import DangerView from 'src/components/util/dangerView.vue';
+import DangerView from 'src/components/util/danger/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 const sysStore = useSystemStore()
-const dialogStore = useDialogStore()
 const $q = useQuasar()
 const { t } = useI18n()
 
@@ -35,9 +33,11 @@ function getAllVers() {
   const versionList = sysStore.serverVersions.get(version.type);
 
   // versionListがundefinedの時にエラー処理
-  // TODO: showDialogを廃止するため、これをcheckError系列の処理に置き換える
   if (versionList === void 0) {
-    dialogStore.showDialog('home.error.title', 'home.error.failedGetVersion', { serverVersion: mainStore.world.version });
+    sendError(
+      t('home.error.title'),
+      t('home.error.failedGetVersion', { serverVersion: mainStore.world.version })
+    );
     mainStore.world.version.type = 'vanilla';
     return;
   }
@@ -193,7 +193,6 @@ async function saveNewWorld() {
       <p class="text-caption">{{ $t('home.saveWorld.description') }}</p>
     </ExpansionView>
 
-    <!-- TODO: memoryがsizeとunitのpropertyを有していないバグをバックに報告 -->
     <ExpansionView :title="$t('home.setting.title')">
       <div class="row" style="max-width: 350px;">
         <SsInput
@@ -217,14 +216,12 @@ async function saveNewWorld() {
 
     <DangerView
       v-if="consoleStore.status() === 'Stop'"
-      :title="$t('home.deleteWorld.title')"
-      i18nKey="home.deleteWorld.titleDesc"
-      :btn-text="$t('home.deleteWorld.button')"
+      :view-title="$t('home.deleteWorld.title')"
+      :view-desc="$t('home.deleteWorld.titleDesc')"
+      :open-dialog-btn-text="$t('home.deleteWorld.button')"
+      :dialog-title="$t('home.deleteWorld.dialogTitle')"
+      :dialog-desc="$t('home.deleteWorld.dialogDesc', { deleteName: mainStore.world.name })"
       @action="removeWorld"
-      show-dialog
-      dialog-title-key="home.deleteWorld.dialogTitle"
-      dialog-i18n-key="home.deleteWorld.dialogDesc"
-      :dialog-i18n-arg="{ deleteName: mainStore.world.name }"
     />
   </div>
 </template>
