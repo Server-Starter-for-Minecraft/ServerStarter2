@@ -14,6 +14,7 @@ const consoleOpeStore = useConsoleOpeStore()
   <div class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
     <SsBtn
       dense
+      is-capital
       icon="stop"
       label="stop"
       color="red"
@@ -23,6 +24,7 @@ const consoleOpeStore = useConsoleOpeStore()
     />
     <SsBtn
       dense
+      is-capital
       icon="restart_alt"
       label="reboot"
       width="100px"
