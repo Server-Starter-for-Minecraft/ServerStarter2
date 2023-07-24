@@ -1,5 +1,6 @@
 <script setup lang="ts">
 interface Prop {
+  icon?: string
   label?: string
   dense?: boolean
   color?: string
@@ -16,6 +17,7 @@ defineProps<Prop>()
   <q-btn
     outline
     :dense="dense"
+    :icon="icon"
     :label="label"
     :color="color"
     :disable="disable"

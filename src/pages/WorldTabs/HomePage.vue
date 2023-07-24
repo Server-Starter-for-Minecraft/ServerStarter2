@@ -6,6 +6,7 @@ import { WorldName } from 'app/src-electron/schema/brands';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { checkError, sendError } from 'src/components/Error/Error';
+import { CustomMapImporterReturns } from 'src/components/World/HOME/CustomMapImporter/iCustomMapImporter';
 import { isError } from 'src/scripts/error';
 import { values } from 'src/scripts/obj';
 import { useWorldStore } from 'src/stores/MainStore';
@@ -18,6 +19,7 @@ import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import CustomMapImporterView from 'src/components/World/HOME/CustomMapImporterView.vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -79,6 +81,17 @@ function openIconSelecter() {
     component: IconSelectView,
   }).onOk(() => {
     mainStore.world.avater_path = mainStore.iconCandidate
+  })
+}
+
+/**
+ * 配布ワールドとローカルワールドの導入画面を表示する
+ */
+function openCustomMapImporter() {
+  $q.dialog({
+    component: CustomMapImporterView,
+  }).onOk((payload: CustomMapImporterReturns) => {
+    mainStore.world.custom_map = payload.customMap
   })
 }
 
@@ -181,12 +194,11 @@ async function saveNewWorld() {
 
     <!-- TODO: 配布ワールドは新規World以外でも導入できるようにするのか？ -->
     <!-- TODO: 配布ワールドだけでなく、既存の個人ワールドについても.minecraftがある場合は導入できるようにする？ -->
-    <!-- 個人ワールドのデフォルトパスは変更できるようにする -->
     <h1>{{ $t('home.useWorld.title') }}</h1>
     <p class="text-caption">{{ $t('home.useWorld.description') }}</p>
     <SsBtn
       :label="$t('home.useWorld.selectWorld')"
-      @click="() => {}"
+      @click="openCustomMapImporter"
     />
 
     <ExpansionView :title="$t('home.saveWorld.title')">
