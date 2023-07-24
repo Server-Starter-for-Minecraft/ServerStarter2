@@ -24,6 +24,10 @@ defineProps<baseDialogProp>()
         @click="onOkClick"
       />
     </q-card-actions>
+
+    <div class="absolute-top-right">
+      <q-btn dense flat round icon="close" size="1rem" class="q-ma-sm" @click="onClose" />
+    </div>
   </q-card>
 </template>
 
