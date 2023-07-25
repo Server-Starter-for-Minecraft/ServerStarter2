@@ -16,6 +16,7 @@ defineProps<CustomMapImporterReturns>()
       ok-btn-txt="ワールドを導入"
       @ok-click="onDialogOK"
       @close="onDialogCancel"
+      style="max-width: 100%;"
     >
       <p v-html="'以下のワールドを導入すると、既存のワールドは削除されます<br>既存のワールドを上書きする形で新規ワールドを導入しますか？'" />
       <WorldItem :world="customMap" />

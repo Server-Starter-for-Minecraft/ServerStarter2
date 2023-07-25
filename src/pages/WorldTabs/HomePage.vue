@@ -192,8 +192,6 @@ async function saveNewWorld() {
       </q-item-section>
     </q-item>
 
-    <!-- TODO: 配布ワールドは新規World以外でも導入できるようにするのか？ -->
-    <!-- TODO: 配布ワールドだけでなく、既存の個人ワールドについても.minecraftがある場合は導入できるようにする？ -->
     <h1>{{ $t('home.useWorld.title') }}</h1>
     <p class="text-caption">{{ $t('home.useWorld.description') }}</p>
     <SsBtn

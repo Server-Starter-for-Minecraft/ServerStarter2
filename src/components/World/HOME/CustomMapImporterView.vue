@@ -87,31 +87,33 @@ onMounted(async () => {
 
       <q-card-section>
         <span class="text-caption">配布ワールドを導入</span>
-        <q-card-section horizontal class="q-mt-sm">
+        <q-card-actions vertical>
           <SsBtn
+            free-width
             color="primary"
             icon="add"
             label="ZIPを選択"
             @click="importZip"
-            class="btn q-mr-md"
+            class="btn"
           />
           <SsBtn
+            free-width
             color="primary"
             icon="add"
             label="フォルダを選択"
             @click="importFolder"
             class="btn"
           />
-        </q-card-section>
+        </q-card-actions>
       </q-card-section>
 
       <q-card-section>
         <span class="text-caption">シングルワールドを導入</span>
-        <div class="row">
+        <q-list separator>
           <template v-for="localWorld in localWorlds" :key="localWorld.path">
             <WorldItem :world="localWorld" @click="showCheckDialog(localWorld)" />
           </template>
-        </div>
+        </q-list>
       </q-card-section>
 
       <div class="absolute-top-right">
@@ -123,6 +125,6 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .btn {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 </style>
