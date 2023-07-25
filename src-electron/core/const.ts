@@ -32,6 +32,9 @@ export const spigotBuildPath = cachePath.child('spigotBuild');
 /** zipファイルを展開するための一時パス */
 export const unzipPath = tempPath.child('zip');
 
+/** git操作をするための一時パス */
+export const gitTempPath = tempPath.child('git');
+
 export const LEVEL_NAME = 'world' as const;
 
 export const PLUGIN_NETHER_LEVEL_NAME = 'world_nether' as const;

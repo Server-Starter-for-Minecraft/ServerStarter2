@@ -10,6 +10,11 @@ import {
 import { Failable } from 'app/src-electron/schema/error';
 import { getSystemSettings } from '../../stores/system';
 import { getPlayerFromUUID } from '../../player/main';
+import { gitTempPath } from '../../const';
+import {
+  failabilify,
+  safeExecAsync,
+} from 'app/src-electron/util/error/failable';
 
 const DEFAULT_REMOTE_NAME = 'serverstarter';
 
@@ -98,4 +103,34 @@ export async function pushWorld(
   await git.add('-A');
   await git.commit(message);
   await git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.name}`, '-f']);
+}
+
+export async function deleteWorld(
+  remote: Remote<GithubRemoteFolder>
+): Promise<Failable<undefined>> {
+  // 一時フォルダ内で実行
+  await gitTempPath.mkdir(true);
+
+  const pat = await getGitPat(remote.folder.owner, remote.folder.repo);
+
+  const url = getRemoteUrl(remote);
+
+  const git = simpleGit(gitTempPath.str(), {
+    config: [
+      `http.${url}.extraheader=Authorization: Basic ${Buffer.from(
+        `${remote.name}:${pat}`
+      ).toString('base64')}`,
+    ],
+  });
+
+  await git.init();
+
+  // リモートのブランチを削除
+  const push = await safeExecAsync(() => git.push(url, ':' + remote.name));
+
+  // 一時フォルダを削除
+  await gitTempPath.remove(true);
+
+  // pushに失敗した場合
+  if (isError(push)) return push;
 }

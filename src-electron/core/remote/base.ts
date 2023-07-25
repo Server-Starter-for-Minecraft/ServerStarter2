@@ -11,6 +11,9 @@ export type RemoteOperator<T extends RemoteFolder> = {
   /** ワールドデータをpush */
   pushWorld(local: Path, remote: Remote<T>): Promise<Failable<undefined>>;
 
+  /** リモートのワールドデータを削除 */
+  deleteWorld(remote: Remote<T>): Promise<Failable<undefined>>;
+
   /** ワールド一覧を取得 */
   getWorlds(remoteFolder: T): Promise<WithError<Failable<RemoteWorld[]>>>;
 

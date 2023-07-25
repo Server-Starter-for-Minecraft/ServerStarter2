@@ -1,4 +1,4 @@
-import { systemSettings } from '../../stores/system';
+import { getSystemSettings, systemSettings } from '../../stores/system';
 import { GithubRemoteSetting } from 'src-electron/schema/remote';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable } from 'app/src-electron/schema/error';
@@ -8,11 +8,12 @@ export async function getGitPat(
   owner: string,
   repo: string
 ): Promise<Failable<string>> {
-  const gitAccounts: GithubRemoteSetting[] = systemSettings.get(
-    'remote.github.accounts'
+  const sysSettings = await getSystemSettings();
+  const gitAccounts: GithubRemoteSetting[] = sysSettings.remote.filter(
+    (x) => x.folder.type === 'github'
   );
 
-  for (const account of gitAccounts ?? []) {
+  for (const account of gitAccounts) {
     const matchOwner = owner === account.folder.owner;
     const matchRepository = repo === account.folder.repo;
     if (matchOwner && matchRepository) {
