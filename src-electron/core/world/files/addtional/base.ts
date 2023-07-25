@@ -159,10 +159,8 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const dirPath = cwdPath.child(this.childPath);
     const errors: ErrorMessage[] = [];
 
-    const isNew = (v: AllFileData<T>): v is NewFileData<T> => v.type === 'new';
-
     // 新しいファイルをコピー
-    await asyncForEach(value.filter(isNew), async (source) => {
+    await asyncForEach(value, async (source) => {
       const srcPath = this.getSourcePath(source);
 
       if (isError(srcPath)) {
@@ -182,7 +180,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       }
 
       // 同一のパスだった場合無視
-      const tgtPath = dirPath.child(source.name);
+      const tgtPath = dirPath.child(source.name + source.ext);
       if (tgtPath.path === srcPath.path) return;
 
       // ソースが有効なデータかどうかを確認
@@ -192,6 +190,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       // インストール処理
       const result = await this.installer(srcPath, tgtPath);
 
+      // 新規ファイルだった場合キャッシュにコピー
       if (source.type === 'new') {
         this.installCache(srcPath, source);
       }
@@ -209,7 +208,9 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
     // 非同期で削除
-    await asyncForEach(deletFiles, (x) => dirPath.child(x.name).remove(true));
+    await asyncForEach(deletFiles, (x) =>
+      dirPath.child(`${x.name}${x.ext}`).remove(true)
+    );
 
     return withError(undefined, errors);
   }

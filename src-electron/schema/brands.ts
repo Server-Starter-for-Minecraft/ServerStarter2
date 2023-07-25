@@ -17,3 +17,6 @@ export type ImageURI = Brand<string, 'ImageURI'>;
 
 /** 1970年1月1日00:00:00 UTCからの経過時間(ミリ秒) */
 export type Timestamp = Brand<number, 'Timestamp'>;
+
+/** リモートワールドの名前文字列 */
+export type RemoteWorldName = Brand<string, 'RemoteWorldName'>;

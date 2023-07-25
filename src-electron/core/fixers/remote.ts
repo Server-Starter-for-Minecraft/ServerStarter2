@@ -1,42 +1,47 @@
 import {
-  GithubAccountSetting,
-  GithubRemote,
+  GithubRemoteFolder,
   GithubRemoteSetting,
   Remote,
+  RemoteFolder,
+  RemoteSetting,
 } from 'app/src-electron/schema/remote';
 import {
   FAIL,
   Fixer,
-  arrayFixer,
   literalFixer,
   objectFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 
-export const fixGithubRemote = objectFixer<GithubRemote>(
+export const fixGithubRemoteFolder = objectFixer<GithubRemoteFolder>(
   {
     type: literalFixer(['github']),
     owner: stringFixer(),
     repo: stringFixer(),
-    branch: stringFixer(),
   },
   false
 );
 
-export const fixRemote: Fixer<Remote | FAIL> = fixGithubRemote;
+// export const fixRemote: Fixer<Remote | FAIL> = fixGithubRemote;
 
-export const fixGithubAccountSetting = objectFixer<GithubAccountSetting>(
+export const fixGithubRemoteSetting = objectFixer<GithubRemoteSetting>(
   {
-    owner: stringFixer(),
-    repo: stringFixer(),
+    folder: fixGithubRemoteFolder,
     pat: stringFixer(),
   },
   false
 );
 
-export const fixGithubRemoteSetting = objectFixer<GithubRemoteSetting>(
+export const fixRemoteFolder: Fixer<RemoteFolder | FAIL> =
+  fixGithubRemoteFolder;
+
+export const fixRemoteSetting: Fixer<RemoteSetting | FAIL> =
+  fixGithubRemoteSetting;
+
+export const fixRemote = objectFixer<Remote>(
   {
-    accounts: arrayFixer(fixGithubAccountSetting, true),
+    folder: fixRemoteFolder,
+    name: stringFixer(),
   },
   false
 );

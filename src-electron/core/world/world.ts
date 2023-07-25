@@ -207,3 +207,12 @@ export function runCommand(worldID: WorldID, command: string): void {
   if (isError(handler)) return;
   handler.runCommand(command);
 }
+
+/**
+ * サーバーを再起動
+ */
+export async function reboot(worldID: WorldID): Promise<void> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return;
+  await handler.reboot();
+}

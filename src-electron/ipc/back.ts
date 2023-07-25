@@ -11,6 +11,7 @@ import {
   deleteWorld,
   runWorld,
   runCommand,
+  reboot,
 } from '../core/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
@@ -21,6 +22,10 @@ import { getAllLocalSaveData } from '../core/user/launcher/localSave';
 import { getCacheContents } from '../core/stores/cache';
 import { pickDialog } from '../core/world/dialog';
 import { getGlobalIP } from '../util/ip';
+import {
+  getRemoteWorlds,
+  validateNewRemoteWorldName,
+} from '../core/remote/remote';
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({
@@ -30,6 +35,8 @@ export const getBackListener = (
     OpenFolder: openFolder,
   },
   handle: {
+    Reboot: reboot,
+
     GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,
@@ -55,7 +62,10 @@ export const getBackListener = (
 
     ValidateNewWorldName: validateNewWorldName,
 
+    ValidateNewRemoteWorldName: validateNewRemoteWorldName,
+
     GetLocalSaveData: getAllLocalSaveData,
+    GetRemoteWorlds: getRemoteWorlds,
 
     PickDialog: pickDialog(windowGetter),
   },

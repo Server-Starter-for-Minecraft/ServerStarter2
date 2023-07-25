@@ -1,4 +1,4 @@
-import { WorldContainer, WorldName } from '../schema/brands';
+import { RemoteWorldName, WorldContainer, WorldName } from '../schema/brands';
 import { Player } from '../schema/player';
 import { StaticResouce } from '../schema/static';
 import { SystemSettings } from '../schema/system';
@@ -17,6 +17,7 @@ import {
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
 import { PlainProgress } from '../schema/progress';
+import { Remote, RemoteFolder, RemoteWorld } from '../schema/remote';
 
 /**
  * ## APIの利用方法
@@ -74,7 +75,10 @@ export interface API extends IAPI {
     CheckShutdown: () => Promise<boolean>;
   };
   sendWindowToMain: {
-    /** 実行中のサーバーにコマンドを送る */
+    /** 実行中のサーバーにコマンドを送る
+     *  Command("run any command")
+     *  Command("reboot",true)
+     */
     Command: (world: WorldID, command: string) => void;
 
     /** URLをブラウザで開く */
@@ -84,6 +88,9 @@ export interface API extends IAPI {
     OpenFolder: (path: string) => void;
   };
   invokeWindowToMain: {
+    /** 実行中のサーバーを再起動 */
+    Reboot: (world: WorldID) => Promise<void>;
+
     /** Backend側から静的なデータを取得する */
     GetStaticResouce: () => Promise<StaticResouce>;
 
@@ -143,6 +150,20 @@ export interface API extends IAPI {
       worldContainer: WorldContainer,
       worldName: string
     ) => Promise<Failable<WorldName>>;
+
+    /**
+     * リモートワールドの名称が使用可能かどうかチェック
+     * バリデート済みの文字列 or エラー が変える
+     */
+    ValidateNewRemoteWorldName: (
+      remoteFolder: RemoteFolder,
+      name: string
+    ) => Promise<Failable<RemoteWorldName>>;
+
+    /** リモートのワールドデータ一覧を取得 */
+    GetRemoteWorlds: (
+      remote: RemoteFolder
+    ) => Promise<WithError<Failable<RemoteWorld[]>>>;
 
     /** ワールド名が使用可能かどうかを検証する */
     GetGlobalIP: () => Promise<Failable<string>>;

@@ -13,7 +13,12 @@ import {
   loadLocalFiles,
   saveLocalFiles,
 } from './local';
-import { RunServer, runServer } from '../server/server';
+import {
+  RunRebootableServer,
+  RunServer,
+  runRebootableServer,
+  runServer,
+} from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -114,7 +119,7 @@ export class WorldHandler {
   name: WorldName;
   container: WorldContainer;
   id: WorldID;
-  runner: RunServer | undefined;
+  runner: RunRebootableServer | undefined;
 
   private constructor(id: WorldID, name: WorldName, container: WorldContainer) {
     this.promiseSpooler = new PromiseSpooler();
@@ -359,7 +364,7 @@ export class WorldHandler {
     return result;
   }
 
-  /** 起動していないサーバーのデータを保存 */
+  /** 起動しているサーバーのデータを保存 */
   private async saveExecRunning(
     world: WorldEdited
   ): Promise<WithError<Failable<World>>> {
@@ -641,7 +646,12 @@ export class WorldHandler {
     errors.push(...directoryFormatResult.errors);
 
     // サーバーの実行を開始
-    const runPromise = runServer(savePath, this.id, settings, progress);
+    const runPromise = runRebootableServer(
+      savePath,
+      this.id,
+      settings,
+      progress
+    );
 
     this.runner = runPromise;
 
@@ -688,5 +698,10 @@ export class WorldHandler {
   /** コマンドを実行 */
   async runCommand(command: string) {
     await this.runner?.runCommand(command);
+  }
+
+  /** サーバーを再起動 */
+  async reboot() {
+    await this.runner?.reboot();
   }
 }

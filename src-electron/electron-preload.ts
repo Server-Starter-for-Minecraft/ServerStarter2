@@ -102,6 +102,8 @@ const api: FrontAPI = {
   sendOpenFolder: send('OpenFolder'),
 
   // INVOKE
+  invokeReboot: invoke('Reboot'),
+
   invokeGetStaticResouce: invoke('GetStaticResouce'),
 
   invokeGetSystemSettings: invoke('GetSystemSettings'),
@@ -125,9 +127,13 @@ const api: FrontAPI = {
 
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
 
+  invokeGetRemoteWorlds: invoke('GetRemoteWorlds'),
+
   invokeGetGlobalIP: invoke('GetGlobalIP'),
 
   invokeValidateNewWorldName: invoke('ValidateNewWorldName'),
+
+  invokeValidateNewRemoteWorldName: invoke('ValidateNewRemoteWorldName'),
 
   invokePickDialog: invoke('PickDialog'),
 };

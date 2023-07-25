@@ -12,7 +12,7 @@ export const ipcHandle = <C extends string>(
     const logger = ipcLoggers.handle[channel](
       args.map((x) => JSON.stringify(x))
     );
-    logger.start;
+    logger.start();
     const result = listener(...args);
     result.then(
       (x) => {

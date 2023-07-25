@@ -2,6 +2,20 @@ import { isError } from 'app/src-electron/util/error/error';
 import { BytesData } from 'src-electron/util/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 import { Failable } from 'app/src-electron/schema/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { FAIL, Fixer } from 'app/src-electron/util/detaFixer/fixer';
+
+/** リポジトリのブランチ一覧を取得 */
+export async function getGithubBranches(
+  owner: string,
+  repo: string,
+  pat: string
+) {
+  const commitURL = `https://api.github.com/repos/${owner}/${repo}/branches`;
+  const commitRes = await get<{ name: string }[]>(commitURL, pat);
+  if (isError(commitRes)) return commitRes;
+  return commitRes.map((x) => x.name);
+}
 
 export class GithubTree {
   url: string;
@@ -28,7 +42,7 @@ export class GithubTree {
     const treeRes = await get<TreeRes>(this.url, this.pat);
     if (isError(treeRes)) return treeRes;
     if (treeRes.tree === undefined)
-      return new Error(`${this.url} is not tree.`);
+      return errorMessage.data.githubAPI.fetchFailed({ url: this.url });
 
     const entries: [string, GithubTree | GithubBlob][] = treeRes.tree.map(
       (sub) => [
@@ -62,9 +76,10 @@ export class GithubBlob {
       case 'base64':
         return await BytesData.fromBase64(blobRes.content);
       default:
-        throw new Error(
-          `unknown github api blob encoding: ${blobRes.encoding}, url: ${this.url}`
-        );
+        return errorMessage.data.githubAPI.unknownBlobEncoding({
+          url: this.url,
+          encoding: blobRes.encoding,
+        });
     }
   }
 
@@ -80,28 +95,41 @@ export class GithubBlob {
         if (isError(b64data)) return b64data;
         return await b64data.text();
       default:
-        throw new Error(
-          `unknown github api blob encoding: ${blobRes.encoding}, url: ${this.url}`
-        );
+        return errorMessage.data.githubAPI.unknownBlobEncoding({
+          url: this.url,
+          encoding: blobRes.encoding,
+        });
     }
   }
 
-  async loadJson<T>(): Promise<Failable<T>> {
+  async loadJson<T>(fixer?: Fixer<T | FAIL>): Promise<Failable<T>> {
     const blobRes = await get<BlobRes>(this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
+    let data: Failable<T>;
     switch (blobRes.encoding) {
       case 'utf-8':
-        return JSON.parse(blobRes.content);
+        data = JSON.parse(blobRes.content);
+        break;
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
         if (isError(b64data)) return b64data;
-        return await b64data.json<T>();
+        data = await b64data.json<T>();
+        break;
       default:
-        throw new Error(
-          `unknown github api blob encoding: ${blobRes.encoding}, url: ${this.url}`
-        );
+        return errorMessage.data.githubAPI.unknownBlobEncoding({
+          url: this.url,
+          encoding: blobRes.encoding,
+        });
     }
+    if (isError(data)) return data;
+    if (fixer === undefined) return data;
+
+    const fixed = fixer(data);
+
+    if (fixed === FAIL) return errorMessage.data.failJsonFix();
+
+    return fixed;
   }
 }
 

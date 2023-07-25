@@ -22,7 +22,7 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 
 export const modFiles = new ServerAdditionalFiles<ModData>(
   'mod',
-  ADDITIONALS_CACHE_PATH.child('mod'),
+  ADDITIONALS_CACHE_PATH.child('mods'),
   'mods',
   loader,
   installer

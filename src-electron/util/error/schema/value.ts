@@ -11,4 +11,8 @@ export type ValueErrors = {
     notMatchRegex: ErrorMessageContent<{ value: string }>;
     alreadyUsed: ErrorMessageContent<{ value: string }>;
   };
+  remoteWorldName: {
+    notMatchRegex: ErrorMessageContent<{ value: string }>;
+    alreadyUsed: ErrorMessageContent<{ value: string }>;
+  };
 };

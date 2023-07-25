@@ -1,4 +1,4 @@
-import { ErrorMessage } from '../../schema/error';
+import { ErrorMessage, WithError } from '../../schema/error';
 
 /**
  * 複数のエラーと正常値を同時に保持する型
