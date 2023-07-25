@@ -15,7 +15,6 @@ export async function getAllLocalSaveData(): Promise<
   WithError<Failable<CustomMapData[]>>
 > {
   const containers = await getLocalSaveContainers();
-  console.log(containers);
   if (isError(containers)) return withError(containers);
 
   const savedatas = await asyncMap(Array.from(containers), getLocalSaveData);

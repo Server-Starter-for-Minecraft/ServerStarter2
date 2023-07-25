@@ -555,8 +555,6 @@ export class WorldHandler {
     // シャットダウンがキャンセルされた時何もせずに終了
     if (!doShutDown) return;
 
-    onQuit(() => console.log('QUIIITQETTETQTTETQEQ'), true);
-
     // アプリケーションを終了
     closeServerStarterAndShutDown();
   }
