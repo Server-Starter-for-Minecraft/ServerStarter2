@@ -165,6 +165,9 @@ export interface API extends IAPI {
       remote: RemoteFolder
     ) => Promise<WithError<Failable<RemoteWorld[]>>>;
 
+    /** リモートのワールドデータを削除 */
+    DeleteRemoteWorld: (remote: Remote) => Promise<Failable<undefined>>;
+
     /** ワールド名が使用可能かどうかを検証する */
     GetGlobalIP: () => Promise<Failable<string>>;
 

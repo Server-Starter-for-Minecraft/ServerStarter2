@@ -128,6 +128,7 @@ const api: FrontAPI = {
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
 
   invokeGetRemoteWorlds: invoke('GetRemoteWorlds'),
+  invokeDeleteRemoteWorld: invoke('DeleteRemoteWorld'),
 
   invokeGetGlobalIP: invoke('GetGlobalIP'),
 
