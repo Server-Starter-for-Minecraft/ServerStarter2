@@ -38,6 +38,14 @@ export function getRemoteWorlds<T extends RemoteFolder>(
 }
 
 // リモートのワールド一覧を取得
+export function deleteRemoteWorld<T extends RemoteFolder>(
+  remote: Remote<T>
+): Promise<Failable<undefined>> {
+  const loader: RemoteOperator<T> = remoteOperators[remote.folder.type];
+  return loader.deleteWorld(remote);
+}
+
+// リモートのワールド一覧を取得
 export function validateNewRemoteWorldName<T extends RemoteFolder>(
   remoteFolder: T,
   name: string
