@@ -13,8 +13,8 @@ const playerModel = defineModel<Player>({ required: true })
       <PlayerHeadView v-model="playerModel" />
     </q-item-section>
     <q-item-section top>
-      <q-item-label class="name force-one-line">{{ playerModel.name }}</q-item-label>
-      <q-item-label caption class="q-pt-xs force-one-line" style="opacity: 0.7;">uuid: {{ playerModel.uuid }}</q-item-label>
+      <q-item-label class="name text-omit">{{ playerModel.name }}</q-item-label>
+      <q-item-label caption class="q-pt-xs text-omit" style="opacity: 0.7;">uuid: {{ playerModel.uuid }}</q-item-label>
     </q-item-section>
     <q-item-section side>
       <q-btn
@@ -30,12 +30,6 @@ const playerModel = defineModel<Player>({ required: true })
 </template>
 
 <style scoped lang="scss">
-.force-one-line {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .name {
   font-size: 1.3rem;
 }

@@ -48,11 +48,11 @@ function checkUnlinkRepo() {
       <div class="caption q-pb-sm">GitHub</div>
       <div class="q-py-sm">
         <div class="caption">ユーザー</div>
-        <div class="dataText">{{ remote.owner }}</div>
+        <div class="dataText text-omit">{{ remote.owner }}</div>
       </div>
       <div class="q-py-sm">
         <div class="caption">リポジトリ</div>
-        <div class="dataText">{{ remote.repo }}</div>
+        <div class="dataText text-omit">{{ remote.repo }}</div>
       </div>
     </q-card-section>
 
@@ -87,8 +87,5 @@ function checkUnlinkRepo() {
 .dataText {
   font-size: 1.5rem;
   line-height: 1.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

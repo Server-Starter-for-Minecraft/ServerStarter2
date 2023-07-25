@@ -37,10 +37,10 @@ async function onCardClicked() {
         :style="{'border-left': `1rem solid ${color}`, 'border-radius': '15px'}"
       >
         <div v-if="showMenuBtn || menuOpened" style="width: calc(100% - 3.5rem);">
-          <div class="groupName">{{ name }}</div>
+          <div class="groupName text-omit">{{ name }}</div>
         </div>
         <div v-else>
-          <div class="groupName">{{ name }}</div>
+          <div class="groupName text-omit">{{ name }}</div>
         </div>
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
         <div class="row q-gutter-md q-pt-sm">
@@ -67,8 +67,5 @@ async function onCardClicked() {
 <style scoped lang="scss">
 .groupName {
   font-size: 1.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

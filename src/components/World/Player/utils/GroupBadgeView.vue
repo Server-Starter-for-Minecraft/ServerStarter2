@@ -23,15 +23,12 @@ async function onCardClicked() {
     @click="onCardClicked"
   >
     <q-icon name="circle" :style="{'color': color}" />
-    <span class="name">{{ groupName }}</span>
+    <span class="name text-omit">{{ groupName }}</span>
   </q-chip>
 </template>
 
 <style scoped lang="scss">
 .name {
   max-width: 12rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>
