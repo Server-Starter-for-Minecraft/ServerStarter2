@@ -30,6 +30,12 @@ async function compressArchive(logDir: Path, latestLog: Path) {
   await newlogPath.remove();
 }
 
+function stringify(data: any) {
+  if (data === undefined) return 'undefined';
+  if (data === null) return 'null';
+  return JSON.stringify(data);
+}
+
 log4js.addLayout('custom', function (config: { max?: number }) {
   return function (logEvent) {
     const level = logEvent.level.levelStr;
@@ -40,7 +46,7 @@ log4js.addLayout('custom', function (config: { max?: number }) {
     const data = logEvent.data
       .slice(2)
       .map((d) => {
-        let text = d;
+        let text = stringify(d);
         if (config.max && text.length > config.max) {
           text = text.slice(undefined, config.max - 3) + '...';
         }

@@ -49,9 +49,9 @@ export async function getWorld(
   const tree = await GithubTree.fromRepository(owner, repo, branch, pat);
   if (isError(tree)) return tree;
 
-  const files = await tree.files();
-  if (isError(files)) return files;
-  const worldTree = files[LEVEL_NAME];
+  const serverFiles = await tree.files();
+  if (isError(serverFiles)) return serverFiles;
+  const worldTree = serverFiles[LEVEL_NAME];
   if (!(worldTree instanceof GithubTree)) {
     return errorMessage.data.githubAPI.invalidWorldData({
       owner,
@@ -60,8 +60,8 @@ export async function getWorld(
     });
   }
 
-  const worldSubTree = await worldTree.files();
-  if (isError(worldSubTree)) return worldSubTree;
+  const worldFiles = await worldTree.files();
+  if (isError(worldFiles)) return worldFiles;
 
   const error = errorMessage.data.githubAPI.invalidWorldData({
     owner,
@@ -69,8 +69,8 @@ export async function getWorld(
     branch,
   });
 
-  const json = await getWorldJson(worldSubTree[WORLD_SETTINGS_PATH], error);
-  const icon = await getWorldIcon(worldSubTree['icon.png'], error);
+  const json = await getWorldJson(serverFiles[WORLD_SETTINGS_PATH], error);
+  const icon = await getWorldIcon(worldFiles['icon.png'], error);
   if (isError(json)) return json;
 
   return {
