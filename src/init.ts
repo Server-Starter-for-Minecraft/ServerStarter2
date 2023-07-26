@@ -69,10 +69,11 @@ async function getAllVersion(useCache: boolean) {
 
   versions.map((ver, i) => {
     if (ver.status == 'fulfilled')
-      useSystemStore().serverVersions.set(
-        versionTypes[i],
-        checkError(ver.value)
-      );
+      checkError(
+        ver.value,
+        vers => useSystemStore().serverVersions.set(versionTypes[i], vers),
+        () => { return { title: `バージョン(${versionTypes[i]})の取得に失敗しました` }}
+      )
   });
 }
 

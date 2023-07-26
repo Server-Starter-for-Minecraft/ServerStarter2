@@ -16,7 +16,7 @@ export const useSystemStore = defineStore('systemStore', {
       systemVersion: version,
       publicIP: '000.111.222.333',
       privateIP: '192.168.000.111',
-      serverVersions: new Map<VersionType, Version[] | undefined>(),
+      serverVersions: new Map<VersionType, Version[]>(),
       staticResouces: {} as StaticResouce,
       baseSystemSettings: {} as SystemSettings,
       baseRemotes: { 'github': {} } as SystemRemoteSettingWithKey,
