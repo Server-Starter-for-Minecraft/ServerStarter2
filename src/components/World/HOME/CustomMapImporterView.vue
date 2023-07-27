@@ -82,17 +82,17 @@ onMounted(async () => {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card>
       <h1 class="q-pa-none q-ml-md q-pt-sm">
-        各種ワールドの導入
+        {{ $t('worldList.addSeveralWorld') }}
       </h1>
 
       <q-card-section>
-        <span class="text-caption">配布ワールドを導入</span>
+        <span class="text-caption">{{ $t('worldList.addCustomWorld') }}</span>
         <q-card-actions vertical>
           <SsBtn
             free-width
             color="primary"
             icon="add"
-            label="ZIPを選択"
+            :label="$t('worldList.selectZip')"
             @click="importZip"
             class="btn"
           />
@@ -100,7 +100,7 @@ onMounted(async () => {
             free-width
             color="primary"
             icon="add"
-            label="フォルダを選択"
+            :label="$t('worldList.selectFolder')"
             @click="importFolder"
             class="btn"
           />
@@ -108,7 +108,7 @@ onMounted(async () => {
       </q-card-section>
 
       <q-card-section>
-        <span class="text-caption">シングルワールドを導入</span>
+        <span class="text-caption">{{ $t('worldList.addSingleWorld') }}</span>
         <q-list separator>
           <template v-for="localWorld in localWorlds" :key="localWorld.path">
             <WorldItem :world="localWorld" @click="showCheckDialog(localWorld)" />
