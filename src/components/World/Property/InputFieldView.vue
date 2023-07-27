@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { useSystemStore } from 'src/stores/SystemStore';
 import { NumberServerPropertyAnnotation, StringServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
+import { useI18n } from 'vue-i18n';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
+
+const { t } = useI18n()
 
 interface Prop {
   propertyName: string
@@ -44,17 +47,20 @@ function numberValidate(val:number, min?:number, max?:number, step?:number) {
 function validationMessage(min?:number, max?:number, step?:number) {
   let AdditionalMessage = ''
   if (min !== void 0) {
-    AdditionalMessage+=`${min}以上`
+    AdditionalMessage+=t('property.inputField.downerLimit', { n: min })
+  }
+  if (min !== void 0 && max !== void 0) {
+    AdditionalMessage+=', '
   }
   if (max !== void 0) {
-    AdditionalMessage+=`${max}以下`
+    AdditionalMessage+=t('property.inputField.upperLimit', { n: max })
   }
   if (step !== void 0) {
-    AdditionalMessage+=`${step}の倍数`
+    AdditionalMessage+=t('property.inputField.multiple', { n: step })
   }
 
   if (AdditionalMessage!='') AdditionalMessage = ` (${AdditionalMessage})`
-  return `半角数字を入力してください${AdditionalMessage}`
+  return  t('property.inputField.number')+AdditionalMessage
 }
 </script>
 
