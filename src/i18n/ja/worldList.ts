@@ -1,5 +1,6 @@
 export const jaWorldList = {
     allWorld: 'ワールド一覧',
     addWorld: 'ワールドを追加',
-    systemSetting: 'システム設定'
+    systemSetting: 'システム設定',
+    searchWorld: 'ワールドを検索'
 };
