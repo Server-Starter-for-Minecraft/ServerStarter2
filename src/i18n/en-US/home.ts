@@ -44,4 +44,8 @@ export const enUSHome: MessageSchema["home"] = {
         You can not choose this server./',
       failedDelete: 'Failed to delete {serverName} which does not exist.'
   },
+  init: {
+    save: 'Save world settings',
+    discard: 'Discard world settings'
+  },
 };

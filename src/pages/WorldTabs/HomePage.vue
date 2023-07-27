@@ -140,8 +140,8 @@ async function saveNewWorld() {
           v-show="mainStore.newWorlds.has(mainStore.world.id)"
           class="row justify-between full-width q-pb-md"
         >
-          <SsBtn label="ワールドの設定を保存" color="primary" width="48%" @click="saveNewWorld" />
-          <SsBtn label="ワールドの設定を破棄" color="red" width="48%" @click="removeWorld" />
+          <SsBtn :label="$t('home.init.save')" color="primary" width="48%" @click="saveNewWorld" />
+          <SsBtn :label="$t('home.init.discard')" color="red" width="48%" @click="removeWorld" />
         </div>
 
         <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
