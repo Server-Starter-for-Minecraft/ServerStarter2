@@ -69,7 +69,7 @@ function resetAll() {
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
         <SsBtn
-          label="プロパティ設定をリセット"
+          :label="$t('property.reset')"
           color="primary"
           @click="mainStore.world.properties = initProperty"
           class="full-width"

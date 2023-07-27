@@ -92,7 +92,8 @@ export const jaProperty = {
   },
   resetProperty:'基本設定の{defaultProperty}に設定を戻します',
   resetProperty2:'「システム設定」>「プロパティ」 より基本設定を変更できます',
-  failed: 'Propertyが読み込めませんでした',
+  failed: 'プロパティが読み込めませんでした',
+  reset: 'プロパティ設定をリセット',
   inputField: {
     downerLimit: '{n}以上',
     upperLimit: '{n}以下',
