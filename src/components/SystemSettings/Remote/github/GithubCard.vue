@@ -6,6 +6,7 @@ import { updatePatProp, unlinkRepoProp, updatePatDialogReturns } from './iGitHub
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import UpdatePatDialog from './UpdatePatDialog.vue';
 import UnlinkRepoDialog from './UnlinkRepoDialog.vue';
+import { useI18n } from 'vue-i18n';
 
 interface Prop {
   remote: GithubAccountSetting
@@ -16,6 +17,7 @@ const prop = defineProps<Prop>()
 const $q = useQuasar()
 const sysStore = useSystemStore()
 const sysKey = `${prop.remote.owner}/${prop.remote.repo}`
+const { t } = useI18n()
 
 function openPatEditor() {
   $q.dialog({
@@ -32,7 +34,7 @@ function checkUnlinkRepo() {
   $q.dialog({
     component: UnlinkRepoDialog,
     componentProps: {
-      title: `${sysKey} を解除`,
+      title: t('shareWorld.githubCard.unresister.dialog',{name: sysKey}),
       owner: prop.remote.owner,
       repo: prop.remote.repo
     } as unlinkRepoProp
@@ -47,30 +49,30 @@ function checkUnlinkRepo() {
     <q-card-section class="q-pt-xs">
       <div class="caption q-pb-sm">GitHub</div>
       <div class="q-py-sm">
-        <div class="caption">ユーザー</div>
+        <div class="caption">{{ $t('shareWorld.githubCard.account') }}</div>
         <div class="dataText text-omit">{{ remote.owner }}</div>
       </div>
       <div class="q-py-sm">
-        <div class="caption">リポジトリ</div>
+        <div class="caption">{{ $t('shareWorld.githubCard.repository') }}</div>
         <div class="dataText text-omit">{{ remote.repo }}</div>
       </div>
     </q-card-section>
 
     <q-card-actions vertical>
       <SsBtn
-        label="Personal Access Token を更新"
+        :label="$t('shareWorld.githubCard.updatePAT')"
         @click="openPatEditor"
         class="q-mb-sm"
       />
       <SsBtn
         v-if="onRegisterClick === void 0"
-        label="リモートの登録を解除"
+        :label="$t('shareWorld.githubCard.unresister.remote')"
         color="red"
         @click="checkUnlinkRepo"
       />
       <SsBtn
         v-else
-        label="このリモートを利用する"
+        :label="$t('shareWorld.githubCard.useRemote')"
         color="primary"
         @click="onRegisterClick"
       />

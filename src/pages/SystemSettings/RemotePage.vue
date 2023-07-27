@@ -19,7 +19,7 @@ function addRemote() {
 <template>
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
-      ワールド共有機能（ShareWorld）を利用するためのデータ保管場所を登録します<br>
+      {{ $t('shareWorld.descriptRemote') }}<br>
     </p>
   
     <div class="row">
@@ -27,7 +27,7 @@ function addRemote() {
         <div>
           <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
           <AddContentsCard
-            label="リモートを追加"
+            :label="$t('shareWorld.addRemote.title')"
             min-height="250px"
             :card-style="{ 'border-radius': '6px' }"
             @click="addRemote"

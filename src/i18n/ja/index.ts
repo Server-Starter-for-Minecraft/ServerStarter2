@@ -11,6 +11,7 @@ import { jaError } from "./error";
 import { jaProgress } from "./progress";
 import { jaWorldList } from "./worldList";
 import { jaIcon } from "./icon";
+import { jaShareWorld } from "./shareWorld";
 
 export const ja = {
   home:jaHome,
@@ -23,5 +24,6 @@ export const ja = {
   error:jaError,
   progress:jaProgress,
   worldList:jaWorldList,
-  icon:jaIcon
+  icon:jaIcon,
+  shareWorld:jaShareWorld,
 };

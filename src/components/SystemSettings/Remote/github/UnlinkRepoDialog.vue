@@ -14,13 +14,13 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
       :title="title"
       color="red"
       overline="GitHub"
-      ok-btn-txt="登録を解除"
+      :ok-btn-txt="$t('shareWorld.githubCard.unresister.decide')"
       @ok-click="onDialogOK"
       @close="onDialogCancel"
     >
       <p class="q-my-none" style="font-size: .8rem; opacity: .8;">
-        ServerStarter2 から 「{{ owner }} / {{ repo }}」の登録を解除します。<br>
-        GitHub上のリポジトリは削除されませんが、「{{ owner }} / {{ repo }}」を用いてワールドを再共有することはできません。
+        {{ $t('shareWorld.githubCard.unresister.desc1',{owner: owner,repo: repo}) }}<br>
+        {{ $t('shareWorld.githubCard.unresister.desc2',{owner: owner,repo: repo}) }}
       </p>
     </baseDialogCard>
   </q-dialog>
