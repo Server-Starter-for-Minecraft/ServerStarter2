@@ -20,6 +20,7 @@ const LEVEL_DAT = 'level.dat';
 async function findLevelDatInZip(zip: ZipFile): Promise<Failable<File>> {
   // ZIP内に ( level.dat | */level.dat ) があった場合OK
   const levelDats = await zip.match(/^([^<>:;,?"*|/\\]+\/)?level\.dat$/);
+  if (isError(levelDats)) return levelDats;
   if (levelDats.length > 1) {
     return errorMessage.data.path.invalidContent.customMapZipWithMultipleLevelDat(
       {
@@ -40,6 +41,7 @@ async function findLevelDatInZip(zip: ZipFile): Promise<Failable<File>> {
 async function findIconPngInZip(zip: ZipFile): Promise<File | undefined> {
   // ZIP内に ( icon.png | */icon.png ) があった場合OK
   const levelDats = await zip.match(/^([^<>:;,?"*|/\\]+\/)?icon\.png$/);
+  if (isError(levelDats)) return undefined;
   return levelDats[0];
 }
 
@@ -175,7 +177,10 @@ async function importCustomMapZip(
   await unzipPath.remove(true);
 
   // zipを一時パスに展開
-  await zip.extract(unzipPath);
+  const extracted = await zip.extract(unzipPath);
+
+  // zipの展開失敗したらエラー
+  if (isError(extracted)) return extracted;
 
   // 展開したパス直下にserver.propertiesがあった場合読み込んでおく
   let props: ServerProperties | undefined = undefined;
