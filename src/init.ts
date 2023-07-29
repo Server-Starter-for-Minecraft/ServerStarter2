@@ -1,9 +1,9 @@
 import { versionTypes } from 'app/src-electron/schema/version';
+import { World } from 'app/src-electron/schema/world';
 import { checkError } from './components/Error/Error';
 import { useMainStore, useWorldStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
-import { isValid } from './scripts/error';
 import { fromEntries, values } from './scripts/obj';
 
 export async function initWindow() {
@@ -24,21 +24,41 @@ export async function initWindow() {
   const worldAbbrFailables = await Promise.all(
     paths.map((path) => window.API.invokeGetWorldAbbrs(path))
   );
-  // TODO: container or world が読み込めなかった場合にPopupを表示する
-  const worldAbbrs = worldAbbrFailables.filter(isValid).flatMap((x) => x);
-  const worlds = await Promise.all(
-    worldAbbrs.flatMap(errorAbbr => errorAbbr.value).map(abbr => window.API.invokeGetWorld(abbr.id))
-  );
+  
+  // ワールドの詳細情報を取得
+  const worldAbbrs = checkError(
+    worldAbbrFailables,
+    undefined,
+    () => { return { title: 'ワールドの取得に失敗しました'}}
+  )
+  if (worldAbbrs !== void 0) {
+    const worlds = await Promise.all(
+      worldAbbrs.flatMap(
+        errorAbbr => errorAbbr.value
+      ).map(
+        abbr => window.API.invokeGetWorld(abbr.id)
+      )
+    );
 
-  const localWorlds = worlds.map(errorWorld => errorWorld.value).filter(isValid);
-  worldStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
+    const localWorlds = [] as World[]
+    worlds.map(wFailable => {
+      checkError(
+        wFailable.value,
+        w => localWorlds.push(w),
+        () => { return { title: 'ワールドの取得に失敗しました'}},
+      )
+    })
+
+    worldStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
+  }
 
   if (Object.keys(worldStore.worldList).length === 0) {
     await mainStore.createNewWorld()
   }
-  else[
+  else {
     mainStore.setWorld(values(worldStore.worldList)[0])
-  ]
+  }
+
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
   // Worldの読み込み中はそれぞれのワールドカードをLoadingにしておく
   // mainStore.worldListを (worldAbbr | world) にする？
