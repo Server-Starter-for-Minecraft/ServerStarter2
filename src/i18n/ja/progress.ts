@@ -2,9 +2,8 @@ import { ProgressMessageTranslation } from 'app/src-electron/schema/progressMess
 
 export const jaProgress: ProgressMessageTranslation = {
   server: {
-    preparing: '',
-    postProcessing: '',
-    getOwner: 'オーナーのデータを取得中です',
+    preparing: '{world}を起動中',
+    postProcessing: '{world}を閉じています',
     eula: {
       title: 'EULAの同意状況を確認しています',
       generating: 'eula.txt を生成中です',
