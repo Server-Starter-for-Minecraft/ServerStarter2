@@ -1,4 +1,4 @@
-import { WorldContainer, WorldName } from '../schema/brands';
+import { RemoteWorldName, WorldContainer, WorldName } from '../schema/brands';
 import { Player } from '../schema/player';
 import { StaticResouce } from '../schema/static';
 import { SystemSettings } from '../schema/system';
@@ -17,6 +17,7 @@ import {
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
 import { PlainProgress } from '../schema/progress';
+import { Remote, RemoteFolder, RemoteWorld } from '../schema/remote';
 
 /**
  * ## APIの利用方法
@@ -149,6 +150,23 @@ export interface API extends IAPI {
       worldContainer: WorldContainer,
       worldName: string
     ) => Promise<Failable<WorldName>>;
+
+    /**
+     * リモートワールドの名称が使用可能かどうかチェック
+     * バリデート済みの文字列 or エラー が変える
+     */
+    ValidateNewRemoteWorldName: (
+      remoteFolder: RemoteFolder,
+      name: string
+    ) => Promise<Failable<RemoteWorldName>>;
+
+    /** リモートのワールドデータ一覧を取得 */
+    GetRemoteWorlds: (
+      remote: RemoteFolder
+    ) => Promise<WithError<Failable<RemoteWorld[]>>>;
+
+    /** リモートのワールドデータを削除 */
+    DeleteRemoteWorld: (remote: Remote) => Promise<Failable<undefined>>;
 
     /** ワールド名が使用可能かどうかを検証する */
     GetGlobalIP: () => Promise<Failable<string>>;

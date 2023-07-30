@@ -1,5 +1,5 @@
-import { systemSettings } from '../../stores/system';
-import { GithubAccountSetting } from 'src-electron/schema/remote';
+import { getSystemSettings, systemSettings } from '../../stores/system';
+import { GithubRemoteSetting } from 'src-electron/schema/remote';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable } from 'app/src-electron/schema/error';
 
@@ -8,13 +8,14 @@ export async function getGitPat(
   owner: string,
   repo: string
 ): Promise<Failable<string>> {
-  const gitAccounts: GithubAccountSetting[] = systemSettings.get(
-    'remote.github.accounts'
+  const sysSettings = await getSystemSettings();
+  const gitAccounts: GithubRemoteSetting[] = sysSettings.remote.filter(
+    (x) => x.folder.type === 'github'
   );
 
-  for (const account of (gitAccounts ?? [])) {
-    const matchOwner = owner === account.owner;
-    const matchRepository = repo === account.repo;
+  for (const account of gitAccounts) {
+    const matchOwner = owner === account.folder.owner;
+    const matchRepository = repo === account.folder.repo;
     if (matchOwner && matchRepository) {
       return account.pat;
     }
@@ -33,13 +34,13 @@ export async function setGitPat(
   repo: string,
   pat: string
 ): Promise<undefined> {
-  const gitAccounts: GithubAccountSetting[] = systemSettings.get(
+  const gitAccounts: GithubRemoteSetting[] = systemSettings.get(
     'remote.github.accounts'
   );
 
   for (const account of gitAccounts) {
-    const matchOwner = owner === account.owner;
-    const matchRepository = repo === account.repo;
+    const matchOwner = owner === account.folder.owner;
+    const matchRepository = repo === account.folder.repo;
     // 登録済みだった場合は更新して保存
     if (matchOwner && matchRepository) {
       account.pat = pat;
@@ -48,7 +49,7 @@ export async function setGitPat(
     }
   }
   // 未登録の場合は追加して保存
-  gitAccounts.push({ owner, repo, pat });
+  gitAccounts.push({ folder: { owner, repo, type: 'github' }, pat });
   systemSettings.set('remote.github.accounts', gitAccounts);
   return undefined;
 }

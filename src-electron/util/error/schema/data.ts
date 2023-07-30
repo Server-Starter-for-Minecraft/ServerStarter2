@@ -35,6 +35,30 @@ export type DataErrors = {
     dialogCanceled: ErrorMessageContent;
   };
 
+  // githubAPI周りのエラー
+  githubAPI: {
+    // データの取得に失敗した場合
+    fetchFailed: ErrorMessageContent<{
+      url: string;
+    }>;
+
+    // blobのencodingがbase64/utf-8以外の場合
+    unknownBlobEncoding: ErrorMessageContent<{
+      encoding: string;
+      url: string;
+    }>;
+
+    // WorldDataの構造が不正な場合
+    invalidWorldData: ErrorMessageContent<{
+      owner: string;
+      repo: string;
+      branch: string;
+    }>;
+  };
+
+  // jsonのデータ修正に失敗した場合
+  failJsonFix: ErrorMessageContent;
+
   // hash値が合わない
   hashNotMatch: ErrorMessageContent<{
     hashtype: 'sha1' | 'md5' | 'sha256';

@@ -22,4 +22,11 @@ export type MinecraftColors = {
 export type StaticResouce = {
   properties: ServerPropertiesAnnotation;
   minecraftColors: MinecraftColors;
+  paths: {
+    cache: {
+      datapack: string;
+      plugin: string;
+      mod: string;
+    };
+  };
 };

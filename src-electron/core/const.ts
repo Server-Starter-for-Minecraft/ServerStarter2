@@ -32,6 +32,11 @@ export const versionManifestPath = versionsCachePath.child(
   'vanilla/version_manifest_v2.json'
 );
 
+export const ADDITIONALS_CACHE_PATH = cachePath.child('additionals');
+export const DATAPACK_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('datapacks');
+export const PLUGIN_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('plugins');
+export const MOD_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('mods');
+
 export const tempPath = mainPath.child('temp');
 
 /** spigotをビルドするためのキャッシュパス */
@@ -39,6 +44,9 @@ export const spigotBuildPath = cachePath.child('spigotBuild');
 
 /** zipファイルを展開するための一時パス */
 export const unzipPath = tempPath.child('zip');
+
+/** git操作をするための一時パス */
+export const gitTempPath = tempPath.child('git');
 
 export const LEVEL_NAME = 'world' as const;
 

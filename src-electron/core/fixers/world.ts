@@ -1,12 +1,8 @@
 import {
   FoldSettings,
   SystemWorldSettings,
-  World,
   WorldAbbr,
-  WorldAdditional,
   WorldBase,
-  WorldEdited,
-  WorldAdditionalEdited,
   WorldID,
 } from 'app/src-electron/schema/world';
 import {
@@ -32,7 +28,6 @@ import { fixPlayerSetting } from './player';
 import { fixMemorySettings } from './memory';
 import { DEFAULT_MEMORY, DEFAULT_SERVER_PROPERTIES } from '../const';
 import { fixServerProperties } from './serverproperty';
-import { fixFileData, fixFileOrNewData, fixNewData } from './filedata';
 
 export const fixWorldID = fixUUID as Fixer<WorldID>;
 
@@ -89,67 +84,6 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
 
     /** アイコンのURI */
     avater_path: optionalFixer(stringFixer()),
-  },
-  false
-);
-
-export const fixWorldAdditional = objectFixer<WorldAdditional>(
-  {
-    /** 導入済みデータパック */
-    datapacks: arrayFixer(fixFileData, true),
-
-    /** 導入済みプラグイン */
-    plugins: arrayFixer(fixFileData, true),
-
-    /** 導入済みMOD */
-    mods: arrayFixer(fixFileData, true),
-  },
-  true
-);
-
-export const fixWorld = extendFixer<World, WorldBase>(
-  fixWorldBase,
-  {
-    /** 導入済み */
-    additional: fixWorldAdditional,
-  },
-  false
-);
-
-fixFileData;
-export const fixWorldEditedAdditional = objectFixer<WorldAdditionalEdited>(
-  {
-    /** 導入済みデータパック */
-    datapacks: arrayFixer(fixFileOrNewData, true),
-
-    /** 導入済みプラグイン */
-    plugins: arrayFixer(fixFileOrNewData, true),
-
-    /** 導入済みMOD */
-    mods: arrayFixer(fixFileOrNewData, true),
-  },
-  true
-);
-
-export const fixWorldEdited = extendFixer<WorldEdited, WorldBase>(
-  fixWorldBase,
-  {
-    /** カスタムマップを導入する場合 */
-    custom_map: optionalFixer(fixNewData),
-
-    /** データの取得元のリモート(同期はしない)
-     * リモート版カスタムマップ的な感じ
-     * 新規ワールドで既存リモートを読み込むときくらいにしか使わないと思う
-     * {
-     *   remote_source:A
-     *   remote:B
-     * }
-     * とした場合 Aからワールドのデータを取得して Bと同期する
-     */
-    remote_source: optionalFixer(fixRemote),
-
-    /** 導入済み */
-    additional: fixWorldEditedAdditional,
   },
   false
 );

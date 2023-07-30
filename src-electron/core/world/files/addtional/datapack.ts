@@ -1,6 +1,6 @@
 import { DatapackData } from 'app/src-electron/schema/filedata';
-import { ADDITIONALS_CACHE_PATH, ServerAdditionalFiles } from './base';
-import { LEVEL_NAME } from 'app/src-electron/core/const';
+import { ServerAdditionalFiles } from './base';
+import { DATAPACK_CACHE_PATH, LEVEL_NAME } from 'app/src-electron/core/const';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { isError } from 'app/src-electron/util/error/error';
@@ -54,7 +54,7 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 
 export const datapackFiles = new ServerAdditionalFiles<DatapackData>(
   'datapack',
-  ADDITIONALS_CACHE_PATH.child('datapacks'),
+  DATAPACK_CACHE_PATH,
   LEVEL_NAME + '/datapacks',
   loader,
   installer

@@ -22,6 +22,11 @@ import { getAllLocalSaveData } from '../core/user/launcher/localSave';
 import { getCacheContents } from '../core/stores/cache';
 import { pickDialog } from '../core/world/dialog';
 import { getGlobalIP } from '../util/ip';
+import {
+  deleteRemoteWorld,
+  getRemoteWorlds,
+  validateNewRemoteWorldName,
+} from '../core/remote/remote';
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({
@@ -58,7 +63,11 @@ export const getBackListener = (
 
     ValidateNewWorldName: validateNewWorldName,
 
+    ValidateNewRemoteWorldName: validateNewRemoteWorldName,
+
     GetLocalSaveData: getAllLocalSaveData,
+    GetRemoteWorlds: getRemoteWorlds,
+    DeleteRemoteWorld: deleteRemoteWorld,
 
     PickDialog: pickDialog(windowGetter),
   },
