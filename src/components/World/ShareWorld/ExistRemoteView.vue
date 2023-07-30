@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { useSystemStore } from 'src/stores/SystemStore';
+import { getRemotesKey, useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
-const remoteKey = `${mainStore.world.remote?.owner}/${mainStore.world.remote?.repo}`
-const remoteURL = `https://civiltt.github.io/${mainStore.world.remote?.owner}/${mainStore.world.remote?.repo}/tree/${mainStore.world.remote?.branch}`
+const remoteURL = `https://github.com/${mainStore.world.remote?.folder.owner}/${mainStore.world.remote?.folder.repo}/tree/${mainStore.world.remote?.name}`
 
 function openURL(url: string) {
   window.API.sendOpenBrowser(url)
@@ -18,19 +17,19 @@ function openURL(url: string) {
 
   <div class="q-py-md">
     <div class="caption">リモートプラットフォーム</div>
-    <div class="dataText">{{ mainStore.world.remote?.type }}</div>
+    <div class="dataText">{{ mainStore.world.remote?.folder.type }}</div>
   </div>
   <div class="q-py-md">
     <div class="caption">ユーザー</div>
-    <div class="dataText">{{ mainStore.world.remote?.owner }}</div>
+    <div class="dataText">{{ mainStore.world.remote?.folder.owner }}</div>
   </div>
   <div class="q-py-md">
     <div class="caption">リポジトリ</div>
-    <div class="dataText">{{ mainStore.world.remote?.repo }}</div>
+    <div class="dataText">{{ mainStore.world.remote?.folder.repo }}</div>
   </div>
   <div class="q-py-md">
     <div class="caption">ワールド名</div>
-    <div class="dataText">{{ mainStore.world.remote?.branch }}</div>
+    <div class="dataText">{{ mainStore.world.remote?.name }}</div>
   </div>
   <div class="q-py-md">
     <div class="caption">URL</div>
@@ -55,12 +54,13 @@ function openURL(url: string) {
   />
 
   <DangerView
+    v-if="mainStore.world.remote !== void 0"
     view-title="リモートデータを削除する"
     view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
     open-dialog-btn-text="登録を解除"
     dialog-title="リモートデータを削除します"
     dialog-desc="このワールドはリモート上のデータが削除されるため、共有相手も同期が解除されます。<br>本当にこのワールドのリモート上のデータを削除しますか？"
-    @action="delete sysStore.remoteSettings().github[remoteKey]"
+    @action="delete sysStore.remoteSettings()[getRemotesKey(mainStore.world.remote?.folder)]"
   />
 </template>
 

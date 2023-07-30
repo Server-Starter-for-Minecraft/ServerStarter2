@@ -34,7 +34,7 @@ function addRemote() {
             style="min-width: calc(13rem + 24px * 2);"
           />
         </div>
-        <div v-for="remoteData in values(sysStore.remoteSettings().github)" :key="remoteData.owner">
+        <div v-for="remoteData in values(sysStore.remoteSettings())" :key="remoteData.pat">
           <GithubCard :remote="remoteData" />
         </div>
       </div>
