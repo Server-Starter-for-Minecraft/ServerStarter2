@@ -3,7 +3,6 @@ import { toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
-import { versionTypes } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { checkError, sendError } from 'src/components/Error/Error';
 import { CustomMapImporterReturns } from 'src/components/World/HOME/CustomMapImporter/iCustomMapImporter';
@@ -20,6 +19,7 @@ import DangerView from 'src/components/util/danger/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CustomMapImporterView from 'src/components/World/HOME/CustomMapImporterView.vue';
+import VersionSelecterView from 'src/components/World/HOME/VersionSelecterView.vue';
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
@@ -136,12 +136,24 @@ async function saveNewWorld() {
   <div class="mainField">
     <q-item class="q-pa-none q-pt-lg">
       <q-item-section>
+        <!-- TODO: ボタンのサイズを自動で決定 -->
         <div
           v-show="mainStore.newWorlds.has(mainStore.world.id)"
           class="row justify-between full-width q-pb-md"
         >
-          <SsBtn label="ワールドの設定を保存" color="primary" width="48%" @click="saveNewWorld" />
-          <SsBtn label="ワールドの設定を破棄" color="red" width="48%" @click="removeWorld" />
+          <SsBtn
+            label="ワールドの設定を保存"
+            color="primary"
+            width="48%"
+            @click="saveNewWorld"
+          />
+          <!-- TODO: NewWorldを削除すると、ワールド一覧に何も表示されなくなる場合には削除できないようにする？ -->
+          <SsBtn
+            label="ワールドの設定を破棄"
+            color="red"
+            width="48%"
+            @click="removeWorld"
+          />
         </div>
 
         <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
@@ -152,20 +164,10 @@ async function saveNewWorld() {
           :rules="[val => validateWorldName(val)]"
           @clear="clearNewName"
         />
-        <!-- TODO: バージョン一覧の取得 -->
+
         <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
-        <SsSelect
-          v-model="mainStore.world.version.type"
-          @update:model-value="getAllVers"
-          :options="versionTypes"
-          :label="$t('home.version.serverType')"
-          class="q-pb-md"
-        />
-        <SsSelect
-          v-model="mainStore.world.version.id"
-          :options="sysStore.serverVersions.get(mainStore.world.version.type)?.map(ver => ver.id)"
-          :label="$t('home.version.versionType')"
-        />
+        <VersionSelecterView />
+
       </q-item-section>
       <q-item-section side top>
         <q-avatar square size="10rem" class="q-ml-lg">
