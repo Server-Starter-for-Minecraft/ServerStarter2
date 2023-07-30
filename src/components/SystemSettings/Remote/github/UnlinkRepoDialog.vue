@@ -18,7 +18,11 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
       @ok-click="onDialogOK"
       @close="onDialogCancel"
     >
-      <p class="q-my-none" style="font-size: .8rem; opacity: .8;" v-html="$t('shareWorld.githubCard.unresister.desc',{owner: owner,repo: repo})"></p>
+      <p
+        class="q-my-none"
+        style="font-size: .8rem; opacity: .8;"
+        v-html="$t('shareWorld.githubCard.unresister.desc',{owner: owner,repo: repo})"
+      />
     </baseDialogCard>
   </q-dialog>
 </template>

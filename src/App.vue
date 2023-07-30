@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { setCssVar, useQuasar } from 'quasar';
 import { useConsoleStore } from './stores/ConsoleStore';
-import { initSystemSettings, initRemoteSettings as initRemoteSettings, useSystemStore, setSysSettingsSubscriber, setRemoteSettingsSubscriber } from './stores/SystemStore';
+import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
@@ -79,7 +79,6 @@ async function setUserSettings() {
 async function firstProcess() {
   // systemSettingsの読み込み
   initSystemSettings(deepCopy(await window.API.invokeGetSystemSettings()))
-  initRemoteSettings()
 
   // UserSettingsの読み込み
   await setUserSettings()
@@ -96,6 +95,7 @@ function setSubscribe() {
   // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
   const currentSelectedId = mainStore.selectedWorldID
 
+  // TODO: worldStoreのPrivate化
   worldStore.$subscribe((mutation, state) => {
     if (!mainStore.newWorlds.has(mainStore.selectedWorldID)) {
       window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
@@ -109,7 +109,6 @@ function setSubscribe() {
   })
   
   setSysSettingsSubscriber()
-  setRemoteSettingsSubscriber()
 
   setPlayerSearchSubscriber(playerStore)
 }

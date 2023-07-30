@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getRemotesKey, useSystemStore } from 'src/stores/SystemStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 
@@ -9,6 +9,18 @@ const remoteURL = `https://github.com/${mainStore.world.remote?.folder.owner}/${
 
 function openURL(url: string) {
   window.API.sendOpenBrowser(url)
+}
+
+function deleteRemoteSetting() {
+  if (mainStore.world.remote !== void 0) {
+    sysStore.systemSettings.remote.splice(
+      sysStore.systemSettings.remote.map(
+        r => r.folder
+      ).indexOf(
+        mainStore.world.remote?.folder
+      ), 1
+    )
+  }
 }
 </script>
 
@@ -40,15 +52,24 @@ function openURL(url: string) {
 
   <q-separator class="q-mt-lg" />
 
-  <DangerView view-title="ワールドの同期を解除" view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）" open-dialog-btn-text="同期を解除"
+  <DangerView
+    view-title="ワールドの同期を解除"
+    view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
+    open-dialog-btn-text="同期を解除"
     dialog-title="リモートとの同期を解除します"
     dialog-desc="リモートとの同期を解除すると、これ以降にこのサーバーで遊んだ内容で共有相手がサーバーを起動できなくなります。<br>共有を解除して本当によろしいですか？"
-    @action="mainStore.world.remote = undefined" />
+    @action="mainStore.world.remote = undefined"
+  />
 
-  <DangerView v-if="mainStore.world.remote !== void 0" view-title="リモートデータを削除する" view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
-    open-dialog-btn-text="登録を解除" dialog-title="リモートデータを削除します"
+  <DangerView
+    v-if="mainStore.world.remote !== void 0"
+    view-title="リモートデータを削除する"
+    view-desc="（UI.pdfに基づいた文章に対応する適切なキーを当てる）"
+    open-dialog-btn-text="登録を解除"
+    dialog-title="リモートデータを削除します"
     dialog-desc="このワールドはリモート上のデータが削除されるため、共有相手も同期が解除されます。<br>本当にこのワールドのリモート上のデータを削除しますか？"
-    @action="delete sysStore.remoteSettings[getRemotesKey(mainStore.world.remote?.folder)]" />
+    @action="deleteRemoteSetting()"
+  />
 </template>
 
 <style scoped lang="scss">

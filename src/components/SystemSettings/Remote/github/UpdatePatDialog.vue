@@ -28,6 +28,7 @@ const inputPat = ref(prop.oldPat)
         autofocus
         v-model="inputPat"
         :placeholder="$t('shareWorld.githubCard.inputPAT')"
+        v-on:keydown.enter="onDialogOK({ newPat: inputPat } as updatePatDialogReturns)"
       />
     </BaseDialogCard>
   </q-dialog>

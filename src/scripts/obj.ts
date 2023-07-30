@@ -14,3 +14,7 @@ export const keys = <K extends string | number | symbol, V>(object: Record<K, V>
 
 export const values = <K extends string | number | symbol, V>(object: Record<K, V>): V[] =>
   Object.values(object) as V[];
+
+export function deleteFromValue<T>(arr: T[], val: T) {
+  arr.splice(arr.indexOf(val), 1)
+}

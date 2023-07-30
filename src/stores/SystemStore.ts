@@ -5,8 +5,6 @@ import { Version, VersionType } from 'app/src-electron/schema/version';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { CacheFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
-import { RemoteFolder, RemoteSetting } from 'app/src-electron/schema/remote';
-import { values } from 'src/scripts/obj';
 
 export const useSystemStore = defineStore('systemStore', {
   state: () => {
@@ -27,10 +25,6 @@ export const useSystemStore = defineStore('systemStore', {
     systemSettings() {
       const sysSettingsStore = useSystemSettingsStore()
       return sysSettingsStore.systemSettings
-    },
-    remoteSettings() {
-      const remoteStore = useRemoteSettingsStore()
-      return remoteStore.remoteSettings
     }
   }
 });
@@ -63,45 +57,4 @@ export function setSysSettingsSubscriber() {
   sysSettingsStore.$subscribe((mutation, state) => {
     window.API.invokeSetSystemSettings(toRaw(state.systemSettings))
   })
-}
-
-
-/**
- * リモート設定専用のStore
- */
-const useRemoteSettingsStore = defineStore('remoteSettingsStore', {
-  state: () => {
-    return {
-      remoteSettings: {} as { [key: string]: RemoteSetting}
-    }
-  }
-})
-
-/**
- * リモート設定の初期化
- */
-export function initRemoteSettings() {
-  const sysStore = useSystemStore()
-  const remoteSettingsStore = useRemoteSettingsStore()
-  sysStore.systemSettings.remote.forEach(remote => {
-    remoteSettingsStore.remoteSettings[`${remote.folder.type}/${remote.folder.owner}/${remote.folder.repo}`] = remote
-  })
-}
-
-/**
- * リモート設定の監視
- */
-export function setRemoteSettingsSubscriber() {
-  const sysStore = useSystemStore()
-  const remoteStore = useRemoteSettingsStore()
-  remoteStore.$subscribe((mutation, state) => {
-    sysStore.systemSettings.remote = values(toRaw(state.remoteSettings))
-  })
-}
-
-/**
- * リモート設定を保存しているデータのキーを取得する
- */
-export function getRemotesKey(remoteFolder: RemoteFolder) {
-  return `${remoteFolder.type}/${remoteFolder.owner}/${remoteFolder.repo}`
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { getRemotesKey, useSystemStore } from 'src/stores/SystemStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
@@ -25,11 +25,10 @@ function okClick() {
       owner: ownerName.value,
       repo: repoName.value,
     }
-    sysStore.baseRemotes[getRemotesKey(folder)] = {
+    sysStore.systemSettings.remote.push({
       folder: folder,
       pat: pat.value
-    }
-    sysStore.remoteSettings
+    })
   }
   // Dialogを閉じる
   onDialogOK()

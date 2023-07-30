@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { values } from 'src/scripts/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
@@ -26,11 +25,16 @@ function addRemote() {
       <div class="row q-py-md q-gutter-md">
         <div>
           <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
-          <AddContentsCard :label="$t('shareWorld.addRemote.title')" min-height="250px"
-            :card-style="{ 'border-radius': '6px' }" @click="addRemote" style="min-width: calc(13rem + 24px * 2);" />
+          <AddContentsCard
+            :label="$t('shareWorld.addRemote.title')"
+            min-height="250px"
+            :card-style="{ 'border-radius': '6px' }"
+            @click="addRemote"
+            style="min-width: calc(13rem + 24px * 2);"
+          />
         </div>
-        <div v-for="remoteData in values(sysStore.remoteSettings)" :key="remoteData.pat">
-          <GithubCard :remote="remoteData" />
+        <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
+          <GithubCard v-model="sysStore.systemSettings.remote[n-1]" />
         </div>
       </div>
     </div>
