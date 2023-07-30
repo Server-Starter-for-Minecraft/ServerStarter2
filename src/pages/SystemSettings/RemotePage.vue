@@ -19,7 +19,7 @@ function addRemote() {
 <template>
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
-      {{ $t('shareWorld.descriptRemote') }}<br>
+      {{ $t('shareWorld.descriptRemote') }}
     </p>
   
     <div class="row">
