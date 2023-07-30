@@ -21,10 +21,14 @@ import {
 import { fixPlayerGroup } from './player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { fixImageURI, fixPlayerUUID, fixWorldContainer } from './brands';
-import { fixGithubRemoteSetting } from './remote';
+import { fixGithubRemoteSetting, fixRemoteSetting } from './remote';
 import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
 import { genUUID } from 'app/src-electron/tools/uuid';
+import {
+  GithubRemoteFolder,
+  RemoteSetting,
+} from 'app/src-electron/schema/remote';
 
 export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], DEFAULT_LOCALE);
 
@@ -81,10 +85,8 @@ export const fixSystemPlayerSetting = objectFixer<SystemPlayerSetting>(
   true
 );
 
-export const fixSystemRemoteSetting = objectFixer<SystemRemoteSetting>(
-  {
-    github: fixGithubRemoteSetting,
-  },
+export const fixSystemRemoteSetting = arrayFixer<RemoteSetting>(
+  fixRemoteSetting,
   true
 );
 

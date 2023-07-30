@@ -2,5 +2,11 @@
 </script>
 
 <template>
-  <h1>world folder</h1>
+  <div class="q-pa-md">
+    <p class="q-my-sm text-body2" style="opacity: .6;">
+      ワールドデータの保存先を設定
+    </p>
+
+    
+  </div>
 </template>

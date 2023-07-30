@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { GithubAccountSetting } from 'app/src-electron/schema/remote';
-import { useSystemStore } from 'src/stores/SystemStore';
+import { useI18n } from 'vue-i18n';
+import { GithubRemoteSetting } from 'app/src-electron/schema/remote';
+import { getRemotesKey, useSystemStore } from 'src/stores/SystemStore';
 import { updatePatProp, unlinkRepoProp, updatePatDialogReturns } from './iGitHubDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import UpdatePatDialog from './UpdatePatDialog.vue';
 import UnlinkRepoDialog from './UnlinkRepoDialog.vue';
-import { useI18n } from 'vue-i18n';
 
 interface Prop {
-  remote: GithubAccountSetting
+  remote: GithubRemoteSetting
   onRegisterClick?: () => void
 }
 const prop = defineProps<Prop>()
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
-const sysKey = `${prop.remote.owner}/${prop.remote.repo}`
 const { t } = useI18n()
 
 function openPatEditor() {
@@ -26,7 +25,7 @@ function openPatEditor() {
       oldPat: prop.remote.pat
     } as updatePatProp
   }).onOk((payload: updatePatDialogReturns) => {
-    sysStore.remoteSettings().github[sysKey].pat = payload.newPat
+    sysStore.remoteSettings()[getRemotesKey(prop.remote.folder)].pat = payload.newPat
   })
 }
 
@@ -34,12 +33,13 @@ function checkUnlinkRepo() {
   $q.dialog({
     component: UnlinkRepoDialog,
     componentProps: {
-      title: t('shareWorld.githubCard.unresister.dialog',{name: sysKey}),
-      owner: prop.remote.owner,
-      repo: prop.remote.repo
+      title: t('shareWorld.githubCard.unresister.dialog',{name: getRemotesKey(prop.remote.folder)}),
+      owner: prop.remote.folder.owner,
+      repo: prop.remote.folder.repo
     } as unlinkRepoProp
   }).onOk(() => {
-    delete sysStore.remoteSettings().github[sysKey]
+    delete sysStore.baseRemotes[getRemotesKey(prop.remote.folder)]
+    sysStore.remoteSettings()
   })
 }
 </script>
@@ -50,11 +50,11 @@ function checkUnlinkRepo() {
       <div class="caption q-pb-sm">GitHub</div>
       <div class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.account') }}</div>
-        <div class="dataText text-omit">{{ remote.owner }}</div>
+        <div class="dataText text-omit">{{ remote.folder.owner }}</div>
       </div>
       <div class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.repository') }}</div>
-        <div class="dataText text-omit">{{ remote.repo }}</div>
+        <div class="dataText text-omit">{{ remote.folder.repo }}</div>
       </div>
     </q-card-section>
 

@@ -19,7 +19,7 @@ function addRemote() {
 <template>
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
-      {{ $t('shareWorld.descriptRemote') }}<br>
+      {{ $t('shareWorld.descriptRemote') }}
     </p>
   
     <div class="row">
@@ -34,7 +34,7 @@ function addRemote() {
             style="min-width: calc(13rem + 24px * 2);"
           />
         </div>
-        <div v-for="remoteData in values(sysStore.remoteSettings().github)" :key="remoteData.owner">
+        <div v-for="remoteData in values(sysStore.remoteSettings())" :key="remoteData.pat">
           <GithubCard :remote="remoteData" />
         </div>
       </div>

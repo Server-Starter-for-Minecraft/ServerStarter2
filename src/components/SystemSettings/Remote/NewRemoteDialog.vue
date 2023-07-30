@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { Remote } from 'app/src-electron/schema/remote';
-import { useSystemStore } from 'src/stores/SystemStore';
+import { getRemotesKey, useSystemStore } from 'src/stores/SystemStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
@@ -11,30 +10,26 @@ defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const sysStore = useSystemStore()
-const accountType: Ref<Remote['type']> = ref('github')
+const accountType: Ref<'github'> = ref('github')
 const ownerName = ref('')
 const repoName = ref('')
 const pat = ref('')
-
-/**
- * 入力状態を見て登録処理を実行可能か判断する
- */
-function checkRegister() {
-  if (accountType.value === 'github') {
-    return [ownerName.value, repoName.value, pat.value].includes('')
-  }
-}
 
 /**
  * 登録処理
  */
 function okClick() {
   if (accountType.value === 'github') {
-    sysStore.remoteSettings().github[`${ownerName.value}/${repoName.value}`] = {
+    const folder = {
+      type: 'github' as const,
       owner: ownerName.value,
       repo: repoName.value,
+    }
+    sysStore.baseRemotes[getRemotesKey(folder)] = {
+      folder: folder,
       pat: pat.value
     }
+    sysStore.remoteSettings()
   }
   // Dialogを閉じる
   onDialogOK()
