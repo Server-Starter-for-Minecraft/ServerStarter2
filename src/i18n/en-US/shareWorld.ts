@@ -1,6 +1,6 @@
 export const enUSShareWorld = {
   title: 'World Sharing (ShareWorld)',
-  description: '\
+  desc: '\
   ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。<br/>\
   使い方の詳細は{link}をご参照ください。',
   link: 'Official HP',
@@ -26,8 +26,10 @@ export const enUSShareWorld = {
       remote: 'Unregister remote',
       dialog: 'Unregister {name}',
       decide: 'Unresister',
-      desc1: 'Unregister "{owner} / {repo}" from ServerStarter2.S',
-      desc2: 'The repository on GitHub will not be deleted, but the world cannot be re-shared using "{owner} / {repo}".',
+      desc: '\
+        Unregister "{owner} / {repo}" from ServerStarter2<br>\
+        The repository on GitHub will not be deleted, but the world cannot be re-shared using "{owner} / {repo}".\
+        ',
     }
   }
 }
