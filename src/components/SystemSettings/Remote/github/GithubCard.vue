@@ -25,7 +25,7 @@ function openPatEditor() {
       oldPat: prop.remote.pat
     } as updatePatProp
   }).onOk((payload: updatePatDialogReturns) => {
-    sysStore.remoteSettings()[getRemotesKey(prop.remote.folder)].pat = payload.newPat
+    sysStore.remoteSettings[getRemotesKey(prop.remote.folder)].pat = payload.newPat
   })
 }
 
@@ -33,13 +33,13 @@ function checkUnlinkRepo() {
   $q.dialog({
     component: UnlinkRepoDialog,
     componentProps: {
-      title: t('shareWorld.githubCard.unresister.dialog',{name: getRemotesKey(prop.remote.folder)}),
+      title: t('shareWorld.githubCard.unresister.dialog', { name: getRemotesKey(prop.remote.folder) }),
       owner: prop.remote.folder.owner,
       repo: prop.remote.folder.repo
     } as unlinkRepoProp
   }).onOk(() => {
     delete sysStore.baseRemotes[getRemotesKey(prop.remote.folder)]
-    sysStore.remoteSettings()
+    sysStore.remoteSettings
   })
 }
 </script>
@@ -59,23 +59,10 @@ function checkUnlinkRepo() {
     </q-card-section>
 
     <q-card-actions vertical>
-      <SsBtn
-        :label="$t('shareWorld.githubCard.updatePAT')"
-        @click="openPatEditor"
-        class="q-mb-sm"
-      />
-      <SsBtn
-        v-if="onRegisterClick === void 0"
-        :label="$t('shareWorld.githubCard.unresister.remote')"
-        color="red"
-        @click="checkUnlinkRepo"
-      />
-      <SsBtn
-        v-else
-        :label="$t('shareWorld.githubCard.useRemote')"
-        color="primary"
-        @click="onRegisterClick"
-      />
+      <SsBtn :label="$t('shareWorld.githubCard.updatePAT')" @click="openPatEditor" class="q-mb-sm" />
+      <SsBtn v-if="onRegisterClick === void 0" :label="$t('shareWorld.githubCard.unresister.remote')" color="red"
+        @click="checkUnlinkRepo" />
+      <SsBtn v-else :label="$t('shareWorld.githubCard.useRemote')" color="primary" @click="onRegisterClick" />
     </q-card-actions>
   </q-card>
 </template>

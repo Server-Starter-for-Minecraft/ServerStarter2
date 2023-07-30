@@ -22,9 +22,9 @@ const initProperty: ServerProperties = fromEntries(toEntries(sysStore.staticReso
  * 全てのServer Propertyを基本設定に戻す
  */
 function resetAll() {
-  Object.keys(sysStore.systemSettings().world.properties).map(key => {
+  Object.keys(sysStore.systemSettings.world.properties).map(key => {
     if (isValid(mainStore.world.properties)) {
-      mainStore.world.properties[key] = sysStore.systemSettings().world.properties[key]
+      mainStore.world.properties[key] = sysStore.systemSettings.world.properties[key]
     }
   })
 }
@@ -34,22 +34,10 @@ function resetAll() {
   <div class="mainField">
     <div v-if="isValid(mainStore.world.properties)" class="column fit">
       <div class="row q-py-md">
-        <SsInput
-          dense
-          v-model="propertyStore.searchName"
-          :placeholder="$t('property.main.search')"
-          class="col"
-        />
-  
-        <SsBtn
-          dense
-          :label="$t('property.main.resetAll')"
-          icon="do_not_disturb_on_total_silence"
-          color="red"
-          width="6rem"
-          @click="resetAll"
-          class="q-ml-md"
-        />
+        <SsInput dense v-model="propertyStore.searchName" :placeholder="$t('property.main.search')" class="col" />
+
+        <SsBtn dense :label="$t('property.main.resetAll')" icon="do_not_disturb_on_total_silence" color="red" width="6rem"
+          @click="resetAll" class="q-ml-md" />
       </div>
 
       <div class="row fit" style="flex: 1 1 0;">
@@ -68,12 +56,8 @@ function resetAll() {
     <div v-else class="fit" style="position: relative;">
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
-        <SsBtn
-          :label="$t('property.reset')"
-          color="primary"
-          @click="mainStore.world.properties = initProperty"
-          class="full-width"
-        />
+        <SsBtn :label="$t('property.reset')" color="primary" @click="mainStore.world.properties = initProperty"
+          class="full-width" />
       </div>
     </div>
   </div>

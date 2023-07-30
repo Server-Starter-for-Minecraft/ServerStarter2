@@ -56,10 +56,8 @@ function getGroups(groups: Record<string, PlayerGroup>) {
 </script>
 
 <template>
-  <BaseActionsCard
-    v-if="player !== void 0" @click="onCardClicked"
-    :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''"
-  >
+  <BaseActionsCard v-if="player !== void 0" @click="onCardClicked"
+    :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''">
     <template #default>
       <q-item style="height: 5rem; padding: 14px;">
         <q-item-section avatar top>
@@ -81,13 +79,10 @@ function getGroups(groups: Record<string, PlayerGroup>) {
     </template>
 
     <template #actions>
-      <q-card-section
-        v-show="getGroups(sysStore.systemSettings().player.groups).length > 0"
-        class="q-py-none"
-        style="width: max-content;"
-      >
+      <q-card-section v-show="getGroups(sysStore.systemSettings.player.groups).length > 0" class="q-py-none"
+        style="width: max-content;">
         <div class="q-gutter-xs q-pb-sm" style="width: 13.5rem">
-          <template v-for="g in getGroups(sysStore.systemSettings().player.groups)" :key="g">
+          <template v-for="g in getGroups(sysStore.systemSettings.player.groups)" :key="g">
             <group-badge-view :group-name="g.name" :color="g.color" />
           </template>
         </div>

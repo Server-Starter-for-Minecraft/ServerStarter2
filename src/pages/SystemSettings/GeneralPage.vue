@@ -22,7 +22,7 @@ function changeLocale(loc: Locale) {
 
 function changeTheme(colorTheme: ColorTheme) {
   // システム設定に登録
-  sysStore.systemSettings().user.theme = colorTheme
+  sysStore.systemSettings.user.theme = colorTheme
   
   // 設定を画面に反映
   switch (colorTheme) {
@@ -42,32 +42,19 @@ function changeTheme(colorTheme: ColorTheme) {
 <template>
   <div class="mainField">
     <h1 class="q-mt-none">{{ $t("systemsetting.general.lang") }}</h1>
-    <SsSelect
-      dense
-      v-model="sysStore.systemSettings().user.language"
-      @update:model-value="newVal => changeLocale(newVal)"
-      :options="localeOptions"
-      option-label="label"
-      option-value="value"
-    />
+    <SsSelect dense v-model="sysStore.systemSettings.user.language" @update:model-value="newVal => changeLocale(newVal)"
+      :options="localeOptions" option-label="label" option-value="value" />
 
     <h1>{{ $t("systemsetting.general.colorMode") }}</h1>
     <div class="row q-gutter-lg">
       <template v-for="theme in colorThemes" :key="theme">
-        <ColorThemeBtn
-          :src="assets.svg[theme]"
-          :active="sysStore.systemSettings().user.theme === theme"
-          :label="theme"
-          @click="() => changeTheme(theme)"
-        />
+        <ColorThemeBtn :src="assets.svg[theme]" :active="sysStore.systemSettings.user.theme === theme" :label="theme"
+          @click="() => changeTheme(theme)" />
       </template>
     </div>
 
     <h1>{{ $t("systemsetting.general.autoShutdown") }}</h1>
-    <q-checkbox
-      v-model="sysStore.systemSettings().user.autoShutDown"
-      :label="$t('systemsetting.general.shutdownDesc')"
-      style="font-size: 1rem;"
-    />
+    <q-checkbox v-model="sysStore.systemSettings.user.autoShutDown" :label="$t('systemsetting.general.shutdownDesc')"
+      style="font-size: 1rem;" />
   </div>
 </template>

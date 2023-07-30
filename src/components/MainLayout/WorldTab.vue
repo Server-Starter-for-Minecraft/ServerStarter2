@@ -53,39 +53,19 @@ function selectWorldIdx() {
 </script>
 
 <template>
-  <q-item
-    clickable
+  <q-item clickable
     :active="(clicked = mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
     :focused="(clicked = mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
-    @click="selectWorldIdx"
-    to="/"
-    v-on:dblclick="startServer"
-    @mouseover="itemHovered = true"
-    @mouseleave="itemHovered = false"
-    class="worldBlock"
-    :style="{'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent'}"
-  >
-    <q-item-section
-      avatar
-      @mouseover="runBtnHovered = true"
-      @mouseleave="runBtnHovered = false"
-    >
+    @click="selectWorldIdx" to="/" v-on:dblclick="startServer" @mouseover="itemHovered = true"
+    @mouseleave="itemHovered = false" class="worldBlock"
+    :style="{ 'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent' }">
+    <q-item-section avatar @mouseover="runBtnHovered = true" @mouseleave="runBtnHovered = false">
       <q-avatar square size="4rem">
-        <q-img
-          :src="world.avater_path ?? assets.png.unset"
-          :ratio="1"
-          style="image-rendering: pixelated;"
-        />
+        <q-img :src="world.avater_path ?? assets.png.unset" :ratio="1" style="image-rendering: pixelated;" />
         <q-btn
-          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id)==='Stop' && runBtnHovered && sysStore.systemSettings().user.drawerWidth > 200"
-          @click="() => startServer(mainStore, consoleStore)"
-          flat
-          dense
-          size="2rem"
-          icon="play_arrow"
-          text-color="white"
-          class="absolute-center q-mini-drawer-hide hantoumei"
-        />
+          v-show="!mainStore.errorWorlds.has(world.id) && consoleStore.status(world.id) === 'Stop' && runBtnHovered && sysStore.systemSettings.user.drawerWidth > 200"
+          @click="() => startServer(mainStore, consoleStore)" flat dense size="2rem" icon="play_arrow" text-color="white"
+          class="absolute-center q-mini-drawer-hide hantoumei" />
       </q-avatar>
     </q-item-section>
     <q-item-section>
@@ -95,12 +75,8 @@ function selectWorldIdx() {
       </div>
     </q-item-section>
 
-    <q-tooltip
-      v-if="sysStore.systemSettings().user.drawerWidth < 200"
-      anchor="center middle"
-      self="top middle"
-      class="text-body2"
-    >
+    <q-tooltip v-if="sysStore.systemSettings.user.drawerWidth < 200" anchor="center middle" self="top middle"
+      class="text-body2">
       {{ world.name }}
     </q-tooltip>
   </q-item>

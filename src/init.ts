@@ -20,16 +20,16 @@ export async function initWindow() {
   await getAllVersion(true);
 
   // world読み込み
-  const paths = sysStore.systemSettings().container.map(c => c.container)
+  const paths = sysStore.systemSettings.container.map(c => c.container)
   const worldAbbrFailables = await Promise.all(
     paths.map((path) => window.API.invokeGetWorldAbbrs(path))
   );
-  
+
   // ワールドの詳細情報を取得
   const worldAbbrs = checkError(
     worldAbbrFailables,
     undefined,
-    () => { return { title: 'ワールドの取得に失敗しました'}}
+    () => { return { title: 'ワールドの取得に失敗しました' } }
   )
   if (worldAbbrs !== void 0) {
     const worlds = await Promise.all(
@@ -45,7 +45,7 @@ export async function initWindow() {
       checkError(
         wFailable.value,
         w => localWorlds.push(w),
-        () => { return { title: 'ワールドの取得に失敗しました'}},
+        () => { return { title: 'ワールドの取得に失敗しました' } },
       )
     })
 
@@ -92,7 +92,7 @@ async function getAllVersion(useCache: boolean) {
       checkError(
         ver.value,
         vers => useSystemStore().serverVersions.set(versionTypes[i], vers),
-        () => { return { title: `バージョン(${versionTypes[i]})の取得に失敗しました` }}
+        () => { return { title: `バージョン(${versionTypes[i]})の取得に失敗しました` } }
       )
   });
 }
@@ -103,9 +103,9 @@ async function getAllVersion(useCache: boolean) {
 async function getCachePlayers() {
   const sysStore = useSystemStore();
   const playerStore = usePlayerStore();
-  const playerUUIDs = sysStore.systemSettings().player.players
+  const playerUUIDs = sysStore.systemSettings.player.players
   const failablePlayers = await Promise.all(playerUUIDs.map(uuid => window.API.invokeGetPlayer(uuid, 'uuid')))
-  failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, () => { return { title : `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）`}}))
+  failablePlayers.forEach(fp => checkError(fp, p => playerStore.cachePlayers[p.uuid] = p, () => { return { title: `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）` } }))
 }
 
 /**

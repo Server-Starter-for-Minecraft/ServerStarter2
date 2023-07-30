@@ -9,15 +9,10 @@ const sysStore = useSystemStore()
 <template>
   <q-layout view="hHh Lpr rff">
     <div class="row">
-      <q-splitter
-        v-model="sysStore.systemSettings().user.drawerWidth"
-        :limits="[100, 400]"
-        unit="px"
-        emit-immediately
-        style="height: 100vh; width: 100vw;"
-      >
+      <q-splitter v-model="sysStore.systemSettings.user.drawerWidth" :limits="[100, 400]" unit="px" emit-immediately
+        style="height: 100vh; width: 100vw;">
         <template #before>
-          <WorldList/>
+          <WorldList />
         </template>
         <template #after>
           <WorldPage />

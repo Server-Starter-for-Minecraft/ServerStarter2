@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { setCssVar, useQuasar } from 'quasar';
 import { useConsoleStore } from './stores/ConsoleStore';
-import { setInitRemoteSettings, useSystemStore } from './stores/SystemStore';
+import { initSystemSettings, initRemoteSettings as initRemoteSettings, useSystemStore, setSysSettingsSubscriber, setRemoteSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
@@ -62,11 +62,11 @@ setSubscribe()
  */
 async function setUserSettings() {
   // 言語設定
-  $t.locale.value = sysStore.systemSettings().user.language
+  $t.locale.value = sysStore.systemSettings.user.language
 
   // ダークモード
-  const isAuto = sysStore.systemSettings().user.theme === 'auto'
-  const isDark = sysStore.systemSettings().user.theme === 'dark'
+  const isAuto = sysStore.systemSettings.user.theme === 'auto'
+  const isDark = sysStore.systemSettings.user.theme === 'dark'
   $q.dark.set(isAuto ? 'auto' : isDark)
 
   // primaryの色を定義
@@ -78,8 +78,8 @@ async function setUserSettings() {
  */
 async function firstProcess() {
   // systemSettingsの読み込み
-  sysStore.baseSystemSettings = deepCopy(await window.API.invokeGetSystemSettings())
-  setInitRemoteSettings()
+  initSystemSettings(deepCopy(await window.API.invokeGetSystemSettings()))
+  initRemoteSettings()
 
   // UserSettingsの読み込み
   await setUserSettings()
@@ -107,6 +107,9 @@ function setSubscribe() {
       })
     }
   })
+  
+  setSysSettingsSubscriber()
+  setRemoteSettingsSubscriber()
 
   setPlayerSearchSubscriber(playerStore)
 }

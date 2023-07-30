@@ -12,7 +12,7 @@ const propertiesModel = defineModel<ServerProperties>({ required: true })
 const sysStore = useSystemStore()
 
 const staticDefaultProperty = sysStore.staticResouces.properties[prop.settingName]
-const defaultProperty = sysStore.systemSettings().world.properties[prop.settingName] ?? staticDefaultProperty.default
+const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName] ?? staticDefaultProperty.default
 const showCancel = () => propertiesModel.value[prop.settingName] !== defaultProperty
 
 /**
@@ -29,24 +29,14 @@ function cancelSettings() {
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`) }}</div>
-      <InputFieldView
-        v-model="propertiesModel[settingName]"
-        :property-name="settingName"
-      />
+      <InputFieldView v-model="propertiesModel[settingName]" :property-name="settingName" />
     </q-item-section>
 
     <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>
-      <q-btn
-        v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()"
-        flat
-        dense
-        icon="do_not_disturb_on"
-        size="1rem"
-        color="red"
-        @click="cancelSettings"
-      >
+      <q-btn v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()" flat dense
+        icon="do_not_disturb_on" size="1rem" color="red" @click="cancelSettings">
         <q-tooltip>
-          <p class="text-caption q-ma-none">{{ $t('property.resetProperty',{defaultProperty: defaultProperty}) }}</p>
+          <p class="text-caption q-ma-none">{{ $t('property.resetProperty', { defaultProperty: defaultProperty }) }}</p>
           <p class="text-caption q-ma-none">{{ $t('property.resetProperty2') }}</p>
         </q-tooltip>
       </q-btn>

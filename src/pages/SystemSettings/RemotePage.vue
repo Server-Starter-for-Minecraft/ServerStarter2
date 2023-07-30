@@ -21,20 +21,15 @@ function addRemote() {
     <p class="q-my-sm text-body2" style="opacity: .6;">
       {{ $t('shareWorld.descriptRemote') }}
     </p>
-  
+
     <div class="row">
       <div class="row q-py-md q-gutter-md">
         <div>
           <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
-          <AddContentsCard
-            :label="$t('shareWorld.addRemote.title')"
-            min-height="250px"
-            :card-style="{ 'border-radius': '6px' }"
-            @click="addRemote"
-            style="min-width: calc(13rem + 24px * 2);"
-          />
+          <AddContentsCard :label="$t('shareWorld.addRemote.title')" min-height="250px"
+            :card-style="{ 'border-radius': '6px' }" @click="addRemote" style="min-width: calc(13rem + 24px * 2);" />
         </div>
-        <div v-for="remoteData in values(sysStore.remoteSettings())" :key="remoteData.pat">
+        <div v-for="remoteData in values(sysStore.remoteSettings)" :key="remoteData.pat">
           <GithubCard :remote="remoteData" />
         </div>
       </div>

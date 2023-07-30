@@ -6,7 +6,7 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const sysStore = useSystemStore()
@@ -29,7 +29,7 @@ function okClick() {
       folder: folder,
       pat: pat.value
     }
-    sysStore.remoteSettings()
+    sysStore.remoteSettings
   }
   // Dialogを閉じる
   onDialogOK()
@@ -38,48 +38,25 @@ function okClick() {
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <BaseDialogCard
-      :disable="[ownerName, repoName, pat].includes('')"
-      :title="$t('shareWorld.registerNewRemote')"
-      :ok-btn-txt="$t('shareWorld.register')"
-      @ok-click="okClick"
-      @close="onDialogCancel"
-    >
+    <BaseDialogCard :disable="[ownerName, repoName, pat].includes('')" :title="$t('shareWorld.registerNewRemote')"
+      :ok-btn-txt="$t('shareWorld.register')" @ok-click="okClick" @close="onDialogCancel">
       <div class="q-pb-sm">
         <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.account') }}</div>
-        <SsSelect
-          dense
-          v-model="accountType"
-          :options="[{ label: 'GitHub', value: 'github' }]"
-          option-label="label"
-          option-value="value"
-        />
+        <SsSelect dense v-model="accountType" :options="[{ label: 'GitHub', value: 'github' }]" option-label="label"
+          option-value="value" />
       </div>
       <div class="q-py-sm">
         <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.user') }}</div>
-        <SsInput
-          dense
-          v-model="ownerName"
-          :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]"
-        />
+        <SsInput dense v-model="ownerName" :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]" />
       </div>
       <div v-show="accountType === 'github'">
         <div class="q-py-sm">
           <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.repository') }}</div>
-          <SsInput
-            dense
-            v-model="repoName"
-            :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]"
-          />
+          <SsInput dense v-model="repoName" :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]" />
         </div>
         <div class="q-py-sm">
           <div class="caption" style="opacity: .6;">Personal Access Token</div>
-          <SsInput
-            dense
-            secret
-            v-model="pat"
-            :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]"
-          />
+          <SsInput dense secret v-model="pat" :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]" />
         </div>
       </div>
     </BaseDialogCard>

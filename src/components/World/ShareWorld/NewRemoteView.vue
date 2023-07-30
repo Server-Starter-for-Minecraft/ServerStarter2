@@ -30,21 +30,14 @@ function registerRemote(remoteData: GithubAccountSetting) {
 
 <template>
   <h1 class="q-py-xs">{{ $t('shareWorld.registerNewRemote') }}</h1>
-  <q-scroll-area
-    style="width: 100%; height: calc(220px + 6rem);"
-  >
+  <q-scroll-area style="width: 100%; height: calc(220px + 6rem);">
     <div class="row q-gutter-md no-wrap" style="margin: auto;">
       <div>
         <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
-        <AddContentsCard
-          :label="$t('shareWorld.addRemote.title')"
-          min-height="250px"
-          :card-style="{ 'border-radius': '6px' }"
-          @click="addRemote"
-          style="min-width: calc(13rem + 24px * 2);"
-        />
+        <AddContentsCard :label="$t('shareWorld.addRemote.title')" min-height="250px"
+          :card-style="{ 'border-radius': '6px' }" @click="addRemote" style="min-width: calc(13rem + 24px * 2);" />
       </div>
-      <div v-for="remoteData in values(sysStore.remoteSettings().github)" :key="remoteData.owner">
+      <div v-for="remoteData in values(sysStore.remoteSettings.github)" :key="remoteData.owner">
         <GithubCard :remote="remoteData" @register-click="registerRemote(remoteData)" />
       </div>
     </div>
