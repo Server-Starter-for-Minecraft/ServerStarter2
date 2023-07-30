@@ -4,6 +4,7 @@ import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter } from 'src/scripts/objFillter';
+import { sortValue } from 'src/scripts/objSort';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -31,11 +32,11 @@ export const useMainStore = defineStore('mainStore', {
 
       if (text !== '') {
         return recordKeyFillter(
-          worldStore.worldList,
+          worldStore.sortedWorldList,
           wId => worldStore.worldList[wId].name.match(text) !== null
         )
       }
-      return worldStore.worldList;
+      return worldStore.sortedWorldList;
     },
     /**
      * ワールドを新規作成する
@@ -78,6 +79,14 @@ export const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
       worldList: {} as Record<WorldID, WorldEdited>,
+    }
+  },
+  getters: {
+    sortedWorldList(state) {
+      return sortValue(
+        state.worldList,
+        (a, b) => (a.last_date ?? 0) - (b.last_date ?? 0)
+      )
     }
   }
 })

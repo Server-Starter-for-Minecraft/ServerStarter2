@@ -4,14 +4,13 @@ import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { assets } from 'src/assets/assets';
-import { checkError, sendError } from 'src/components/Error/Error';
+import { checkError } from 'src/components/Error/Error';
 import { CustomMapImporterReturns } from 'src/components/World/HOME/CustomMapImporter/iCustomMapImporter';
 import { isError } from 'src/scripts/error';
 import { values } from 'src/scripts/obj';
 import { useWorldStore } from 'src/stores/MainStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
@@ -23,31 +22,8 @@ import VersionSelecterView from 'src/components/World/HOME/VersionSelecterView.v
 
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
-const sysStore = useSystemStore()
 const $q = useQuasar()
 const { t } = useI18n()
-
-/**
- * バージョンの一覧を取得する
- */
-function getAllVers() {
-  const version = mainStore.world.version;
-  const versionList = sysStore.serverVersions.get(version.type);
-
-  // versionListがundefinedの時にエラー処理
-  if (versionList === void 0) {
-    sendError(
-      t('home.error.title'),
-      t('home.error.failedGetVersion', { serverVersion: mainStore.world.version })
-    );
-    mainStore.world.version.type = 'vanilla';
-    return;
-  }
-
-  // Version Listに選択されていたバージョンがない場合や、新規ワールドの場合は最新バージョンを提示
-  if (version.id == '' || versionList.every((ver) => ver.id != version.id))
-    mainStore.world.version.id = versionList[0].id;
-}
 
 /**
  * 選択されているワールドを削除する
@@ -56,8 +32,17 @@ async function removeWorld() {
   /** 描画の更新 */
   function updateView() {
     const worldStore = useWorldStore()
+
+    // 描画上のリストから削除
     mainStore.removeWorld()
-    mainStore.setWorld(values(worldStore.worldList)[0])
+
+    // ワールドが消失した場合は、新規ワールドを自動生成
+    if (values(worldStore.worldList).length === 0) {
+      mainStore.createNewWorld()
+    }
+
+    // ワールドリストの0番目を表示
+    mainStore.setWorld(values(worldStore.sortedWorldList)[0])
   }
 
   if (mainStore.newWorlds.has(mainStore.world.id)) {
@@ -136,22 +121,22 @@ async function saveNewWorld() {
   <div class="mainField">
     <q-item class="q-pa-none q-pt-lg">
       <q-item-section>
-        <!-- TODO: ボタンのサイズを自動で決定 -->
         <div
           v-show="mainStore.newWorlds.has(mainStore.world.id)"
-          class="row justify-between full-width q-pb-md"
+          class="row q-pb-md q-gutter-md"
         >
           <SsBtn
+            free-width
             :label="$t('home.init.save')"
             color="primary"
-            width="48%"
+            class="col"
             @click="saveNewWorld"
           />
-          <!-- TODO: NewWorldを削除すると、ワールド一覧に何も表示されなくなる場合には削除できないようにする？ -->
           <SsBtn
+            free-width
             :label="$t('home.init.discard')"
             color="red"
-            width="48%"
+            class="col"
             @click="removeWorld"
           />
         </div>

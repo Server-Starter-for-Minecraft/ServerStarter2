@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { sendError } from 'src/components/Error/Error';
@@ -17,7 +16,6 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const { t } = useI18n()
 
-const selectVersionType = ref(mainStore.world.version.type)
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
 const validVersionTypes = versionTypes.filter(
   serverType => sysStore.serverVersions.get(serverType) !== void 0
@@ -27,7 +25,7 @@ const validVersionTypes = versionTypes.filter(
  * バージョンの一覧を取得する
  */
 function getAllVers() {
-  const versionList = sysStore.serverVersions.get(selectVersionType.value);
+  const versionList = sysStore.serverVersions.get(mainStore.world.version.type);
 
   // versionListがundefinedの時にエラー処理
   if (versionList === void 0) {
@@ -47,7 +45,7 @@ function getAllVers() {
 <template>
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelect
-    v-model="selectVersionType"
+    v-model="mainStore.world.version.type"
     @update:model-value="getAllVers"
     :options="validVersionTypes"
     :label="$t('home.version.serverType')"
@@ -55,10 +53,10 @@ function getAllVers() {
   />
 
   <!-- バージョンの一覧を取得できていないときには、編集ができないようにする -->
-  <Vanilla v-if="selectVersionType === 'vanilla'" />
-  <Spigot  v-else-if="selectVersionType === 'spigot'" />
-  <PaperMC v-else-if="selectVersionType === 'papermc'" />
-  <Forge v-else-if="selectVersionType === 'forge'" />
-  <MohistMC v-else-if="selectVersionType === 'mohistmc'" />
-  <Fabric v-else-if="selectVersionType === 'fabric'" />
+  <Vanilla  v-if="mainStore.world.version.type      === 'vanilla'"  />
+  <Spigot   v-else-if="mainStore.world.version.type === 'spigot'"   />
+  <PaperMC  v-else-if="mainStore.world.version.type === 'papermc'"  />
+  <Forge    v-else-if="mainStore.world.version.type === 'forge'"    />
+  <MohistMC v-else-if="mainStore.world.version.type === 'mohistmc'" />
+  <Fabric   v-else-if="mainStore.world.version.type === 'fabric'"   />
 </template>

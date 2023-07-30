@@ -13,10 +13,6 @@ const searchWorldName = ref('')
 
 const miniChangeWidth = 200
 const drawer = ref(true)
-
-function openHP() {
-  window.API.sendOpenBrowser('https://civiltt.github.io/ServerStarter/')
-}
 </script>
 
 <template>
