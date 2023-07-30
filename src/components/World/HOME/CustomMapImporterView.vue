@@ -9,11 +9,13 @@ import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import { isValid } from 'src/scripts/error';
+import { useI18n } from 'vue-i18n';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const $q = useQuasar()
+const { t } = useI18n()
 const mainStore = useMainStore()
 const localWorlds:Ref<CustomMapData[]> = ref([])
 
@@ -25,7 +27,8 @@ async function importZip() {
   checkError(
     res,
     w => showCheckDialog(w),
-    () => { return { title: '配布ワールドの導入に失敗しました' } }
+    e => { return { title: t(`error.${e.key}`) }}
+    //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
 /**
@@ -36,7 +39,8 @@ async function importFolder() {
   checkError(
     res,
     w => showCheckDialog(w),
-    () => { return { title: '配布ワールドの導入に失敗しました' } }
+    e => { return { title: t(`error.${e.key}`) }}
+    //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
 

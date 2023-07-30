@@ -1,7 +1,7 @@
 export const jaShareWorld = {
   title: 'ワールド共有設定 (ShareWorld)',
-  descriptShareWorld: '\
-  ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。<br/>\
+  desc: '\
+  ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。<br>\
   使い方の詳細は{link}をご参照ください。',
   link: '公式HP',
   descriptRemote: 'ワールド共有機能（ShareWorld）を利用するためのデータ保管場所を登録します',
@@ -26,8 +26,9 @@ export const jaShareWorld = {
       remote: 'リモートの登録を解除',
       dialog: '{name} を解除',
       decide: '登録を解除',
-      desc1: 'ServerStarter2 から 「{owner} / {repo}」の登録を解除します。',
-      desc2: 'GitHub上のリポジトリは削除されませんが、「{owner} / {repo}」を用いてワールドを再共有することはできません。'
+      desc: '\
+        ServerStarter2 から 「{owner} / {repo}」の登録を解除します。<br>\
+        GitHub上のリポジトリは削除されませんが、「{owner} / {repo}」を用いてワールドを再共有することは出来なくなります。',
     }
-  }
+  }, 
 }
