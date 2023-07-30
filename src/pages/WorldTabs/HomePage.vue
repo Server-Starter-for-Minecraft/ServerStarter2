@@ -6,8 +6,10 @@ import { WorldName } from 'app/src-electron/schema/brands';
 import { assets } from 'src/assets/assets';
 import { checkError } from 'src/components/Error/Error';
 import { CustomMapImporterReturns } from 'src/components/World/HOME/CustomMapImporter/iCustomMapImporter';
+import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import { isError } from 'src/scripts/error';
 import { values } from 'src/scripts/obj';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldStore } from 'src/stores/MainStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -17,9 +19,13 @@ import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import IconSelectView from 'src/components/World/HOME/IconSelectView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
+import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
+import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import CustomMapImporterView from 'src/components/World/HOME/CustomMapImporterView.vue';
 import VersionSelecterView from 'src/components/World/HOME/VersionSelecterView.vue';
 
+const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 const $q = useQuasar()
@@ -115,6 +121,21 @@ async function saveNewWorld() {
     () => { return { title: 'ワールドの保存に失敗しました' }}
   )
 }
+
+/**
+ * ワールドコンテナの新規作成Dialog
+ */
+function openFolderEditor() {
+  $q.dialog({
+    component: AddFolderDialog
+  }).onOk((payload: AddFolderDialogReturns) => {
+    sysStore.systemSettings.container.push({
+      name: payload.name,
+      visible: true,
+      container: payload.container
+    })
+  })
+}
 </script>
 
 <template>
@@ -188,6 +209,22 @@ async function saveNewWorld() {
 
     <ExpansionView :title="$t('home.saveWorld.title')">
       <p class="text-caption">{{ $t('home.saveWorld.description') }}</p>
+
+      <div class="column q-gutter-y-md">
+        <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
+          <FolderCard
+            v-model="sysStore.systemSettings.container[n - 1]"
+            :active="mainStore.world.container === sysStore.systemSettings.container[n - 1].container"
+            @click="mainStore.world.container = sysStore.systemSettings.container[n - 1].container"
+          />
+        </template>
+        <AddContentsCard
+          label="ワールドフォルダを追加"
+          min-height="3rem"
+          :card-style="{'min-width': '100%', 'border-radius': '5px'}"
+          @click="openFolderEditor"
+        />
+      </div>
     </ExpansionView>
 
     <ExpansionView :title="$t('home.setting.title')">

@@ -1,10 +1,37 @@
 <script setup lang="ts">
+import { getCssVar, useQuasar } from 'quasar';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
+import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 
+interface Prop {
+  showOperationBtns?: boolean
+  active?: boolean
+  onClick?: () => void
+}
+defineProps<Prop>()
 const folder = defineModel<WorldContainerSetting>({ required: true })
 
+const $q = useQuasar()
 const sysStore = useSystemStore()
+
+function switchVisible() {
+  return folder.value.visible = !folder.value.visible
+}
+
+function editFolder() {
+  $q.dialog({
+    component: AddFolderDialog,
+    componentProps: {
+      containerSettings: folder.value
+    } as AddFolderDialogProps
+  }).onOk((payload: AddFolderDialogReturns) => {
+    folder.value.name = payload.name
+    folder.value.container = payload.container
+  })
+}
 
 function removeFolder() {
   sysStore.systemSettings.container.splice(
@@ -14,12 +41,45 @@ function removeFolder() {
 </script>
 
 <template>
-  <q-card flat>
-    <q-card-section>
-      <div class="text-omit" style="font-size: 1.1rem;">{{ folder.name }}</div>
-      <div class="text-caption text-omit" style="opacity: .6;">{{ folder.container }}</div>
-    </q-card-section>
-
-    <q-checkbox v-model="folder.visible" />
+  <q-card
+    flat
+    bordered 
+    :style="{ 'border-color': active ? getCssVar('primary') : 'transparent' }"
+  >
+    <q-item :clickable="onClick !== void 0" :active="active" @click="onClick">
+      <q-item-section>
+        <div class="text-omit" style="font-size: 1.1rem;">{{ folder.name }}</div>
+        <div class="text-caption text-omit" style="opacity: .6;">{{ folder.container }}</div>
+      </q-item-section>
+  
+      <q-item-section side>
+        <div class="row q-gutter-sm">
+          <ss-btn
+            dense
+            free-width
+            :icon="folder.visible ? 'visibility' : 'visibility_off'"
+            :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible"
+            @click="switchVisible"
+          >
+            <q-tooltip>
+              ワールド一覧にこのフォルダに保存されたワールドを表示{{ folder.visible ? 'する' : 'しない' }}
+            </q-tooltip>
+          </ss-btn>
+          <ss-btn
+            v-show="showOperationBtns"
+            free-width
+            label="編集"
+            @click="editFolder"
+          />
+          <ss-btn
+            v-show="showOperationBtns"
+            free-width
+            label="削除"
+            color="red"
+            @click="removeFolder"
+          />
+        </div>
+      </q-item-section>
+    </q-item>
   </q-card>
 </template>

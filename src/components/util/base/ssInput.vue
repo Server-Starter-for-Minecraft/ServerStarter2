@@ -5,6 +5,7 @@ import { ValidationRule } from 'quasar/dist/types/api/validation'
 interface Prop {
   label?: string
   placeholder?: string
+  hint?: string
   dense?: boolean
   autofocus?: boolean
   secret?: boolean
@@ -39,6 +40,7 @@ function onClearClick() {
     filled
     :label="label"
     :placeholder="placeholder"
+    :hint="hint"
     :dense="dense"
     :autofocus="autofocus"
     :type="isPwd ? 'password' : 'text'"
