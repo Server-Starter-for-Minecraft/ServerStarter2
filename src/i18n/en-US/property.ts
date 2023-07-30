@@ -94,4 +94,11 @@ export const enUSproperty = {
   resetProperty:'Reset setting to default setting \"{defaultProperty}\"',
   resetProperty2:'You can change basic settings from "System Settings" > "Properties".',
   failed: 'Failed to load properties',
+  reset: 'Reset property settings',
+  inputField: {
+    downerLimit: '{n} or more',
+    upperLimit: '{n} or less',
+    multiple: 'multiple of {n}',
+    number:  'Input half size number'
+  },
 };

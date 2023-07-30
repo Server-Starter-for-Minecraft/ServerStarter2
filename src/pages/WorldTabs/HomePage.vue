@@ -142,14 +142,14 @@ async function saveNewWorld() {
           class="row justify-between full-width q-pb-md"
         >
           <SsBtn
-            label="ワールドの設定を保存"
+            :label="$t('home.init.save')"
             color="primary"
             width="48%"
             @click="saveNewWorld"
           />
           <!-- TODO: NewWorldを削除すると、ワールド一覧に何も表示されなくなる場合には削除できないようにする？ -->
           <SsBtn
-            label="ワールドの設定を破棄"
+            :label="$t('home.init.discard')"
             color="red"
             width="48%"
             @click="removeWorld"

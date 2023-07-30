@@ -12,7 +12,7 @@ function openHP() {
 
 <template>
   <div class="mainField">
-    <h1 class="q-pt-lg q-pb-md q-ma-none">ワールド共有設定（ShareWorld）</h1>
+    <h1 class="q-pt-lg q-pb-md q-ma-none">{{ $t('shareWorld.title') }}</h1>
     
     <div class="q-pb-lg text-body2" style="opacity: .6;">
       ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。<br>

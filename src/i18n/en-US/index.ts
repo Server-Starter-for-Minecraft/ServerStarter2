@@ -12,6 +12,7 @@ import { enUSError } from "./error";
 import { enUSProgress } from "./progress";
 import { enUSWorldList } from "./worldList";
 import { enUSIcon } from "./icon";
+import { enUSShareWorld } from "./shareWorld";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
@@ -24,5 +25,6 @@ export const enUS: MessageSchema = {
   error:enUSError,
   progress:enUSProgress,
   worldList:enUSWorldList,
-  icon:enUSIcon
+  icon:enUSIcon,
+  shareWorld:enUSShareWorld,
 };

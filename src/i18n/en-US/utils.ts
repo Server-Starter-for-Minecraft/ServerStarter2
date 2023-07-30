@@ -9,7 +9,7 @@ export const enUSUtils = {
     datapack: 'Datapack',
     plugin: 'Plugin',
     mod: 'MOD',
-    cloud: 'Share your world',
+    cloud: 'ShareWorld',
   },
   systemSettingTabs: {
     home: 'General',

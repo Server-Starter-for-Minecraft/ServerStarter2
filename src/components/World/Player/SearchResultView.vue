@@ -61,7 +61,7 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
       </q-list>
     </q-card-section>
     <q-card-section v-else>
-      <p class="q-my-xs text-center">検索結果無し</p>
+      <p class="q-my-xs text-center">{{ $t('player.notFound') }}</p>
     </q-card-section>
   </q-card>
 </template>

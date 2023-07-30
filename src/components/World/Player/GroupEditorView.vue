@@ -113,7 +113,7 @@ function removeGroup() {
                 @click="playerStore.selectedGroup.color = colorOp.code"
               >
                 <q-tooltip class="text-body2">
-                  {{ colorOp.label }}
+                  {{ $t(`player.color.${colorOp.label}`) }}
                 </q-tooltip>
               </q-btn>                
             </template>

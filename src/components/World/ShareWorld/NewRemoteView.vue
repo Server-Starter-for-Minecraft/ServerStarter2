@@ -29,7 +29,7 @@ function registerRemote(remoteData: GithubAccountSetting) {
 </script>
 
 <template>
-  <h1 class="q-py-xs">新規リモートの登録</h1>
+  <h1 class="q-py-xs">{{ $t('shareWorld.registerNewRemote') }}</h1>
   <q-scroll-area
     style="width: 100%; height: calc(220px + 6rem);"
   >
@@ -37,7 +37,7 @@ function registerRemote(remoteData: GithubAccountSetting) {
       <div>
         <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
         <AddContentsCard
-          label="リモートを追加"
+          :label="$t('shareWorld.addRemote.title')"
           min-height="250px"
           :card-style="{ 'border-radius': '6px' }"
           @click="addRemote"

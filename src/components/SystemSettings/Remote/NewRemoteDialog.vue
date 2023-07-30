@@ -45,13 +45,13 @@ function okClick() {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
       :disable="[ownerName, repoName, pat].includes('')"
-      title="新規ShareWorldの登録"
-      ok-btn-txt="登録"
+      :title="$t('shareWorld.registerNewRemote')"
+      :ok-btn-txt="$t('shareWorld.register')"
       @ok-click="okClick"
       @close="onDialogCancel"
     >
       <div class="q-pb-sm">
-        <div class="caption" style="opacity: .6;">アカウントの種類</div>
+        <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.account') }}</div>
         <SsSelect
           dense
           v-model="accountType"
@@ -61,20 +61,20 @@ function okClick() {
         />
       </div>
       <div class="q-py-sm">
-        <div class="caption" style="opacity: .6;">ユーザー名</div>
+        <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.user') }}</div>
         <SsInput
           dense
           v-model="ownerName"
-          :rules="[val => val !== '' || '値を入力してください']"
+          :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]"
         />
       </div>
       <div v-show="accountType === 'github'">
         <div class="q-py-sm">
-          <div class="caption" style="opacity: .6;">リポジトリ名</div>
+          <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.repository') }}</div>
           <SsInput
             dense
             v-model="repoName"
-            :rules="[val => val !== '' || '値を入力してください']"
+            :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]"
           />
         </div>
         <div class="q-py-sm">
@@ -83,7 +83,7 @@ function okClick() {
             dense
             secret
             v-model="pat"
-            :rules="[val => val !== '' || '値を入力してください']"
+            :rules="[val => val !== '' || $t('shareWorld.addRemote.inputValue')]"
           />
         </div>
       </div>

@@ -16,9 +16,9 @@ const inputPat = ref(prop.oldPat)
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
       :disable="inputPat === ''"
-      title="Personal Access Tokenを更新"
+      :title="$t('shareWorld.githubCard.updatePAT')"
       overline="GitHub"
-      ok-btn-txt="Tokenを更新"
+      :ok-btn-txt="$t('shareWorld.githubCard.update')"
       @ok-click="onDialogOK({ newPat: inputPat } as updatePatDialogReturns)"
       @close="onDialogCancel"
     >
@@ -27,7 +27,7 @@ const inputPat = ref(prop.oldPat)
         secret
         autofocus
         v-model="inputPat"
-        placeholder="Personal Access Token を入力"
+        :placeholder="$t('shareWorld.githubCard.inputPAT')"
       />
     </BaseDialogCard>
   </q-dialog>
