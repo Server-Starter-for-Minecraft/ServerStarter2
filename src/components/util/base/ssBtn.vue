@@ -7,6 +7,7 @@ interface Prop {
   width?: string
   freeWidth?: boolean
   disable?: boolean
+  loading?: boolean
   isCapital?: boolean
   onClick: () => void
 }
@@ -21,6 +22,7 @@ defineProps<Prop>()
     :label="label"
     :color="color"
     :disable="disable"
+    :loading="loading"
     :no-caps="!isCapital"
     @click="onClick"
     :style="{ 'width': freeWidth ? '' : (width ?? '13rem') }"

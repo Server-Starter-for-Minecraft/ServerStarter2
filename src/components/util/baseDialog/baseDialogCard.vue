@@ -19,6 +19,7 @@ defineProps<baseDialogProp>()
     <q-card-actions align="right">
       <ss-btn
         :disable="disable"
+        :loading="loading"
         :label="okBtnTxt"
         :color="color ?? 'primary'"
         @click="onOkClick"
@@ -26,7 +27,15 @@ defineProps<baseDialogProp>()
     </q-card-actions>
 
     <div class="absolute-top-right">
-      <q-btn dense flat round icon="close" size="1rem" class="q-ma-sm" @click="onClose" />
+      <q-btn
+        dense
+        flat
+        round
+        icon="close"
+        size="1rem"
+        class="q-ma-sm"
+        @click="onClose"
+      />
     </div>
   </q-card>
 </template>

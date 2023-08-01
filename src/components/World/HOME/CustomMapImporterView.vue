@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Ref, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
-import { CustomMapImporterReturns } from './CustomMapImporter/iCustomMapImporter';
+import { CustomMapImporterProp, importCustomMap } from './CustomMapImporter/iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
-import { isValid } from 'src/scripts/error';
-import { useI18n } from 'vue-i18n';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -18,6 +17,7 @@ const $q = useQuasar()
 const { t } = useI18n()
 const mainStore = useMainStore()
 const localWorlds:Ref<CustomMapData[]> = ref([])
+const loading = ref(false)
 
 /**
  * 配布ワールドのZip版を導入
@@ -50,9 +50,7 @@ async function importFolder() {
 function showCheckDialog(customMap: CustomMapData) {
   // NewWorldの時には確認画面を表示しない
   if (mainStore.newWorlds.has(mainStore.world.id)) {
-    onDialogOK({
-      customMap: customMap
-    } as CustomMapImporterReturns)
+    importCustomMap(customMap)
     return
   }
 
@@ -62,11 +60,9 @@ function showCheckDialog(customMap: CustomMapData) {
     component: CheckDialog,
     componentProps: {
       customMap: customMap
-    } as CustomMapImporterReturns
+    } as CustomMapImporterProp
   }).onOk(() => {
-    onDialogOK({
-      customMap: customMap
-    } as CustomMapImporterReturns)
+    onDialogOK()
   }).onCancel(() => {
     onDialogCancel()
   })
@@ -121,7 +117,16 @@ onMounted(async () => {
       </q-card-section>
 
       <div class="absolute-top-right">
-        <q-btn dense flat round icon="close" size="1rem" class="q-ma-sm" @click="onDialogCancel" />
+        <q-btn
+          dense
+          flat
+          round
+          icon="close"
+          size="1rem"
+          :loading="loading"
+          class="q-ma-sm"
+          @click="onDialogCancel"
+        />
       </div>
     </q-card>
   </q-dialog>

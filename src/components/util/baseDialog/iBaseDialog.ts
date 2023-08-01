@@ -1,4 +1,5 @@
 export interface baseDialogProp {
+  loading?: boolean
   disable?: boolean
   overline?: string
   title: string

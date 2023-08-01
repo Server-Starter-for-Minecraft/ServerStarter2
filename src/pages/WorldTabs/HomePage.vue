@@ -5,7 +5,6 @@ import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { assets } from 'src/assets/assets';
 import { checkError } from 'src/components/Error/Error';
-import { CustomMapImporterReturns } from 'src/components/World/HOME/CustomMapImporter/iCustomMapImporter';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import { isError } from 'src/scripts/error';
 import { values } from 'src/scripts/obj';
@@ -81,8 +80,6 @@ function openIconSelecter() {
 function openCustomMapImporter() {
   $q.dialog({
     component: CustomMapImporterView,
-  }).onOk((payload: CustomMapImporterReturns) => {
-    mainStore.world.custom_map = payload.customMap
   })
 }
 
