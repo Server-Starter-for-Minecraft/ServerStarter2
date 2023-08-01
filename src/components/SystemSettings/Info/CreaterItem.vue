@@ -2,8 +2,7 @@
 interface Prop {
   job: string
   names: string[]
-  twitter?: string
-  github?: string
+  url?: string
 }
 defineProps<Prop>()
 
@@ -14,30 +13,23 @@ function openLink(url: string) {
 
 <template>
   <div class="row q-pb-md">
-    <p class="q-ma-none" style="width: 12rem;">　{{ job }}</p>
+    <p class="q-ma-none" style="width: 10rem;">{{ job }}</p>
 
     <div class="column">
       <template v-for="name in names" :key="name">
-        <p class="q-ma-none" style="width: 5rem;">{{ name }}</p>
+        <a v-if="url" href="javascript: void(0)" @click="openLink(url)" class="q-ma-none text-primary" style="width: 5rem; font-size: 1rem;">
+          {{ name }}
+        </a>
+        <p v-else class="q-ma-none" style="width: 5rem;">{{ name }}</p>
       </template>
     </div>
-    
-    <q-btn
-      v-if="twitter"
-      dense
-      label="T"
-      color="blue"
-      @click="openLink(twitter)"
-      class="q-px-sm q-mr-md"
-    />
-    
-    <q-btn
-      v-if="github"
-      dense
-      label="G"
-      color="black"
-      @click="openLink(github)"
-      class="q-px-sm"
-    />
   </div>
 </template>
+
+<style scoped lang="scss">
+.logoBtn {
+  width: 1.7rem;
+  min-height: 1.7rem;
+  max-height: 1.7rem;
+}
+</style>
