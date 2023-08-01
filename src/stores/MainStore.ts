@@ -76,6 +76,13 @@ export const useMainStore = defineStore('mainStore', {
     setWorld(world: World | WorldEdited) {
       this.selectedWorldID = world.id
       this.inputWorldName = world.name
+    },
+    /**
+     * ワールドオブジェクトそのものを更新する
+     */
+    updateWorld(world: World | WorldEdited) {
+      const worldStore = useWorldStore()
+      worldStore.worldList[this.selectedWorldID] = world
     }
   },
 });

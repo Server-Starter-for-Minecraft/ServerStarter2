@@ -1,3 +1,4 @@
+import { toRaw } from "vue";
 import { CustomMapData } from "app/src-electron/schema/filedata";
 import { deepcopy } from "app/src-electron/util/deepcopy";
 import { checkError } from "src/components/Error/Error";
@@ -12,14 +13,13 @@ export async function importCustomMap(customMap: CustomMapData) {
   
   // ready world object
   const world = deepcopy(mainStore.world)
-  world.custom_map = customMap
+  world.custom_map = toRaw(customMap)
 
   // save data
-  const res = await window.API.invokeSetWorld(world)
-
+  const res = await window.API.invokeSetWorld(toRaw(world))
   checkError(
     res.value,
-    undefined,
+    w => mainStore.updateWorld(w),
     () => { return { title: '配布ワールドの保存に失敗しました'}}
   )
 }

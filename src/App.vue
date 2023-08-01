@@ -97,15 +97,13 @@ function setSubscribe() {
 
   // TODO: worldStoreのPrivate化
   worldStore.$subscribe((mutation, state) => {
-    if (!mainStore.newWorlds.has(mainStore.selectedWorldID)) {
-      window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
-        checkError(
-          v.value,
-          undefined,
-          () => { return { title: 'ワールドの設定を保存できませんでした' } }
-        )
-      })
-    }
+    window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
+      checkError(
+        v.value,
+        undefined,
+        () => { return { title: 'ワールドの設定を保存できませんでした' } }
+      )
+    })
   })
   
   setSysSettingsSubscriber()

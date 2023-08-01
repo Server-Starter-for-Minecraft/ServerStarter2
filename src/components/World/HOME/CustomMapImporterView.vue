@@ -15,7 +15,6 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 
 const $q = useQuasar()
 const { t } = useI18n()
-const mainStore = useMainStore()
 const localWorlds:Ref<CustomMapData[]> = ref([])
 const loading = ref(false)
 
@@ -49,7 +48,6 @@ async function importFolder() {
  */
 function showCheckDialog(customMap: CustomMapData) {
   // 確認Dialogの表示
-  onDialogHide()
   $q.dialog({
     component: CheckDialog,
     componentProps: {
@@ -57,8 +55,6 @@ function showCheckDialog(customMap: CustomMapData) {
     } as CustomMapImporterProp
   }).onOk(() => {
     onDialogOK()
-  }).onCancel(() => {
-    onDialogCancel()
   })
 }
 
