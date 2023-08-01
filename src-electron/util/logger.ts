@@ -121,7 +121,7 @@ export function getRootLogger(logDir: Path): {
       _file: {
         type: 'file',
         filename: logDir.child(LATEST).str(),
-        layout: { type: 'custom', max: 500 },
+        layout: { type: 'custom' },
       },
       out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
       file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
