@@ -28,10 +28,6 @@ async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore
   // Stop状態でない時にはサーバーを起動できないようにする
   if (cStore.status() !== 'Stop') { return }
 
-  // NewWorldの場合にはWorldの書き出し、NewWorldではなくなる通知、を行う
-  await window.API.invokeCreateWorld(toRaw(mStore.world))
-  mStore.newWorlds.delete(mStore.selectedWorldID)
-
   // サーバーの起動を開始
   await router.push('/console');
   runServer()

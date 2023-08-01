@@ -5,13 +5,13 @@ import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
+import { isError } from 'src/scripts/error';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
     return {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
-      newWorlds: new Set<WorldID>(),
       errorWorlds: new Set<WorldID>(),
       iconCandidate: undefined as ImageURI | undefined
     };
@@ -42,13 +42,22 @@ export const useMainStore = defineStore('mainStore', {
      * ワールドを新規作成する
      */
     async createNewWorld() {
-      const worldStore = useWorldStore()
+      async function creater() {
+        // NewWorldを生成
+        const world = (await window.API.invokeNewWorld()).value
+        if (isError(world)) {
+          return world
+        }
+        // NewWorldを実データに書き出す
+        return (await window.API.invokeCreateWorld(world)).value
+      }
 
+      const worldStore = useWorldStore()
+      // NewWorldをFrontのリストに追加する
       checkError(
-        (await window.API.invokeNewWorld()).value,
+        await creater(),
         world => {
           worldStore.worldList[world.id] = toRaw(world)
-          this.newWorlds.add(world.id)
           this.setWorld(world)
         },
         () => { return { title: '新規ワールドの作成に失敗しました' }}

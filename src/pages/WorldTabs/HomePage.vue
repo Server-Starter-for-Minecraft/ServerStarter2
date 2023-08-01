@@ -50,17 +50,12 @@ async function removeWorld() {
     mainStore.setWorld(values(worldStore.sortedWorldList)[0])
   }
 
-  if (mainStore.newWorlds.has(mainStore.world.id)) {
-    updateView()
-  }
-  else {
-    const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
-    checkError(
-      res.value,
-      updateView,
-      () => { return { title: t('home.error.failedDelete', { serverName: mainStore.world.name }) } }
-    )
-  }
+  const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID)
+  checkError(
+    res.value,
+    updateView,
+    () => { return { title: t('home.error.failedDelete', { serverName: mainStore.world.name }) } }
+  )
 }
 
 /**
@@ -108,18 +103,6 @@ function clearNewName() {
 }
 
 /**
- * NewWorldを保存する
- */
-async function saveNewWorld() {
-  const res = await window.API.invokeCreateWorld(toRaw(mainStore.world))
-  checkError(
-    res.value,
-    w => mainStore.newWorlds.delete(w.id),
-    () => { return { title: 'ワールドの保存に失敗しました' }}
-  )
-}
-
-/**
  * ワールドコンテナの新規作成Dialog
  */
 function openFolderEditor() {
@@ -139,26 +122,6 @@ function openFolderEditor() {
   <div class="mainField">
     <q-item class="q-pa-none q-pt-lg">
       <q-item-section>
-        <div
-          v-show="mainStore.newWorlds.has(mainStore.world.id)"
-          class="row q-pb-md q-gutter-md"
-        >
-          <SsBtn
-            free-width
-            :label="$t('home.init.save')"
-            color="primary"
-            class="col"
-            @click="saveNewWorld"
-          />
-          <SsBtn
-            free-width
-            :label="$t('home.init.discard')"
-            color="red"
-            class="col"
-            @click="removeWorld"
-          />
-        </div>
-
         <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
         <SsInput
           v-model="mainStore.inputWorldName"

@@ -77,16 +77,6 @@ export async function runServer() {
     mainStore.world.avater_path = assets.png.unset
   }
 
-  // 新規ワールドの時にサーバーのディレクトリを生成する
-  if (mainStore.newWorlds.has(mainStore.world.id)) {
-    const res = await window.API.invokeCreateWorld(toRaw(mainStore.world))
-    checkError(
-      res.value,
-      w => mainStore.newWorlds.delete(w.id),
-      () => { return { title: 'ワールドの生成に失敗しました' }}
-    )
-  }
-
   // プログレスのステータスをセットして起動
   consoleStore.setProgress(
     mainStore.selectedWorldID,

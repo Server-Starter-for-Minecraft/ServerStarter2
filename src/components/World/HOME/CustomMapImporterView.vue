@@ -5,7 +5,7 @@ import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
-import { CustomMapImporterProp, importCustomMap } from './CustomMapImporter/iCustomMapImporter';
+import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
@@ -48,12 +48,6 @@ async function importFolder() {
  * 配布ワールドで既存のデータを上書きするかの確認を行う
  */
 function showCheckDialog(customMap: CustomMapData) {
-  // NewWorldの時には確認画面を表示しない
-  if (mainStore.newWorlds.has(mainStore.world.id)) {
-    importCustomMap(customMap)
-    return
-  }
-
   // 確認Dialogの表示
   onDialogHide()
   $q.dialog({
