@@ -15,8 +15,9 @@ function openHP() {
     <h1 class="q-pt-lg q-pb-md q-ma-none">{{ $t('shareWorld.title') }}</h1>
     
     <div class="q-pb-lg text-body2" style="opacity: .6;">
-      ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。<br>
-      使い方の詳細は<a href="javascript:void(0)" @click="openHP" class="text-primary">公式HP</a>をご参照ください。
+      <i18n-t keypath="shareWorld.desc" tag="label" for="shareWorld.link">
+        <a href="javascript:void(0)" @click="openHP" class="text-primary">{{ $t('shareWorld.link') }}</a>
+      </i18n-t>
     </div>
 
     <NewRemoteView v-if="mainStore.world.remote === void 0" />
