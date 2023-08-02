@@ -66,7 +66,7 @@ function removeFolder() {
             </q-tooltip>
           </ss-btn>
           <ss-btn
-            v-show="showOperationBtns"
+            v-show="showOperationBtns && folder.name !== 'default'"
             free-width
             label="編集"
             @click="editFolder"
@@ -76,6 +76,7 @@ function removeFolder() {
             free-width
             label="削除"
             color="red"
+            :disable="sysStore.systemSettings.container.length === 1"
             @click="removeFolder"
           />
         </div>
