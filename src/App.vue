@@ -8,6 +8,7 @@ import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
+import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
 import { deepCopy } from './scripts/deepCopy';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 
@@ -55,6 +56,7 @@ setOpenDialogFunc((args) => {
 // Windowの起動時処理
 firstProcess()
 setSubscribe()
+setShutdownHandler()
 
 
 /**

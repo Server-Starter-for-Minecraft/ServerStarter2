@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { WorldName } from 'app/src-electron/schema/brands';
