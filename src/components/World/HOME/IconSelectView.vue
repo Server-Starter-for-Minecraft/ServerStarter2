@@ -70,13 +70,13 @@ function showImgClipper() {
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card >
+    <q-card>
       <h1 class="q-pa-none q-ml-md q-pt-sm">
         {{ $t("icon.setIcon") }}
       </h1>
 
       <q-card-section v-if="!isImgClipper">
-        <div class="q-gutter-md">
+        <div class="q-gutter-md justify-center flex" style="margin-left: -24px;">
           <SelectorBtn
             icon="add"
             :label="$t('icon.selcIcon')"
@@ -92,6 +92,9 @@ function showImgClipper() {
         <q-item>
           <q-item-section style="image-rendering: pixelated;">
             <ClipImg v-if="customImgReload" />
+            <div v-else class="customImgSelecting">
+              画像を選択中
+            </div>
           </q-item-section>
           <q-item-section side>
             <SelectorBtn
@@ -127,3 +130,15 @@ function showImgClipper() {
     </q-card>
   </q-dialog>
 </template>
+
+<style scoped lang="scss">
+.customImgSelecting {
+  min-width: 300px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  opacity: .6;
+}
+</style>

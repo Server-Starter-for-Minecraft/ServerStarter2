@@ -3,7 +3,6 @@ import { Ref, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
-import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
 import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -16,7 +15,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 const $q = useQuasar()
 const { t } = useI18n()
 const localWorlds:Ref<CustomMapData[]> = ref([])
-const loading = ref(false)
+const loading = ref(true)
 
 /**
  * 配布ワールドのZip版を導入
@@ -65,6 +64,9 @@ onMounted(async () => {
     lws => localWorlds.value = lws,
     () => { return { title: 'シングルワールドの読み込みに失敗しました' } }
   )
+
+  // 読み込み処理の終了を通知
+  loading.value = false
 })
 </script>
 
@@ -99,7 +101,22 @@ onMounted(async () => {
 
       <q-card-section>
         <span class="text-caption">{{ $t('worldList.addSingleWorld') }}</span>
-        <q-list separator>
+        <div v-if="localWorlds.length === 0" class="messageField">
+          <div v-if="loading" class="absolute-center messageText row">
+            <q-circular-progress
+              indeterminate
+              rounded
+              color="grey"
+              size="2rem"
+              class="q-my-sm q-mr-lg"
+            />
+            <p>シングルプレイワールドを<br>読み込み中</p>
+          </div>
+          <div v-else class="absolute-center messageText">
+            シングルプレイワールドは<br>見つかりませんでした
+          </div>
+        </div>
+        <q-list v-else separator>
           <template v-for="localWorld in localWorlds" :key="localWorld.path">
             <WorldItem :world="localWorld" @click="showCheckDialog(localWorld)" />
           </template>
@@ -113,7 +130,6 @@ onMounted(async () => {
           round
           icon="close"
           size="1rem"
-          :loading="loading"
           class="q-ma-sm"
           @click="onDialogCancel"
         />
@@ -125,5 +141,16 @@ onMounted(async () => {
 <style scoped lang="scss">
 .btn {
   font-size: 1rem;
+}
+
+.messageField {
+  width: 20rem;
+  height: 10rem;
+}
+
+.messageText {
+  width: max-content;
+  font-size: 1rem;
+  opacity: .6;
 }
 </style>

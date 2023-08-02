@@ -98,13 +98,20 @@ function openGroupEditor(group?: PlayerGroup) {
               style="width: 6.5rem; margin-right: 10px;"
             />
           </div>
-          <div class="row q-gutter-sm q-pa-sm">
-            <div v-for="player in playerStore.searchPlayers(mainStore.world.players).sort(playerSortFunc(playerOrder))" :key="player.uuid" class="col-">
+          <div v-if="mainStore.world.players.length !== 0" class="row q-gutter-sm q-pa-sm">
+            <div
+              v-for="player in playerStore.searchPlayers(mainStore.world.players).sort(playerSortFunc(playerOrder))"
+              :key="player.uuid"
+              class="col-"
+            >
               <PlayerCardView
                 :uuid="player.uuid"
                 :op-level="player.op?.level"
               />
             </div>
+          </div>
+          <div v-else class="full-width text-center text-h5 q-py-xl" style="opacity: .6;">
+            プレイヤーが登録されていません
           </div>
 
           <q-separator class="q-my-md" />
