@@ -191,7 +191,10 @@ export interface API extends IAPI {
       ) => Promise<Failable<NewFileData<ModData>>>) &
       ((
         options: { type: 'image' } & DialogOptions
-      ) => Promise<Failable<ImageURIData>>);
+      ) => Promise<Failable<ImageURIData>>) &
+      ((
+        options: { type: 'container' } & DialogOptions
+      ) => Promise<Failable<WorldContainer>>);
   };
 }
 
