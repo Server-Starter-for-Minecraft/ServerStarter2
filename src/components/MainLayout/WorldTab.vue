@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -71,8 +71,13 @@ function selectWorldIdx() {
       </div>
     </q-item-section>
 
-    <q-tooltip v-if="sysStore.systemSettings.user.drawerWidth < 200" anchor="center middle" self="top middle"
-      class="text-body2">
+    <q-tooltip
+      v-if="sysStore.systemSettings.user.drawerWidth < 200"
+      anchor="center middle"
+      self="top middle"
+      :delay="500"
+      class="text-body2"
+    >
       {{ world.name }}
     </q-tooltip>
   </q-item>

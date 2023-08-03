@@ -3,6 +3,7 @@ interface Prop {
   iconSrc?: string
   iconName?: string
   label: string
+  tooltip?: string
   to?: string
   onClick?: () => void
 }
@@ -20,5 +21,9 @@ defineProps<Prop>()
     <q-item-section>
       <span style="font-size: 1rem;">{{ label }}</span>
     </q-item-section>
+
+    <q-tooltip v-if="tooltip" anchor="center middle" self="top middle" :delay="500">
+      {{ tooltip }}
+    </q-tooltip>
   </q-item>
 </template>
