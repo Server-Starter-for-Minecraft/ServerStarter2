@@ -1,22 +1,19 @@
+# 
+# assets.tsの自動生成プログラム
+# 
+# SVG画像においては余計な要素（defs、sodipodi:namedview）を落としておく
+# 色を可変にしたい場合は、「fill:${color}」のように色コード部分を可変値にしておく
+# 
 
 from glob import glob
 from pathlib import Path
 import base64
 
-def svgEncode(svg):
+def svgEncode(svg:str):
   """
   SVGをエンコード
   """
-  encodePattern = '"%#{}<>&|[]^`;?:@=/ ' # Encode these to %hex
-  encodeResult = ''
-  for c in str(svg):
-    if c in encodePattern:
-      encodeResult += "'" if c == '"' else '%' + format(ord(c), "x")
-    else:
-      encodeResult += c
-  
-  returnTxt = ' '.join(encodeResult.split())
-  return returnTxt
+  return svg.replace('#', '%23')
 
 
 def pngEncode(png:bytes):
@@ -48,7 +45,7 @@ import { ImageURI } from "app/src-electron/schema/brands"
 
 interface iAssets {
   svg: {
-    [key in svgFiles]: ImageURI
+    [key in svgFiles]: (color?: string) => string
   },
   png: {
     [key in pngFiles]: ImageURI
@@ -59,7 +56,7 @@ export const assets: iAssets = {
   svg: {
 """
 
-  svgTxt = [f"    {key}: \"{val}\" as ImageURI,\n" for key, val in svgDict.items()]
+  svgTxt = [f"    {key}: (color?: string) => {val},\n" for key, val in svgDict.items()]
   pngTxt = [f"    {key}: \"{val}\" as ImageURI,\n" for key, val in pngDict.items()]
 
   with open(Path(__file__).parent/'assets.ts', 'w', encoding='utf-8') as f:
@@ -81,7 +78,7 @@ if __name__ == "__main__":
   for svgPath in glob('./src/assets/**/*.svg', recursive=True):
     with open(svgPath, 'r') as f:
       name = Path(svgPath).stem.replace('-', '_')
-      svgDict[name] = 'data:image/svg+xml;charset=utf8,' + svgEncode(''.join(f.readlines()))
+      svgDict[name] = '`img:data:image/svg+xml;charset=utf8,' + svgEncode(''.join(f.readlines())) + '`'
 
   # PNGの読み込み
   for pngPath in glob('./src/assets/**/*.png', recursive=True):

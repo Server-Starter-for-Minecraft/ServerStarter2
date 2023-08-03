@@ -16,7 +16,7 @@ defineProps<Prop>()
     @click="onClick"
   >
     <q-avatar square size="3rem" class="q-ma-xs">
-      <q-img :src="src" />
+      <q-icon size="3rem" :name="src" />
     </q-avatar>
 
     <q-tooltip class="text-body2">

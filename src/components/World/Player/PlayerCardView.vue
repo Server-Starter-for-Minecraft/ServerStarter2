@@ -71,8 +71,8 @@ function getGroups(groups: Record<string, PlayerGroup>) {
           </q-item-label>
         </q-item-section>
         <q-item-section side top>
-          <q-avatar square size="2rem" class="q-ma-none">
-            <q-img :src="assets.svg[`level${opLevel ?? 0}`]" />
+          <q-avatar square size="2rem">
+            <q-icon size="2rem" :name="assets.svg[`level${opLevel ?? 0}`]()" />
           </q-avatar>
         </q-item-section>
       </q-item>

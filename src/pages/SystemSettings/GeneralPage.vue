@@ -48,8 +48,12 @@ function changeTheme(colorTheme: ColorTheme) {
     <h1>{{ $t("systemsetting.general.colorMode") }}</h1>
     <div class="row q-gutter-lg">
       <template v-for="theme in colorThemes" :key="theme">
-        <ColorThemeBtn :src="assets.svg[theme]" :active="sysStore.systemSettings.user.theme === theme" :label="theme"
-          @click="() => changeTheme(theme)" />
+        <ColorThemeBtn
+          :src="assets.svg[theme]()"
+          :active="sysStore.systemSettings.user.theme === theme"
+          :label="theme"
+          @click="() => changeTheme(theme)"
+        />
       </template>
     </div>
 

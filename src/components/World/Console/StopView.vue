@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getCssVar } from 'quasar';
 import { assets } from 'src/assets/assets'
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -20,8 +21,8 @@ const consoleStore = useConsoleStore()
       @click="runServer"
       class="btn"
     >
-      <q-avatar square class="q-mr-md" style="height: 4rem;">
-        <q-img :src="assets.svg.systemLogo_filled" />
+      <q-avatar square class="q-mr-md q-my-sm" size="4rem">
+        <q-icon :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" />
       </q-avatar>
       <span style="font-size: 1.5rem;">{{ $t('console.boot', { name: mainStore.world.name }) }}</span>
     </ss-btn>

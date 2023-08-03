@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { getCssVar } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -28,7 +29,10 @@ const drawer = ref(true)
     <div class="q-mini-drawer-only">
       <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = 300">
         <q-avatar size="2rem">
-          <q-img :src="assets.svg.menuicon_white" />
+          <q-icon
+            size="2rem"
+            :name="assets.svg.menuicon($q.dark.isActive ? 'white' : 'black')"
+          />
         </q-avatar>
         <q-tooltip anchor="center middle" self="top middle" :delay="500">
           ワールド一覧を開く
@@ -36,7 +40,7 @@ const drawer = ref(true)
       </q-item>
     </div>
     <icon-button-view
-      :icon-src="assets.svg.menuicon_open"
+      :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
       :label="$t('worldList.allWorld')"
       tooltip="ワールド一覧を最小化"
       @click="sysStore.systemSettings.user.drawerWidth = 100"

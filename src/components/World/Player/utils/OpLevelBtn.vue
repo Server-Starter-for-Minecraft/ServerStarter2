@@ -24,7 +24,7 @@ const playerStore = usePlayerStore()
   >
     <q-item-section avatar>
       <q-avatar v-if="icon === void 0" size="2rem">
-        <q-img :src="src" />
+        <q-icon size="1.8rem" :name="src" />
       </q-avatar>
       <q-icon v-else :name="icon" :color="color" size="2rem" />
     </q-item-section>
