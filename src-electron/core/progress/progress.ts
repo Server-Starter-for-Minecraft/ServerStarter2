@@ -1,131 +1,222 @@
-import { genUUID } from 'app/src-electron/tools/uuid';
+import { ProgressMessage } from 'app/src-electron/schema/progressMessage';
 import {
   ConsoleProgress,
+  GroupProgress,
   NumericProgress,
-  PlainProgress,
+  NumericProgressUnit,
   Progress,
+  SubtitleProgress,
+  TitleProgress,
 } from '../../schema/progress';
+import { api } from '../api';
+import { WorldID } from 'app/src-electron/schema/world';
 
-type ProgressorHandler<T extends Progress> = (value: T | null) => void;
+export abstract class Progressor<T extends Progress> {
+  parent?: GroupProgressor;
+  protected updated = false;
 
-abstract class IProgressor<T extends Progress> {
-  handler: ProgressorHandler<T>;
-  protected sub: Record<string, IProgressor<any>>;
-
-  constructor(handler: ProgressorHandler<T>, options?: Omit<T, 'type'>) {
-    this.handler = handler;
-    this.sub = {};
-    this.handler({ ...this.base(), ...(options ?? {}) });
+  constructor(parent?: GroupProgressor) {
+    this.parent = parent;
   }
 
-  protected abstract base(): T;
-
-  /** keyだけをupdate */
-  protected update<K extends keyof T>(key: K, value: T[K]) {
-    // TODO: 黒魔術の解消
-    const partial: T = {
-      ...this.base(),
-      [key]: value,
-    } as unknown as T;
-    this.handler(partial);
+  protected update() {
+    // 変更を通知
+    if (this.updated) return;
+    this.updated = true;
+    this.parent?.update();
   }
 
-  set title(value: T['title']) {
-    this.update('title', value);
+  delete() {
+    if (this.parent) {
+      this.parent.subs = this.parent.subs.filter((x) => x === this);
+      this.parent.update();
+    }
   }
 
-  set description(value: T['description']) {
-    this.update('description', value);
+  abstract export(): T;
+}
+
+export class TitleProgressor extends Progressor<TitleProgress> {
+  private _title: ProgressMessage;
+
+  constructor(title: ProgressMessage, parent?: GroupProgressor) {
+    super(parent);
+    this._title = title;
+    this.update();
   }
 
-  end() {
-    this.handler(null);
+  set title(val: ProgressMessage) {
+    this._title = val;
+    this.update();
   }
 
-  private subProgressor<T extends Progress, S extends IProgressor<T>>(
-    gen: (handler: ProgressorHandler<T>) => S
-  ): S {
-    const id = genUUID();
-    const update = (key: any, value: T[any]) => this.update(key, value);
-    const subHandler: ProgressorHandler<T> = (value) => {
-      // TODO: あやしいas
-      const sub: T['sub'] = { [id]: value } as T['sub'];
-      update('sub', sub);
+  export(): TitleProgress {
+    return {
+      type: 'title',
+      value: this._title,
     };
-    const result = gen(subHandler);
-    this.sub[id] = result;
-    return result;
+  }
+}
+
+export class SubtitleProgressor extends Progressor<SubtitleProgress> {
+  private _subtitle: ProgressMessage;
+
+  constructor(subtitle: ProgressMessage, parent?: GroupProgressor) {
+    super(parent);
+    this._subtitle = subtitle;
+    this.update();
   }
 
-  subConsole(options?: Omit<ConsoleProgress, 'type'>) {
-    return this.subProgressor<ConsoleProgress, ConsoleProgressor>(
-      (handler) => new ConsoleProgressor(handler, options)
-    );
+  set subtitle(val: ProgressMessage) {
+    this._subtitle = val;
+    this.update();
   }
 
-  subPlain(options?: Omit<PlainProgress, 'type'>) {
-    return this.subProgressor<PlainProgress, PlainProgressor>(
-      (handler) => new PlainProgressor(handler, options)
-    );
+  export(): SubtitleProgress {
+    return {
+      type: 'subtitle',
+      value: this._subtitle,
+    };
   }
+}
 
-  async withPlain<T>(
-    action: (progress?: PlainProgressor) => Promise<T>,
-    options?: Omit<PlainProgress, 'type'>
+export class NumericProgressor extends Progressor<NumericProgress> {
+  private _value = 0;
+  private _max?: number;
+  private _unit?: NumericProgressUnit;
+
+  constructor(
+    unit?: NumericProgressUnit,
+    max?: number,
+    parent?: GroupProgressor
   ) {
-    const sub = this.subPlain(options);
-    const result = await action(sub);
-    sub.end();
-    return result;
+    super(parent);
+    this._unit = unit;
+    this._max = max;
+    this.update();
   }
 
-  subNumeric(options?: Omit<NumericProgress, 'type'>) {
-    return this.subProgressor<NumericProgress, NumericProgressor>(
-      (handler) => new NumericProgressor(handler, options)
-    );
+  set value(value: number) {
+    this._value = value;
+    this.update();
+  }
+
+  set max(value: number) {
+    this._max = value;
+    this.update();
+  }
+
+  set unit(value: NumericProgressUnit | undefined) {
+    this._unit = value;
+    this.update();
+  }
+
+  export(): NumericProgress {
+    return {
+      type: 'numeric',
+      max: this._max,
+      unit: this._unit,
+      value: this._value,
+    };
   }
 }
 
-export function genWithPlain(progress?: Progressor) {
-  function withPlain<T>(
-    action: (progress?: PlainProgressor) => Promise<T>,
-    options?: Omit<PlainProgress, 'type'>
-  ) {
-    if (progress === undefined) return action();
-    return progress?.withPlain((sub) => action(sub), options);
-  }
-  return withPlain;
-}
+export class ConsoleProgressor extends Progressor<ConsoleProgress> {
+  private _console: string[];
+  private _maxLineCount?: number;
 
-export class PlainProgressor extends IProgressor<PlainProgress> {
-  protected base(): PlainProgress {
-    return { type: 'plain' };
-  }
-}
-
-export class NumericProgressor extends IProgressor<NumericProgress> {
-  protected base(): NumericProgress {
-    return { type: 'numeric' };
-  }
-  set value(value: NumericProgress['value']) {
-    this.update('value', value);
+  /** maxLineCount : コンソールに保存する最大行数 */
+  constructor(maxLineCount?: number, parent?: GroupProgressor) {
+    super(parent);
+    this._maxLineCount = maxLineCount;
+    this._console = [];
+    this.update();
   }
 
-  set max(value: NumericProgress['max']) {
-    this.update('max', value);
-  }
-}
+  push(chunk: string) {
+    this._console.push(chunk);
 
-export class ConsoleProgressor extends IProgressor<ConsoleProgress> {
-  protected base(): ConsoleProgress {
-    return { type: 'console' };
+    // コンソールの長さが指定値を超えた場合手前から削除
+    if (
+      this._maxLineCount !== undefined &&
+      this._console.length > this._maxLineCount
+    ) {
+      this._console.shift();
+    }
+
+    this.update();
   }
-  set value(value: ConsoleProgress['value']) {
-    this.update('value', value);
+
+  export(): ConsoleProgress {
+    return {
+      type: 'console',
+      value: this._console,
+    };
   }
 }
 
-export type Progressor =
-  | PlainProgressor
-  | NumericProgressor
-  | ConsoleProgressor;
+export class GroupProgressor extends Progressor<GroupProgress> {
+  subs: Progressor<Progress>[];
+
+  constructor(parent?: GroupProgressor) {
+    super(parent);
+    this.subs = [];
+    this.update();
+  }
+
+  export(): GroupProgress {
+    return {
+      type: 'group',
+      value: this.subs.map((x) => x.export()),
+    };
+  }
+
+  subGroup() {
+    return new GroupProgressor(this);
+  }
+
+  title(title: ProgressMessage) {
+    return new TitleProgressor(title, this);
+  }
+
+  subtitle(subtitle: ProgressMessage) {
+    return new SubtitleProgressor(subtitle, this);
+  }
+
+  numeric(unit?: NumericProgressUnit | undefined, max?: number | undefined) {
+    return new NumericProgressor(unit, max, this);
+  }
+
+  console(maxLineCount?: number) {
+    return new ConsoleProgressor(maxLineCount, this);
+  }
+}
+
+/** プログレスをフロントに反映するまでの最短の時間(ms) */
+const SLEEP_TREATHOLD = 10;
+
+export class WorldProgressor extends GroupProgressor {
+  private id: WorldID;
+  private hot = false;
+
+  constructor(id: WorldID) {
+    super();
+    this.id = id;
+  }
+
+  protected update() {
+    super.update();
+
+    if (this.hot) return;
+
+    this.hot = true;
+    setTimeout(() => {
+      this.hot = false;
+      if (this.updated) {
+        api.send.Progress(this.id, this.export());
+      }
+    }, SLEEP_TREATHOLD);
+
+    api.send.Progress(this.id, this.export());
+  }
+}

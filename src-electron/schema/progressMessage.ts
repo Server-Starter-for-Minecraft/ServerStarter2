@@ -45,6 +45,9 @@ type HProgressMessage = {
       /** ワールド設定ファイルを保存中 */
       savingSettingFiles: MessageContent;
 
+      /** ワールド設定ファイルを読み込み中 */
+      loadSettingFiles: MessageContent;
+
       /** ワールドのデータ構造を変更中 */
       formatWorldDirectory: MessageContent;
 
@@ -67,6 +70,22 @@ type HProgressMessage = {
         remote: Remote;
       }>;
 
+      /** リモート操作の説明 */
+      desc: {
+        getPlayerFromUUID: MessageContent<{ uuid: string }>;
+
+        /**
+         * simpleGitのプログレスを反映
+         * https://github.com/steveukx/git-js/blob/main/docs/PLUGIN-PROGRESS-EVENTS.md
+         */
+        git: MessageContent<{
+          /** pull / push ... */
+          method: string;
+          /** pull / push ... */
+          stage: string;
+        }>;
+      };
+
       /** リモートにデータをアップロード中 */
       push: MessageContent<{
         remote: Remote;
@@ -84,6 +103,69 @@ type HProgressMessage = {
     version: {
       /** log4Jの設定ファイルをダウンロード中 */
       getLog4jSettingFile: MessageContent<{ path: string }>;
+    };
+
+    /** ワールドデータの読み込みに関する処理 */
+    load: {
+      /** ワールドデータを読み込み中 */
+      title: MessageContent;
+
+      /** ローカルの設定ファイルを読み込み中 */
+      loadLocalSetting: MessageContent;
+
+      /** ローカルの設定を再読み込み中 */
+      reloading: MessageContent;
+
+      /** 処理をキャンセル中 */
+      aborting: MessageContent;
+    };
+
+    /** ワールドデータの書き込みに関する処理 */
+    save: {
+      /** ワールドデータを書き込み中 */
+      title: MessageContent;
+
+      /** ローカルの設定ファイルを保存中 */
+      localSetting: MessageContent;
+    };
+
+    /** ワールドデータのpullに関する処理 */
+    pull: {
+      /** リモートからワールドデータをダウンロード中 */
+      title: MessageContent;
+
+      /** pullの準備中 */
+      ready: MessageContent;
+
+      /** gitの実行段階を表す？要検証 */
+      stage: MessageContent<{ stage: string }>;
+    };
+
+    /** ワールドデータのpushに関する処理 */
+    push: {
+      /** リモートにワールドデータをアップロード中 */
+      title: MessageContent;
+
+      /** pushの準備中 */
+      ready: MessageContent;
+
+      /** gitの実行段階を表す？要検証 */
+      stage: MessageContent<{ stage: string }>;
+    };
+
+    /** ワールドの実行に関する処理 */
+    run: {
+      before: {
+        /** ワールド起動前の処理 */
+        title: MessageContent;
+
+        /** ファイル構造を修正中 */
+        convertDirectory: MessageContent;
+      };
+      after: {
+        /** ワールド起動後の処理 */
+        title: MessageContent;
+      };
     };
   };
 };

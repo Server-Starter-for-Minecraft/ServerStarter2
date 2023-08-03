@@ -4,6 +4,7 @@ import { Path } from 'src-electron/util/path';
 import { Remote, RemoteFolder, RemoteWorld } from 'src-electron/schema/remote';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
+import { GroupProgressor, NumericProgressor } from '../progress/progress';
 
 export const remoteOperators: {
   [K in RemoteFolder as K['type']]: RemoteOperator<K>;
@@ -14,19 +15,21 @@ export const remoteOperators: {
 // ワールドのデータをpull
 export async function pullRemoteWorld<T extends RemoteFolder>(
   local: Path,
-  remote: Remote<T>
+  remote: Remote<T>,
+  progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   const loader: RemoteOperator<T> = remoteOperators[remote.folder.type];
-  return await loader.pullWorld(local, remote);
+  return await loader.pullWorld(local, remote, progress);
 }
 
 // ワールドのデータをpush
 export async function pushRemoteWorld<T extends RemoteFolder>(
   local: Path,
-  remote: Remote<T>
+  remote: Remote<T>,
+  progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   const loader: RemoteOperator<T> = remoteOperators[remote.folder.type];
-  return await loader.pushWorld(local, remote);
+  return await loader.pushWorld(local, remote, progress);
 }
 
 // リモートのワールド一覧を取得

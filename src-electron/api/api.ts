@@ -16,7 +16,7 @@ import {
 } from '../schema/filedata';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
-import { PlainProgress } from '../schema/progress';
+import { GroupProgress } from '../schema/progress';
 import { Remote, RemoteFolder, RemoteWorld } from '../schema/remote';
 
 /**
@@ -51,8 +51,8 @@ export interface API extends IAPI {
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;
 
-    /** サーバー実行(前|後)の進捗画面表示 未実装 */
-    Progress: (world: WorldID, progress: PlainProgress | null) => void;
+    /** サーバー実行(前|後)の進捗画面表示 */
+    Progress: (world: WorldID, progress: GroupProgress) => void;
 
     /** コンソールに文字列を追加 */
     AddConsole: (world: WorldID, chunk: string) => void;
