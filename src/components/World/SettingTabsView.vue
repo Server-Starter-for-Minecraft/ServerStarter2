@@ -10,6 +10,7 @@ import IconTabDropdownView from './utils/IconTabDropdownView.vue';
     align="left"
     dense
     outside-arrows
+    active-color="primary"
     indicator-color="primary"
     class="fit q-px-sm"
     style="flex: 1 1 0;"
