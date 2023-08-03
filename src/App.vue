@@ -86,7 +86,7 @@ async function firstProcess() {
   await setUserSettings()
 
   // 起動時処理の開始
-  router.push('/init')
+  router.replace('/init')
 }
 
 /**

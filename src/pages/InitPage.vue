@@ -20,7 +20,7 @@ async function asyncProcess() {
   await initWindow()
   afterWindow()
   
-  await router.push('/')
+  await router.replace('/')
   progressStore.initProgress()
 }
 </script>
