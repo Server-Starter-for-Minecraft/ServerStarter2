@@ -109,6 +109,7 @@ async function getMohistmcVersions(
 
   return Object.values(json)
     .filter((v) => v.status === 'SUCCESS')
+    .reverse()
     .map(({ forge_version, number }) => ({
       forge_version,
       id,
