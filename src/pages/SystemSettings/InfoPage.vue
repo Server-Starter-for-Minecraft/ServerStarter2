@@ -2,6 +2,7 @@
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CreaterItem from 'src/components/SystemSettings/Info/CreaterItem.vue';
+import SsA from 'src/components/util/base/ssA.vue';
 
 const sysStore = useSystemStore()
 
@@ -11,10 +12,6 @@ const latest = false
 // TODO: installerのダウンロードなどを行い、システムをアップデートするための準備を行う
 function systemUpdate() {
 
-}
-
-function openLink(url: string) {
-  window.API.sendOpenBrowser(url)
 }
 </script>
 
@@ -37,17 +34,16 @@ function openLink(url: string) {
     <div class="q-pl-md">
       <div class="row">
         <p class="q-ma-none" style="width: 12rem;">公式ホームページ</p>
-        <a href="javascript:void(0)" @click="openLink('https://civiltt.github.io/ServerStarter/')"
-          class="text-primary text-body2">
+        <SsA url="https://civiltt.github.io/ServerStarter/" class="text-body2">
           https://civiltt.github.io/ServerStarter/
-        </a>
+        </SsA>
       </div>
       <div class="row q-pt-sm">
         <p class="q-ma-none" style="width: 12rem;">お問い合わせ</p>
         <div class="row" style="flex: 1 1 0">
-          <a href="javascript:void(0)" @click="openLink('https://twitter.com/CivilT_T')" class="text-primary text-body2">
+          <SsA url="https://twitter.com/CivilT_T" class="text-body2">
             https://twitter.com/CivilT_T
-          </a>
+          </SsA>
           <span>（DMよりご連絡ください）</span>
         </div>
       </div>

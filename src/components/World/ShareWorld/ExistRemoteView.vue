@@ -2,14 +2,11 @@
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import DangerView from 'src/components/util/danger/dangerView.vue';
+import SsA from 'src/components/util/base/ssA.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const remoteURL = `https://github.com/${mainStore.world.remote?.folder.owner}/${mainStore.world.remote?.folder.repo}/tree/${mainStore.world.remote?.name}`
-
-function openURL(url: string) {
-  window.API.sendOpenBrowser(url)
-}
 
 function deleteRemoteSetting() {
   if (mainStore.world.remote !== void 0) {
@@ -45,9 +42,9 @@ function deleteRemoteSetting() {
   </div>
   <div class="q-py-md">
     <div class="caption">URL</div>
-    <a href="javascript:void(0)" @click="openURL(remoteURL)" class="text-body2 naturalText">
+    <SsA :url="remoteURL" class="text-body2 naturalText">
       {{ remoteURL }}
-    </a>
+    </SsA>
   </div>
 
   <q-separator class="q-mt-lg" />
