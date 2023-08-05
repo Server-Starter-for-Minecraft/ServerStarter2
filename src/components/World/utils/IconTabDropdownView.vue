@@ -25,6 +25,7 @@ const dropLabels = prop.btns.map(btn => `/${btn.path}`)
       flat
       :icon="icon"
       :label="$q.screen.gt.md || dropLabels.includes($route.path) ? label : undefined"
+      :class="dropLabels.includes($route.path) ? 'text-primary' : ''"
       style="
         padding-top: 8px;
         padding-bottom: 8px;
