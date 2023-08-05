@@ -111,7 +111,7 @@ function openGroupEditor(group?: PlayerGroup) {
             </div>
           </div>
           <div v-else class="full-width text-center text-h5 q-py-xl" style="opacity: .6;">
-            プレイヤーが登録されていません
+            {{ $t('player.notRegistered') }}
           </div>
 
           <q-separator class="q-my-md" />
