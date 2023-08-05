@@ -37,11 +37,11 @@ function getNumberName(n: number, forgeVersion?: string) {
           data: val,
           label:
             idx === 0
-              ? `${getNumberName(val.number, val.forge_version)} (推奨)`
+              ? `${getNumberName(val.number, val.forge_version)} (${$t('home.version.recommend')})`
               : getNumberName(val.number, val.forge_version)
         }
       })"
-      label="ビルド番号 (変更不要)"
+      :label="$t('home.version.buildNumber') + $t('home.version.notChange')"
       option-label="label"
       option-value="data"
       :disable="mohists === void 0"

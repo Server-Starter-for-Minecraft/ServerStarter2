@@ -24,9 +24,9 @@ const forges = sysStore.serverVersions.get('forge') as ForgeVersion[]
     <SsSelect
       v-model="mainStore.world.version"
       :options="forges?.filter(ver => ver.id === mainStore.world.version.id).map((val, idx) => {
-        return { data: val, label: idx === 0 ? `${val.forge_version} (推奨)` : val.forge_version}
+        return { data: val, label: idx === 0 ? `${val.forge_version} (${$t('home.version.recommend')})` : val.forge_version}
       })"
-      label="ビルド番号"
+      :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
       :disable="forges === void 0"

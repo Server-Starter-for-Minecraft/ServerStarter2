@@ -24,9 +24,9 @@ const papers = (sysStore.serverVersions.get('papermc') as PapermcVersion[])
     <SsSelect
       v-model="mainStore.world.version"
       :options="papers?.filter(ver => ver.id === mainStore.world.version.id).map((val, idx) => {
-        return { data: val, label: idx === 0 ? `${val.build} (推奨)` : val.build}
+        return { data: val, label: idx === 0 ? `${val.build} (${$t('home.version.recommend')})` : val.build}
       })"
-      label="ビルド番号"
+      :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
       :disable="papers === void 0"

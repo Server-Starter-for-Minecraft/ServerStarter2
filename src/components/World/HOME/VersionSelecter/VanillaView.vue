@@ -23,12 +23,11 @@ const vanillas = sysStore.serverVersions.get('vanilla') as VanillaVersion[] | un
       class="col"
     />
     <div class="column items-end">
-      <span>選択一覧に表示するバージョン</span>
+      <span>{{ $t('home.version.displayVersion') }}</span>
       <q-toggle
         v-model="isRelease"
-        :label="isRelease ? 'Releaseのみ' : '全てのバージョン'"
+        :label="isRelease ? $t('home.version.onlyReleased') : $t('home.version.allVersions')"
         left-label
-        :disable="vanillas === void 0"
         style="width: fit-content;"
       />
     </div>
