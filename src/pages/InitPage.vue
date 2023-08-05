@@ -14,20 +14,19 @@ const $q = useQuasar();
 const router = useRouter()
 const sysStore = useSystemStore()
 
-// 起動時処理
-asyncProcess()
-
 // 利用規約へ同意
 if (!sysStore.systemSettings.user.eula) {
   $q.dialog({
     component: WelcomeDialog
   }).onOk(() => {
     sysStore.systemSettings.user.eula = true
-    switchPage()    
+    // 起動時処理
+    asyncProcess()
   })
 }
 else {
-  switchPage()
+  // 起動時処理
+  asyncProcess()
 }
 
 
@@ -37,12 +36,7 @@ else {
 async function asyncProcess() {
   await initWindow()
   afterWindow()
-}
-
-/**
- * ページをホーム画面へ遷移し、プログレスを終了する
- */
-async function switchPage() {
+  
   await router.replace('/')
   progressStore.initProgress()
 }
