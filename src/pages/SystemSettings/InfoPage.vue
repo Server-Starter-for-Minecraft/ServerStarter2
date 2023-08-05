@@ -51,7 +51,7 @@ function systemUpdate() {
 
     <h1>ライセンス</h1>
     <div class="q-pl-md">
-      <p class="text-bold q-ma-none">MIT License</p>
+      <p class="q-ma-none">MIT License</p>
       <div class="text-caption q-pt-sm" style="opacity: .6;">
         制作者への許可なくシステムを改変して再配布することを禁じています。<br>
         詳細はServerStarter2の利用規約、並びにライセンス条項をご確認ください。

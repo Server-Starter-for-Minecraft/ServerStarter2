@@ -42,8 +42,14 @@ function changeTheme(colorTheme: ColorTheme) {
 <template>
   <div class="mainField">
     <h1 class="q-mt-none">{{ $t("systemsetting.general.lang") }}</h1>
-    <SsSelect dense v-model="sysStore.systemSettings.user.language" @update:model-value="newVal => changeLocale(newVal)"
-      :options="localeOptions" option-label="label" option-value="value" />
+    <SsSelect
+      dense
+      v-model="sysStore.systemSettings.user.language"
+      @update:model-value="newVal => changeLocale(newVal)"
+      :options="localeOptions"
+      option-label="label"
+      option-value="value"
+    />
 
     <h1>{{ $t("systemsetting.general.colorMode") }}</h1>
     <div class="row q-gutter-lg">
@@ -58,7 +64,10 @@ function changeTheme(colorTheme: ColorTheme) {
     </div>
 
     <h1>{{ $t("systemsetting.general.autoShutdown") }}</h1>
-    <q-checkbox v-model="sysStore.systemSettings.user.autoShutDown" :label="$t('systemsetting.general.shutdownDesc')"
-      style="font-size: 1rem;" />
+    <q-checkbox
+      v-model="sysStore.systemSettings.user.autoShutDown"
+      :label="$t('systemsetting.general.shutdownDesc')"
+      style="font-size: 1rem;"
+    />
   </div>
 </template>
