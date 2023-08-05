@@ -1,6 +1,36 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { Version } from 'app/src-electron/schema/version';
+import { useMainStore } from 'src/stores/MainStore';
 import IconTabView from './utils/IconTabView.vue';
 import IconTabDropdownView from './utils/IconTabDropdownView.vue';
+
+const { t } = useI18n()
+const mainStore = useMainStore()
+
+type contentExists = { [ver in Version['type']]: { datapack: boolean, plugin: boolean, mod: boolean } }
+const isContentsExists: contentExists = {
+  'vanilla' : { datapack: true, plugin: false, mod: false },
+  'spigot'  : { datapack: true, plugin: true , mod: false },
+  'papermc' : { datapack: true, plugin: true , mod: false },
+  'forge'   : { datapack: true, plugin: false, mod: true  },
+  'mohistmc': { datapack: true, plugin: true , mod: true  },
+  'fabric'  : { datapack: true, plugin: true , mod: true  },
+} 
+
+function getAdditionalContentsBtns() {
+  const btns = []
+  if (isContentsExists[mainStore.world.version.type].datapack) {
+    btns.push({ path: 'datapack', label: t('utils.worldSettingTabs.datapack') })
+  }
+  if (isContentsExists[mainStore.world.version.type].plugin) {
+    btns.push({ path: 'plugin', label: t('utils.worldSettingTabs.plugin') })
+  }
+  if (isContentsExists[mainStore.world.version.type].mod) {
+    btns.push({ path: 'mod', label: t('utils.worldSettingTabs.mod') })
+  }
+  return btns
+}
 </script>
 
 <template>
@@ -24,11 +54,7 @@ import IconTabDropdownView from './utils/IconTabDropdownView.vue';
         path="contents"
         icon="extension"
         :label="$t('utils.worldSettingTabs.contents')"
-        :btns = "[
-          { path: 'datapack', label: $t('utils.worldSettingTabs.datapack') },
-          { path: 'plugin', label: $t('utils.worldSettingTabs.plugin') },
-          { path: 'mod', label: $t('utils.worldSettingTabs.mod') },
-        ]"
+        :btns = "getAdditionalContentsBtns()"
       />
       <icon-tab-view path="share-world" icon="cloud" :label="$t('utils.worldSettingTabs.cloud')" />
     </template>
