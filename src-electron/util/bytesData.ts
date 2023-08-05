@@ -67,7 +67,8 @@ export class BytesData {
         path: url,
       });
     } catch (e) {
-      logger.fail();
+      const em = fromRuntimeError(e);
+      logger.fail(em);
       return fromRuntimeError(e);
     }
   }
