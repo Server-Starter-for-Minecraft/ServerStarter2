@@ -89,6 +89,13 @@ function addContent2World(content: NewFileData<T>) {
   (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(content);
   (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).push(NewFile2CacheFile())
 }
+
+/**
+ * キャッシュフォルダを開く
+ */
+function openCacheFolder() {
+  window.API.sendOpenFolder(sysStore.staticResouces.paths.cache[prop.contentType])
+}
 </script>
 
 <template>
@@ -111,7 +118,19 @@ function addContent2World(content: NewFileData<T>) {
 
     <q-separator class="q-my-md" />
 
-    <span class="text-caption">{{ $t('additionalContents.add', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
+    <div class="row justify-between">
+      <span class="text-caption">{{ $t('additionalContents.add', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
+      <q-btn
+        dense
+        flat
+        :label="`${$t(`additionalContents.${prop.contentType}`)}の保存場所を開く`"
+        icon="folder"
+        color="grey"
+        size=".7rem"
+        @click="openCacheFolder"
+        class="folderBtn"
+      />
+    </div>
     <div class="row q-gutter-sm q-pa-sm">
       <div>
         <AddContentsCard
@@ -131,3 +150,9 @@ function addContent2World(content: NewFileData<T>) {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.folderBtn {
+  border-color: transparent;
+}
+</style>
