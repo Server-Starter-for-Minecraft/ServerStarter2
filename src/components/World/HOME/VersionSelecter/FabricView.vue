@@ -26,10 +26,10 @@ const fabricLoader = ref(mainStore.world.version.type === 'fabric' ? mainStore.w
       class="col"
     />
     <div class="column items-end">
-      <span>選択一覧に表示するバージョン</span>
+      <span>{{ $t('home.version.displayVersion') }}</span>
       <q-toggle
         v-model="isRelease"
-        :label="isRelease ? 'Releaseのみ' : '全てのバージョン'"
+        :label="isRelease ? $t('home.version.onlyReleased') : $t('home.version.allVersions')"
         left-label
         style="width: fit-content;"
       />
@@ -43,9 +43,9 @@ const fabricLoader = ref(mainStore.world.version.type === 'fabric' ? mainStore.w
       :options="uniqueArrayDict(
         fabrics, 'installer'
       ).map(
-        (v, i) => { return { data: v.installer, label: i === 0 ? `${v.installer} (推奨)` : v.installer }}
+        (v, i) => { return { data: v.installer, label: i === 0 ? `${v.installer} (${$t('home.version.recommend')})` : v.installer }}
       )"
-      label="インストーラー"
+      :label="$t('home.version.installer')"
       option-label="label"
       option-value="data"
       :disable="fabrics === void 0"
@@ -57,9 +57,9 @@ const fabricLoader = ref(mainStore.world.version.type === 'fabric' ? mainStore.w
       :options="uniqueArrayDict(
         fabrics, 'loader'
       ).map(
-        (v, i) => { return { data: v.loader, label: i === 0 ? `${v.loader} (推奨)` : v.loader }}
+        (v, i) => { return { data: v.loader, label: i === 0 ? `${v.loader} (${$t('home.version.recommend')})` : v.loader }}
       )"
-      label="ローダー"
+      :label="$t('home.version.loader')"
       option-label="label"
       option-value="data"
       :disable="fabrics === void 0"

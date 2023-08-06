@@ -2,6 +2,7 @@ export const enUSPlayer = {
   description: 'You can set the server\'s OP and players who can enter and leave the server.',
   search: 'Search players',
   registeredPlayer: 'Registered player',
+  notRegistered: 'No players registered',
   notFound: 'No player found',
   groupList: 'Bulk registration by group ',
   join: 'Only registered player',

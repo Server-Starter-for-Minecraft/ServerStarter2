@@ -2,7 +2,7 @@
 
 export const enUSIcon = {
     setIcon: 'Select your icon for server header',
-    selcIcon: 'Select Image',
+    selcIcon: 'Pick',
     prev: 'Preview',
     reg: 'Register'
 };

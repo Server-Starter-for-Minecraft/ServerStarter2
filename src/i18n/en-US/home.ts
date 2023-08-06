@@ -10,6 +10,23 @@ export const enUSHome: MessageSchema["home"] = {
     title: 'Versions',
     serverType: 'Select the Server Type',
     versionType: 'Select the Server Version',
+    displayVersion: 'Versions to be displayed in the selection list',
+    allVersions: 'All versions',
+    onlyReleased: 'Only released',
+    buildNumber: 'Build number',
+    notChange: '(No change required)',
+    recommend: 'Recommended',
+    installer: 'Installer',
+    loader: 'Loader'
+
+  },
+  serverType: {
+    vanilla: 'Vanilla',
+    spigot: 'Spigot',
+    papermc: 'PaperMC',
+    forge: 'Forge',
+    mohistmc: 'MohistMC',
+    fabric: 'Fabric'
   },
   icon: 'Change server icon',
   useWorld: {

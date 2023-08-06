@@ -10,6 +10,22 @@ export const jaHome = {
     title: 'バージョン',
     serverType: 'サーバーの種類を選択',
     versionType: 'バージョンを選択',
+    displayVersion: '選択一覧に表示するバージョン',
+    allVersions: '全てのバージョン',
+    onlyReleased: 'Releasedのみ',
+    buildNumber: 'ビルド番号',
+    notChange: '(変更不要)',
+    recommend: '推奨',
+    installer: 'インストーラー',
+    loader: 'ローダー'
+  },
+  serverType: {
+    vanilla: 'バニラ',
+    spigot: 'Spigot',
+    papermc: 'PaperMC',
+    forge: 'Forge',
+    mohistmc: 'MohistMC',
+    fabric: 'Fabric'
   },
   icon: 'アイコンを変更',
   useWorld: {

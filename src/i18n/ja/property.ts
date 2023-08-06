@@ -90,8 +90,9 @@ export const jaProperty = {
     'enforce-whitelist': 'ホワイトリストによる管理を強制する',
     'white-list': 'ホワイトリストによるプレイヤーのログイン管理を行う',
   },
-  resetProperty:'基本設定の{defaultProperty}に設定を戻します',
-  resetProperty2:'「システム設定」>「プロパティ」 より基本設定を変更できます',
+  resetProperty:'\
+    基本設定の{defaultProperty}に設定を戻します<br>\
+    「システム設定」>「プロパティ」 より基本設定を変更できます',
   failed: 'プロパティが読み込めませんでした',
   reset: 'プロパティ設定をリセット',
   inputField: {

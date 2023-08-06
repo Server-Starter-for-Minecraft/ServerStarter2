@@ -33,11 +33,20 @@ function cancelSettings() {
     </q-item-section>
 
     <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>
-      <q-btn v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()" flat dense
-        icon="do_not_disturb_on" size="1rem" color="red" @click="cancelSettings">
+      <q-btn 
+        v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()" 
+        flat 
+        dense
+        icon="do_not_disturb_on" 
+        size="1rem" 
+        color="red" 
+        @click="cancelSettings"
+        >
         <q-tooltip>
-          <p class="text-caption q-ma-none">{{ $t('property.resetProperty', { defaultProperty: defaultProperty }) }}</p>
-          <p class="text-caption q-ma-none">{{ $t('property.resetProperty2') }}</p>
+          <p 
+            class="text-caption q-ma-none"
+            v-html = "$t('property.resetProperty', { defaultProperty: defaultProperty })"
+          ></p>
         </q-tooltip>
       </q-btn>
     </q-item-section>
