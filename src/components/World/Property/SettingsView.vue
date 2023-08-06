@@ -8,7 +8,14 @@ const propertyStore = usePropertyStore()
 </script>
 
 <template>
-  <template v-for="key in propertyStore.searchProperties(model)" :key="key">
-    <SettingBlockView v-model="model" :setting-name="key" />
-  </template>
+  <div v-if="propertyStore.searchProperties(model).length !== 0">
+    <template v-for="key in propertyStore.searchProperties(model)" :key="key">
+      <SettingBlockView v-model="model" :setting-name="key" />
+    </template>
+  </div>
+  <div v-else>
+    <p class="q-pl-md" style="font-size: .8rem; padding-top: 14px;">
+      プロパティが見つかりませんでした
+    </p>
+  </div>
 </template>

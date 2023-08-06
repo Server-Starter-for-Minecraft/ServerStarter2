@@ -52,8 +52,6 @@ function resetAll() {
 
         <q-separator vertical inset />
 
-        <!-- TODO: 検索の結果、何も表示されなかった場合はその旨を示すメッセージを追記 -->
-        <!-- TODO: numberのプロパティでは数値のみの入力に制約をかける -->
         <div class="col">
           <q-scroll-area :thumb-style="thumbStyle" class="fit">
             <SettingsView v-model="mainStore.world.properties" />

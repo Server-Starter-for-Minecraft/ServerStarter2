@@ -70,7 +70,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
       v-model="model"
       dense
       :autofocus="autofocus"
-      style="width: 100%;"
+      style="width: 100%; padding-bottom: 18px;"
     />
   </div>
   
@@ -78,9 +78,8 @@ function validationMessage(min?:number, max?:number, step?:number) {
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
       v-model="model"
-      class="items-center"
-      style="width: 100%;"
       dense
+      type="number"
       :autofocus="autofocus"
       :rules="[
         val => numberValidate(
@@ -93,6 +92,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
           (defaultProperty as NumberServerPropertyAnnotation)?.max,
           (defaultProperty as NumberServerPropertyAnnotation)?.step
         )]"
+      style="width: 100%;"
     />
   </div>
   
@@ -100,7 +100,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
     v-else-if="selectEditer()==='boolean'"
     v-model="model"
     :label="model?.toString()"
-    style="font-size: 1rem;"
+    style="font-size: 1rem; padding-bottom: 12px;"
   />
   
   <SsSelect
@@ -108,5 +108,6 @@ function validationMessage(min?:number, max?:number, step?:number) {
     dense
     v-model="model"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
+    style="padding-bottom: 18px;"
   />
 </template>
