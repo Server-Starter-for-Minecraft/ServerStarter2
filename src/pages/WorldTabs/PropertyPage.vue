@@ -36,8 +36,15 @@ function resetAll() {
       <div class="row q-py-md">
         <SsInput dense v-model="propertyStore.searchName" :placeholder="$t('property.main.search')" class="col" />
 
-        <SsBtn dense :label="$t('property.main.resetAll')" icon="do_not_disturb_on_total_silence" color="red" width="6rem"
-          @click="resetAll" class="q-ml-md" />
+        <SsBtn
+          dense
+          :label="$t('property.main.resetAll')"
+          icon="do_not_disturb_on_total_silence"
+          color="red"
+          width="6rem"
+          @click="resetAll"
+          class="q-ml-md"
+        />
       </div>
 
       <div class="row fit" style="flex: 1 1 0;">
@@ -45,6 +52,8 @@ function resetAll() {
 
         <q-separator vertical inset />
 
+        <!-- TODO: 検索の結果、何も表示されなかった場合はその旨を示すメッセージを追記 -->
+        <!-- TODO: numberのプロパティでは数値のみの入力に制約をかける -->
         <div class="col">
           <q-scroll-area :thumb-style="thumbStyle" class="fit">
             <SettingsView v-model="mainStore.world.properties" />
@@ -56,8 +65,12 @@ function resetAll() {
     <div v-else class="fit" style="position: relative;">
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
-        <SsBtn :label="$t('property.reset')" color="primary" @click="mainStore.world.properties = initProperty"
-          class="full-width" />
+        <SsBtn
+          :label="$t('property.reset')"
+          color="primary"
+          @click="mainStore.world.properties = initProperty"
+          class="full-width"
+        />
       </div>
     </div>
   </div>

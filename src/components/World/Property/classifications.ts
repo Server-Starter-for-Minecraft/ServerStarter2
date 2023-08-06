@@ -1,8 +1,17 @@
-interface iPropertyClasses {
-  [key: string]: string[]
-}
+export type pGroupKey = 'base'
+  | 'player'
+  | 'server'
+  | 'generator'
+  | 'spawning'
+  | 'world'
+  | 'network'
+  | 'rcon-query'
+  | 'command'
+  | 'resourcepack'
+  | 'security'
+  | 'other'
 
-export const propertyClasses: iPropertyClasses = {
+export const propertyClasses: Record<pGroupKey, string[]> = {
   'base': [
     'difficulty',
     'gamemode',

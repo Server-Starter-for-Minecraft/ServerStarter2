@@ -8,7 +8,7 @@ const propertyStore = usePropertyStore()
 </script>
 
 <template>
-  <template v-for="key in propertyStore.searchProperties()" :key="key">
+  <template v-for="key in propertyStore.searchProperties(model)" :key="key">
     <SettingBlockView v-model="model" :setting-name="key" />
   </template>
 </template>

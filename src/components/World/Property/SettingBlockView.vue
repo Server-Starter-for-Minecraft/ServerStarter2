@@ -13,7 +13,6 @@ const sysStore = useSystemStore()
 
 const staticDefaultProperty = sysStore.staticResouces.properties[prop.settingName]
 const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName] ?? staticDefaultProperty.default
-const showCancel = () => propertiesModel.value[prop.settingName] !== defaultProperty
 
 /**
  * 設定を規定値に戻す
@@ -28,7 +27,7 @@ function cancelSettings() {
 
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
-      <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`) }}</div>
+      <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`, '解説が見つかりません') }}</div>
       <InputFieldView v-model="propertiesModel[settingName]" :property-name="settingName" />
     </q-item-section>
 
@@ -46,7 +45,7 @@ function cancelSettings() {
           <p 
             class="text-caption q-ma-none"
             v-html = "$t('property.resetProperty', { defaultProperty: defaultProperty })"
-          ></p>
+          />
         </q-tooltip>
       </q-btn>
     </q-item-section>

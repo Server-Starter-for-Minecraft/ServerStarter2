@@ -1,22 +1,28 @@
 <script setup lang="ts">
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
+import { pGroupKey, propertyClasses } from 'src/components/World/Property/classifications';
+import { keys } from 'src/scripts/obj';
 import { thumbStyle } from '../scrollBar';
 
 const propertyStore = usePropertyStore()
 
-function groupClicked(selectedGroupName: string) {
+function groupClicked(selectedGroupName: pGroupKey) {
   propertyStore.selectTab = selectedGroupName
 }
 </script>
 
 <template>
   <div style="width: 170px;">
-    <q-scroll-area :thumb-style="thumbStyle" class="fit">
-      <template v-for="groupKey in propertyStore.propertyTabs()" :key="groupKey">
+    <q-scroll-area v-if="propertyStore.searchName === ''" :thumb-style="thumbStyle" class="fit">
+      <template v-for="groupKey in keys(propertyClasses)" :key="groupKey">
         <q-item clickable :active="propertyStore.selectPropertyTab(groupKey)" @click="() => groupClicked(groupKey)">
           <q-item-section style="width: max-content;">{{ $t(`property.group.${groupKey}`) }}</q-item-section>
         </q-item>
       </template>
     </q-scroll-area>
+    
+    <q-item v-else active>
+      <q-item-section style="width: max-content;">検索結果</q-item-section>
+    </q-item>
   </div>
 </template>
