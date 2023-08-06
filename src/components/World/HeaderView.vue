@@ -9,26 +9,23 @@ const consoleStore = useConsoleStore()
 </script>
 
 <template>
-  <q-item>
-    <q-item-section>
-      <div class="row items-center">
-        <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
-          <span class="title q-pr-md">{{ mainStore.world.name }}</span>
-          <span class="text-red">{{ consoleStore.status(mainStore.world.id) }}</span>
-        </template>
-        <template v-else>
-          <span class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
-        </template>
-      </div>
-    </q-item-section>
-    <q-item-section side>
-      IP {{ sysStore.publicIP }}
-    </q-item-section>
-  </q-item>
+  <div class="flex items-center full-width q-py-sm q-px-md">
+    <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
+      <div class="title text-omit q-pr-md">{{ mainStore.world.name }}</div>
+      <div class="text-red q-mr-md">{{ consoleStore.status(mainStore.world.id) }}</div>
+    </template>
+    <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
+    <q-space />
+    <div class="force-oneline">IP {{ sysStore.publicIP }}</div>
+  </div>
 </template>
 
 <style scoped lang="scss">
 .title {
   font-size: 1.5rem;
+}
+
+.force-oneline {
+  white-space: nowrap;
 }
 </style>
