@@ -12,6 +12,7 @@ import { jaProgress } from "./progress";
 import { jaWorldList } from "./worldList";
 import { jaIcon } from "./icon";
 import { jaShareWorld } from "./shareWorld";
+import { jaWelcome } from "./welcome";
 
 export const ja = {
   home:jaHome,
@@ -26,4 +27,5 @@ export const ja = {
   worldList:jaWorldList,
   icon:jaIcon,
   shareWorld:jaShareWorld,
+  welcome:jaWelcome,
 };

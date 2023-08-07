@@ -9,20 +9,21 @@ import SsSelect from '../util/base/ssSelect.vue';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
 
-const t = useI18n()
-const sysStore = useSystemStore()
-const isAgree = ref(false)
+const t = useI18n();
+const sysStore = useSystemStore();
+const isAgree = ref(false);
 
-const localeOptions: { value: Locale, label: string }[] = [
+const localeOptions: { value: Locale; label: string }[] = [
   { value: 'ja', label: '日本語' },
-  { value: 'en-US', label: 'English' }
-]
+  { value: 'en-US', label: 'English' },
+];
 
 function changeLocale(loc: Locale) {
-  t.locale.value = loc
+  t.locale.value = loc;
 }
 </script>
 
@@ -30,15 +31,15 @@ function changeLocale(loc: Locale) {
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card flat>
       <q-card-section>
-        <div style="font-size: 1.5rem;">ServerStarter2へようこそ！</div>
+        <div style="font-size: 1.5rem">{{ $t('welcome.welcome') }}</div>
       </q-card-section>
 
       <q-card-section>
-        <h1>言語 / Language</h1>
+        <h1>{{ $t('welcome.lang') }}</h1>
         <SsSelect
           dense
           v-model="sysStore.systemSettings.user.language"
-          @update:model-value="newVal => changeLocale(newVal)"
+          @update:model-value="(newVal) => changeLocale(newVal)"
           :options="localeOptions"
           option-label="label"
           option-value="value"
@@ -46,24 +47,35 @@ function changeLocale(loc: Locale) {
       </q-card-section>
 
       <q-card-section class="q-mt-md">
-        <h1>利用規約</h1>
-        <p class="text-caption" style="opacity: .6;">
-          ServerStarter2の利用規約は<SsA url="https://civiltt.github.io/ServerStarter/credit">ホームページ</SsA>より閲覧可能です<br>
-          ご利用前にご一読ください
+        <h1>{{ $t('welcome.term') }}</h1>
+
+        <p class="text-caption" style="opacity: 0.6">
+          <i18n-t keypath="welcome.termDesc" tag="false">
+            <template>
+              <SsA url="https://civiltt.github.io/ServerStarter/credit">
+                {{ $t('welcome.link') }}
+              </SsA>
+            </template>
+            <template>
+              <br />
+            </template>
+          </i18n-t>
         </p>
-        <q-checkbox v-model="isAgree" label="ServerStarterの利用規約に同意する" />
+        <q-checkbox v-model="isAgree" :label="$t('welcome.agreeTerm')" />
       </q-card-section>
 
       <q-card-actions align="right">
-        <SsBtn
-          color="primary"
-          :disable="!isAgree"
-          @click="onDialogOK"
-        >
+        <SsBtn color="primary" :disable="!isAgree" @click="onDialogOK">
           <q-avatar square class="q-mr-md q-my-sm" size="1.3rem">
-            <q-icon :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" />
+            <q-icon
+              :name="
+                assets.svg.systemLogo_filled(
+                  getCssVar('primary')?.replace('#', '%23')
+                )
+              "
+            />
           </q-avatar>
-          <span style="font-size: .8rem;">スタート！</span>
+          <span style="font-size: 0.8rem">{{ $t('welcome.start') }}</span>
         </SsBtn>
       </q-card-actions>
     </q-card>

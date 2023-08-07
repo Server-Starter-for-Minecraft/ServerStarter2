@@ -13,6 +13,7 @@ import { enUSProgress } from "./progress";
 import { enUSWorldList } from "./worldList";
 import { enUSIcon } from "./icon";
 import { enUSShareWorld } from "./shareWorld";
+import { enWelcome } from "./welcome";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
@@ -27,4 +28,5 @@ export const enUS: MessageSchema = {
   worldList:enUSWorldList,
   icon:enUSIcon,
   shareWorld:enUSShareWorld,
+  welcome:enWelcome,
 };
