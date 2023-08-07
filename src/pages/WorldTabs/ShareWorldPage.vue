@@ -13,6 +13,7 @@ const mainStore = useMainStore()
     
     <div class="q-pb-lg text-body2" style="opacity: .6;">
       <i18n-t keypath="shareWorld.desc" tag="label" for="shareWorld.link">
+        <br>
         <SsA url="https://civiltt.github.io/ServerStarter/ShareWorld">
           {{ $t('shareWorld.link') }}
         </SsA>

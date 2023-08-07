@@ -1,8 +1,8 @@
 export const enUSShareWorld = {
   title: 'World Sharing (ShareWorld)',
   desc: '\
-  ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。\
-  使い方の詳細は{0}をご参照ください。',
+    ShareWorld is a feature that allows multiple players to always play the latest world, no matter which player starts the server. {0}\
+    Please refer to the {1} for details on how to use this feature.',
   link: 'Official HP',
   descriptRemote: 'Register a data storage location to use the world sharing (ShareWorld)',
   registerNewRemote: 'Register new remote',
