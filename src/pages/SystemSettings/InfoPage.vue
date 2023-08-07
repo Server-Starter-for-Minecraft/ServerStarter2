@@ -27,7 +27,9 @@ function systemUpdate() {
         </div>
       </div>
       <!-- TODO: 最終更新日を取得＆保存 -->
-      <div class="text-caption q-pt-sm" style="opacity: .6;">{{ $t('systemsetting.info.finalUpdate', {datetime: '2023年8月1日火曜日　0:00:00'}) }}</div>
+      <div class="text-caption q-pt-sm" tyle="opacity: .6;">
+        {{ $t('systemsetting.info.finalUpdate', {datetime: '2023年8月1日火曜日　0:00:00'}) }}
+      </div>
     </div>
 
     <h1>{{  $t('systemsetting.info.externalLink') }}</h1>
@@ -52,7 +54,11 @@ function systemUpdate() {
     <h1>{{ $t('systemsetting.info.license') }}</h1>
     <div class="q-pl-md">
       <p class="q-ma-none">{{ $t('systemsetting.info.MIT') }}</p>
-      <div class="text-caption q-pt-sm" style="opacity: .6;" v-html="$t('systemsetting.info.licenseDesc')">
+      <div 
+        class="text-caption q-pt-sm"
+        style="opacity: .6;"
+        v-html="$t('systemsetting.info.licenseDesc')"
+      >
       </div>
     </div>
 
