@@ -13,5 +13,23 @@ export const enUSSystemSetting = {
   },
   remote: {},
   folder: {},
-  info: {},
+  info: {
+    systemVersion: 'System version',
+    latest: '(Latest)',
+    update: 'Update to the latest version',
+    finalUpdate: 'Last update：{datetime}',
+    externalLink: 'External links',
+    homepage: 'Official Homepage',
+    contact: 'Contact',
+    dm: '(Please contact us via DM)',
+    license: 'License',
+    MIT: 'MIT License',
+    licenseDesc: '\
+      Modification and redistribution of the system without permission from the creator is prohibited.<br>\
+      Please refer to the ServerStarter2 Terms of Use and License Agreement for more information.',
+    developer: 'Developer',
+    productionManager: 'Production Manager',
+    technicalManager: 'Technical Manager',
+    support: 'Supports',
+  },
 };

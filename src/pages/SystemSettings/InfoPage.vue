@@ -17,61 +17,59 @@ function systemUpdate() {
 
 <template>
   <div class="q-px-md" style="margin: auto; width: fit-content;">
-    <h1 class="q-pt-md">システムバージョン</h1>
+    <h1 class="q-pt-md">{{ $t('systemsetting.info.systemVersion') }}</h1>
     <div class="q-pl-md">
       <div class="row items-center">
         <p class="q-ma-none">{{ sysStore.systemVersion }}</p>
         <div class="q-ml-md">
-          <p v-if="latest">(最新)</p>
-          <SsBtn v-else free-width label="最新版に更新" color="primary" @click="systemUpdate" />
+          <p v-if="latest">{{ $t('systemsetting.info.latest') }}</p>
+          <SsBtn v-else free-width :label="$t('systemsetting.info.update')" color="primary" @click="systemUpdate" />
         </div>
       </div>
       <!-- TODO: 最終更新日を取得＆保存 -->
-      <div class="text-caption q-pt-sm" style="opacity: .6;">最終更新日：2023年8月1日火曜日　0:00:00</div>
+      <div class="text-caption q-pt-sm" style="opacity: .6;">{{ $t('systemsetting.info.finalUpdate', {datetime: '2023年8月1日火曜日　0:00:00'}) }}</div>
     </div>
 
-    <h1>外部リンク</h1>
+    <h1>{{  $t('systemsetting.info.externalLink') }}</h1>
     <div class="q-pl-md">
       <div class="row">
-        <p class="q-ma-none" style="width: 12rem;">公式ホームページ</p>
+        <p class="q-ma-none" style="width: 12rem;">{{ $t('systemsetting.info.homepage') }}</p>
         <SsA url="https://civiltt.github.io/ServerStarter/" class="text-body2">
           https://civiltt.github.io/ServerStarter/
         </SsA>
       </div>
       <div class="row q-pt-sm">
-        <p class="q-ma-none" style="width: 12rem;">お問い合わせ</p>
+        <p class="q-ma-none" style="width: 12rem;">{{ $t('systemsetting.info.contact') }}</p>
         <div class="row" style="flex: 1 1 0">
           <SsA url="https://twitter.com/CivilT_T" class="text-body2">
             https://twitter.com/CivilT_T
           </SsA>
-          <span>（DMよりご連絡ください）</span>
+          <span>{{ $t('systemsetting.info.dm') }}</span>
         </div>
       </div>
     </div>
 
-    <h1>ライセンス</h1>
+    <h1>{{ $t('systemsetting.info.license') }}</h1>
     <div class="q-pl-md">
-      <p class="q-ma-none">MIT License</p>
-      <div class="text-caption q-pt-sm" style="opacity: .6;">
-        制作者への許可なくシステムを改変して再配布することを禁じています。<br>
-        詳細はServerStarter2の利用規約、並びにライセンス条項をご確認ください。
+      <p class="q-ma-none">{{ $t('systemsetting.info.MIT') }}</p>
+      <div class="text-caption q-pt-sm" style="opacity: .6;" v-html="$t('systemsetting.info.licenseDesc')">
       </div>
     </div>
 
-    <h1>製作者</h1>
+    <h1>{{ $t('systemsetting.info.developer') }}</h1>
     <div class="q-pl-md">
       <CreaterItem
-        job="製作責任者"
+        :job="$t('systemsetting.info.productionManager')"
         :names="['CivilTT']"
         url="https://twitter.com/CivilT_T"
       />
       <CreaterItem
-        job="技術責任者"
+        :job="$t('systemsetting.info.technicalManager')"
         :names="['txkodo']"
         url="https://twitter.com/txkodo"
       />
       <CreaterItem
-        job="実装補助"
+        :job="$t('systemsetting.info.support')"
         :names="['nozz', 'Monchi']"
       />
     </div>
