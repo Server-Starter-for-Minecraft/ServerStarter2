@@ -14,6 +14,7 @@ import { enUSWorldList } from "./worldList";
 import { enUSIcon } from "./icon";
 import { enUSShareWorld } from "./shareWorld";
 import { enWelcome } from "./welcome";
+import { enAutoShutdown } from "./autoshutdown";
 
 export const enUS: MessageSchema = {
   home:enUSHome,
@@ -29,4 +30,5 @@ export const enUS: MessageSchema = {
   icon:enUSIcon,
   shareWorld:enUSShareWorld,
   welcome:enWelcome,
+  autoshutdown:enAutoShutdown,
 };

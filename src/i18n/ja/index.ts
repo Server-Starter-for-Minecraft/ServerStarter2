@@ -13,6 +13,7 @@ import { jaWorldList } from "./worldList";
 import { jaIcon } from "./icon";
 import { jaShareWorld } from "./shareWorld";
 import { jaWelcome } from "./welcome";
+import { jaAutoShutdown } from "./autoshutdown";
 
 export const ja = {
   home:jaHome,
@@ -28,4 +29,5 @@ export const ja = {
   icon:jaIcon,
   shareWorld:jaShareWorld,
   welcome:jaWelcome,
+  autoshutdown:jaAutoShutdown,
 };

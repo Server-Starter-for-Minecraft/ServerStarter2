@@ -43,17 +43,18 @@ onMounted(shutdownCounter)
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card>
       <q-card-section>
-        <div style="font-size: 1.5rem;">自動シャットダウン</div>
+        <div style="font-size: 1.5rem;">{{ $t('autoshutdown.title') }}</div>
       </q-card-section>
       <q-card-section>
-        <div style="font-size: 1rem; opacity: .6;">
-          {{ `${autoShutdownInterval}秒後にこのPCをシャットダウンします。` }}<br>
-          キャンセルの場合は、シャットダウンしません。
+        <div 
+          style="font-size: 1rem; opacity: .6;"
+          v-html="$t('autoshutdown.desc', {time:autoShutdownInterval})"
+          >
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <SsBtn label="キャンセル" @click="shutdownSelecter(false)" v-close-popup />
-        <SsBtn :label="`OK（${autoShutdownInterval}秒後にシャットダウン）`" @click="onDialogOK" class="text-primary" />
+        <SsBtn :label="$t('autoshutdown.cancel')" @click="shutdownSelecter(false)" v-close-popup />
+        <SsBtn :label="$t('autoshutdown.ok',{time:autoShutdownInterval})" @click="onDialogOK" class="text-primary" />
       </q-card-actions>
     </q-card>
   </q-dialog>
