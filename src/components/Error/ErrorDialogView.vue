@@ -46,7 +46,7 @@ function closeCounter() {
         <q-separator vertical inset />
 
         <q-card-actions>
-          <q-btn dense round icon="close" size=".8rem" @click="onDialogCancel" />
+          <q-btn dense round flat icon="close" size=".8rem" @click="onDialogCancel" />
         </q-card-actions>
       </q-card-section>
 
