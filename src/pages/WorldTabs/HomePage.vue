@@ -178,7 +178,7 @@ function openFolderEditor() {
           />
         </template>
         <AddContentsCard
-          label="ワールドフォルダを追加"
+          :label="$t('home.saveWorld.addFolder')"
           min-height="3rem"
           :card-style="{'min-width': '100%', 'border-radius': '5px'}"
           @click="openFolderEditor"

@@ -25,7 +25,7 @@ function openFolderEditor() {
 <template>
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
-      ワールドデータの保存先を設定
+      {{ $t('home.saveWorld.description') }}
     </p>
 
     <div class="column q-py-sm q-gutter-y-md">
@@ -33,7 +33,7 @@ function openFolderEditor() {
         <FolderCard show-operation-btns v-model="sysStore.systemSettings.container[n - 1]" />
       </template>
       <AddContentsCard
-        label="ワールドフォルダを追加"
+        :label="$t('home.saveWorld.addFolder')"
         min-height="4rem"
         :card-style="{'min-width': '100%', 'border-radius': '5px'}"
         @click="openFolderEditor"

@@ -36,7 +36,16 @@ export const enUSHome: MessageSchema["home"] = {
   },
   saveWorld: {
     title: 'World folder',
-    description: 'Select your folder to save world data'
+    description: 'Select your folder to save world data',
+    addFolder: 'Add world folder',
+    add: 'Add {name}',
+    folderName: 'Name of world folder',
+    select: 'Select folder',
+    exist: '{name} already exists',
+    inputFolderName: 'Input folder name',
+    selectFolder: 'Select folder',
+
+
   },
   setting: {
     title: 'Start up settings',

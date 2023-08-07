@@ -35,7 +35,15 @@ export const jaHome = {
   },
   saveWorld: {
     title: 'ワールドフォルダ',
-    description: 'ワールドデータの保存フォルダを選択'
+    description: 'ワールドデータの保存フォルダを選択',
+    addFolder: 'ワールドフォルダを追加',
+    add: '{name}を追加',
+    folderName: 'ワールドフォルダ名',
+    select: 'フォルダを選択',
+    exist: '{name}は既に存在します',
+    inputFolderName: 'フォルダ名を入力してください',
+    selectFolder: 'フォルダを選択してください',
+
   },
   setting: {
     title: '起動設定',

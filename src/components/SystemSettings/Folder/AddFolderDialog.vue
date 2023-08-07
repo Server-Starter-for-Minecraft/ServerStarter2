@@ -23,21 +23,21 @@ function pickFolder() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      title="ワールドフォルダを追加"
+      :title="$t('home.saveWorld.addFolder')"
       :disable="sysStore.systemSettings.container.filter(c => c.name === inputName && inputName !== prop.containerSettings?.name).length > 0 || inputName === '' || pickPath === ''"
-      :ok-btn-txt="`${inputName}を追加`"
+      :ok-btn-txt="$t('home.saveWorld.add', { name: inputName })"
       @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
       @close="onDialogCancel"
     >
       <div class="row q-gutter-md">
         <SsInput
           v-model="inputName"
-          label="ワールドフォルダ名"
+          :label="$t('home.saveWorld.folderName')"
           class="col"
         />
         <SsBtn
           free-width
-          label="フォルダを選択"
+          :label="$t('home.saveWorld.selectFolder')"
           @click="pickFolder"
         />
       </div>
@@ -46,19 +46,19 @@ function pickFolder() {
         v-show="sysStore.systemSettings.container.filter(c => c.name === inputName && inputName !== prop.containerSettings?.name).length > 0"
         class="text-caption text-omit text-red q-pt-sm"
       >
-        {{ inputName }}は既に存在します
+        {{ $t('home.saveworld.exist',{ name: inputName }) }}
       </div>
       <div
         v-show="inputName === ''"
         class="text-caption text-omit text-red q-pt-sm"
       >
-        フォルダ名を入力してください
+        {{ $t('home.saveWorld.inputFolderName') }}
       </div>
       <div
         v-show="pickPath === ''"
         class="text-caption text-omit text-red q-pt-sm"
       >
-        フォルダを選択してください
+        {{ $t('home.saveWorld.selectFolder') }}
       </div>
       <div 
         v-show="pickPath !== ''"
