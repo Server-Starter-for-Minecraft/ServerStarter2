@@ -7,6 +7,5 @@ export const jaAdditionalContents = {
   newInstall: '新規追加',
   add: '{type}を追加',
   notInstalled: '導入された{type}はありません',
-
-  
+  openSaveLocation: '{type}の保存場所を開く',
 }

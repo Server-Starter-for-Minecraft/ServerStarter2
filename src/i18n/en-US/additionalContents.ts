@@ -7,4 +7,5 @@ export const enAdditionalContents = {
   newInstall: 'Install new',
   add: 'Install {type}',
   notInstalled: 'No {type} installed',
+  openSaveLocation: 'Open {type} save Location',
 }

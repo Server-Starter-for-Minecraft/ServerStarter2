@@ -123,7 +123,7 @@ function openCacheFolder() {
       <q-btn
         dense
         flat
-        :label="`${$t(`additionalContents.${prop.contentType}`)}の保存場所を開く`"
+        :label="$t('additionalContents.openSaveLocation', { type: $t(`additionalContents.${prop.contentType}`) })"
         icon="folder"
         color="grey"
         size=".7rem"
