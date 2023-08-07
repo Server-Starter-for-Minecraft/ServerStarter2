@@ -20,6 +20,7 @@ const forges = sysStore.serverVersions.get('forge') as ForgeVersion[]
       option-label="id"
       :disable="forges === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
     <SsSelect
       v-model="mainStore.world.version"
@@ -31,6 +32,7 @@ const forges = sysStore.serverVersions.get('forge') as ForgeVersion[]
       option-value="data"
       :disable="forges === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
   </div>
 </template>

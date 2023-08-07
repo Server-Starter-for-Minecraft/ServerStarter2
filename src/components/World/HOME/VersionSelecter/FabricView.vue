@@ -24,6 +24,7 @@ const fabricLoader = ref(mainStore.world.version.type === 'fabric' ? mainStore.w
       option-label="id"
       :disable="fabrics === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
     <div class="column items-end">
       <span>{{ $t('home.version.displayVersion') }}</span>
@@ -50,6 +51,7 @@ const fabricLoader = ref(mainStore.world.version.type === 'fabric' ? mainStore.w
       option-value="data"
       :disable="fabrics === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
     <SsSelect
       v-model="fabricLoader"
@@ -64,6 +66,7 @@ const fabricLoader = ref(mainStore.world.version.type === 'fabric' ? mainStore.w
       option-value="data"
       :disable="fabrics === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
   </div>
 </template>

@@ -29,6 +29,7 @@ function getNumberName(n: number, forgeVersion?: string) {
       option-label="id"
       :disable="mohists === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
     <SsSelect
       v-model="mainStore.world.version"
@@ -46,6 +47,7 @@ function getNumberName(n: number, forgeVersion?: string) {
       option-value="data"
       :disable="mohists === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
   </div>
 </template>

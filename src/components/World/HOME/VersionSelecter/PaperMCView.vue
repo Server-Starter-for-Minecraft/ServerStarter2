@@ -20,6 +20,7 @@ const papers = (sysStore.serverVersions.get('papermc') as PapermcVersion[])
       option-label="id"
       :disable="papers === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
     <SsSelect
       v-model="mainStore.world.version"
@@ -31,6 +32,7 @@ const papers = (sysStore.serverVersions.get('papermc') as PapermcVersion[])
       option-value="data"
       :disable="papers === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
   </div>
 </template>

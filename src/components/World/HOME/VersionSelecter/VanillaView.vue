@@ -21,6 +21,7 @@ const vanillas = sysStore.serverVersions.get('vanilla') as VanillaVersion[] | un
       option-label="id"
       :disable="vanillas === void 0"
       class="col"
+      style="min-width: 8rem;"
     />
     <div class="column items-end">
       <span>{{ $t('home.version.displayVersion') }}</span>
