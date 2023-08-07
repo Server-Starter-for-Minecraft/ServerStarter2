@@ -7,5 +7,7 @@ export const jaWorldList = {
     addCustomWorld: '配布ワールドを導入',
     selectZip: 'ZIPファイルを選択',
     selectFolder: 'フォルダを選択',
-    addSingleWorld: 'シングルワールドを導入'
+    addSingleWorld: 'シングルワールドを導入',
+    openList: 'ワールド一覧を開く',
+    minimizeList: 'ワールド一覧を最小化',
 };

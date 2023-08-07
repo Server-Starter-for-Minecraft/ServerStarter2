@@ -35,14 +35,14 @@ const drawer = ref(true)
           />
         </q-avatar>
         <q-tooltip anchor="center middle" self="top middle" :delay="500">
-          ワールド一覧を開く
+          {{ $t('worldList.openList') }}
         </q-tooltip>
       </q-item>
     </div>
     <icon-button-view
       :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
       :label="$t('worldList.allWorld')"
-      tooltip="ワールド一覧を最小化"
+      :tooltip="$t('worldList.minimizeList')"
       @click="sysStore.systemSettings.user.drawerWidth = 100"
       class="q-mini-drawer-hide"
     />
