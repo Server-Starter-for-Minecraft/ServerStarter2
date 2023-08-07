@@ -92,7 +92,7 @@ export const enUSproperty = {
     'white-list': 'Manage player login by the white list',
   },
   resetProperty:'\
-    Reset setting to default setting \"{defaultProperty}\"\
+    Reset setting to default setting \"{defaultProperty}\"<br>\
     You can change basic settings from "System Settings" > "Properties".',
   failed: 'Failed to load properties',
   reset: 'Reset property settings',
