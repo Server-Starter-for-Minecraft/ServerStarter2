@@ -20,7 +20,7 @@ export const jaHome = {
     loader: 'ローダー'
   },
   serverType: {
-    vanilla: 'バニラ',
+    vanilla: 'バニラ(Minecraft公式)',
     spigot: 'Spigot',
     papermc: 'PaperMC',
     forge: 'Forge',

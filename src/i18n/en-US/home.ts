@@ -21,7 +21,7 @@ export const enUSHome: MessageSchema["home"] = {
 
   },
   serverType: {
-    vanilla: 'Vanilla',
+    vanilla: 'Vanilla(Minecraft Official)',
     spigot: 'Spigot',
     papermc: 'PaperMC',
     forge: 'Forge',

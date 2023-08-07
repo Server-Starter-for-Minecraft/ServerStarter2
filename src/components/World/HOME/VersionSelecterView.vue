@@ -24,6 +24,15 @@ const validVersionTypes = versionTypes.filter(
   serverType => sysStore.serverVersions.get(serverType) !== void 0
 )
 
+function createTranslateObject(value: Version['type']) {
+  return {
+    value: value,
+    label: t(`home.serverType.${value}`), 
+  };
+}
+
+const translatedVersionTypes = validVersionTypes.map((value) => createTranslateObject(value));
+
 /**
  * バージョンの一覧を取得する
  */
@@ -50,7 +59,9 @@ function getAllVers() {
   <SsSelect
     v-model="versionType"
     @update:model-value="getAllVers"
-    :options="validVersionTypes"
+    :options="translatedVersionTypes"
+    option-label="label"
+    option-value="value"
     :label="$t('home.version.serverType')"
     class="q-pb-md"
   />
