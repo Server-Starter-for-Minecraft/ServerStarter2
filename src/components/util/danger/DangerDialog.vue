@@ -11,6 +11,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
+      :overline="dialogOverline"
       :title="dialogTitle"
       color="red"
       :ok-btn-txt="okBtnTxt"

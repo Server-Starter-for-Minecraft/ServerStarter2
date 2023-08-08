@@ -3,11 +3,12 @@ import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
 import { GithubRemoteSetting, RemoteSetting } from 'app/src-electron/schema/remote';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { updatePatProp, unlinkRepoProp, updatePatDialogReturns } from './iGitHubDialog';
+import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { deleteFromValue } from 'src/scripts/obj';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import UpdatePatDialog from './UpdatePatDialog.vue';
-import UnlinkRepoDialog from './UnlinkRepoDialog.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 interface Prop {
   onRegisterClick?: (remoteData: RemoteSetting) => void
@@ -32,12 +33,19 @@ function openPatEditor() {
 
 function checkUnlinkRepo() {
   $q.dialog({
-    component: UnlinkRepoDialog,
+    component: DangerDialog,
     componentProps: {
-      title: t('shareWorld.githubCard.unresister.dialog', { name: remote.value.folder.repo }),
-      owner: remote.value.folder.owner,
-      repo: remote.value.folder.repo
-    } as unlinkRepoProp
+      dialogOverline: 'GitHub',
+      dialogTitle: t(
+        'shareWorld.githubCard.unresister.dialog',
+        { name: remote.value.folder.repo }
+      ),
+      dialogDesc: t(
+        'shareWorld.githubCard.unresister.desc',
+        { owner: remote.value.folder.owner, repo: remote.value.folder.repo }
+      ),
+      okBtnTxt: t('shareWorld.githubCard.unresister.decide')
+    } as dangerDialogProp
   }).onOk(() => {
     deleteFromValue(sysStore.systemSettings.remote, remote.value)
   })
@@ -59,23 +67,10 @@ function checkUnlinkRepo() {
     </q-card-section>
 
     <q-card-actions vertical>
-      <SsBtn
-        :label="$t('shareWorld.githubCard.updatePAT')"
-        @click="openPatEditor"
-        class="q-mb-sm"
-      />
-      <SsBtn
-        v-if="onRegisterClick === void 0"
-        :label="$t('shareWorld.githubCard.unresister.remote')"
-        color="red"
-        @click="checkUnlinkRepo"
-      />
-      <SsBtn
-        v-else
-        :label="$t('shareWorld.githubCard.useRemote')"
-        color="primary"
-        @click="onRegisterClick(remote)"
-      />
+      <SsBtn :label="$t('shareWorld.githubCard.updatePAT')" @click="openPatEditor" class="q-mb-sm" />
+      <SsBtn v-if="onRegisterClick === void 0" :label="$t('shareWorld.githubCard.unresister.remote')" color="red"
+        @click="checkUnlinkRepo" />
+      <SsBtn v-else :label="$t('shareWorld.githubCard.useRemote')" color="primary" @click="onRegisterClick(remote)" />
     </q-card-actions>
   </q-card>
 </template>

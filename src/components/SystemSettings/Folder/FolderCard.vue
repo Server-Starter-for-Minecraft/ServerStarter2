@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { getCssVar, useQuasar } from 'quasar';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 interface Prop {
   loading?: boolean
@@ -35,9 +37,18 @@ function editFolder() {
 }
 
 function removeFolder() {
-  sysStore.systemSettings.container.splice(
-    sysStore.systemSettings.container.map(c => c.name).indexOf(folder.value.name), 1
-  )
+  $q.dialog({
+    component: DangerDialog,
+    componentProps: {
+      dialogTitle: `${folder.value.name}の登録を解除します`,
+      dialogDesc: `ServerStarterのワールド保存先一覧より${folder.value.name}の登録を解除します。<br>解除したフォルダとその内部データが削除されることはありません。`,
+      okBtnTxt: '登録を解除'
+    } as dangerDialogProp
+  }).onOk(() => {
+    sysStore.systemSettings.container.splice(
+      sysStore.systemSettings.container.map(c => c.name).indexOf(folder.value.name), 1
+    )
+  })
 }
 </script>
 
@@ -80,7 +91,7 @@ function removeFolder() {
           <ss-btn
             v-show="showOperationBtns"
             free-width
-            label="削除"
+            label="登録解除"
             color="red"
             :disable="sysStore.systemSettings.container.length === 1"
             @click="removeFolder"

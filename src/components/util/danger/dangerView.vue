@@ -2,7 +2,7 @@
 import { useQuasar } from 'quasar';
 import { dangerDialogProp } from './iDangerDialog';
 import SsBtn from '../base/ssBtn.vue';
-import PopupDialog from './PopupDialog.vue';
+import DangerDialog from './DangerDialog.vue';
 
 interface Prop {
   viewTitle: string
@@ -17,7 +17,7 @@ const $q = useQuasar()
 
 function openDialog() {
   $q.dialog({
-    component: PopupDialog,
+    component: DangerDialog,
     componentProps: {
       dialogTitle: prop.dialogTitle,
       dialogDesc: prop.dialogDesc,
