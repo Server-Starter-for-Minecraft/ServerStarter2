@@ -3,9 +3,10 @@ import { defineStore } from 'pinia';
 import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
-import { recordKeyFillter } from 'src/scripts/objFillter';
+import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
 import { isError } from 'src/scripts/error';
+import { useSystemStore } from './SystemStore';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -99,8 +100,11 @@ export const useWorldStore = defineStore('worldStore', {
   },
   getters: {
     sortedWorldList(state) {
+      const sysStore = useSystemStore()
+      const visibleContainers = new Set(sysStore.systemSettings.container.filter(c => c.visible).map(c => c.container))
       return sortValue(
-        state.worldList,
+        // 表示設定にしていたコンテナのみを描画対象にする
+        recordValueFilter(state.worldList, w => visibleContainers.has(w.container)),
         (a, b) => (a.last_date ?? 0) - (b.last_date ?? 0)
       )
     }
