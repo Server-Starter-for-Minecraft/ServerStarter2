@@ -32,8 +32,8 @@ import {
 } from '../const';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { importCustomMap } from './cusomMap';
-import { PlainProgressor, genWithPlain } from '../progress/progress';
 import { pullRemoteWorld } from '../remote/remote';
+import { GroupProgressor } from '../progress/progress';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -269,10 +269,8 @@ function estimateWorldDirectoryType(savePath: Path): WorldDirectoryTypes {
 export async function formatWorldDirectory(
   savePath: Path,
   version: Version,
-  progress?: PlainProgressor
+  progress?: GroupProgressor
 ): Promise<WithError<undefined>> {
-  const withPlain = genWithPlain(progress);
-
   const directoryTypeMap: Record<Version['type'], WorldDirectoryTypes> = {
     vanilla: 'vanilla',
     spigot: 'plugin',
@@ -291,39 +289,24 @@ export async function formatWorldDirectory(
   const pluginNether = savePath.child(PLUGIN_NETHER_DIM);
   const pluginEnd = savePath.child(PLUGIN_THE_END_DIM);
 
+  progress?.title({ key: 'server.run.before.convertDirectory' });
   switch (true) {
     case current === 'vanilla' && next === 'plugin':
-      await withPlain(
-        () =>
-          asyncMap(
-            [
-              { from: vanillaNether, to: pluginNether },
-              { from: vanillaEnd, to: pluginEnd },
-            ],
-            ({ from, to }) => from.moveTo(to)
-          ),
-        {
-          title: {
-            key: 'server.local.formatWorldDirectory',
-          },
-        }
+      await asyncMap(
+        [
+          { from: vanillaNether, to: pluginNether },
+          { from: vanillaEnd, to: pluginEnd },
+        ],
+        ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined);
     case current === 'plugin' && next === 'vanilla':
-      await withPlain(
-        () =>
-          asyncMap(
-            [
-              { from: pluginNether, to: vanillaNether },
-              { from: pluginEnd, to: vanillaEnd },
-            ],
-            ({ from, to }) => from.moveTo(to)
-          ),
-        {
-          title: {
-            key: 'server.local.formatWorldDirectory',
-          },
-        }
+      await asyncMap(
+        [
+          { from: pluginNether, to: vanillaNether },
+          { from: pluginEnd, to: vanillaEnd },
+        ],
+        ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined);
     default:

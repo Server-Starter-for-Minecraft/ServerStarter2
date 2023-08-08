@@ -3,13 +3,22 @@ import { Path } from '../../util/path';
 import { Remote, RemoteFolder, RemoteWorld } from 'src-electron/schema/remote';
 import { WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
+import { GroupProgressor } from '../progress/progress';
 
 export type RemoteOperator<T extends RemoteFolder> = {
   /** ワールドデータをpull */
-  pullWorld(local: Path, remote: Remote<T>): Promise<Failable<undefined>>;
+  pullWorld(
+    local: Path,
+    remote: Remote<T>,
+    progress?: GroupProgressor
+  ): Promise<Failable<undefined>>;
 
   /** ワールドデータをpush */
-  pushWorld(local: Path, remote: Remote<T>): Promise<Failable<undefined>>;
+  pushWorld(
+    local: Path,
+    remote: Remote<T>,
+    progress?: GroupProgressor
+  ): Promise<Failable<undefined>>;
 
   /** リモートのワールドデータを削除 */
   deleteWorld(remote: Remote<T>): Promise<Failable<undefined>>;

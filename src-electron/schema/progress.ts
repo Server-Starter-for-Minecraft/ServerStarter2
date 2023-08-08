@@ -1,34 +1,57 @@
 // プログレスの進捗状態を通知する型定義群
-
 import { ProgressMessage } from './progressMessage';
 
-// すべてのデータを送信するのではなく、変更箇所のみ値が入り、それ以外はundefinedになる
-// プロパティの削除を通知する場合は、削除箇所の値がnullになる
-
-export type IProgress = {
-  title?: ProgressMessage | null;
-  description?: ProgressMessage | null;
-  sub?: Record<string, Progress> | null;
+/** タイトルのプログレス */
+export type TitleProgress = {
+  type: 'title';
+  value: ProgressMessage;
 };
 
-/** タイトルと説明文があるだけのプログレス */
-export type PlainProgress = {
-  type: 'plain';
-} & IProgress;
+/** 説明文のプログレス */
+export type SubtitleProgress = {
+  type: 'subtitle';
+  value: ProgressMessage;
+};
 
-/** 進捗を数値で表せるプログレス */
+/**
+ * NumericProgressで使用される単位
+ * file : ファイルの個数
+ * byte : 読み込みのバイト
+ * percent : パーセント表示(maxは100固定)
+ */
+export type NumericProgressUnit = 'file' | 'byte' | 'percent';
+
+/**
+ * 数値のプログレス
+ * pythonのtqdmっぽい感じ
+ * maxがある場合はバーでない場合は数字だけでの表示を想定
+ */
 export type NumericProgress = {
   type: 'numeric';
-  value?: number | null;
+  value: number;
   // 最大値(存在する場合)
-  max?: number | null;
-} & IProgress;
+  max?: number;
+  unit?: NumericProgressUnit;
+};
 
 /** コンソールのプログレス */
 export type ConsoleProgress = {
   type: 'console';
-  // コンソールの文字列(一行)
-  value?: string | null;
-} & IProgress;
+  // コンソールの文字列配列
+  value: string[];
+};
 
-export type Progress = PlainProgress | NumericProgress | ConsoleProgress;
+/** グループ化されたプログレス */
+export type GroupProgress = {
+  type: 'group';
+  // コンソールの文字列配列
+  value: Progress[];
+};
+
+/** プログレス一覧 */
+export type Progress =
+  | TitleProgress
+  | SubtitleProgress
+  | NumericProgress
+  | ConsoleProgress
+  | GroupProgress;

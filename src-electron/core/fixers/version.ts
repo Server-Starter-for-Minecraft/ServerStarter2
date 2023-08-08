@@ -16,6 +16,7 @@ import {
   literalFixer,
   numberFixer,
   objectFixer,
+  optionalFixer,
   stringFixer,
   unionFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
@@ -51,7 +52,7 @@ export const fixMohistmcVersion = objectFixer<MohistmcVersion>(
   {
     id: stringFixer(),
     type: literalFixer(['mohistmc']),
-    forge_version: stringFixer(),
+    forge_version: optionalFixer(stringFixer()),
     number: numberFixer(),
   },
   false
