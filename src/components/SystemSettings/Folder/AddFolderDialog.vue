@@ -6,6 +6,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import { checkError } from 'src/components/Error/Error';
 
 const prop = defineProps<AddFolderDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -15,8 +16,13 @@ const sysStore = useSystemStore()
 const inputName = ref(prop.containerSettings?.name ?? '')
 const pickPath = ref(prop.containerSettings?.container ?? '')
 
-function pickFolder() {
-  // TODO: Pickerの実装が完了し次第、作成
+async function pickFolder() {
+  const res = await window.API.invokePickDialog({ type: 'container' })
+  checkError(
+    res,
+    c => pickPath.value = c,
+    () => { return { title: 'フォルダの選択に失敗しました' } }
+  )
 }
 </script>
 

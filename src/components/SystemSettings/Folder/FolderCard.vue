@@ -7,6 +7,7 @@ import SsBtn from 'src/components/util/base/ssBtn.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 
 interface Prop {
+  loading?: boolean
   showOperationBtns?: boolean
   active?: boolean
   onClick?: () => void
@@ -46,7 +47,12 @@ function removeFolder() {
     bordered 
     :style="{ 'border-color': active ? getCssVar('primary') : 'transparent' }"
   >
-    <q-item :clickable="onClick !== void 0" :active="active" @click="onClick">
+    <q-item
+      :clickable="onClick !== void 0"
+      :active="active"
+      :disable="loading"
+      @click="onClick"
+    >
       <q-item-section>
         <div class="text-omit" style="font-size: 1.1rem;">{{ folder.name }}</div>
         <div class="text-caption text-omit" style="opacity: .6;">{{ folder.container }}</div>
@@ -81,6 +87,17 @@ function removeFolder() {
           />
         </div>
       </q-item-section>
+
+      <div class="absolute-center">
+        <q-circular-progress
+          v-show="loading"
+          indeterminate
+          rounded
+          size="40px"
+          color="primary"
+          class="q-ma-md"
+        />
+      </div>
     </q-item>
   </q-card>
 </template>

@@ -34,8 +34,6 @@ function closeCounter() {
     <q-card class="dialogCard fixed-bottom-right q-my-md">
       <q-card-section horizontal>
         <q-card-section class="row items-center no-wrap">
-          <!-- TODO: check.arg, check.keyによってエラー文をi18nに登録する -->
-          <!-- TODO: 最終的にはKeyに付随する説明文をTitleにすることでTitle引数を削除する？（Keyの存在しないエラーが起きた場合は？） -->
           <div>
             <div class="text-weight-bold">{{ title }}</div>
             <div class="text-grey">{{ desc }}</div>

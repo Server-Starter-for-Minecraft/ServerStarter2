@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
-import { WorldName } from 'app/src-electron/schema/brands';
+import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
+import { deepcopy } from "app/src-electron/util/deepcopy";
 import { assets } from 'src/assets/assets';
 import { checkError } from 'src/components/Error/Error';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
@@ -28,6 +30,8 @@ const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 const $q = useQuasar()
 const { t } = useI18n()
+
+const isWorldContainerLoading = ref(false)
 
 /**
  * 選択されているワールドを削除する
@@ -102,6 +106,30 @@ function clearNewName() {
 }
 
 /**
+ * ワールドコンテナをセットする際に、データの移動を待機する
+ */
+async function setWorldContainer(container: WorldContainer) {
+  // エラーの起きているワールドということにしてワールドの起動を阻止する
+  mainStore.errorWorlds.add(mainStore.world.id)
+  isWorldContainerLoading.value = true
+
+  const world = deepcopy(mainStore.world)
+  world.container = container
+
+  // 保存処理を実行
+  const res = await window.API.invokeSetWorld(toRaw(world))
+  checkError(
+    res.value,
+    w => mainStore.updateWorld(w),
+    () => { return { title: 'ワールドの保存フォルダを変更できませんでした' } }
+  )
+
+  // エラー状態の解除
+  mainStore.errorWorlds.delete(world.id)
+  isWorldContainerLoading.value = false
+}
+
+/**
  * ワールドコンテナの新規作成Dialog
  */
 function openFolderEditor() {
@@ -170,11 +198,13 @@ function openFolderEditor() {
       <p class="text-caption">{{ $t('home.saveWorld.description') }}</p>
 
       <div class="column q-gutter-y-md">
+        <!-- v-modelの書き込みに対応するため、わざとインデックスによる呼び出しを利用 -->
         <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
           <FolderCard
             v-model="sysStore.systemSettings.container[n - 1]"
+            :loading="isWorldContainerLoading"
             :active="mainStore.world.container === sysStore.systemSettings.container[n - 1].container"
-            @click="mainStore.world.container = sysStore.systemSettings.container[n - 1].container"
+            @click="setWorldContainer(sysStore.systemSettings.container[n - 1].container)"
           />
         </template>
         <AddContentsCard
