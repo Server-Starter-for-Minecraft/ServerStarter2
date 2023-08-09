@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
@@ -7,7 +8,12 @@ interface Prop {
 }
 defineProps<Prop>()
 
+const mainStore = useMainStore()
 const consoleOpeStore = useConsoleOpeStore()
+
+function reboot() {
+  window.API.invokeReboot(mainStore.selectedWorldID)
+}
 </script>
 
 <template>
@@ -29,7 +35,7 @@ const consoleOpeStore = useConsoleOpeStore()
       label="reboot"
       width="100px"
       :disable="disable"
-      @click="consoleOpeStore.sendCommand('reboot')"
+      @click="reboot"
       class="q-mx-sm"
     />
     <q-input
