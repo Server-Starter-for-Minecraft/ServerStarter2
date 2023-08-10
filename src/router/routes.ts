@@ -9,9 +9,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'console', component: () => import('src/pages/WorldTabs/ConsolePage.vue') },
       { path: 'property', component: () => import('src/pages/WorldTabs/PropertyPage.vue') },
       { path: 'player', component: () => import('src/pages/WorldTabs/PlayerPage.vue') },
-      { path: 'datapack', component: () => import('src/pages/WorldTabs/DatapackPage.vue') },
-      { path: 'plugin', component: () => import('src/pages/WorldTabs/PluginPage.vue') },
-      { path: 'mod', component: () => import('src/pages/WorldTabs/ModPage.vue') },
+      { path: 'contents', component: () => import('src/pages/WorldTabs/ContentsPage.vue') },
       { path: 'share-world', component: () => import('src/pages/WorldTabs/ShareWorldPage.vue') },
 
       {

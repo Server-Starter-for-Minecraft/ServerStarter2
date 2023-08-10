@@ -1,28 +1,17 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
 interface Prop {
-  name: string
+  active?: boolean
   label: string
-  to?: string
-  onClick?: () => void
+  onClick: () => void
 }
-const prop = defineProps<Prop>()
-const router = useRouter()
-
-const toPath = prop.to ?? prop.name
-
-async function clicked() {
-  await router.push(`/${toPath}`)
-  if (prop.onClick) { prop.onClick() }
-}
+defineProps<Prop>()
 </script>
 
 <template>
   <q-item
-    :active="$route.path===`/${toPath}`"
+    :active="active"
     clickable
-    @click="clicked()"
+    @click="onClick"
   >
     <q-item-section>{{ label }}</q-item-section>
   </q-item>

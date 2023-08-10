@@ -1,33 +1,34 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { Version } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
+import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
+import { isContentsExists } from './Contents/contentsPage';
 import IconTabView from './utils/IconTabView.vue';
 import IconTabDropdownView from './utils/IconTabDropdownView.vue';
 
 const { t } = useI18n()
 const mainStore = useMainStore()
-
-type contentExists = { [ver in Version['type']]: { datapack: boolean, plugin: boolean, mod: boolean } }
-const isContentsExists: contentExists = {
-  'vanilla' : { datapack: true, plugin: false, mod: false },
-  'spigot'  : { datapack: true, plugin: true , mod: false },
-  'papermc' : { datapack: true, plugin: true , mod: false },
-  'forge'   : { datapack: true, plugin: false, mod: true  },
-  'mohistmc': { datapack: true, plugin: true , mod: true  },
-  'fabric'  : { datapack: true, plugin: true , mod: true  },
-} 
+const contentsStore = useContentsStore()
 
 function getAdditionalContentsBtns() {
   const btns = []
   if (isContentsExists[mainStore.world.version.type].datapack) {
-    btns.push({ path: 'datapack', label: t('utils.worldSettingTabs.datapack') })
+    btns.push({
+      label: t('utils.worldSettingTabs.datapack'),
+      activeModelValue: 'datapack'
+    })
   }
   if (isContentsExists[mainStore.world.version.type].plugin) {
-    btns.push({ path: 'plugin', label: t('utils.worldSettingTabs.plugin') })
+    btns.push({
+      label: t('utils.worldSettingTabs.plugin'),
+      activeModelValue: 'plugin'
+    })
   }
   if (isContentsExists[mainStore.world.version.type].mod) {
-    btns.push({ path: 'mod', label: t('utils.worldSettingTabs.mod') })
+    btns.push({
+      label: t('utils.worldSettingTabs.mod'),
+      activeModelValue: 'mod'
+    })
   }
   return btns
 }
@@ -51,6 +52,7 @@ function getAdditionalContentsBtns() {
       <icon-tab-view path="property" icon="list" :label="$t('utils.worldSettingTabs.property')" />
       <icon-tab-view path="player" icon="person" :label="$t('utils.worldSettingTabs.player')" />
       <icon-tab-dropdown-view
+        v-model="contentsStore.selectedTab"
         path="contents"
         icon="extension"
         :label="$t('utils.worldSettingTabs.contents')"
