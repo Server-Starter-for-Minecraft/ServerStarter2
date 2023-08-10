@@ -49,14 +49,15 @@ function selectWorldIdx() {
 <template>
   <q-item
     clickable
-    :active="(clicked = mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
-    :focused="(clicked = mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system')"
+    :active="(clicked = mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system')"
+    :focused="(clicked = mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system')"
     @click="selectWorldIdx"
     v-on:dblclick="startServer"
+    :to="$route.path.slice(0, 7) === '/system' ? '/' : $route"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
-    :style="{ 'border-left': mainStore.selectedWorldID === world.id && $router.currentRoute.value.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent' }"
+    :style="{ 'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent' }"
   >
     <q-item-section
       avatar
