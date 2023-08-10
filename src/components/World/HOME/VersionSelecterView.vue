@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Version, versionTypes } from 'app/src-electron/schema/version';
 import { sendError } from 'src/components/Error/Error';
@@ -16,8 +15,6 @@ import Fabric from './VersionSelecter/FabricView.vue';
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const { t } = useI18n()
-
-const versionType:Ref<Version['type']> = ref(mainStore.world.version.type)
 
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
 const validVersionTypes = versionTypes.filter(
@@ -37,7 +34,7 @@ const translatedVersionTypes = validVersionTypes.map((value) => createTranslateO
  * バージョンの一覧を取得する
  */
 function getAllVers() {
-  const versionList = sysStore.serverVersions.get(versionType.value);
+  const versionList = sysStore.serverVersions.get(mainStore.world.version.type);
 
   // versionListがundefinedの時にエラー処理
   if (versionList === void 0) {
@@ -45,7 +42,7 @@ function getAllVers() {
       t('home.error.title'),
       t('home.error.failedGetVersion', { serverVersion: mainStore.world.version })
     );
-    versionType.value = 'vanilla';
+    mainStore.world.version.type = 'vanilla';
     return;
   }
 
@@ -57,7 +54,7 @@ function getAllVers() {
 <template>
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelect
-    v-model="versionType"
+    v-model="mainStore.world.version.type"
     @update:model-value="getAllVers"
     :options="translatedVersionTypes"
     option-label="label"
@@ -67,10 +64,10 @@ function getAllVers() {
   />
 
   <!-- バージョンの一覧を取得できていないときには、編集ができないようにする -->
-  <Vanilla  v-if="versionType      === 'vanilla'"  />
-  <Spigot   v-else-if="versionType === 'spigot'"   />
-  <PaperMC  v-else-if="versionType === 'papermc'"  />
-  <Forge    v-else-if="versionType === 'forge'"    />
-  <MohistMC v-else-if="versionType === 'mohistmc'" />
-  <Fabric   v-else-if="versionType === 'fabric'"   />
+  <Vanilla  v-if="mainStore.world.version.type      === 'vanilla'"  />
+  <Spigot   v-else-if="mainStore.world.version.type === 'spigot'"   />
+  <PaperMC  v-else-if="mainStore.world.version.type === 'papermc'"  />
+  <Forge    v-else-if="mainStore.world.version.type === 'forge'"    />
+  <MohistMC v-else-if="mainStore.world.version.type === 'mohistmc'" />
+  <Fabric   v-else-if="mainStore.world.version.type === 'fabric'"   />
 </template>
