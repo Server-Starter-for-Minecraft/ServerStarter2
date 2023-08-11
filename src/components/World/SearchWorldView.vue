@@ -28,7 +28,7 @@ const sysStore = useSystemStore()
       self="top middle"
       :delay="500"
     >
-      ワールドを検索
+      {{ $t('worldList.searchWorld') }}
     </q-tooltip>
   </q-item>
 </template>
