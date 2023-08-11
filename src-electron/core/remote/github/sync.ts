@@ -1,4 +1,4 @@
-import { simpleGit } from 'simple-git';
+import { SimpleGitProgressEvent, simpleGit } from 'simple-git';
 import { Path } from 'src-electron/util/path';
 import { getGitPat } from './pat';
 import { GithubRemoteFolder, Remote } from 'src-electron/schema/remote';
@@ -11,10 +11,26 @@ import { Failable } from 'app/src-electron/schema/error';
 import { getSystemSettings } from '../../stores/system';
 import { getPlayerFromUUID } from '../../player/main';
 import { gitTempPath } from '../../const';
+import { safeExecAsync } from 'app/src-electron/util/error/failable';
 import {
-  failabilify,
-  safeExecAsync,
-} from 'app/src-electron/util/error/failable';
+  GroupProgressor,
+  NumericProgressor,
+  Progressor,
+} from '../../progress/progress';
+
+function logger(): [
+  (func: (arg: SimpleGitProgressEvent) => void) => void,
+  (arg: SimpleGitProgressEvent) => void
+] {
+  let _func: (arg: SimpleGitProgressEvent) => void;
+  function set(func: (arg: SimpleGitProgressEvent) => void) {
+    _func = func;
+  }
+  function invoke(arg: SimpleGitProgressEvent) {
+    _func?.(arg);
+  }
+  return [set, invoke];
+}
 
 const DEFAULT_REMOTE_NAME = 'serverstarter';
 
@@ -27,11 +43,14 @@ function getRemoteUrl(remote: Remote<GithubRemoteFolder>) {
 
 // SimpleGitインスタンスを取得
 async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
+  // プログレス周りの処理
+  const [set, invoke] = logger();
+
   // patを取得
   // TODO: patが未登録だった場合GUI側で入力待機したほうがいいかも
   const pat = await getGitPat(remote.folder.owner, remote.folder.repo);
 
-  if (isError(pat)) return pat;
+  if (isError(pat)) return [pat, set] as const;
 
   const url = getRemoteUrl(remote);
   // ディレクトリがなければ作成
@@ -44,6 +63,7 @@ async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
         `${remote.name}:${pat}`
       ).toString('base64')}`,
     ],
+    progress: invoke,
   });
 
   try {
@@ -61,16 +81,30 @@ async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
     await git.remote(['add', DEFAULT_REMOTE_NAME, url]);
   }
 
-  return git;
+  return [git, set] as const;
 }
 
 export async function pullWorld(
   local: Path,
-  remote: Remote<GithubRemoteFolder>
+  remote: Remote<GithubRemoteFolder>,
+  progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
-  const git = await setupGit(local, remote);
+  progress?.title({ key: 'server.pull.title' });
+  const [git, set] = await setupGit(local, remote);
   if (isError(git)) return git;
 
+  if (progress) {
+    const stage = progress.subtitle({ key: 'server.pull.ready' });
+    const numeric = progress.numeric();
+    set((x) => {
+      stage.subtitle = {
+        key: 'server.pull.stage',
+        args: { stage: x.stage },
+      };
+      numeric.max = x.total;
+      numeric.value = x.processed;
+    });
+  }
   try {
     await git.fetch(DEFAULT_REMOTE_NAME, remote.name);
     // リモートの内容をチェックアウト
@@ -87,21 +121,44 @@ export async function pullWorld(
 
 export async function pushWorld(
   local: Path,
-  remote: Remote<GithubRemoteFolder>
+  remote: Remote<GithubRemoteFolder>,
+  progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
-  const git = await setupGit(local, remote);
+  progress?.title({ key: 'server.push.title' });
+  const [git, set] = await setupGit(local, remote);
   if (isError(git)) return git;
 
   const sys = await getSystemSettings();
   const uuid = sys.user.owner;
 
   let message: string;
+
+  // UUIDからプレイヤー検索
+  const sub = progress?.subtitle({
+    key: 'server.remote.desc.getPlayerFromUUID',
+    args: { uuid: uuid },
+  });
   const player = await getPlayerFromUUID(uuid);
+  sub?.delete();
   if (isValid(player)) message = `${player.name}(${uuid})`;
   else message = `<ANONYMOUS>(${uuid})`;
 
   await git.add('-A');
   await git.commit(message);
+
+  // pushのプログレスを反映
+  if (progress) {
+    const stage = progress.subtitle({ key: 'server.push.ready' });
+    const numeric = progress.numeric();
+    set((x) => {
+      stage.subtitle = {
+        key: 'server.push.stage',
+        args: { stage: x.stage },
+      };
+      numeric.max = x.total;
+      numeric.value = x.processed;
+    });
+  }
   await git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.name}`, '-f']);
 }
 

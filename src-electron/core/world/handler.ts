@@ -28,11 +28,10 @@ import {
   Failable,
   WithError,
 } from 'app/src-electron/schema/error';
-import { PlainProgressor, genWithPlain } from '../progress/progress';
+import { GroupProgressor } from '../progress/progress';
 import { sleep } from 'app/src-electron/util/sleep';
 import { api } from '../api';
 import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
-import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
 
@@ -170,7 +169,7 @@ export class WorldHandler {
     const targetPath = worldContainerToPath(container).child(name);
 
     // パスに変化がない場合はなにもしない
-    if (currentPath.path === targetPath.path) return targetPath;
+    if (currentPath.path === targetPath.path) return;
 
     // 保存ディレクトリを移動する
     await currentPath.moveTo(targetPath);
@@ -192,63 +191,52 @@ export class WorldHandler {
     return await serverJsonFile.save(savePath, settings);
   }
 
-  private async pull(progress?: PlainProgressor) {
+  /** リモートがあるかをチェックして、ある場合はpull */
+  private async pull(progress?: GroupProgressor) {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    const withPlain = genWithPlain(progress);
 
-    const loadLocalServerJson = () => this.loadLocalServerJson();
+    const sub = progress?.subtitle({ key: 'server.local.loadSettingFiles' });
+    const worldSettings = await this.loadLocalServerJson();
+    sub?.delete();
 
-    const worldSettings = await withPlain(loadLocalServerJson, {
-      title: {
-        key: 'server.remote.check',
-      },
-    });
     if (isError(worldSettings)) return worldSettings;
 
     // リモートが存在する場合Pull
     if (worldSettings.remote) {
       const remote = worldSettings.remote;
       const savePath = this.getSavePath();
-      const pull = await withPlain(() => pullRemoteWorld(savePath, remote), {
-        title: {
-          key: 'server.remote.pull',
-          args: {
-            remote: remote,
-          },
-        },
-      });
+
+      const pull = await pullRemoteWorld(
+        savePath,
+        remote,
+        progress?.subGroup()
+      );
 
       // Pullに失敗した場合エラー
       if (isError(pull)) return pull;
     }
   }
 
-  private async push(progress?: PlainProgressor) {
-    const withPlain = genWithPlain(progress);
-
+  private async push(progress?: GroupProgressor) {
     // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    const loadLocalServerJson = () => this.loadLocalServerJson();
-
-    const worldSettings = await withPlain(loadLocalServerJson, {
-      title: {
-        key: 'server.remote.check',
-      },
-    });
+    const prog = progress?.subtitle({ key: 'server.remote.check' });
+    const worldSettings = await this.loadLocalServerJson();
+    prog?.delete();
 
     if (isError(worldSettings)) return worldSettings;
 
     // リモートが存在する場合Push
     const remote = worldSettings.remote;
     if (remote) {
-      const savePath = this.getSavePath();
-      const push = await withPlain(() => pushRemoteWorld(savePath, remote), {
-        title: {
-          key: 'server.remote.push',
-          args: {
-            remote: remote,
-          },
-        },
+      const pushProgress = progress?.subGroup();
+      pushProgress?.title({
+        key: 'server.push.title',
       });
+
+      const savePath = this.getSavePath();
+      const prog = pushProgress?.subGroup();
+      const push = await pushRemoteWorld(savePath, remote, prog);
+      pushProgress?.delete();
 
       // Pushに失敗した場合エラー
       if (isError(push)) return push;
@@ -263,7 +251,7 @@ export class WorldHandler {
 
   async save(
     world: WorldEdited,
-    progress?: PlainProgressor
+    progress?: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
     const func = () => this.saveExec(world, progress);
     return await this.promiseSpooler.spool(func, 'SAVE');
@@ -271,7 +259,7 @@ export class WorldHandler {
   /** サーバーのデータを保存 */
   private async saveExec(
     world: WorldEdited,
-    progress?: PlainProgressor
+    progress?: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
     if (this.runner === undefined) {
       // 起動中に設定を反映
@@ -285,9 +273,8 @@ export class WorldHandler {
   /** 起動していないサーバーのデータを保存 */
   private async saveExecNonRunning(
     world: WorldEdited,
-    progress?: PlainProgressor
+    progress?: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
-    const withPlain = genWithPlain(progress);
     const errors: ErrorMessage[] = [];
 
     // ワールド名に変更があった場合正常な名前かどうかを確認してワールドの保存場所を変更
@@ -300,15 +287,7 @@ export class WorldHandler {
       );
       if (isValid(newWorldName)) {
         // セーブデータを移動
-        await withPlain(() => this.move(world.name, world.container), {
-          title: {
-            key: 'server.local.movingSaveData',
-            args: {
-              world: world.name,
-              container: world.container,
-            },
-          },
-        });
+        await this.move(world.name, world.container);
       } else {
         errors.push(newWorldName);
       }
@@ -323,11 +302,9 @@ export class WorldHandler {
     const loadLocalServerJson = () => this.loadLocalServerJson();
 
     // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
-    const worldSettings = await withPlain(loadLocalServerJson, {
-      title: {
-        key: 'server.local.checkUsing',
-      },
-    });
+    const sub = progress?.subtitle({ key: 'server.load.loadLocalSetting' });
+    const worldSettings = await loadLocalServerJson();
+    sub?.delete();
 
     if (isError(worldSettings)) return withError(worldSettings);
 
@@ -339,25 +316,24 @@ export class WorldHandler {
           name: this.name,
         })
       );
-      const world = await withPlain(this.loadLocal, {
-        title: {
-          key: 'server.local.reloading',
-        },
-      });
+      const sub = progress?.subtitle({ key: 'server.local.reloading' });
+      const world = await this.loadLocal();
+      sub?.delete();
+
       world.errors.push(...errors);
       return world;
     }
 
     // 変更をローカルに保存
     // additionalの解決、custum_map,remote_sourceの導入も行う
-    const result = await withPlain(() => saveLocalFiles(savePath, world), {
-      title: {
-        key: 'server.local.saving',
-      },
+    const saveLocalFilesprogress = progress?.subtitle({
+      key: 'server.save.title',
     });
+    const result = await saveLocalFiles(savePath, world);
     result.errors.push(...errors);
+    saveLocalFilesprogress?.delete();
 
-    // リモートにpush
+    // リモートの存在を確認して存在したらpush
     const push = await this.push(progress);
     if (isError(push)) return withError(push, errors);
 
@@ -461,8 +437,14 @@ export class WorldHandler {
   }
 
   /** サーバーのデータをロード(戻り値がLocalWorldResult) */
-  private async loadExec(): Promise<WithError<Failable<World>>> {
+  private async loadExec(
+    progress?: GroupProgressor
+  ): Promise<WithError<Failable<World>>> {
+    // プログレスのタイトルを設定
+    progress?.title({ key: 'server.load.title' });
+
     // ローカルに保存されたワールド設定Jsonを読み込む(実行中フラグの確認)
+    progress?.subtitle({ key: 'server.load.loadLocalSetting' });
     const worldSettings = await this.loadLocalServerJson();
     if (isError(worldSettings)) return withError(worldSettings);
 
@@ -476,14 +458,19 @@ export class WorldHandler {
       this.runner === undefined
     ) {
       // フラグを折ってPush
+      progress?.subtitle({ key: 'server.load.aborting' });
       return await this.fix();
     }
     // リモートからpull
-    const pullResult = await this.pull();
+    const group = progress?.subGroup();
+    const pullResult = await this.pull(group);
+    group?.delete();
     if (isError(pullResult)) return withError(pullResult);
 
     // ローカルデータをロード
-    return await this.loadLocal();
+    const result = await this.loadLocal();
+
+    return result;
   }
 
   async create(world: WorldEdited): Promise<WithError<Failable<World>>> {
@@ -559,7 +546,7 @@ export class WorldHandler {
     closeServerStarterAndShutDown();
   }
 
-  async run(progress: PlainProgressor): Promise<WithError<Failable<World>>> {
+  async run(progress: GroupProgressor): Promise<WithError<Failable<World>>> {
     const func = () => this.runExec(progress);
     const result = await this.promiseSpooler.spool(func);
 
@@ -571,8 +558,11 @@ export class WorldHandler {
 
   /** データを同期して サーバーを起動 */
   private async runExec(
-    progress: PlainProgressor
+    progress: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
+    const beforeTitle = progress.title({
+      key: 'server.run.before.title',
+    });
     const errors: ErrorMessage[] = [];
 
     // 起動中の場合エラー
@@ -585,7 +575,7 @@ export class WorldHandler {
       );
 
     // ワールド情報をリモートから取得
-    const loadResult = await this.loadExec();
+    const loadResult = await this.loadExec(progress);
     // const loadWorld = () => this.load();
     // const loadResult = await progress.withPlain(loadWorld, {
     //   title: { key: 'server.local.loading' },
@@ -599,13 +589,7 @@ export class WorldHandler {
     const beforeWorld = loadResult.value;
 
     // serverstarterの実行者UUID
-    const selfOwner = (
-      await progress.withPlain(getSystemSettings, {
-        title: {
-          key: 'server.getOwner',
-        },
-      })
-    ).user.owner;
+    const selfOwner = (await getSystemSettings()).user.owner;
 
     // 起動している場合エラー
     if (beforeWorld.using)
@@ -626,11 +610,9 @@ export class WorldHandler {
     settings.using = true;
     settings.last_user = selfOwner;
     settings.last_date = getCurrentTimestamp();
-    await progress.withPlain(() => serverJsonFile.save(savePath, settings), {
-      title: {
-        key: 'server.local.savingSettingFiles',
-      },
-    });
+    const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
+    await serverJsonFile.save(savePath, settings);
+    sub.delete();
 
     // pushを実行 TODO: 失敗時の処理
     await this.push(progress);
@@ -653,30 +635,23 @@ export class WorldHandler {
 
     this.runner = runPromise;
 
-    // タイトルを削除
-    progress.title = null;
+    beforeTitle.delete();
 
     // サーバーの終了を待機
     const serverResult = await runPromise;
 
     this.runner = undefined;
 
-    progress.title = {
-      key: 'server.postProcessing',
-      args: {
-        container: this.container,
-        world: this.name,
-      },
-    };
+    const afterTitle = progress.title({
+      key: 'server.run.after.title',
+    });
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = false;
     beforeWorld.last_date = getCurrentTimestamp();
-    await progress.withPlain(() => serverJsonFile.save(savePath, settings), {
-      title: {
-        key: 'server.local.savingSettingFiles',
-      },
-    });
+    const saveSub = progress.subtitle({ key: 'server.save.localSetting' });
+    await serverJsonFile.save(savePath, settings);
+    saveSub.delete();
 
     // pushを実行
     await this.push(progress);
@@ -685,12 +660,7 @@ export class WorldHandler {
     if (isError(serverResult)) return withError(serverResult);
 
     // ワールド情報を再取得
-    const load = () => this.loadExec();
-    return await progress.withPlain(load, {
-      title: {
-        key: 'server.local.reloading',
-      },
-    });
+    return await this.loadExec(progress);
   }
 
   /** コマンドを実行 */

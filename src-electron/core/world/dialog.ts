@@ -16,6 +16,7 @@ import { pluginFiles } from './files/addtional/plugin';
 import { modFiles } from './files/addtional/mod';
 import { loadCustomMap } from './cusomMap';
 import { pickImage } from '../misc/pickImage';
+import { WorldContainer } from 'app/src-electron/schema/brands';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -34,8 +35,11 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     options: { type: 'image' } & DialogOptions
   ): Promise<Failable<ImageURIData>>;
   async function result(
+    options: { type: 'container' } & DialogOptions
+  ): Promise<Failable<WorldContainer>>;
+  async function result(
     options: {
-      type: 'datapack' | 'world' | 'plugin' | 'mod' | 'image';
+      type: 'datapack' | 'world' | 'plugin' | 'mod' | 'image' | 'container';
       isFile?: boolean;
     } & DialogOptions
   ): Promise<
@@ -43,6 +47,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
       | NewFileData<DatapackData | PluginData | ModData>
       | CustomMapData
       | ImageURIData
+      | WorldContainer
     >
   > {
     const window = windowGetter();
@@ -77,6 +82,10 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
             name: 'zip',
           });
         }
+        break;
+      case 'container':
+        options.isFile = false;
+        break;
     }
 
     const isFile = options.isFile ?? true;
@@ -113,6 +122,8 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         return modFiles.loadNew(path);
       case 'image':
         return pickImage(path);
+      case 'container':
+        return path.str() as WorldContainer;
     }
   }
   return result;

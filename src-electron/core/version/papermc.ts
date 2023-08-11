@@ -62,7 +62,9 @@ async function getPapermcBuilds(
   const json = await data.json<ApiBuilds>();
   if (isError(json)) return json;
 
-  return json.builds.map((build) => ({ id: version, type: 'papermc', build }));
+  return json.builds
+    .reverse()
+    .map((build) => ({ id: version, type: 'papermc', build }));
 }
 
 type ApiBuild = {
