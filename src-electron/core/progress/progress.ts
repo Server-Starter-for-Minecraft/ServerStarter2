@@ -68,6 +68,10 @@ export class SubtitleProgressor extends Progressor<SubtitleProgress> {
   }
 
   set subtitle(val: ProgressMessage) {
+    this.setSubtitle(val);
+  }
+
+  setSubtitle(val: ProgressMessage) {
     this._subtitle = val;
     this.update();
   }
@@ -97,16 +101,28 @@ export class NumericProgressor extends Progressor<NumericProgress> {
   }
 
   set value(value: number) {
+    this.setValue(value);
+  }
+
+  setValue(value: number) {
     this._value = value;
     this.update();
   }
 
   set max(value: number) {
+    this.setMax(value);
+  }
+
+  setMax(value: number) {
     this._max = value;
     this.update();
   }
 
   set unit(value: NumericProgressUnit | undefined) {
+    this.setUnit(value);
+  }
+
+  setUnit(value: NumericProgressUnit | undefined) {
     this._unit = value;
     this.update();
   }
@@ -171,24 +187,29 @@ export class GroupProgressor extends Progressor<GroupProgress> {
     };
   }
 
+  private push<T extends Progressor<any>>(sub: T): T {
+    this.subs.push(sub);
+    return sub;
+  }
+
   subGroup() {
-    return new GroupProgressor(this);
+    return this.push(new GroupProgressor(this));
   }
 
   title(title: ProgressMessage) {
-    return new TitleProgressor(title, this);
+    return this.push(new TitleProgressor(title, this));
   }
 
   subtitle(subtitle: ProgressMessage) {
-    return new SubtitleProgressor(subtitle, this);
+    return this.push(new SubtitleProgressor(subtitle, this));
   }
 
   numeric(unit?: NumericProgressUnit | undefined, max?: number | undefined) {
-    return new NumericProgressor(unit, max, this);
+    return this.push(new NumericProgressor(unit, max, this));
   }
 
   console(maxLineCount?: number) {
-    return new ConsoleProgressor(maxLineCount, this);
+    return this.push(new ConsoleProgressor(maxLineCount, this));
   }
 }
 

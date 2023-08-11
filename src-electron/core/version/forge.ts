@@ -15,6 +15,7 @@ import { readyJava } from '../../util/java/java';
 import { osPlatform } from '../../util/os';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { GroupProgressor } from '../progress/progress';
 
 const forgeVersionsPath = versionsCachePath.child('forge');
 
@@ -22,7 +23,15 @@ const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
 
 export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
   /** forgeのサーバーデータをダウンロード */
-  async readyVersion(version: ForgeVersion) {
+  async readyVersion(
+    version: ForgeVersion,
+    cwdPath: Path,
+    progress?: GroupProgressor
+  ) {
+    progress?.title({
+      key: 'server.readyVersion.title',
+      args: { version: version },
+    });
     // 適切なjavaのバージョンを取得
     const component = await getJavaComponent(version.id);
     if (isError(component)) return component;
@@ -37,7 +46,11 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
     // 実行可能なファイルが存在しなかった場合
     if (isError(programArguments)) {
       // インストール
+      const r = progress?.subtitle({
+        key: 'server.readyVersion.forge.readyServerData',
+      });
       const install = await installForgeVersion(version, versionPath, jarpath);
+      r?.delete();
 
       // インストールに失敗した場合エラー
       if (isError(install)) return install;

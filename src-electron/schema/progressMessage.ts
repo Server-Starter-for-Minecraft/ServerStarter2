@@ -4,6 +4,7 @@ import {
   MessageTranslation,
 } from '../util/message/base';
 import { Remote } from './remote';
+import { Version, VersionType } from './version';
 
 type WorldMessageContent = MessageContent<{ world: string; container: string }>;
 
@@ -92,14 +93,68 @@ type HProgressMessage = {
       }>;
     };
 
-    java: {
-      /** ユーザー設定の実行時引数を取得 */
-      userArguments: MessageContent;
+    readyJava: {
+      /** Javaランタイムを準備中 */
+      title: MessageContent;
+
+      /** {path}を生成中 */
+      file: MessageContent<{ path: string }>;
     };
 
-    version: {
-      /** log4Jの設定ファイルをダウンロード中 */
-      getLog4jSettingFile: MessageContent<{ path: string }>;
+    readyVersion: {
+      /** {version}を準備中 */
+      title: MessageContent<{ version: Version }>;
+
+      vanilla: {
+        /** サーバーデータをダウンロード中 */
+        fetching: MessageContent;
+
+        /** サーバーデータを保存中 */
+        saving: MessageContent;
+      };
+
+      spigot: {
+        /** ビルド用のJavaのバージョンを確認中 */
+        loadBuildJavaVersion: MessageContent;
+
+        /** ビルド用のJavaを準備中 */
+        readyBuildJava: MessageContent;
+
+        /** ビルドツールを準備中 */
+        readyBuildtool: MessageContent;
+
+        /** ビルド情報を取得中 */
+        loadBuildData: MessageContent;
+
+        /** ビルド中 */
+        building: MessageContent;
+
+        /** サーバーデータを移動中 */
+        moving: MessageContent;
+      };
+
+      papermc: {
+        /** ビルド情報を取得中 */
+        laodBuildData: MessageContent;
+
+        /** サーバーデータを準備中 */
+        readyServerData: MessageContent;
+      };
+
+      mohistmc: {
+        /** サーバーデータを準備中 */
+        readyServerData: MessageContent;
+      };
+
+      forge: {
+        /** サーバーデータを準備中 */
+        readyServerData: MessageContent;
+      };
+
+      fabric: {
+        /** サーバーデータを準備中 */
+        readyServerData: MessageContent;
+      };
     };
 
     /** ワールドデータの読み込みに関する処理 */
@@ -161,6 +216,9 @@ type HProgressMessage = {
 
         /** Javaのユーザー定義引数の検証中 */
         userArguments: MessageContent;
+
+        /** log4Jの設定ファイルをダウンロード中 */
+        getLog4jSettingFile: MessageContent<{ path: string }>;
 
         /** ファイル構造を修正中 */
         convertDirectory: MessageContent;

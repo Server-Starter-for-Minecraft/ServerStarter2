@@ -56,12 +56,17 @@ export async function readyRunServer(
 
   async function serverData() {
     // サーバーデータ準備
-    const server = await readyVersion(settings.version, cwdPath);
+    const serverSub = progress.subGroup();
+    const server = await readyVersion(settings.version, cwdPath, serverSub);
+    serverSub.delete();
     // サーバーデータの用意ができなかった場合エラー
     if (isError(server)) return server;
 
     // 実行javaを用意
-    const javaPath = await readyJava(server.component, true);
+    const javaSub = progress.subGroup();
+    const javaPath = await readyJava(server.component, true, javaSub);
+    javaSub.delete();
+
     // 実行javaが用意できなかった場合エラー
     if (isError(javaPath)) return javaPath;
 
