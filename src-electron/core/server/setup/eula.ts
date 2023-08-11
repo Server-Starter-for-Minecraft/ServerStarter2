@@ -5,7 +5,7 @@ import { execProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { PlainProgressor } from '../../progress/progress';
+import { GroupProgressor } from '../../progress/progress';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -18,37 +18,44 @@ export async function checkEula(
   javaPath: Path,
   programArgunets: string[],
   serverCwdPath: Path,
-  progress: PlainProgressor
+  progress: GroupProgressor
 ): Promise<Failable<boolean>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // eula.txtが存在しない場合生成
   if (!eulaPath.exists()) {
-    progress.description = {
+    const sub = progress.subtitle({
       key: 'server.eula.generating',
-    };
+    });
     const result = await generateEula(javaPath, programArgunets, serverCwdPath);
-    progress.description = null;
+    sub.delete();
     // 生成に失敗した場合エラー
     if (isError(result)) return result;
   }
   // eulaの内容を読み取る
 
-  progress.description = {
+  const sub = progress.subtitle({
     key: 'server.eula.loading',
-  };
+  });
   const content = await eulaPath.read();
 
-  if (isError(content)) return content;
+  if (isError(content)) {
+    sub.delete();
+    return content;
+  }
 
   const { eula, url, comments } = parseEula(await content.text());
+  sub.delete();
+
   let agree = eula;
 
   if (!agree) {
-    progress.description = {
+    const sub = progress.subtitle({
       key: 'server.eula.asking',
-    };
+    });
     const result = await api.invoke.AgreeEula(worldId, url);
+    sub.delete();
+
     // mainWindowが存在しなかった場合エラーとなる
     if (isError(result)) return result;
     agree = result;
@@ -56,11 +63,12 @@ export async function checkEula(
 
   const txt = stringifyEula(agree, comments);
 
-  // eulaの内容を書き込む
-  progress.description = {
+  const saveSub = progress.subtitle({
     key: 'server.eula.saving',
-  };
+  });
+  // eulaの内容を書き込む
   await eulaPath.writeText(txt);
+  saveSub.delete();
 
   return agree;
 }

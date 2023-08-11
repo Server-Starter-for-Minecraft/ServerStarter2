@@ -7,7 +7,7 @@ import { ServerProcess, serverProcess } from './process';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { decoratePromise } from 'app/src-electron/util/promiseDecorator';
 import { isError } from 'app/src-electron/util/error/error';
-import { PlainProgressor } from '../progress/progress';
+import { GroupProgressor } from '../progress/progress';
 
 export type RunServer = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -18,7 +18,7 @@ export function runServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  progress: PlainProgressor
+  progress: GroupProgressor
 ): RunServer {
   let process: ServerProcess | undefined = undefined;
   async function promise() {
@@ -64,7 +64,7 @@ export function runRebootableServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  progress: PlainProgressor
+  progress: GroupProgressor
 ) {
   let promise: RunServer;
 
