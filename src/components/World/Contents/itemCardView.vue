@@ -51,7 +51,7 @@ function deleteContent() {
             @click="deleteContent"
           >
             <div class="text-red text-center full-width" style="font-size: .8rem;">
-              削除</div>
+              {{ $t('additionalContents.delete') }}</div>
           </q-btn>
         </q-item-section>
         <q-item-section v-else side>
@@ -65,7 +65,7 @@ function deleteContent() {
             @click="addContent"
           >
             <div class="text-primary text-center full-width" style="font-size: .8rem;">
-              導入
+              {{ $t('additionalContents.install') }}
             </div>
           </q-btn>
         </q-item-section>
