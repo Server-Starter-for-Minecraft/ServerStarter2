@@ -12,7 +12,15 @@ export const enUSSystemSetting = {
     search: 'Search the setting',
   },
   remote: {},
-  folder: {},
+  folder: {
+    unregistTitle: 'Unregister {name}',
+    unregistDialog: 'Unregister {name} from the ServerStarter2 world save list. <br>Unregistered folders and their internal data will not be deleted.',
+    unregistBtn: 'Unregister',
+    tooltipVisible: 'Display worlds saved in this folder in the world list',
+    tooltipInvisible: 'Do not display worlds saved in this folder in the world list',
+    edit: 'Edit',
+    unregist: 'Unregister',
+  },
   info: {
     systemVersion: 'System version',
     latest: '(Latest)',

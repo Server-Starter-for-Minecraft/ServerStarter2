@@ -7,6 +7,9 @@ import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n()
 
 interface Prop {
   loading?: boolean
@@ -40,9 +43,9 @@ function removeFolder() {
   $q.dialog({
     component: DangerDialog,
     componentProps: {
-      dialogTitle: `${folder.value.name}の登録を解除します`,
-      dialogDesc: `ServerStarterのワールド保存先一覧より${folder.value.name}の登録を解除します。<br>解除したフォルダとその内部データが削除されることはありません。`,
-      okBtnTxt: '登録を解除'
+      dialogTitle: t('systemsetting.folder.unregistTitle',{ name: folder.value.name }),
+      dialogDesc: t('systemsetting.folder.unregistDialog',{ name: folder.value.name }),
+      okBtnTxt: t('systemsetting.folder.unregistBtn')
     } as dangerDialogProp
   }).onOk(() => {
     sysStore.systemSettings.container.splice(
@@ -79,19 +82,19 @@ function removeFolder() {
             @click="switchVisible"
           >
             <q-tooltip>
-              ワールド一覧にこのフォルダに保存されたワールドを表示{{ folder.visible ? 'する' : 'しない' }}
+              {{ folder.visible ? $t('systemsetting.folder.tooltipVisible') : $t('systemsetting.folder.tooltipInvisible') }}
             </q-tooltip>
           </ss-btn>
           <ss-btn
             v-show="showOperationBtns && folder.name !== 'default'"
             free-width
-            label="編集"
+            :label="$t('systemsetting.folder.edit')"
             @click="editFolder"
           />
           <ss-btn
             v-show="showOperationBtns"
             free-width
-            label="登録解除"
+            :label="$t('systemsetting.folder.unregist')"
             color="red"
             :disable="sysStore.systemSettings.container.length === 1"
             @click="removeFolder"
