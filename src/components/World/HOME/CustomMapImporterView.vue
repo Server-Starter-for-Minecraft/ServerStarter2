@@ -62,7 +62,8 @@ onMounted(async () => {
   checkError(
     res.value,
     lws => localWorlds.value = lws,
-    () => { return { title: 'シングルワールドの読み込みに失敗しました' } }
+    e => { return { title: t(`error.${e.key}`) }},
+    //() => { return { title: 'シングルワールドの読み込みに失敗しました' } }
   )
 
   // 読み込み処理の終了を通知
@@ -110,10 +111,13 @@ onMounted(async () => {
               size="2rem"
               class="q-my-sm q-mr-lg"
             />
-            <p>シングルプレイワールドを<br>読み込み中</p>
+            <p v-html="$t('worldList.loadSingleWorld')"></p>
           </div>
-          <div v-else class="absolute-center messageText">
-            シングルプレイワールドは<br>見つかりませんでした
+          <div 
+            v-else 
+            class="absolute-center messageText"
+            v-html="$t('worldList.noSingleWorld')"
+          > 
           </div>
         </div>
         <q-list v-else separator>

@@ -8,6 +8,8 @@ export const jaWorldList = {
     selectZip: 'ZIPファイルを選択',
     selectFolder: 'フォルダを選択',
     addSingleWorld: 'シングルワールドを導入',
+    loadSingleWorld: 'シングルプレイワールドを<br>読み込み中',
+    noSingleWorld: 'シングルプレイワールドは<br>見つかりませんでした',
     openList: 'ワールド一覧を開く',
     minimizeList: 'ワールド一覧を最小化',
 };

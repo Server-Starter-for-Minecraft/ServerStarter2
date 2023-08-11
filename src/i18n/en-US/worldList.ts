@@ -8,6 +8,8 @@ export const enUSWorldList = {
     selectZip: 'Select ZIP file',
     selectFolder: 'Select folder',
     addSingleWorld: 'Add single world',
+    loadSingleWorld: 'Loading<br>single play world',
+    noSingleWorld: 'Single play world<br>was not found',
     openList: 'Open worldr list',
     minimizeList: 'Minimize world list',
 };
