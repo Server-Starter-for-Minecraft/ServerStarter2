@@ -85,7 +85,7 @@ function selectWorldIdx() {
     <q-item-section>
       <div>
         <p class="worldName">{{ world.name }}</p>
-        <p class="versionName">{{ `${world.version.id} (${world.version.type})` }}</p>
+        <p class="versionName">{{ `${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` }}</p>
       </div>
     </q-item-section>
 
