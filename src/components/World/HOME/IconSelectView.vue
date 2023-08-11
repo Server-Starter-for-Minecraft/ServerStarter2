@@ -93,7 +93,7 @@ function showImgClipper() {
           <q-item-section style="image-rendering: pixelated;">
             <ClipImg v-if="customImgReload" />
             <div v-else class="customImgSelecting">
-              画像を選択中
+              {{ $t('icon.selecting') }}
             </div>
           </q-item-section>
           <q-item-section side>
@@ -110,7 +110,7 @@ function showImgClipper() {
                 <q-img :src="mainStore.iconCandidate" style="image-rendering: pixelated;"/>
               </q-avatar>
               <p class="text-right full-width q-ma-none" style="font-size: .5rem;">
-                64 x 64 px
+                {{ $t('icon.size') }}
               </p>
             </div>
             <q-space />
