@@ -26,10 +26,10 @@ export const jaSystemSetting = {
     license: 'ライセンス',
     MIT: 'MIT License',
     licenseDesc: '\
-      制作者への許可なくシステムを改変して再配布することを禁じています。<br>\
+      製作者への許可なくシステムを改変して再配布することを禁じています。<br>\
       詳細はServerStarter2の利用規約、並びにライセンス条項をご確認ください。',
     developer: '製作者',
-    productionManager: '制作責任者',
+    productionManager: '製作責任者',
     technicalManager: '技術責任者',
     support: '実装補助',
   },
