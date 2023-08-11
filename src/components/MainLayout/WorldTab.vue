@@ -85,10 +85,20 @@ function selectWorldIdx() {
     <q-item-section>
       <div>
         <p class="worldName">{{ world.name }}</p>
-        <p class="versionName">{{ `${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` }}</p>
+        <p 
+          class="versionName"
+          v-if="world.version.type === 'vanilla'"
+        >
+        {{ `${world.version.id}` }}
+      </p>
+      <p 
+        class="versionName"
+        v-else
+      >
+        {{ `${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` }}
+      </p>
       </div>
     </q-item-section>
-
     <q-tooltip
       v-if="sysStore.systemSettings.user.drawerWidth < 200"
       anchor="center middle"
