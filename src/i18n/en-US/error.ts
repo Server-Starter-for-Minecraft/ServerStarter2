@@ -40,6 +40,12 @@ export const enUSError: ErrorTranslationTypes = {
       creationFiled: 'Failed to create file or directory',
       dialogCanceled: 'Window to select file is cancelled',
     },
+    githubAPI: {
+      fetchFailed: 'Failed to fetch data from {url}',
+      unknownBlobEncoding: 'Incorrect encoding used in blob',
+      invalidWorldData: 'World data is invalid',
+    },
+    failJsonFix: 'Failed to fix JSON file',
     hashNotMatch: 'The file may not be correct',
   },
   value: {
@@ -52,6 +58,10 @@ export const enUSError: ErrorTranslationTypes = {
       notMatchRegex: 'Inallowed letter is used, just use an alphabet or number',
       alreadyUsed: 'This name is already used',
     },
+    remoteWorldName: {
+      notMatchRegex: 'Inallowed letter is used, just use an alphabet or number',
+      alreadyUsed: 'This name is already used',
+    }
   },
   core: {
     world: {

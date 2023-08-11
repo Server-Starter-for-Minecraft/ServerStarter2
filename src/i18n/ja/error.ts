@@ -40,6 +40,12 @@ export const jaError: ErrorTranslationTypes = {
       creationFiled: 'ファイル、またはディレクトリの生成に失敗しました',
       dialogCanceled: 'ファイル選択ウィンドウがキャンセルされました'
     },
+    githubAPI: {
+      fetchFailed: '{url}からのデータの取得に失敗しました',
+      unknownBlobEncoding: 'blobのエンコードが異なっています',
+      invalidWorldData: 'WorldDataが壊れています',
+    },
+    failJsonFix: 'JSONデータの修復に失敗しました',
     hashNotMatch: 'ファイルの中身が正しくない可能性があります。',
   },
   value: {
@@ -52,6 +58,10 @@ export const jaError: ErrorTranslationTypes = {
       notMatchRegex: '使えない文字が含まれています。半角英数字のみ入力してください',
       alreadyUsed: 'この名前は既に使われています',
     },
+    remoteWorldName: {
+      notMatchRegex: '使えない文字が含まれています。半角英数字のみ入力してください',
+      alreadyUsed: 'この名前は既に使われています',
+    }
   },
   core: {
     world: {
