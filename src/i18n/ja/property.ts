@@ -2,7 +2,6 @@
 // so you can safely delete all default props below
 
 export const jaProperty = {
-  init: 'ServerStarter2を起動中',
   main: {
     search: 'プロパティを検索',
     resetAll: '全て戻す',

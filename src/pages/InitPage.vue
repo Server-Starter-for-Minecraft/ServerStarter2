@@ -6,9 +6,12 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import ProgressPage from './ProgressPage.vue';
 import WelcomeDialog from 'src/components/App/WelcomeDialog.vue'
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n()
 
 const progressStore = useProgressStore()
-progressStore.setProgress('ServerStarter2を起動中')
+progressStore.setProgress(t('console.init'))
 
 const $q = useQuasar();
 const router = useRouter()

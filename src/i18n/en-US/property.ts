@@ -1,5 +1,4 @@
 export const enUSproperty = {
-  init: 'Booting ServerStarter2',
   main: {
     search: 'search properties',
     resetAll: 'reset all',
