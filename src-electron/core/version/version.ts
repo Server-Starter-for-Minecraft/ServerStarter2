@@ -7,6 +7,7 @@ import { mohistmcVersionLoader } from './mohistmc';
 import { Path } from '../../util/path';
 import { fabricVersionLoader } from './fabric';
 import { Version, VersionType } from 'src-electron/schema/version';
+import { GroupProgressor } from '../progress/progress';
 
 export const versionLoaders: {
   [V in Version as V['type']]: VersionLoader<V>;
@@ -22,12 +23,13 @@ export const versionLoaders: {
 // 指定されたバージョンを準備する
 export async function readyVersion<V extends Version>(
   version: V,
-  cwdPath: Path
+  cwdPath: Path,
+  progress?: GroupProgressor
 ) {
   const loader: VersionLoader<V> = versionLoaders[
     version.type
   ] as VersionLoader<V>;
-  return await loader.readyVersion(version, cwdPath);
+  return await loader.readyVersion(version, cwdPath, progress);
 }
 
 // 指定されたバージョンを準備する

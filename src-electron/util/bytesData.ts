@@ -137,20 +137,6 @@ export class BytesData {
     }
   }
 
-  /**
-   * 非推奨
-   *
-   * fromPathOrUrl/fromUrlOrPathを使用すること
-   *
-   * @param path
-   * @param url
-   * @param hash undefined データの整合性チェックのためのsha1ハッシュ値
-   * @param prioritizeUrl true Urlにアクセスできなかった場合のみローカルのデータを参照する
-   * @param updateLocal true Urlにアクセス出来た場合ローカルのデータを更新する
-   * @param compareHashOnFetch true URLアクセス時にhash値を比較するかどうか
-   * @returns
-   */
-
   static async fromPathOrUrl(
     path: Path,
     url: string,

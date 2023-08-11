@@ -9,6 +9,7 @@ import {
 } from './base';
 import { Path } from '../../util/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { GroupProgressor } from '../progress/progress';
 
 const fabricVersionsPath = versionsCachePath.child('fabric');
 
@@ -23,12 +24,24 @@ export const fabricVersionLoader: VersionLoader<FabricVersion> = {
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
-async function readyVersion(version: FabricVersion, cwdPath: Path) {
+async function readyVersion(
+  version: FabricVersion,
+  cwdPath: Path,
+  progress?: GroupProgressor
+) {
+  progress?.title({
+    key: 'server.readyVersion.title',
+    args: { version: version },
+  });
+
   const url = `https://meta.fabricmc.net/v2/versions/loader/${version.id}/${version.loader}/${version.installer}/server/jar`;
   const jarpath = cwdPath.child(
     `fabric-${version.id}-${version.loader}-${version.installer}.jar`
   );
 
+  progress?.subtitle({
+    key: 'server.readyVersion.fabric.readyServerData'
+  });
   const result = await BytesData.fromPathOrUrl(jarpath, url, undefined, false);
 
   if (isError(result)) return result;
