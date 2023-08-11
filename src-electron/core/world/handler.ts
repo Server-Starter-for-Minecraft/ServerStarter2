@@ -576,10 +576,6 @@ export class WorldHandler {
 
     // ワールド情報をリモートから取得
     const loadResult = await this.loadExec(progress);
-    // const loadWorld = () => this.load();
-    // const loadResult = await progress.withPlain(loadWorld, {
-    //   title: { key: 'server.local.loading' },
-    // });
 
     // 取得に失敗したらエラー
     if (isError(loadResult.value)) return loadResult;

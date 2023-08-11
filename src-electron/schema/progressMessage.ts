@@ -93,9 +93,6 @@ type HProgressMessage = {
     };
 
     java: {
-      /** メモリ容量に関する実行時引数を取得 */
-      memoryArguments: MessageContent;
-
       /** ユーザー設定の実行時引数を取得 */
       userArguments: MessageContent;
     };
@@ -158,6 +155,12 @@ type HProgressMessage = {
       before: {
         /** ワールド起動前の処理 */
         title: MessageContent;
+
+        /** Javaのメモリ引数の生成中 */
+        memoryArguments: MessageContent;
+
+        /** Javaのユーザー定義引数の検証中 */
+        userArguments: MessageContent;
 
         /** ファイル構造を修正中 */
         convertDirectory: MessageContent;

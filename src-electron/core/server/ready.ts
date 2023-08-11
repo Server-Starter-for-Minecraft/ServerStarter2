@@ -15,14 +15,14 @@ import { checkEula } from './setup/eula';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { PlainProgressor } from '../progress/progress';
+import { GroupProgressor } from '../progress/progress';
 
 /** サーバー起動前の準備の内容 戻り値はJava実行時引数 */
 export async function readyRunServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  progress: PlainProgressor
+  progress: GroupProgressor
 ): Promise<Failable<{ javaArgs: string[]; javaPath: Path }>> {
   const javaArgs: string[] = [];
 
@@ -30,24 +30,24 @@ export async function readyRunServer(
   javaArgs.push(...javaEncodingToUtf8());
 
   async function memoryArg() {
-    // 実行メモリ量のJAVA引数
-    return await progress.withPlain(() => getMemoryArguments(settings.memory), {
-      title: {
-        key: 'server.java.memoryArguments',
-      },
+    const sub = progress.subtitle({
+      key: 'server.run.before.memoryArguments',
     });
+    // 実行メモリ量のJAVA引数
+    const result = await getMemoryArguments(settings.memory);
+    sub.delete();
+    return result;
   }
 
   async function userArg() {
+    const sub = progress.subtitle({
+      key: 'server.run.before.userArguments',
+    });
     // ユーザー定義JAVA引数
-    const additionalJavaArgument = await progress.withPlain(
-      () => getAdditionalJavaArgument(settings.javaArguments),
-      {
-        title: {
-          key: 'server.java.userArguments',
-        },
-      }
+    const additionalJavaArgument = await getAdditionalJavaArgument(
+      settings.javaArguments
     );
+    sub.delete();
     if (isValid(additionalJavaArgument)) {
       return additionalJavaArgument;
     }
@@ -115,7 +115,7 @@ async function assertEula(
   server: VersionComponent,
   version: Version,
   javaPath: Path,
-  progress: PlainProgressor
+  progress: GroupProgressor
 ) {
   const needEula = needEulaAgreement(version);
   // Eulaチェックが必要かどうかの検証に失敗した場合エラー
@@ -124,13 +124,12 @@ async function assertEula(
   if (!needEula) return undefined;
 
   // Eulaチェック
-  const eulaAgreement = await progress.withPlain(
-    () => checkEula(id, javaPath, server.programArguments, cwdPath, progress),
-    {
-      title: {
-        key: 'server.eula.title',
-      },
-    }
+  const eulaAgreement = await checkEula(
+    id,
+    javaPath,
+    server.programArguments,
+    cwdPath,
+    progress
   );
 
   // Eulaチェックに失敗した場合エラー
