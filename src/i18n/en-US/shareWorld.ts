@@ -27,8 +27,8 @@ export const enUSShareWorld = {
       dialog: 'Unregister {name}',
       decide: 'Unresister',
       desc: '\
-        Unregister "{owner} / {repo}" from ServerStarter2<br>\
-        The repository on GitHub will not be deleted, but the world cannot be re-shared using "{owner} / {repo}".\
+        Unregister "{owner}/{repo}" from ServerStarter2<br>\
+        The repository on GitHub will not be deleted, but the world cannot be re-shared using "{owner}/{repo}".\
         ',
     }
   }
