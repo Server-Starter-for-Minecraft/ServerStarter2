@@ -89,6 +89,11 @@ export const enUSproperty = {
     'enforce-secure-profile': 'Allow connections only to players who have Mojang-signed public keys.',
     'enforce-whitelist': 'Deny participation to non-whitelisted players',
     'white-list': 'Manage player login by the white list',
+    'enable-jmx-monitoring':'Enable monitoring by JMX',
+    'previews-chat':'Enable preview to display when sending chat',
+    'snooper-enabled': 'Sets whether the server sends snoop data regularly to http://snoop.minecraft.net',
+    'text-filtering-config': '',
+
   },
   resetProperty:'\
     Reset setting to default setting \"{defaultProperty}\"<br>\

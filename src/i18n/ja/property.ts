@@ -88,6 +88,10 @@ export const jaProperty = {
     'enforce-secure-profile': 'Mojang署名の公開鍵を持っているプレイヤーにのみ接続を許可する',
     'enforce-whitelist': 'ホワイトリストによる管理を強制する',
     'white-list': 'ホワイトリストによるプレイヤーのログイン管理を行う',
+    'enable-jmx-monitoring':'JMXによるモニターを有効化',
+    'previews-chat':'チャット送信時に表示するプレビューを有効にする',
+    'snooper-enabled': 'サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する',
+    'text-filtering-config': '',
   },
   resetProperty:'\
     基本設定の{defaultProperty}に設定を戻します<br>\
