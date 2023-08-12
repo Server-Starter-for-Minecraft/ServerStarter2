@@ -22,7 +22,7 @@ function groupClicked(selectedGroupName: pGroupKey) {
     </q-scroll-area>
     
     <q-item v-else active>
-      <q-item-section style="width: max-content;">検索結果</q-item-section>
+      <q-item-section style="width: max-content;">{{ $t('property.result') }}</q-item-section>
     </q-item>
   </div>
 </template>

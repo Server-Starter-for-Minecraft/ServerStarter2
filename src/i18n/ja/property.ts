@@ -99,6 +99,7 @@ export const jaProperty = {
     「システム設定」>「プロパティ」 より基本設定を変更できます',
   failed: 'プロパティが読み込めませんでした',
   reset: 'プロパティ設定をリセット',
+  result: '検索結果',
   notFound: 'プロパティが見つかりませんでした',
   inputField: {
     downerLimit: '{n}以上',
