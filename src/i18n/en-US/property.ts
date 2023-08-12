@@ -19,6 +19,7 @@ export const enUSproperty = {
     other: 'others',
   },
   description: {
+    notFound: 'Description not found',
     difficulty: 'Game difficulty',
     hardcore: 'Set gamemode to hardcore',
     'force-gamemode': 'Enforce game mode at login',
@@ -100,6 +101,7 @@ export const enUSproperty = {
     You can change basic settings from "System Settings" > "Properties".',
   failed: 'Failed to load properties',
   reset: 'Reset property settings',
+  notFound: 'Not found',
   inputField: {
     downerLimit: '{n} or more',
     upperLimit: '{n} or less',

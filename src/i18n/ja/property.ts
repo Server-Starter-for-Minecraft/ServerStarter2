@@ -22,6 +22,7 @@ export const jaProperty = {
     other: 'その他',
   },
   description: {
+    notFound: '解説が見つかりません',
     difficulty: 'ゲーム難易度',
     gamemode: 'ゲーム内でのゲームモード',
     hardcore: 'ハードコアに設定する',
@@ -98,6 +99,7 @@ export const jaProperty = {
     「システム設定」>「プロパティ」 より基本設定を変更できます',
   failed: 'プロパティが読み込めませんでした',
   reset: 'プロパティ設定をリセット',
+  notFound: 'プロパティが見つかりませんでした',
   inputField: {
     downerLimit: '{n}以上',
     upperLimit: '{n}以下',

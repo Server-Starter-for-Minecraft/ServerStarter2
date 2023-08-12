@@ -15,7 +15,7 @@ const propertyStore = usePropertyStore()
   </div>
   <div v-else>
     <p class="q-pl-md" style="font-size: .8rem; padding-top: 14px;">
-      プロパティが見つかりませんでした
+      {{ $t('property.notFound') }}
     </p>
   </div>
 </template>

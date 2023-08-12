@@ -27,7 +27,7 @@ function cancelSettings() {
 
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
-      <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`, '解説が見つかりません') }}</div>
+      <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`, $t('property.description.notFound')) }}</div>
       <InputFieldView v-model="propertiesModel[settingName]" :property-name="settingName" />
     </q-item-section>
 
