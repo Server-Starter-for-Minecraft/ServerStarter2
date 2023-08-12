@@ -21,14 +21,14 @@ async function updateWorld() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      title="ワールド導入の確認"
-      ok-btn-txt="ワールドを導入"
+      :title="$t('home.useWorld.checkWorldInstall')"
+      :ok-btn-txt="$t('home.useWorld.installBtn')"
       :loading="loading"
       @ok-click="updateWorld"
       @close="onDialogCancel"
       style="max-width: 100%;"
     >
-      <p v-html="'以下のワールドを導入すると、既存のワールドは削除されます<br>既存のワールドを上書きする形で新規ワールドを導入しますか？'" />
+      <p v-html="$t('home.useWorld.checkDialog')" />
       <WorldItem :world="customMap" />
     </BaseDialogCard>
   </q-dialog>

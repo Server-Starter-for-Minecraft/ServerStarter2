@@ -32,7 +32,12 @@ export const enUSHome: MessageSchema["home"] = {
   useWorld: {
     title: 'Import existing world',
     description: 'Import single world or zip format destribution world',
-    selectWorld: 'Select your world data'
+    selectWorld: 'Select your world data',
+    checkWorldInstall: 'Check for world install',
+    checkDialog: '\
+      When the following worlds are introduced, the existing worlds will be deleted.<br>\
+      Do you want to introduce a new world that will overwrite an existing world?',
+    installBtn: 'Install world',
   },
   saveWorld: {
     title: 'World folder',
