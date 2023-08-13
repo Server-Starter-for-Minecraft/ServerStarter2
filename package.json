@@ -15,10 +15,10 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "cheerio": "^1.0.0-rc.12",
+    "electron-fetch": "^1.9.1",
     "electron-store": "^8.1.0",
     "fs-extra": "^11.1.1",
     "log4js": "^6.9.1",
-    "node-fetch": "^3.3.1",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
     "sharp": "^0.32.1",
