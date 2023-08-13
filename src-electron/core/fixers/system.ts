@@ -1,7 +1,6 @@
 import {
   Locale,
   SystemPlayerSetting,
-  SystemRemoteSetting,
   SystemSettings,
   SystemUserSetting,
   WorldContainerSetting,
@@ -13,19 +12,17 @@ import {
   defaultFixer,
   literalFixer,
   objectFixer,
-  optionalFixer,
   recordFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixPlayerGroup } from './player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { fixImageURI, fixPlayerUUID, fixWorldContainer } from './brands';
-import { fixGithubRemoteSetting, fixRemoteSetting } from './remote';
+import { fixPlayerUUID, fixWorldContainer } from './brands';
+import { fixRemoteSetting } from './remote';
 import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
 import { fixSystemWorldSettings } from './world';
 import { genUUID } from 'app/src-electron/tools/uuid';
 import {
-  GithubRemoteFolder,
   RemoteSetting,
 } from 'app/src-electron/schema/remote';
 
