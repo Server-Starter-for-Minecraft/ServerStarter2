@@ -8,10 +8,9 @@ import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
+import fetch from 'electron-fetch';
 
 const nbt = import('nbtify');
-
-const fetch = import('node-fetch');
 
 const loggers = utilLoggers.BytesData;
 
@@ -37,7 +36,7 @@ export class BytesData {
     logger.start();
 
     try {
-      const res = await (await fetch).default(url, { headers });
+      const res = await fetch(url, { headers });
       if (res.status !== 200) {
         logger.fail({ status: res.status, statusText: res.statusText });
         return errorMessage.data.url.fetch({
