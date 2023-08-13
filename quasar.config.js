@@ -74,6 +74,14 @@ module.exports = configure(function (/* ctx */) {
       viteVuePluginOptions: {
         script: {
           defineModel: true
+        },
+        electronBuilder: {
+          builderOptions: {
+            "files": [
+              "node_modules/prismarine-nbt/*"
+            ]
+
+          }
         }
       },
 

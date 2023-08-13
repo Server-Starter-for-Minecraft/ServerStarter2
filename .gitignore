@@ -42,3 +42,5 @@ yarn-error.log*
 # Ignore files
 *.private.test.ts
 design/schedule.xlsx
+
+.temp/

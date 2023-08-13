@@ -23,12 +23,12 @@
     "log4js": "^6.9.1",
     "pinia": "^2.1.4",
     "quasar": "^2.12.2",
+    "prismarine-nbt": "^2.2.1",
     "sharp": "^0.32.1",
     "simple-git": "^3.19.1",
     "unzipper": "^0.10.14",
     "vue": "^3.3.0",
     "vue-i18n": "^9.2.2",
-    "nbtify": "^1.60.2",
     "vue-router": "^4.2.2"
   },
   "devDependencies": {
@@ -36,6 +36,7 @@
     "@quasar/app-vite": "^1.4.3",
     "@types/node": "^20.3.3",
     "@types/tar": "^6.1.5",
+    "@types/unzipper": "^0.10.6",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "autoprefixer": "^10.4.14",
@@ -46,7 +47,6 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-vue": "^9.15.1",
     "prettier": "^2.8.8",
-    "prismarine-nbt": "^2.2.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.5.4",
     "vitest": "^0.29.2"

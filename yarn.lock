@@ -760,6 +760,13 @@
     "@types/node" "*"
     minipass "^4.0.0"
 
+"@types/unzipper@^0.10.6":
+  version "0.10.6"
+  resolved "https://registry.yarnpkg.com/@types/unzipper/-/unzipper-0.10.6.tgz#767101c65fa3968a725c02de11884f75952b091e"
+  integrity sha512-zcBj329AHgKLQyz209N/S9R0GZqXSkUQO4tJSYE3x02qg4JuDFpgKMj50r82Erk1natCWQDIvSccDddt7jPzjA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/verror@^1.10.3":
   version "1.10.6"
   resolved "https://registry.yarnpkg.com/@types/verror/-/verror-1.10.6.tgz#3e600c62d210c5826460858f84bcbb65805460bb"
@@ -990,6 +997,19 @@
   version "3.3.4"
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.3.4.tgz#06e83c5027f464eef861c329be81454bc8b70780"
   integrity sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==
+
+"@xmcl/bytebuffer@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@xmcl/bytebuffer/-/bytebuffer-0.1.1.tgz#402d9beb8cd8d93ad3012e4d9e2c5cf08bc6d60d"
+  integrity sha512-Mja7XzIjXgXX/mDNqkVO6X3yltIYo18RYTo3J4UA8Di2TMZp90NRbLJ8PFRWAyDo/R+kNyErvfXMge2eB/q9pg==
+
+"@xmcl/nbt@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@xmcl/nbt/-/nbt-3.0.1.tgz#27260637af83582f978517dc61a1e65b0d09757a"
+  integrity sha512-RPMs1GIc/z5xtrTIacGtdZGEkBPs8Hxo2+Dn2cPTgtRr7Rcj8JtSmUmFqhTUEeb+Arbm1rXFR79/EDAaVqBEgw==
+  dependencies:
+    "@xmcl/bytebuffer" "0.1.1"
+    pako "^2.1.0"
 
 abbrev@^1.0.0:
   version "1.1.1"
@@ -4463,6 +4483,11 @@ p-try@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
+
+pako@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-2.1.0.tgz#266cc37f98c7d883545d11335c00fbd4062c9a86"
+  integrity sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==
 
 param-case@^2.1.1:
   version "2.1.1"

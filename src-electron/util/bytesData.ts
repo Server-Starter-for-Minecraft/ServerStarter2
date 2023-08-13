@@ -9,8 +9,7 @@ import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
 import fetch from 'electron-fetch';
-import nbt from 'prismarine-nbt';
-
+const prismarineNbt = require('prismarine-nbt');
 const loggers = utilLoggers.BytesData;
 
 export type Hash = {
@@ -258,8 +257,11 @@ export class BytesData {
   }
 
   /** バイト列をjava NBTに変換 */
-  async nbt<T extends object>(): Promise<Failable<T>> {
+  async nbt<T extends object>(
+    complesstion?: 'deflate' | 'deflate-raw' | 'gzip' | null
+  ): Promise<Failable<T>> {
     try {
+      const nbt = await prismarineNbt;
       const result = await nbt.parse(Buffer.from(this.data), 'big');
       return nbt.simplify(result.parsed);
     } catch (e) {
