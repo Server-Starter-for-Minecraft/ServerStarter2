@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
-import { GithubRemoteSetting, RemoteSetting } from 'app/src-electron/schema/remote';
+import { GithubRemoteSetting, RemoteFolder } from 'app/src-electron/schema/remote';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
@@ -11,7 +11,7 @@ import UpdatePatDialog from './UpdatePatDialog.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 interface Prop {
-  onRegisterClick?: (remoteData: RemoteSetting) => void
+  onRegisterClick?: (remoteData: RemoteFolder) => void
 }
 const prop = defineProps<Prop>()
 const remote = defineModel<GithubRemoteSetting>({ required: true })
@@ -70,7 +70,7 @@ function checkUnlinkRepo() {
       <SsBtn :label="$t('shareWorld.githubCard.updatePAT')" @click="openPatEditor" class="q-mb-sm" />
       <SsBtn v-if="onRegisterClick === void 0" :label="$t('shareWorld.githubCard.unresister.remote')" color="red"
         @click="checkUnlinkRepo" />
-      <SsBtn v-else :label="$t('shareWorld.githubCard.useRemote')" color="primary" @click="onRegisterClick(remote)" />
+      <SsBtn v-else :label="$t('shareWorld.githubCard.useRemote')" color="primary" @click="onRegisterClick(remote.folder)" />
     </q-card-actions>
   </q-card>
 </template>

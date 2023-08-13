@@ -2,6 +2,7 @@ import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { RemoteWorld } from 'app/src-electron/schema/remote';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
@@ -14,7 +15,8 @@ export const useMainStore = defineStore('mainStore', {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
       errorWorlds: new Set<WorldID>(),
-      iconCandidate: undefined as ImageURI | undefined
+      iconCandidate: undefined as ImageURI | undefined,
+      gotRemoteWorlds: [] as RemoteWorld[]
     };
   },
   getters: {
