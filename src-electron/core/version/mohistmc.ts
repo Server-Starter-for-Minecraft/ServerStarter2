@@ -111,7 +111,7 @@ async function getMohistmcVersions(
     .filter((v) => v.status === 'SUCCESS')
     .reverse()
     .map(({ forge_version, number }) => ({
-      forge_version,
+      forge_version: forge_version === 'unknown' ? undefined : forge_version,
       id,
       type: 'mohistmc',
       number,
