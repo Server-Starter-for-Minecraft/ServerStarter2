@@ -12,8 +12,8 @@ import {
   serverPropertiesFile,
 } from './files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { BytesData } from 'app/src-electron/util/bytesData';
 import { LevelDat } from './misc/levelDat';
+import { BytesData } from 'app/src-electron/util/bytesData';
 
 const LEVEL_DAT = 'level.dat';
 
