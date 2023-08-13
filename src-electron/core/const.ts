@@ -29,10 +29,7 @@ export const mainPath = userDataPath;
 //   mode: 0o666,
 //  });
 
-export const cachePath = mainPath.child('serverstarter/cache');
 export const logPath = mainPath.child('serverstarter/log');
-export const logPath = mainPath.child('serverstarter/log');
-
 export const cachePath = mainPath.child('serverstarter/cache');
 
 export const runtimePath = cachePath.child('bin/runtime');
