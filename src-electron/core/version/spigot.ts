@@ -17,6 +17,7 @@ import {
 import { getVersionMainfest } from './mainfest';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { GroupProgressor } from '../progress/progress';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 
@@ -32,23 +33,42 @@ export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
 
 /** spigotのサーバーデータを必要があればダウンロード */
 async function readySpigotVersion(
-  version: SpigotVersion
+  version: SpigotVersion,
+  cwdPath: Path,
+  progress?: GroupProgressor
 ): Promise<Failable<VersionComponent>> {
+  progress?.title({
+    key: 'server.readyVersion.title',
+    args: { version: version },
+  });
   const versionPath = spigotVersionsPath.child(version.id);
   const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
 
   // 適切なjavaのバージョンを取得
+  const b = progress?.subtitle({
+    key: 'server.readyVersion.spigot.loadBuildJavaVersion',
+  });
   const component = await getJavaComponent(version.id);
+  b?.delete();
   if (isError(component)) return component;
 
   // server.jarが存在しなかった場合の処理
   if (!jarpath.exists()) {
     // ビルドツールのダウンロード
+    const b = progress?.subtitle({
+      key: 'server.readyVersion.spigot.readyBuildtool',
+    });
     const buildTool = await readySpigotBuildTool();
+    b?.delete();
     if (isError(buildTool)) return buildTool;
 
     // ビルドの実行
-    const buildResult = await buildSpigotVersion(version, jarpath, component);
+    const buildResult = await buildSpigotVersion(
+      version,
+      jarpath,
+      component,
+      progress
+    );
     if (isError(buildResult)) return buildResult;
   }
 
@@ -143,14 +163,19 @@ type SpigotVersionData = {
 async function buildSpigotVersion(
   version: SpigotVersion,
   targetpath: Path,
-  javaComponent: JavaComponent
+  javaComponent: JavaComponent,
+  progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   const VERSION_URL = `https://hub.spigotmc.org/versions/${version.id}.json`;
 
   // spigotのデータを取得する(実行javaバージョンの確認するため)
+  const l = progress?.subtitle({
+    key: 'server.readyVersion.spigot.loadBuildData',
+  });
   const data = await BytesData.fromURL(VERSION_URL);
   if (isError(data)) return data;
   const json = await data.json<SpigotVersionData>();
+  l?.delete();
 
   if (isError(json)) return json;
 
@@ -168,20 +193,31 @@ async function buildSpigotVersion(
       });
   }
 
+  const j = progress?.subtitle({
+    key: 'server.readyVersion.spigot.readyBuildJava',
+  });
   const javapath = await readyJava(javaComponent, false);
+  j?.delete();
   if (isError(javapath)) return javapath;
+
+  const d = progress?.subtitle({
+    key: 'server.readyVersion.spigot.building',
+  });
+  const console = progress?.console(10);
 
   // ビルドの開始
   const process = interactiveProcess(
     javapath.absolute().str(),
     ['-jar', buildToolPath.absolute().str(), '--rev', version.id],
-    undefined,
-    undefined,
+    console?.push,
+    console?.push,
     spigotBuildPath.absolute().str(),
     true
   );
 
   const result = await process;
+  d?.delete();
+  console?.delete();
 
   // ビルド失敗した場合エラー
   if (isError(result)) return result;
@@ -190,8 +226,14 @@ async function buildSpigotVersion(
   targetpath.parent().mkdir(true);
 
   // jarファイルを移動
+  const m = progress?.subtitle({
+    key: 'server.readyVersion.spigot.moving',
+  });
+
   await spigotBuildPath.child(`spigot-${version.id}.jar`).rename(targetpath);
 
   // 不要なファイルの削除
   await spigotBuildPath.child('work').remove(true);
+
+  m?.delete();
 }

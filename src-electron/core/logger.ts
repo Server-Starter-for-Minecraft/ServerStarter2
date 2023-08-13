@@ -1,10 +1,8 @@
 import { onQuit } from '../lifecycle/lifecycle';
 import { getRootLogger } from '../util/logger';
-import { mainPath } from './const';
+import { logPath } from './const';
 
-const dirPath = mainPath.child('log/serverstarter');
-
-const { logger, archive } = getRootLogger(dirPath);
+const { logger, archive } = getRootLogger(logPath);
 
 onQuit(archive, true);
 

@@ -6,6 +6,7 @@ import { Path } from '../path';
 import { Failable } from '../error/failable';
 import { installManifest, Manifest } from './manifest';
 import { fromRuntimeError, isError } from '../error/error';
+import { GroupProgressor } from 'app/src-electron/core/progress/progress';
 
 export type component =
   | 'java-runtime-alpha'
@@ -19,8 +20,13 @@ export type component =
  */
 export async function readyJava(
   component: component,
-  javaw: boolean
+  javaw: boolean,
+  progress?: GroupProgressor
 ): Promise<Failable<Path>> {
+  progress?.title({
+    key: 'server.readyJava.title',
+  });
+
   const json = await getAllJson();
 
   if (isError(json)) return json;
@@ -28,8 +34,11 @@ export async function readyJava(
   const manifest = json[osPlatform][component][0].manifest;
 
   const path = runtimePath.child(`${component}/${osPlatform}`);
+
   const data = await getManifestJson(manifest, path.child('manifest.json'));
-  await installManifest(data, path);
+
+  await installManifest(data, path, progress);
+
   switch (osPlatform) {
     case 'windows-x64':
       return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
