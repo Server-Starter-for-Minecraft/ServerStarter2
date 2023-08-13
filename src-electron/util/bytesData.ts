@@ -257,9 +257,7 @@ export class BytesData {
   }
 
   /** バイト列をjava NBTに変換 */
-  async nbt<T extends object>(
-    complesstion?: 'deflate' | 'deflate-raw' | 'gzip' | null
-  ): Promise<Failable<T>> {
+  async nbt<T extends object>(): Promise<Failable<T>> {
     try {
       const nbt = await prismarineNbt;
       const result = await nbt.parse(Buffer.from(this.data), 'big');
