@@ -23,7 +23,14 @@ export const mainPath = userDataPath;
 //   mode: 0o666,
 //  });
 
-export const cachePath = mainPath.child('cache');
+// writeFileSync('/Users/harutom/document/test.txt', mainPath.path+'\n' ,{
+//   encoding: 'utf8',
+//   flag: 'a+',
+//   mode: 0o666,
+//  });
+
+export const cachePath = mainPath.child('serverstarter/cache');
+export const logPath = mainPath.child('serverstarter/log');
 
 export const runtimePath = cachePath.child('bin/runtime');
 export const versionsCachePath = cachePath.child('versions');
