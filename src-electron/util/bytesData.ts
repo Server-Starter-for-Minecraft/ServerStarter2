@@ -9,8 +9,7 @@ import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
 import fetch from 'electron-fetch';
-import nbt from 'prismarine-nbt';
-
+const prismarineNbt = require('prismarine-nbt');
 const loggers = utilLoggers.BytesData;
 
 export type Hash = {
@@ -65,7 +64,8 @@ export class BytesData {
         path: url,
       });
     } catch (e) {
-      logger.fail();
+      const em = fromRuntimeError(e);
+      logger.fail(em);
       return fromRuntimeError(e);
     }
   }
@@ -134,6 +134,20 @@ export class BytesData {
       logger.fail(e);
     }
   }
+
+  /**
+   * 非推奨
+   *
+   * fromPathOrUrl/fromUrlOrPathを使用すること
+   *
+   * @param path
+   * @param url
+   * @param hash undefined データの整合性チェックのためのsha1ハッシュ値
+   * @param prioritizeUrl true Urlにアクセスできなかった場合のみローカルのデータを参照する
+   * @param updateLocal true Urlにアクセス出来た場合ローカルのデータを更新する
+   * @param compareHashOnFetch true URLアクセス時にhash値を比較するかどうか
+   * @returns
+   */
 
   static async fromPathOrUrl(
     path: Path,
@@ -243,8 +257,11 @@ export class BytesData {
   }
 
   /** バイト列をjava NBTに変換 */
-  async nbt<T extends object>(): Promise<Failable<T>> {
+  async nbt<T extends object>(
+    complesstion?: 'deflate' | 'deflate-raw' | 'gzip' | null
+  ): Promise<Failable<T>> {
     try {
+      const nbt = await prismarineNbt;
       const result = await nbt.parse(Buffer.from(this.data), 'big');
       return nbt.simplify(result.parsed);
     } catch (e) {
