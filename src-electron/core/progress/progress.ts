@@ -68,6 +68,10 @@ export class SubtitleProgressor extends Progressor<SubtitleProgress> {
   }
 
   set subtitle(val: ProgressMessage) {
+    this.setSubtitle(val);
+  }
+
+  setSubtitle(val: ProgressMessage) {
     this._subtitle = val;
     this.update();
   }
@@ -97,16 +101,28 @@ export class NumericProgressor extends Progressor<NumericProgress> {
   }
 
   set value(value: number) {
+    this.setValue(value);
+  }
+
+  setValue(value: number) {
     this._value = value;
     this.update();
   }
 
   set max(value: number) {
+    this.setMax(value);
+  }
+
+  setMax(value: number) {
     this._max = value;
     this.update();
   }
 
   set unit(value: NumericProgressUnit | undefined) {
+    this.setUnit(value);
+  }
+
+  setUnit(value: NumericProgressUnit | undefined) {
     this._unit = value;
     this.update();
   }
@@ -171,7 +187,7 @@ export class GroupProgressor extends Progressor<GroupProgress> {
     };
   }
 
-  private push(sub: Progressor<any>) {
+  private push<T extends Progressor<any>>(sub: T): T {
     this.subs.push(sub);
     return sub;
   }
