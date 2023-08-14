@@ -51,8 +51,8 @@ function getLauncherPath(): Path {
       return homePath.child('AppData/Roaming/.minecraft/');
     case 'mac-os':
     case 'mac-os-arm64':
-      return homePath.child('Library/Application Support/minecraft/saves');
+      return homePath.child('Library/Application Support/minecraft/');
     case 'linux':
-      return homePath.child('.minecraft/saves');
+      return homePath.child('.minecraft/');
   }
 }
