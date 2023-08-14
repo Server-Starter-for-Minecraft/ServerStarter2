@@ -91,7 +91,7 @@ export async function pullWorld(
 
   if (progress) {
     const stage = progress.subtitle({ key: 'server.pull.ready' });
-    const numeric = progress.numeric();
+    const numeric = progress.numeric("file");
     set((x) => {
       stage.subtitle = {
         key: 'server.pull.stage',
@@ -145,7 +145,7 @@ export async function pushWorld(
   // pushのプログレスを反映
   if (progress) {
     const stage = progress.subtitle({ key: 'server.push.ready' });
-    const numeric = progress.numeric();
+    const numeric = progress.numeric("file");
     onGitProgress((x) => {
       stage.subtitle = {
         key: 'server.push.stage',

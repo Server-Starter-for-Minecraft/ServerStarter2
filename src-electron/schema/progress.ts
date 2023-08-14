@@ -31,7 +31,7 @@ export type NumericProgress = {
   value: number;
   // 最大値(存在する場合)
   max?: number;
-  unit?: NumericProgressUnit;
+  unit: NumericProgressUnit;
 };
 
 /** コンソールのプログレス */

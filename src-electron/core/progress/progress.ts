@@ -87,10 +87,10 @@ export class SubtitleProgressor extends Progressor<SubtitleProgress> {
 export class NumericProgressor extends Progressor<NumericProgress> {
   private _value = 0;
   private _max?: number;
-  private _unit?: NumericProgressUnit;
+  private _unit: NumericProgressUnit;
 
   constructor(
-    unit?: NumericProgressUnit,
+    unit: NumericProgressUnit,
     max?: number,
     parent?: GroupProgressor
   ) {
@@ -118,11 +118,11 @@ export class NumericProgressor extends Progressor<NumericProgress> {
     this.update();
   }
 
-  set unit(value: NumericProgressUnit | undefined) {
+  set unit(value: NumericProgressUnit) {
     this.setUnit(value);
   }
 
-  setUnit(value: NumericProgressUnit | undefined) {
+  setUnit(value: NumericProgressUnit) {
     this._unit = value;
     this.update();
   }
@@ -195,7 +195,7 @@ export class GroupProgressor extends Progressor<GroupProgress> {
     return this.push(new SubtitleProgressor(subtitle, this));
   }
 
-  numeric(unit?: NumericProgressUnit | undefined, max?: number | undefined) {
+  numeric(unit: NumericProgressUnit, max?: number | undefined) {
     return this.push(new NumericProgressor(unit, max, this));
   }
 
