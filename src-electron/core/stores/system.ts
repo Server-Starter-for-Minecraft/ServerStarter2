@@ -1,16 +1,42 @@
-import Store from 'electron-store';
-import { mainPath } from '../const';
+import { settingPath } from '../const';
 import { SystemSettings } from 'src-electron/schema/system';
 import { fixSystemSettings } from '../fixers/system';
 
-export const systemSettings = new Store<SystemSettings>({
-  cwd: mainPath.str(),
-  name: 'serverstarter',
-  fileExtension: 'json',
-});
+import { safeStorage } from 'electron';
+import { readFileSync, writeFileSync } from 'fs-extra';
 
-let systemSettingsValue = fixSystemSettings(systemSettings.store);
-systemSettings.store = systemSettingsValue;
+// 設定ファイルの書き込み
+function write(settings: SystemSettings) {
+  systemSettingsValue = settings;
+
+  // 文字列化
+  const stringified = JSON.stringify(settings);
+
+  // 暗号化
+  let encrypted = safeStorage.encryptString(stringified);
+
+  // ファイルに保存
+  writeFileSync(settingPath.str(), encrypted);
+}
+
+// 設定ファイルの読み込み
+function read() {
+  let parsed: any;
+  try {
+    // ファイルから読み取り
+    const encrypted = readFileSync(settingPath.str());
+    // 復号
+    const value = safeStorage.decryptString(encrypted);
+    // パース
+    parsed = JSON.parse(value) as SystemSettings;
+  } catch {
+    parsed = undefined;
+  }
+  const fixed = fixSystemSettings(parsed);
+  return fixed;
+}
+
+let systemSettingsValue = read();
 
 export async function getSystemSettings(): Promise<SystemSettings> {
   return systemSettingsValue;
@@ -20,8 +46,6 @@ export async function getSystemSettings(): Promise<SystemSettings> {
 export async function setSystemSettings(
   settings: SystemSettings
 ): Promise<SystemSettings> {
-  systemSettingsValue = settings;
-
-  systemSettings.store = settings;
+  write(settings);
   return settings;
 }

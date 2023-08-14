@@ -4,6 +4,7 @@ import type { BytesData } from './bytesData';
 import { Failable } from './error/failable';
 import { asyncForEach } from './objmap';
 import { isError } from './error/error';
+import { readFileSync } from 'fs';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
@@ -127,6 +128,11 @@ export class Path {
     const data = await (await loadBytesData()).fromPath(this);
     if (isError(data)) return data;
     return await data.text();
+  }
+
+  /** 非推奨 */
+  readBufferSync(): Buffer {
+    return fs.readFileSync(this.str());
   }
 
   async iter() {
