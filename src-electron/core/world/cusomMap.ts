@@ -1,9 +1,5 @@
 import {
   CustomMapData,
-  DatapackData,
-  ModData,
-  NewFileData,
-  PluginData,
 } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
