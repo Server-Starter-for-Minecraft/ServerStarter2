@@ -13,7 +13,9 @@ function write(settings: SystemSettings) {
   const stringified = JSON.stringify(settings);
 
   // 暗号化
-  let encrypted = safeStorage.encryptString(stringified);
+  const encrypted = safeStorage.encryptString(stringified);
+
+  console.log(encrypted)
 
   // ファイルに保存
   writeFileSync(settingPath.str(), encrypted);
@@ -36,10 +38,13 @@ function read() {
   return fixed;
 }
 
-let systemSettingsValue = read();
+let systemSettingsValue: SystemSettings;
 
 export async function getSystemSettings(): Promise<SystemSettings> {
-  return systemSettingsValue;
+  if (systemSettingsValue !== undefined) return systemSettingsValue;
+  const result = read();
+  write(result);
+  return result;
 }
 
 /** SystemSettingsを上書き */
