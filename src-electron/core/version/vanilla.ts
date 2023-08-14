@@ -1,4 +1,4 @@
-import { VanillaVersion } from 'src-electron/schema/version';
+import { AllVanillaVersion, VanillaVersion } from 'src-electron/schema/version';
 import { getVersionMainfest } from './mainfest';
 import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
@@ -85,12 +85,15 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
   },
 
   /** バニラのバージョンの一覧返す */
-  getAllVersions: genGetAllVersions('vanilla', getAllVanillaVersions),
+  getAllVersions: genGetAllVersions<VanillaVersion>(
+    'vanilla',
+    getAllVanillaVersions
+  ),
 
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
-async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
+async function getAllVanillaVersions(): Promise<Failable<AllVanillaVersion>> {
   const manifest = await getVersionMainfest();
   if (isError(manifest)) return manifest;
 
@@ -99,7 +102,6 @@ async function getAllVanillaVersions(): Promise<Failable<VanillaVersion[]>> {
   const multiPlayableVersions = manifest.versions.slice(0, lastindex);
 
   return multiPlayableVersions.map((x) => ({
-    type: 'vanilla',
     release: x.type === 'release',
     id: x.id,
   }));

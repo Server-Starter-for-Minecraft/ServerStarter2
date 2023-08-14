@@ -2,7 +2,7 @@ import { RemoteWorldName, WorldContainer, WorldName } from '../schema/brands';
 import { Player } from '../schema/player';
 import { StaticResouce } from '../schema/static';
 import { SystemSettings } from '../schema/system';
-import { Version, VersionType } from '../schema/version';
+import { AllVersion, Version, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 import {
@@ -140,7 +140,7 @@ export interface API extends IAPI {
     GetVersions: (
       type: VersionType,
       useCache: boolean
-    ) => Promise<Failable<Version[]>>;
+    ) => Promise<Failable<AllVersion<VersionType>>>;
 
     /** ローカルのセーブデータ一覧を取得 */
     GetLocalSaveData: () => Promise<WithError<Failable<CustomMapData[]>>>;
