@@ -8,6 +8,7 @@ import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
 import { isError } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
+import { assets } from 'src/assets/assets';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -51,6 +52,10 @@ export const useMainStore = defineStore('mainStore', {
         if (isError(world)) {
           return world
         }
+
+        // set default icon
+        world.avater_path = assets.png.unset
+
         // NewWorldを実データに書き出す
         return (await window.API.invokeCreateWorld(world)).value
       }
