@@ -998,19 +998,6 @@
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.3.4.tgz#06e83c5027f464eef861c329be81454bc8b70780"
   integrity sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==
 
-"@xmcl/bytebuffer@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@xmcl/bytebuffer/-/bytebuffer-0.1.1.tgz#402d9beb8cd8d93ad3012e4d9e2c5cf08bc6d60d"
-  integrity sha512-Mja7XzIjXgXX/mDNqkVO6X3yltIYo18RYTo3J4UA8Di2TMZp90NRbLJ8PFRWAyDo/R+kNyErvfXMge2eB/q9pg==
-
-"@xmcl/nbt@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@xmcl/nbt/-/nbt-3.0.1.tgz#27260637af83582f978517dc61a1e65b0d09757a"
-  integrity sha512-RPMs1GIc/z5xtrTIacGtdZGEkBPs8Hxo2+Dn2cPTgtRr7Rcj8JtSmUmFqhTUEeb+Arbm1rXFR79/EDAaVqBEgw==
-  dependencies:
-    "@xmcl/bytebuffer" "0.1.1"
-    pako "^2.1.0"
-
 abbrev@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -4224,11 +4211,6 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-nbtify@^1.60.2:
-  version "1.60.2"
-  resolved "https://registry.yarnpkg.com/nbtify/-/nbtify-1.60.2.tgz#15633d25d5828295848bcb70e3c0bb0ac126a0ff"
-  integrity sha512-p63A4g7b01SMStSNyK2/QFRfTTW9IC3PSPy3SscHOAMr1BSL+UIcm65bQweI8AWost/igfWBkXFExVHldyBfrw==
-
 negotiator@0.6.3, negotiator@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
@@ -4483,11 +4465,6 @@ p-try@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
-
-pako@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/pako/-/pako-2.1.0.tgz#266cc37f98c7d883545d11335c00fbd4062c9a86"
-  integrity sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==
 
 param-case@^2.1.1:
   version "2.1.1"
