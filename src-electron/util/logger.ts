@@ -124,7 +124,7 @@ export function getRootLogger(logDir: Path): {
         layout: { type: 'custom' },
       },
       out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
-      file: { type: 'logLevelFilter', appender: '_file', level: 'info' },
+      file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
     },
     categories: {
       default: { appenders: ['out', 'file'], level: 'trace' },
