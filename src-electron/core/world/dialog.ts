@@ -89,7 +89,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     }
 
     const isFile = options.isFile ?? true;
-    if (!isFile) props.push('openDirectory');
+    props.push(isFile ? 'openFile' : 'openDirectory');
 
     // ファイル選択ダイアログを開く
     const result = await dialog.showOpenDialog(window, {
