@@ -10,13 +10,18 @@ import { errorMessage } from '../util/error/construct';
 export async function UsernameToUUID(
   username: string
 ): Promise<Failable<{ name: string; uuid: PlayerUUID }>> {
-  const res = await BytesData.fromURL(
-    `https://api.mojang.com/users/profiles/minecraft/${username}`
-  );
-  if (isError(res))
+  const url = `https://api.mojang.com/users/profiles/minecraft/${username}`;
+  const res = await BytesData.fromURL(url);
+  if (isError(res)) {
+    // エラーコード 429 (Too Many Requests) が返ってきた場合
+    if (res.key === 'data.url.fetch' && res.arg.status === 429) {
+      return errorMessage.data.url.tooManyRequest({ url: url });
+    }
     return errorMessage.value.playerName({
       value: username,
     });
+  }
+
   const jsonData = await res.json<{ name: string; id: PlayerUUID }>();
   if (isError(jsonData)) return jsonData;
   return {
