@@ -113,6 +113,7 @@ export async function loadCustomMap(
     versionName: datContent.Data.Version.Name,
     icon: iconURI,
     isFile: !isDirectory,
+    lastPlayed:datContent.Data.LastPlayed
   };
 }
 

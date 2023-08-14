@@ -7,5 +7,7 @@ export type LevelDat = {
       Name: string;
       //  Snapshot: 1または0 (true/false) - バージョンがスナップショットであったかどうか
     };
+    // レベルが最後にロードされたUnix時間(ミリ秒)
+    LastPlayed: number;
   };
 };
