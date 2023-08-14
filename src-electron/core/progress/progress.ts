@@ -138,28 +138,19 @@ export class NumericProgressor extends Progressor<NumericProgress> {
 }
 
 export class ConsoleProgressor extends Progressor<ConsoleProgress> {
-  private _console: string[];
+  private _console: string;
   private _maxLineCount?: number;
 
   /** maxLineCount : コンソールに保存する最大行数 */
-  constructor(maxLineCount?: number, parent?: GroupProgressor) {
+  constructor(parent?: GroupProgressor) {
     super(parent);
-    this._maxLineCount = maxLineCount;
-    this._console = [];
+    this._console = '';
     this.update();
   }
 
   push(chunk: string) {
-    this._console.push(chunk);
-
-    // コンソールの長さが指定値を超えた場合手前から削除
-    if (
-      this._maxLineCount !== undefined &&
-      this._console.length > this._maxLineCount
-    ) {
-      this._console.shift();
-    }
-
+    if (chunk.trim() === '') return;
+    this._console = chunk;
     this.update();
   }
 
@@ -208,8 +199,8 @@ export class GroupProgressor extends Progressor<GroupProgress> {
     return this.push(new NumericProgressor(unit, max, this));
   }
 
-  console(maxLineCount?: number) {
-    return this.push(new ConsoleProgressor(maxLineCount, this));
+  console() {
+    return this.push(new ConsoleProgressor(this));
   }
 }
 

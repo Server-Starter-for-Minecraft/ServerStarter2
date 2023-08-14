@@ -38,7 +38,7 @@ export type NumericProgress = {
 export type ConsoleProgress = {
   type: 'console';
   // コンソールの文字列配列
-  value: string[];
+  value: string;
 };
 
 /** グループ化されたプログレス */

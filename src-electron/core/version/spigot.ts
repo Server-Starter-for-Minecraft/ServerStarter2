@@ -201,7 +201,7 @@ async function buildSpigotVersion(
   const d = progress?.subtitle({
     key: 'server.readyVersion.spigot.building',
   });
-  const console = progress?.console(10);
+  const console = progress?.console();
 
   // ビルドの開始
   const process = interactiveProcess(
