@@ -4,7 +4,6 @@ import type { BytesData } from './bytesData';
 import { Failable } from './error/failable';
 import { asyncForEach } from './objmap';
 import { isError } from './error/error';
-import { readFileSync } from 'fs';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');

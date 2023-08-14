@@ -14,6 +14,11 @@ export type DataErrors = {
       status: number;
       statusText: string;
     }>;
+
+    // リクエストが多すぎたときのエラー
+    tooManyRequest: ErrorMessageContent<{
+      url: string;
+    }>;
   };
   path: {
     // ファイル/ディレクトリの読み込みに失敗したときのエラー

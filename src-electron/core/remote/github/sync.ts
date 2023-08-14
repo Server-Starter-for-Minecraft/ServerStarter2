@@ -12,11 +12,7 @@ import { getSystemSettings } from '../../stores/system';
 import { getPlayerFromUUID } from '../../player/main';
 import { gitTempPath } from '../../const';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
-import {
-  GroupProgressor,
-  NumericProgressor,
-  Progressor,
-} from '../../progress/progress';
+import { GroupProgressor } from '../../progress/progress';
 
 function logger(): [
   (func: (arg: SimpleGitProgressEvent) => void) => void,
@@ -125,7 +121,7 @@ export async function pushWorld(
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   progress?.title({ key: 'server.push.title' });
-  const [git, set] = await setupGit(local, remote);
+  const [git, onGitProgress] = await setupGit(local, remote);
   if (isError(git)) return git;
 
   const sys = await getSystemSettings();
@@ -144,13 +140,13 @@ export async function pushWorld(
   else message = `<ANONYMOUS>(${uuid})`;
 
   await git.add('-A');
-  await git.commit(message);
+  await git.commit(message, undefined, { '--allow-empty': null });
 
   // pushのプログレスを反映
   if (progress) {
     const stage = progress.subtitle({ key: 'server.push.ready' });
     const numeric = progress.numeric();
-    set((x) => {
+    onGitProgress((x) => {
       stage.subtitle = {
         key: 'server.push.stage',
         args: { stage: x.stage },
@@ -159,7 +155,9 @@ export async function pushWorld(
       numeric.value = x.processed;
     });
   }
-  await git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.name}`, '-f']);
+  await safeExecAsync(() =>
+    git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.name}`, '-f'])
+  );
 }
 
 export async function deleteWorld(

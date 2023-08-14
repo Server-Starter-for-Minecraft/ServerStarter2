@@ -4,7 +4,7 @@ import { Path } from 'src-electron/util/path';
 import { Remote, RemoteFolder, RemoteWorld } from 'src-electron/schema/remote';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
-import { GroupProgressor, NumericProgressor } from '../progress/progress';
+import { GroupProgressor } from '../progress/progress';
 
 export const remoteOperators: {
   [K in RemoteFolder as K['type']]: RemoteOperator<K>;

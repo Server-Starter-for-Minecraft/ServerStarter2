@@ -1,4 +1,6 @@
-import { CustomMapData } from 'app/src-electron/schema/filedata';
+import {
+  CustomMapData,
+} from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
@@ -14,6 +16,10 @@ import {
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { LevelDat } from './misc/levelDat';
 import { BytesData } from 'app/src-electron/util/bytesData';
+import { modFiles } from './files/addtional/mod';
+import { asyncMap } from 'app/src-electron/util/objmap';
+import { pluginFiles } from './files/addtional/plugin';
+import { datapackFiles } from './files/addtional/datapack';
 
 const LEVEL_DAT = 'level.dat';
 
@@ -113,7 +119,7 @@ export async function loadCustomMap(
     versionName: datContent.Data.Version.Name,
     icon: iconURI,
     isFile: !isDirectory,
-    lastPlayed:datContent.Data.LastPlayed
+    lastPlayed: datContent.Data.LastPlayed,
   };
 }
 
@@ -151,7 +157,14 @@ async function importCustomMapDir(
   sourcePath: Path,
   worldPath: Path
 ): Promise<ServerProperties | undefined> {
-  await sourcePath.copyTo(worldPath);
+  await Promise.all([
+    // ディレクトリをコピー
+    sourcePath.copyTo(worldPath),
+    // シングルプレイで使用していたmod/plugin/datapackをキャッシュに追加
+    cacheLocalMods(sourcePath),
+    cacheLocalPlugins(sourcePath),
+    cacheLocalDatapacks(sourcePath),
+  ]);
 
   if (!sourcePath.child(SERVER_PROPERTIES_PATH).exists()) return;
 
@@ -160,6 +173,29 @@ async function importCustomMapDir(
   if (isError(props)) return;
 
   return props;
+}
+
+/** ローカルで使われていたであろうMOD一覧をキャッシュにコピー */
+async function cacheLocalMods(sourcePath: Path): Promise<void> {
+  const paths = await sourcePath.parent(2).child('mods').iter();
+  const mods = (await asyncMap(paths, modFiles.loadNew)).filter(isValid);
+  await asyncMap(mods, modFiles.appendCache);
+}
+
+/** ローカルで使われていたであろうPlugin一覧をキャッシュにコピー */
+async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
+  const paths = await sourcePath.parent(2).child('plugins').iter();
+  const plugins = (await asyncMap(paths, pluginFiles.loadNew)).filter(isValid);
+  await asyncMap(plugins, pluginFiles.appendCache);
+}
+
+/** ローカルで使われていたであろうDatapack一覧をキャッシュにコピー */
+async function cacheLocalDatapacks(sourcePath: Path): Promise<void> {
+  const paths = await sourcePath.child('datapacks').iter();
+  const datapacks = (await asyncMap(paths, datapackFiles.loadNew)).filter(
+    isValid
+  );
+  await asyncMap(datapacks, datapackFiles.appendCache);
 }
 
 /** CustomMapのデータでワールドを上書きする */
