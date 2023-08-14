@@ -29,15 +29,14 @@ function getNewContents(worldContents: AllFileData<T>[]) {
 /**
  * コンテンツを新規導入
  */
-async function importNewContent() {
+async function importNewContent(isFile = false) {
   // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
   switch (prop.contentType) {
     case 'datapack':
-      // TODO: 導入するデータパックについて、isFile = false|true を選択できるUIの提供
-      // TODO: 翻訳時にtypeのアルファベットは全て日本語（or 適切な表現）に変換する
-      // TODO: 何もファイルを選択せずに修了した場合もエラー扱いとなるため、翻訳時にそのことを含意する文言に修正
+      // TODO: 何もファイルを選択せずに修了した場合もエラー扱いとなるため、
+      // 何も選択しなかった場合はエラーを表示せず、不適なファイルが選択された際には適切なエラーを表示するようにする
       checkError(
-        await window.API.invokePickDialog({type: 'datapack', isFile: true}),
+        await window.API.invokePickDialog({type: 'datapack', isFile: isFile}),
         c => addContent2World(c),
         //"$t('additionalContents.installFailed')"
         () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
@@ -56,6 +55,7 @@ async function importNewContent() {
         c => addContent2World(c),
         () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
+      break;
     default:
       break;
   }
@@ -134,9 +134,21 @@ function openCacheFolder() {
     <div class="row q-gutter-sm q-pa-sm">
       <div>
         <AddContentsCard
-          :label="$t('additionalContents.newInstall')"
+          :label="contentType === 'datapack' ? 'Zipから新規追加' : $t('additionalContents.newInstall')"
           min-height="4rem"
-          @click="importNewContent"
+          @click="importNewContent(true)"
+          :card-style="{
+            'border-radius': '6px',
+            'border-color': getCssVar('primary')
+          }"
+          class="text-primary"
+        />
+      </div>
+      <div v-if="contentType === 'datapack'">
+        <AddContentsCard
+          label="フォルダから新規追加"
+          min-height="4rem"
+          @click="importNewContent(false)"
           :card-style="{
             'border-radius': '6px',
             'border-color': getCssVar('primary')
