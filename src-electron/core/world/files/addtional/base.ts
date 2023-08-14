@@ -113,6 +113,19 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     return result;
   }
 
+  /** キャッシュにファイルを追加 */
+  async appendCache(source: NewFileData<T>): Promise<Failable<void>> {
+    const basename = source.name + source.ext;
+    const sourcePath = new Path(source.path);
+    const targetPath = this.cachePath.child(basename);
+    if (targetPath.exists())
+      return errorMessage.data.path.alreadyExists({
+        type: source.isFile ? 'file' : 'directory',
+        path: targetPath.path,
+      });
+    return await this.installer(sourcePath, targetPath);
+  }
+
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
     const paths = await this.cachePath.iter();
     const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
