@@ -14,8 +14,6 @@ import { gitTempPath } from '../../const';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
 import {
   GroupProgressor,
-  NumericProgressor,
-  Progressor,
 } from '../../progress/progress';
 
 function logger(): [

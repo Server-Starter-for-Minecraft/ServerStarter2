@@ -15,9 +15,7 @@ import {
 } from './local';
 import {
   RunRebootableServer,
-  RunServer,
   runRebootableServer,
-  runServer,
 } from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
@@ -638,7 +636,7 @@ export class WorldHandler {
 
     this.runner = undefined;
 
-    const afterTitle = progress.title({
+    progress.title({
       key: 'server.run.after.title',
     });
 
