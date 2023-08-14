@@ -12,8 +12,8 @@ import {
   serverPropertiesFile,
 } from './files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { BytesData } from 'app/src-electron/util/bytesData';
 import { LevelDat } from './misc/levelDat';
+import { BytesData } from 'app/src-electron/util/bytesData';
 
 const LEVEL_DAT = 'level.dat';
 
@@ -101,7 +101,7 @@ export async function loadCustomMap(
   }
 
   if (isError(dat)) return dat;
-  const datContent = await dat.nbt<LevelDat>('gzip');
+  const datContent = await dat.nbt<LevelDat>();
   if (isError(datContent)) return datContent;
 
   const iconURI = await icon?.encodeURI('image/png');
@@ -113,6 +113,7 @@ export async function loadCustomMap(
     versionName: datContent.Data.Version.Name,
     icon: iconURI,
     isFile: !isDirectory,
+    lastPlayed:datContent.Data.LastPlayed
   };
 }
 

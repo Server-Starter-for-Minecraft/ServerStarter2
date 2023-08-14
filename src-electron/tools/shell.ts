@@ -5,5 +5,5 @@ export function openBrowser(url: string) {
 }
 
 export function openFolder(path: string) {
-  shell.showItemInFolder(path);
+  shell.openPath(path);
 }

@@ -8,11 +8,8 @@ import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
 import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
-
-const nbt = import('nbtify');
-
-const fetch = import('node-fetch');
-
+import fetch from 'electron-fetch';
+const prismarineNbt = require('prismarine-nbt');
 const loggers = utilLoggers.BytesData;
 
 export type Hash = {
@@ -37,7 +34,7 @@ export class BytesData {
     logger.start();
 
     try {
-      const res = await (await fetch).default(url, { headers });
+      const res = await fetch(url, { headers });
       if (res.status !== 200) {
         logger.fail({ status: res.status, statusText: res.statusText });
         return errorMessage.data.url.fetch({
@@ -67,7 +64,8 @@ export class BytesData {
         path: url,
       });
     } catch (e) {
-      logger.fail();
+      const em = fromRuntimeError(e);
+      logger.fail(em);
       return fromRuntimeError(e);
     }
   }
@@ -137,6 +135,20 @@ export class BytesData {
     }
   }
 
+  /**
+   * 非推奨
+   *
+   * fromPathOrUrl/fromUrlOrPathを使用すること
+   *
+   * @param path
+   * @param url
+   * @param hash undefined データの整合性チェックのためのsha1ハッシュ値
+   * @param prioritizeUrl true Urlにアクセスできなかった場合のみローカルのデータを参照する
+   * @param updateLocal true Urlにアクセス出来た場合ローカルのデータを更新する
+   * @param compareHashOnFetch true URLアクセス時にhash値を比較するかどうか
+   * @returns
+   */
+
   static async fromPathOrUrl(
     path: Path,
     url: string,
@@ -194,23 +206,23 @@ export class BytesData {
     return this.fromBase64(match[1]);
   }
 
-  /** objectをJavaNBTの形でエンコード */
-  static async fromNbtData(
-    data: object,
-    compression?: 'deflate' | 'deflate-raw' | 'gzip' | null
-  ): Promise<Failable<BytesData>> {
-    try {
-      const result = await (
-        await nbt
-      ).write(data, {
-        endian: 'big',
-        compression: compression,
-      });
-      return new BytesData(result.buffer);
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
-  }
+  // /** objectをJavaNBTの形でエンコード */
+  // static async fromNbtData(
+  //   data: object,
+  //   compression?: 'deflate' | 'deflate-raw' | 'gzip' | null
+  // ): Promise<Failable<BytesData>> {
+  //   try {
+  //     const result = await (
+  //       await nbt
+  //     ).write(data, {
+  //       endian: 'big',
+  //       compression: compression,
+  //     });
+  //     return new BytesData(result.buffer);
+  //   } catch (e) {
+  //     return fromRuntimeError(e);
+  //   }
+  // }
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
     const sha1 = createHash(algorithm);
@@ -245,17 +257,11 @@ export class BytesData {
   }
 
   /** バイト列をjava NBTに変換 */
-  async nbt<T extends object>(
-    complesstion?: 'deflate' | 'deflate-raw' | 'gzip' | null
-  ): Promise<Failable<T>> {
+  async nbt<T extends object>(): Promise<Failable<T>> {
     try {
-      const result = await (
-        await nbt
-      ).read(this.data, {
-        endian: 'big',
-        compression: complesstion,
-      });
-      return result.data;
+      const nbt = await prismarineNbt;
+      const result = await nbt.parse(Buffer.from(this.data), 'big');
+      return nbt.simplify(result.parsed);
     } catch (e) {
       return fromRuntimeError(e);
     }

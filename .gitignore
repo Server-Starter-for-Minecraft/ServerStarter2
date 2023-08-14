@@ -36,7 +36,11 @@ yarn-error.log*
 /server
 /logs
 /userData
-*.py
+/*.py
+!/src/assets/encodeAssets.py
 
-
+# Ignore files
 *.private.test.ts
+design/schedule.xlsx
+
+.temp/
