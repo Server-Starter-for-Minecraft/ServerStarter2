@@ -1,7 +1,6 @@
 import { settingPath } from '../const';
 import { SystemSettings } from 'src-electron/schema/system';
 import { fixSystemSettings } from '../fixers/system';
-
 import { safeStorage } from 'electron';
 import { readFileSync, writeFileSync } from 'fs-extra';
 

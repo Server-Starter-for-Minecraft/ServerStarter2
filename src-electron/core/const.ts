@@ -54,7 +54,8 @@ export const DEFAULT_MEMORY: MemorySettings = {
 } as const;
 
 // システムの言語設定がjaだった場合ja、それ以外の場合en-USに
-export const DEFAULT_LOCALE: Locale = app.getLocale() === 'ja' ? 'ja' : 'en-US';
+export const getDefaultLocale = (): Locale =>
+  app.getLocale() === 'ja' ? 'ja' : 'en-US';
 
 export const NEW_WORLD_NAME = 'NewWorld';
 
