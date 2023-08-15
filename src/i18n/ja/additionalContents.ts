@@ -9,4 +9,6 @@ export const jaAdditionalContents = {
   notInstalled: '導入された{type}はありません',
   openSaveLocation: '{type}の保存場所を開く',
   install: '導入',
+  installFromZip: 'Zipから新規追加',
+  installFromFolder: 'フォルダーから新規追加',
 }

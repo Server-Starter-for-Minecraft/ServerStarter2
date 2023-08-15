@@ -9,4 +9,6 @@ export const enAdditionalContents = {
   notInstalled: 'No {type} installed',
   openSaveLocation: 'Open {type} save Location',
   install: 'Install',
+  installFromZip: 'New install from Zip',
+  installFromFolder: 'New install from Folder',
 }

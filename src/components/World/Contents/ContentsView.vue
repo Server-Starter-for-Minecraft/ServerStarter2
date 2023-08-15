@@ -134,7 +134,7 @@ function openCacheFolder() {
     <div class="row q-gutter-sm q-pa-sm">
       <div>
         <AddContentsCard
-          :label="contentType === 'datapack' ? 'Zipから新規追加' : $t('additionalContents.newInstall')"
+          :label="contentType === 'datapack' ? $t('additionalContents.installFromZip') : $t('additionalContents.newInstall')"
           min-height="4rem"
           @click="importNewContent(true)"
           :card-style="{
@@ -146,7 +146,7 @@ function openCacheFolder() {
       </div>
       <div v-if="contentType === 'datapack'">
         <AddContentsCard
-          label="フォルダから新規追加"
+          :label="$t('additionalContents.installFromFolder')"
           min-height="4rem"
           @click="importNewContent(false)"
           :card-style="{
