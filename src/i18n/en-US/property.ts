@@ -93,7 +93,6 @@ export const enUSproperty = {
     'enable-jmx-monitoring':'Enable monitoring by JMX',
     'previews-chat':'Enable preview to display when sending chat',
     'snooper-enabled': 'Sets whether the server sends snoop data regularly to http://snoop.minecraft.net',
-    'text-filtering-config': '',
 
   },
   resetProperty:'\
