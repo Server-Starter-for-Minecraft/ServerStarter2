@@ -4,7 +4,6 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
-import { File } from 'unzipper';
 import { LEVEL_NAME, unzipPath } from '../const';
 import { WorldSettings } from './files/json';
 import {
@@ -105,7 +104,7 @@ export async function loadCustomMap(
     // /icon.pngを読み込み
     const iconFile = await findIconPngInZip(zip);
     if (isValid(iconFile)) {
-      dat = iconFile;
+      icon = iconFile;
     }
   }
 
