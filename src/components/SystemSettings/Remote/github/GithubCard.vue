@@ -11,7 +11,9 @@ import UpdatePatDialog from './UpdatePatDialog.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 interface Prop {
+  showUnlink?: boolean
   onRegisterClick?: (remoteData: RemoteFolder) => void
+  worldName?: string
 }
 const prop = defineProps<Prop>()
 const remote = defineModel<GithubRemoteSetting>({ required: true })
@@ -64,13 +66,30 @@ function checkUnlinkRepo() {
         <div class="caption">{{ $t('shareWorld.githubCard.repository') }}</div>
         <div class="dataText text-omit">{{ remote.folder.repo }}</div>
       </div>
+      <div v-if="worldName" class="q-py-sm">
+        <div class="caption">{{ '同期先ワールド名' }}</div>
+        <div class="dataText text-omit">{{ worldName }}</div>
+      </div>
     </q-card-section>
 
     <q-card-actions vertical>
-      <SsBtn :label="$t('shareWorld.githubCard.updatePAT')" @click="openPatEditor" class="q-mb-sm" />
-      <SsBtn v-if="onRegisterClick === void 0" :label="$t('shareWorld.githubCard.unresister.remote')" color="red"
-        @click="checkUnlinkRepo" />
-      <SsBtn v-else :label="$t('shareWorld.githubCard.useRemote')" color="primary" @click="onRegisterClick(remote.folder)" />
+      <SsBtn
+        :label="$t('shareWorld.githubCard.updatePAT')"
+        @click="openPatEditor"
+        class="q-mb-sm"
+      />
+      <SsBtn
+        v-if="showUnlink"
+        :label="$t('shareWorld.githubCard.unresister.remote')"
+        color="red"
+        @click="checkUnlinkRepo"
+      />
+      <SsBtn
+        v-if="onRegisterClick !== void 0"
+        :label="$t('shareWorld.githubCard.useRemote')"
+        color="primary"
+        @click="onRegisterClick(remote.folder)"
+      />
     </q-card-actions>
   </q-card>
 </template>
@@ -79,6 +98,7 @@ function checkUnlinkRepo() {
 .caption {
   font-size: .6rem;
   opacity: .6;
+  padding-bottom: 4px;
 }
 
 .dataText {
