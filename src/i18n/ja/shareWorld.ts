@@ -22,6 +22,7 @@ export const jaShareWorld = {
     update: 'Tokenを更新',
     inputPAT: 'Personal Access Token を入力',
     useRemote: 'このリモートを利用する',
+    worldName: '同期先ワールド名',
     unresister: {
       remote: 'リモートの登録を解除',
       dialog: '{name} を解除',

@@ -22,6 +22,7 @@ export const enUSShareWorld = {
     update: 'UpdateToken',
     inputPAT: 'Input Personal Access Token',
     useRemote: 'Use this remote',
+    worldName: 'World name to sync with',
     unresister: {
       remote: 'Unregister remote',
       dialog: 'Unregister {name}',

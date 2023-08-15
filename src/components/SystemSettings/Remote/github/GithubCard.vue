@@ -67,7 +67,7 @@ function checkUnlinkRepo() {
         <div class="dataText text-omit">{{ remote.folder.repo }}</div>
       </div>
       <div v-if="worldName" class="q-py-sm">
-        <div class="caption">{{ '同期先ワールド名' }}</div>
+        <div class="caption">{{ $t('shareWorld.githubCard.worldName') }}</div>
         <div class="dataText text-omit">{{ worldName }}</div>
       </div>
     </q-card-section>
