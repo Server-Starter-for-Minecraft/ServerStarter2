@@ -19,7 +19,7 @@ async function updateWorld() {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
     <BaseDialogCard
       :title="$t('home.useWorld.checkWorldInstall')"
       :ok-btn-txt="$t('home.useWorld.installBtn')"
@@ -29,7 +29,11 @@ async function updateWorld() {
       style="max-width: 100%;"
     >
       <p v-html="$t('home.useWorld.checkDialog')" />
-      <WorldItem :world="customMap" />
+      <WorldItem
+        :icon="customMap.icon"
+        :world-name="customMap.levelName"
+        :version-name="customMap.versionName"
+      />
     </BaseDialogCard>
   </q-dialog>
 </template>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { CustomMapData } from 'app/src-electron/schema/filedata';
+import { ImageURI } from 'app/src-electron/schema/brands';
 
 interface Prop {
-  world: CustomMapData
+  icon?: ImageURI,
+  worldName: string,
+  versionName: string,
   onClick?: () => void
 }
 defineProps<Prop>()
@@ -15,13 +17,13 @@ defineProps<Prop>()
   >
     <q-item-section avatar top>
       <q-avatar square size="5rem">
-        <q-img :src="world.icon" class="lowImg" />
+        <q-img :src="icon" class="lowImg" />
       </q-avatar>
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="name text-omit">{{ world.levelName }}</q-item-label>
-      <q-item-label class="version">{{ world.versionName }}</q-item-label>
+      <q-item-label class="name text-omit">{{ worldName }}</q-item-label>
+      <q-item-label class="version">{{ versionName }}</q-item-label>
     </q-item-section>
   </q-item>
 </template>

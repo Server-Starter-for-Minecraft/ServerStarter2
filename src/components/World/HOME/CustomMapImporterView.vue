@@ -126,7 +126,9 @@ onMounted(async () => {
         <div class="row q-gutter-sm justify-center">
           <template v-for="localWorld in localWorlds" :key="localWorld.path">
             <WorldItem
-              :world="localWorld"
+              :icon="localWorld.icon"
+              :world-name="localWorld.levelName"
+              :version-name="localWorld.versionName"
               @click="showCheckDialog(localWorld)"
               style="min-width: 20rem; max-width: 20rem;;"
             />
