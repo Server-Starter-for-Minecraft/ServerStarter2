@@ -35,7 +35,9 @@ window.API.onProgress((_event, worldID, progress) => {
 
 <template>
   <div class="justify-center column items-center fit">
-    <h1>{{ progressStore.getProgress(mainStore.world.id).title }}</h1>
-    <ProgressView :progress="progressStore.getProgress(mainStore.world.id).progress" />
+    <div style="width: 30rem;">
+      <h1 style="font-weight: bold;">{{ progressStore.getProgress(mainStore.world.id).title }}</h1>
+      <ProgressView :progress="progressStore.getProgress(mainStore.world.id).progress" />
+    </div>
   </div>
 </template>
