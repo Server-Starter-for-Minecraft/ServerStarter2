@@ -10,6 +10,7 @@ import {
 } from './base';
 import { Path } from '../../util/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { GroupProgressor } from '../progress/progress';
 
 const papermcVersionsPath = versionsCachePath.child('papermc');
 
@@ -84,7 +85,16 @@ type ApiBuild = {
   };
 };
 
-async function readyVersion(version: PapermcVersion, cwdPath: Path) {
+async function readyVersion(
+  version: PapermcVersion,
+  cwdPath: Path,
+  progress?: GroupProgressor
+) {
+  progress?.title({
+    key: 'server.readyVersion.title',
+    args: { version: version },
+  });
+
   const jarpath = cwdPath.child(
     `${version.type}-${version.id}-${version.build}.jar`
   );
@@ -93,16 +103,24 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
   const jsonpath = papermcVersionsPath.child(
     `${version.id}/${version.build}.json`
   );
+
+  const l = progress?.subtitle({
+    key: 'server.readyVersion.papermc.laodBuildData',
+  });
   const jsonResponse = await BytesData.fromUrlOrPath(jsonpath, buildURL);
   if (isError(jsonResponse)) return jsonResponse;
 
   const json = await jsonResponse.json<ApiBuild>();
   if (isError(json)) return json;
+  l?.delete();
 
   const { name, sha256 } = json.downloads.application;
 
   const jarURL = buildURL + `/downloads/${name}`;
 
+  const s = progress?.subtitle({
+    key: 'server.readyVersion.papermc.readyServerData',
+  });
   const jarResponse = await BytesData.fromPathOrUrl(
     jarpath,
     jarURL,
@@ -114,6 +132,8 @@ async function readyVersion(version: PapermcVersion, cwdPath: Path) {
   // 適切なjavaのバージョンを取得
   const component = await getJavaComponent(version.id);
   if (isError(component)) return component;
+
+  s?.delete();
 
   return {
     programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],

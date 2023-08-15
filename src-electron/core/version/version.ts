@@ -24,12 +24,13 @@ export const versionLoaders: {
 // 指定されたバージョンを準備する
 export async function readyVersion<V extends Version>(
   version: V,
-  cwdPath: Path
+  cwdPath: Path,
+  progress?: GroupProgressor
 ) {
   const loader: VersionLoader<V> = versionLoaders[
     version.type
   ] as VersionLoader<V>;
-  return await loader.readyVersion(version, cwdPath);
+  return await loader.readyVersion(version, cwdPath, progress);
 }
 
 // 指定されたバージョンを準備する

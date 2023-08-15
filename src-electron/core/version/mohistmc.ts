@@ -14,6 +14,7 @@ import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
 import { Path } from '../../util/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { GroupProgressor } from '../progress/progress';
 
 const papermcVersionsPath = versionsCachePath.child('mohistmc');
 
@@ -27,11 +28,19 @@ export const mohistmcVersionLoader: VersionLoader<MohistmcVersion> = {
 };
 
 async function readyMohistmcVersion(
-  version: MohistmcVersion
+  version: MohistmcVersion,
+  cwdPath: Path,
+  progress?: GroupProgressor
 ): Promise<Failable<VersionComponent>> {
+  progress?.title({
+    key: 'server.readyVersion.title',
+    args: { version: version },
+  });
+
   const versionPath = papermcVersionsPath.child(
     `${version.id}-${version.number}`
   );
+
   const jarpath = versionPath.child(
     `${version.type}-${version.id}-${version.number}.jar`
   );
@@ -40,7 +49,11 @@ async function readyMohistmcVersion(
   const component = await getJavaComponent(version.id);
   if (isError(component)) return component;
 
+  const r = progress?.subtitle({
+    key: 'server.readyVersion.mohistmc.readyServerData',
+  });
   const result = await downloadMohistmcVersion(version, jarpath);
+  r?.delete();
   if (isError(result)) return result;
 
   return {
