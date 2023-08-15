@@ -1,6 +1,4 @@
-import {
-  CustomMapData,
-} from 'app/src-electron/schema/filedata';
+import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
@@ -23,32 +21,37 @@ import { datapackFiles } from './files/addtional/datapack';
 
 const LEVEL_DAT = 'level.dat';
 
-async function findLevelDatInZip(zip: ZipFile): Promise<Failable<File>> {
+async function findLevelDatInZip(
+  zip: ZipFile
+): Promise<Failable<[string, BytesData]>> {
   // ZIP内に ( level.dat | */level.dat ) があった場合OK
   const levelDats = await zip.match(/^([^<>:;,?"*|/\\]+\/)?level\.dat$/);
   if (isError(levelDats)) return levelDats;
-  if (levelDats.length > 1) {
+  const keys = Object.keys(levelDats);
+  if (keys.length > 1) {
     return errorMessage.data.path.invalidContent.customMapZipWithMultipleLevelDat(
       {
         path: zip.path.path,
-        innderPath: levelDats.map((x) => x.path),
+        innderPath: keys,
       }
     );
   }
-  if (levelDats.length === 0) {
+  if (keys.length === 0) {
     return errorMessage.data.path.invalidContent.invalidCustomMap({
       type: 'file',
       path: zip.path.path,
     });
   }
-  return levelDats[0];
+  const [path, filedata] = Object.entries(levelDats)[0];
+  if (isError(filedata)) return filedata;
+  return [path, filedata];
 }
 
-async function findIconPngInZip(zip: ZipFile): Promise<File | undefined> {
+async function findIconPngInZip(zip: ZipFile): Promise<Failable<BytesData>> {
   // ZIP内に ( icon.png | */icon.png ) があった場合OK
-  const levelDats = await zip.match(/^([^<>:;,?"*|/\\]+\/)?icon\.png$/);
-  if (isError(levelDats)) return undefined;
-  return levelDats[0];
+  const pngs = await zip.match(/^([^<>:;,?"*|/\\]+\/)?icon\.png$/);
+  if (isError(pngs)) return pngs;
+  return Object.values(pngs)[0];
 }
 
 /** パスを受け適切なマップ形式だった場合CustomMapを返す */
@@ -97,12 +100,12 @@ export async function loadCustomMap(
     const datFile = await findLevelDatInZip(zip);
     if (isError(datFile)) return datFile;
 
-    dat = await BytesData.fromBuffer(await datFile.buffer());
+    dat = await datFile[1];
 
     // /icon.pngを読み込み
     const iconFile = await findIconPngInZip(zip);
-    if (iconFile !== undefined) {
-      dat = await BytesData.fromBuffer(await iconFile.buffer());
+    if (isValid(iconFile)) {
+      dat = iconFile;
     }
   }
 
@@ -208,7 +211,7 @@ async function importCustomMapZip(
   // zip内のlevel.datを探し、なかった/複数あった場合はエラー
   const datFile = await findLevelDatInZip(zip);
   if (isError(datFile)) return datFile;
-  const innerPath = datFile.path;
+  const innerPath = datFile[0];
 
   // 一時ディレクトリを削除
   await unzipPath.remove(true);
