@@ -92,7 +92,6 @@ export const jaProperty = {
     'enable-jmx-monitoring':'JMXによるモニターを有効化',
     'previews-chat':'チャット送信時に表示するプレビューを有効にする',
     'snooper-enabled': 'サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する',
-    'text-filtering-config': '',
   },
   resetProperty:'\
     基本設定の{defaultProperty}に設定を戻します<br>\

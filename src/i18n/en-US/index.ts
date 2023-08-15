@@ -15,8 +15,10 @@ import { enUSIcon } from "./icon";
 import { enUSShareWorld } from "./shareWorld";
 import { enWelcome } from "./welcome";
 import { enAutoShutdown } from "./autoshutdown";
+import { enUSGeneral } from "./general";
 
 export const enUS: MessageSchema = {
+  general:enUSGeneral,
   home:enUSHome,
   property:enUSproperty,
   console:enUSConsole,

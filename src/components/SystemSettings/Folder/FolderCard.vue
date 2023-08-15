@@ -45,7 +45,7 @@ function removeFolder() {
     componentProps: {
       dialogTitle: t('systemsetting.folder.unregistTitle',{ name: folder.value.name }),
       dialogDesc: t('systemsetting.folder.unregistDialog',{ name: folder.value.name }),
-      okBtnTxt: t('systemsetting.folder.unregistBtn')
+      okBtnTxt: t('systemsetting.folder.unregist')
     } as dangerDialogProp
   }).onOk(() => {
     sysStore.systemSettings.container.splice(
@@ -88,7 +88,7 @@ function removeFolder() {
           <ss-btn
             v-show="showOperationBtns && folder.name !== 'default'"
             free-width
-            :label="$t('systemsetting.folder.edit')"
+            :label="$t('general.edit')"
             @click="editFolder"
           />
           <ss-btn

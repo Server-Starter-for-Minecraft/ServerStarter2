@@ -6,8 +6,6 @@ export const enUSPlayer = {
   notFound: 'No player found',
   groupList: 'Bulk registration by group ',
   join: 'Only registered player',
-  edit: 'Edit',
-  delete: 'Delete',
   changeOP: 'Change OP level',
   makeGroup: 'Make group',
   deletePlayer: 'Delete player',

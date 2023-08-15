@@ -14,8 +14,10 @@ import { jaIcon } from "./icon";
 import { jaShareWorld } from "./shareWorld";
 import { jaWelcome } from "./welcome";
 import { jaAutoShutdown } from "./autoshutdown";
+import { jaGeneral } from "./general";
 
 export const ja = {
+  general:jaGeneral,
   home:jaHome,
   property:jaProperty,
   console:jaConsole,

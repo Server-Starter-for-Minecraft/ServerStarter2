@@ -22,14 +22,13 @@ function closeWindow() {
     
         <q-card-section>
           <div>
-            <p>ご迷惑をおかけします。</p>
+            <p>{{ $t('utils.bugReport.title') }}</p>
             <p style="text-decoration: underline;">{{ store.description }}</p>
-            <p>こちらのエラーが頻発する場合には、以下の「バグ報告」よりエラーの報告をお願いします。</p>
-            <p>なお、緊急の対応が必要な場合は、お手数をおかけしますがTwitterにて作者CivilTTまでご連絡ください。</p>
+            <p v-html="$t('utils.bugReport.desc')"></p>
           </div>
     
           <div>
-            <p>【エラー要因】</p>
+            <p>{{ $t('utils.bugReport.cause') }}</p>
             <p>{{ store.error }}</p>
           </div>
         </q-card-section>
@@ -37,9 +36,9 @@ function closeWindow() {
 
       <q-card-actions class="justify-center">
         <!-- TODO: バグ報告フォームの整備 -->
-        <q-btn color="red" icon="pest_control" label="バグ報告" size="1.3rem" class="q-mx-md"/>
-        <q-btn color="blue-1" text-color="blue" icon="img:https://cdn.iconscout.com/icon/free/png-512/free-twitter-87-432551.png?f=avif&w=256" label="作者へ連絡" size="1.3rem" class="q-mx-md" @click="showTwitter"/>
-        <q-btn icon="close" label="閉じる" size="1.3rem" class="q-mx-md" @click="closeWindow"/>
+        <q-btn color="red" icon="pest_control" :label="$t('utils.bugReport.reportBtn')" size="1.3rem" class="q-mx-md"/>
+        <q-btn color="blue-1" text-color="blue" icon="img:https://cdn.iconscout.com/icon/free/png-512/free-twitter-87-432551.png?f=avif&w=256" :label="$t('utils.bugReport.contact')" size="1.3rem" class="q-mx-md" @click="showTwitter"/>
+        <q-btn icon="close" :label="$t('utils.bugReport.close')" size="1.3rem" class="q-mx-md" @click="closeWindow"/>
       </q-card-actions>
     </q-card>
   </div>

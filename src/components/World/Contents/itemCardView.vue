@@ -51,7 +51,7 @@ function deleteContent() {
             @click="deleteContent"
           >
             <div class="text-red text-center full-width" style="font-size: .8rem;">
-              {{ $t('additionalContents.delete') }}</div>
+              {{ $t('general.delete') }}</div>
           </q-btn>
         </q-item-section>
         <q-item-section v-else side>
