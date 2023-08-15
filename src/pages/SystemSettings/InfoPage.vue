@@ -13,6 +13,13 @@ const latest = false
 function systemUpdate() {
 
 }
+
+/**
+ * MIT LICENSEのファイルを開く
+ */
+function openMIT() {
+  window.API.sendOpenBrowser('https://github.com/CivilTT/ServerStarter2/blob/master/LICENSE')
+}
 </script>
 
 <template>
@@ -53,7 +60,17 @@ function systemUpdate() {
 
     <h1>{{ $t('systemsetting.info.license') }}</h1>
     <div class="q-pl-md">
-      <p class="q-ma-none">{{ $t('systemsetting.info.MIT') }}</p>
+      <div class="row items-start">
+        <p class="q-ma-none">{{ $t('systemsetting.info.MIT') }}</p>
+        <q-btn
+          flat
+          dense
+          icon="open_in_new"
+          color="grey"
+          size=".5rem"
+          @click="openMIT"
+        />
+      </div>
       <div 
         class="text-caption q-pt-sm"
         style="opacity: .6;"
