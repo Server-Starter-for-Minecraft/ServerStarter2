@@ -38,7 +38,7 @@ window.API.onStartServer((_event, worldID) => {
 })
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {
-  consoleStore.setProgress(worldID, '')
+  consoleStore.initProgress(worldID, 'サーバーをシャットダウン中')
 })
 // サーバーに送信されたコンソールの処理
 window.API.onAddConsole((_event, worldID, chunk) => {

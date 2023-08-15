@@ -1,61 +1,41 @@
 <script setup lang="ts">
-import { useProgressStore } from '../stores/ProgressStore';
+import { useQuasar } from 'quasar';
+import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
+import { useMainStore } from 'src/stores/MainStore';
+import { useProgressStore } from 'src/stores/ProgressStore';
+import ProgressView from 'src/components/Progress/ProgressView.vue';
+import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
+const $q = useQuasar()
+const mainStore = useMainStore()
 const progressStore = useProgressStore();
 
 // Eulaの同意処理
-window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID) => {
+window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) => {
   const promise = new Promise<boolean>(
-    (resolve) => { progressStore.back2frontHandler(resolve, worldID) }
+    (resolve) => { progressStore.back2frontHandler(worldID, resolve) }
   );
+
+  $q.dialog({
+    component: EulaDialog,
+    componentProps: {
+      eulaURL: url
+    } as EulaDialogProp
+  }).onOk(() => {
+    progressStore.getProgress(worldID).selecter?.(true)
+  })
+
   return await promise;
 });
 
 window.API.onProgress((_event, worldID, progress) => {
-  // TODO: onProgressに対応
-  // progressStore.setProgress(progress. message, current=current, total=total, worldID=worldID)
+  progressStore.setProgress(worldID, progress)
 });
 </script>
 
 <template>
   <div class="justify-center column items-center fit">
-    <q-circular-progress
-      indeterminate
-      size="50px"
-      :thickness="0.22"
-      rounded
-      color="primary"
-      track-color="grey-3"
-      class="q-ma-md"
-      style="margin: auto 0;"
-    />
-
-    <p class="message">{{ progressStore.message }}</p>
-    <div v-if="progressStore.ratio !== void 0">
-      <q-linear-progress
-        :value="(progressStore.ratio as number) / 100"
-        rounded
-        color="$primary"
-        class="q-pa-md"
-        style="max-height: 1pt"
-      />
-    </div>
-
-    <q-btn
-      v-show="progressStore.userSelecter"
-      @click="progressStore.userSelecter?.(true)"
-      label="AGREE EULA!!"
-    />
-    <q-btn
-      v-show="progressStore.userSelecter"
-      @click="progressStore.userSelecter?.(false)"
-      label="DISAGREE EULA!!"
-    />
+    <h1>{{ progressStore.getProgress(mainStore.world.id).title }}</h1>
+    <ProgressView :progress="progressStore.getProgress(mainStore.world.id).progress" />
   </div>
 </template>
-
-<style scoped lang="scss">
-.message {
-  font-size: 20pt;
-}
-</style>

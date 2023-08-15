@@ -16,12 +16,10 @@ defineProps<baseDialogProp>()
       <slot />
     </q-card-section>
 
-    <q-card-actions
-      v-if="okBtnTxt !== void 0 || onOkClick !== void 0"
-      align="right"
-    >
+    <q-card-actions align="right">
       <slot name="additionalBtns" />
       <ss-btn
+        v-if="okBtnTxt !== void 0 || onOkClick !== void 0"
         :disable="disable"
         :loading="loading"
         :label="okBtnTxt"
@@ -30,7 +28,7 @@ defineProps<baseDialogProp>()
       />
     </q-card-actions>
 
-    <div class="absolute-top-right">
+    <div v-if="onClose !== void 0" class="absolute-top-right">
       <q-btn
         dense
         flat

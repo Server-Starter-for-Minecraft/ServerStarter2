@@ -3,15 +3,7 @@ import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router'
 import { initWindow, afterWindow } from 'app/src/init';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { useProgressStore } from 'src/stores/ProgressStore';
-import ProgressPage from './ProgressPage.vue';
 import WelcomeDialog from 'src/components/App/WelcomeDialog.vue'
-import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n()
-
-const progressStore = useProgressStore()
-progressStore.setProgress(t('console.init'))
 
 const $q = useQuasar();
 const router = useRouter()
@@ -41,12 +33,24 @@ async function asyncProcess() {
   afterWindow()
   
   await router.replace('/')
-  progressStore.initProgress()
 }
 </script>
 
 <template>
   <div class="absolute-center">
-    <progress-page/>
+    <div class="justify-center column items-center fit">
+      <q-circular-progress
+        indeterminate
+        size="50px"
+        :thickness="0.22"
+        rounded
+        color="primary"
+        track-color="grey-3"
+        class="q-ma-md"
+        style="margin: auto 0;"
+      />
+
+      <p class="message">{{ $t('console.init') }}</p>
+    </div>
   </div>
 </template>

@@ -6,5 +6,5 @@ export interface baseDialogProp {
   okBtnTxt?: string
   color?: string
   onOkClick?: () => void
-  onClose: () => void
+  onClose?: () => void
 }

@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { WorldID } from 'app/src-electron/schema/world';
 import { useProgressStore } from './ProgressStore';
@@ -39,9 +38,9 @@ export const useConsoleStore = defineStore('consoleStore', {
     /**
      * 進捗を登録する
      */
-    setProgress(worldID: WorldID, message: string, current?: number, total?: number) {
+    initProgress(worldID: WorldID, message: string) {
       const progressStore = useProgressStore()
-      progressStore.setProgress(message, current=current, total=total, worldID=worldID)
+      progressStore.initProgress(worldID, message)
       this._world[worldID].status = 'Ready'
     },
     /**
@@ -78,7 +77,7 @@ export async function runServer() {
   }
 
   // プログレスのステータスをセットして起動
-  consoleStore.setProgress(
+  consoleStore.initProgress(
     mainStore.selectedWorldID,
     `${mainStore.world.version.id} (${mainStore.world.version.type}) / ${mainStore.world.name} を起動中`
   )
