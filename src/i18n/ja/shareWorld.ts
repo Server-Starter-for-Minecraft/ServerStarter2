@@ -1,4 +1,5 @@
 export const jaShareWorld = {
+  github: 'GitHub',
   title: 'ワールド共有設定 (ShareWorld)',
   desc: '\
   ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。{0}\
@@ -23,7 +24,7 @@ export const jaShareWorld = {
     inputPAT: 'Personal Access Token を入力',
     useRemote: 'このリモートを利用する',
     worldName: '同期先ワールド名',
-    unresister: {
+    unregister: {
       remote: 'リモートの登録を解除',
       dialog: '{name} を解除',
       decide: '登録を解除',
@@ -32,4 +33,31 @@ export const jaShareWorld = {
         GitHub上のリポジトリは削除されませんが、「{owner}/{repo}」を用いてワールドを再共有することは出来なくなります。',
     }
   }, 
+  existRemote: {
+    syncWorldTitle: '同期中のShareWorldデータ',
+    syncWorldDesc: '\
+      このワールドは{0}と同期されています。{1}\
+      {2}ではこの同期データをブラウザ上で確認することができます。',
+    unregister: {
+      unregistSyncTitle: 'ワールドの同期を解除',
+      unregistSyncDesc: '\
+        {remotePath}との同期を解除します。<br>\
+        ShareWorldが削除されることはありませんが、{worldName}の更新データは共有されなくなります。',
+      dialogTitle: '同期を解除します',
+      dialogDesc: '\
+        同期を解除すると、これ以降にこのサーバーで遊んだ内容は同期されません。<br>\
+        共有を解除しますか？',
+    },
+    delete: {
+      title: 'ShareWorldを削除する',
+      desc: '\
+        {remotePath}の共有データを完全に削除します。<br>\
+        共有しているShareWorldのデータは削除されますが、全ての参加者はローカルワールドとして引き続きこのワールドを起動することができます。',
+      btn: 'ShareWorldを削除',
+      dialogTitle: 'リモートデータを削除します',
+      dialogDesc: '\
+        このワールドはShareWorldのデータが削除されるため、共有相手も同期が解除されます。<br>\
+        このワールドのShareWorldデータを削除しますか？',
+    }
+  }
 }

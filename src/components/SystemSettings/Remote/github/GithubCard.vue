@@ -37,16 +37,16 @@ function checkUnlinkRepo() {
   $q.dialog({
     component: DangerDialog,
     componentProps: {
-      dialogOverline: 'GitHub',
+      dialogOverline: t('shareWorld.github'),
       dialogTitle: t(
-        'shareWorld.githubCard.unresister.dialog',
+        'shareWorld.githubCard.unregister.dialog',
         { name: remote.value.folder.repo }
       ),
       dialogDesc: t(
-        'shareWorld.githubCard.unresister.desc',
+        'shareWorld.githubCard.unregister.desc',
         { owner: remote.value.folder.owner, repo: remote.value.folder.repo }
       ),
-      okBtnTxt: t('shareWorld.githubCard.unresister.decide')
+      okBtnTxt: t('shareWorld.githubCard.unregister.decide')
     } as dangerDialogProp
   }).onOk(() => {
     deleteFromValue(sysStore.systemSettings.remote, remote.value)
@@ -80,7 +80,7 @@ function checkUnlinkRepo() {
       />
       <SsBtn
         v-if="showUnlink"
-        :label="$t('shareWorld.githubCard.unresister.remote')"
+        :label="$t('shareWorld.githubCard.unregister.remote')"
         color="red"
         @click="checkUnlinkRepo"
       />

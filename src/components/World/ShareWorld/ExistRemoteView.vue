@@ -30,10 +30,15 @@ function deleteRemoteSetting() {
 </script>
 
 <template>
-  <h1 class="q-pt-md">同期中のShareWorldデータ</h1>
+  <h1 class="q-pt-md">{{ $t('shareWorld.existRemote.syncWorldTitle') }}</h1>
   <p class="text-body2" style="opacity: .6;">
-    このワールドは{{ `${remote.folder.owner}/${remote.folder.repo}/${remote.name}` }}と同期されています<br>
-    <SsA :url="remoteURL" class="text-body2 text-primary">GitHub</SsA>ではこの同期データをブラウザ上で確認することができます
+    <i18n-t keypath="shareWorld.existRemote.syncWorldDesc" tag="false">
+      {{ `${remote.folder.owner}/${remote.folder.repo}/${remote.name}` }}
+      <br>
+      <SsA :url="remoteURL" class="text-body2 text-primary">
+        {{ $t('shareWorld.github') }}
+      </SsA>
+    </i18n-t>
   </p>
   
   <GithubCard
@@ -45,24 +50,28 @@ function deleteRemoteSetting() {
   />
 
   <DangerView
-    view-title="ワールドの同期を解除"
-    :view-desc="`
-      ${remote.folder.owner}/${remote.folder.repo}/${remote.name}との同期を解除します<br>
-      ShareWorldが削除されることはありませんが、${mainStore.world.name}の更新データは共有されなくなります`"
-    open-dialog-btn-text="ワールドの同期を解除"
-    dialog-title="同期を解除します"
-    dialog-desc="同期を解除すると、これ以降にこのサーバーで遊んだ内容は同期されません<br>共有を解除しますか？"
+    :view-title="$t('shareWorld.existRemote.unregister.unregistSyncTitle')"
+    :view-desc="
+      $t(
+        'shareWorld.existRemote.unregister.unregistSyncDesc',
+        {
+          remotePath: `${remote.folder.owner}/${remote.folder.repo}/${remote.name}`, 
+          worldName: `${mainStore.world.name}`
+        }
+      )
+    "
+    :open-dialog-btn-text="$t('shareWorld.existRemote.unregister.unregistSyncTitle')"
+    :dialog-title="$t('shareWorld.existRemote.unregister.dialogTitle')"
+    :dialog-desc="$t('shareWorld.existRemote.unregister.dialogDesc')"
     @action="mainStore.world.remote = undefined"
   />
 
   <DangerView
-    view-title="ShareWorldを削除する"
-    :view-desc="`
-      ${remote.folder.owner}/${remote.folder.repo}/${remote.name}の共有データを完全に削除します<br>
-      共有しているShareWorldのデータは削除されますが、全ての参加者はローカルワールドとして引き続きこのワールドを起動することができます`"
-    open-dialog-btn-text="ShareWorldを削除"
-    dialog-title="リモートデータを削除します"
-    dialog-desc="このワールドはShareWorldのデータが削除されるため、共有相手も同期が解除されます<br>このワールドのShareWorldデータを削除しますか？"
+    :view-title="$t('shareWorld.existRemote.delete.title')"
+    :view-desc="$t('shareWorld.existRemote.delete.desc',{remotePath: `${remote.folder.owner}/${remote.folder.repo}/${remote.name}`})"
+    :open-dialog-btn-text="$t('shareWorld.existRemote.delete.btn')"
+    :dialog-title="$t('shareWorld.existRemote.delete.dialogTitle')"
+    :dialog-desc="$t('shareWorld.existRemote.delete.dialogDesc')"
     @action="deleteRemoteSetting()"
   />
 </template>
