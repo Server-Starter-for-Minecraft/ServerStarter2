@@ -15,7 +15,7 @@ const prop = defineProps<Prop>()
 const model = defineModel<string | number | boolean>({ required: true })
 
 const sysStore = useSystemStore()
-const defaultProperty = sysStore.staticResouces.properties[prop.propertyName]
+const defaultProperty = sysStore.staticResouces.properties[prop.propertyName] ?? { type: 'string', default: '' }
 
 if (model.value === void 0) {
   model.value = defaultProperty.default
@@ -65,16 +65,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
 </script>
 
 <template>
-  <div v-if="typeof model === 'string' && selectEditer()==='string'" class="row">
-    <SsInput
-      v-model="model"
-      dense
-      :autofocus="autofocus"
-      style="width: 100%; padding-bottom: 18px;"
-    />
-  </div>
-  
-  <div v-else-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()==='number'" class="row" style="width: 100%;">
+  <div v-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()==='number'" class="row" style="width: 100%;">
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
       v-model="model"
@@ -97,17 +88,25 @@ function validationMessage(min?:number, max?:number, step?:number) {
   </div>
   
   <q-toggle
-    v-else-if="selectEditer()==='boolean'"
+    v-else-if="typeof model === 'boolean' || selectEditer() === 'boolean'"
     v-model="model"
     :label="model?.toString()"
     style="font-size: 1rem; padding-bottom: 12px;"
   />
   
   <SsSelect
-    v-else-if="selectEditer()==='enum'"
+    v-else-if="selectEditer() === 'enum'"
     dense
     v-model="model"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
     style="padding-bottom: 18px;"
+  />
+
+  <SsInput
+    v-else
+    v-model="model"
+    dense
+    :autofocus="autofocus"
+    style="width: 100%; padding-bottom: 18px;"
   />
 </template>

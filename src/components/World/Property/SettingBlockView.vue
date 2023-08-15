@@ -11,7 +11,7 @@ const propertiesModel = defineModel<ServerProperties>({ required: true })
 
 const sysStore = useSystemStore()
 
-const staticDefaultProperty = sysStore.staticResouces.properties[prop.settingName]
+const staticDefaultProperty = sysStore.staticResouces.properties[prop.settingName] ?? { type: 'string', default: '' }
 const defaultProperty = sysStore.systemSettings.world.properties[prop.settingName] ?? staticDefaultProperty.default
 
 /**
