@@ -546,7 +546,7 @@ export async function getLog4jArg(
   // 1.12-1.16.5
   if (version.id in ver_12_16) {
     const sub = progress.subtitle({
-      key: 'server.version.getLog4jSettingFile',
+      key: 'server.run.before.getLog4jSettingFile',
       args: {
         path: xml_12_16,
       },
@@ -559,7 +559,7 @@ export async function getLog4jArg(
   // 1.7-1.11.2
   if (version.id in ver_7_11) {
     const sub = progress.subtitle({
-      key: 'server.version.getLog4jSettingFile',
+      key: 'server.run.before.getLog4jSettingFile',
       args: {
         path: xml_7_11,
       },

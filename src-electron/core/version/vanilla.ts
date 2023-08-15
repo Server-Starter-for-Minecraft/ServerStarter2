@@ -11,6 +11,7 @@ import {
 import { Path } from '../../util/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { GroupProgressor } from '../progress/progress';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
@@ -36,7 +37,16 @@ export type VanillaVersionJson = {
 
 export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
   /** vanillaのサーバーデータを必要があればダウンロード */
-  async readyVersion(version: VanillaVersion, cwdPath: Path) {
+  async readyVersion(
+    version: VanillaVersion,
+    cwdPath: Path,
+    progress?: GroupProgressor
+  ) {
+    progress?.title({
+      key: 'server.readyVersion.title',
+      args: { version: version },
+    });
+
     const jarpath = cwdPath.child(`${version.type}-${version.id}.jar`);
 
     // versionのjsonを取得
@@ -44,6 +54,9 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
     if (isError(json)) return json;
 
     // jarデータを取得
+    const f = progress?.subtitle({
+      key: 'server.readyVersion.vanilla.fetching',
+    });
     const serverData = await BytesData.fromPathOrUrl(
       jarpath,
       json.downloads.server.url,
@@ -53,12 +66,17 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
       },
       true
     );
+    f?.delete();
 
     // serverデータがダウロードできなかった場合
     if (isError(serverData)) return serverData;
 
     // serverデータをファイルに書き出し
+    const s = progress?.subtitle({
+      key: 'server.readyVersion.vanilla.saving',
+    });
     await jarpath.write(serverData);
+    s?.delete();
 
     return {
       programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],

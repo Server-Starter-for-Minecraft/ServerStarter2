@@ -25,7 +25,16 @@ export const fabricVersionLoader: VersionLoader<FabricVersion> = {
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
-async function readyVersion(version: FabricVersion, cwdPath: Path) {
+async function readyVersion(
+  version: FabricVersion,
+  cwdPath: Path,
+  progress?: GroupProgressor
+) {
+  progress?.title({
+    key: 'server.readyVersion.title',
+    args: { version: version },
+  });
+
   const url = `https://meta.fabricmc.net/v2/versions/loader/${version.id}/${version.loader}/${version.installer}/server/jar`;
   const jarpath = cwdPath.child(
     `fabric-${version.id}-${version.loader}-${version.installer}.jar`

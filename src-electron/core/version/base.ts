@@ -8,6 +8,7 @@ import { BytesData } from '../../util/bytesData';
 import { rootLoggerHierarchy } from '../logger';
 import { eulaUnnecessaryVersionIds } from './const';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { GroupProgressor } from '../progress/progress';
 
 export const versionLoggers = rootLoggerHierarchy.server.version;
 
@@ -17,7 +18,11 @@ export type VersionComponent = {
 };
 
 export type VersionLoader<V extends Version> = {
-  readyVersion(version: V, cwdPath: Path): Promise<Failable<VersionComponent>>;
+  readyVersion(
+    version: V,
+    cwdPath: Path,
+    progress?: GroupProgressor
+  ): Promise<Failable<VersionComponent>>;
 
   /**
    * @param useCache ローカルのキャッシュを使用するかどうか
