@@ -21,6 +21,6 @@ const mainStore = useMainStore()
     </div>
 
     <NewRemoteView v-if="mainStore.world.remote === void 0" />
-    <ExistRemoteView v-else />
+    <ExistRemoteView v-else :remote="mainStore.world.remote"/>
   </div>
 </template>

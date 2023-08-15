@@ -34,7 +34,7 @@ function addRemote() {
           />
         </div>
         <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
-          <GithubCard v-model="sysStore.systemSettings.remote[n-1]" />
+          <GithubCard v-model="sysStore.systemSettings.remote[n-1]" show-unlink />
         </div>
       </div>
     </div>
