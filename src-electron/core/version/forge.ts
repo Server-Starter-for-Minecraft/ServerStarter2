@@ -290,10 +290,12 @@ export async function scrapeForgeVersions(
     const path = element.text();
 
     if (typeof path !== 'string') return;
-    const match = path.match(/[\d\.]+ - (\.+)/);
+    console.log(path)
+    const match = path.match(/^[\d\.]+ - (.+)$/);
+    console.log(match)
     if (match === null) return;
     const reco = match[1];
-    if (forge_versions.includes(reco)) return;
+    if (! forge_versions.includes(reco)) return;
     recommended = reco;
   });
 

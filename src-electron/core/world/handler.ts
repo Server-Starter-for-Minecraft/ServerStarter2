@@ -32,6 +32,7 @@ import { api } from '../api';
 import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
+import { asyncMap } from 'app/src-electron/util/objmap';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -378,8 +379,10 @@ export class WorldHandler {
     ) {
       const diff = getOpDiff(current.value.players, world.players);
       const hasDiff = Object.values(diff).some((x) => x.length > 0);
-      if (diff[0].length > 0)
-        await this.runCommand('deop ' + diff[0].join(' '));
+      console.log('DIFF', diff, hasDiff);
+
+      // op権限レベルが0になったプレイヤーに対してdeopを実行
+      await asyncMap(diff[0], (x) => this.runCommand(`deop ${x}`));
 
       if (isValid(current.value.properties)) {
         const opPermissionLevel =
@@ -387,8 +390,8 @@ export class WorldHandler {
 
         if (includes([1, 2, 3, 4] as const, opPermissionLevel)) {
           const diffs = diff[opPermissionLevel];
-          // op-permission-levelと同じopになるプレイヤーにopをあたえる
-          if (diffs.length > 0) await this.runCommand('op ' + diffs.join(' '));
+          // op権限レベルがop-permission-levelになったプレイヤーに対してopを実行
+          await asyncMap(diffs, (x) => this.runCommand(`op ${x}`));
           ([1, 2, 3, 4] as const).forEach((i) => {
             if (i !== opPermissionLevel && diff[i].length > 0) {
               errorMessage.core.world.failedChangingOp({
@@ -399,7 +402,7 @@ export class WorldHandler {
           });
         }
       }
-      if (hasDiff) await this.runCommand('whitelist reload');
+      await this.runCommand('whitelist reload');
     }
 
     return result;
@@ -545,8 +548,7 @@ export class WorldHandler {
   }
 
   async run(progress: GroupProgressor): Promise<WithError<Failable<World>>> {
-    const func = () => this.runExec(progress);
-    const result = await this.promiseSpooler.spool(func);
+    const result = await this.runExec(progress);
 
     // サーバーの実行に成功した場合のみシャットダウン(シャットダウンしないこともある)
     if (isValid(result)) this.shutdown();
@@ -636,7 +638,7 @@ export class WorldHandler {
 
     this.runner = undefined;
 
-    progress.title({
+    const afterTitle = progress.title({
       key: 'server.run.after.title',
     });
 

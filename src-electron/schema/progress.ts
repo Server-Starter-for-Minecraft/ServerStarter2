@@ -31,14 +31,14 @@ export type NumericProgress = {
   value: number;
   // 最大値(存在する場合)
   max?: number;
-  unit?: NumericProgressUnit;
+  unit: NumericProgressUnit;
 };
 
 /** コンソールのプログレス */
 export type ConsoleProgress = {
   type: 'console';
   // コンソールの文字列配列
-  value: string[];
+  value: string;
 };
 
 /** グループ化されたプログレス */
