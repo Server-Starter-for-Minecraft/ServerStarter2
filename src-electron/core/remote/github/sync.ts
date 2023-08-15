@@ -13,6 +13,7 @@ import { getPlayerFromUUID } from '../../player/main';
 import { gitTempPath } from '../../const';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
 import { GroupProgressor } from '../../progress/progress';
+import { getSystemOwnerName } from '../../player/owner';
 
 function logger(): [
   (func: (arg: SimpleGitProgressEvent) => void) => void,
@@ -77,6 +78,14 @@ async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
     await git.remote(['add', DEFAULT_REMOTE_NAME, url]);
   }
 
+  await git.addConfig(
+    'user.name',
+    (await getSystemOwnerName()) ?? '<ANONYMOUS>',
+    undefined,
+    'local'
+  );
+  await git.addConfig('user.email', '', undefined, 'local');
+
   return [git, set] as const;
 }
 
@@ -91,7 +100,7 @@ export async function pullWorld(
 
   if (progress) {
     const stage = progress.subtitle({ key: 'server.pull.ready' });
-    const numeric = progress.numeric("file");
+    const numeric = progress.numeric('file');
     set((x) => {
       stage.subtitle = {
         key: 'server.pull.stage',
@@ -145,7 +154,7 @@ export async function pushWorld(
   // pushのプログレスを反映
   if (progress) {
     const stage = progress.subtitle({ key: 'server.push.ready' });
-    const numeric = progress.numeric("file");
+    const numeric = progress.numeric('file');
     onGitProgress((x) => {
       stage.subtitle = {
         key: 'server.push.stage',
