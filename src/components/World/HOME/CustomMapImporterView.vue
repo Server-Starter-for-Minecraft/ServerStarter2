@@ -8,6 +8,7 @@ import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -73,30 +74,32 @@ onMounted(async () => {
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card>
-      <h1 class="q-pa-none q-ml-md q-pt-sm">
-        {{ $t('worldList.addSeveralWorld') }}
-      </h1>
-
+    <BaseDialogCard
+      :title="$t('worldList.addSeveralWorld')"
+      @close="onDialogCancel"
+      style="max-width: 50%;"
+    >
       <q-card-section>
         <span class="text-caption">{{ $t('worldList.addCustomWorld') }}</span>
-        <q-card-actions vertical>
-          <SsBtn
-            free-width
-            color="primary"
-            icon="add"
-            :label="$t('worldList.selectZip')"
-            @click="importZip"
-            class="btn"
-          />
-          <SsBtn
-            free-width
-            color="primary"
-            icon="add"
-            :label="$t('worldList.selectFolder')"
-            @click="importFolder"
-            class="btn"
-          />
+        <q-card-actions>
+          <div class="row full-width q-gutter-sm">
+            <SsBtn
+              free-width
+              color="primary"
+              icon="add"
+              :label="$t('worldList.selectZip')"
+              @click="importZip"
+              class="btn col"
+            />
+            <SsBtn
+              free-width
+              color="primary"
+              icon="add"
+              :label="$t('worldList.selectFolder')"
+              @click="importFolder"
+              class="btn col"
+            />
+          </div>
         </q-card-actions>
       </q-card-section>
 
@@ -120,31 +123,24 @@ onMounted(async () => {
           > 
           </div>
         </div>
-        <q-list v-else separator>
+        <div class="row q-gutter-sm justify-center">
           <template v-for="localWorld in localWorlds" :key="localWorld.path">
-            <WorldItem :world="localWorld" @click="showCheckDialog(localWorld)" />
+            <WorldItem
+              :world="localWorld"
+              @click="showCheckDialog(localWorld)"
+              style="min-width: 20rem; max-width: 20rem;;"
+            />
           </template>
-        </q-list>
+        </div>
       </q-card-section>
-
-      <div class="absolute-top-right">
-        <q-btn
-          dense
-          flat
-          round
-          icon="close"
-          size="1rem"
-          class="q-ma-sm"
-          @click="onDialogCancel"
-        />
-      </div>
-    </q-card>
+    </BaseDialogCard>
   </q-dialog>
 </template>
 
 <style scoped lang="scss">
 .btn {
   font-size: 1rem;
+  min-width: 12rem;
 }
 
 .messageField {
