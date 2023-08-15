@@ -53,7 +53,7 @@ onMounted(shutdownCounter)
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <SsBtn :label="$t('autoshutdown.cancel')" @click="shutdownSelecter(false)" v-close-popup />
+        <SsBtn :label="$t('general.cancel')" @click="shutdownSelecter(false)" v-close-popup />
         <SsBtn :label="$t('autoshutdown.ok',{time:autoShutdownInterval})" @click="onDialogOK" class="text-primary" />
       </q-card-actions>
     </q-card>

@@ -6,8 +6,6 @@ export const jaPlayer = {
   notFound: '検索結果無し',
   groupList: 'グループによる一括追加',
   join: '登録済みのプレイヤーのみ参加可能',
-  edit: '編集',
-  delete: '削除',
   changeOP: 'OPレベルの変更',
   makeGroup: 'グループを作成',
   deletePlayer: 'プレイヤーを削除',

@@ -16,10 +16,8 @@ export const jaSystemSetting = {
   folder: {
     unregistTitle: '{name}の登録を解除します',
     unregistDialog: 'ServerStarterのワールド保存先一覧より{name}の登録を解除します。<br>解除したフォルダとその内部データが削除されることはありません。',
-    unregistBtn: '登録を解除',
     tooltipVisible: 'ワールド一覧にこのフォルダに保存されたワールドを表示する',
     tooltipInvisible: 'ワールド一覧にこのフォルダに保存されたワールドを表示しない',
-    edit: '編集',
     unregist: '登録解除',
   },
   info: {

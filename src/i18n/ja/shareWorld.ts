@@ -12,12 +12,12 @@ export const jaShareWorld = {
     dialogTitle: '新規ShareWorldの登録',
     account: 'アカウントの種類',
     user: 'ユーザー名',
-    repository: 'レポジトリ名',
+    repository: 'リポジトリ名',
     inputValue: '値を入力してください'
   },
   githubCard: {
     account: 'アカウント',
-    repository: 'レポジトリ',
+    repository: 'リポジトリ',
     updatePAT: 'Personal Access Token を更新',
     update: 'Tokenを更新',
     inputPAT: 'Personal Access Token を入力',
