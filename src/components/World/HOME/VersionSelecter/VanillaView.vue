@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { VanillaVersion } from 'app/src-electron/schema/version';
+import { AllVanillaVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -9,14 +9,22 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
 const isRelease = ref(false)
-const vanillas = sysStore.serverVersions.get('vanilla') as VanillaVersion[] | undefined
+const vanillas = sysStore.serverVersions.get('vanilla') as AllVanillaVersion | undefined
+const vanillaOps = vanillas?.map(
+  ver => { return { id: ver.id, type: 'vanilla' as const, release: ver.release }}
+)
+
+// vanillaでないときには最新のバージョンを割り当てる
+if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
+  mainStore.world.version = vanillaOps[0]
+}
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="vanillas?.filter(ver => !isRelease || ver['release'])"
+      :options="vanillaOps?.filter(ver => !isRelease || ver['release'])"
       :label="$t('home.version.versionType')"
       option-label="id"
       :disable="vanillas === void 0"

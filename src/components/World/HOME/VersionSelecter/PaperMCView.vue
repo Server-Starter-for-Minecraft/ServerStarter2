@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { PapermcVersion } from 'app/src-electron/schema/version';
-import { uniqueArrayDict } from 'src/scripts/objFillter';
+import { AllPapermcVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -8,14 +7,26 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
-const papers = (sysStore.serverVersions.get('papermc') as PapermcVersion[])
+const papers = sysStore.serverVersions.get('papermc') as AllPapermcVersion | undefined
+const paperVerOps = papers?.map(
+  ver => { return { id: ver.id, type: 'papermc' as const, build: ver.builds[0] }}
+)
+const paperBuildOps = () => {
+  const builds = papers?.filter(ver => ver.id === mainStore.world.version.id)[0].builds
+  return builds?.map(b => { return { id: mainStore.world.version.id, type: 'papermc' as const, build: b }})
+}
+
+// paperでないときには最新のバージョンを割り当てる
+if (mainStore.world.version.type !== 'papermc' && paperVerOps !== void 0) {
+  mainStore.world.version = paperVerOps[0]
+}
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="uniqueArrayDict(papers, 'id')"
+      :options="paperVerOps"
       :label="$t('home.version.versionType')"
       option-label="id"
       :disable="papers === void 0"
@@ -24,7 +35,7 @@ const papers = (sysStore.serverVersions.get('papermc') as PapermcVersion[])
     />
     <SsSelect
       v-model="mainStore.world.version"
-      :options="papers?.filter(ver => ver.id === mainStore.world.version.id).map((val, idx) => {
+      :options="paperBuildOps()?.map((val, idx) => {
         return { data: val, label: idx === 0 ? `${val.build} (${$t('home.version.recommend')})` : val.build}
       })"
       :label="$t('home.version.buildNumber')"

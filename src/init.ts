@@ -81,6 +81,8 @@ export async function afterWindow() {
  *                 利用しないと正確なリストを通信して取得する
  */
 async function getAllVersion(useCache: boolean) {
+  const sysStore = useSystemStore()
+
   const versions = await Promise.allSettled(
     versionTypes.map((type) => {
       return window.API.invokeGetVersions(type, useCache);
@@ -88,12 +90,13 @@ async function getAllVersion(useCache: boolean) {
   );
 
   versions.map((ver, i) => {
-    if (ver.status == 'fulfilled')
+    if (ver.status == 'fulfilled') {
       checkError(
         ver.value,
-        vers => useSystemStore().serverVersions.set(versionTypes[i], vers),
+        vers => sysStore.serverVersions.set(versionTypes[i], vers),
         () => { return { title: `バージョン(${versionTypes[i]})の取得に失敗しました` } }
       )
+    }
   });
 }
 

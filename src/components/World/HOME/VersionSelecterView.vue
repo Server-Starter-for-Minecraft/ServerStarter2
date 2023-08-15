@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Version, versionTypes } from 'app/src-electron/schema/version';
-import { sendError } from 'src/components/Error/Error';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -30,33 +28,12 @@ function createTranslateObject(value: Version['type']) {
 }
 
 const translatedVersionTypes = validVersionTypes.map((value) => createTranslateObject(value));
-
-/**
- * バージョンの一覧を取得する
- */
-function getAllVers() {
-  const versionList = sysStore.serverVersions.get(mainStore.selectedVersionType);
-
-  // versionListがundefinedの時にエラー処理
-  if (versionList === void 0) {
-    sendError(
-      t('home.error.title'),
-      t('home.error.failedGetVersion', { serverVersion: mainStore.world.version })
-    );
-    mainStore.selectedVersionType = 'vanilla';
-    return;
-  }
-
-  // Serverの種類が変更されたときには、一旦最新バージョンを提示
-  mainStore.world.version = versionList[0];
-}
 </script>
 
 <template>
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelect
     v-model="mainStore.selectedVersionType"
-    @update:model-value="getAllVers"
     :options="translatedVersionTypes"
     option-label="label"
     option-value="value"

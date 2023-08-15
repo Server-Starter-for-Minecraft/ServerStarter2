@@ -1,7 +1,7 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { version } from '../../package.json';
-import { Version, VersionType } from 'app/src-electron/schema/version';
+import { AllVersion, Version, VersionType } from 'app/src-electron/schema/version';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { CacheFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
@@ -12,7 +12,7 @@ export const useSystemStore = defineStore('systemStore', {
       systemVersion: version,
       publicIP: '000.111.222.333',
       privateIP: '192.168.000.111',
-      serverVersions: new Map<VersionType, Version[]>(),
+      serverVersions: new Map<Version['type'], AllVersion<VersionType>>(),
       staticResouces: {} as StaticResouce,
       cacheContents: {
         'datapacks': [] as CacheFileData<DatapackData>[],
