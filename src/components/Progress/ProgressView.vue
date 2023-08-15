@@ -10,16 +10,16 @@ defineProps<Prop>()
 <template>
   <template v-for="p in progress.value" :key="p">
     <div v-if="p.type === 'title'">
-      <span style="font-size: 1rem;">{{ $t(p.value.key, (p.value as { 'args': Record<string, any> }).args ?? {}) }}</span>
+      <span style="font-size: 1rem;">{{ $t(`progress.${p.value.key}`, (p.value as { 'args': Record<string, any> }).args ?? {}) }}</span>
     </div>
 
     <div v-else-if="p.type === 'subtitle'">
-      <span class="text-caption">{{ $t(p.value.key, (p.value as { 'args': Record<string, any> }).args ?? {}) }}</span>
+      <span class="text-caption">{{ $t(`progress.${p.value.key}`, (p.value as { 'args': Record<string, any> }).args ?? {}) }}</span>
     </div>
 
     <div v-else-if="p.type === 'numeric'">
       <q-linear-progress rounded size="15px" :value="p.value" color="primary" />
-      <span class="text-caption text-right full-width">
+      <span class="text-caption text-right">
         {{ `${p.value}${p.max ? '/' : ''}${p.max} ${p.unit}` }}
       </span>
     </div>

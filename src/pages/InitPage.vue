@@ -50,7 +50,7 @@ async function asyncProcess() {
         style="margin: auto 0;"
       />
 
-      <p class="message">{{ $t('console.init') }}</p>
+      <h1 style="font-weight: bold;">{{ $t('console.init') }}</h1>
     </div>
   </div>
 </template>
