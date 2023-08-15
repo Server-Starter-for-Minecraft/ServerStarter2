@@ -15,7 +15,7 @@ async function compressArchive(logDir: Path, latestLog: Path) {
   const newlogPath = logDir.child(logName);
   await newlogPath.remove(true);
 
-  await latestLog.moveTo(newlogPath);
+  await latestLog.copyTo(newlogPath);
 
   await c(
     {
@@ -25,38 +25,44 @@ async function compressArchive(logDir: Path, latestLog: Path) {
     },
     [logName]
   );
-  await latestLog.moveTo(logDir.child(logName));
-
   await newlogPath.remove();
 }
 
 function stringify(data: any) {
-  if (data === undefined) return 'undefined';
-  if (data === null) return 'null';
-  return JSON.stringify(data);
+  return JSON.stringify(data, (k, v) => (v === undefined ? 'undefined' : v));
 }
 
-log4js.addLayout('custom', function (config: { max?: number }) {
+log4js.addLayout('custom', function () {
   return function (logEvent) {
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
     const state = logEvent.data[0];
     const args = logEvent.data[1];
 
-    const data = logEvent.data
-      .slice(2)
-      .map((d) => {
-        let text = stringify(d);
-        if (config.max && text.length > config.max) {
-          text = text.slice(undefined, config.max - 3) + '...';
-        }
-        return text;
-      })
-      .join(', ');
+    const json = {
+      level,
+      state,
+      category,
+      args,
+      data: logEvent.data.slice(2),
+    };
 
-    if (data === '') return `[${level}/${state}] ${category} (${args})`;
+    return stringify(json);
 
-    return `[${level}/${state}] ${category} (${args}): ${data}`;
+    // const data = logEvent.data
+    //   .slice(2)
+    //   .map((d) => {
+    //     let text = stringify(d);
+    //     if (config.max && text.length > config.max) {
+    //       text = text.slice(undefined, config.max - 3) + '...';
+    //     }
+    //     return text;
+    //   })
+    //   .join(', ');
+
+    // if (data === '') return `[${level}/${state}] ${category} (${args})`;
+
+    // return `[${level}/${state}] ${category} (${args}): ${data}`;
   };
 });
 
@@ -112,6 +118,8 @@ export function getRootLogger(logDir: Path): {
   logger: LoggerHierarchy;
   archive: () => Promise<void>;
 } {
+  logDir.child(LATEST).writeTextSync('');
+
   log4js.configure({
     appenders: {
       _out: {
@@ -121,7 +129,7 @@ export function getRootLogger(logDir: Path): {
       _file: {
         type: 'file',
         filename: logDir.child(LATEST).str(),
-        layout: { type: 'custom' },
+        layout: { type: 'custom', max: 500 },
       },
       out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
       file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
@@ -140,41 +148,38 @@ const loggerSymbol = Symbol();
 
 class LoggerWrapper {
   private logger: log4js.Logger;
-  private argstr: string;
-  constructor(logger: log4js.Logger, kwargs: object) {
+  private arg: any;
+  constructor(logger: log4js.Logger, arg: any) {
     this.logger = logger;
-
-    this.argstr = Object.entries(kwargs)
-      .map(([k, v]) => `${k}:${v}`)
-      .join(', ');
+    this.arg = arg;
   }
 
   start(...message: any[]) {
-    this.logger.trace('start', this.argstr, ...message);
+    this.logger.trace('start', this.arg, ...message);
   }
   success(...message: any[]) {
-    this.logger.info('success', this.argstr, ...message);
+    this.logger.info('success', this.arg, ...message);
   }
   fail(...message: any[]) {
-    this.logger.info('fail', this.argstr, ...message);
+    this.logger.info('fail', this.arg, ...message);
   }
   trace(...message: any[]) {
-    this.logger.trace('trace', this.argstr, ...message);
+    this.logger.trace('trace', this.arg, ...message);
   }
   debug(...message: any[]) {
-    this.logger.debug('debug', this.argstr, ...message);
+    this.logger.debug('debug', this.arg, ...message);
   }
   info(...message: any[]) {
-    this.logger.info('info', this.argstr, ...message);
+    this.logger.info('info', this.arg, ...message);
   }
   warn(...message: any[]) {
-    this.logger.warn('warn', this.argstr, ...message);
+    this.logger.warn('warn', this.arg, ...message);
   }
   error(...message: any[]) {
-    this.logger.error('error', this.argstr, ...message);
+    this.logger.error('error', this.arg, ...message);
   }
   fatal(...message: any[]) {
-    this.logger.fatal('fatal', this.argstr, ...message);
+    this.logger.fatal('fatal', this.arg, ...message);
   }
 }
 

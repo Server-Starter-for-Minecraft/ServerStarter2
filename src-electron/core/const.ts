@@ -13,24 +13,10 @@ const userDataPath = (
     : new Path(app?.getPath('userData'))
 ).absolute();
 
-//const userDataPath = new Path('userData')
-
 export const mainPath = userDataPath;
 
-// writeFileSync('/Users/harutom/document/test.txt', mainPath.path+'\n' ,{
-//   encoding: 'utf8',
-//   flag: 'a+',
-//   mode: 0o666,
-//  });
-
-// writeFileSync('/Users/harutom/document/test.txt', mainPath.path+'\n' ,{
-//   encoding: 'utf8',
-//   flag: 'a+',
-//   mode: 0o666,
-//  });
-
-export const logPath = mainPath.child('serverstarter/log');
 export const cachePath = mainPath.child('serverstarter/cache');
+export const logPath = mainPath.child('serverstarter/log');
 
 export const settingPath = mainPath.child('serverstarter/settings.json');
 

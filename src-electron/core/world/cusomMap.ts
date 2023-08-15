@@ -109,7 +109,7 @@ export async function loadCustomMap(
   }
 
   if (isError(dat)) return dat;
-  const datContent = await dat.nbt<LevelDat>("gzip");
+  const datContent = await dat.nbt<LevelDat>();
   if (isError(datContent)) return datContent;
 
   const iconURI = await icon?.encodeURI('image/png');

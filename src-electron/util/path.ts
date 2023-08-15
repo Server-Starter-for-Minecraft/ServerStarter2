@@ -102,6 +102,12 @@ export class Path {
     await fs.writeFile(this.path, content);
   }
 
+  /** 同期書き込み(非推奨) */
+  writeTextSync(content: string) {
+    this.parent().mkdir(true);
+    fs.writeFileSync(this.path, content);
+  }
+
   async writeJson<T>(content: T) {
     this.parent().mkdir(true);
     await fs.writeFile(this.path, JSON.stringify(content));
