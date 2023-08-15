@@ -1,6 +1,7 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
+import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
@@ -16,12 +17,18 @@ export const useMainStore = defineStore('mainStore', {
       inputWorldName: '' as WorldName,
       errorWorlds: new Set<WorldID>(),
       iconCandidate: undefined as ImageURI | undefined,
+      selectedVersionType: 'vanilla' as Version['type']
     };
   },
   getters: {
     world(state) {
       const worldStore = useWorldStore()
-      return worldStore.worldList[state.selectedWorldID]
+      const returnWorld = worldStore.worldList[state.selectedWorldID]
+
+      // バージョンの更新（ワールドを選択し直すタイミングでバージョンの変更を反映）
+      state.selectedVersionType = returnWorld.version.type
+
+      return returnWorld
     }
   },
   actions: {
@@ -66,7 +73,7 @@ export const useMainStore = defineStore('mainStore', {
           worldStore.worldList[world.id] = toRaw(world)
           this.setWorld(world)
         },
-        () => { return { title: '新規ワールドの作成に失敗しました' }}
+        () => { return { title: '新規ワールドの作成に失敗しました' } }
       )
     },
     /**
