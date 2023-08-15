@@ -10,6 +10,7 @@ import {
   arrayFixer,
   booleanFixer,
   defaultFixer,
+  defaultGetterFixer,
   literalFixer,
   numberFixer,
   objectFixer,
@@ -20,14 +21,15 @@ import { fixPlayerGroup } from './player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { fixPlayerUUID, fixWorldContainer } from './brands';
 import { fixRemoteSetting } from './remote';
-import { DEFAULT_LOCALE, DEFAULT_WORLD_CONTAINER } from '../const';
+import { DEFAULT_WORLD_CONTAINER, getDefaultLocale } from '../const';
 import { fixSystemWorldSettings } from './world';
 import { genUUID } from 'app/src-electron/tools/uuid';
-import {
-  RemoteSetting,
-} from 'app/src-electron/schema/remote';
+import { RemoteSetting } from 'app/src-electron/schema/remote';
 
-export const fixLocale = literalFixer<Locale>(['ja', 'en-US'], DEFAULT_LOCALE);
+export const fixLocale = defaultGetterFixer(
+  literalFixer<Locale>(['ja', 'en-US']),
+  getDefaultLocale
+);
 
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {

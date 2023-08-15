@@ -115,7 +115,7 @@ export class BytesData {
   }
 
   /** base64の形式でByteDataに変換 */
-  static async fromBuffer(buffer: Buffer): Promise<Failable<BytesData>> {
+  static async fromBuffer(buffer: ArrayBuffer): Promise<Failable<BytesData>> {
     return new BytesData(buffer);
   }
 

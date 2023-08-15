@@ -186,6 +186,16 @@ export function defaultFixer<T>(
   };
 }
 
+export function defaultGetterFixer<T>(
+  fixer: Fixer<T | FAIL>,
+  defaultGetter: () => T
+): Fixer<T> {
+  return (arg: any) => {
+    const r = fixer(arg);
+    return r === FAIL ? defaultGetter() : r;
+  };
+}
+
 export function applyFixer<T, U>(
   fixer: Fixer<T>,
   apply: (arg: T) => U

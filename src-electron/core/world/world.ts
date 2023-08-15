@@ -112,7 +112,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     name,
     container,
     id,
-    version: latestRelease,
+    version: { type: 'vanilla', ...latestRelease },
     using: false,
     remote: undefined,
     last_date: undefined,
