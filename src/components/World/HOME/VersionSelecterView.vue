@@ -17,11 +17,6 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const { t } = useI18n()
 
-// バージョンの種類だけ変更されて、他のデータが変更されていない、という状況を回避するために、
-// worldのversionデータは全て揃った状態で更新する
-// TODO: 一方で選択されているワールドが変更されたときにはここが更新される必要あり
-// const versionType:Ref<Version['type']> = ref(mainStore.world.version.type)
-
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
 const validVersionTypes = versionTypes.filter(
   serverType => sysStore.serverVersions.get(serverType) !== void 0
