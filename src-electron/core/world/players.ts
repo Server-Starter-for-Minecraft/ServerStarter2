@@ -8,11 +8,11 @@ export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
     current.map((x) => [x.uuid, x.op?.level ?? 0])
   );
   const opPlayers = {
-    0: [] as PlayerUUID[],
-    1: [] as PlayerUUID[],
-    2: [] as PlayerUUID[],
-    3: [] as PlayerUUID[],
-    4: [] as PlayerUUID[],
+    0: [] as string[],
+    1: [] as string[],
+    2: [] as string[],
+    3: [] as string[],
+    4: [] as string[],
   };
   next.forEach((item) => {
     const cur = currentMap[item.uuid];
@@ -22,9 +22,9 @@ export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
     if (cur === nxt) return;
 
     // 権限が下がる場合は一度deopする
-    if (cur ?? 0 > nxt ?? 0) opPlayers[0].push(item.uuid);
+    if (cur ?? 0 > nxt ?? 0) opPlayers[0].push(item.name);
 
-    opPlayers[nxt].push(item.uuid);
+    opPlayers[nxt].push(item.name);
   });
   return opPlayers;
 }

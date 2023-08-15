@@ -6,7 +6,9 @@ import { forgeVersionLoader } from './forge';
 import { mohistmcVersionLoader } from './mohistmc';
 import { Path } from '../../util/path';
 import { fabricVersionLoader } from './fabric';
-import { Version, VersionType } from 'src-electron/schema/version';
+import { AllVersion, Version, VersionType } from 'src-electron/schema/version';
+import { GroupProgressor } from '../progress/progress';
+import { Failable } from 'app/src-electron/schema/error';
 
 export const versionLoaders: {
   [V in Version as V['type']]: VersionLoader<V>;
@@ -31,12 +33,16 @@ export async function readyVersion<V extends Version>(
 }
 
 // 指定されたバージョンを準備する
-export async function getVersions(type: VersionType, useCache: boolean) {
+export async function getVersions<V extends VersionType>(
+  type: V,
+  useCache: boolean
+): Promise<Failable<AllVersion<V>>> {
   const loader = versionLoaders[type];
   if (!loader) {
     throw new Error(`unknown version type ${type}`);
   }
-  return await loader.getAllVersions(useCache);
+  const all = (await loader.getAllVersions(useCache)) as AllVersion<V>;
+  return all;
 }
 
 /** サーバーの起動にeulaが必要かどうか */

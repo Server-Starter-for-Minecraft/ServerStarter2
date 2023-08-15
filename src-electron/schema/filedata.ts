@@ -61,6 +61,8 @@ export type CustomMapData = {
   icon?: ImageURI;
   // level.dat の中身の Data.Version.Name の値 バニラの時しか意味ないかも? TODO: 要検証
   versionName: string;
+  // レベルが最後にロードされたUnix時間(ミリ秒)
+  lastPlayed: number;
 };
 
 /** 画像データ(ImageURI) */

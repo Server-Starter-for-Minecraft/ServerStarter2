@@ -1,4 +1,4 @@
-import { getSystemSettings, systemSettings } from '../../stores/system';
+import { getSystemSettings, setSystemSettings } from '../../stores/system';
 import { GithubRemoteSetting } from 'src-electron/schema/remote';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable } from 'app/src-electron/schema/error';
@@ -34,22 +34,23 @@ export async function setGitPat(
   repo: string,
   pat: string
 ): Promise<undefined> {
-  const gitAccounts: GithubRemoteSetting[] = systemSettings.get(
-    'remote.github.accounts'
-  );
+  const systemSettings = await getSystemSettings();
 
-  for (const account of gitAccounts) {
-    const matchOwner = owner === account.folder.owner;
-    const matchRepository = repo === account.folder.repo;
+  for (const remote of systemSettings.remote) {
+    if (remote.folder.type !== 'github') continue;
+    const matchOwner = owner === remote.folder.owner;
+    const matchRepository = repo === remote.folder.repo;
     // 登録済みだった場合は更新して保存
     if (matchOwner && matchRepository) {
-      account.pat = pat;
-      systemSettings.set('remote.github.accounts', gitAccounts);
+      remote.pat = pat;
+      await setSystemSettings(systemSettings);
       return undefined;
     }
   }
+
   // 未登録の場合は追加して保存
-  gitAccounts.push({ folder: { owner, repo, type: 'github' }, pat });
-  systemSettings.set('remote.github.accounts', gitAccounts);
+  systemSettings.remote.push({ folder: { owner, repo, type: 'github' }, pat });
+
+  await setSystemSettings(systemSettings);
   return undefined;
 }

@@ -1,4 +1,4 @@
-import { SpigotVersion } from 'src-electron/schema/version';
+import { AllSpigotVersion, SpigotVersion } from 'src-electron/schema/version';
 import { Path } from '../../util/path';
 import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
@@ -25,7 +25,7 @@ export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
   readyVersion: readySpigotVersion,
 
   /** spigotのバージョンの一覧返す */
-  getAllVersions: genGetAllVersions('spigot', getSpigotVersions),
+  getAllVersions: genGetAllVersions<SpigotVersion>('spigot', getSpigotVersions),
 
   needEulaAgreement: needEulaAgreementVanilla,
 };
@@ -61,7 +61,7 @@ async function readySpigotVersion(
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 
 /** バージョン一覧の取得 */
-async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
+async function getSpigotVersions(): Promise<Failable<AllSpigotVersion>> {
   const result = await BytesData.fromURL(SPIGOT_VERSIONS_URL);
   if (isError(result)) return result;
 
@@ -90,9 +90,7 @@ async function getSpigotVersions(): Promise<Failable<SpigotVersion[]>> {
   ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
 
   return ids.map((id) => ({
-    type: 'spigot',
     id,
-    release: true,
   }));
 }
 
@@ -170,6 +168,11 @@ async function buildSpigotVersion(
 
   const javapath = await readyJava(javaComponent, false);
   if (isError(javapath)) return javapath;
+
+  const d = progress?.subtitle({
+    key: 'server.readyVersion.spigot.building',
+  });
+  const console = progress?.console();
 
   // ビルドの開始
   const process = interactiveProcess(

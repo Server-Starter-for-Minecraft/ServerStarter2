@@ -123,6 +123,11 @@ export class Path {
     return await data.text();
   }
 
+  /** 非推奨 */
+  readBufferSync(): Buffer {
+    return fs.readFileSync(this.str());
+  }
+
   async iter() {
     if (this.exists() ?? (await this.isDirectory()))
       return (await fs.readdir(this.path)).map((p) => this.child(p));

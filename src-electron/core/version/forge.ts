@@ -1,4 +1,4 @@
-import { ForgeVersion } from 'src-electron/schema/version';
+import { AllForgeVersion, ForgeVersion } from 'src-electron/schema/version';
 import {
   VersionLoader,
   genGetAllVersions,
@@ -57,7 +57,7 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
   },
 
   /** forgeのバージョンの一覧返す */
-  getAllVersions: genGetAllVersions('forge', getAllForgeVersions),
+  getAllVersions: genGetAllVersions<ForgeVersion>('forge', getAllForgeVersions),
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
@@ -201,7 +201,9 @@ export async function getForgeDownloadUrl(version: ForgeVersion) {
   return `https://maven.minecraftforge.net/net/minecraftforge/forge/${version.id}-${version.forge_version}/forge-${version.id}-${version.forge_version}-installer.jar`;
 }
 
-export async function getAllForgeVersions() {
+export async function getAllForgeVersions(): Promise<
+  Failable<AllForgeVersion>
+> {
   const indexPage = await BytesData.fromURL(ForgeURL);
 
   if (isError(indexPage)) return indexPage;
@@ -220,7 +222,6 @@ export async function getAllForgeVersions() {
   // 各バージョン後ごとの全ビルドを並列取得してflat化
   const versions = (await Promise.all(ids.map(scrapeForgeVersions)))
     .filter(isValid)
-    .flatMap((x) => x);
 
   return versions;
 }
@@ -245,7 +246,7 @@ const noInstallerVersionIds = new Set([
 
 export async function scrapeForgeVersions(
   id: string
-): Promise<Failable<ForgeVersion[]>> {
+): Promise<Failable<AllForgeVersion[number]>> {
   if (noInstallerVersionIds.has(id))
     return errorMessage.core.version.forgeInstallerNotProvided({ version: id });
 
@@ -266,9 +267,28 @@ export async function scrapeForgeVersions(
     }
   });
 
-  return forge_versions.map((forge_version) => ({
+  // recommendedを取得
+  let recommended: string | undefined = undefined;
+  $('div.downloads > div.download > div.title > small').each((i, elem) => {
+    if (i !== 1) return;
+
+    const element = $(elem);
+    // 子要素を消して直接のテキストだけを取得
+    const path = element.text();
+
+    if (typeof path !== 'string') return;
+    console.log(path)
+    const match = path.match(/^[\d\.]+ - (.+)$/);
+    console.log(match)
+    if (match === null) return;
+    const reco = match[1];
+    if (! forge_versions.includes(reco)) return;
+    recommended = reco;
+  });
+
+  return {
     id,
-    forge_version,
-    type: 'forge',
-  }));
+    forge_versions,
+    recommended,
+  };
 }

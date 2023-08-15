@@ -1,4 +1,4 @@
-import { PapermcVersion } from 'src-electron/schema/version';
+import { AllPapermcVersion, PapermcVersion } from 'src-electron/schema/version';
 import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent } from './vanilla';
@@ -25,12 +25,15 @@ export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
   readyVersion: readyVersion,
 
   /** papermcのバージョンの一覧返す */
-  getAllVersions: genGetAllVersions('papermc', getPapermcVersions),
+  getAllVersions: genGetAllVersions<PapermcVersion>(
+    'papermc',
+    getPapermcVersions
+  ),
 
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
-async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
+async function getPapermcVersions(): Promise<Failable<AllPapermcVersion>> {
   const VERSION_LIST_URL = 'https://api.papermc.io/v2/projects/paper';
   const data = await BytesData.fromURL(VERSION_LIST_URL);
   if (isError(data)) return data;
@@ -42,7 +45,7 @@ async function getPapermcVersions(): Promise<Failable<PapermcVersion[]>> {
 
   const results = await Promise.all(promisses);
 
-  return results.filter(isValid).flatMap((x) => x);
+  return results.filter(isValid);
 }
 
 type ApiBuilds = {
@@ -54,7 +57,7 @@ type ApiBuilds = {
 
 async function getPapermcBuilds(
   version: string
-): Promise<Failable<PapermcVersion[]>> {
+): Promise<Failable<AllPapermcVersion[number]>> {
   const url = `https://api.papermc.io/v2/projects/paper/versions/${version}`;
   const data = await BytesData.fromURL(url);
   if (isError(data)) return data;
@@ -62,9 +65,7 @@ async function getPapermcBuilds(
   const json = await data.json<ApiBuilds>();
   if (isError(json)) return json;
 
-  return json.builds
-    .reverse()
-    .map((build) => ({ id: version, type: 'papermc', build }));
+  return { id: version, builds: json.builds.reverse() };
 }
 
 type ApiBuild = {

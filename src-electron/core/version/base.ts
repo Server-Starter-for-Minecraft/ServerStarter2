@@ -1,4 +1,4 @@
-import { Version, VersionType } from 'src-electron/schema/version';
+import { AllVersion, Version, VersionType } from 'src-electron/schema/version';
 import { Path } from '../../util/path';
 import { JavaComponent } from './vanilla';
 import { Failable } from '../../util/error/failable';
@@ -26,7 +26,9 @@ export type VersionLoader<V extends Version> = {
    * - false     必ずリモートから最新版を取得(必ず最新版) 遅い
    * - undefined 起動中にリモートから取得済みだったらローカルを使用(おそらく最新版) 初回だけ遅い
    */
-  getAllVersions(useCache: boolean | undefined): Promise<Failable<V[]>>;
+  getAllVersions(
+    useCache: boolean | undefined
+  ): Promise<Failable<AllVersion<V['type']>>>;
 
   /** サーバーの起動にminecraft Eulaへの同意が必要かどうか */
   needEulaAgreement(version: V): boolean;
@@ -37,24 +39,15 @@ export function needEulaAgreementVanilla(version: Version) {
   return !eulaUnnecessaryVersionIds.includes(version.id);
 }
 
-const allVersionsReloadedMap: { [key in VersionType]: boolean } = {
-  fabric: false,
-  forge: false,
-  mohistmc: false,
-  papermc: false,
-  spigot: false,
-  vanilla: false,
-};
-
 export const genGetAllVersions = <V extends Version>(
   type: V['type'],
-  getAllVersionsFromRemote: () => Promise<Failable<V[]>>
+  getAllVersionsFromRemote: () => Promise<Failable<AllVersion<V['type']>>>
 ) =>
-  async function result(useCache: boolean | undefined): Promise<Failable<V[]>> {
+  async function result(
+    useCache: boolean | undefined
+  ): Promise<Failable<AllVersion<V['type']>>> {
     // ローカルのデータが最新版ならローカルのデータを使う
-    if (useCache === undefined) {
-      useCache = allVersionsReloadedMap[type];
-    }
+    if (useCache === undefined) useCache = true;
 
     const logger = versionLoggers.getAllVersions({ type, useCache });
     logger.start();
@@ -64,7 +57,7 @@ export const genGetAllVersions = <V extends Version>(
 
     if (useCache) {
       // ローカルから読み込み
-      const versions = await getAllLocalVersions<V>(type, jsonpath, configkey);
+      const versions = await getAllLocalVersions<V>(jsonpath, configkey);
       if (versions !== undefined) {
         logger.success('load from local');
         return versions;
@@ -87,14 +80,11 @@ export const genGetAllVersions = <V extends Version>(
     await jsonpath.write(data);
     versionConfig.set(configkey, await data.hash('sha1'));
 
-    allVersionsReloadedMap[type] = true;
-
     logger.success('load from remote');
     return versions;
   };
 
 export async function getAllLocalVersions<V extends Version>(
-  type: VersionType,
   jsonpath: Path,
   configkey: string
 ) {
@@ -108,6 +98,6 @@ export async function getAllLocalVersions<V extends Version>(
 
   if (configSha1 !== dataSha1) return;
 
-  const vers = await data.json<V[]>();
+  const vers = await data.json<AllVersion<V['type']>>();
   if (isValid(vers)) return vers;
 }

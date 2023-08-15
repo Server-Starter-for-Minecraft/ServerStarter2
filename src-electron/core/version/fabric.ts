@@ -1,4 +1,4 @@
-import { FabricVersion } from 'src-electron/schema/version';
+import { AllFabricVersion, FabricVersion } from 'src-electron/schema/version';
 import { BytesData } from '../../util/bytesData';
 import { getJavaComponent, vanillaVersionLoader } from './vanilla';
 import { versionsCachePath } from '../const';
@@ -9,6 +9,8 @@ import {
 } from './base';
 import { Path } from '../../util/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { GroupProgressor } from '../progress/progress';
+import { Failable } from 'app/src-electron/schema/error';
 
 const fabricVersionsPath = versionsCachePath.child('fabric');
 
@@ -18,7 +20,7 @@ export const fabricVersionLoader: VersionLoader<FabricVersion> = {
 
   /** fabricのバージョンの一覧返す */
   // TODO: jsonの内容がとてつもなく冗長になってしまっている
-  getAllVersions: genGetAllVersions('fabric', getAllVersions),
+  getAllVersions: genGetAllVersions<FabricVersion>('fabric', getAllVersions),
 
   needEulaAgreement: needEulaAgreementVanilla,
 };
@@ -29,6 +31,9 @@ async function readyVersion(version: FabricVersion, cwdPath: Path) {
     `fabric-${version.id}-${version.loader}-${version.installer}.jar`
   );
 
+  progress?.subtitle({
+    key: 'server.readyVersion.fabric.readyServerData',
+  });
   const result = await BytesData.fromPathOrUrl(jarpath, url, undefined, false);
 
   if (isError(result)) return result;
@@ -43,28 +48,25 @@ async function readyVersion(version: FabricVersion, cwdPath: Path) {
 }
 
 // TODO: ローカルに保存
-async function getAllVersions() {
-  const [games, loaders, installers] = await Promise.all([
+async function getAllVersions(): Promise<Failable<AllFabricVersion>> {
+  const [gameValues, loaders, installers] = await Promise.all([
     getGames(),
     getLoaders(),
     getInstallers(),
   ]);
-  if (isError(games)) return games;
+  if (isError(gameValues)) return gameValues;
   if (isError(loaders)) return loaders;
   if (isError(installers)) return installers;
 
-  const versions: FabricVersion[] = games.flatMap(({ id, release }) =>
-    loaders.flatMap((loader) =>
-      installers.map((installer) => ({
-        type: 'fabric',
-        id,
-        release,
-        loader,
-        installer,
-      }))
-    )
-  );
-  return versions;
+  const games = gameValues.flatMap(({ id, release }) => ({
+    id,
+    release,
+  }));
+  return {
+    games,
+    loaders,
+    installers,
+  };
 }
 
 type Loader = {

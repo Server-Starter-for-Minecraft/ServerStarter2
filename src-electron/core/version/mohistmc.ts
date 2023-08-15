@@ -1,4 +1,7 @@
-import { MohistmcVersion } from 'src-electron/schema/version';
+import {
+  AllMohistmcVersion,
+  MohistmcVersion,
+} from 'src-electron/schema/version';
 import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import {
@@ -16,7 +19,10 @@ const papermcVersionsPath = versionsCachePath.child('mohistmc');
 
 export const mohistmcVersionLoader: VersionLoader<MohistmcVersion> = {
   readyVersion: readyMohistmcVersion,
-  getAllVersions: genGetAllVersions('mohistmc', getAllMohistmcVersions),
+  getAllVersions: genGetAllVersions<MohistmcVersion>(
+    'mohistmc',
+    getAllMohistmcVersions
+  ),
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
@@ -79,7 +85,7 @@ async function getMohistmcVersionsJson(
   return json;
 }
 
-async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
+async function getAllMohistmcVersions(): Promise<Failable<AllMohistmcVersion>> {
   // mohistmcが対応しているバージョン一覧を取得
   const data = await BytesData.fromUrlOrPath(
     papermcVersionsPath.child('versions.json'),
@@ -103,19 +109,22 @@ async function getAllMohistmcVersions(): Promise<Failable<MohistmcVersion[]>> {
 
 async function getMohistmcVersions(
   id: string
-): Promise<Failable<MohistmcVersion[]>> {
+): Promise<Failable<AllMohistmcVersion[number]>> {
   const json = await getMohistmcVersionsJson(id);
   if (isError(json)) return json;
 
-  return Object.values(json)
+  const builds = Object.values(json)
     .filter((v) => v.status === 'SUCCESS')
     .reverse()
     .map(({ forge_version, number }) => ({
-      forge_version: forge_version === 'unknown' ? undefined : forge_version,
-      id,
-      type: 'mohistmc',
       number,
+      forge_version: forge_version === 'unknown' ? undefined : forge_version,
     }));
+
+  return {
+    id,
+    builds,
+  };
 }
 
 type MohistmcApiBuild = {
