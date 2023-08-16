@@ -60,7 +60,7 @@ async function setRemote() {
       @ok-click="setRemote"
       @close="onDialogCancel"
     >
-      <p>
+      <p style="font-size: .8rem; opacity: .8;">
         新規ShareWorldを作成して同期データを作成します<br>
         同期する際に用いるShareWorldの名称を入力してください
       </p>

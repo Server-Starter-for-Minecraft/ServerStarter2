@@ -1,4 +1,5 @@
 import { toRaw } from "vue";
+import { ImageURI } from "app/src-electron/schema/brands";
 import { Remote, RemoteFolder } from "app/src-electron/schema/remote";
 import { deepcopy } from "app/src-electron/util/deepcopy";
 import { checkError } from "src/components/Error/Error";
@@ -10,6 +11,8 @@ export interface GitHubSelecterProp {
 
 export interface GithubCheckDialogProp {
   remoteData: RemoteFolder
+  rIcon?: ImageURI
+  rVersionName: string
   rWorldName: string
 }
 

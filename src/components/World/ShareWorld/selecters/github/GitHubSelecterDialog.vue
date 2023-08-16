@@ -28,7 +28,9 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
     component: ExistedGitHubDialog,
     componentProps: {
       remoteData: prop.remoteData,
-      rWorldName: selectedRemote.remote.name
+      rWorldName: selectedRemote.remote.name,
+      rIcon: selectedRemote.avater_path,
+      rVersionName: selectedRemote.version.id
     } as GithubCheckDialogProp
   }).onOk(() => {
     mainStore.world.version = selectedRemote.version
@@ -43,7 +45,9 @@ function checkSetNewRemote() {
     component: NewGitHubDialog,
     componentProps: {
       remoteData: prop.remoteData,
-      rWorldName: mainStore.world.name
+      rWorldName: mainStore.world.name,
+      rIcon: mainStore.world.avater_path,
+      rVersionName: mainStore.world.version.id
     } as GithubCheckDialogProp
   }).onOk(onDialogOK)
 }
