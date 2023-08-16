@@ -13,6 +13,7 @@ import {
   NewFileData,
   CustomMapData,
   ImageURIData,
+  BackupData,
 } from '../schema/filedata';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
@@ -194,7 +195,10 @@ export interface API extends IAPI {
       ) => Promise<Failable<ImageURIData>>) &
       ((
         options: { type: 'container' } & DialogOptions
-      ) => Promise<Failable<WorldContainer>>);
+      ) => Promise<Failable<WorldContainer>>) &
+      ((
+        options: { type: 'backup' } & DialogOptions
+      ) => Promise<Failable<BackupData>>);
   };
 }
 
