@@ -23,6 +23,8 @@ window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) =>
     } as EulaDialogProp
   }).onOk(() => {
     progressStore.getProgress(worldID).selecter?.(true)
+  }).onCancel(() => {
+    progressStore.getProgress(worldID).selecter?.(false)
   })
 
   return await promise;

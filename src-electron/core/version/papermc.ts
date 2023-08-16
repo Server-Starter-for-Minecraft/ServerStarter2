@@ -105,7 +105,7 @@ async function readyVersion(
   );
 
   const l = progress?.subtitle({
-    key: 'server.readyVersion.papermc.laodBuildData',
+    key: 'server.readyVersion.papermc.loadBuildData',
   });
   const jsonResponse = await BytesData.fromUrlOrPath(jsonpath, buildURL);
   if (isError(jsonResponse)) return jsonResponse;
