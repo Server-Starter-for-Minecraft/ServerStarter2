@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
@@ -8,6 +9,7 @@ import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
+const consoleStore = useConsoleStore()
 
 function openFolderEditor() {
   $q.dialog({
@@ -27,10 +29,17 @@ function openFolderEditor() {
     <p class="q-my-sm text-body2" style="opacity: .6;">
       {{ $t('home.saveWorld.description') }}
     </p>
+    <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-red">
+      起動中のワールドがある状態でワールドフォルダを編集することはできません
+    </p>
 
     <div class="column q-py-sm q-gutter-y-md">
       <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
-        <FolderCard show-operation-btns v-model="sysStore.systemSettings.container[n - 1]" />
+        <FolderCard
+          show-operation-btns
+          v-model="sysStore.systemSettings.container[n - 1]"
+          :disable="!consoleStore.isAllWorldStop()"
+        />
       </template>
       <AddContentsCard
         :label="$t('home.saveWorld.addFolder')"

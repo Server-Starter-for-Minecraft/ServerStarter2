@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import NewRemoteDialog from 'src/components/SystemSettings/Remote/NewRemoteDialog.vue';
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
+const consoleStore = useConsoleStore()
 
 function addRemote() {
   $q.dialog({
@@ -19,6 +21,9 @@ function addRemote() {
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
       {{ $t('shareWorld.descriptRemote') }}
+    </p>
+    <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-red">
+      起動中のワールドがある状態でリモート設定を編集することはできません
     </p>
 
     <div class="row">
@@ -34,7 +39,11 @@ function addRemote() {
           />
         </div>
         <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
-          <GithubCard v-model="sysStore.systemSettings.remote[n-1]" show-unlink />
+          <GithubCard
+            v-model="sysStore.systemSettings.remote[n-1]"
+            show-unlink
+            :disable="!consoleStore.isAllWorldStop()"
+          />
         </div>
       </div>
     </div>

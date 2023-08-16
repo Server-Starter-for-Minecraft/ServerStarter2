@@ -4,6 +4,7 @@ import { useProgressStore } from './ProgressStore';
 import { useMainStore } from './MainStore';
 import { checkError } from 'src/components/Error/Error';
 import { assets } from 'src/assets/assets';
+import { values } from 'src/scripts/obj';
 
 interface WorldConsole {
   [id: WorldID]: {
@@ -56,6 +57,12 @@ export const useConsoleStore = defineStore('consoleStore', {
     status(worldID?: WorldID) {
       const id = worldID ?? useMainStore().selectedWorldID
       return this._world[id]?.status ?? 'Stop'
+    },
+    /**
+     * 全てのワールドが停止中か否かを返す
+     */
+    isAllWorldStop() {
+      return values(this._world).every(obj => obj.status === 'Stop')
     },
     /**
      * ワールドのコンソール状態を取得する

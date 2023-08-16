@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
+import { WorldContainer } from 'app/src-electron/schema/brands';
+import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import { checkError } from 'src/components/Error/Error';
 
 const prop = defineProps<AddFolderDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -14,7 +15,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 
 const sysStore = useSystemStore()
 const inputName = ref(prop.containerSettings?.name ?? '')
-const pickPath = ref(prop.containerSettings?.container ?? '')
+const pickPath = ref(prop.containerSettings?.container ?? '' as WorldContainer)
 
 async function pickFolder() {
   const res = await window.API.invokePickDialog({ type: 'container' })
@@ -30,7 +31,14 @@ async function pickFolder() {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
       :title="$t('home.saveWorld.addFolder')"
-      :disable="sysStore.systemSettings.container.filter(c => c.name === inputName && inputName !== prop.containerSettings?.name).length > 0 || inputName === '' || pickPath === ''"
+      :disable="
+        sysStore.systemSettings.container.filter(
+          c => c.name === inputName && inputName !== containerSettings?.name
+        ).length > 0
+          || sysStore.systemSettings.container.map(c => c.container).includes(pickPath)
+          || inputName === ''
+          || pickPath === ''
+      "
       :ok-btn-txt="$t('home.saveWorld.add', { name: inputName })"
       @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
       @close="onDialogCancel"
@@ -39,6 +47,7 @@ async function pickFolder() {
         <SsInput
           v-model="inputName"
           :label="$t('home.saveWorld.folderName')"
+          autofocus
           class="col"
         />
         <SsBtn
