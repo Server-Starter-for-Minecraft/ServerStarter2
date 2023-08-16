@@ -201,21 +201,31 @@ async function buildSpigotVersion(
   const d = progress?.subtitle({
     key: 'server.readyVersion.spigot.building',
   });
-  const console = progress?.console();
+  const console_progress = progress?.console();
+
+  const push = (chunk: string) => {
+    console_progress?.push(chunk);
+  };
 
   // ビルドの開始
   const process = interactiveProcess(
     javapath.absolute().str(),
-    ['-jar', buildToolPath.absolute().str(), '--rev', version.id],
-    console?.push,
-    console?.push,
+    [
+      '-Dfile.encoding=UTF-8',
+      '-jar',
+      buildToolPath.absolute().str(),
+      '--rev',
+      version.id,
+    ],
+    push,
+    push,
     spigotBuildPath.absolute().str(),
     true
   );
 
   const result = await process;
   d?.delete();
-  console?.delete();
+  console_progress?.delete();
 
   // ビルド失敗した場合エラー
   if (isError(result)) return result;
