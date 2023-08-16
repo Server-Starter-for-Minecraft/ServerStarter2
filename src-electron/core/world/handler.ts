@@ -13,10 +13,7 @@ import {
   loadLocalFiles,
   saveLocalFiles,
 } from './local';
-import {
-  RunRebootableServer,
-  runRebootableServer,
-} from '../server/server';
+import { RunRebootableServer, runRebootableServer } from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -377,7 +374,10 @@ export class WorldHandler {
       isValid(current.value.players) &&
       isValid(world.players)
     ) {
-      const diff = getOpDiff(current.value.players, world.players);
+      const [diff, sameMember] = getOpDiff(
+        current.value.players,
+        world.players
+      );
       const hasDiff = Object.values(diff).some((x) => x.length > 0);
       console.log('DIFF', diff, hasDiff);
 
@@ -402,7 +402,7 @@ export class WorldHandler {
           });
         }
       }
-      await this.runCommand('whitelist reload');
+      if (!sameMember) await this.runCommand('whitelist reload');
     }
 
     return result;

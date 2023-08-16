@@ -4,6 +4,13 @@ import { fromEntries } from 'app/src-electron/util/obj';
 
 /** Opレベルに変更のあるプレイヤーだけを抜き出す */
 export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
+  const currentUUIDs = new Set(current.map((x) => x.uuid));
+  const nextUUIDs = new Set(next.map((x) => x.uuid));
+
+  const sameMember =
+    currentUUIDs.size === nextUUIDs.size &&
+    [...currentUUIDs].every((value) => nextUUIDs.has(value));
+
   const currentMap = fromEntries<Record<PlayerUUID, OpLevel | 0>>(
     current.map((x) => [x.uuid, x.op?.level ?? 0])
   );
@@ -26,5 +33,5 @@ export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
 
     opPlayers[nxt].push(item.name);
   });
-  return opPlayers;
+  return [opPlayers, sameMember] as const;
 }
