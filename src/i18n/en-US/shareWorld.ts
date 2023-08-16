@@ -16,6 +16,27 @@ export const enUSShareWorld = {
     repository: 'Repository name',
     inputValue: 'Input value'
   },
+  sync: 'sync with {path}',
+  existedDialog: '\
+    Sync {worldname} with {owner}/{repo}.<br>\
+    Data in this world will be overwritten by data in the selected ShareWorld.<br>\
+    Do you want to sync with {repo}？',
+  selectRemote: {
+    title: 'Register new ShareWorld',
+    makeShareWorld: 'Make new ShareWorld and sync',
+    syncExistWorld: 'Sync with existed ShareWorld',
+    loading: 'Loading ShareWorld',
+    notFound: 'Existed ShareWorld was not found',
+  },
+  newRemote: {
+    title: 'Sync with new ShareWorld',
+    btn: 'Sync with new data',
+    desc: '\
+      Create a new ShareWorld and synchronize data.<br>\
+      Enter the name of the ShareWorld to be used for synchronization.',  
+    inputName: 'Input name of new ShareWorld',
+    unavailName: 'Cannot use as a new name for ShareWorld',
+  },
   githubCard: {
     account: 'Account',
     repository: 'repository',

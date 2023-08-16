@@ -6,6 +6,7 @@ import { isError, isValid } from 'src/scripts/error';
 import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import { useI18n } from 'vue-i18n';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -14,6 +15,7 @@ const prop = defineProps<GithubCheckDialogProp>()
 const loading = ref(false)
 const isValidName = ref(false)
 const inputName = ref(prop.rWorldName)
+const { t } = useI18n()
 
 /**
  * ワールド名のバリデーションを行う
@@ -22,7 +24,7 @@ async function validateWorldName(name: string) {
   const res = await window.API.invokeValidateNewRemoteWorldName(toRaw(prop.remoteData), name)
   if (isError(res)) {
     isValidName.value = false
-    return 'ShareWorldの新規名称として使用できません'
+    return t('shareWorld.newRemote.unavailName')
   }
   else {
     isValidName.value = true
@@ -53,21 +55,19 @@ async function setRemote() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
     <BaseDialogCard
-      title="新規ShareWorldと同期"
-      ok-btn-txt="新規データで同期"
+      :title="$t('shareWorld.newRemote.title')"
+      :ok-btn-txt="$t('shareWorld.newRemote.btn')"
       :loading="loading"
       :disable="!isValidName"
       @ok-click="setRemote"
       @close="onDialogCancel"
     >
-      <p>
-        新規ShareWorldを作成して同期データを作成します<br>
-        同期する際に用いるShareWorldの名称を入力してください
+      <p v-html="$t('shareWorld.newRemote.desc')">
       </p>
 
       <SsInput
         v-model="inputName"
-        label="新規ShareWorldの名称を入力"
+        :label="$t('shareWorld.newRemote.inputName')"
         :debounce="200"
         :rules="[val => validateWorldName(val)]"
         @clear="isValidName = false"

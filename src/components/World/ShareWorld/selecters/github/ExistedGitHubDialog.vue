@@ -35,16 +35,24 @@ async function setRemote() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
     <BaseDialogCard
-      :title="`${remoteData.owner}/${remoteData.repo}/${rWorldName}と同期`"
-      :ok-btn-txt="`${rWorldName}と同期`"
+      :title="$t('shareWorld.sync',{ path:`${remoteData.owner}/${remoteData.repo}/${rWorldName}` })"
+      :ok-btn-txt="$t('shareWorld.sync',{ path:`${rWorldName}` })"
       :loading="loading"
       @ok-click="setRemote"
       @close="onDialogCancel"
     >
-      <p>
-        {{ `${rWorldName}を${remoteData.owner}/${remoteData.repo}と同期します` }}<br>
-        このワールドのデータは選択したShareWorldのデータによって上書きされます<br>
-        {{ `${remoteData.repo}と同期しますか？` }}
+      <p 
+        v-html="
+          $t(
+            'shareWorld.existedDialog',
+            {
+              worldname: `${rWorldName}`,
+              owner: `${remoteData.owner}`,
+              repo: `${remoteData.repo}`
+            }
+          )
+        "
+      >
       </p>
     </BaseDialogCard>
   </q-dialog>

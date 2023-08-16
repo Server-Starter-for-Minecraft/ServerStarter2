@@ -33,6 +33,27 @@ export const jaShareWorld = {
         GitHub上のリポジトリは削除されませんが、「{owner}/{repo}」を用いてワールドを再共有することは出来なくなります。',
     }
   }, 
+  sync: '{path}と同期',
+  existedDialog: '\
+    {worldname}を{owner}/{repo}と同期します。<br>\
+    このワールドのデータは選択したShareWorldのデータによって上書きされます<br>\
+    {repo}と同期しますか？',
+  selectRemote: {
+    title: 'ShareWorldを新規登録',
+    makeShareWorld: '新規ShareWorldを作成して同期',
+    syncExistWorld: '既存のShareWorldと同期',
+    loading: 'ShareWorldを読み込み中',
+    notFound: '既存のShareWorldは見つかりませんでした',
+  },
+  newRemote: {
+    title: '新規ShareWorldと同期',
+    btn: '新規データで同期',
+    desc: '\
+      新規ShareWorldを作成して同期データを作成します<br>\
+      同期する際に用いるShareWorldの名称を入力してください',
+    inputName: '新規ShareWorldの名称を入力',
+    unavailName: 'ShareWorldの新規名称として使用できません',
+  },
   existRemote: {
     syncWorldTitle: '同期中のShareWorldデータ',
     syncWorldDesc: '\
