@@ -2,7 +2,7 @@ import { RemoteWorldName, WorldContainer, WorldName } from '../schema/brands';
 import { Player } from '../schema/player';
 import { StaticResouce } from '../schema/static';
 import { SystemSettings } from '../schema/system';
-import { AllVersion, Version, VersionType } from '../schema/version';
+import { AllVersion, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 import {
@@ -118,6 +118,11 @@ export interface API extends IAPI {
     DeleteWorld: (world: WorldID) => Promise<WithError<Failable<undefined>>>;
     /** Worldを起動 */
     RunWorld: (world: WorldID) => Promise<WithError<Failable<World>>>;
+    /** Worldを複製 */
+    DuplicateWorld: (
+      world: WorldID,
+      name?: WorldName
+    ) => Promise<WithError<Failable<World>>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
