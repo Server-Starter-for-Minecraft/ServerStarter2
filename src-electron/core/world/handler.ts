@@ -374,7 +374,10 @@ export class WorldHandler {
       isValid(current.value.players) &&
       isValid(world.players)
     ) {
-      const diff = getOpDiff(current.value.players, world.players);
+      const [diff, sameMember] = getOpDiff(
+        current.value.players,
+        world.players
+      );
       const hasDiff = Object.values(diff).some((x) => x.length > 0);
       console.log('DIFF', diff, hasDiff);
 
@@ -399,7 +402,7 @@ export class WorldHandler {
           });
         }
       }
-      await this.runCommand('whitelist reload');
+      if (!sameMember) await this.runCommand('whitelist reload');
     }
 
     return result;
