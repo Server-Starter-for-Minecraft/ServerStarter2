@@ -1,8 +1,7 @@
-import { ImageURI, PlayerUUID, WorldContainer } from './brands';
+import { PlayerUUID, WorldContainer } from './brands';
 import { PlayerGroup } from './player';
-import { GithubRemoteSetting, RemoteSetting } from './remote';
+import { RemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
-import { Brand } from '../util/brand';
 
 /** システム設定まとめてここに格納 */
 export type SystemSettings = {
