@@ -4,89 +4,193 @@ import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 
 export const jaError: ErrorTranslationTypes = {
   system: {
-    runtime: '\
-      ランタイムエラーが発生しました<br>\
-      エラーの型: {type}<br>\
-      エラーの内容: {message}',
-    ipc: '\
-      IPC通信でエラーが発生しました<br>\
-      エラーの型: {type}<br>\
-      エラーの内容: {message}<br>',
-    subprocess: '\
-      {processPath}でエラーが発生しました<br>\
-      終了コード: {exitcode}',
+    runtime: {
+      title: 'ランタイムエラーが発生しました',
+      desc: 'エラーの型: {type} ,エラーの内容: {message}',
+    },
+    ipc: {
+      title: 'IPC通信でエラーが発生しました',
+      desc: 'エラーの型: {type} ,エラーの内容: {message}',
+    },
+    subprocess: {
+      title: '{processPath}でエラーが発生しました',
+      desc: '終了コード: {exitcode}',
+    },
   },
   data: {
     url: {
-      fetch: '{url}からデータを取得するのに失敗しました',
+      fetch: {
+        title: '{url}からのデータの取得に失敗しました',
+        desc: 'サーバー状態:{status}/{statusText}'
+      },
+      tooManyRequest: {
+        title: 'リクエストが多すぎます',
+        desc : '少し時間を置いてから再度実行してください',
+      }
     },
     path: {
-      loadingFailed: 'ファイル、またはディレクトリの読み込みに失敗しました',
-      alreadyExists: 'ファイル、またはディレクトリが既に存在しています',
-      notFound: 'ファイル、またはディレクトリが存在していません',
-      invalidContent: {
-        missingJavaCommand: 'run.bat、またはrun.sh内にjavaを起動するコマンドが存在していません',
-        mustBeDirectory: 'ここではディレクトリを使用する必要があります',
-        mustBeFile: 'ここではファイルを選択する必要があります',
-        invalidDatapack: '不適なデータパックが選択されました。正しいものであるかをもう一度確認してください。',
-        invalidPlugin: '不適なプラグインファイルが選択されました。正しいものであるかをもう一度確認してください。',
-        invalidMod: '不適なModファイルが選択されました。正しいものであるかをもう一度確認してください。',
-        invalidCustomMap: '不適なカスタムマップが選択されました。正しいものであるかをもう一度確認してください。',
-        customMapZipWithMultipleLevelDat: '{path}のカスタムマップにはlevel.datが複数格納されています',
-        invalidWorldSettingJson: 'server_settings.json の中身が不適当です',
-        invalidOpsJson: 'ops.json の中身が不適当です',
-        invalidWhitelistJson: 'whitelist.json 中身が不適当です',
+      loadingFailed: {
+        title: `{type}の読み込みに失敗しました`,
+        desc: '{path}を読み込めませんでした'
       },
-      creationFiled: 'ファイル、またはディレクトリの生成に失敗しました',
-      dialogCanceled: 'ファイル選択ウィンドウがキャンセルされました'
+      alreadyExists: {
+        title:'{type}が既に存在しています',
+      },
+      notFound: {
+        title: '{type}が存在していません',
+        desc: '{path}を確認してください',
+      },
+      invalidContent: {
+        missingJavaCommand: {
+          title: 'run.bat、またはrun.sh内にjavaを起動するコマンドが存在していません',
+          desc: '{path}を確認してください',
+        },
+        mustBeDirectory: {
+          title:'ここではディレクトリを使用する必要があります',
+          desc: '{path}がディレクトリかどうか確認してください',
+        },
+        mustBeFile: {
+          title: 'ここではファイルを選択する必要があります',
+          desc: '{path}がファイルかどうか確認してください',
+        },
+        invalidDatapack: {
+          title: '不適なデータパックが選択されました。',
+          desc: '{path}を確認してください'
+        },
+        invalidPlugin:{
+          title: '不適なプラグインファイルが選択されました。',
+          desc: '{path}を確認してください'
+        },
+        invalidMod:{
+          title: '不適なModファイルが選択されました。',
+          desc: '{path}を確認してください'
+        },
+        invalidCustomMap:{
+          title: '不適なカスタムマップが選択されました。',
+          desc: '{path}を確認してください'
+        },
+        customMapZipWithMultipleLevelDat:{
+          title: '{path}のカスタムマップにはlevel.datが複数格納されています',
+        },
+        invalidWorldSettingJson:{
+          title: 'server_settings.json の中身が不適当です',
+        },
+        invalidOpsJson:{
+          title: 'ops.json の中身が不適当です',
+        },
+        invalidWhitelistJson:{
+          title: 'whitelist.json の中身が不適当です',
+      },
+      },
+      creationFiled:{
+        title: 'ファイル、またはディレクトリの生成に失敗しました',
+      },
+      dialogCanceled:{
+        title: `ファイル選択ウィンドウがキャンセルされました`
+      },
     },
     githubAPI: {
-      fetchFailed: '{url}からのデータの取得に失敗しました',
-      unknownBlobEncoding: 'blobのエンコードが異なっています',
-      invalidWorldData: 'WorldDataが壊れています',
+      fetchFailed:{
+        title: '{url}からのデータの取得に失敗しました',
+      },
+      unknownBlobEncoding:{
+        title: 'blobのエンコードが異なっています',
+      },
+      invalidWorldData:{
+        title: 'WorldDataが壊れています',
+        desc: '{owner}/{repo}/{branch}のデータを確認してください'
+      },
     },
-    failJsonFix: 'JSONデータの修復に失敗しました',
-    hashNotMatch: 'ファイルの中身が正しくない可能性があります。',
+    failJsonFix: {
+      title: 'JSONデータの修復に失敗しました',
+    },
+    hashNotMatch: {
+      title: 'ファイルの中身が正しくない可能性があります。',
+    },
   },
   value: {
-    playerName: 'プレイヤー名{value}が存在しません',
-    playerUUID: 'このUUIDに対応するプレイヤーは存在しません',
-    playerNameOrUUID: '{value}に対応するプレイヤーは存在しません',
-    base64URI: '{value}には画像が存在しません',
-    commandLineArgument: '{value}の様なコマンドは存在しません',
+    playerName: {
+      title: 'プレイヤー名{value}が存在しません',
+    },
+    playerUUID: {
+      title: 'このUUIDに対応するプレイヤーは存在しません',
+    },
+    playerNameOrUUID: {
+      title: '{value}に対応するプレイヤーは存在しません',
+    },
+    base64URI: {
+      title: '{value}には画像が存在しません',
+    },
+    commandLineArgument: {
+      title: '{value}というコマンドは存在しません',
+    },
     worldName: {
-      notMatchRegex: '使えない文字が含まれています。半角英数字のみ入力してください',
-      alreadyUsed: 'この名前は既に使われています',
+      notMatchRegex: {
+        title: '使えない文字が含まれています。',
+        desc:'半角英数字のみ入力してください',
+      },
+      alreadyUsed: {
+        title: 'この名前({value})は既に使われています',
+      },
     },
     remoteWorldName: {
-      notMatchRegex: '使えない文字が含まれています。半角英数字のみ入力してください',
-      alreadyUsed: 'この名前は既に使われています',
+      notMatchRegex: {
+        title: '使えない文字が含まれています。',
+        desc:'半角英数字のみ入力してください',
+      },
+      alreadyUsed: {
+        title: 'この名前({value})は既に使われています',
+      }
     }
   },
   core: {
     world: {
-      invalidWorldId: '{id}に対応するワールドが存在しません',
-      cannotChangeRunningWorldName: '\
-        実行中のワールドの名前、保存フォルダは変更できません<br>\
-        ワールドを閉じてから再度試してください',
-      worldAleradyRunning: '{container}/{name}に保存されているワールドは既に起動してあります',
-      failedChangingOp: '\
-        {users}のop権限の変更に失敗しました<br>\
-        現在の{users}のopレベルは{op}です'
+      invalidWorldId: {
+        title: '{id}に対応するワールドが存在しません',
+      },
+      cannotChangeRunningWorldName: {
+        title: '実行中のワールドの名前、保存フォルダは変更できません',
+        desc: 'ワールドを閉じてから再度試してください',
+      },
+      worldAleradyRunning: {
+        title: '{container}/{name}に保存されているワールドは既に起動中です',
+      },
+      failedChangingOp: {
+        title: '{users}のop権限の変更に失敗しました',
+        desc: '現在の{users}のopレベルは{op}です',
+      },
     },
     container: {
-      noContainerSubscribed: 'WorldContainerが登録されていません、もう一度ご確認ください'
+      noContainerSubscribed: {
+        title:'WorldContainerが登録されていません',
+        desc: 'もう一度ご確認ください',
+      },
     },
     version: {
-      forgeInstallerNotProvided: '{version}のforgeのインストーラは提供されていません',
-      failSpigotBuild: {
-        javaNeeded: '{version}のspiotのビルドに失敗しました、{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります'
+      forgeInstallerNotProvided: {
+        title: '{version}のforgeのインストーラは提供されていません',
       },
-      vanillaVersionNotExists: 'バージョン{version}のvanillaは存在しません',
+      failSpigotBuild: {
+        javaNeeded: {
+          title:'{version}のspigotのビルドに失敗しました',
+          desc: '{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります',
+        },
+      },
+      vanillaVersionNotExists: {
+        title: 'バージョン{version}のvanillaは存在しません',
+      },
     },
-    missingPersonalAccessToken: 'https://github.com/{owner}/{repo}のパーソナルアクセストークンが存在しません',
-    minecraftEULANotAccepted: 'Minecraftのeulaに同意していません',
-    failCacheAddiltionalData: '{type}のキャッシュに失敗しました。',
-    failGetGlobalIP: 'グローバルIPの取得に失敗しました',
+    missingPersonalAccessToken: {
+      title: 'https://github.com/{owner}/{repo}のパーソナルアクセストークンが存在しません',
+    },
+    minecraftEULANotAccepted: {
+      title: 'Minecraftのeulaに同意していません',
+    },
+    failCacheAddiltionalData: {
+      title:'{type}のキャッシュに失敗しました。',
+    },
+    failGetGlobalIP: {
+      title: 'グローバルIPの取得に失敗しました',
+    }
   },
 };
