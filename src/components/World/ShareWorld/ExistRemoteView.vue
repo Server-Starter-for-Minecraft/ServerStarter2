@@ -2,6 +2,7 @@
 import { Remote } from 'app/src-electron/schema/remote';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import SsA from 'src/components/util/base/ssA.vue';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
@@ -13,6 +14,7 @@ const prop = defineProps<Prop>()
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 const remoteURL = `https://github.com/${prop.remote.folder.owner}/${prop.remote.folder.repo}/tree/${prop.remote.name}`
 
 function deleteRemoteSetting() {
@@ -46,6 +48,7 @@ function deleteRemoteSetting() {
       r => (r.folder.owner === remote.folder.owner && r.folder.repo === remote.folder.repo)
     )[0]"
     :world-name="remote.name"
+    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     style="width: max-content;"
   />
 
@@ -63,6 +66,7 @@ function deleteRemoteSetting() {
     :open-dialog-btn-text="$t('shareWorld.existRemote.unregister.unregistSyncTitle')"
     :dialog-title="$t('shareWorld.existRemote.unregister.dialogTitle')"
     :dialog-desc="$t('shareWorld.existRemote.unregister.dialogDesc')"
+    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     @action="mainStore.world.remote = undefined"
   />
 
@@ -72,6 +76,7 @@ function deleteRemoteSetting() {
     :open-dialog-btn-text="$t('shareWorld.existRemote.delete.btn')"
     :dialog-title="$t('shareWorld.existRemote.delete.dialogTitle')"
     :dialog-desc="$t('shareWorld.existRemote.delete.dialogDesc')"
+    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     @action="deleteRemoteSetting()"
   />
 </template>

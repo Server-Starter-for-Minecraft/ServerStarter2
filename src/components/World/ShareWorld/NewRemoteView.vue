@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { RemoteFolder } from 'app/src-electron/schema/remote';
 import { GitHubSelecterProp } from './selecters/iRemoteSelecter';
 import GitHubSelecterDialog from './selecters/github/GitHubSelecterDialog.vue';
@@ -10,6 +12,8 @@ import NewRemoteDialog from 'src/components/SystemSettings/Remote/NewRemoteDialo
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
+const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 function addRemote() {
   $q.dialog({
@@ -43,6 +47,7 @@ async function registerRemoteAccount(remoteData: RemoteFolder) {
     <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
       <GithubCard
         v-model="sysStore.systemSettings.remote[n-1]"
+        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
         @register-click="registerRemoteAccount"
       />
     </div>
