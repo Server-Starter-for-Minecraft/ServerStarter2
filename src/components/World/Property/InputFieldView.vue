@@ -68,7 +68,7 @@ function validationMessage(min?:number, max?:number, step?:number) {
   <div v-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()==='number'" class="row" style="width: 100%;">
     <!-- 半角数字、バリデーションを強制 -->
     <ss-input
-      v-model="model"
+      v-model.number="model"
       dense
       type="number"
       :autofocus="autofocus"

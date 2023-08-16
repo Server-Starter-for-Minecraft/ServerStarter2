@@ -2,6 +2,7 @@
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 
 interface Prop {
+  disable?: boolean
   src?: string
   icon?: string
   label: string
@@ -18,7 +19,7 @@ const playerStore = usePlayerStore()
     clickable
     v-ripple
     dense
-    :disable="playerStore.focusCards.size === 0"
+    :disable="playerStore.focusCards.size === 0 || disable"
     @click="onClick"
     class="q-py-xs"
   >

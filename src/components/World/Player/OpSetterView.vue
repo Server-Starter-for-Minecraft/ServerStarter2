@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { assets } from 'src/assets/assets';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import OpLevelBtn from 'src/components/World/Player/utils/OpLevelBtn.vue';
-import { useMainStore } from 'src/stores/MainStore';
 import { OpLevel, OpSetting } from 'app/src-electron/schema/player';
+import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { isValid } from 'src/scripts/error';
+import { assets } from 'src/assets/assets';
+import { useMainStore } from 'src/stores/MainStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import OpLevelBtn from 'src/components/World/Player/utils/OpLevelBtn.vue';
+
+interface Prop {
+  validProperties: ServerProperties
+}
+defineProps<Prop>()
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
+const consoleStore = useConsoleStore()
 
 
 function setOP(setVal: 0 | OpLevel) {
@@ -56,6 +64,7 @@ function removePlayer() {
         <OpLevelBtn
           :src="assets.svg[`level${opLevel}`]()"
           :label="opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')"
+          :disable="consoleStore.status(mainStore.world.id) !== 'Stop' && ![validProperties['op-permission-level'], 0].includes(opLevel)"
           @click="() => setOP(opLevel)"
         />
       </template>

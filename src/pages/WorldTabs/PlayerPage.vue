@@ -146,7 +146,11 @@ function openGroupEditor(group?: PlayerGroup) {
           :is="playerStore.openGroupEditor"
           class="q-my-md"
         />
-        <OpSetterView v-else class="q-my-md"/>
+        <OpSetterView
+          v-if="!playerStore.openGroupEditor && isValid(mainStore.world.properties)"
+          :valid-properties="mainStore.world.properties"
+          class="q-my-md"
+        />
         <SelectedPlayersView />
       </div>
     </div>
