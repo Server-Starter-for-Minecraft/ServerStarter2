@@ -13,19 +13,21 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <BaseDialogCard
-      title="Minecraft EULA に同意"
-      okBtnTxt="EULA に同意して実行"
+      :title="$t('eulaDialog.title')"
+      :okBtnTxt="$t('eulaDialog.agree')"
       @okClick="onDialogOK"
     >
       <template #default>        
         <p class="q-my-none" style="font-size: .8rem; opacity: .8;">
-          このサーバーは<SsA :url="eulaURL">Minecraft EULA</SsA>の規約が適用されます。<br>
-          ご利用前にご一読ください。
+          <i18n-t keypath="eulaDialog.desc" tag="label">
+            <SsA :url="eulaURL">{{ $t('eulaDialog.eula') }}</SsA>
+            <br>
+      </i18n-t>
         </p>
       </template>
       <template #additionalBtns>
         <SsBtn
-          label="EULA に同意しない"
+          :label="$t('eulaDialog.disagree')"
           color="red"
           @click="onDialogCancel"
         />

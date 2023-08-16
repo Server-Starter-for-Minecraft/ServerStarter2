@@ -5,6 +5,7 @@ import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { isValid } from 'src/scripts/error';
 import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import WorldItem from 'src/components/util/WorldItem.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -35,17 +36,24 @@ async function setRemote() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
     <BaseDialogCard
-      :title="`${remoteData.owner}/${remoteData.repo}/${rWorldName}と同期`"
-      :ok-btn-txt="`${rWorldName}と同期`"
+      :title="$t('shareWorld.sync',{ path:`${remoteData.owner}/${remoteData.repo}/${rWorldName}` })"
+      :ok-btn-txt="$t('shareWorld.sync',{ path:`${rWorldName}` })"
       :loading="loading"
       @ok-click="setRemote"
       @close="onDialogCancel"
     >
-      <p>
-        {{ `${rWorldName}を${remoteData.owner}/${remoteData.repo}と同期します` }}<br>
-        このワールドのデータは選択したShareWorldのデータによって上書きされます<br>
-        {{ `${remoteData.repo}と同期しますか？` }}
+      <p style="font-size: .8rem; opacity: .8;">
+        {{ `${rWorldName}とワールドデータを同期します` }}<br>
+        このワールドは選択したShareWorldによって上書きされます<br>
+        ワールドを同期しますか？
       </p>
+      
+      <WorldItem
+        :icon="rIcon"
+        :world-name="rWorldName"
+        :version-name="rVersionName"
+        style="min-width: 20rem; max-width: 20rem;;"
+      />
     </BaseDialogCard>
   </q-dialog>
 </template>

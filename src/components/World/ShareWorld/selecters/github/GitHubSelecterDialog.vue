@@ -28,7 +28,9 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
     component: ExistedGitHubDialog,
     componentProps: {
       remoteData: prop.remoteData,
-      rWorldName: selectedRemote.remote.name
+      rWorldName: selectedRemote.remote.name,
+      rIcon: selectedRemote.avater_path,
+      rVersionName: selectedRemote.version.id
     } as GithubCheckDialogProp
   }).onOk(() => {
     mainStore.world.version = selectedRemote.version
@@ -43,7 +45,9 @@ function checkSetNewRemote() {
     component: NewGitHubDialog,
     componentProps: {
       remoteData: prop.remoteData,
-      rWorldName: mainStore.world.name
+      rWorldName: mainStore.world.name,
+      rIcon: mainStore.world.avater_path,
+      rVersionName: mainStore.world.version.id
     } as GithubCheckDialogProp
   }).onOk(onDialogOK)
 }
@@ -65,17 +69,17 @@ onMounted(async () => {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      :title="`${remoteData.owner}/${remoteData.repo}と同期`"
+      :title="$t('shareWorld.sync',{path: `${remoteData.owner}/${remoteData.repo}`})"
       @close="onDialogCancel"
     >
       <q-card-section>
-        <span class="text-caption">ShareWorldを新規登録</span>
+        <span class="text-caption">{{ $t('shareWorld.selectRemote.title') }}</span>
         <q-card-actions>
           <SsBtn
             free-width
             color="primary"
             icon="add"
-            label="新規ShareWorldを作成して同期"
+            :label="$t('shareWorld.selectRemote.makeShareWorld')"
             @click="checkSetNewRemote"
             class="btn col"
           />
@@ -83,7 +87,7 @@ onMounted(async () => {
       </q-card-section>
 
       <q-card-section>
-        <span class="text-caption">既存のShareWorldと同期</span>
+        <span class="text-caption">{{ $t('shareWorld.selectRemote.syncExistWorld') }}</span>
         <div v-if="remoteWorlds.length === 0" class="messageField">
           <div v-if="loading" class="absolute-center messageText row items-center">
             <q-circular-progress
@@ -93,13 +97,13 @@ onMounted(async () => {
               size="2rem"
               class="q-my-sm q-mr-lg"
             />
-            <p class="q-ma-none">ShareWorldを読み込み中</p>
+            <p class="q-ma-none">{{ $t('shareWorld.selectRemote.loading') }}</p>
           </div>
           <div 
             v-else 
             class="absolute-center messageText"
           >
-            既存のShareWorldは見つかりませんでした
+            {{ $t('shareWorld.selectRemote.notFound') }}
           </div>
         </div>
         <div class="row q-gutter-sm justify-center">

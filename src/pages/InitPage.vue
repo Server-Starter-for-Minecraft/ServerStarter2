@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { initWindow, afterWindow } from 'app/src/init';
 import { useSystemStore } from 'src/stores/SystemStore';
 import WelcomeDialog from 'src/components/App/WelcomeDialog.vue'
+import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
+import { OwnerDialogProp } from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
 
 const $q = useQuasar();
 const router = useRouter()
@@ -15,8 +17,17 @@ if (!sysStore.systemSettings.user.eula) {
     component: WelcomeDialog
   }).onOk(() => {
     sysStore.systemSettings.user.eula = true
-    // 起動時処理
-    asyncProcess()
+
+    // オーナープレイヤーの登録催促
+    $q.dialog({
+      component: OwnerDialog,
+      componentProps: {
+        persistent: true
+      } as OwnerDialogProp
+    }).onOk(() => {
+      // 起動時処理
+      asyncProcess()
+    })
   })
 }
 else {

@@ -13,10 +13,7 @@ import {
   loadLocalFiles,
   saveLocalFiles,
 } from './local';
-import {
-  RunRebootableServer,
-  runRebootableServer,
-} from '../server/server';
+import { RunRebootableServer, runRebootableServer } from '../server/server';
 import { getSystemSettings } from '../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -449,17 +446,19 @@ export class WorldHandler {
     const worldSettings = await this.loadLocalServerJson();
     if (isError(worldSettings)) return withError(worldSettings);
 
-    const owner = (await getSystemSettings()).user.owner;
+    const env_id = (await getSystemSettings()).user.id;
 
-    // 自分が使用中かつプロセスが起動していない場合
+    // プレイ中のフラグが立っている &&
+    // この環境が最終利用 &&
+    // 現在起動中でない場合
     // (前回の起動時に正常にサーバーが終了しなかった場合)
     if (
       worldSettings.using === true &&
-      worldSettings.last_user === owner &&
+      worldSettings.last_id === env_id &&
       this.runner === undefined
     ) {
       // フラグを折ってPush
-      progress?.subtitle({ key: 'server.load.aborting' });
+      progress?.subtitle({ key: 'server.remote.fixing' });
       return await this.fix();
     }
     // リモートからpull

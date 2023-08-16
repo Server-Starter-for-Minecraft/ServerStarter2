@@ -1,4 +1,4 @@
-import { PlayerUUID, Timestamp } from 'app/src-electron/schema/brands';
+import { PlayerUUID, Timestamp, UUID } from 'app/src-electron/schema/brands';
 import { MemorySettings } from 'app/src-electron/schema/memory';
 import { Remote } from 'app/src-electron/schema/remote';
 import { Version } from 'app/src-electron/schema/version';
@@ -15,7 +15,7 @@ import {
 import { fixMemorySettings } from '../../fixers/memory';
 import { fixVersion } from '../../fixers/version';
 import { fixRemote } from '../../fixers/remote';
-import { fixPlayerUUID } from '../../fixers/brands';
+import { fixPlayerUUID, fixUUID } from '../../fixers/brands';
 import { ServerSettingFile } from './base';
 import { getSystemSettings } from '../../stores/system';
 import { isError } from 'app/src-electron/util/error/error';
@@ -55,6 +55,9 @@ export type WorldSettings = {
   /** 最終プレイ者 */
   last_user?: PlayerUUID;
 
+  /** 最終プレイ環境 */
+  last_id?: UUID;
+
   /** 起動中フラグ */
   using?: boolean;
 
@@ -87,6 +90,9 @@ export async function worldSettingsFixer() {
 
       /** 最終プレイ者 */
       last_user: optionalFixer(fixPlayerUUID),
+
+      /** 最終プレイ環境 */
+      last_id: optionalFixer(fixUUID),
 
       /** 起動中フラグ */
       using: optionalFixer(booleanFixer()),

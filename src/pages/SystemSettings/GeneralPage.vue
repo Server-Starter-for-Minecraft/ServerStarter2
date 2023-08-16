@@ -6,10 +6,13 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { assets } from 'src/assets/assets';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ColorThemeBtn from 'src/components/SystemSettings/General/ColorThemeBtn.vue';
+import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
+import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
 
 const sysStore = useSystemStore()
 const t = useI18n()
-const q = useQuasar();
+const $q = useQuasar();
 
 const localeOptions: { value: Locale, label: string }[] = [
   { value: 'ja', label: '日本語' },
@@ -27,15 +30,21 @@ function changeTheme(colorTheme: ColorTheme) {
   // 設定を画面に反映
   switch (colorTheme) {
     case 'auto':
-      q.dark.set('auto');
+      $q.dark.set('auto');
       break;
     case 'dark':
-      q.dark.set(true);
+      $q.dark.set(true);
       break;
     case 'light':
-      q.dark.set(false);
+      $q.dark.set(false);
       break;
   }
+}
+
+function showOwnerDialog() {
+  $q.dialog({
+    component: OwnerDialog
+  })
 }
 </script>
 
@@ -68,6 +77,18 @@ function changeTheme(colorTheme: ColorTheme) {
       v-model="sysStore.systemSettings.user.autoShutDown"
       :label="$t('systemsetting.general.shutdownDesc')"
       style="font-size: 1rem;"
+    />
+
+    <h1>オーナープレイヤーの登録</h1>
+    <p class="q-my-sm text-body2" style="opacity: .5;">
+      新規サーバーに自動でOP権限を付与する機能などを利用できるようになります
+    </p>
+    <PlayerCard v-model="sysStore.systemSettings.user.owner" />
+    <SsBtn
+      :label="`オーナープレイヤーの${sysStore.systemSettings.user.owner ? '変更' : '登録'}`"
+      :color="!sysStore.systemSettings.user.owner ? 'primary' : undefined"
+      @click="showOwnerDialog"
+      class="q-my-md"
     />
   </div>
 </template>

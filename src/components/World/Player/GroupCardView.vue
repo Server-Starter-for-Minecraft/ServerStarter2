@@ -45,7 +45,7 @@ async function onCardClicked() {
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
         <div class="row q-gutter-md q-pt-sm">
           <template v-for="uuid in players" :key="uuid">
-            <player-head-view v-model="cachePlayers[uuid]" size="1.5rem" />
+            <PlayerHeadView :player="cachePlayers[uuid]" size="1.5rem" />
           </template>
         </div>
       </q-card-section>

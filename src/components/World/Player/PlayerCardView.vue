@@ -61,7 +61,7 @@ function getGroups(groups: Record<string, PlayerGroup>) {
     <template #default>
       <q-item style="height: 5rem; padding: 14px;">
         <q-item-section avatar top>
-          <player-head-view v-model="player" size="2.5rem" />
+          <PlayerHeadView :player="player" size="2.5rem" />
         </q-item-section>
 
         <q-item-section top>

@@ -1,4 +1,4 @@
-import { PlayerUUID, WorldContainer } from './brands';
+import { PlayerUUID, UUID, WorldContainer } from './brands';
 import { PlayerGroup } from './player';
 import { RemoteSetting } from './remote';
 import { SystemWorldSettings } from './world';
@@ -36,8 +36,11 @@ export type SystemUserSetting = {
   // システム言語
   language: Locale;
   // 実行者情報
-  // 存在しないプレイヤーのUUIDである可能性あり
-  owner: PlayerUUID;
+  owner: PlayerUUID | undefined;
+
+  /** 実行環境ID(特に変更の必要なし) */
+  id: UUID;
+
   // 自動シャットダウン
   autoShutDown: boolean;
   // ワールドリストの幅
@@ -61,4 +64,4 @@ export type SystemPlayerSetting = {
   players: PlayerUUID[];
 };
 
-export type SystemRemoteSetting = RemoteSetting[]
+export type SystemRemoteSetting = RemoteSetting[];
