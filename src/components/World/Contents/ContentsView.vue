@@ -3,6 +3,7 @@ import { getCssVar } from 'quasar';
 import { AllFileData, CacheFileData, DatapackData, ModData, NewFileData, PluginData } from 'app/src-electron/schema/filedata';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCardView from './itemCardView.vue';
@@ -16,6 +17,7 @@ const prop = defineProps<Prop>()
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 /**
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
@@ -103,6 +105,9 @@ function openCacheFolder() {
     <h1 class="q-py-xs">{{ $t('additionalContents.management', { type: $t(`additionalContents.${prop.contentType}` )}) }}</h1>
 
     <span class="text-caption">{{ $t('additionalContents.installed', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
+    <p v-if="consoleStore.status(mainStore.world.id) !== 'Stop' && contentType !== 'datapack'" class="text-caption text-red q-ma-none">
+      変更を反映するにはサーバーの再起動が必要です
+    </p>
     <div class="row q-gutter-md q-pa-sm">
       <template v-if="mainStore.world.additional[`${contentType}s`].length > 0">
         <div v-for="item in mainStore.world.additional[`${contentType}s`]" :key="item.name" class="col-">
