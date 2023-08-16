@@ -378,7 +378,6 @@ export class WorldHandler {
         current.value.players,
         world.players
       );
-      const hasDiff = Object.values(diff).some((x) => x.length > 0);
       // op権限レベルが0になったプレイヤーに対してdeopを実行
       await asyncMap(diff[0], (x) => this.runCommand(`deop ${x}`));
 
