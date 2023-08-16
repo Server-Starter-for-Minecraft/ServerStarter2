@@ -217,7 +217,6 @@ export class WorldProgressor extends GroupProgressor {
   }
 
   protected update() {
-    console.log('OUT', JSON.stringify(this.export()));
     super.update();
 
     // if (this.hot) return;

@@ -45,7 +45,6 @@ async function putStopConsole(world: WorldID) {
 }
 
 export function runCommand(world: WorldID, command: string): void {
-  console.log(`[runCommand] world:${world} command:${command}`);
   if (serverStopper[world] !== undefined) {
     api.send.AddConsole(world, command);
     if (command === 'stop') {

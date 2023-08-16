@@ -14,8 +14,6 @@ function write(settings: SystemSettings) {
   // 暗号化
   const encrypted = safeStorage.encryptString(stringified);
 
-  console.log(encrypted)
-
   // ファイルに保存
   writeFileSync(settingPath.str(), encrypted);
 }

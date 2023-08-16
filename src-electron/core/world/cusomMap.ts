@@ -180,24 +180,25 @@ async function importCustomMapDir(
 /** ローカルで使われていたであろうMOD一覧をキャッシュにコピー */
 async function cacheLocalMods(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('mods').iter();
-  const mods = (await asyncMap(paths, modFiles.loadNew)).filter(isValid);
-  await asyncMap(mods, modFiles.appendCache);
+  const load = async (path: Path) => await modFiles.loadNew(path);
+  const mods = (await asyncMap(paths, load)).filter(isValid);
+  await asyncMap(mods, async (data) => await modFiles.appendCache(data));
 }
 
 /** ローカルで使われていたであろうPlugin一覧をキャッシュにコピー */
 async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('plugins').iter();
-  const plugins = (await asyncMap(paths, pluginFiles.loadNew)).filter(isValid);
-  await asyncMap(plugins, pluginFiles.appendCache);
+  const load = async (path: Path) => await pluginFiles.loadNew(path);
+  const plugins = (await asyncMap(paths, load)).filter(isValid);
+  await asyncMap(plugins, async (data) => await pluginFiles.appendCache(data));
 }
 
 /** ローカルで使われていたであろうDatapack一覧をキャッシュにコピー */
 async function cacheLocalDatapacks(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.child('datapacks').iter();
-  const datapacks = (await asyncMap(paths, datapackFiles.loadNew)).filter(
-    isValid
-  );
-  await asyncMap(datapacks, datapackFiles.appendCache);
+  const load = async (path: Path) => await datapackFiles.loadNew(path);
+  const datapacks = (await asyncMap(paths, load)).filter(isValid);
+  await asyncMap(datapacks, async (data) => datapackFiles.appendCache(data));
 }
 
 /** CustomMapのデータでワールドを上書きする */
