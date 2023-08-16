@@ -154,6 +154,7 @@ function openFolderEditor() {
           v-model="mainStore.inputWorldName"
           :label="$t('home.worldName.enterName')"
           :debounce="200"
+          :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
           :rules="[val => validateWorldName(val)]"
           @clear="clearNewName"
         />
@@ -173,6 +174,7 @@ function openFolderEditor() {
             flat
             size="4.4rem"
             icon=""
+            :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
             @click="openIconSelecter"
             class="absolute-center"
           />
@@ -181,6 +183,7 @@ function openFolderEditor() {
         <SsBtn
           :label="$t('home.icon')"
           width="10rem"
+          :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
           @click="openIconSelecter"
           class="q-mt-lg"
         />
@@ -191,6 +194,7 @@ function openFolderEditor() {
     <p class="text-caption">{{ $t('home.useWorld.description') }}</p>
     <SsBtn
       :label="$t('home.useWorld.selectWorld')"
+      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="openCustomMapImporter"
     />
 
@@ -203,6 +207,7 @@ function openFolderEditor() {
           <FolderCard
             v-model="sysStore.systemSettings.container[n - 1]"
             :loading="isWorldContainerLoading"
+            :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
             :active="mainStore.world.container === sysStore.systemSettings.container[n - 1].container"
             @click="setWorldContainer(sysStore.systemSettings.container[n - 1].container)"
           />
@@ -221,11 +226,13 @@ function openFolderEditor() {
         <SsInput
           v-model="mainStore.world.memory.size"
           :label="$t('home.setting.memSize')"
+          :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
           class="col-5 q-pr-md"
         />
         <SsSelect
           v-model="mainStore.world.memory.unit"
           :options="['MB', 'GB', 'TB']"
+          :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
           class="col-3"
         />
       </div>
@@ -233,17 +240,18 @@ function openFolderEditor() {
       <SsInput
         v-model="mainStore.world.javaArguments"
         :label="$t('home.setting.jvmArgument')"
+        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
         class="q-pt-md"
       />
     </ExpansionView>
 
     <DangerView
-      v-if="consoleStore.status() === 'Stop'"
       :view-title="$t('home.deleteWorld.title')"
       :view-desc="$t('home.deleteWorld.titleDesc')"
       :open-dialog-btn-text="$t('home.deleteWorld.button')"
       :dialog-title="$t('home.deleteWorld.dialogTitle')"
       :dialog-desc="$t('home.deleteWorld.dialogDesc', { deleteName: mainStore.world.name })"
+      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @action="removeWorld"
     />
   </div>

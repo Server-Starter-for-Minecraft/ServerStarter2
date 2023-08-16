@@ -2,10 +2,12 @@
 import { AllSpigotVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 const spigots = sysStore.serverVersions.get('spigot') as AllSpigotVersion | undefined
 const spigotOps = spigots?.map(
@@ -24,7 +26,7 @@ if (mainStore.world.version.type !== 'spigot' && spigotOps !== void 0) {
     :options="spigotOps"
     :label="$t('home.version.versionType')"
     option-label="id"
-    :disable="spigots === void 0"
+    :disable="spigots === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
     class="col"
   />
 </template>

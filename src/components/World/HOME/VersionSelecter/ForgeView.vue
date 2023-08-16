@@ -2,10 +2,12 @@
 import { AllForgeVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 const forges = sysStore.serverVersions.get('forge') as AllForgeVersion | undefined
 const forgeVerOps = forges?.map(
@@ -29,7 +31,7 @@ if (mainStore.world.version.type !== 'forge' && forgeVerOps !== void 0) {
       :options="forgeVerOps"
       :label="$t('home.version.versionType')"
       option-label="id"
-      :disable="forges === void 0"
+      :disable="forges === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />
@@ -41,7 +43,7 @@ if (mainStore.world.version.type !== 'forge' && forgeVerOps !== void 0) {
       :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
-      :disable="forges === void 0"
+      :disable="forges === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />

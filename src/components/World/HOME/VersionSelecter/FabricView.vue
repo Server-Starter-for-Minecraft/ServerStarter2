@@ -3,10 +3,12 @@ import { ref } from 'vue';
 import { AllFabricVersion, FabricVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 const isRelease = ref(false)
 const fabrics = sysStore.serverVersions.get('fabric') as AllFabricVersion | undefined
@@ -36,7 +38,7 @@ if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
       :options="fabricVerOps"
       :label="$t('home.version.versionType')"
       option-label="id"
-      :disable="fabrics === void 0"
+      :disable="fabrics === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />
@@ -46,6 +48,7 @@ if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
         v-model="isRelease"
         :label="isRelease ? $t('home.version.onlyReleased') : $t('home.version.allVersions')"
         left-label
+        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
         style="width: fit-content;"
       />
     </div>
@@ -61,7 +64,7 @@ if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
       :label="$t('home.version.installer')"
       option-label="label"
       option-value="data"
-      :disable="fabrics === void 0"
+      :disable="fabrics === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />
@@ -74,7 +77,7 @@ if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
       :label="$t('home.version.loader')"
       option-label="label"
       option-value="data"
-      :disable="fabrics === void 0"
+      :disable="fabrics === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />

@@ -5,6 +5,7 @@ import SsBtn from '../base/ssBtn.vue';
 import DangerDialog from './DangerDialog.vue';
 
 interface Prop {
+  disable?: boolean
   viewTitle: string
   viewDesc: string
   dialogTitle: string
@@ -35,6 +36,7 @@ function openDialog() {
     <p v-html="viewDesc" class="text-caption q-py-sm"/>
     <SsBtn
       :label="openDialogBtnText"
+      :disable="disable"
       color="red"
       @click="openDialog"
     />

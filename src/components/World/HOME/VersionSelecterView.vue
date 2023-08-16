@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { Version, versionTypes } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import Vanilla from './VersionSelecter/VanillaView.vue';
 import Spigot from './VersionSelecter/SpigotView.vue';
@@ -13,6 +14,7 @@ import Fabric from './VersionSelecter/FabricView.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 const { t } = useI18n()
 
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
@@ -38,6 +40,7 @@ const translatedVersionTypes = validVersionTypes.map((value) => createTranslateO
     option-label="label"
     option-value="value"
     :label="$t('home.version.serverType')"
+    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     class="q-pb-md"
   />
 

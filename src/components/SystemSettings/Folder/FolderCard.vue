@@ -13,6 +13,7 @@ const { t } = useI18n()
 
 interface Prop {
   loading?: boolean
+  disable?: boolean
   showOperationBtns?: boolean
   active?: boolean
   onClick?: () => void
@@ -64,7 +65,7 @@ function removeFolder() {
     <q-item
       :clickable="onClick !== void 0"
       :active="active"
-      :disable="loading"
+      :disable="loading || disable"
       @click="onClick"
     >
       <q-item-section>
@@ -78,7 +79,7 @@ function removeFolder() {
             dense
             free-width
             :icon="folder.visible ? 'visibility' : 'visibility_off'"
-            :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible"
+            :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible || disable"
             @click="switchVisible"
           >
             <q-tooltip>
@@ -89,6 +90,7 @@ function removeFolder() {
             v-show="showOperationBtns && folder.name !== 'default'"
             free-width
             :label="$t('general.edit')"
+            :disable="disable"
             @click="editFolder"
           />
           <ss-btn
@@ -96,7 +98,7 @@ function removeFolder() {
             free-width
             :label="$t('systemsetting.folder.unregist')"
             color="red"
-            :disable="sysStore.systemSettings.container.length === 1"
+            :disable="sysStore.systemSettings.container.length === 1 || disable"
             @click="removeFolder"
           />
         </div>

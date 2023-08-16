@@ -2,10 +2,12 @@
 import { AllMohistmcVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 const mohists = sysStore.serverVersions.get('mohistmc') as AllMohistmcVersion | undefined
 const mohistVerOps = mohists?.map(
@@ -48,7 +50,7 @@ function getNumberName(n: number, forgeVersion?: string) {
       :options="mohistVerOps"
       :label="$t('home.version.versionType')"
       option-label="id"
-      :disable="mohists === void 0"
+      :disable="mohists === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />
@@ -66,7 +68,7 @@ function getNumberName(n: number, forgeVersion?: string) {
       :label="$t('home.version.buildNumber') + $t('home.version.notChange')"
       option-label="label"
       option-value="data"
-      :disable="mohists === void 0"
+      :disable="mohists === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />
