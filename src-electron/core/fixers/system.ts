@@ -14,12 +14,13 @@ import {
   literalFixer,
   numberFixer,
   objectFixer,
+  optionalFixer,
   recordFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixPlayerGroup } from './player';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { fixPlayerUUID, fixWorldContainer } from './brands';
+import { fixPlayerUUID, fixUUID, fixWorldContainer } from './brands';
 import { fixRemoteSetting } from './remote';
 import { DEFAULT_WORLD_CONTAINER, getDefaultLocale } from '../const';
 import { fixSystemWorldSettings } from './world';
@@ -40,7 +41,9 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     // システム言語
     language: fixLocale,
     // 実行者情報
-    owner: defaultFixer(fixPlayerUUID, genUUID<PlayerUUID>()),
+    owner: optionalFixer(fixPlayerUUID),
+    // 実行環境ID
+    id: defaultGetterFixer(fixUUID, genUUID),
     // 自動シャットダウン
     autoShutDown: booleanFixer(false),
     // World Listの横幅
