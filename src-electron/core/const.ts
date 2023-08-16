@@ -17,6 +17,7 @@ export const mainPath = userDataPath;
 
 export const cachePath = mainPath.child('serverstarter/cache');
 export const logPath = mainPath.child('serverstarter/log');
+export const tempPath = mainPath.child('serverstarter/temp');
 
 export const settingPath = mainPath.child('serverstarter/settings.json');
 
@@ -31,8 +32,6 @@ export const ADDITIONALS_CACHE_PATH = cachePath.child('additionals');
 export const DATAPACK_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('datapacks');
 export const PLUGIN_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('plugins');
 export const MOD_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('mods');
-
-export const tempPath = mainPath.child('temp');
 
 /** spigotをビルドするためのキャッシュパス */
 export const spigotBuildPath = cachePath.child('spigotBuild');

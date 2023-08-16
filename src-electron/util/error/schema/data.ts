@@ -20,6 +20,17 @@ export type DataErrors = {
       url: string;
     }>;
   };
+
+  zip: {
+    // zipの中のパスのデータがファイルではなくディレクトリである場合
+    isDir: ErrorMessageContent<{
+      // パス
+      path: string;
+      // zipの内部のパス
+      innerPath: string;
+    }>;
+  };
+
   path: {
     // ファイル/ディレクトリの読み込みに失敗したときのエラー
     loadingFailed: PathErrorContent;

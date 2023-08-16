@@ -31,15 +31,22 @@ class ZipHandler {
       decodeFileName: (name) =>
         decode(Buffer.from(name as Uint8Array), 'shift-jis'),
     });
-    const getBytesData = (v: JSZip.JSZipObject) => {
+    const getBytesData = (innerPath: string, v: JSZip.JSZipObject) => {
       let dat: Failable<BytesData> | undefined = undefined;
       return async () => {
         if (dat !== undefined) return dat;
-        dat = await BytesData.fromBuffer(await v.async('arraybuffer'));
+        if (v.dir) {
+          dat = errorMessage.data.zip.isDir({
+            path: path.str(),
+            innerPath,
+          });
+        } else {
+          dat = await BytesData.fromBuffer(await v.async('arraybuffer'));
+        }
         return dat;
       };
     };
-    const result = objMap(zipData.files, (k, v) => [k, getBytesData(v)]);
+    const result = objMap(zipData.files, (k, v) => [k, getBytesData(k, v)]);
     return result;
   }
 }

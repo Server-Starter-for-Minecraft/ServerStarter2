@@ -135,7 +135,7 @@ export class Path {
   }
 
   async iter() {
-    if (this.exists() ?? (await this.isDirectory()))
+    if (this.exists() && (await this.isDirectory()))
       return (await fs.readdir(this.path)).map((p) => this.child(p));
     return [];
   }
