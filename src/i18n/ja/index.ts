@@ -15,21 +15,23 @@ import { jaShareWorld } from "./shareWorld";
 import { jaWelcome } from "./welcome";
 import { jaAutoShutdown } from "./autoshutdown";
 import { jaGeneral } from "./general";
+import { jaEulaDialog } from "./eulaDialog";
 
 export const ja = {
-  general:jaGeneral,
-  home:jaHome,
-  property:jaProperty,
-  console:jaConsole,
-  player:jaPlayer,
-  systemsetting:jaSystemSetting,
-  utils:jaUtils,
-  additionalContents:jaAdditionalContents,
-  error:jaError,
-  progress:jaProgress,
-  worldList:jaWorldList,
-  icon:jaIcon,
-  shareWorld:jaShareWorld,
-  welcome:jaWelcome,
-  autoshutdown:jaAutoShutdown,
+  general: jaGeneral,
+  home: jaHome,
+  property: jaProperty,
+  console: jaConsole,
+  player: jaPlayer,
+  systemsetting: jaSystemSetting,
+  utils: jaUtils,
+  additionalContents: jaAdditionalContents,
+  error: jaError,
+  progress: jaProgress,
+  worldList: jaWorldList,
+  icon: jaIcon,
+  shareWorld: jaShareWorld,
+  welcome: jaWelcome,
+  autoshutdown: jaAutoShutdown,
+  eulaDialog: jaEulaDialog,
 };

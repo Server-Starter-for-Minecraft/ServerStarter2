@@ -144,7 +144,7 @@ export class Path {
     if (!this.exists()) return;
 
     if (await this.isDirectory()) {
-      await fs.rmdir(this.path, { recursive });
+      await fs.rm(this.path, { recursive });
     } else {
       await fs.unlink(this.path);
     }

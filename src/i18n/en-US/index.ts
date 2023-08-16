@@ -16,21 +16,23 @@ import { enUSShareWorld } from "./shareWorld";
 import { enWelcome } from "./welcome";
 import { enAutoShutdown } from "./autoshutdown";
 import { enUSGeneral } from "./general";
+import { enUSEulaDialog } from "./eulaDialog";
 
 export const enUS: MessageSchema = {
-  general:enUSGeneral,
-  home:enUSHome,
-  property:enUSproperty,
-  console:enUSConsole,
-  player:enUSPlayer,
-  systemsetting:enUSSystemSetting,
-  utils:enUSUtils,
-  additionalContents:enAdditionalContents,
-  error:enUSError,
-  progress:enUSProgress,
-  worldList:enUSWorldList,
-  icon:enUSIcon,
-  shareWorld:enUSShareWorld,
-  welcome:enWelcome,
-  autoshutdown:enAutoShutdown,
+  general: enUSGeneral,
+  home: enUSHome,
+  property: enUSproperty,
+  console: enUSConsole,
+  player: enUSPlayer,
+  systemsetting: enUSSystemSetting,
+  utils: enUSUtils,
+  additionalContents: enAdditionalContents,
+  error: enUSError,
+  progress: enUSProgress,
+  worldList: enUSWorldList,
+  icon: enUSIcon,
+  shareWorld: enUSShareWorld,
+  welcome: enWelcome,
+  autoshutdown: enAutoShutdown,
+  eulaDialog: enUSEulaDialog,
 };

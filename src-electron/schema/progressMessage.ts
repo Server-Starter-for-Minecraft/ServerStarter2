@@ -135,7 +135,7 @@ type HProgressMessage = {
 
       papermc: {
         /** ビルド情報を取得中 */
-        laodBuildData: MessageContent;
+        loadBuildData: MessageContent;
 
         /** サーバーデータを準備中 */
         readyServerData: MessageContent;
