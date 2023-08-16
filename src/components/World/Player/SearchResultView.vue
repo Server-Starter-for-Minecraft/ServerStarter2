@@ -5,7 +5,6 @@ import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { isValid } from 'src/scripts/error';
 import SearchResultItem from './utils/SearchResultItem.vue';
-import StaticSearchResultItem from './utils/StaticSearchResultItem.vue';
 
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
@@ -49,14 +48,20 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         <SearchResultItem
           v-if="playerStore.newPlayerCandidate !== void 0"
           v-show="!hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid)"
-          v-model="playerStore.newPlayerCandidate"
+          :player="playerStore.newPlayerCandidate"
+          :register-btn-text="$t('player.addPlayer')"
+          :register-process="playerStore.addPlayer"
         />
         <!-- 過去に登録実績のあるプレイヤー一覧 -->
         <template
           v-for="p in playerStore.searchPlayers(filterRegisteredPlayer(Object.values(playerStore.cachePlayers)))"
           :key="p"
         >
-          <StaticSearchResultItem :player="p" />
+          <SearchResultItem
+            :player="p"
+            :register-btn-text="$t('player.addPlayer')"
+            :register-process="playerStore.addPlayer"
+          />
         </template>
       </q-list>
     </q-card-section>
