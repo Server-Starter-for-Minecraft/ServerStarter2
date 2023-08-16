@@ -205,7 +205,7 @@ export class GroupProgressor extends Progressor<GroupProgress> {
 }
 
 /** プログレスをフロントに反映するまでの最短の時間(ms) */
-const SLEEP_TREATHOLD = 10;
+const SLEEP_TREATHOLD = 100;
 
 export class WorldProgressor extends GroupProgressor {
   private id: WorldID;
@@ -219,13 +219,13 @@ export class WorldProgressor extends GroupProgressor {
   protected update() {
     super.update();
 
-    // if (this.hot) return;
+    if (this.hot) return;
 
-    // this.hot = true;
-    // setTimeout(() => {
-    //   this.hot = false;
-    //   api.send.Progress(this.id, this.export());
-    // }, SLEEP_TREATHOLD);
+    this.hot = true;
+    setTimeout(() => {
+      this.hot = false;
+      api.send.Progress(this.id, this.export());
+    }, SLEEP_TREATHOLD);
 
     api.send.Progress(this.id, this.export());
   }
