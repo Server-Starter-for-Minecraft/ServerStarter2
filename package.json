@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "vitest",
     "dev": "quasar dev -m electron",
+    "dummy": "cross-env SRC_DIR=src/dummy quasar dev -m electron",
     "build": "quasar build -m electron"
   },
   "dependencies": {
@@ -43,6 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "autoprefixer": "^10.4.14",
+    "cross-env": "^7.0.3",
     "electron": "^25.2.0",
     "electron-builder": "^24.4.0",
     "electron-packager": "^17.1.1",
