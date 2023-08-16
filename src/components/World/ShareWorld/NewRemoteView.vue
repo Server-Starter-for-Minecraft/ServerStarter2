@@ -29,24 +29,22 @@ async function registerRemoteAccount(remoteData: RemoteFolder) {
 
 <template>
   <h1 class="q-py-xs">{{ $t('shareWorld.registerNewRemote') }}</h1>
-  <q-scroll-area style="width: 100%; height: calc(220px + 6rem);">
-    <div class="row q-gutter-md no-wrap" style="margin: auto;">
-      <div>
-        <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
-        <AddContentsCard
-          :label="$t('shareWorld.addRemote.title')"
-          min-height="250px"
-          :card-style="{ 'border-radius': '6px' }"
-          @click="addRemote"
-          style="min-width: calc(13rem + 24px * 2);"
-        />
-      </div>
-      <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
-        <GithubCard
-          v-model="sysStore.systemSettings.remote[n-1]"
-          @register-click="registerRemoteAccount"
-        />
-      </div>
+  <div class="row q-gutter-md q-py-sm">
+    <div>
+      <!-- 13remはssBtnの固定サイズ、24pxは片側余白幅 -->
+      <AddContentsCard
+        :label="$t('shareWorld.addRemote.title')"
+        min-height="250px"
+        :card-style="{ 'border-radius': '6px' }"
+        @click="addRemote"
+        style="min-width: calc(13rem + 24px * 2);"
+      />
     </div>
-  </q-scroll-area>
+    <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
+      <GithubCard
+        v-model="sysStore.systemSettings.remote[n-1]"
+        @register-click="registerRemoteAccount"
+      />
+    </div>
+  </div>
 </template>
