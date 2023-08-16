@@ -520,6 +520,7 @@ export class WorldHandler {
   private async deleteExec(): Promise<WithError<Failable<undefined>>> {
     const result = await failabilify(() => this.getSavePath().remove(true))();
     if (isError(result)) return withError(result);
+
     delete WorldHandler.worldHandlerMap[this.id];
     return withError(undefined);
   }

@@ -23,14 +23,18 @@ import { WorldProgressor } from '../progress/progress';
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
 ): Promise<WithError<WorldAbbr[]>> {
-  const subdir = await worldContainerToPath(worldContainer).iter();
+  const dir = worldContainerToPath(worldContainer);
+  const subdir = await dir.iter();
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
   );
+  // ワールドが一つもない場合はディレクトリを削除(設定からは削除しない)
+  if (subdir.length === 0) dir.remove(true);
+
   return withError(results.filter(isValid), results.filter(isError));
 }
 
-export async function getWorldAbbr(
+async function getWorldAbbr(
   path: Path,
   worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
