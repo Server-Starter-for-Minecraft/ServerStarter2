@@ -10,7 +10,7 @@ const playerModel = defineModel<Player>({ required: true })
 <template>
   <q-item>
     <q-item-section avatar>
-      <PlayerHeadView v-model="playerModel" />
+      <PlayerHeadView :player="playerModel" />
     </q-item-section>
     <q-item-section top>
       <q-item-label class="name text-omit">{{ playerModel.name }}</q-item-label>
