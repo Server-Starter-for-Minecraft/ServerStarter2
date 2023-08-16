@@ -525,6 +525,25 @@ export class WorldHandler {
     return withError(undefined);
   }
 
+  /** ワールドを複製 */
+  async duplicate(name?: WorldName): Promise<WithError<Failable<World>>> {
+    const func = () => this.duplicateExec(name);
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** ワールドを複製 */
+  private async duplicateExec(
+    name?: WorldName
+  ): Promise<WithError<Failable<World>>> {
+    const newName =
+      name ?? (await getDuplicateWorldName(this.container, this.name));
+    const newId = WorldHandler.register(newName, this.container);
+    const newHandler = WorldHandler.get(newId);
+    if (isError(newHandler)) throw new Error();
+    await this.getSavePath().copyTo(newHandler.getSavePath());
+    return await newHandler.load();
+  }
+
   /** すべてのサーバーが終了した場合のみシャットダウン */
   private async shutdown() {
     // TODO: この実装ひどい
@@ -668,4 +687,21 @@ export class WorldHandler {
   async reboot() {
     await this.runner?.reboot();
   }
+}
+
+/** 複製する際のワールド名を取得 */
+async function getDuplicateWorldName(
+  container: WorldContainer,
+  name: WorldName
+) {
+  let worldName: string = name;
+
+  let result = await validateNewWorldName(container, worldName);
+  let i = 0;
+  while (isError(result)) {
+    worldName = `${name}_${i}`;
+    i += 1;
+    result = await validateNewWorldName(container, worldName);
+  }
+  return result;
 }

@@ -12,6 +12,7 @@ import {
   runWorld,
   runCommand,
   reboot,
+  duplicateWorld,
 } from '../core/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
@@ -50,6 +51,7 @@ export const getBackListener = (
     NewWorld: newWorld,
     CreateWorld: createWorld,
     DeleteWorld: deleteWorld,
+    DuplicateWorld: duplicateWorld,
 
     RunWorld: runWorld,
 

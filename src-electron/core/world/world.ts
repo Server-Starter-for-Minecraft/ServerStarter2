@@ -173,6 +173,18 @@ export async function deleteWorld(
 }
 
 /**
+ * ワールドデータを複製する
+ */
+export async function duplicateWorld(
+  worldID: WorldID,
+  name?: WorldName
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+  return await handler.duplicate(name);
+}
+
+/**
  * ワールドを起動する
  */
 export async function runWorld(
