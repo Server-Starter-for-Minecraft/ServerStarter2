@@ -10,25 +10,26 @@ import {
 } from '../../schema/progress';
 import { api } from '../api';
 import { WorldID } from 'app/src-electron/schema/world';
+import { UUID } from 'app/src-electron/schema/brands';
+import { genUUID } from 'app/src-electron/tools/uuid';
 
 export abstract class Progressor<T extends Progress> {
   parent?: GroupProgressor;
-  protected updated = false;
+  uuid: UUID;
 
   constructor(parent?: GroupProgressor) {
     this.parent = parent;
+    this.uuid = genUUID();
   }
 
   protected update() {
     // 変更を通知
-    if (this.updated) return;
-    this.updated = true;
     this.parent?.update();
   }
 
   delete() {
     if (this.parent) {
-      this.parent.subs = this.parent.subs.filter((x) => x === this);
+      this.parent.subs = this.parent.subs.filter((x) => x.uuid !== this.uuid);
       this.parent.update();
     }
   }
@@ -139,7 +140,6 @@ export class NumericProgressor extends Progressor<NumericProgress> {
 
 export class ConsoleProgressor extends Progressor<ConsoleProgress> {
   private _console: string;
-  private _maxLineCount?: number;
 
   /** maxLineCount : コンソールに保存する最大行数 */
   constructor(parent?: GroupProgressor) {
@@ -217,17 +217,16 @@ export class WorldProgressor extends GroupProgressor {
   }
 
   protected update() {
+    console.log('OUT', JSON.stringify(this.export()));
     super.update();
 
-    if (this.hot) return;
+    // if (this.hot) return;
 
-    this.hot = true;
-    setTimeout(() => {
-      this.hot = false;
-      if (this.updated) {
-        api.send.Progress(this.id, this.export());
-      }
-    }, SLEEP_TREATHOLD);
+    // this.hot = true;
+    // setTimeout(() => {
+    //   this.hot = false;
+    //   api.send.Progress(this.id, this.export());
+    // }, SLEEP_TREATHOLD);
 
     api.send.Progress(this.id, this.export());
   }

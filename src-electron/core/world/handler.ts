@@ -637,7 +637,7 @@ export class WorldHandler {
 
     this.runner = undefined;
 
-    const afterTitle = progress.title({
+    progress.title({
       key: 'server.run.after.title',
     });
 
