@@ -71,6 +71,9 @@ type HProgressMessage = {
         remote: Remote;
       }>;
 
+      /** リモートのデータを修正中 */
+      fixing: MessageContent;
+
       /** リモート操作の説明 */
       desc: {
         getPlayerFromUUID: MessageContent<{ uuid: string }>;
