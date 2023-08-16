@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "vitest",
     "dev": "quasar dev -m electron",
-    "dummy": "cross-env SRC_FILE=src-dummy/App.vue quasar dev -m electron",
+    "dummy": "cross-env SRC_DIR=src/dummy quasar dev -m electron",
     "build": "quasar build -m electron"
   },
   "dependencies": {

@@ -128,9 +128,9 @@ module.exports = configure(function (/* ctx */) {
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#sourcefiles
 
     sourceFiles: {
-      rootComponent: process.env.SRC_FILE || 'src/App.vue',
-      // router: 'src/router/index',
-      // store: 'src/store/index',
+      rootComponent: (process.env.SRC_DIR || 'src') + '/App.vue',
+      router: (process.env.SRC_DIR || 'src') + '/router/index',
+      // store: (process.env.SRC_DIR || 'src') + '/store/index',
       // registerServiceWorker: 'src-pwa/register-service-worker',
       // serviceWorker: 'src-pwa/custom-service-worker',
       // pwaManifestFile: 'src-pwa/manifest.json',
