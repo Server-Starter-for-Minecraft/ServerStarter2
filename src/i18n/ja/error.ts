@@ -28,6 +28,12 @@ export const jaError: ErrorTranslationTypes = {
         desc : '少し時間を置いてから再度実行してください',
       }
     },
+    zip: {
+      isDir: {
+        title: 'ZIPファイル中のパスのデータがディレクトリになっています',
+        desc: '{path}を確認してください',
+      },
+    },
     path: {
       loadingFailed: {
         title: `{type}の読み込みに失敗しました`,
