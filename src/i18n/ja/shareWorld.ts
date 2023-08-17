@@ -49,8 +49,9 @@ export const jaShareWorld = {
     title: '新規ShareWorldと同期',
     btn: '新規データで同期',
     desc: '\
-      新規ShareWorldを作成して同期データを作成します<br>\
-      同期する際に用いるShareWorldの名称を入力してください',
+      新規ShareWorldを作成して同期データを作成します。{0}\
+      同期する際に用いるShareWorldの名称を入力してください。{1}{2}',
+    caution: 'この名称は後から変更することができません。',
     inputName: '新規ShareWorldの名称を入力',
     unavailName: 'ShareWorldの新規名称として使用できません',
   },

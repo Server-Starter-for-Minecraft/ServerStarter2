@@ -34,6 +34,7 @@ export const enUSShareWorld = {
     desc: '\
       Create a new ShareWorld and synchronize data.<br>\
       Enter the name of the ShareWorld to be used for synchronization.',  
+    caution: 'This name cannot be changed later.',
     inputName: 'Input name of new ShareWorld',
     unavailName: 'Cannot use as a new name for ShareWorld',
   },
