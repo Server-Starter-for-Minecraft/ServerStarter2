@@ -35,6 +35,7 @@ import { Path } from 'app/src-electron/util/path';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BACKUP_EXT } from '../const';
 import { BackupData } from 'app/src-electron/schema/filedata';
+import { allocateTempDir } from '../misc/tempPath';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -639,11 +640,23 @@ export class WorldHandler {
     }
     const savePath = this.getSavePath();
 
+    // 展開先の一時フォルダ
+    const tempDir = await allocateTempDir();
+
     // tarファイルを展開
-    const decompressResult = await decompressTar(tarPath, savePath);
+    const decompressResult = await decompressTar(tarPath, tempDir);
 
     // 展開に失敗した場合
-    if (isError(decompressResult)) return withError(decompressResult);
+    if (isError(decompressResult)) {
+      // 一時フォルダを削除
+      await tempDir.remove(true);
+      return withError(decompressResult);
+    }
+
+    // 一時フォルダの中身をこのパスに移動
+    await savePath.remove(true);
+    await tempDir.moveTo(savePath);
+    await tempDir.remove(true);
 
     return this.loadExec();
   }
