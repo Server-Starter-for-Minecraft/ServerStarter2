@@ -3,5 +3,6 @@ export const enUSGeneral = {
   delete: 'Delete',
   edit: 'Edit',
   file: 'file',
-  directory: 'directory'
+  directory: 'directory',
+  skip: 'skip',
 };

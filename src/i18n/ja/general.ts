@@ -3,5 +3,6 @@ export const jaGeneral = {
   delete: '削除',
   edit: '編集',
   file: 'ファイル',
-  directory: 'ディレクトリ'
+  directory: 'ディレクトリ',
+  skip: 'スキップ',
 };

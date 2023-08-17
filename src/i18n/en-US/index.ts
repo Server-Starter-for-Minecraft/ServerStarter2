@@ -17,6 +17,7 @@ import { enWelcome } from "./welcome";
 import { enAutoShutdown } from "./autoshutdown";
 import { enUSGeneral } from "./general";
 import { enUSEulaDialog } from "./eulaDialog";
+import { enUSOwner } from "./owner";
 
 export const enUS: MessageSchema = {
   general: enUSGeneral,
@@ -35,4 +36,5 @@ export const enUS: MessageSchema = {
   welcome: enWelcome,
   autoshutdown: enAutoShutdown,
   eulaDialog: enUSEulaDialog,
+  owner: enUSOwner,
 };
