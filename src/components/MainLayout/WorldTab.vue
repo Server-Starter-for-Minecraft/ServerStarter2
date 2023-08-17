@@ -52,7 +52,7 @@ function selectWorldIdx() {
     :active="(clicked = mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system')"
     :focused="(clicked = mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system')"
     @click="selectWorldIdx"
-    v-on:dblclick="startServer"
+    v-on:dblclick="() => startServer(mainStore, consoleStore)"
     :to="$route.path.slice(0, 7) === '/system' ? '/' : $route"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"

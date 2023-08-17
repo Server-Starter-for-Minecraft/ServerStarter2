@@ -10,7 +10,6 @@ import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
-import { title } from 'process';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
