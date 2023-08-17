@@ -58,7 +58,7 @@ function checkUnlinkRepo() {
 <template>
   <q-card flat class="q-py-sm q-px-md">
     <q-card-section class="q-pt-xs">
-      <div class="caption q-pb-sm">GitHub</div>
+      <div class="caption q-pb-sm">{{ $t('shareWorld.github') }}</div>
       <div class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.account') }}</div>
         <div class="dataText text-omit">{{ remote.folder.owner }}</div>

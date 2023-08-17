@@ -1,7 +1,10 @@
-export const enUSGeneral = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSGeneral:MessageSchema['general'] = {
   cancel: 'Cancel',
   delete: 'Delete',
   edit: 'Edit',
   file: 'file',
-  directory: 'directory'
+  directory: 'directory',
+  skip: 'skip',
 };

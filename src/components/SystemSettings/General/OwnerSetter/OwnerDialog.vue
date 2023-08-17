@@ -28,32 +28,32 @@ function registOwner() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="persistent">
     <BaseDialogCard
-      title="オーナープレイヤー設定"
-      okBtnTxt="オーナーを登録"
+      :title="$t('owner.set')"
+      :okBtnTxt="$t('owner.registBtn')"
       :disable="ownerCandidate === void 0"
       @okClick="registOwner"
       @close="onDialogOK"
     >
       <template #default>
-        <p class="q-my-sm text-body2" style="opacity: .5;">
-          ServerStarter2の利用者であるオーナープレイヤーの登録を行います
+        <p 
+          class="q-my-sm text-body2"
+          style="opacity: .5;"
+          v-html="$t('owner.dialogDesc')"
+        >
         </p>
-        <p class="q-my-sm text-body2" style="opacity: .5;">
-          オーナーの登録を行うことで、新規サーバーに自動でOP権限を付与する機能などを利用できるようになります
-        </p>
-        
+
         <InputFieldView class="q-my-md" />
         <SearchResultView v-model="ownerCandidate" />
 
         <div v-if="ownerCandidate" class="q-my-sm">
-          <span class="text-caption">オーナープレイヤー</span>
+          <span class="text-caption">{{ $t('owner.ownerPlayer') }}</span>
           <PlayerCard v-model="ownerCandidate" />
         </div>
       </template>
 
       <template v-if="persistent" #additionalBtns>
         <SsBtn
-          label="スキップ"
+          :label="$t('general.skip')"
           @click="onDialogOK"
         />
       </template>

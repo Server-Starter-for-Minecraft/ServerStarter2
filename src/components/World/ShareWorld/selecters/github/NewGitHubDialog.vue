@@ -63,9 +63,11 @@ async function setRemote() {
       @close="onDialogCancel"
     >
       <p style="font-size: .8rem; opacity: .8;">
-        新規ShareWorldを作成して同期データを作成します<br>
-        同期する際に用いるShareWorldの名称を入力してください<br>
-        <span class="text-red text-bold">この名称は後から変更することができません</span>
+        <i18n-t keypath="shareWorld.newRemote.desc" tag="false">
+          <br>
+          <br>
+          <span class="text-red text-bold">{{ $t('shareWorld.newRemote.caution') }}</span>
+        </i18n-t>
       </p>
 
       <SsInput

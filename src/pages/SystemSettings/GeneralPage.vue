@@ -79,13 +79,13 @@ function showOwnerDialog() {
       style="font-size: 1rem;"
     />
 
-    <h1>オーナープレイヤーの登録</h1>
+    <h1>{{ $t('owner.register') }}</h1>
     <p class="q-my-sm text-body2" style="opacity: .5;">
-      新規サーバーに自動でOP権限を付与する機能などを利用できるようになります
+      {{ $t('owner.generalDesc') }}
     </p>
     <PlayerCard v-model="sysStore.systemSettings.user.owner" />
     <SsBtn
-      :label="`オーナープレイヤーの${sysStore.systemSettings.user.owner ? '変更' : '登録'}`"
+      :label="`${sysStore.systemSettings.user.owner ? $t('owner.change') : $t('owner.register') }`"
       :color="!sysStore.systemSettings.user.owner ? 'primary' : undefined"
       @click="showOwnerDialog"
       class="q-my-md"

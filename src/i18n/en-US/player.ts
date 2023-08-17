@@ -1,4 +1,6 @@
-export const enUSPlayer = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSPlayer:MessageSchema['player'] = {
   description: 'You can set the server\'s OP and players who can enter and leave the server.',
   search: 'Search players',
   registeredPlayer: 'Registered player',

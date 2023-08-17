@@ -42,10 +42,11 @@ async function setRemote() {
       @ok-click="setRemote"
       @close="onDialogCancel"
     >
-      <p style="font-size: .8rem; opacity: .8;">
-        {{ `${rWorldName}とワールドデータを同期します` }}<br>
-        このワールドは選択したShareWorldによって上書きされます<br>
-        ワールドを同期しますか？
+      <p 
+        style="font-size: 
+        .8rem; opacity: .8;"
+        v-html="$t('shareWorld.existedDialog',{rWorldName: rWorldName})"
+      >
       </p>
       
       <WorldItem

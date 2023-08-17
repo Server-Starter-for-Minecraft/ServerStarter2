@@ -49,6 +49,7 @@ export const enUSHome: MessageSchema["home"] = {
     exist: '{name} already exists',
     inputFolderName: 'Input folder name',
     selectFolder: 'Select folder',
+    selectFolderBtn: 'Select folder',
 
 
   },

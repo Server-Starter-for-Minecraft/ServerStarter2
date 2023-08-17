@@ -12,7 +12,7 @@ export const jaHome = {
     versionType: 'バージョンを選択',
     displayVersion: '一覧に表示するバージョン',
     allVersions: '全てのバージョン',
-    onlyReleased: 'Releasedのみ',
+    onlyReleased: '正式リリース版のみ',
     buildNumber: 'ビルド番号',
     notChange: '(変更不要)',
     recommend: '推奨',
@@ -46,6 +46,7 @@ export const jaHome = {
     exist: '{name}は既に存在します',
     inputFolderName: 'フォルダ名を入力してください',
     selectFolder: 'フォルダを選択してください',
+    selectFolderBtn: 'フォルダを選択',
 
   },
   setting: {

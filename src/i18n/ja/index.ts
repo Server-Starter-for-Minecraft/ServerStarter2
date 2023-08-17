@@ -16,6 +16,7 @@ import { jaWelcome } from "./welcome";
 import { jaAutoShutdown } from "./autoshutdown";
 import { jaGeneral } from "./general";
 import { jaEulaDialog } from "./eulaDialog";
+import { jaOwner } from "./owner";
 
 export const ja = {
   general: jaGeneral,
@@ -34,4 +35,5 @@ export const ja = {
   welcome: jaWelcome,
   autoshutdown: jaAutoShutdown,
   eulaDialog: jaEulaDialog,
+  owner: jaOwner,
 };
