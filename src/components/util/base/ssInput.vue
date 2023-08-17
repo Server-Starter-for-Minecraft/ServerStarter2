@@ -7,6 +7,7 @@ interface Prop {
   placeholder?: string
   hint?: string
   dense?: boolean
+  disable?: boolean
   autofocus?: boolean
   secret?: boolean
   debounce?: number
@@ -42,6 +43,7 @@ function onClearClick() {
     :placeholder="placeholder"
     :hint="hint"
     :dense="dense"
+    :disable="disable"
     :autofocus="autofocus"
     :type="isPwd ? 'password' : 'text'"
     :rules="rules"

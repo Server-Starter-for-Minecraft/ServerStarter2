@@ -80,6 +80,11 @@ function selectWorldIdx() {
           text-color="white"
           class="absolute-center q-mini-drawer-hide hantoumei"
         />
+        <div v-show="consoleStore.status(world.id) !== 'Stop'" class="absolute-top-right badge">
+          <q-badge outline rounded style="background-color: #262626; aspect-ratio: 1;" >
+            <q-icon :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" size="1rem" />
+          </q-badge>
+        </div>
       </q-avatar>
     </q-item-section>
     <q-item-section>
@@ -124,5 +129,9 @@ function selectWorldIdx() {
 
 .hantoumei {
   background-color: rgba($color: $primary, $alpha: 0.7);
+}
+
+.badge {
+  margin: -10px;
 }
 </style>

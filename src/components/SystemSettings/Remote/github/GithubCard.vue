@@ -11,6 +11,7 @@ import UpdatePatDialog from './UpdatePatDialog.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 interface Prop {
+  disable?: boolean
   showUnlink?: boolean
   onRegisterClick?: (remoteData: RemoteFolder) => void
   worldName?: string
@@ -75,17 +76,20 @@ function checkUnlinkRepo() {
     <q-card-actions vertical>
       <SsBtn
         :label="$t('shareWorld.githubCard.updatePAT')"
+        :disable="disable"
         @click="openPatEditor"
         class="q-mb-sm"
       />
       <SsBtn
         v-if="showUnlink"
+        :disable="disable"
         :label="$t('shareWorld.githubCard.unregister.remote')"
         color="red"
         @click="checkUnlinkRepo"
       />
       <SsBtn
         v-if="onRegisterClick !== void 0"
+        :disable="disable"
         :label="$t('shareWorld.githubCard.useRemote')"
         color="primary"
         @click="onRegisterClick(remote.folder)"

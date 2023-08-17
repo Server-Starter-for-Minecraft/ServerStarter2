@@ -2,10 +2,12 @@
 import { AllPapermcVersion } from 'app/src-electron/schema/version';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 
 const papers = sysStore.serverVersions.get('papermc') as AllPapermcVersion | undefined
 const paperVerOps = papers?.map(
@@ -29,7 +31,7 @@ if (mainStore.world.version.type !== 'papermc' && paperVerOps !== void 0) {
       :options="paperVerOps"
       :label="$t('home.version.versionType')"
       option-label="id"
-      :disable="papers === void 0"
+      :disable="papers === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />
@@ -41,7 +43,7 @@ if (mainStore.world.version.type !== 'papermc' && paperVerOps !== void 0) {
       :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
-      :disable="papers === void 0"
+      :disable="papers === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />

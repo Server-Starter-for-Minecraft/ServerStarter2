@@ -4,6 +4,8 @@ import { useProgressStore } from './ProgressStore';
 import { useMainStore } from './MainStore';
 import { checkError } from 'src/components/Error/Error';
 import { assets } from 'src/assets/assets';
+import { values } from 'src/scripts/obj';
+import { isValid } from 'src/scripts/error';
 
 interface WorldConsole {
   [id: WorldID]: {
@@ -58,6 +60,12 @@ export const useConsoleStore = defineStore('consoleStore', {
       return this._world[id]?.status ?? 'Stop'
     },
     /**
+     * 全てのワールドが停止中か否かを返す
+     */
+    isAllWorldStop() {
+      return values(this._world).every(obj => obj.status === 'Stop')
+    },
+    /**
      * ワールドのコンソール状態を取得する
      */
     console(worldID?: WorldID) {
@@ -84,7 +92,7 @@ export async function runServer() {
   const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
 
   // サーバー終了時のエラー確認
-  checkError(res, undefined, () => { return { title: 'サーバーが異常終了しました' }})
+  checkError(res.value, undefined, () => { return { title: 'サーバーが異常終了しました' }})
 
   // サーバータブをリセット
   consoleStore.initTab(true)
