@@ -1,6 +1,8 @@
 import { genUUID } from 'app/src-electron/tools/uuid';
 import { tempPath } from '../const';
 
-export function allocateTempDir() {
-  return tempPath.child(genUUID());
+export async function allocateTempDir() {
+  const dir = tempPath.child(genUUID());
+  await dir.mkdir(true);
+  return dir;
 }
