@@ -8,6 +8,7 @@ import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
 import { isError } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
+import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
 
 export const useMainStore = defineStore('mainStore', {
@@ -66,12 +67,14 @@ export const useMainStore = defineStore('mainStore', {
       }
 
       const worldStore = useWorldStore()
+      const consoleStore = useConsoleStore()
       // NewWorldをFrontのリストに追加する
       checkError(
         await creater(),
         world => {
           worldStore.worldList[world.id] = toRaw(world)
           this.setWorld(world)
+          consoleStore.initTab()
         },
         () => { return { title: '新規ワールドの作成に失敗しました' } }
       )
