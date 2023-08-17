@@ -15,6 +15,12 @@ export type CoreErrors = {
       container: string;
     }>;
 
+    // 実行中のワールドは複製できない
+    cannotDuplicateRunningWorld: ErrorMessageContent<{
+      name: string;
+      container: string;
+    }>;
+
     // ワールドがすでに起動中
     worldAleradyRunning: ErrorMessageContent<{
       // ワールドのパス = {container}/{name}
