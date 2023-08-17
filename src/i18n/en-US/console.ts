@@ -1,5 +1,8 @@
 export const enUSConsole = {
   init: 'Booting ServerStarter2...',
   boot: 'BOOT {name}',
-  abnormalEnd:'Terminated abnormally'
+  booting: 'Booting {name}',
+  abnormalEnd:'Terminated abnormally',
+  stop: 'stop',
+  reboot: 'reboot',
 }
