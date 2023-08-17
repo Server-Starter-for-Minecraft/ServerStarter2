@@ -6,17 +6,21 @@ import { setCssVar, useQuasar } from 'quasar';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { useProgressStore } from 'src/stores/ProgressStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
+import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import { deepCopy } from './scripts/deepCopy';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
+import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
 const worldStore = useWorldStore()
 const playerStore = usePlayerStore()
 const consoleStore = useConsoleStore()
+const progressStore = useProgressStore();
 
 // routerを定義
 const router = useRouter()
@@ -44,6 +48,29 @@ window.API.onFinishServer((_event, worldID) => {
 window.API.onAddConsole((_event, worldID, chunk) => {
   consoleStore.setConsole(worldID, chunk);
 })
+// Eulaの同意処理
+window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) => {
+  const promise = new Promise<boolean>(
+    (resolve) => { progressStore.back2frontHandler(worldID, resolve) }
+  );
+
+  $q.dialog({
+    component: EulaDialog,
+    componentProps: {
+      eulaURL: url
+    } as EulaDialogProp
+  }).onOk(() => {
+    progressStore.getProgress(worldID).selecter?.(true)
+  }).onCancel(() => {
+    progressStore.getProgress(worldID).selecter?.(false)
+  })
+
+  return await promise;
+});
+// Progressがバックエンドからやってきたときの処理
+window.API.onProgress((_event, worldID, progress) => {
+  progressStore.setProgress(worldID, progress)
+});
 // エラーが発生した際にDialogを表示
 setOpenDialogFunc((args) => {
   $q.dialog({
@@ -51,7 +78,6 @@ setOpenDialogFunc((args) => {
     componentProps: args
   })
 })
-
 
 // Windowの起動時処理
 firstProcess()
