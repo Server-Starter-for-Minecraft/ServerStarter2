@@ -106,7 +106,7 @@ function openCacheFolder() {
 
     <span class="text-caption">{{ $t('additionalContents.installed', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
     <p v-if="consoleStore.status(mainStore.world.id) !== 'Stop' && contentType !== 'datapack'" class="text-caption text-red q-ma-none">
-      変更を反映するにはサーバーの再起動が必要です
+      {{ $t('additionalContents.needReboot') }}
     </p>
     <div class="row q-gutter-md q-pa-sm">
       <template v-if="mainStore.world.additional[`${contentType}s`].length > 0">

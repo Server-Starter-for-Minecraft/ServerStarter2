@@ -13,4 +13,5 @@ export const enAdditionalContents:MessageSchema['additionalContents'] = {
   install: 'Install',
   installFromZip: 'New install from Zip',
   installFromFolder: 'New install from Folder',
+  needReboot: 'A server restart is required for the changes to take effect.',
 }
