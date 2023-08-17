@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { GroupProgress, Progress } from 'app/src-electron/schema/progress';
+import { flattenObj } from 'src/scripts/objFlatten'
 
 interface Prop {
   progress?: GroupProgress
@@ -27,8 +28,8 @@ function flatProgress(ps?: Progress[]) {
 
 <template>
   <template v-for="p in flatProgress(progress?.value)" :key="p">
-    <p v-if="p.type === 'title'" class="q-pt-lg q-ma-none" style="font-size: 1rem;">{{ $t(`progress.${p.value.key}`, (p.value as { 'args': Record<string, any> }).args ?? {}) }}</p>
-    <p v-else-if="p.type === 'subtitle'" class="text-caption q-ma-none" style="opacity: .6;">{{ $t(`progress.${p.value.key}`, (p.value as { 'args': Record<string, any> }).args ?? {}) }}</p>
+    <p v-if="p.type === 'title'" class="q-pt-lg q-ma-none" style="font-size: 1rem;">{{ $t(`progress.${p.value.key}`, flattenObj(p.value as { 'args': Record<string, any> }).args ?? {}) }}</p>
+    <p v-else-if="p.type === 'subtitle'" class="text-caption q-ma-none" style="opacity: .6;">{{ $t(`progress.${p.value.key}`, flattenObj(p.value as { 'args': Record<string, any> }).args ?? {}) }}</p>
 
     <div v-else-if="p.type === 'numeric'" class="q-pt-lg">
       <q-linear-progress rounded size="15px" :value="p.value/(p.max ?? 100)" color="primary" />
