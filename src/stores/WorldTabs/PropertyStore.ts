@@ -3,6 +3,8 @@ import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { pGroupKey, propertyClasses } from 'src/components/World/Property/classifications';
 import { keys, values } from 'src/scripts/obj';
 
+const disableProperties = ['level-name']
+
 export const usePropertyStore = defineStore('propertyStore', {
   state: () => {
     return {
@@ -25,7 +27,7 @@ export const usePropertyStore = defineStore('propertyStore', {
       else {
         if (this.selectTab === 'other') {
           const classifiedKeies = values(propertyClasses).flat()
-          return keys(targetProps).filter(k => !classifiedKeies.includes(k))
+          return keys(targetProps).filter(k => !classifiedKeies.includes(k) && !disableProperties.includes(k))
         }
         else {
           return propertyClasses[this.selectTab]
