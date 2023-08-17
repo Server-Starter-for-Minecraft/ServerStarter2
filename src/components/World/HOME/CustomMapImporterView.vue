@@ -124,7 +124,14 @@ onMounted(async () => {
           </div>
         </div>
         <div class="row q-gutter-sm justify-center">
-          <template v-for="localWorld in localWorlds" :key="localWorld.path">
+          <template
+            v-for="localWorld in localWorlds.sort(
+              (w1, w2) => {
+                return w2.lastPlayed - w1.lastPlayed
+              }
+            )"
+            :key="localWorld.path"
+          >
             <WorldItem
               :icon="localWorld.icon"
               :world-name="localWorld.levelName"
