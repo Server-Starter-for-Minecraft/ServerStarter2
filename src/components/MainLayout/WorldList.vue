@@ -7,6 +7,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import WorldTab from './WorldTab.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
+import { sortValue } from 'src/scripts/objSort';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore();
@@ -54,7 +55,15 @@ const drawer = ref(true)
 
     <q-scroll-area class="fit col">
       <q-list>
-        <template v-for="(world, idx) in mainStore.searchWorld(searchWorldName)" :key="world">
+        <template
+          v-for="(world, idx) in sortValue(
+            mainStore.searchWorld(searchWorldName),
+            (w1, w2) => {
+              return (w2.last_date ?? 0) - (w1.last_date ?? 0)
+            }
+          )"
+          :key="world"
+        >
           <world-tab :world="world" :idx="idx" />
         </template>
       </q-list>
