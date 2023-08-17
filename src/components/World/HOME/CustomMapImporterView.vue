@@ -128,7 +128,7 @@ onMounted(async () => {
           <template
             v-for="localWorld in localWorlds.sort(
               (w1, w2) => {
-                return w2.lastPlayed - w1.lastPlayed
+                return w2.lastPlayed - w1.lastPlayed > 0 ? 1 : -1
               }
             )"
             :key="localWorld.path"
