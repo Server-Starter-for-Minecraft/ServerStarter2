@@ -1,5 +1,7 @@
-export const enWelcome = {
-  welcome: 'Welcome to ServerStarter2！',
+import { MessageSchema } from "src/boot/i18n";
+
+export const enWelcome:MessageSchema['welcome'] = {
+  welcome: 'Welcome to ServerStarter2!',
   lang: 'Language',
   term: 'Terms of Use',
   termDesc: '\
@@ -8,5 +10,5 @@ export const enWelcome = {
   link: 'homepage',
   url: 'https://civiltt.github.io/ServerStarter/credit',
   agreeTerm: 'Agree to the term of use of ServerStarter2',
-  start: 'Start！'
+  start: 'Start!'
 }

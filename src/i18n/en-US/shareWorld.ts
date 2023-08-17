@@ -1,4 +1,6 @@
-export const enUSShareWorld = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSShareWorld:MessageSchema['shareWorld'] = {
   github: 'GitHub',
   title: 'World Sharing (ShareWorld)',
   desc: '\

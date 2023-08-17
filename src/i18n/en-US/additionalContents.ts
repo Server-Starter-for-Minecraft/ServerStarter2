@@ -1,4 +1,6 @@
-export const enAdditionalContents = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enAdditionalContents:MessageSchema['additionalContents'] = {
   datapack: 'datapack',
   mod: 'MOD',
   plugin: 'plugin',

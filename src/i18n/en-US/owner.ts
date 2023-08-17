@@ -1,4 +1,6 @@
-export const enUSOwner = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSOwner:MessageSchema['owner'] = {
   set: 'Set owner player',
   registBtn: 'Register owner',
   dialogDesc: '\
