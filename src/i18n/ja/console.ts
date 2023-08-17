@@ -5,4 +5,9 @@ export const jaConsole = {
   abnormalEnd:'サーバーが異常終了しました',
   stop: 'stop',
   reboot: 'reboot',
+  status: {
+    Stop: '停止中',
+    Ready: '準備中',
+    Running: '起動中',
+  },
 }

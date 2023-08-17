@@ -12,7 +12,17 @@ const consoleStore = useConsoleStore()
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">{{ mainStore.world.name }}</div>
-      <div class="text-red q-mr-md">{{ consoleStore.status(mainStore.world.id) }}</div>
+      <div 
+        :class="
+          consoleStore.status(mainStore.world.id) === 'Stop' ? 'text-red' :
+          consoleStore.status(mainStore.world.id) === 'Ready' ? 'text-grey':
+          consoleStore.status(mainStore.world.id) === 'Running' ? 'text-green':
+          'text-red'
+        "
+        class="q-mr-md"
+      >
+      {{ $t(`console.status.${consoleStore.status(mainStore.world.id)}`) }}
+      </div>
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />

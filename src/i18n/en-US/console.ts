@@ -7,4 +7,9 @@ export const enUSConsole:MessageSchema['console'] = {
   abnormalEnd:'Terminated abnormally',
   stop: 'stop',
   reboot: 'reboot',
+  status: {
+    Stop: 'Stop',
+    Ready: 'Ready',
+    Running: 'Running',
+  },
 }
