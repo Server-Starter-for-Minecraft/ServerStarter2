@@ -13,6 +13,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldStore } from 'src/stores/MainStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { $T } from 'src/i18n/utils/tFunc'
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
@@ -149,7 +150,7 @@ function openFolderEditor() {
   <div class="mainField">
     <q-item class="q-pa-none q-pt-lg">
       <q-item-section>
-        <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
+        <h1 class="q-pt-none">{{ $T("home.worldName.title") }}</h1>
         <SsInput
           v-model="mainStore.inputWorldName"
           :label="$t('home.worldName.enterName')"
@@ -159,7 +160,7 @@ function openFolderEditor() {
           @clear="clearNewName"
         />
 
-        <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
+        <h1 class="q-pt-md">{{ $T("home.version.title") }}</h1>
         <VersionSelecterView />
 
       </q-item-section>

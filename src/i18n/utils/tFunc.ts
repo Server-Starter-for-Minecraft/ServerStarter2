@@ -2,7 +2,7 @@ import { ErrorMessage } from "app/src-electron/schema/error";
 import { ProgressMessage } from "app/src-electron/schema/progressMessage";
 import { fromEntries, toEntries } from "src/scripts/obj";
 import { flattenObj } from "src/scripts/objFlatten";
-import { useI18n } from "vue-i18n";
+import { ComposerTranslation, DefineLocaleMessage, useI18n } from "vue-i18n";
 
 // argsのvalueに以下の文字列が来たときには翻訳を強制する
 // TODO: value側の型定義を推敲
@@ -11,26 +11,37 @@ const translationArgs: Record<string, string> = {
   'spigot': 'home.serverType.spigot'
 }
 
-const { t } = useI18n()
+// const {t} = useI18n()
+// type RemoveIndexSignature<T> = {
+//   [K in keyof T as string extends K ? never : number extends K ? never : K]: T[K];
+// };
+// type tFunc = ComposerTranslation<{}, {}, RemoveIndexSignature<{
+//   [K in keyof DefineLocaleMessage]: DefineLocaleMessage[K];
+// }>>;
+
+let _t: tFunc
+export function setI18nFunc(t: tFunc) {
+  _t = t
+}
 
 export function $T(key: string): string;
 export function $T(key: string, args: Record<string, unknown>): string;
 export function $T(key: string, defaultMessage: string): string;
 export function $T(key: string, args?: Record<string, unknown> | string) {
   if (args === void 0) {
-    return t(key)
+    return _t(key)
   }
   else if (typeof args === 'string') {
-    return t(key, args)
+    return _t(key, args)
   }
   else {
-    return t(
+    return _t(
       key,
       fromEntries(
         toEntries(args).map(
           v => {
             if (typeof v[1] === 'string') {
-              return [v[0], t(translationArgs[v[1]])]
+              return [v[0], _t(translationArgs[v[1]])]
             }
             else {
               return v

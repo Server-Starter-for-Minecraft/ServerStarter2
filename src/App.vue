@@ -14,6 +14,7 @@ import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import { deepCopy } from './scripts/deepCopy';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
+import { setI18nFunc } from './i18n/utils/tFunc';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
@@ -26,6 +27,8 @@ const progressStore = useProgressStore();
 const router = useRouter()
 // 言語設定を定義
 const $t = useI18n()
+const { t } = useI18n()
+setI18nFunc(t)
 
 // 仮のテーマを適用する
 const $q = useQuasar();
