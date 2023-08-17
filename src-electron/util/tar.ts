@@ -4,7 +4,7 @@ import { BytesData } from './bytesData';
 import { Path } from './path';
 import { Failable } from '../schema/error';
 import { fromRuntimeError } from './error/error';
-import { failabilify, safeExecAsync } from './error/failable';
+import { safeExecAsync } from './error/failable';
 
 export async function createTar(
   directoryPath: Path,
