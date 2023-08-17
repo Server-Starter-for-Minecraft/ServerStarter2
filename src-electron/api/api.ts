@@ -124,6 +124,14 @@ export interface API extends IAPI {
       world: WorldID,
       name?: WorldName
     ) => Promise<WithError<Failable<World>>>;
+    /**
+     * Worldをバックアップ
+     * @parem path?:string - バックアップのファイルパス(省略可)
+     */
+    BackupWorld: (
+      world: WorldID,
+      path?: string
+    ) => Promise<WithError<Failable<undefined>>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)

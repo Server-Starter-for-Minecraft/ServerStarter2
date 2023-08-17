@@ -117,6 +117,7 @@ const api: FrontAPI = {
   invokeCreateWorld: invoke('CreateWorld'),
   invokeDeleteWorld: invoke('DeleteWorld'),
   invokeDuplicateWorld: invoke('DuplicateWorld'),
+  invokeBackupWorld: invoke('BackupWorld'),
 
   invokeRunWorld: invoke('RunWorld'),
 

@@ -185,6 +185,18 @@ export async function duplicateWorld(
 }
 
 /**
+ * ワールドデータをバックアップする
+ */
+export async function backupWorld(
+  worldID: WorldID,
+  path?: string
+): Promise<WithError<Failable<undefined>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+  return await handler.backup(path);
+}
+
+/**
  * ワールドを起動する
  */
 export async function runWorld(

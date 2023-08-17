@@ -18,6 +18,7 @@ import { modFiles } from './files/addtional/mod';
 import { loadCustomMap } from './cusomMap';
 import { pickImage } from '../misc/pickImage';
 import { WorldContainer } from 'app/src-electron/schema/brands';
+import { BACKUP_EXT } from '../const';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -99,10 +100,10 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         options.isFile = false;
         break;
       case 'backup':
-        // バックアップはtar.gz形式
+        // バックアップはssbackup形式(中身はtar.gz)
         filters.push({
-          extensions: ['tar.gz'],
-          name: 'tar.gz',
+          extensions: [BACKUP_EXT],
+          name: BACKUP_EXT,
         });
         break;
     }

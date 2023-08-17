@@ -30,6 +30,10 @@ import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
+import { getBackUpPath } from './backup';
+import { Path } from 'app/src-electron/util/path';
+import { createTar } from 'app/src-electron/util/tar';
+import { BACKUP_EXT } from '../const';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -557,20 +561,60 @@ export class WorldHandler {
     if (isError(worldSettings)) return withError(worldSettings);
 
     // リモートの情報を削除
-    worldSettings.remote = undefined
+    worldSettings.remote = undefined;
     // 使用中フラグを削除
-    worldSettings.using = false
-    
+    worldSettings.using = false;
+
     const newHandler = WorldHandler.get(newId);
     if (isError(newHandler)) throw new Error();
 
-    
     await this.getSavePath().copyTo(newHandler.getSavePath());
-    
+
     // 設定ファイルを上書き
     await newHandler.saveLocalServerJson(worldSettings);
 
     return await newHandler.load();
+  }
+
+  /** ワールドをバックアップ */
+  async backup(path?: string): Promise<WithError<Failable<undefined>>> {
+    const func = () => this.backupExec(path);
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** ワールドをバックアップ */
+  private async backupExec(
+    path?: string
+  ): Promise<WithError<Failable<undefined>>> {
+    let backupPath: Path;
+    if (path !== undefined) {
+      backupPath = new Path(path);
+      // ファイルが既に存在する場合
+      if (backupPath.exists()) {
+        const e = errorMessage.data.path.alreadyExists({
+          type: 'file',
+          path: backupPath.str(),
+        });
+        return withError(e);
+      }
+      // 拡張子が.ssbackupでない場合
+      if (backupPath.extname() !== '.' + BACKUP_EXT) {
+        const e = errorMessage.data.path.invalidExt({
+          path: backupPath.str(),
+          expectedExt: BACKUP_EXT,
+        });
+        return withError(e);
+      }
+    } else {
+      backupPath = getBackUpPath(this.container, this.name);
+    }
+    // tarファイルを生成
+    const tar = await createTar(this.getSavePath(), true);
+    if (isError(tar)) return withError(tar);
+    // tarファイルを保存
+    await backupPath.write(tar);
+
+    return withError(undefined);
   }
 
   /** すべてのサーバーが終了した場合のみシャットダウン */
