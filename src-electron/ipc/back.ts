@@ -14,6 +14,7 @@ import {
   reboot,
   duplicateWorld,
   backupWorld,
+  restoreWorld,
 } from '../core/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
@@ -54,6 +55,7 @@ export const getBackListener = (
     DeleteWorld: deleteWorld,
     DuplicateWorld: duplicateWorld,
     BackupWorld: backupWorld,
+    RestoreWorld: restoreWorld,
 
     RunWorld: runWorld,
 

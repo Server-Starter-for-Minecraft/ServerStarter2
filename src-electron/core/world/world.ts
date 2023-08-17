@@ -19,6 +19,7 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { WorldProgressor } from '../progress/progress';
+import { BackupData } from 'app/src-electron/schema/filedata';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -194,6 +195,18 @@ export async function backupWorld(
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
   return await handler.backup(path);
+}
+
+/**
+ * ワールドデータをバックアップから復元する
+ */
+export async function restoreWorld(
+  worldID: WorldID,
+  backup: BackupData
+): Promise<WithError<Failable<World>>> {
+  const handler = WorldHandler.get(worldID);
+  if (isError(handler)) return withError(handler);
+  return await handler.restore(backup);
 }
 
 /**

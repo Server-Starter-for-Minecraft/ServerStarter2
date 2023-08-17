@@ -32,8 +32,9 @@ import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
 import { getBackUpPath } from './backup';
 import { Path } from 'app/src-electron/util/path';
-import { createTar } from 'app/src-electron/util/tar';
+import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BACKUP_EXT } from '../const';
+import { BackupData } from 'app/src-electron/schema/filedata';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -615,6 +616,36 @@ export class WorldHandler {
     await backupPath.write(tar);
 
     return withError(undefined);
+  }
+
+  /** ワールドにバックアップを復元 */
+  async restore(backup: BackupData): Promise<WithError<Failable<World>>> {
+    const func = () => this.restoreExec(backup);
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** ワールドにバックアップを復元 */
+  private async restoreExec(
+    backup: BackupData
+  ): Promise<WithError<Failable<World>>> {
+    const tarPath = new Path(backup.path);
+    if (!tarPath.exists()) {
+      return withError(
+        errorMessage.data.path.notFound({
+          type: 'file',
+          path: backup.path,
+        })
+      );
+    }
+    const savePath = this.getSavePath();
+
+    // tarファイルを展開
+    const decompressResult = await decompressTar(tarPath, savePath);
+
+    // 展開に失敗した場合
+    if (isError(decompressResult)) return withError(decompressResult);
+
+    return this.loadExec();
   }
 
   /** すべてのサーバーが終了した場合のみシャットダウン */
