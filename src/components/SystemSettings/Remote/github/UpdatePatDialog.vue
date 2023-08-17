@@ -17,7 +17,7 @@ const inputPat = ref(prop.oldPat)
     <BaseDialogCard
       :disable="inputPat === ''"
       :title="$t('shareWorld.githubCard.updatePAT')"
-      overline="GitHub"
+      :overline="$t('shareWorld.github')"
       :ok-btn-txt="$t('shareWorld.githubCard.update')"
       @ok-click="onDialogOK({ newPat: inputPat } as updatePatDialogReturns)"
       @close="onDialogCancel"

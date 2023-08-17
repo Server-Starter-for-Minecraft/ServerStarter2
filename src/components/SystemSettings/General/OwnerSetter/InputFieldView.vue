@@ -7,7 +7,7 @@ const playerStore = usePlayerStore()
 
 <template>
   <div>
-    <span class="text-caption">登録するオーナーを検索</span>
+    <span class="text-caption">{{ $t('owner.searchPlayer') }}</span>
     <SsInput
       v-model="playerStore.searchName"
       dense

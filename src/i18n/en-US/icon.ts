@@ -1,6 +1,8 @@
 // /src/components/World/HOME/IconSelectView.vue の翻訳
 
-export const enUSIcon = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSIcon:MessageSchema['icon'] = {
     setIcon: 'Select your icon for server header',
     selcIcon: 'Pick',
     selecting: 'Picking image',

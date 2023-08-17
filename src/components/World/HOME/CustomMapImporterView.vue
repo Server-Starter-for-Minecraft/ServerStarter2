@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { checkError } from 'src/components/Error/Error';
+import { assets } from 'src/assets/assets';
 import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
@@ -124,9 +125,16 @@ onMounted(async () => {
           </div>
         </div>
         <div class="row q-gutter-sm justify-center">
-          <template v-for="localWorld in localWorlds" :key="localWorld.path">
+          <template
+            v-for="localWorld in localWorlds.sort(
+              (w1, w2) => {
+                return w2.lastPlayed - w1.lastPlayed > 0 ? 1 : -1
+              }
+            )"
+            :key="localWorld.path"
+          >
             <WorldItem
-              :icon="localWorld.icon"
+              :icon="localWorld.icon ?? assets.png.unset"
               :world-name="localWorld.levelName"
               :version-name="localWorld.versionName"
               @click="showCheckDialog(localWorld)"

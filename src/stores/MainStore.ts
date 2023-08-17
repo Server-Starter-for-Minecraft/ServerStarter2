@@ -6,8 +6,9 @@ import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
-import { isError } from 'src/scripts/error';
+import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
+import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
 
 export const useMainStore = defineStore('mainStore', {
@@ -61,17 +62,41 @@ export const useMainStore = defineStore('mainStore', {
         // set default icon
         world.avater_path = assets.png.unset
 
+        // set owner player
+        const ownerPlayer = useSystemStore().systemSettings.user.owner
+        if (ownerPlayer) {
+          const res = await window.API.invokeGetPlayer(ownerPlayer, 'uuid')
+          checkError(
+            res,
+            p => {
+              if (isValid(world.players)) {
+                world.players.push({
+                  name: p.name,
+                  uuid: p.uuid,
+                  op: { level: 4, bypassesPlayerLimit: false }
+                })
+              }
+            },
+            () => { return {
+              title: 'OP一覧にオーナープレイヤーを登録できませんでした',
+              desc: 'オーナープレイヤーのデータ取得に失敗しました'
+            }}
+          )
+        }
+
         // NewWorldを実データに書き出す
         return (await window.API.invokeCreateWorld(world)).value
       }
 
       const worldStore = useWorldStore()
+      const consoleStore = useConsoleStore()
       // NewWorldをFrontのリストに追加する
       checkError(
         await creater(),
         world => {
           worldStore.worldList[world.id] = toRaw(world)
           this.setWorld(world)
+          consoleStore.initTab()
         },
         () => { return { title: '新規ワールドの作成に失敗しました' } }
       )

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { assets } from 'src/assets/assets';
 import { CustomMapImporterProp, importCustomMap } from './iCustomMapImporter';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
@@ -30,7 +31,7 @@ async function updateWorld() {
     >
       <p v-html="$t('home.useWorld.checkDialog')" />
       <WorldItem
-        :icon="customMap.icon"
+        :icon="customMap.icon ?? assets.png.unset"
         :world-name="customMap.levelName"
         :version-name="customMap.versionName"
       />

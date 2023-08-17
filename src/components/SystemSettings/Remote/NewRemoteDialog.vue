@@ -41,7 +41,7 @@ function okClick() {
       :ok-btn-txt="$t('shareWorld.register')" @ok-click="okClick" @close="onDialogCancel">
       <div class="q-pb-sm">
         <div class="caption" style="opacity: .6;">{{ $t('shareWorld.addRemote.account') }}</div>
-        <SsSelect dense v-model="accountType" :options="[{ label: 'GitHub', value: 'github' }]" option-label="label"
+        <SsSelect dense v-model="accountType" :options="[{ label: $t('shareWorld.github'), value: 'github' }]" option-label="label"
           option-value="value" />
       </div>
       <div class="q-py-sm">

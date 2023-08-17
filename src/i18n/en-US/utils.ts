@@ -1,4 +1,6 @@
-export const enUSUtils = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSUtils:MessageSchema['utils'] = {
   searchWorld: 'Search a World',
   worldSettingTabs: {
     home: 'Home',

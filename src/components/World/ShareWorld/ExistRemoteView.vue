@@ -70,7 +70,8 @@ function deleteRemoteSetting() {
     @action="mainStore.world.remote = undefined"
   />
 
-  <DangerView
+  <!-- TODO: 旧実装のため、更新の必要あり -->
+  <!-- <DangerView
     :view-title="$t('shareWorld.existRemote.delete.title')"
     :view-desc="$t('shareWorld.existRemote.delete.desc',{remotePath: `${remote.folder.owner}/${remote.folder.repo}/${remote.name}`})"
     :open-dialog-btn-text="$t('shareWorld.existRemote.delete.btn')"
@@ -78,5 +79,5 @@ function deleteRemoteSetting() {
     :dialog-desc="$t('shareWorld.existRemote.delete.dialogDesc')"
     :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     @action="deleteRemoteSetting()"
-  />
+  /> -->
 </template>

@@ -22,7 +22,7 @@ function reboot() {
       dense
       is-capital
       icon="stop"
-      label="stop"
+      :label="$t('console.stop')"
       color="red"
       width="100px"
       :disable="disable"
@@ -32,7 +32,7 @@ function reboot() {
       dense
       is-capital
       icon="restart_alt"
-      label="reboot"
+      :label="$t('console.reboot')"
       width="100px"
       :disable="disable"
       @click="reboot"

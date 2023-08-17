@@ -38,7 +38,7 @@ async function updatePlayer() {
     </q-item>
 
     <q-card-section v-else>
-      <p class="message ">オーナープレイヤーは登録されていません</p>
+      <p class="message ">{{ $t('owner.noOwner') }}</p>
     </q-card-section>
   </q-card>
 </template>

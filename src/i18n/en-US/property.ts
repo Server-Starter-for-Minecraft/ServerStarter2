@@ -1,4 +1,6 @@
-export const enUSproperty = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSproperty:MessageSchema['property'] = {
   main: {
     search: 'search properties',
     resetAll: 'reset all',

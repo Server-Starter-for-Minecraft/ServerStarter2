@@ -6,13 +6,24 @@ import { useSystemStore } from 'src/stores/SystemStore';
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
+
+const statusColor = {
+  'Stop': 'red',
+  'Ready': 'grey',
+  'Running': 'primary'
+}
 </script>
 
 <template>
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">{{ mainStore.world.name }}</div>
-      <div class="text-red q-mr-md">{{ consoleStore.status(mainStore.world.id) }}</div>
+      <div 
+        :class="`text-${statusColor[consoleStore.status(mainStore.world.id)]}`"
+        class="q-mr-md"
+      >
+      {{ $t(`console.status.${consoleStore.status(mainStore.world.id)}`) }}
+      </div>
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />

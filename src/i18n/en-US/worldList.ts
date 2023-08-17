@@ -1,4 +1,6 @@
-export const enUSWorldList = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSWorldList:MessageSchema['worldList'] = {
     allWorld: 'All Worlds',
     addWorld: 'Add new world',
     systemSetting: 'System Settings',

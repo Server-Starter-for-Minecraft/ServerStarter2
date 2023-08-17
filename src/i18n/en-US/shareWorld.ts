@@ -1,4 +1,6 @@
-export const enUSShareWorld = {
+import { MessageSchema } from "src/boot/i18n";
+
+export const enUSShareWorld:MessageSchema['shareWorld'] = {
   github: 'GitHub',
   title: 'World Sharing (ShareWorld)',
   desc: '\
@@ -18,9 +20,9 @@ export const enUSShareWorld = {
   },
   sync: 'sync with {path}',
   existedDialog: '\
-    Sync {worldname} with {owner}/{repo}.<br>\
+    Sync world data with {rWorldName}.<br>\
     Data in this world will be overwritten by data in the selected ShareWorld.<br>\
-    Do you want to sync with {repo}？',
+    Do you want to sync world？',
   selectRemote: {
     title: 'Register new ShareWorld',
     makeShareWorld: 'Make new ShareWorld and sync',
@@ -34,6 +36,7 @@ export const enUSShareWorld = {
     desc: '\
       Create a new ShareWorld and synchronize data.<br>\
       Enter the name of the ShareWorld to be used for synchronization.',  
+    caution: 'This name cannot be changed later.',
     inputName: 'Input name of new ShareWorld',
     unavailName: 'Cannot use as a new name for ShareWorld',
   },
