@@ -52,7 +52,7 @@ async function pickFolder() {
         />
         <SsBtn
           free-width
-          :label="$t('home.saveWorld.selectFolder')"
+          :label="$t('home.saveWorld.selectFolderBtn')"
           @click="pickFolder"
         />
       </div>

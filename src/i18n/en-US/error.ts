@@ -28,6 +28,12 @@ export const enUSError: ErrorTranslationTypes = {
         desc : 'Wait a few moments and do again.',
       },
     },
+    zip: {
+      isDir: {
+        title: 'The data in the path in the ZIP file is a directory',
+        desc: 'Please check {path}',
+      },
+    },
     path: {
       loadingFailed:{
         title: 'Failed to read the {type}',
