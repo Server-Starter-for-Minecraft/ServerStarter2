@@ -15,7 +15,7 @@ export function flattenObj<V extends (Record<string, V> | string | number | stri
     else {
       const resultObj = flattenObj(value)
       keys(resultObj).map(k => {
-        flat[`${key}.${k}`] = resultObj[k]
+        flat[`${key}_${k}`] = resultObj[k]
       })
     }
   })

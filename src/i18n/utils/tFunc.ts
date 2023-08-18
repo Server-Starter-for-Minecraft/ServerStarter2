@@ -8,7 +8,11 @@ import { flattenObj } from "src/scripts/objFlatten";
 // TODO: value側の型定義を推敲
 const translationArgs: Record<string, string> = {
   'vanilla': 'home.serverType.vanilla',
-  'spigot': 'home.serverType.spigot'
+  'spigot': 'home.serverType.spigot',
+  'papermc': 'home.serverType.papermc',
+  'forge': 'home.serverType.forge',
+  'mohistmc': 'home.serverType.mohistmc',
+  'fabric': 'home.serverType.fabric'
 }
 
 type tFunc = (key: string, args?: Record<string, unknown> | string) => string

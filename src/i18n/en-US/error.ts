@@ -13,7 +13,7 @@ export const enUSError: ErrorTranslationTypes = {
       desc: 'Error type: {type}, Error message: {message}',
     },
     subprocess: {
-      title: 'Error occurred in {processPath}',
+      title: 'Error occurred when subprocess executing',
       desc: 'Exitcode: {exitcode}'
     },
   },
@@ -79,13 +79,16 @@ export const enUSError: ErrorTranslationTypes = {
           title: 'There are too many level.dat in the custom map saved in {path}',
         },
         invalidWorldSettingJson: {
-          title: 'server_setting.json is not inappropriate',
+          title: 'The file of world settings is invalid',
+          desc: '{path} is inappropriate',
         },
         invalidOpsJson: {
-          title: 'ops.json is not inappropriate',
+          title: 'The file manages the player op is invalid',
+          desc: '{path} is inappropriate',
         },
         invalidWhitelistJson: {
-          title: 'ops.json is not inappropriate',
+          title: 'The file manages the whitelist is invalid',
+          desc: '{path} is inappropriate',
         },
       },
       creationFiled: {
@@ -136,7 +139,8 @@ export const enUSError: ErrorTranslationTypes = {
         desc: 'just use an alphabet or number',
       },
       alreadyUsed: {
-        title: 'This name is already used',
+        title: 'This name ({value}) is already used',
+        desc: 'please use other name',
       },
     },
     remoteWorldName: {
@@ -146,6 +150,7 @@ export const enUSError: ErrorTranslationTypes = {
       },
       alreadyUsed: {
         title: 'This name ({value}) is already used',
+        desc: 'please use other name',
       },
     },
   },
@@ -157,6 +162,10 @@ export const enUSError: ErrorTranslationTypes = {
       cannotChangeRunningWorldName: {
         title: 'You cannot change your world name or saved folder',
         desc:'Close your world and do it again',
+      },
+      cannotDuplicateRunningWorld:{
+        title: 'The name of the running world and the folder where it is saved cannot be changed.',
+        desc: 'Stop world {name} and try again',
       },
       worldAleradyRunning: {
         title: 'Your world saved in {container}/{name} is already started',
@@ -178,8 +187,12 @@ export const enUSError: ErrorTranslationTypes = {
       },
       failSpigotBuild: {
         javaNeeded: {
-          title: 'Failed to build spiot for {version}', 
+          title: 'Failed to build spiot for {spigotVersion}', 
           desc: 'install Java from {minVersion} to {maxversion}',
+        },
+        missingJar: {
+          title: 'Failed to build server',
+          desc: 'failed for version {spigotVersion}'
         },
       },
       vanillaVersionNotExists: {
