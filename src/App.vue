@@ -3,6 +3,7 @@ import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { setCssVar, useQuasar } from 'quasar';
+import { setI18nFunc } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
@@ -26,6 +27,8 @@ const progressStore = useProgressStore();
 const router = useRouter()
 // 言語設定を定義
 const $t = useI18n()
+const { t } = useI18n()
+setI18nFunc(t)
 
 // 仮のテーマを適用する
 const $q = useQuasar();

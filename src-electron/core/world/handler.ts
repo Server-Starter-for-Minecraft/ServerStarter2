@@ -416,6 +416,7 @@ export class WorldHandler {
    * usingフラグを折ってPush
    */
   private async fix() {
+    worldLoggers.fix({ name: this.name, container: this.container }).warn();
     const local = await this.loadLocal();
     const world = local.value;
     if (isError(world)) return local;
@@ -524,7 +525,7 @@ export class WorldHandler {
 
   /** ワールドを削除(リモ－トは削除しない) */
   private async deleteExec(): Promise<WithError<Failable<undefined>>> {
-    const result = await failabilify(() => this.getSavePath().remove(true))();
+    const result = await failabilify(() => this.getSavePath().remove())();
     if (isError(result)) return withError(result);
 
     delete WorldHandler.worldHandlerMap[this.id];

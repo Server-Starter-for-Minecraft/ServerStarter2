@@ -138,15 +138,17 @@ export async function pushWorld(
 
   let message: string;
 
-  // UUIDからプレイヤー検索
-  const sub = progress?.subtitle({
-    key: 'server.remote.desc.getPlayerFromUUID',
-    args: { uuid: uuid },
-  });
-  const player = await getPlayerFromUUID(uuid);
-  sub?.delete();
-  if (isValid(player)) message = `${player.name}(${uuid})`;
-  else message = `<ANONYMOUS>(${uuid})`;
+  if (uuid !== undefined) {
+    // UUIDからプレイヤー検索
+    const sub = progress?.subtitle({
+      key: 'server.remote.desc.getPlayerFromUUID',
+      args: { uuid: uuid },
+    });
+    const player = await getPlayerFromUUID(uuid);
+    sub?.delete();
+    if (isValid(player)) message = `${player.name}`;
+    else message = `<UNKNOWN_PLAYER>(${uuid})`;
+  } else message = '<ANONYMOUS>';
 
   await git.add('-A');
   await git.commit(message, undefined, { '--allow-empty': null });
@@ -193,7 +195,7 @@ export async function deleteWorld(
   const push = await safeExecAsync(() => git.push(url, ':' + remote.name));
 
   // 一時フォルダを削除
-  await gitTempPath.remove(true);
+  await gitTempPath.remove();
 
   // pushに失敗した場合
   if (isError(push)) return push;

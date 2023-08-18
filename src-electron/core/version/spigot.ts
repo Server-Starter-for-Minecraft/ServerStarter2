@@ -4,7 +4,7 @@ import { Failable } from '../../util/error/failable';
 import { BytesData } from '../../util/bytesData';
 import { JavaComponent, getJavaComponent } from './vanilla';
 import { versionConfig } from '../stores/config';
-import { spigotBuildPath, versionsCachePath } from '../const';
+import { versionsCachePath } from '../const';
 import * as cheerio from 'cheerio';
 import { interactiveProcess } from '../../util/subprocess';
 import { readyJava } from '../../util/java/java';
@@ -18,6 +18,7 @@ import { getVersionMainfest } from './mainfest';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { GroupProgressor } from '../progress/progress';
+import { allocateTempDir } from '../misc/tempPath';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 
@@ -30,6 +31,10 @@ export const spigotVersionLoader: VersionLoader<SpigotVersion> = {
 
   needEulaAgreement: needEulaAgreementVanilla,
 };
+
+function getBuildToolPath(buildDir: Path) {
+  return buildDir.child('BuildTools.jar');
+}
 
 /** spigotのサーバーデータを必要があればダウンロード */
 async function readySpigotVersion(
@@ -54,21 +59,31 @@ async function readySpigotVersion(
 
   // server.jarが存在しなかった場合の処理
   if (!jarpath.exists()) {
+    // ビルド用ディレクトリの確保
+    const buildDir = await allocateTempDir();
+
     // ビルドツールのダウンロード
     const b = progress?.subtitle({
       key: 'server.readyVersion.spigot.readyBuildtool',
     });
-    const buildTool = await readySpigotBuildTool();
+    const buildTool = await readySpigotBuildTool(buildDir);
     b?.delete();
-    if (isError(buildTool)) return buildTool;
+    if (isError(buildTool)) {
+      // 一時フォルダの削除
+      await buildDir.remove();
+      return buildTool;
+    }
 
     // ビルドの実行
     const buildResult = await buildSpigotVersion(
+      buildDir,
       version,
       jarpath,
       component,
       progress
     );
+    // 一時フォルダの削除
+    await buildDir.remove();
     if (isError(buildResult)) return buildResult;
   }
 
@@ -114,30 +129,20 @@ async function getSpigotVersions(): Promise<Failable<AllSpigotVersion>> {
   }));
 }
 
-const buildToolPath = spigotBuildPath.child('BuildTools.jar');
-
 const SPIGOT_BUILDTOOL_URL =
   'https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar';
 
 /** ビルドツールのダウンロード */
-async function readySpigotBuildTool(): Promise<Failable<undefined>> {
+async function readySpigotBuildTool(
+  buildDir: Path
+): Promise<Failable<undefined>> {
   // ビルドツールをダウンロード
-  let buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
-
-  // ビルドツールのダウンロードに失敗した場合ローカルにあるデータを使う
-  if (isError(buildtool)) {
-    // ハッシュ値をコンフィグから読み込む
-    const sha1 = versionConfig.get('spigot_buildtool_sha1');
-    if (sha1) {
-      buildtool = await BytesData.fromPath(buildToolPath.absolute(), {
-        type: 'sha1',
-        value: sha1,
-      });
-    }
-  }
+  const buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 
   // ビルドツールが用意できなかった場合エラー
   if (isError(buildtool)) return buildtool;
+
+  const buildToolPath = getBuildToolPath(buildDir);
 
   // ハッシュ値をコンフィグに保存
   versionConfig.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
@@ -159,6 +164,7 @@ type SpigotVersionData = {
 };
 
 async function buildSpigotVersion(
+  buildDir: Path,
   version: SpigotVersion,
   targetpath: Path,
   javaComponent: JavaComponent,
@@ -213,13 +219,13 @@ async function buildSpigotVersion(
     [
       '-Dfile.encoding=UTF-8',
       '-jar',
-      buildToolPath.absolute().str(),
+      getBuildToolPath(buildDir).absolute().str(),
       '--rev',
       version.id,
     ],
     push,
     push,
-    spigotBuildPath.absolute().str(),
+    buildDir.absolute().str(),
     true
   );
 
@@ -238,10 +244,16 @@ async function buildSpigotVersion(
     key: 'server.readyVersion.spigot.moving',
   });
 
-  await spigotBuildPath.child(`spigot-${version.id}.jar`).rename(targetpath);
+  const jarPath = buildDir.child(`spigot-${version.id}.jar`);
 
-  // 不要なファイルの削除
-  await spigotBuildPath.child('work').remove(true);
+  if (!jarPath.exists()) {
+    m?.delete();
+    return errorMessage.core.version.failSpigotBuild.missingJar({
+      spigotVersion: version.id,
+    });
+  }
+
+  await jarPath.rename(targetpath);
 
   m?.delete();
 }

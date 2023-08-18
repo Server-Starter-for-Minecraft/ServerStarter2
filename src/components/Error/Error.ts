@@ -11,6 +11,8 @@ export interface iErrorDialogProps {
   desc?: string
 }
 
+export type ErrorFuncReturns = { title: string, desc?: string }
+
 /**
  * エラーが発生する可能性のある変数をチェックし、エラーがある場合はエラー画面を表示する
  * @param check エラーチェックをする変数
@@ -20,7 +22,7 @@ export interface iErrorDialogProps {
 export function checkError<S>(
   check: Failable<S>,
   successProcess?: (checked: S) => void,
-  errorDescription?: (error: ErrorMessage) => { title: string, desc?: string }
+  errorDescription?: (error: ErrorMessage) => ErrorFuncReturns
 ) {
   if (isValid(check)) {
     if (successProcess !== void 0) successProcess(check)

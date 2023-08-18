@@ -218,7 +218,7 @@ async function importCustomMapZip(
   const innerPath = datFile[0];
 
   // 一時ディレクトリを削除
-  await unzipPath.remove(true);
+  await unzipPath.remove();
 
   // zipを一時パスに展開
   const extracted = await zip.extract(unzipPath);
@@ -246,7 +246,7 @@ async function importCustomMapZip(
   }
 
   // 一時ディレクトリを削除
-  await unzipPath.remove(true);
+  await unzipPath.remove();
 
   return props;
 }

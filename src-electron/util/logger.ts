@@ -13,7 +13,7 @@ async function compressArchive(logDir: Path, latestLog: Path) {
   );
 
   const newlogPath = logDir.child(logName);
-  await newlogPath.remove(true);
+  await newlogPath.remove();
 
   await latestLog.copyTo(newlogPath);
 

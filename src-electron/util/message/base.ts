@@ -69,11 +69,19 @@ export type FlattenMessages<T extends HierarchicalMessage> = TranslationPair<
 
 export type MessageTranslation<T extends HierarchicalMessage> = {
   [K in keyof T]: T[K] extends MessageContent<infer U>
+    ? string | MessageTranslationContent<U>
+    : T[K] extends HierarchicalMessage
+    ? MessageTranslation<T[K]>
+    : never;
+};
+
+export type MessageDescTitleTranslation<T extends HierarchicalMessage> = {
+  [K in keyof T]: T[K] extends MessageContent<infer U>
     ? {
         title: string | MessageTranslationContent<U>;
         desc?: string | MessageTranslationContent<U>;
       }
     : T[K] extends HierarchicalMessage
-    ? MessageTranslation<T[K]>
+    ? MessageDescTitleTranslation<T[K]>
     : never;
 };

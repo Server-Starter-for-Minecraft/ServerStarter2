@@ -3,8 +3,9 @@ import { Ref, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
-import { checkError } from 'src/components/Error/Error';
 import { assets } from 'src/assets/assets';
+import { tError } from 'src/i18n/utils/tFunc';
+import { checkError } from 'src/components/Error/Error';
 import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
@@ -27,7 +28,7 @@ async function importZip() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => { return { title: t(`error.${e.key}`) }}
+    e => tError(e)
     //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
@@ -39,7 +40,7 @@ async function importFolder() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => { return { title: t(`error.${e.key}`) }}
+    e => tError(e)
     //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
@@ -64,7 +65,7 @@ onMounted(async () => {
   checkError(
     res.value,
     lws => localWorlds.value = lws,
-    e => { return { title: t(`error.${e.key}`) }},
+    e => tError(e),
     //() => { return { title: 'シングルワールドの読み込みに失敗しました' } }
   )
 
