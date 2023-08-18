@@ -46,6 +46,10 @@ export const jaError: ErrorTranslationTypes = {
         title: '{type}が存在していません',
         desc: '{path}を確認してください',
       },
+      invalidExt: {
+        title: '{path} の拡張子が正しくありません',
+        desc: '拡張子{expectedExt}のファイルを選択してください',
+      },
       invalidContent: {
         missingJavaCommand: {
           title: 'run.bat、またはrun.sh内にjavaを起動するコマンドが存在していません',

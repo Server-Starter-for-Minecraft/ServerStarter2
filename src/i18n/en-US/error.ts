@@ -46,6 +46,10 @@ export const enUSError: ErrorTranslationTypes = {
         title: 'No {type} exists',
         desc: 'Please check {path}'
       },
+      invalidExt: {
+        title: 'Extension of {path} is inappropriate',
+        desc: 'Please select files with the extension {expectedExt}',
+      },
       invalidContent: {
         missingJavaCommand: {
           title: 'There are no command to exec java in run.bat or run.sh',
