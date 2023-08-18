@@ -13,7 +13,7 @@ export const jaError: ErrorTranslationTypes = {
       desc: 'エラーの型: {type} ,エラーの内容: {message}',
     },
     subprocess: {
-      title: '{processPath}でエラーが発生しました',
+      title: 'subprocessの実行時にエラーが発生しました',
       desc: '終了コード: {exitcode}',
     },
   },
@@ -79,13 +79,16 @@ export const jaError: ErrorTranslationTypes = {
           title: '{path}のカスタムマップにはlevel.datが複数格納されています',
         },
         invalidWorldSettingJson:{
-          title: 'server_settings.json の中身が不適当です',
+          title: 'ワールドの設定ファイルが壊れています',
+          desc: '{path} の中身が不適当です',
         },
         invalidOpsJson:{
-          title: 'ops.json の中身が不適当です',
+          title: 'プレイヤーのopを管理するファイルが壊れています',
+          desc: '{path} の中身が不適当です',
         },
         invalidWhitelistJson:{
-          title: 'whitelist.json の中身が不適当です',
+          title: 'ホワイトリストを管理するファイルが壊れています',
+          desc: '{path}の中身が不適当です',
       },
       },
       creationFiled:{
@@ -137,6 +140,7 @@ export const jaError: ErrorTranslationTypes = {
       },
       alreadyUsed: {
         title: 'この名前({value})は既に使われています',
+        desc: '他の名前を使用してください',
       },
     },
     remoteWorldName: {
@@ -146,6 +150,7 @@ export const jaError: ErrorTranslationTypes = {
       },
       alreadyUsed: {
         title: 'この名前({value})は既に使われています',
+        desc: '他の名前を使用してください',
       }
     }
   },
@@ -156,7 +161,11 @@ export const jaError: ErrorTranslationTypes = {
       },
       cannotChangeRunningWorldName: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
-        desc: 'ワールドを閉じてから再度試してください',
+        desc: 'ワールド {name} を停止してから再度試してください',
+      },
+      cannotDuplicateRunningWorld:{
+        title: '実行中のワールドの名前、保存フォルダは変更できません',
+        desc: 'ワールド {name} を停止してから再度試してください',
       },
       worldAleradyRunning: {
         title: '{container}/{name}に保存されているワールドは既に起動中です',
@@ -178,9 +187,13 @@ export const jaError: ErrorTranslationTypes = {
       },
       failSpigotBuild: {
         javaNeeded: {
-          title:'{version}のspigotのビルドに失敗しました',
+          title:'{spigotVersion}のspigotのビルドに失敗しました',
           desc: '{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります',
         },
+        missingJar: {
+          title: 'サーバーのビルドに失敗しました',
+          desc: 'ビルドに失敗したバージョン : {spigotVersion}',
+        }
       },
       vanillaVersionNotExists: {
         title: 'バージョン{version}のvanillaは存在しません',
