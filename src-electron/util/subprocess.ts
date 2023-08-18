@@ -14,7 +14,7 @@ export type ChildProcessPromise = Promise<Failable<undefined>> & {
   write(msg: string): Promise<void>;
 };
 
-function exscapePath(path: string) {
+function escapePath(path: string) {
   return '"' + path.replace('\\', '\\\\').replace('"', '\\"') + '"';
 }
 
@@ -104,7 +104,7 @@ export const interactiveProcess = (
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ): ChildProcessPromise => {
-  const child = child_process.spawn(exscapePath(process), args, {
+  const child = child_process.spawn(escapePath(process), args, {
     cwd,
     shell,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
@@ -137,6 +137,6 @@ export function execProcess(
   cwd: string | undefined = undefined,
   shell = false
 ) {
-  const child = child_process.spawn(exscapePath(process), args, { cwd, shell });
+  const child = child_process.spawn(escapePath(process), args, { cwd, shell });
   return promissifyProcess(child, process, args);
 }
