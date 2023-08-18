@@ -30,6 +30,9 @@ import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
+import { rootLoggerHierarchy } from '../logger';
+
+const worldLoggers = rootLoggerHierarchy.world;
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -410,6 +413,7 @@ export class WorldHandler {
    * usingフラグを折ってPush
    */
   private async fix() {
+    worldLoggers.fix({ name: this.name, container: this.container }).warn();
     const local = await this.loadLocal();
     const world = local.value;
     if (isError(world)) return local;
@@ -557,16 +561,15 @@ export class WorldHandler {
     if (isError(worldSettings)) return withError(worldSettings);
 
     // リモートの情報を削除
-    worldSettings.remote = undefined
+    worldSettings.remote = undefined;
     // 使用中フラグを削除
-    worldSettings.using = false
-    
+    worldSettings.using = false;
+
     const newHandler = WorldHandler.get(newId);
     if (isError(newHandler)) throw new Error();
 
-    
     await this.getSavePath().copyTo(newHandler.getSavePath());
-    
+
     // 設定ファイルを上書き
     await newHandler.saveLocalServerJson(worldSettings);
 
