@@ -65,6 +65,12 @@ export type CustomMapData = {
   lastPlayed: bigint;
 };
 
+/** バックアップデータ */
+export type BackupData = {
+  kind: 'backup';
+  path: string;
+};
+
 /** 画像データ(ImageURI) */
 export type ImageURIData = {
   kind: 'image';

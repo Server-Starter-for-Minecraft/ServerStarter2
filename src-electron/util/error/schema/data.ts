@@ -41,6 +41,12 @@ export type DataErrors = {
     // ファイルまたはディレクトリが存在しない
     notFound: PathErrorContent;
 
+    // ファイルの拡張子が異なる場合
+    invalidExt: ErrorMessageContent<{
+      path: string;
+      expectedExt: string;
+    }>;
+
     // ファイルまたはディレクトリの内容が無効
     invalidContent: PathContentErrors;
 

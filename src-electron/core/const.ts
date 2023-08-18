@@ -63,3 +63,6 @@ export const DEFAULT_SERVER_PROPERTIES: ServerProperties = objValueMap(
 export const DEFAULT_WORLD_CONTAINER = 'servers' as WorldContainer;
 
 export const WORLDNAME_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+export const BACKUP_DIRECTORY_NAME = '#backups';
+export const BACKUP_EXT = 'ssbackup';

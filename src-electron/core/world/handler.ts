@@ -30,9 +30,12 @@ import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
-import { rootLoggerHierarchy } from '../logger';
-
-const worldLoggers = rootLoggerHierarchy.world;
+import { getBackUpPath } from './backup';
+import { Path } from 'app/src-electron/util/path';
+import { createTar, decompressTar } from 'app/src-electron/util/tar';
+import { BACKUP_EXT } from '../const';
+import { BackupData } from 'app/src-electron/schema/filedata';
+import { allocateTempDir } from '../misc/tempPath';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -574,6 +577,89 @@ export class WorldHandler {
     await newHandler.saveLocalServerJson(worldSettings);
 
     return await newHandler.load();
+  }
+
+  /** ワールドをバックアップ */
+  async backup(path?: string): Promise<WithError<Failable<undefined>>> {
+    const func = () => this.backupExec(path);
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** ワールドをバックアップ */
+  private async backupExec(
+    path?: string
+  ): Promise<WithError<Failable<undefined>>> {
+    let backupPath: Path;
+    if (path !== undefined) {
+      backupPath = new Path(path);
+      // ファイルが既に存在する場合
+      if (backupPath.exists()) {
+        const e = errorMessage.data.path.alreadyExists({
+          type: 'file',
+          path: backupPath.str(),
+        });
+        return withError(e);
+      }
+      // 拡張子が.ssbackupでない場合
+      if (backupPath.extname() !== '.' + BACKUP_EXT) {
+        const e = errorMessage.data.path.invalidExt({
+          path: backupPath.str(),
+          expectedExt: BACKUP_EXT,
+        });
+        return withError(e);
+      }
+    } else {
+      backupPath = getBackUpPath(this.container, this.name);
+    }
+    // tarファイルを生成
+    const tar = await createTar(this.getSavePath(), true);
+    if (isError(tar)) return withError(tar);
+    // tarファイルを保存
+    await backupPath.write(tar);
+
+    return withError(undefined);
+  }
+
+  /** ワールドにバックアップを復元 */
+  async restore(backup: BackupData): Promise<WithError<Failable<World>>> {
+    const func = () => this.restoreExec(backup);
+    return await this.promiseSpooler.spool(func);
+  }
+
+  /** ワールドにバックアップを復元 */
+  private async restoreExec(
+    backup: BackupData
+  ): Promise<WithError<Failable<World>>> {
+    const tarPath = new Path(backup.path);
+    if (!tarPath.exists()) {
+      return withError(
+        errorMessage.data.path.notFound({
+          type: 'file',
+          path: backup.path,
+        })
+      );
+    }
+    const savePath = this.getSavePath();
+
+    // 展開先の一時フォルダ
+    const tempDir = await allocateTempDir();
+
+    // tarファイルを展開
+    const decompressResult = await decompressTar(tarPath, tempDir);
+
+    // 展開に失敗した場合
+    if (isError(decompressResult)) {
+      // 一時フォルダを削除
+      await tempDir.remove(true);
+      return withError(decompressResult);
+    }
+
+    // 一時フォルダの中身をこのパスに移動
+    await savePath.remove(true);
+    await tempDir.moveTo(savePath);
+    await tempDir.remove(true);
+
+    return this.loadExec();
   }
 
   /** すべてのサーバーが終了した場合のみシャットダウン */

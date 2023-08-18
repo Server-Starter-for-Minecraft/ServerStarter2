@@ -13,6 +13,7 @@ import {
   NewFileData,
   CustomMapData,
   ImageURIData,
+  BackupData,
 } from '../schema/filedata';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
@@ -123,6 +124,22 @@ export interface API extends IAPI {
       world: WorldID,
       name?: WorldName
     ) => Promise<WithError<Failable<World>>>;
+    /**
+     * Worldをバックアップ
+     * @parem path?:string - バックアップのファイルパス(省略可)
+     */
+    BackupWorld: (
+      world: WorldID,
+      path?: string
+    ) => Promise<WithError<Failable<undefined>>>;
+    /**
+     * Worldにバックアップを復元
+     * @parem path?:string - バックアップのファイルパス(省略可)
+     */
+    RestoreWorld: (
+      world: WorldID,
+      backup: BackupData
+    ) => Promise<WithError<Failable<World>>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
@@ -199,7 +216,10 @@ export interface API extends IAPI {
       ) => Promise<Failable<ImageURIData>>) &
       ((
         options: { type: 'container' } & DialogOptions
-      ) => Promise<Failable<WorldContainer>>);
+      ) => Promise<Failable<WorldContainer>>) &
+      ((
+        options: { type: 'backup' } & DialogOptions
+      ) => Promise<Failable<BackupData>>);
   };
 }
 

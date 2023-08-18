@@ -2,6 +2,7 @@ import { BrowserWindow, dialog } from 'electron';
 import { DialogOptions } from '../../schema/dialog';
 import { Failable } from '../../util/error/failable';
 import {
+  BackupData,
   CustomMapData,
   DatapackData,
   ImageURIData,
@@ -17,6 +18,7 @@ import { modFiles } from './files/addtional/mod';
 import { loadCustomMap } from './cusomMap';
 import { pickImage } from '../misc/pickImage';
 import { WorldContainer } from 'app/src-electron/schema/brands';
+import { BACKUP_EXT } from '../const';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -38,8 +40,18 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     options: { type: 'container' } & DialogOptions
   ): Promise<Failable<WorldContainer>>;
   async function result(
+    options: { type: 'backup' } & DialogOptions
+  ): Promise<Failable<BackupData>>;
+  async function result(
     options: {
-      type: 'datapack' | 'world' | 'plugin' | 'mod' | 'image' | 'container';
+      type:
+        | 'datapack'
+        | 'world'
+        | 'plugin'
+        | 'mod'
+        | 'image'
+        | 'container'
+        | 'backup';
       isFile?: boolean;
     } & DialogOptions
   ): Promise<
@@ -48,6 +60,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
       | CustomMapData
       | ImageURIData
       | WorldContainer
+      | BackupData
     >
   > {
     const window = windowGetter();
@@ -85,6 +98,13 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         break;
       case 'container':
         options.isFile = false;
+        break;
+      case 'backup':
+        // バックアップはssbackup形式(中身はtar.gz)
+        filters.push({
+          extensions: [BACKUP_EXT],
+          name: BACKUP_EXT,
+        });
         break;
     }
 
@@ -124,6 +144,8 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         return pickImage(path);
       case 'container':
         return path.str() as WorldContainer;
+      case 'backup':
+        return { kind: 'backup', path: path.str() };
     }
   }
   return result;
