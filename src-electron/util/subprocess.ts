@@ -5,6 +5,7 @@ import { sleep } from './sleep';
 import { onQuit } from '../lifecycle/lifecycle';
 import { fromRuntimeError } from './error/error';
 import { errorMessage } from './error/construct';
+import { Path } from './path';
 
 const loggers = utilLoggers.subprocess;
 
@@ -20,13 +21,13 @@ function escapePath(path: string) {
 
 function promissifyProcess(
   process: child_process.ChildProcess,
-  processPath: string,
+  processPath: Path,
   args: string[],
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ) {
   const logger = loggers.promissifyProcess({
-    command: processPath + ' ' + args.join(' '),
+    command: processPath.strQuoted() + ' ' + args.join(' '),
   });
   logger.start();
 
@@ -35,7 +36,7 @@ function promissifyProcess(
   function onExit(code: number | null): Failable<undefined> {
     if (code === 0 || code === null) return undefined;
     return errorMessage.system.subprocess({
-      processPath,
+      processPath: processPath.strQuoted(),
       args,
       exitcode: code,
     });
@@ -95,7 +96,7 @@ function promissifyProcess(
 }
 
 export const interactiveProcess = (
-  process: string,
+  process: Path,
   args: string[],
   onout: ((chunk: string) => void) | undefined,
   onerr: ((chunk: string) => void) | undefined,
@@ -104,7 +105,7 @@ export const interactiveProcess = (
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ): ChildProcessPromise => {
-  const child = child_process.spawn(escapePath(process), args, {
+  const child = child_process.spawn(process.strQuoted(), args, {
     cwd,
     shell,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
@@ -132,11 +133,11 @@ export const interactiveProcess = (
 };
 
 export function execProcess(
-  process: string,
+  process: Path,
   args: string[],
   cwd: string | undefined = undefined,
   shell = false
 ) {
-  const child = child_process.spawn(escapePath(process), args, { cwd, shell });
+  const child = child_process.spawn(process.strQuoted(), args, { cwd, shell });
   return promissifyProcess(child, process, args);
 }

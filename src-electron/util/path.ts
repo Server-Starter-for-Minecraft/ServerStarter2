@@ -51,6 +51,11 @@ export class Path {
     return this.path;
   }
 
+  /** "で囲まれたパス文字列を返す */
+  strQuoted() {
+    return '"' + this.path.replace('\\', '\\\\').replace('"', '\\"') + '"';
+  }
+
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
   basename() {
     return path.basename(this.path);
@@ -144,7 +149,7 @@ export class Path {
     if (!this.exists()) return;
 
     if (await this.isDirectory()) {
-      await fs.rm(this.path, { recursive:true });
+      await fs.rm(this.path, { recursive: true });
     } else {
       await fs.unlink(this.path);
     }

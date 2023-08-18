@@ -199,11 +199,11 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   // インストール開始
   // -jar forge-*-installer.jar --installServer server
   const process = interactiveProcess(
-    javaPath.absolute().str(),
+    javaPath,
     args,
     undefined,
     undefined,
-    installerPath.parent().absolute().str(),
+    installerPath.parent().absolute().strQuoted(),
     true
   );
   return await process;
@@ -233,8 +233,9 @@ export async function getAllForgeVersions(): Promise<
   });
 
   // 各バージョン後ごとの全ビルドを並列取得してflat化
-  const versions = (await Promise.all(ids.map(scrapeForgeVersions)))
-    .filter(isValid)
+  const versions = (await Promise.all(ids.map(scrapeForgeVersions))).filter(
+    isValid
+  );
 
   return versions;
 }
@@ -293,7 +294,7 @@ export async function scrapeForgeVersions(
     const match = path.match(/^[\d\.]+ - (.+)$/);
     if (match === null) return;
     const reco = match[1];
-    if (! forge_versions.includes(reco)) return;
+    if (!forge_versions.includes(reco)) return;
     recommended = reco;
   });
 

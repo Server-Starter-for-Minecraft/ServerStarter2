@@ -215,7 +215,7 @@ async function buildSpigotVersion(
 
   // ビルドの開始
   const process = interactiveProcess(
-    javapath.absolute().str(),
+    javapath,
     [
       '-Dfile.encoding=UTF-8',
       '-jar',

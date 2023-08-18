@@ -25,11 +25,11 @@ export function serverProcess(
   const addConsole = (chunk: string) => console(chunk);
 
   const process = interactiveProcess(
-    javaPath.absolute().str(),
+    javaPath,
     args,
     addConsole,
     addConsole,
-    cwdPath.absolute().str(),
+    cwdPath.absolute().strQuoted(),
     true,
     // アプリケーション終了時/stopコマンドを実行 (実行から10秒のタイムアウトでプロセスキル)
     async (process) => {

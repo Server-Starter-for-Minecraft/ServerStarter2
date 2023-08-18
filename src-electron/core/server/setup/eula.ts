@@ -110,9 +110,9 @@ async function generateEula(
 
   // サーバーを仮起動
   const result = await execProcess(
-    javaPath.absolute().str(),
+    javaPath,
     [...programArgunets, '--nogui'],
-    serverCwdPath.absolute().str(),
+    serverCwdPath.absolute().strQuoted(),
     true
   );
 
