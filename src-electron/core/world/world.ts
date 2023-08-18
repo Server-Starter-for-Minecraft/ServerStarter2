@@ -29,7 +29,7 @@ export async function getWorldAbbrs(
     getWorldAbbr(x, worldContainer)
   );
   // ワールドが一つもない場合はディレクトリを削除(設定からは削除しない)
-  if (subdir.length === 0) dir.remove(true);
+  if (subdir.length === 0) dir.remove();
 
   return withError(results.filter(isValid), results.filter(isError));
 }

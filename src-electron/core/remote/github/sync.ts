@@ -193,7 +193,7 @@ export async function deleteWorld(
   const push = await safeExecAsync(() => git.push(url, ':' + remote.name));
 
   // 一時フォルダを削除
-  await gitTempPath.remove(true);
+  await gitTempPath.remove();
 
   // pushに失敗した場合
   if (isError(push)) return push;

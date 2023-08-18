@@ -140,11 +140,11 @@ export class Path {
     return [];
   }
 
-  async remove(recursive = false) {
+  async remove() {
     if (!this.exists()) return;
 
     if (await this.isDirectory()) {
-      await fs.rm(this.path, { recursive });
+      await fs.rm(this.path, { recursive:true });
     } else {
       await fs.unlink(this.path);
     }
@@ -153,14 +153,14 @@ export class Path {
   async copyTo(target: Path) {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
-    await target.remove(true);
+    await target.remove();
     await fs.copy(this.str(), target.str());
   }
 
   async moveTo(target: Path) {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
-    await target.remove(true);
+    await target.remove();
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
     async function recursiveMove(path: Path, target: Path) {
@@ -172,7 +172,7 @@ export class Path {
       } else {
         await fs.move(path.str(), target.str());
       }
-      await path.remove(true);
+      await path.remove();
     }
     await recursiveMove(this, target);
   }

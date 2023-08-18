@@ -219,7 +219,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
 
     // 非同期で削除
     await asyncForEach(deletFiles, (x) =>
-      dirPath.child(`${x.name}${x.ext}`).remove(true)
+      dirPath.child(`${x.name}${x.ext}`).remove()
     );
 
     return withError(undefined, errors);

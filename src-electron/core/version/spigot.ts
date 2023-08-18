@@ -79,7 +79,7 @@ async function readySpigotVersion(
       progress
     );
     // 一時フォルダの削除
-    await buildDir.remove(true);
+    await buildDir.remove();
     if (isError(buildResult)) return buildResult;
   }
 

@@ -6,6 +6,6 @@ export async function allocateTempDir() {
   const dir = tempPath.child(genUUID());
   await dir.mkdir(true);
   // ソフト終了時に削除
-  onQuit(async () => dir.remove(true), true);
+  onQuit(async () => dir.remove(), true);
   return dir;
 }
