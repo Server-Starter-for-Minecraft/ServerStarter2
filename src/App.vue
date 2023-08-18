@@ -3,6 +3,7 @@ import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { setCssVar, useQuasar } from 'quasar';
+import { setI18nFunc } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
@@ -14,7 +15,6 @@ import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import { deepCopy } from './scripts/deepCopy';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
-import { setI18nFunc } from './i18n/utils/tFunc';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
