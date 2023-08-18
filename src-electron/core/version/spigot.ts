@@ -68,7 +68,11 @@ async function readySpigotVersion(
     });
     const buildTool = await readySpigotBuildTool(buildDir);
     b?.delete();
-    if (isError(buildTool)) return buildTool;
+    if (isError(buildTool)) {
+      // 一時フォルダの削除
+      await buildDir.remove();
+      return buildTool;
+    }
 
     // ビルドの実行
     const buildResult = await buildSpigotVersion(
@@ -133,24 +137,12 @@ async function readySpigotBuildTool(
   buildDir: Path
 ): Promise<Failable<undefined>> {
   // ビルドツールをダウンロード
-  let buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
-
-  const buildToolPath = getBuildToolPath(buildDir);
-
-  // ビルドツールのダウンロードに失敗した場合ローカルにあるデータを使う
-  if (isError(buildtool)) {
-    // ハッシュ値をコンフィグから読み込む
-    const sha1 = versionConfig.get('spigot_buildtool_sha1');
-    if (sha1) {
-      buildtool = await BytesData.fromPath(buildToolPath.absolute(), {
-        type: 'sha1',
-        value: sha1,
-      });
-    }
-  }
+  const buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 
   // ビルドツールが用意できなかった場合エラー
   if (isError(buildtool)) return buildtool;
+
+  const buildToolPath = getBuildToolPath(buildDir);
 
   // ハッシュ値をコンフィグに保存
   versionConfig.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
@@ -252,7 +244,16 @@ async function buildSpigotVersion(
     key: 'server.readyVersion.spigot.moving',
   });
 
-  await buildDir.child(`spigot-${version.id}.jar`).rename(targetpath);
+  const jarPath = buildDir.child(`spigot-${version.id}.jar`);
+
+  if (!jarPath.exists()) {
+    m?.delete();
+    return errorMessage.core.version.failSpigotBuild.missingJar({
+      spigotVersion: version.id,
+    });
+  }
+
+  await jarPath.rename(targetpath);
 
   m?.delete();
 }

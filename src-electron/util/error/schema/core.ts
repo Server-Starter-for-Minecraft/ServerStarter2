@@ -58,6 +58,11 @@ export type CoreErrors = {
         minVersion: string;
         maxVersion: string;
       }>;
+
+      // ビルド結果のjarファイルが存在しない
+      missingJar: ErrorMessageContent<{
+        spigotVersion: string;
+      }>;
     };
 
     // vanillaのバージョンが存在しない
