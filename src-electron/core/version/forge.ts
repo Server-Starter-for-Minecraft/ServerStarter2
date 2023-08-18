@@ -80,7 +80,7 @@ async function installForgeVersion(
   jarpath: Path
 ) {
   // versionフォルダを削除
-  await versionPath.remove(true);
+  await versionPath.remove();
 
   const installerPath = versionPath.child(
     'forge-' + version.id + '-installer.jar'
