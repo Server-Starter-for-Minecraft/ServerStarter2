@@ -134,7 +134,7 @@ async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
     }
   }
 
-  if (jarpath.exists()) return ['-jar', '"' + jarpath.absolute().str() + '"'];
+  if (jarpath.exists()) return ['-jar', jarpath.absolute().strQuoted()];
 
   return errorMessage.data.path.notFound({
     type: 'file',
@@ -192,7 +192,7 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
 
   const args = [
     '-jar',
-    '"' + installerPath.absolute().str() + '"',
+    installerPath.absolute().strQuoted(),
     '--installServer',
   ];
 
@@ -203,7 +203,7 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
     args,
     undefined,
     undefined,
-    installerPath.parent().absolute().strQuoted(),
+    installerPath.parent().absolute().str(),
     true
   );
   return await process;

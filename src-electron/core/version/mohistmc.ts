@@ -57,7 +57,7 @@ async function readyMohistmcVersion(
   if (isError(result)) return result;
 
   return {
-    programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+    programArguments: ['-jar', jarpath.absolute().strQuoted() ],
     component,
   };
 }

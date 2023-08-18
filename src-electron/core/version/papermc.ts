@@ -136,7 +136,7 @@ async function readyVersion(
   s?.delete();
 
   return {
-    programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+    programArguments: ['-jar', jarpath.absolute().strQuoted()],
     component,
   };
 }

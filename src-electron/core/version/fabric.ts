@@ -51,7 +51,7 @@ async function readyVersion(
   if (isError(javaComponent)) return javaComponent;
 
   return {
-    programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+    programArguments: ['-jar', jarpath.absolute().strQuoted()],
     component: javaComponent,
   };
 }

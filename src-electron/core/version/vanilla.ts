@@ -79,7 +79,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
     s?.delete();
 
     return {
-      programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+      programArguments: ['-jar', jarpath.absolute().strQuoted()],
       component: json.javaVersion?.component ?? 'jre-legacy',
     };
   },

@@ -88,7 +88,7 @@ async function readySpigotVersion(
   }
 
   return {
-    programArguments: ['-jar', '"' + jarpath.absolute().str() + '"'],
+    programArguments: ['-jar', jarpath.absolute().strQuoted()],
     component,
   };
 }
@@ -219,7 +219,7 @@ async function buildSpigotVersion(
     [
       '-Dfile.encoding=UTF-8',
       '-jar',
-      getBuildToolPath(buildDir).absolute().str(),
+      getBuildToolPath(buildDir).absolute().strQuoted(),
       '--rev',
       version.id,
     ],
