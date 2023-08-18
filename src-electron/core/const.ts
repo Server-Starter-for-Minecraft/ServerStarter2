@@ -33,9 +33,6 @@ export const DATAPACK_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('datapacks');
 export const PLUGIN_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('plugins');
 export const MOD_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('mods');
 
-/** spigotをビルドするためのキャッシュパス */
-export const spigotBuildPath = cachePath.child('spigotBuild');
-
 /** zipファイルを展開するための一時パス */
 export const unzipPath = tempPath.child('zip');
 
