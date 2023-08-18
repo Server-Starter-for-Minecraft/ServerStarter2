@@ -15,10 +15,6 @@ export type ChildProcessPromise = Promise<Failable<undefined>> & {
   write(msg: string): Promise<void>;
 };
 
-function escapePath(path: string) {
-  return '"' + path.replace('\\', '\\\\').replace('"', '\\"') + '"';
-}
-
 function promissifyProcess(
   process: child_process.ChildProcess,
   processPath: Path,
