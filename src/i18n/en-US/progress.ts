@@ -25,6 +25,7 @@ export const enUSProgress: ProgressMessageTranslation = {
 		remote: {
 			check: 'Checking existence of data on the remote',
 			pull: 'Downloading data on the remote',
+      fixing: 'Fixing remote data',
       desc: {
         getPlayerFromUUID: 'Gettinf player from UUID',
         git: 'Executing git.{method} {stage} stage',
@@ -88,6 +89,7 @@ export const enUSProgress: ProgressMessageTranslation = {
         title: 'Processing before world startup',
         memoryArguments: 'Generating memory arguments in Java',
         userArguments: 'Validating user arguments in Java',
+        getLog4jSettingFile: 'Downloading configuration file of log4J',
         convertDirectory: 'fixing directory structure',
       },
       after: {

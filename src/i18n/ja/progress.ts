@@ -25,6 +25,7 @@ export const jaProgress: ProgressMessageTranslation = {
 		remote: {
 			check: 'リモートのデータがあるかどうか確認しています',
 			pull: 'リモートのデータをダウンロード中です',
+      fixing: 'リモートのデータを修復中です',
       desc: {
         getPlayerFromUUID: 'UUIDからプレイヤーを取得中です',
         git: 'git.{method} {stage} stage を実行中',
@@ -36,7 +37,7 @@ export const jaProgress: ProgressMessageTranslation = {
       file: '{path}を生成中です',
     },
 		readyVersion: {
-			title: '{version}を準備中です',
+			title: '{version_id}({version_type})を準備中です',
       vanilla: {
         fetching: 'サーバーデータをダウンロード中です',
         saving: 'サーバーデータを保存中です'
@@ -85,14 +86,14 @@ export const jaProgress: ProgressMessageTranslation = {
     },
     run: {
       before:{
-        title: 'ワールド起動前の処理中です',
+        title: 'ワールドの起動準備を行っています',
         memoryArguments: 'Javaのメモリ引数を生成しています',
         userArguments: 'Javaのユーザー定義引数を検証中です',
         getLog4jSettingFile: 'log4Jの設定ファイルをダウンロード中です',
-        convertDirectory: 'ファイル構造を修正しています',
+        convertDirectory: 'サーバーのファイル構造を構成しています',
       },
       after: {
-        title: 'ワールド起動後の処理中です',
+        title: 'ワールドの終了処理を行っています',
       },
     },
   },
