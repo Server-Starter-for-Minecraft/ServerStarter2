@@ -1,12 +1,19 @@
 import { ErrorMessage } from "app/src-electron/schema/error";
 import { ProgressMessage } from "app/src-electron/schema/progressMessage";
+import { MessageSchema } from "src/boot/i18n";
 import { ErrorFuncReturns } from "src/components/Error/Error";
 import { fromEntries, toEntries } from "src/scripts/obj";
 import { flattenObj } from "src/scripts/objFlatten";
 
-// argsのvalueに以下の文字列が来たときには翻訳を強制する
-// TODO: value側の型定義を推敲
-const translationArgs: Record<string, string> = {
+/** 指定した型のキーに対して string | number の型を付与して返す */
+type AssignKeyType<T> = Extract<keyof T, string | number>
+
+/** Dict形式の型からキー一覧を取得する */
+type FullKeys<T> = T extends object ? {
+  [K in AssignKeyType<T>]: `${K}` | `${K}.${FullKeys<T[K]>}`
+}[AssignKeyType<T>] : never
+
+const translationArgs: Record<string, FullKeys<MessageSchema>> = {
   'vanilla': 'home.serverType.vanilla',
   'spigot': 'home.serverType.spigot',
   'papermc': 'home.serverType.papermc',
