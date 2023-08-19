@@ -25,6 +25,8 @@ import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialo
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import CustomMapImporterView from 'src/components/World/HOME/CustomMapImporterView.vue';
 import VersionSelecterView from 'src/components/World/HOME/VersionSelecterView.vue';
+import DuplicateWorldView from 'src/components/World/HOME/DuplicateWorldView.vue';
+import BackupWorldView from 'src/components/World/HOME/BackupWorldView.vue';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
@@ -245,6 +247,10 @@ function openFolderEditor() {
         class="q-pt-md"
       />
     </ExpansionView>
+    
+    <h1>ワールドの操作</h1>
+    <DuplicateWorldView />
+    <BackupWorldView />
 
     <DangerView
       :view-title="$t('home.deleteWorld.title')"
