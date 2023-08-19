@@ -50,7 +50,7 @@ export const enUSHome: MessageSchema["home"] = {
     inputFolderName: 'Input folder name',
     selectFolder: 'Select folder',
     selectFolderBtn: 'Select folder',
-
+    cannotEdit: 'World folders cannot be edited while a world is running',
 
   },
   setting: {

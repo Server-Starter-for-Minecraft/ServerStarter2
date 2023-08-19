@@ -47,7 +47,7 @@ export const jaHome = {
     inputFolderName: 'フォルダ名を入力してください',
     selectFolder: 'フォルダを選択してください',
     selectFolderBtn: 'フォルダを選択',
-
+    cannotEdit: '起動中のワールドがある状態でワールドフォルダを編集することはできません',
   },
   setting: {
     title: '起動設定',

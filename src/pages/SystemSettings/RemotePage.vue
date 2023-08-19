@@ -23,7 +23,7 @@ function addRemote() {
       {{ $t('shareWorld.descriptRemote') }}
     </p>
     <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-red">
-      起動中のワールドがある状態でリモート設定を編集することはできません
+      {{ $t('shareWorld.cannotEdit') }}
     </p>
 
     <div class="row">
