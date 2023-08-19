@@ -96,13 +96,13 @@ export const interactiveProcess = (
   args: string[],
   onout: ((chunk: string) => void) | undefined,
   onerr: ((chunk: string) => void) | undefined,
-  cwd: string | undefined = undefined,
+  cwd: Path | undefined = undefined,
   shell = false,
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ): ChildProcessPromise => {
   const child = child_process.spawn(process.strQuoted(), args, {
-    cwd,
+    cwd: cwd?.str(),
     shell,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
   });
@@ -131,9 +131,12 @@ export const interactiveProcess = (
 export function execProcess(
   process: Path,
   args: string[],
-  cwd: string | undefined = undefined,
+  cwd: Path | undefined = undefined,
   shell = false
 ) {
-  const child = child_process.spawn(process.strQuoted(), args, { cwd, shell });
+  const child = child_process.spawn(process.strQuoted(), args, {
+    cwd: cwd?.str(),
+    shell,
+  });
   return promissifyProcess(child, process, args);
 }

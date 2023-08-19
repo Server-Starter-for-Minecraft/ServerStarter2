@@ -46,8 +46,9 @@ async function readySpigotVersion(
     key: 'server.readyVersion.title',
     args: { version: version },
   });
-  const versionPath = spigotVersionsPath.child(version.id);
-  const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
+
+  // 実行jarパス
+  const jarPath = cwdPath.child(`${version.type}-${version.id}.jar`);
 
   // 適切なjavaのバージョンを取得
   const b = progress?.subtitle({
@@ -57,40 +58,62 @@ async function readySpigotVersion(
   b?.delete();
   if (isError(component)) return component;
 
-  // server.jarが存在しなかった場合の処理
-  if (!jarpath.exists()) {
-    // ビルド用ディレクトリの確保
-    const buildDir = await allocateTempDir();
-
-    // ビルドツールのダウンロード
-    const b = progress?.subtitle({
-      key: 'server.readyVersion.spigot.readyBuildtool',
-    });
-    const buildTool = await readySpigotBuildTool(buildDir);
-    b?.delete();
-    if (isError(buildTool)) {
-      // 一時フォルダの削除
-      await buildDir.remove();
-      return buildTool;
-    }
-
-    // ビルドの実行
-    const buildResult = await buildSpigotVersion(
-      buildDir,
+  if (!jarPath.exists()) {
+    // server.jarが存在しなかった場合キャッシュされたバージョンデータをコピー
+    const cachedJarPath = await readyCachedSpigotVersion(
       version,
-      jarpath,
       component,
       progress
     );
-    // 一時フォルダの削除
-    await buildDir.remove();
-    if (isError(buildResult)) return buildResult;
+    if (isError(cachedJarPath)) return cachedJarPath;
+    cachedJarPath.copyTo(jarPath);
   }
 
   return {
-    programArguments: ['-jar', jarpath.absolute().strQuoted()],
+    programArguments: ['-jar', jarPath.absolute().strQuoted()],
     component,
   };
+}
+
+async function readyCachedSpigotVersion(
+  version: SpigotVersion,
+  component: JavaComponent,
+  progress?: GroupProgressor
+): Promise<Failable<Path>> {
+  const versionPath = spigotVersionsPath.child(version.id);
+  const cachedJarPath = versionPath.child(`${version.type}-${version.id}.jar`);
+
+  // すでにキャッシュされたデータがあったら終了
+  if (cachedJarPath.exists()) return cachedJarPath;
+
+  // ビルド用ディレクトリの確保
+  const buildDir = await allocateTempDir();
+
+  // ビルドツールのダウンロード
+  const b = progress?.subtitle({
+    key: 'server.readyVersion.spigot.readyBuildtool',
+  });
+  const buildTool = await readySpigotBuildTool(buildDir);
+  b?.delete();
+  if (isError(buildTool)) {
+    // 一時フォルダの削除
+    await buildDir.remove();
+    return buildTool;
+  }
+
+  // ビルドの実行
+  const buildResult = await buildSpigotVersion(
+    buildDir,
+    version,
+    cachedJarPath,
+    component,
+    progress
+  );
+  // 一時フォルダの削除
+  await buildDir.remove();
+  if (isError(buildResult)) return buildResult;
+
+  return cachedJarPath;
 }
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
@@ -225,7 +248,7 @@ async function buildSpigotVersion(
     ],
     push,
     push,
-    buildDir.absolute().str(),
+    buildDir,
     true
   );
 

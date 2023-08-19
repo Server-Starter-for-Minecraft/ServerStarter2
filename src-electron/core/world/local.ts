@@ -134,6 +134,7 @@ export async function loadLocalFiles(
     remote: worldSettings.remote,
     last_date: worldSettings.last_date,
     last_user: worldSettings.last_user,
+    last_id: worldSettings.last_id,
     memory: worldSettings.memory,
     additional: additional.value,
     properties,
@@ -184,7 +185,6 @@ export async function saveLocalFiles(
     // 導入に失敗した場合
     if (isError(importResult)) errors.push(importResult);
     else {
-      
       world.avater_path = world.custom_map.icon ?? world.avater_path;
 
       worldSettings = importResult.settings;
@@ -246,6 +246,7 @@ export function constructWorldSettings(world: World | WorldEdited) {
     remote: world.remote,
     last_date: world.last_date,
     last_user: world.last_user,
+    last_id: world.last_id,
     using: world.using,
   };
   return worldSettings;

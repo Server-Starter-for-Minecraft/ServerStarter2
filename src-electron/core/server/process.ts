@@ -29,7 +29,7 @@ export function serverProcess(
     args,
     addConsole,
     addConsole,
-    cwdPath.absolute().strQuoted(),
+    cwdPath,
     true,
     // アプリケーション終了時/stopコマンドを実行 (実行から10秒のタイムアウトでプロセスキル)
     async (process) => {

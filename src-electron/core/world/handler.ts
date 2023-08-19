@@ -416,7 +416,6 @@ export class WorldHandler {
    * usingフラグを折ってPush
    */
   private async fix() {
-    worldLoggers.fix({ name: this.name, container: this.container }).warn();
     const local = await this.loadLocal();
     const world = local.value;
     if (isError(world)) return local;
@@ -650,14 +649,14 @@ export class WorldHandler {
     // 展開に失敗した場合
     if (isError(decompressResult)) {
       // 一時フォルダを削除
-      await tempDir.remove(true);
+      await tempDir.remove();
       return withError(decompressResult);
     }
 
     // 一時フォルダの中身をこのパスに移動
-    await savePath.remove(true);
+    await savePath.remove();
     await tempDir.moveTo(savePath);
-    await tempDir.remove(true);
+    await tempDir.remove();
 
     return this.loadExec();
   }
