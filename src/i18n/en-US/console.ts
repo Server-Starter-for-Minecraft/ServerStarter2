@@ -13,4 +13,5 @@ export const enUSConsole:MessageSchema['console'] = {
     Running: 'Running',
   },
   shutdownServer: 'Shutdowning server',
+  command: 'Command',
 }
