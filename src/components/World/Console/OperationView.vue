@@ -47,7 +47,7 @@ function reboot() {
       v-on:keydown.enter="() => consoleOpeStore.sendCommand()"
       v-on:keydown.up="consoleOpeStore.upKey()"
       v-on:keydown.down="consoleOpeStore.downKey()"
-      placeholder="Command"
+      :placeholder="$t('console.command')"
       class="col"
     >
       <template #append>
