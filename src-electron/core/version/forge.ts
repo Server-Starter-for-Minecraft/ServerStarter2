@@ -37,11 +37,12 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
     if (isError(component)) return component;
 
     const versionPath = forgeVersionsPath.child(version.id);
-    const serverCwdPath = versionPath;
-    const jarpath = versionPath.child(`${version.type}-${version.id}.jar`);
+    const jarpath = cwdPath.child(`${version.type}-${version.id}.jar`);
 
     // 実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
-    let programArguments = await getProgramArguments(serverCwdPath, jarpath);
+    let programArguments = await getProgramArguments(cwdPath, jarpath);
+
+    console.log(programArguments);
 
     // 実行可能なファイルが存在しなかった場合
     if (isError(programArguments)) {
@@ -49,14 +50,15 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
       const r = progress?.subtitle({
         key: 'server.readyVersion.forge.readyServerData',
       });
-      const install = await installForgeVersion(version, versionPath, jarpath);
+      const install = await installForgeVersion(version, cwdPath, jarpath);
       r?.delete();
 
       // インストールに失敗した場合エラー
       if (isError(install)) return install;
 
       // 再び実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
-      programArguments = await getProgramArguments(serverCwdPath, jarpath);
+      programArguments = await getProgramArguments(cwdPath, jarpath);
+      console.log(programArguments);
 
       // 実行可能なファイルが存在しなかった場合インストールに失敗したとみなしエラー
       if (isError(programArguments)) return programArguments;
@@ -64,7 +66,6 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
 
     return {
       programArguments,
-      serverCwdPath,
       component,
     };
   },
@@ -76,21 +77,20 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
 
 async function installForgeVersion(
   version: ForgeVersion,
-  versionPath: Path,
+  cwdPath: Path,
   jarpath: Path
 ) {
   // versionフォルダを削除
-  await versionPath.remove();
+  await cwdPath.remove();
 
-  const installerPath = versionPath.child(
-    'forge-' + version.id + '-installer.jar'
-  );
+  const installerPath = cwdPath.child('forge-' + version.id + '-installer.jar');
 
   // インストーラーのダウンロードURLを取得
   const serverURL = await getForgeDownloadUrl(version);
 
   // インストーラーを取得
   const serverData = await BytesData.fromURL(serverURL);
+
   if (isError(serverData)) return serverData;
 
   // インストーラーを保存
@@ -100,7 +100,7 @@ async function installForgeVersion(
   const installResult = await installForge(installerPath);
   if (isError(installResult)) return installResult;
 
-  for (const file of await versionPath.iter()) {
+  for (const file of await cwdPath.iter()) {
     const filename = file.basename();
 
     // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
@@ -116,7 +116,6 @@ async function installForgeVersion(
 
 async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
-  // TODO: osに応じてrun.shに対応
   let runPath: Path;
   if (osPlatform == 'windows-x64') {
     // windows
@@ -142,6 +141,18 @@ async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
   });
 }
 
+/** 他のファイルからimportするタイプの引数を解決 */
+async function resolveImportArgs(cwdPath: Path, args: string[]) {
+  const result: string[] = [];
+
+  for (const x of args) {
+    const match = x.match(/@(.*)/);
+    if (match === null) return [x];
+    const filePath = cwdPath.child(match[1]);
+    const contents = await filePath.readText();
+  }
+}
+
 async function getProgramArgumentsFromBat(batPath: Path) {
   const data = await batPath.read();
   if (isError(data)) return data;
@@ -154,7 +165,7 @@ async function getProgramArgumentsFromBat(batPath: Path) {
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      return ['@user_jvm_args.txt', arg];
+      return ['"@user_jvm_args.txt"', arg.split(' ').map((x) => `"${x}"`)];
     }
   }
   return errorMessage.data.path.invalidContent.missingJavaCommand({
@@ -203,7 +214,7 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
     args,
     undefined,
     undefined,
-    installerPath.parent().absolute().str(),
+    installerPath,
     true
   );
   return await process;

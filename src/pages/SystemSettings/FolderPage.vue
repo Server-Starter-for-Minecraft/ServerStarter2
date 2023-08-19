@@ -30,7 +30,7 @@ function openFolderEditor() {
       {{ $t('home.saveWorld.description') }}
     </p>
     <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-red">
-      起動中のワールドがある状態でワールドフォルダを編集することはできません
+      {{ $t('home.saveWorld.cannotEdit') }}
     </p>
 
     <div class="column q-py-sm q-gutter-y-md">

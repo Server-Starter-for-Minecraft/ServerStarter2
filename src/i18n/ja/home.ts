@@ -10,9 +10,8 @@ export const jaHome = {
     title: 'バージョン',
     serverType: 'サーバーの種類を選択',
     versionType: 'バージョンを選択',
-    displayVersion: '一覧に表示するバージョン',
     allVersions: '全てのバージョン',
-    onlyReleased: '正式リリース版のみ',
+    onlyReleased: 'リリース版のみ',
     buildNumber: 'ビルド番号',
     notChange: '(変更不要)',
     recommend: '推奨',
@@ -47,7 +46,7 @@ export const jaHome = {
     inputFolderName: 'フォルダ名を入力してください',
     selectFolder: 'フォルダを選択してください',
     selectFolderBtn: 'フォルダを選択',
-
+    cannotEdit: '起動中のワールドがある状態でワールドフォルダを編集することはできません',
   },
   setting: {
     title: '起動設定',

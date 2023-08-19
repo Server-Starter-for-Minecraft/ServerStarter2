@@ -10,7 +10,6 @@ export const enUSHome: MessageSchema["home"] = {
     title: 'Versions',
     serverType: 'Select the Server Type',
     versionType: 'Select the Server Version',
-    displayVersion: 'Versions to be displayed in the selection list',
     allVersions: 'All versions',
     onlyReleased: 'Only released',
     buildNumber: 'Build number',
@@ -50,7 +49,7 @@ export const enUSHome: MessageSchema["home"] = {
     inputFolderName: 'Input folder name',
     selectFolder: 'Select folder',
     selectFolderBtn: 'Select folder',
-
+    cannotEdit: 'World folders cannot be edited while a world is running',
 
   },
   setting: {

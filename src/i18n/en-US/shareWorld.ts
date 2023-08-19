@@ -10,6 +10,7 @@ export const enUSShareWorld:MessageSchema['shareWorld'] = {
   descriptRemote: 'Register a data storage location to use the world sharing (ShareWorld)',
   registerNewRemote: 'Register new remote',
   register: 'Register',
+  cannotEdit: 'Remote settings cannot be edited while there is a running world',
   addRemote: {
     title: 'Add remote',
     dialogTitle: 'Registration of new ShareWorld',
@@ -34,8 +35,8 @@ export const enUSShareWorld:MessageSchema['shareWorld'] = {
     title: 'Sync with new ShareWorld',
     btn: 'Sync with new data',
     desc: '\
-      Create a new ShareWorld and synchronize data.<br>\
-      Enter the name of the ShareWorld to be used for synchronization.',  
+      Create a new ShareWorld and synchronize data.{0}\
+      Enter the name of the ShareWorld to be used for synchronization.{1}{2}',  
     caution: 'This name cannot be changed later.',
     inputName: 'Input name of new ShareWorld',
     unavailName: 'Cannot use as a new name for ShareWorld',

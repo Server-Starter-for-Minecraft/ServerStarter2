@@ -58,6 +58,9 @@ export interface WorldBase extends WorldAbbr {
   /** 最終プレイ者 */
   last_user?: PlayerUUID;
 
+  /** 最終プレイ環境 */
+  last_id?: UUID;
+
   /** 使用メモリ量 */
   memory: MemorySettings;
 

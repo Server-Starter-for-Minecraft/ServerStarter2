@@ -23,7 +23,7 @@ if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
 </script>
 
 <template>
-  <div class="row justify-between q-gutter-md">
+  <div class="row justify-between q-gutter-md items-center">
     <SsSelect
       v-model="mainStore.world.version"
       :options="vanillaOps?.filter(ver => !isRelease || ver['release'])"
@@ -33,15 +33,12 @@ if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
       class="col"
       style="min-width: 8rem;"
     />
-    <div class="column items-end">
-      <span>{{ $t('home.version.displayVersion') }}</span>
-      <q-toggle
-        v-model="isRelease"
-        :label="isRelease ? $t('home.version.onlyReleased') : $t('home.version.allVersions')"
-        left-label
-        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
-        style="width: fit-content;"
-      />
-    </div>
+    <q-toggle
+      v-model="isRelease"
+      :label="isRelease ? $t('home.version.onlyReleased') : $t('home.version.allVersions')"
+      left-label
+      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      style="width: fit-content;"
+    />
   </div>
 </template>
