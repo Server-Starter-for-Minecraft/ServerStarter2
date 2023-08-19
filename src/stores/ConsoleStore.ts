@@ -6,6 +6,8 @@ import { checkError } from 'src/components/Error/Error';
 import { assets } from 'src/assets/assets';
 import { values } from 'src/scripts/obj';
 import { isValid } from 'src/scripts/error';
+import { $T, tError } from 'src/i18n/utils/tFunc';
+import { useI18n } from 'vue-i18n';
 
 interface WorldConsole {
   [id: WorldID]: {
@@ -87,12 +89,14 @@ export async function runServer() {
   // プログレスのステータスをセットして起動
   consoleStore.initProgress(
     mainStore.selectedWorldID,
-    `${mainStore.world.version.id} (${mainStore.world.version.type}) / ${mainStore.world.name} を起動中`
+    //`${mainStore.world.version.id} (${mainStore.world.version.type}) / ${mainStore.world.name} を起動中`
+    $T('console.booting',{id: `${mainStore.world.version.id}`,type:` ${$T(`home.serverType.${mainStore.world.version.type}`)}` ,name:`${mainStore.world.name}`})
   )
   const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
 
   // サーバー終了時のエラー確認
-  checkError(res.value, undefined, () => { return { title: 'サーバーが異常終了しました' }})
+  checkError(res.value, undefined, e=>tError(e))
+  //() => { return { title: 'サーバーが異常終了しました' }}
 
   // サーバータブをリセット
   consoleStore.initTab(true)
