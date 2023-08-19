@@ -4,6 +4,7 @@ import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from 'src/components/World/Player/utils/PlayerHeadView.vue';
+import { tError } from 'src/i18n/utils/tFunc';
 
 const owner = defineModel<PlayerUUID>()
 
@@ -18,7 +19,8 @@ async function updatePlayer() {
     checkError(
       res,
       p => player.value = p,
-      () => { return { title: 'オーナープレイヤーの取得に失敗しました' }}
+      e => tError(e)
+      //() => { return { title: 'オーナープレイヤーの取得に失敗しました' }}
     )
   }
 }

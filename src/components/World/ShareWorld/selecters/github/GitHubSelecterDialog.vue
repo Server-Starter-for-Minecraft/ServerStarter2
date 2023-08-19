@@ -10,6 +10,7 @@ import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import ExistedGitHubDialog from './ExistedGitHubDialog.vue';
 import NewGitHubDialog from './NewGitHubDialog.vue';
+import { tError } from 'src/i18n/utils/tFunc';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -58,7 +59,8 @@ onMounted(async () => {
   checkError(
     res.value,
     remotes => remoteWorlds.value = remotes,
-    () => { return { title: 'ShareWorldの取得に失敗しました' } }
+    e => tError(e)
+    //() => { return { title: 'ShareWorldの取得に失敗しました' } }
   )
 
   // 読み込み中のステータスを解除

@@ -8,6 +8,7 @@ import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import { tError } from 'src/i18n/utils/tFunc';
 
 const prop = defineProps<AddFolderDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -22,7 +23,8 @@ async function pickFolder() {
   checkError(
     res,
     c => pickPath.value = c,
-    () => { return { title: 'フォルダの選択に失敗しました' } }
+    e => tError(e)
+    //() => { return { title: 'フォルダの選択に失敗しました' } }
   )
 }
 </script>
