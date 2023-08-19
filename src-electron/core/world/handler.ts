@@ -610,9 +610,23 @@ export class WorldHandler {
     } else {
       backupPath = getBackUpPath(this.container, this.name);
     }
+
+    // リモートのデータを一時的に削除
+    const localJson = await this.loadLocalServerJson();
+    if (isError(localJson)) return withError(localJson);
+    const remote = localJson.remote;
+    delete localJson.remote;
+    await this.saveLocalServerJson(localJson);
+    localJson.remote = remote;
+
     // tarファイルを生成
     const tar = await createTar(this.getSavePath(), true);
+
+    // リモートのデータを復旧
+    await this.saveLocalServerJson(localJson);
+
     if (isError(tar)) return withError(tar);
+
     // tarファイルを保存
     await backupPath.write(tar);
 
@@ -629,6 +643,10 @@ export class WorldHandler {
   private async restoreExec(
     backup: BackupData
   ): Promise<WithError<Failable<World>>> {
+    const beforeLocalJson = await this.loadLocalServerJson();
+    if (isError(beforeLocalJson)) return withError(beforeLocalJson);
+    const remote = beforeLocalJson.remote;
+
     const tarPath = new Path(backup.path);
     if (!tarPath.exists()) {
       return withError(
@@ -652,11 +670,22 @@ export class WorldHandler {
       await tempDir.remove();
       return withError(decompressResult);
     }
+    const afterLocalJson = await serverJsonFile.load(tempDir);
+    // Jsonの読み込みに失敗した場合
+    if (isError(afterLocalJson)) {
+      // 一時フォルダを削除
+      await tempDir.remove();
+      return withError(afterLocalJson);
+    }
 
     // 一時フォルダの中身をこのパスに移動
     await savePath.remove();
     await tempDir.moveTo(savePath);
     await tempDir.remove();
+
+    // remoteをrestore前のデータで上書き
+    afterLocalJson.remote = remote;
+    await this.saveLocalServerJson(afterLocalJson);
 
     return this.loadExec();
   }
