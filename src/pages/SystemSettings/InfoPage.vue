@@ -35,7 +35,7 @@ function openMIT() {
       </div>
       <!-- TODO: 最終更新日を取得＆保存 -->
       <div class="text-caption q-pt-sm" tyle="opacity: .6;">
-        {{ $t('systemsetting.info.finalUpdate', {datetime: '2023年8月1日火曜日　0:00:00'}) }}
+        {{ $t('systemsetting.info.finalUpdate', { datetime: $d(new Date(), 'dateTime') } ) }}
       </div>
     </div>
 
