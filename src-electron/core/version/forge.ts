@@ -78,9 +78,6 @@ async function installForgeVersion(
   cwdPath: Path,
   jarpath: Path
 ) {
-  // versionフォルダを削除
-  await cwdPath.remove();
-
   const installerPath = cwdPath.child('forge-' + version.id + '-installer.jar');
 
   // インストーラーのダウンロードURLを取得
