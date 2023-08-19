@@ -90,7 +90,14 @@ export async function runServer() {
   consoleStore.initProgress(
     mainStore.selectedWorldID,
     //`${mainStore.world.version.id} (${mainStore.world.version.type}) / ${mainStore.world.name} を起動中`
-    $T('console.booting',{id: `${mainStore.world.version.id}`,type:` ${$T(`home.serverType.${mainStore.world.version.type}`)}` ,name:`${mainStore.world.name}`})
+    $T(
+      'console.booting',
+      {
+        id: `${mainStore.world.version.id}`,
+        type:` ${$T(`home.serverType.${mainStore.world.version.type}`)}`,
+        name:`${mainStore.world.name}`
+      }
+    )
   )
   const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
 
