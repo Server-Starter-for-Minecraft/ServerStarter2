@@ -13,7 +13,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldStore } from 'src/stores/MainStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import { $T } from 'src/i18n/utils/tFunc'
+import { $T, tError } from 'src/i18n/utils/tFunc'
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
@@ -122,7 +122,8 @@ async function setWorldContainer(container: WorldContainer) {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    () => { return { title: 'ワールドの保存フォルダを変更できませんでした' } }
+    e => tError(e)
+    //() => { return { title: 'ワールドの保存フォルダを変更できませんでした' } }
   )
 
   // エラー状態の解除
