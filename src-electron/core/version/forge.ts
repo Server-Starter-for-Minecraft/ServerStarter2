@@ -1,5 +1,6 @@
 import { AllForgeVersion, ForgeVersion } from 'src-electron/schema/version';
 import {
+  VersionComponent,
   VersionLoader,
   genGetAllVersions,
   needEulaAgreementVanilla,
@@ -27,7 +28,7 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
     version: ForgeVersion,
     cwdPath: Path,
     progress?: GroupProgressor
-  ) {
+  ): Promise<Failable<VersionComponent>> {
     progress?.title({
       key: 'server.readyVersion.title',
       args: { version: version },
@@ -36,13 +37,10 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
     const component = await getJavaComponent(version.id);
     if (isError(component)) return component;
 
-    const versionPath = forgeVersionsPath.child(version.id);
     const jarpath = cwdPath.child(`${version.type}-${version.id}.jar`);
 
     // 実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
     let programArguments = await getProgramArguments(cwdPath, jarpath);
-
-    console.log(programArguments);
 
     // 実行可能なファイルが存在しなかった場合
     if (isError(programArguments)) {
@@ -141,18 +139,6 @@ async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
   });
 }
 
-/** 他のファイルからimportするタイプの引数を解決 */
-async function resolveImportArgs(cwdPath: Path, args: string[]) {
-  const result: string[] = [];
-
-  for (const x of args) {
-    const match = x.match(/@(.*)/);
-    if (match === null) return [x];
-    const filePath = cwdPath.child(match[1]);
-    const contents = await filePath.readText();
-  }
-}
-
 async function getProgramArgumentsFromBat(batPath: Path) {
   const data = await batPath.read();
   if (isError(data)) return data;
@@ -165,7 +151,7 @@ async function getProgramArgumentsFromBat(batPath: Path) {
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      return ['"@user_jvm_args.txt"', arg.split(' ').map((x) => `"${x}"`)];
+      return ['"@user_jvm_args.txt"', ...arg.split(' ')];
     }
   }
   return errorMessage.data.path.invalidContent.missingJavaCommand({
@@ -186,7 +172,7 @@ async function getProgramArgumentsFromSh(shPath: Path) {
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      return ['@user_jvm_args.txt', arg];
+      return ['@user_jvm_args.txt', ...arg.split(' ')];
     }
   }
   return errorMessage.data.path.invalidContent.missingJavaCommand({
@@ -214,7 +200,7 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
     args,
     undefined,
     undefined,
-    installerPath,
+    installerPath.parent(),
     true
   );
   return await process;
