@@ -96,7 +96,8 @@ export const jaError: ErrorTranslationTypes = {
       },
       },
       creationFiled:{
-        title: 'ファイル、またはディレクトリの生成に失敗しました',
+        title: '{type}の生成に失敗しました',
+        desc: '{path}の生成ができませんでした'
       },
       dialogCanceled:{
         title: `ファイル選択ウィンドウがキャンセルされました`

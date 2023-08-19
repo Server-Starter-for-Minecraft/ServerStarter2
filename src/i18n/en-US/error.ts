@@ -96,7 +96,8 @@ export const enUSError: ErrorTranslationTypes = {
         },
       },
       creationFiled: {
-        title: 'Failed to create file or directory',
+        title: 'Failed to create {type}',
+        desc: 'failed to create {path}'
       },
       dialogCanceled: {
         title: 'Window to select file is cancelled',

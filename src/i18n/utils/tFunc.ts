@@ -19,7 +19,9 @@ const translationArgs: Record<string, FullKeys<MessageSchema>> = {
   'papermc': 'home.serverType.papermc',
   'forge': 'home.serverType.forge',
   'mohistmc': 'home.serverType.mohistmc',
-  'fabric': 'home.serverType.fabric'
+  'fabric': 'home.serverType.fabric',
+  'file' : 'general.file',
+  'directory': 'general.directory'
 }
 
 type tFunc = (key: string, args?: Record<string, unknown> | string) => string
