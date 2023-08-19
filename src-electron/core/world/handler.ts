@@ -721,7 +721,7 @@ export class WorldHandler {
     const beforeWorld = loadResult.value;
 
     // serverstarterの実行者UUID
-    const selfOwner = (await getSystemSettings()).user.owner;
+    const sysSettings = await getSystemSettings();
 
     // 起動している場合エラー
     if (beforeWorld.using)
@@ -740,8 +740,9 @@ export class WorldHandler {
     // 使用中フラグを立てて保存
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = true;
-    settings.last_user = selfOwner;
+    settings.last_user = sysSettings.user.owner;
     settings.last_date = getCurrentTimestamp();
+    settings.last_id = sysSettings.user.id;
     const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
     await serverJsonFile.save(savePath, settings);
     sub.delete();
