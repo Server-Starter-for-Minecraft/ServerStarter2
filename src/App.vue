@@ -156,6 +156,5 @@ function setPrimary(isDark: boolean) {
 </script>
 
 <template>
-  <popup-dialog />
   <router-view />
 </template>
