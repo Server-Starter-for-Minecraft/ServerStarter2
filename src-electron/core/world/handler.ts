@@ -30,7 +30,7 @@ import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
-import { getBackUpPath } from './backup';
+import { getBackUpPath, parseBackUpPath } from './backup';
 import { Path } from 'app/src-electron/util/path';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BACKUP_EXT } from '../const';
@@ -579,37 +579,14 @@ export class WorldHandler {
   }
 
   /** ワールドをバックアップ */
-  async backup(path?: string): Promise<WithError<Failable<undefined>>> {
-    const func = () => this.backupExec(path);
+  async backup(): Promise<WithError<Failable<BackupData>>> {
+    const func = () => this.backupExec();
     return await this.promiseSpooler.spool(func);
   }
 
   /** ワールドをバックアップ */
-  private async backupExec(
-    path?: string
-  ): Promise<WithError<Failable<undefined>>> {
-    let backupPath: Path;
-    if (path !== undefined) {
-      backupPath = new Path(path);
-      // ファイルが既に存在する場合
-      if (backupPath.exists()) {
-        const e = errorMessage.data.path.alreadyExists({
-          type: 'file',
-          path: backupPath.str(),
-        });
-        return withError(e);
-      }
-      // 拡張子が.ssbackupでない場合
-      if (backupPath.extname() !== '.' + BACKUP_EXT) {
-        const e = errorMessage.data.path.invalidExt({
-          path: backupPath.str(),
-          expectedExt: BACKUP_EXT,
-        });
-        return withError(e);
-      }
-    } else {
-      backupPath = getBackUpPath(this.container, this.name);
-    }
+  private async backupExec(): Promise<WithError<Failable<BackupData>>> {
+    const backupPath = getBackUpPath(this.container, this.name);
 
     // リモートのデータを一時的に削除
     const localJson = await this.loadLocalServerJson();
@@ -630,7 +607,8 @@ export class WorldHandler {
     // tarファイルを保存
     await backupPath.write(tar);
 
-    return withError(undefined);
+    // バックアップデータを返却
+    return withError(await parseBackUpPath(backupPath));
   }
 
   /** ワールドにバックアップを復元 */

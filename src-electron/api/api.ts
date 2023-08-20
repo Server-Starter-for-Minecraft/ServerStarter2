@@ -128,10 +128,7 @@ export interface API extends IAPI {
      * Worldをバックアップ
      * @parem path?:string - バックアップのファイルパス(省略可)
      */
-    BackupWorld: (
-      world: WorldID,
-      path?: string
-    ) => Promise<WithError<Failable<undefined>>>;
+    BackupWorld: (world: WorldID) => Promise<WithError<Failable<BackupData>>>;
     /**
      * Worldにバックアップを復元
      * @parem path?:string - バックアップのファイルパス(省略可)
@@ -218,7 +215,7 @@ export interface API extends IAPI {
         options: { type: 'container' } & DialogOptions
       ) => Promise<Failable<WorldContainer>>) &
       ((
-        options: { type: 'backup' } & DialogOptions
+        options: { type: 'backup'; container: WorldContainer } & DialogOptions
       ) => Promise<Failable<BackupData>>);
   };
 }
