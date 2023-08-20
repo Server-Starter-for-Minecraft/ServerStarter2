@@ -129,7 +129,7 @@ export function tError(
   const returnObj: ErrorFuncReturns = { title: '', desc: undefined }
   // Errorのタイトルは必ず表示するために、表示をオフにできない仕様
   if (error.arg) {
-    returnObj.title = $T(useTitleKey, flattenObj(error.arg as Record<string, string | number | string[]>))
+    returnObj.title = $T(useTitleKey, omitPath(flattenObj(error.arg as Record<string, string | number | string[]>)))
   }
   else {
     returnObj.title = $T(useTitleKey)
@@ -138,7 +138,7 @@ export function tError(
   // 説明文は空文字列が来たら表示をオフにする
   if (useDescKey !== '') {
     if (error.arg) {
-      returnObj.desc = $T(useDescKey, flattenObj(error.arg as Record<string, string | number | string[]>))
+      returnObj.desc = $T(useDescKey, omitPath(flattenObj(error.arg as Record<string, string | number | string[]>)))
     }
     else {
       returnObj.desc = $T(useDescKey, 'undefined')
@@ -146,4 +146,16 @@ export function tError(
   }
 
   return returnObj
+}
+
+/**
+ * 引数の中に`key: path`があった場合、フルパスの中のファイル名を抽出した文字列に変換
+ */
+function omitPath(args: Record<string, string | number | string[]>) {
+  if ('path' in args) {
+    const names = args['path'].toString().split(/\/|\\/)
+    args['path'] = names[names.length - 1]
+  }
+
+  return args
 }
