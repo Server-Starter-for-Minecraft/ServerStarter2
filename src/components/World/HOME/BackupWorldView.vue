@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { Ref, onMounted, ref } from 'vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -13,6 +13,8 @@ const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 const loading = ref(false)
+const isShowingMessage = ref(false)
+const fadeoutMessage:Ref<EventTarget | undefined> = ref()
 
 async function backupWorld() {
   // ボタンをローディング状態にする
@@ -23,6 +25,7 @@ async function backupWorld() {
 
   // ボタンの状態をリセット
   loading.value = false
+  isShowingMessage.value = true
 }
 
 async function recoverWorld() {
@@ -40,6 +43,14 @@ async function recoverWorld() {
     () => { return { title: 'バックアップデータの取得に失敗しました' }}
   )
 }
+
+// アニメーション終了時のイベントリスナーを登録する
+onMounted(() => {
+  fadeoutMessage.value?.addEventListener('animationend', () => {
+    // fadeクラスを削除する
+    isShowingMessage.value = false
+  })
+})
 </script>
 
 <template>
@@ -56,12 +67,26 @@ async function recoverWorld() {
     />
     <SsBtn
       label="バックアップから復旧"
-      :loading="loading"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="recoverWorld"
     />
-    <div class="text-primary q-ml-sm fade-out">
+    <div ref="fadeoutMessage" class="text-primary" :class="isShowingMessage ? 'fade-out' : 'un-visible'">
       {{ mainStore.world.name }}のバックアップの作成に成功しました
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.un-visible {
+  visibility: collapse;
+}
+
+.fade-out {
+  animation: fadeout .3s ease-in 3s;
+}
+
+@keyframes fadeout {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(20px); }
+}
+</style>
