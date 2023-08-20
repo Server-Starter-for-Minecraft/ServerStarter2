@@ -4,13 +4,18 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
+interface Prop {
+  onScrollTop: () => void
+}
+const prop = defineProps<Prop>()
+
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 const loading = ref(false)
 
 async function duplicateWorld() {
-  // ボタンをローディング所帯にする
+  // ボタンをローディング状態にする
   loading.value = true
 
   // ワールドを複製
@@ -18,6 +23,7 @@ async function duplicateWorld() {
 
   // ボタンの状態をリセット
   loading.value = false
+  prop.onScrollTop()
 }
 </script>
 
