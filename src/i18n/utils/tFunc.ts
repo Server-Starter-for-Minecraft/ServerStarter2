@@ -103,14 +103,22 @@ export function tProgress(progress: ProgressMessage) {
  * 
  * 説明文の表示をオフにして、タイトルは(エラーに対応する翻訳を)表示する場合は`tError(e, undefined, '')`とする
  * 
+ * なお、説明文の翻訳が登録されていないエラーが発生し、`descKey`が指定されていない場合には、説明文の描画を省略する
+ * 
  * 翻訳文を作成するときに利用できる変数は`flattenObj()`によって平坦化されるため、
- * ネスト構造になっていたとしても、それらを「.」でつなぐことで当該変数を利用できる
+ * ネスト構造になっていたとしても、それらを「_」でつなぐことで当該変数を利用できる
+ * 
+ * @param ignoreErrors ここで指定したエラーのキーが発生した場合には、エラー画面を表示しない
  */
 export function tError(
   error: ErrorMessage,
   titleKey?: string,
-  descKey?: string
+  descKey?: string,
+  ignoreErrors?: ErrorMessage['key'][]
 ) {
+  // 指定されたエラーを無視する
+  if (ignoreErrors?.includes(error.key)) return
+
   // Key の更新
   let useTitleKey = `error.${error.key}.title`
   if (titleKey) useTitleKey = titleKey
@@ -133,7 +141,7 @@ export function tError(
       returnObj.desc = $T(useDescKey, flattenObj(error.arg as Record<string, string | number | string[]>))
     }
     else {
-      returnObj.desc = $T(useDescKey)
+      returnObj.desc = $T(useDescKey, '')
     }
   }
 
