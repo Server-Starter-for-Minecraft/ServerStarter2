@@ -36,9 +36,9 @@ async function recoverWorld() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading" >
     <BaseDialogCard
-      title="$T('home.backup.recoverFromBackup')"
+      :title="$T('home.backup.recoverFromBackup')"
       :loading="loading"
-      ok-btn-txt="$T('home.backup.startRecover')"
+      :ok-btn-txt="$T('home.backup.startRecover')"
       @ok-click="recoverWorld"
       @close="onDialogCancel"
     >
