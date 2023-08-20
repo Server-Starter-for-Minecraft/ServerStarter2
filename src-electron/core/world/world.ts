@@ -190,12 +190,11 @@ export async function duplicateWorld(
  * ワールドデータをバックアップする
  */
 export async function backupWorld(
-  worldID: WorldID,
-  path?: string
-): Promise<WithError<Failable<undefined>>> {
+  worldID: WorldID
+): Promise<WithError<Failable<BackupData>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.backup(path);
+  return await handler.backup();
 }
 
 /**
