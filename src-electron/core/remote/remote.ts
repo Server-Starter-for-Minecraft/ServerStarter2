@@ -1,7 +1,12 @@
 import { RemoteOperator } from './base';
 import { githubRemoteOperator } from './github/git';
 import { Path } from 'src-electron/util/path';
-import { Remote, RemoteFolder, RemoteWorld } from 'src-electron/schema/remote';
+import {
+  Remote,
+  RemoteFolder,
+  RemoteSetting,
+  RemoteWorld,
+} from 'src-electron/schema/remote';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { GroupProgressor } from '../progress/progress';
@@ -18,7 +23,7 @@ export async function pullRemoteWorld<T extends RemoteFolder>(
   remote: Remote<T>,
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
-  const loader: RemoteOperator<T> = remoteOperators[remote.folder.type];
+  const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
   return await loader.pullWorld(local, remote, progress);
 }
 
@@ -28,7 +33,7 @@ export async function pushRemoteWorld<T extends RemoteFolder>(
   remote: Remote<T>,
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
-  const loader: RemoteOperator<T> = remoteOperators[remote.folder.type];
+  const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
   return await loader.pushWorld(local, remote, progress);
 }
 
@@ -36,7 +41,7 @@ export async function pushRemoteWorld<T extends RemoteFolder>(
 export function getRemoteWorlds<T extends RemoteFolder>(
   remoteFolder: T
 ): Promise<WithError<Failable<RemoteWorld[]>>> {
-  const loader: RemoteOperator<T> = remoteOperators[remoteFolder.type];
+  const loader = remoteOperators[remoteFolder.type] as RemoteOperator<T>;
   return loader.getWorlds(remoteFolder);
 }
 
@@ -44,7 +49,7 @@ export function getRemoteWorlds<T extends RemoteFolder>(
 export function deleteRemoteWorld<T extends RemoteFolder>(
   remote: Remote<T>
 ): Promise<Failable<undefined>> {
-  const loader: RemoteOperator<T> = remoteOperators[remote.folder.type];
+  const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
   return loader.deleteWorld(remote);
 }
 
@@ -53,6 +58,14 @@ export function validateNewRemoteWorldName<T extends RemoteFolder>(
   remoteFolder: T,
   name: string
 ): Promise<Failable<RemoteWorldName>> {
-  const loader: RemoteOperator<T> = remoteOperators[remoteFolder.type];
+  const loader = remoteOperators[remoteFolder.type] as RemoteOperator<T>;
   return loader.validateNewWorldName(remoteFolder, name);
+}
+
+// リモートフォルダの存在を確認
+export function validateRemoteSetting(
+  remoteSetting: RemoteSetting
+): Promise<Failable<RemoteSetting>> {
+  const loader = remoteOperators[remoteSetting.folder.type];
+  return loader.validate(remoteSetting);
 }
