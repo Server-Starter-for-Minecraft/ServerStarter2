@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Ref, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { assets } from 'src/assets/assets';
@@ -16,7 +15,6 @@ defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const $q = useQuasar()
-const { t } = useI18n()
 const localWorlds:Ref<CustomMapData[]> = ref([])
 const loading = ref(true)
 
@@ -28,7 +26,7 @@ async function importZip() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => tError(e)
+    e => tError(e, ['data.path.dialogCanceled'])
     //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
@@ -40,7 +38,7 @@ async function importFolder() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => tError(e)
+    e => tError(e, ['data.path.dialogCanceled'])
     //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
