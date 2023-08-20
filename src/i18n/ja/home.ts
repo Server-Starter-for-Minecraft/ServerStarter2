@@ -62,7 +62,7 @@ export const jaHome = {
   },
   backup: {
     madeBackup: '{world}のバックアップを作成しました',
-    recoverd: 'ワールドの復旧が完了しました',
+    recovered: 'ワールドの復旧が完了しました',
     backupDesc: '\
       このワールドのバックアップを作成します<br>\
       バックアップしたワールドデータは「バックアップから復旧」より利用することができます',

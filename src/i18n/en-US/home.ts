@@ -66,7 +66,7 @@ export const enUSHome: MessageSchema["home"] = {
   },
   backup: {
     madeBackup: 'Made backup of {world}',
-    recoverd: 'FInish world recovering',
+    recovered: 'FInish world recovering',
     backupDesc: '\
     Make backup of this world<br>\
     Backed-up world data can be accessed from "Recover from Backup"',
