@@ -29,7 +29,7 @@ async function duplicateWorld() {
   <SsBtn
     label="このワールドを複製"
     :loading="loading"
-    :disable="loading || consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     @click="duplicateWorld"
   />
 </template>

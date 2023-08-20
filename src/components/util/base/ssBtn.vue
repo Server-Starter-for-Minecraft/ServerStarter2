@@ -21,7 +21,7 @@ defineProps<Prop>()
     :icon="icon"
     :label="label"
     :color="color"
-    :disable="disable"
+    :disable="loading || disable"
     :loading="loading"
     :no-caps="!isCapital"
     @click="onClick"
