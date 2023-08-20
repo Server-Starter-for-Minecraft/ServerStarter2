@@ -222,9 +222,9 @@ function openFolderEditor() {
         @click="openCustomMapImporter"
       />
 
-      <ExpansionView :title="$t('home.saveWorld.title')">
-        <p class="text-caption">{{ $t('home.saveWorld.description') }}</p>
-
+      <ExpansionView title="その他の設定" class="q-pt-lg">
+        <h1 class="q-pt-none">{{ $t('home.saveWorld.title') }}</h1>
+        <p class="text-caption" style="opacity: .6;">{{ $t('home.saveWorld.description') }}</p>
         <div class="column q-gutter-y-md">
           <!-- v-modelの書き込みに対応するため、わざとインデックスによる呼び出しを利用 -->
           <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
@@ -243,29 +243,29 @@ function openFolderEditor() {
             @click="openFolderEditor"
           />
         </div>
-      </ExpansionView>
-
-      <ExpansionView :title="$t('home.setting.title')">
+        
+        <h1>{{ $t('home.setting.title') }}</h1>
+        <span class="text-caption">{{ $t('home.setting.memSize') }}</span>
         <div class="row" style="max-width: 350px;">
           <SsInput
             v-model="mainStore.world.memory.size"
-            :label="$t('home.setting.memSize')"
+            dense
             :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
-            class="col-5 q-pr-md"
+            class="col-4 q-pr-md"
           />
           <SsSelect
             v-model="mainStore.world.memory.unit"
+            dense
             :options="['MB', 'GB', 'TB']"
             :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
             class="col-3"
           />
         </div>
-
         <SsInput
           v-model="mainStore.world.javaArguments"
           :label="$t('home.setting.jvmArgument')"
           :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
-          class="q-pt-md"
+          class="q-pt-lg"
         />
       </ExpansionView>
       
