@@ -1,6 +1,6 @@
 import { MessageSchema } from "src/boot/i18n";
 
-export const enUSSystemSetting:MessageSchema['systemsetting'] = {
+export const enUSSystemSetting: MessageSchema['systemsetting'] = {
   title: 'Settings',
   general: {
     lang: 'Language',

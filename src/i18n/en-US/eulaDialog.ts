@@ -1,6 +1,6 @@
 import { MessageSchema } from "src/boot/i18n";
 
-export const enUSEulaDialog:MessageSchema['eulaDialog'] = {
+export const enUSEulaDialog: MessageSchema['eulaDialog'] = {
   title: 'Agree Minecraft EULA',
   agree: 'Agree EULA and execute',
   desc: '\

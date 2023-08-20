@@ -64,19 +64,19 @@ export const jaError: ErrorTranslationTypes = {
           desc: '{path}がファイルかどうか確認してください',
         },
         invalidDatapack: {
-          title: '不適なデータパックが選択されました。',
+          title: '不適なデータパックが選択されました',
           desc: '{path}を確認してください'
         },
         invalidPlugin:{
-          title: '不適なプラグインファイルが選択されました。',
+          title: '不適なプラグインファイルが選択されました',
           desc: '{path}を確認してください'
         },
         invalidMod:{
-          title: '不適なModファイルが選択されました。',
+          title: '不適なModファイルが選択されました',
           desc: '{path}を確認してください'
         },
         invalidCustomMap:{
-          title: '不適なカスタムマップが選択されました。',
+          title: '不適なカスタムマップが選択されました',
           desc: '{path}を確認してください'
         },
         customMapZipWithMultipleLevelDat:{
@@ -119,7 +119,7 @@ export const jaError: ErrorTranslationTypes = {
       title: 'JSONデータの修復に失敗しました',
     },
     hashNotMatch: {
-      title: 'ファイルの中身が正しくない可能性があります。',
+      title: 'ファイルの中身が正しくない可能性があります',
     },
   },
   value: {
@@ -140,7 +140,7 @@ export const jaError: ErrorTranslationTypes = {
     },
     worldName: {
       notMatchRegex: {
-        title: '使えない文字が含まれています。',
+        title: '使えない文字が含まれています',
         desc:'半角英数字のみ入力してください',
       },
       alreadyUsed: {
@@ -150,7 +150,7 @@ export const jaError: ErrorTranslationTypes = {
     },
     remoteWorldName: {
       notMatchRegex: {
-        title: '使えない文字が含まれています。',
+        title: '使えない文字が含まれています',
         desc:'半角英数字のみ入力してください',
       },
       alreadyUsed: {
@@ -211,7 +211,7 @@ export const jaError: ErrorTranslationTypes = {
       title: 'Minecraftのeulaに同意していません',
     },
     failCacheAddiltionalData: {
-      title:'{type}のキャッシュに失敗しました。',
+      title:'{type}のキャッシュに失敗しました',
     },
     failGetGlobalIP: {
       title: 'グローバルIPの取得に失敗しました',

@@ -32,7 +32,7 @@ export const jaShareWorld = {
         ServerStarter2 から 「{owner}/{repo}」の登録を解除します。<br>\
         GitHub上のリポジトリは削除されませんが、「{owner}/{repo}」を用いてワールドを再共有することは出来なくなります。',
     }
-  }, 
+  },
   sync: '{path}と同期',
   existedDialog: '\
     {rWorldName}とワールドデータを同期します。<br>\
@@ -51,7 +51,7 @@ export const jaShareWorld = {
     desc: '\
       新規ShareWorldを作成して同期データを作成します。{0}\
       同期する際に用いるShareWorldの名称を入力してください。{1}{2}',
-    caution: 'この名称は後から変更することができません。',
+    caution: 'この名称は後から変更することができません',
     inputName: '新規ShareWorldの名称を入力',
     unavailName: 'ShareWorldの新規名称として使用できません',
   },

@@ -1,7 +1,7 @@
 import { MessageSchema } from "src/boot/i18n";
 
-export const enUSPlayer:MessageSchema['player'] = {
-  description: 'You can set the server\'s OP and players who can enter and leave the server.',
+export const enUSPlayer: MessageSchema['player'] = {
+  description: 'You can set the server\'s OP and players who can enter and leave the server',
   search: 'Search players',
   registeredPlayer: 'Registered player',
   notRegistered: 'No players registered',
@@ -11,13 +11,13 @@ export const enUSPlayer:MessageSchema['player'] = {
   changeOP: 'Change OP level',
   makeGroup: 'Make group',
   deletePlayer: 'Delete player',
-  selectPlayerFromLeft:' Select player from left',
+  selectPlayerFromLeft: ' Select player from left',
   selectPlayer: 'Select Players',
   editGroup: 'Edit {group}',
   newGroup: 'New group',
   groupName: 'Group name',
   groupColor: 'Color',
-  color:{
+  color: {
     dark_red: 'dark_red',
     red: 'red',
     gold: 'gold',

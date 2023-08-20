@@ -5,7 +5,7 @@ import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 export const enUSError: ErrorTranslationTypes = {
   system: {
     runtime: {
-      title: 'Runtime error occurred.',
+      title: 'Runtime error occurred',
       desc: 'Error type: {type}, Error message: {message}',
     },
     ipc: {
@@ -24,8 +24,8 @@ export const enUSError: ErrorTranslationTypes = {
         desc: 'Server status : {status}/{statusText}'
       },
       tooManyRequest: {
-        title: 'To many requests have sent.',
-        desc : 'Wait a few moments and do again.',
+        title: 'To many requests have sent',
+        desc: 'Wait a few moments and do again',
       },
     },
     zip: {
@@ -35,14 +35,14 @@ export const enUSError: ErrorTranslationTypes = {
       },
     },
     path: {
-      loadingFailed:{
+      loadingFailed: {
         title: 'Failed to read the {type}',
         desc: 'failed for {path}'
       },
-      alreadyExists:{
+      alreadyExists: {
         title: '{type} already exists',
       },
-      notFound:{
+      notFound: {
         title: 'No {type} exists',
         desc: 'Please check {path}'
       },
@@ -57,11 +57,11 @@ export const enUSError: ErrorTranslationTypes = {
         },
         mustBeDirectory: {
           title: 'You need to use directory here',
-          desc: 'Please check {path} is directory or not.',
+          desc: 'Please check {path} is directory or not',
         },
         mustBeFile: {
           title: 'You need to select file here',
-          desc: 'Please check {path} is file or not.',
+          desc: 'Please check {path} is file or not',
         },
         invalidDatapack: {
           title: 'Improper datapack is selected',
@@ -112,11 +112,11 @@ export const enUSError: ErrorTranslationTypes = {
       },
       invalidWorldData: {
         title: 'World data is invalid',
-        desc: 'Please check the data on {owner}/{repo}/{branch}.'
+        desc: 'Please check the data on {owner}/{repo}/{branch}'
       },
     },
     failJsonFix: {
-      title:'Failed to fix JSON file',
+      title: 'Failed to fix JSON file',
     },
     hashNotMatch: {
       title: 'The file may not be correct',
@@ -124,23 +124,23 @@ export const enUSError: ErrorTranslationTypes = {
   },
   value: {
     playerName: {
-      title:'{value} does not exist',
+      title: '{value} does not exist',
     },
     playerUUID: {
-      title:'No players are related to this ID',
+      title: 'No players are related to this ID',
     },
     playerNameOrUUID: {
-      title:'Nethier player exist related {value}',
+      title: 'Nethier player exist related {value}',
     },
     base64URI: {
-      title:'No figure exist in {value}',
+      title: 'No figure exist in {value}',
     },
     commandLineArgument: {
-      title:'Wrong command line, {value} does not exist',
+      title: 'Wrong command line, {value} does not exist',
     },
     worldName: {
       notMatchRegex: {
-        title: 'Inallowed letter is used.',
+        title: 'Inallowed letter is used',
         desc: 'just use an alphabet or number',
       },
       alreadyUsed: {
@@ -150,7 +150,7 @@ export const enUSError: ErrorTranslationTypes = {
     },
     remoteWorldName: {
       notMatchRegex: {
-        title: 'Inallowed letter is used.',
+        title: 'Inallowed letter is used',
         desc: ' just use an alphabet or number',
       },
       alreadyUsed: {
@@ -166,10 +166,10 @@ export const enUSError: ErrorTranslationTypes = {
       },
       cannotChangeRunningWorldName: {
         title: 'You cannot change your world name or saved folder',
-        desc:'Close your world and do it again',
+        desc: 'Close your world and do it again',
       },
-      cannotDuplicateRunningWorld:{
-        title: 'The name of the running world and the folder where it is saved cannot be changed.',
+      cannotDuplicateRunningWorld: {
+        title: 'The name of the running world and the folder where it is saved cannot be changed',
         desc: 'Stop world {name} and try again',
       },
       worldAleradyRunning: {
@@ -182,8 +182,8 @@ export const enUSError: ErrorTranslationTypes = {
     },
     container: {
       noContainerSubscribed: {
-        title: 'No WorldContainer is registered.',
-        desc: 'Check WorldContainer again.'
+        title: 'No WorldContainer is registered',
+        desc: 'Check WorldContainer again'
       },
     },
     version: {
@@ -192,7 +192,7 @@ export const enUSError: ErrorTranslationTypes = {
       },
       failSpigotBuild: {
         javaNeeded: {
-          title: 'Failed to build spiot for {spigotVersion}', 
+          title: 'Failed to build spiot for {spigotVersion}',
           desc: 'install Java from {minVersion} to {maxversion}',
         },
         missingJar: {
@@ -205,10 +205,10 @@ export const enUSError: ErrorTranslationTypes = {
       },
     },
     missingPersonalAccessToken: {
-      title: 'Personal access token for https://github.com/{owner}/{repo} dose not exist.',
+      title: 'Personal access token for https://github.com/{owner}/{repo} dose not exist',
     },
     minecraftEULANotAccepted: {
-      title :'It does not agree to eula for Minecraft',
+      title: 'It does not agree to eula for Minecraft',
     },
     failCacheAddiltionalData: {
       title: 'Failed to cache {type}',
