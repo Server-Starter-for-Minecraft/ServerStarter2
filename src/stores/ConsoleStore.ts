@@ -94,7 +94,7 @@ export async function runServer() {
       'console.booting',
       {
         id: `${mainStore.world.version.id}`,
-        type:` ${$T(`home.serverType.${mainStore.world.version.type}`)}`,
+        type:`${$T(`home.serverType.${mainStore.world.version.type}`)}`,
         name:`${mainStore.world.name}`
       }
     )
