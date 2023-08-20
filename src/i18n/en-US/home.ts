@@ -57,6 +57,26 @@ export const enUSHome: MessageSchema["home"] = {
     memSize: 'memory size',
     jvmArgument: 'Minecraft JVM arguments'
   },
+  worldOperation:'World Operations',
+  duplicate: {
+    duplicateDesc: '\
+      Duplicate the world and take over various settings such as server version, properties, OP player, etc.<br>\
+      However, ShareWorld settings are not duplicated and must be configured again.',
+    btn: 'Duplicate this world'
+  },
+  backup: {
+    madeBackup: 'Made backup of {world}',
+    recoverd: 'FInish world recovering',
+    backupDesc: '\
+    Make backup of this world<br>\
+    Backed-up world data can be accessed from "Recover from Backup"',
+    makeBackup : 'Make backup',
+    recoverFromBackup: 'Recover from backup',
+    startRecover: 'Start recovering',
+    recoverDialog: '\
+      Introduce {world} created on {date} into the current existing world.<br>\
+      Do you want to overwrite an existing world with a backup world?',
+  },
   deleteWorld: {
     title: 'Delete World',
     button: 'Delete your world data',

@@ -7,6 +7,7 @@ import { checkError } from 'src/components/Error/Error';
 import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
+import { $T } from 'src/i18n/utils/tFunc';
 
 const $q = useQuasar()
 const mainStore = useMainStore()
@@ -25,7 +26,7 @@ async function backupWorld() {
 
   // ボタンの状態をリセット
   loading.value = false
-  showingMessage.value = `${mainStore.world.name}のバックアップを作成しました`
+  showingMessage.value = $T('home.backup.madeBackup',{world: mainStore.world.name})
 }
 
 async function recoverWorld() {
@@ -39,7 +40,7 @@ async function recoverWorld() {
         backupData: b
       } as RecoverDialogProp
     }).onOk(() => {
-      showingMessage.value = 'ワールドの復旧が完了しました'
+      showingMessage.value = $T('home.backup.recovered')
     }),
     () => { return { title: 'バックアップデータの取得に失敗しました' }}
   )
@@ -55,19 +56,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <p class="text-caption q-mt-md" style="opacity: .6;">
-    このワールドのバックアップを作成します<br>
-    バックアップしたワールドデータは「バックアップから復旧」より利用することができます
+  <p 
+    class="text-caption q-mt-md" 
+    style="opacity: .6;"
+    v-html="$T('home.backup.backupDesc')"
+  >  
   </p>
   <div class="row items-center q-gutter-md">
     <SsBtn
-      label="バックアップを作成"
+      :label="$T('home.backup.makeBackup')"
       :loading="loading"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="backupWorld"
     />
     <SsBtn
-      label="バックアップから復旧"
+      :label="$T('home.backup.recoverFromBackup')"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="recoverWorld"
     />

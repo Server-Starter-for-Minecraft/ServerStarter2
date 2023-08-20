@@ -5,6 +5,7 @@ import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import { RecoverDialogProp } from './iRecoverDialog';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
+import { $T } from 'src/i18n/utils/tFunc';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -35,16 +36,14 @@ async function recoverWorld() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading" >
     <BaseDialogCard
-      title="バックアップから復旧"
+      title="$T('home.backup.recoverFromBackup')"
       :loading="loading"
-      ok-btn-txt="復旧を開始"
+      ok-btn-txt="$T('home.backup.startRecover')"
       @ok-click="recoverWorld"
       @close="onDialogCancel"
     >
       <!-- TODO: BackupDataが更新され次第，変数を埋め込む -->
-      <p>
-        【日時】に作成された【ワールド名】を現在の既存ワールドに導入します<br>
-        既存ワールドをバックアップのワールドで上書きしますか？
+      <p v-html="$T('home.backup.recoverDialog',{date: '【日時】',world: '【ワールド名】'})">
       </p>
     </BaseDialogCard>
   </q-dialog>

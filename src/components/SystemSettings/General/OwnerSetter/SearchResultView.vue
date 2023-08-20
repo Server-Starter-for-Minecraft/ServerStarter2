@@ -2,6 +2,7 @@
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import SearchResultItem from 'src/components/World/Player/utils/SearchResultItem.vue';
+import { $T } from 'src/i18n/utils/tFunc';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 
 const ownerCandidate = defineModel<PlayerUUID>()
@@ -16,7 +17,7 @@ function setOwner(player: Player) {
 
 <template>
   <div v-show="playerStore.searchName !== ''" class="q-pb-md">
-    <span class="text-caption">プレイヤー検索結果</span>
+    <span class="text-caption">{{ $T('owner.searchResult') }}</span>
     <q-card flat bordered class="card q-ma-sm">
       <q-card-section
         v-if="(
@@ -30,7 +31,7 @@ function setOwner(player: Player) {
           <SearchResultItem
             v-if="playerStore.newPlayerCandidate !== void 0"
             :player="playerStore.newPlayerCandidate"
-            register-btn-text="このプレイヤーを登録"
+            :register-btn-text="$T('owner.registerPlayer')"
             :register-process="setOwner"
           />
           <!-- 過去に登録実績のあるプレイヤー一覧 -->
@@ -40,7 +41,7 @@ function setOwner(player: Player) {
           >
             <SearchResultItem
               :player="p"
-              register-btn-text="このプレイヤーを登録"
+              :register-btn-text="$T('owner.registerPlayer')"
               :register-process="setOwner"
             />
           </template>

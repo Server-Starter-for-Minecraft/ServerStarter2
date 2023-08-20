@@ -267,7 +267,7 @@ function openFolderEditor() {
         />
       </ExpansionView>
       
-      <h1>ワールドの操作</h1>
+      <h1>{{ $T('home.worldOperation') }}</h1>
       <DuplicateWorldView @scroll-top="scrollTop" />
       <BackupWorldView />
 
