@@ -18,7 +18,12 @@ import {
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
 import { GroupProgress } from '../schema/progress';
-import { Remote, RemoteFolder, RemoteWorld } from '../schema/remote';
+import {
+  Remote,
+  RemoteFolder,
+  RemoteSetting,
+  RemoteWorld,
+} from '../schema/remote';
 
 /**
  * ## APIの利用方法
@@ -178,6 +183,11 @@ export interface API extends IAPI {
       remoteFolder: RemoteFolder,
       name: string
     ) => Promise<Failable<RemoteWorldName>>;
+
+    /** RemoteSettingが存在するかどうかを確認 */
+    ValidateRemoteSetting: (
+      remote: RemoteSetting
+    ) => Promise<Failable<RemoteSetting>>;
 
     /** リモートのワールドデータ一覧を取得 */
     GetRemoteWorlds: (

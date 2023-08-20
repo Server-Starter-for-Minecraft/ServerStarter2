@@ -130,6 +130,8 @@ const api: FrontAPI = {
 
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
 
+  invokeValidateRemoteSetting: invoke('ValidateRemoteSetting'),
+
   invokeGetRemoteWorlds: invoke('GetRemoteWorlds'),
   invokeDeleteRemoteWorld: invoke('DeleteRemoteWorld'),
 

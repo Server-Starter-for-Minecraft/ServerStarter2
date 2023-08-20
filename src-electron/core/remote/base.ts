@@ -1,6 +1,11 @@
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from '../../util/path';
-import { Remote, RemoteFolder, RemoteWorld } from 'src-electron/schema/remote';
+import {
+  Remote,
+  RemoteFolder,
+  RemoteSetting,
+  RemoteWorld,
+} from 'src-electron/schema/remote';
 import { WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { GroupProgressor } from '../progress/progress';
@@ -31,4 +36,7 @@ export type RemoteOperator<T extends RemoteFolder> = {
     remoteFolder: T,
     name: string
   ): Promise<Failable<RemoteWorldName>>;
+
+  /** ワールドフォルダが利用可能かチェック */
+  validate(remoteSetting: RemoteSetting): Promise<Failable<RemoteSetting>>;
 };

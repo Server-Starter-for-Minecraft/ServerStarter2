@@ -29,6 +29,7 @@ import {
   deleteRemoteWorld,
   getRemoteWorlds,
   validateNewRemoteWorldName,
+  validateRemoteSetting,
 } from '../core/remote/remote';
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -68,6 +69,8 @@ export const getBackListener = (
     GetGlobalIP: getGlobalIP,
 
     ValidateNewWorldName: validateNewWorldName,
+
+    ValidateRemoteSetting: validateRemoteSetting,
 
     ValidateNewRemoteWorldName: validateNewRemoteWorldName,
 

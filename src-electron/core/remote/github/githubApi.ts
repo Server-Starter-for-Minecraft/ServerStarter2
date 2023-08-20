@@ -4,7 +4,6 @@ import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { FAIL, Fixer } from 'app/src-electron/util/detaFixer/fixer';
-
 /** リポジトリのブランチ一覧を取得 */
 export async function getGithubBranches(
   owner: string,
