@@ -841,12 +841,17 @@ async function getDuplicateWorldName(
   container: WorldContainer,
   name: WorldName
 ) {
-  let worldName: string = name;
+  let baseName: string = name;
+  const match = name.match(/^(.*)_\d+$/);
+  if (match !== null) {
+    baseName = match[1];
+  }
 
+  let worldName: string = baseName;
   let result = await validateNewWorldName(container, worldName);
   let i = 0;
   while (isError(result)) {
-    worldName = `${name}_${i}`;
+    worldName = `${baseName}_${i}`;
     i += 1;
     result = await validateNewWorldName(container, worldName);
   }
