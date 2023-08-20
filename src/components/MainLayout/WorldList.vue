@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -8,13 +9,28 @@ import WorldTab from './WorldTab.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
 import { sortValue } from 'src/scripts/objSort';
+import { moveScrollTop_Home } from '../World/HOME/scroll';
 
+const router = useRouter()
 const sysStore = useSystemStore()
 const mainStore = useMainStore();
 const searchWorldName = ref('')
 
 const miniChangeWidth = 200
 const drawer = ref(true)
+
+async function createNewWorld() {
+  // 新規ワールドの生成
+  await mainStore.createNewWorld()
+
+  // 画面遷移
+  if (router.currentRoute.value.path === '/') {
+    moveScrollTop_Home()
+  }
+  else {
+    router.push('/')
+  }
+}
 </script>
 
 <template>
@@ -73,7 +89,7 @@ const drawer = ref(true)
       icon-name="add"
       :label="$t('worldList.addWorld')"
       :tooltip="$t('worldList.addWorld')"
-      @click="mainStore.createNewWorld()"
+      @click="createNewWorld"
     />
     <q-separator class="q-mx-xs" />
     <icon-button-view

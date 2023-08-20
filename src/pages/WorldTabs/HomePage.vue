@@ -27,6 +27,7 @@ import CustomMapImporterView from 'src/components/World/HOME/CustomMapImporterVi
 import VersionSelecterView from 'src/components/World/HOME/VersionSelecterView.vue';
 import DuplicateWorldView from 'src/components/World/HOME/DuplicateWorldView.vue';
 import BackupWorldView from 'src/components/World/HOME/BackupWorldView.vue';
+import { setScrollTop } from 'src/components/World/HOME/scroll';
 
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
@@ -37,9 +38,13 @@ const { t } = useI18n()
 const isWorldContainerLoading = ref(false)
 const scrollAreaRef = ref()
 
+/**
+ * 画面を一番上に遷移
+ */
 function scrollTop() {
   scrollAreaRef.value.setScrollPosition('vertical', 0)
 }
+setScrollTop(scrollTop)
 
 /**
  * 選択されているワールドを削除する
