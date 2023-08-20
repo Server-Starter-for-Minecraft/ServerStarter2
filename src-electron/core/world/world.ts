@@ -20,6 +20,7 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { WorldProgressor } from '../progress/progress';
 import { BackupData } from 'app/src-electron/schema/filedata';
+import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -120,7 +121,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     version: { type: 'vanilla', ...latestRelease },
     using: false,
     remote: undefined,
-    last_date: undefined,
+    last_date: getCurrentTimestamp(),
     last_user: undefined,
     memory: systemSettings.world.memory,
     javaArguments: systemSettings.world.javaArguments,
