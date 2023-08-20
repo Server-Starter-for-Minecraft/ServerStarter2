@@ -165,7 +165,7 @@ function openFolderEditor() {
 <template>
   <q-scroll-area
     ref="scrollAreaRef"
-    class="column full-height"
+    class="full-height"
     style="flex: 1 1 0;"
   >
     <div class="mainField">
@@ -213,7 +213,9 @@ function openFolderEditor() {
       </q-item>
 
       <h1>{{ $t('home.useWorld.title') }}</h1>
-      <p class="text-caption">{{ $t('home.useWorld.description') }}</p>
+      <p class="text-caption" style="opacity: .6;">
+        {{ $t('home.useWorld.description') }}
+      </p>
       <SsBtn
         :label="$t('home.useWorld.selectWorld')"
         :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
