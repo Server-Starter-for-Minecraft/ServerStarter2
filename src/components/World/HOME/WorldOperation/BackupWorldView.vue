@@ -30,7 +30,7 @@ async function backupWorld() {
 }
 
 async function recoverWorld() {
-  const res = await window.API.invokePickDialog({ type: 'backup' })
+  const res = await window.API.invokePickDialog({ type: 'backup', container: mainStore.world.container })
 
   checkError(
     res,

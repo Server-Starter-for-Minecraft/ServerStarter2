@@ -42,9 +42,7 @@ async function recoverWorld() {
       @ok-click="recoverWorld"
       @close="onDialogCancel"
     >
-      <!-- TODO: BackupDataが更新され次第，変数を埋め込む -->
-      <p v-html="$T('home.backup.recoverDialog',{date: '【日時】',world: '【ワールド名】'})">
-      </p>
+      <p v-html="$T('home.backup.recoverDialog',{date: $d(new Date(Number(backupData.time)), 'dateTime'), world: backupData.name})" />
     </BaseDialogCard>
   </q-dialog>
 </template>
