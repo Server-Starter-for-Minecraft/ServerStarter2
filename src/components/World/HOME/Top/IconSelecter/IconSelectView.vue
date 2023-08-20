@@ -4,9 +4,9 @@ import { useDialogPluginComponent } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useMainStore } from 'src/stores/MainStore';
 import { isValid } from 'src/scripts/error';
-import IconBtn from './IconSelecter/IconBtn.vue';
-import ClipImg from './IconSelecter/ClipImg.vue';
-import SelectorBtn from './IconSelecter/SelectorBtn.vue';
+import IconBtn from './IconBtn.vue';
+import ClipImg from './ClipImg.vue';
+import SelectorBtn from './SelectorBtn.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
