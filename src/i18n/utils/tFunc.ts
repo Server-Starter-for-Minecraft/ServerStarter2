@@ -76,7 +76,7 @@ export function tProgress(progress: ProgressMessage) {
 }
 
 /**
- * checkError()の第３引数にサンプルコードのように渡すことでエラー時の翻訳文を生成する
+ * checkError()の第４引数にサンプルコードのように渡すことでエラー時の翻訳文を生成する
  * 
  * ```typescript
  * checkError(
@@ -112,9 +112,9 @@ export function tProgress(progress: ProgressMessage) {
  */
 export function tError(
   error: ErrorMessage,
+  ignoreErrors?: ErrorMessage['key'][],
   titleKey?: string,
   descKey?: string,
-  ignoreErrors?: ErrorMessage['key'][]
 ) {
   // 指定されたエラーを無視する
   if (ignoreErrors?.includes(error.key)) return
@@ -141,7 +141,7 @@ export function tError(
       returnObj.desc = $T(useDescKey, flattenObj(error.arg as Record<string, string | number | string[]>))
     }
     else {
-      returnObj.desc = $T(useDescKey, '')
+      returnObj.desc = $T(useDescKey, 'undefined')
     }
   }
 
