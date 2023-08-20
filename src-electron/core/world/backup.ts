@@ -44,7 +44,7 @@ export async function parseBackUpPath(
   const name = path.stemname();
   const match = name.match(
     new RegExp(
-      `^(${WORLDNAME_REGEX_STR})-(\d{4})-(\d{2})-(\d{2})-(\d{2})(\(\d+\))?$`
+      `^(${WORLDNAME_REGEX_STR})-(\\d{4})-(\\d{2})-(\\d{2})-(\\d{2})(\\(\\d+\\))?$`
     )
   );
   if (match === null)
