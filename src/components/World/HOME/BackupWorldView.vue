@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { Ref, onMounted, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 import { checkError } from 'src/components/Error/Error';
-import { useQuasar } from 'quasar';
-import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
 import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
+import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
 
 const $q = useQuasar()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 const loading = ref(false)
-const isShowingMessage = ref(false)
-const fadeoutMessage:Ref<EventTarget | undefined> = ref()
+const showingMessage: Ref<string | undefined> = ref()
+const fadeoutMessageRef: Ref<EventTarget | undefined> = ref()
 
 async function backupWorld() {
   // ボタンをローディング状態にする
@@ -25,7 +25,7 @@ async function backupWorld() {
 
   // ボタンの状態をリセット
   loading.value = false
-  isShowingMessage.value = true
+  showingMessage.value = `${mainStore.world.name}のバックアップを作成しました`
 }
 
 async function recoverWorld() {
@@ -38,6 +38,8 @@ async function recoverWorld() {
       componentProps: {
         backupData: b
       } as RecoverDialogProp
+    }).onOk(() => {
+      showingMessage.value = 'ワールドの復旧が完了しました'
     }),
     () => { return { title: 'バックアップデータの取得に失敗しました' }}
   )
@@ -45,9 +47,9 @@ async function recoverWorld() {
 
 // アニメーション終了時のイベントリスナーを登録する
 onMounted(() => {
-  fadeoutMessage.value?.addEventListener('animationend', () => {
+  fadeoutMessageRef.value?.addEventListener('animationend', () => {
     // fadeクラスを削除する
-    isShowingMessage.value = false
+    showingMessage.value = undefined
   })
 })
 </script>
@@ -69,8 +71,8 @@ onMounted(() => {
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="recoverWorld"
     />
-    <div ref="fadeoutMessage" class="text-primary" :class="isShowingMessage ? 'fade-out' : 'un-visible'">
-      {{ mainStore.world.name }}のバックアップの作成に成功しました
+    <div ref="fadeoutMessageRef" class="text-primary" :class="showingMessage ? 'fade-out' : 'un-visible'">
+      {{ showingMessage }}
     </div>
   </div>
 </template>
