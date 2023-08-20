@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { $T } from 'src/i18n/utils/tFunc'
 import { setScrollTop } from 'src/components/World/HOME/scroll';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
@@ -33,10 +32,10 @@ setScrollTop(scrollTop)
     <div class="mainField">
       <q-item class="q-pa-none q-pt-lg">
         <q-item-section>
-          <h1 class="q-pt-none">{{ $T("home.worldName.title") }}</h1>
+          <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
           <WorldNameView />
 
-          <h1 class="q-pt-md">{{ $T("home.version.title") }}</h1>
+          <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
           <VersionSelecterView />
         </q-item-section>
 
@@ -56,7 +55,7 @@ setScrollTop(scrollTop)
         <BootSettingsView />
       </ExpansionView>
       
-      <h1>{{ $T('home.worldOperation') }}</h1>
+      <h1>{{ $t('home.worldOperation') }}</h1>
       <DuplicateWorldView @scroll-top="scrollTop" />
       <BackupWorldView />
 
