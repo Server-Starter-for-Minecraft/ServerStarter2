@@ -36,7 +36,6 @@ async function recoverWorld() {
     b => $q.dialog({
       component: RecoverDialog,
       componentProps: {
-        worldID: mainStore.world.id,
         backupData: b
       } as RecoverDialogProp
     }),

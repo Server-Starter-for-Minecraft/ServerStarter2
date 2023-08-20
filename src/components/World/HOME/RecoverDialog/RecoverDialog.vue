@@ -3,10 +3,14 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import { RecoverDialogProp } from './iRecoverDialog';
+import { checkError } from 'src/components/Error/Error';
+import { useMainStore } from 'src/stores/MainStore';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const prop = defineProps<RecoverDialogProp>()
+
+const mainStore = useMainStore()
 const loading = ref(false)
 
 async function recoverWorld() {
@@ -14,8 +18,15 @@ async function recoverWorld() {
   loading.value = true
 
   // バックアップデータを反映
-  await window.API.invokeRestoreWorld(prop.worldID, prop.backupData)
+  const res = await window.API.invokeRestoreWorld(mainStore.world.id, prop.backupData)
 
+  // 復旧データを画面に反映
+  checkError(
+    res.value,
+    w => mainStore.updateWorld(w),
+    () => { return { title: 'バックアップデータからの復旧に失敗しました' }}
+  )
+  
   // ダイアログを閉じる
   onDialogOK()
 }
