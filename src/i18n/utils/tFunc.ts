@@ -112,18 +112,20 @@ export function tProgress(progress: ProgressMessage) {
  */
 export function tError(
   error: ErrorMessage,
-  ignoreErrors?: ErrorMessage['key'][],
-  titleKey?: string,
-  descKey?: string,
+  options?: {
+    ignoreErrors?: ErrorMessage['key'][],
+    titleKey?: string,
+    descKey?: string,
+  }
 ) {
   // 指定されたエラーを無視する
-  if (ignoreErrors?.includes(error.key)) return
+  if (options?.ignoreErrors?.includes(error.key)) return
 
   // Key の更新
   let useTitleKey = `error.${error.key}.title`
-  if (titleKey) useTitleKey = titleKey
+  if (options?.titleKey) useTitleKey = options?.titleKey
   let useDescKey = `error.${error.key}.desc`
-  if (descKey) useDescKey = descKey
+  if (options?.descKey) useDescKey = options?.descKey
 
   // 翻訳を生成
   const returnObj: ErrorFuncReturns = { title: '', desc: undefined }
