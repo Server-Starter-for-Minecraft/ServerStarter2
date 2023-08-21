@@ -38,6 +38,7 @@ export const enUSHome: MessageSchema["home"] = {
       Do you want to introduce a new world that will overwrite an existing world?',
     installBtn: 'Install world',
   },
+  otherSettings: 'Advanced Options',
   saveWorld: {
     title: 'World folder',
     description: 'Select your folder to save world data',

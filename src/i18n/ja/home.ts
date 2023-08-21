@@ -35,6 +35,7 @@ export const jaHome = {
     checkDialog: '以下のワールドを導入すると、既存のワールドは削除されます<br>既存のワールドを上書きする形で新規ワールドを導入しますか？',
     installBtn: 'ワールドを導入',
   },
+  otherSettings: 'その他の設定',
   saveWorld: {
     title: 'ワールドフォルダ',
     description: 'ワールドデータの保存フォルダを選択',

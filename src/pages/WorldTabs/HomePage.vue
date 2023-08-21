@@ -47,7 +47,7 @@ setScrollTop(scrollTop)
       <h1>{{ $t('home.useWorld.title') }}</h1>
       <CustomMapView />
 
-      <ExpansionView title="その他の設定" class="q-pt-xl">
+      <ExpansionView :title="$t('home.otherSettings')" class="q-pt-xl">
         <h1 class="q-pt-none">{{ $t('home.saveWorld.title') }}</h1>
         <WorldFolderView />
         
