@@ -34,7 +34,7 @@ export type SystemUserSetting = {
   // カラーテーマ Light/Dark
   theme: ColorTheme;
   // 色覚サポート
-  visionSupprot: boolean;
+  visionSupport: boolean;
   // システム言語
   language: Locale;
   // 実行者情報

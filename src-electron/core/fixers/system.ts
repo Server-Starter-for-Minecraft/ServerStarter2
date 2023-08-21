@@ -39,7 +39,7 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     // カラーテーマ Light/Dark
     theme: literalFixer(['light', 'auto', 'dark'], 'auto'),
     // 色覚サポート
-    visionSupprot: booleanFixer(false),
+    visionSupport: booleanFixer(false),
     // システム言語
     language: fixLocale,
     // 実行者情報
