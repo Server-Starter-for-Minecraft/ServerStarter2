@@ -41,7 +41,7 @@ async function importNewContent(isFile = false) {
       checkError(
         await window.API.invokePickDialog({type: 'datapack', isFile: isFile}),
         c => addContent2World(c),
-        e => tError(e)
+        e => tError(e, ['data.path.dialogCanceled'])
         //() => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
       break;
@@ -49,7 +49,7 @@ async function importNewContent(isFile = false) {
       checkError(
         await window.API.invokePickDialog({type: 'plugin'}),
         c => addContent2World(c),
-        e => tError(e)
+        e => tError(e, ['data.path.dialogCanceled'])
         //() => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
       break;
@@ -57,7 +57,7 @@ async function importNewContent(isFile = false) {
       checkError(
         await window.API.invokePickDialog({type: 'mod'}),
         c => addContent2World(c),
-        e => tError(e)
+        e => tError(e, ['data.path.dialogCanceled'])
         //() => { return { title: `${prop.contentType}の導入は行われませんでした` }}
       )
       break;
