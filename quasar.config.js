@@ -207,6 +207,13 @@ module.exports = configure(function (/* ctx */) {
         // https://www.electron.build/configuration/configuration
 
         appId: 'ServerStarter2',
+
+        nsis: {
+          oneClick: false,
+          perMachine: false,
+          allowToChangeInstallationDirectory: true,
+          license: "LICENSE.txt", // <- Put your license name here.
+        },
       },
     },
 
