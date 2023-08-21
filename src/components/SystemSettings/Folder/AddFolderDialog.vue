@@ -23,7 +23,7 @@ async function pickFolder() {
   checkError(
     res,
     c => pickPath.value = c,
-    e => tError(e, ['data.path.dialogCanceled'])
+    e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
     //() => { return { title: 'フォルダの選択に失敗しました' } }
   )
 }

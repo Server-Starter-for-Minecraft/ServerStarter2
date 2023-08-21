@@ -26,7 +26,7 @@ async function importZip() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => tError(e, ['data.path.dialogCanceled'])
+    e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
     //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
@@ -38,7 +38,7 @@ async function importFolder() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => tError(e, ['data.path.dialogCanceled'])
+    e => tError(e, {ignoreErrors: ['data.path.dialogCanceled']})
     //() => { return { title: '配布ワールドの導入に失敗しました' } }
   )
 }
