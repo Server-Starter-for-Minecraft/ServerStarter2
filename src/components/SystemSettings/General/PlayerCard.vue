@@ -19,7 +19,13 @@ async function updatePlayer() {
     checkError(
       res,
       p => player.value = p,
-      e => tError(e)
+      e => tError(
+        e,
+        {
+          titleKey:'utils.errorDialog.failToGetOwner',
+          descKey:`error.${e.key}.title`
+        }
+      )
       //() => { return { title: 'オーナープレイヤーの取得に失敗しました' }}
     )
   }

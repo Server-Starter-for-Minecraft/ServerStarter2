@@ -78,7 +78,7 @@ export const useMainStore = defineStore('mainStore', {
                 })
               }
             },
-            e => tError(e,[],'OP一覧にオーナープレイヤーを登録できませんでした',`error.${e.key}.title`)
+            e => tError(e,{titleKey: 'utils.errorDialog.failOPForOwner',descKey: `error.${e.key}.title`})
             //() => { return {
             //  title: 'OP一覧にオーナープレイヤーを登録できませんでした',
             //  desc: 'オーナープレイヤーのデータ取得に失敗しました'
