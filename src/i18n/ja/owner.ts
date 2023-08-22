@@ -10,4 +10,6 @@ export const jaOwner = {
   generalDesc: '新規サーバーに自動でOP権限を付与する機能などを利用できるようになります',
   searchPlayer: 'オーナーとして登録するプレイヤーを検索',
   noOwner: 'オーナープレイヤーは登録されていません',
+  registerPlayer: 'このプレイヤーを登録',
+  searchResult: 'プレイヤー検索結果',
 }

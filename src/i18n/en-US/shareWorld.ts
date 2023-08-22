@@ -10,6 +10,7 @@ export const enUSShareWorld: MessageSchema['shareWorld'] = {
   descriptRemote: 'Register a data storage location to use the world sharing (ShareWorld)',
   registerNewRemote: 'Register new remote',
   register: 'Register',
+  cannotEdit: 'Remote settings cannot be edited while there is a running world',
   addRemote: {
     title: 'Add remote',
     dialogTitle: 'Registration of new ShareWorld',

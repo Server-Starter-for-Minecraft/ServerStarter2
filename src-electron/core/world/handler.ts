@@ -30,7 +30,7 @@ import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
 import { getOpDiff } from './players';
 import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
-import { getBackUpPath } from './backup';
+import { getBackUpPath, parseBackUpPath } from './backup';
 import { Path } from 'app/src-electron/util/path';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BACKUP_EXT } from '../const';
@@ -416,7 +416,6 @@ export class WorldHandler {
    * usingフラグを折ってPush
    */
   private async fix() {
-    worldLoggers.fix({ name: this.name, container: this.container }).warn();
     const local = await this.loadLocal();
     const world = local.value;
     if (isError(world)) return local;
@@ -580,44 +579,36 @@ export class WorldHandler {
   }
 
   /** ワールドをバックアップ */
-  async backup(path?: string): Promise<WithError<Failable<undefined>>> {
-    const func = () => this.backupExec(path);
+  async backup(): Promise<WithError<Failable<BackupData>>> {
+    const func = () => this.backupExec();
     return await this.promiseSpooler.spool(func);
   }
 
   /** ワールドをバックアップ */
-  private async backupExec(
-    path?: string
-  ): Promise<WithError<Failable<undefined>>> {
-    let backupPath: Path;
-    if (path !== undefined) {
-      backupPath = new Path(path);
-      // ファイルが既に存在する場合
-      if (backupPath.exists()) {
-        const e = errorMessage.data.path.alreadyExists({
-          type: 'file',
-          path: backupPath.str(),
-        });
-        return withError(e);
-      }
-      // 拡張子が.ssbackupでない場合
-      if (backupPath.extname() !== '.' + BACKUP_EXT) {
-        const e = errorMessage.data.path.invalidExt({
-          path: backupPath.str(),
-          expectedExt: BACKUP_EXT,
-        });
-        return withError(e);
-      }
-    } else {
-      backupPath = getBackUpPath(this.container, this.name);
-    }
+  private async backupExec(): Promise<WithError<Failable<BackupData>>> {
+    const backupPath = getBackUpPath(this.container, this.name);
+
+    // リモートのデータを一時的に削除
+    const localJson = await this.loadLocalServerJson();
+    if (isError(localJson)) return withError(localJson);
+    const remote = localJson.remote;
+    delete localJson.remote;
+    await this.saveLocalServerJson(localJson);
+    localJson.remote = remote;
+
     // tarファイルを生成
     const tar = await createTar(this.getSavePath(), true);
+
+    // リモートのデータを復旧
+    await this.saveLocalServerJson(localJson);
+
     if (isError(tar)) return withError(tar);
+
     // tarファイルを保存
     await backupPath.write(tar);
 
-    return withError(undefined);
+    // バックアップデータを返却
+    return withError(await parseBackUpPath(backupPath));
   }
 
   /** ワールドにバックアップを復元 */
@@ -630,6 +621,10 @@ export class WorldHandler {
   private async restoreExec(
     backup: BackupData
   ): Promise<WithError<Failable<World>>> {
+    const beforeLocalJson = await this.loadLocalServerJson();
+    if (isError(beforeLocalJson)) return withError(beforeLocalJson);
+    const remote = beforeLocalJson.remote;
+
     const tarPath = new Path(backup.path);
     if (!tarPath.exists()) {
       return withError(
@@ -650,14 +645,25 @@ export class WorldHandler {
     // 展開に失敗した場合
     if (isError(decompressResult)) {
       // 一時フォルダを削除
-      await tempDir.remove(true);
+      await tempDir.remove();
       return withError(decompressResult);
+    }
+    const afterLocalJson = await serverJsonFile.load(tempDir);
+    // Jsonの読み込みに失敗した場合
+    if (isError(afterLocalJson)) {
+      // 一時フォルダを削除
+      await tempDir.remove();
+      return withError(afterLocalJson);
     }
 
     // 一時フォルダの中身をこのパスに移動
-    await savePath.remove(true);
+    await savePath.remove();
     await tempDir.moveTo(savePath);
-    await tempDir.remove(true);
+    await tempDir.remove();
+
+    // remoteをrestore前のデータで上書き
+    afterLocalJson.remote = remote;
+    await this.saveLocalServerJson(afterLocalJson);
 
     return this.loadExec();
   }
@@ -722,7 +728,7 @@ export class WorldHandler {
     const beforeWorld = loadResult.value;
 
     // serverstarterの実行者UUID
-    const selfOwner = (await getSystemSettings()).user.owner;
+    const sysSettings = await getSystemSettings();
 
     // 起動している場合エラー
     if (beforeWorld.using)
@@ -741,8 +747,9 @@ export class WorldHandler {
     // 使用中フラグを立てて保存
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = true;
-    settings.last_user = selfOwner;
+    settings.last_user = sysSettings.user.owner;
     settings.last_date = getCurrentTimestamp();
+    settings.last_id = sysSettings.user.id;
     const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
     await serverJsonFile.save(savePath, settings);
     sub.delete();
@@ -812,12 +819,17 @@ async function getDuplicateWorldName(
   container: WorldContainer,
   name: WorldName
 ) {
-  let worldName: string = name;
+  let baseName: string = name;
+  const match = name.match(/^(.*)_\d+$/);
+  if (match !== null) {
+    baseName = match[1];
+  }
 
+  let worldName: string = baseName;
   let result = await validateNewWorldName(container, worldName);
   let i = 0;
   while (isError(result)) {
-    worldName = `${name}_${i}`;
+    worldName = `${baseName}_${i}`;
     i += 1;
     result = await validateNewWorldName(container, worldName);
   }

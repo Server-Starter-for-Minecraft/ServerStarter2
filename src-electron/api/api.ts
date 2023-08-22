@@ -18,7 +18,12 @@ import {
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import { DialogOptions } from '../schema/dialog';
 import { GroupProgress } from '../schema/progress';
-import { Remote, RemoteFolder, RemoteWorld } from '../schema/remote';
+import {
+  Remote,
+  RemoteFolder,
+  RemoteSetting,
+  RemoteWorld,
+} from '../schema/remote';
 
 /**
  * ## APIの利用方法
@@ -128,10 +133,7 @@ export interface API extends IAPI {
      * Worldをバックアップ
      * @parem path?:string - バックアップのファイルパス(省略可)
      */
-    BackupWorld: (
-      world: WorldID,
-      path?: string
-    ) => Promise<WithError<Failable<undefined>>>;
+    BackupWorld: (world: WorldID) => Promise<WithError<Failable<BackupData>>>;
     /**
      * Worldにバックアップを復元
      * @parem path?:string - バックアップのファイルパス(省略可)
@@ -182,6 +184,11 @@ export interface API extends IAPI {
       name: string
     ) => Promise<Failable<RemoteWorldName>>;
 
+    /** RemoteSettingが存在するかどうかを確認 */
+    ValidateRemoteSetting: (
+      remote: RemoteSetting
+    ) => Promise<Failable<RemoteSetting>>;
+
     /** リモートのワールドデータ一覧を取得 */
     GetRemoteWorlds: (
       remote: RemoteFolder
@@ -218,7 +225,7 @@ export interface API extends IAPI {
         options: { type: 'container' } & DialogOptions
       ) => Promise<Failable<WorldContainer>>) &
       ((
-        options: { type: 'backup' } & DialogOptions
+        options: { type: 'backup'; container: WorldContainer } & DialogOptions
       ) => Promise<Failable<BackupData>>);
   };
 }

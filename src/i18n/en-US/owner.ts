@@ -12,4 +12,6 @@ export const enUSOwner: MessageSchema['owner'] = {
   generalDesc: 'You will be able to use features such as automatic OP privileges for new servers',
   searchPlayer: 'Search for players to register as owner',
   noOwner: 'Owner player is not registered',
+  registerPlayer: 'Register this player',
+  searchResult: 'Search result',
 }

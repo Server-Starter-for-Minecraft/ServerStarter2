@@ -8,19 +8,24 @@ const mainStore = useMainStore()
 </script>
 
 <template>
-  <div class="mainField">
-    <h1 class="q-pt-lg q-pb-md q-ma-none">{{ $t('shareWorld.title') }}</h1>
-    
-    <div class="q-pb-lg text-body2" style="opacity: .6;">
-      <i18n-t keypath="shareWorld.desc" tag="label" for="shareWorld.link">
-        <br>
-        <SsA url="https://civiltt.github.io/ServerStarter/ShareWorld">
-          {{ $t('shareWorld.link') }}
-        </SsA>
-      </i18n-t>
-    </div>
+  <q-scroll-area
+    class="full-height"
+    style="flex: 1 1 0;"
+  >
+    <div class="mainField">
+      <h1 class="q-pt-lg q-pb-md q-ma-none">{{ $t('shareWorld.title') }}</h1>
+      
+      <div class="q-pb-lg text-body2" style="opacity: .6;">
+        <i18n-t keypath="shareWorld.desc" tag="label" for="shareWorld.link">
+          <br>
+          <SsA url="https://civiltt.github.io/ServerStarter/ShareWorld">
+            {{ $t('shareWorld.link') }}
+          </SsA>
+        </i18n-t>
+      </div>
 
-    <NewRemoteView v-if="mainStore.world.remote === void 0" />
-    <ExistRemoteView v-else :remote="mainStore.world.remote"/>
-  </div>
+      <NewRemoteView v-if="mainStore.world.remote === void 0" />
+      <ExistRemoteView v-else :remote="mainStore.world.remote"/>
+    </div>
+  </q-scroll-area>
 </template>

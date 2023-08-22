@@ -10,7 +10,6 @@ export const enUSHome: MessageSchema["home"] = {
     title: 'Versions',
     serverType: 'Select the Server Type',
     versionType: 'Select the Server Version',
-    displayVersion: 'Versions to be displayed in the selection list',
     allVersions: 'All versions',
     onlyReleased: 'Only released',
     buildNumber: 'Build number',
@@ -39,24 +38,49 @@ export const enUSHome: MessageSchema["home"] = {
       Do you want to introduce a new world that will overwrite an existing world?',
     installBtn: 'Install world',
   },
+  otherSettings: 'Advanced Options',
   saveWorld: {
     title: 'World folder',
     description: 'Select your folder to save world data',
     addFolder: 'Add world folder',
-    add: 'Add {name}',
+    add: 'add',
+    addBtn: 'Add {name}',
     folderName: 'Name of world folder',
     select: 'Select folder',
     exist: '{name} already exists',
     inputFolderName: 'Input folder name',
     selectFolder: 'Select folder',
     selectFolderBtn: 'Select folder',
-
+    cannotEdit: 'World folders cannot be edited while a world is running',
 
   },
   setting: {
     title: 'Start up settings',
     memSize: 'memory size',
     jvmArgument: 'Minecraft JVM arguments'
+  },
+  worldOperation:'World Operations',
+  duplicate: {
+    duplicateDesc: '\
+      Duplicate the world and take over various settings such as server version, properties, OP player, etc.<br>\
+      However, ShareWorld settings are not duplicated and must be configured again.',
+    btn: 'Duplicate this world'
+  },
+  backup: {
+    madeBackup: 'Made backup of {world}',
+    recovered: 'FInish world recovering',
+    backupDesc: '\
+    Make backup of this world<br>\
+    Backed-up world data can be accessed from "Recover from Backup"',
+    makeBackup : 'Make backup',
+    recoverFromBackup: 'Recover from backup',
+    startRecover: 'Start recovering',
+    recoverDialogDate: '\
+      Introduce {world} created on {date} into the current existing world.<br>\
+      Do you want to overwrite an existing world with a backup world?',
+    recoverDialog: '\
+      Introduce {world} into the current existing world.<br>\
+      Do you want to overwrite an existing world with a backup world?',
   },
   deleteWorld: {
     title: 'Delete World',

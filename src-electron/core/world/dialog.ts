@@ -18,7 +18,9 @@ import { modFiles } from './files/addtional/mod';
 import { loadCustomMap } from './cusomMap';
 import { pickImage } from '../misc/pickImage';
 import { WorldContainer } from 'app/src-electron/schema/brands';
-import { BACKUP_EXT } from '../const';
+import { BACKUP_DIRECTORY_NAME, BACKUP_EXT } from '../const';
+import { worldContainerToPath } from './worldContainer';
+import { parseBackUpPath } from './backup';
 
 export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
@@ -40,7 +42,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     options: { type: 'container' } & DialogOptions
   ): Promise<Failable<WorldContainer>>;
   async function result(
-    options: { type: 'backup' } & DialogOptions
+    options: { type: 'backup'; container: WorldContainer } & DialogOptions
   ): Promise<Failable<BackupData>>;
   async function result(
     options: {
@@ -53,6 +55,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         | 'container'
         | 'backup';
       isFile?: boolean;
+      container?: WorldContainer;
     } & DialogOptions
   ): Promise<
     Failable<
@@ -71,6 +74,8 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     const props: Electron.OpenDialogOptions['properties'] = [];
 
     const filters: Electron.FileFilter[] = [];
+
+    let defaultPath: undefined | Path = undefined;
 
     // 拡張子制約を設ける
     switch (options.type) {
@@ -105,6 +110,13 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
           extensions: [BACKUP_EXT],
           name: BACKUP_EXT,
         });
+        // バックアップフォルダを開く
+        if (options.container) {
+          defaultPath = worldContainerToPath(options.container).child(
+            BACKUP_DIRECTORY_NAME
+          );
+          props.push('dontAddToRecent');
+        }
         break;
     }
 
@@ -115,7 +127,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
     const result = await dialog.showOpenDialog(window, {
       properties: props,
       title: options.title,
-      defaultPath: options.defaultPath,
+      defaultPath: defaultPath?.str(),
       buttonLabel: options.buttonLabel,
       message: options.message,
       filters,
@@ -145,7 +157,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
       case 'container':
         return path.str() as WorldContainer;
       case 'backup':
-        return { kind: 'backup', path: path.str() };
+        return parseBackUpPath(path);
     }
   }
   return result;

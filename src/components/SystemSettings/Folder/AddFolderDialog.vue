@@ -40,7 +40,12 @@ async function pickFolder() {
           || inputName === ''
           || pickPath === ''
       "
-      :ok-btn-txt="$t('home.saveWorld.add', { name: inputName })"
+      :ok-btn-txt="
+        inputName ? 
+        $t('home.saveWorld.addBtn', { name: inputName }) :
+        $t('home.saveWorld.add')
+        "
+
       @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
       @close="onDialogCancel"
     >

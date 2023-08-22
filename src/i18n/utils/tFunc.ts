@@ -30,14 +30,14 @@ export function setI18nFunc(t: tFunc) {
   _t = t
 }
 
-export function $T(key: string): string;
-export function $T(key: string, args: Record<string, unknown>): string;
-export function $T(key: string, defaultMessage: string): string;
+export function $T(key: FullKeys<MessageSchema>): string;
+export function $T(key: FullKeys<MessageSchema>, args: Record<string, unknown>): string;
+export function $T(key: FullKeys<MessageSchema>, defaultMessage: string): string;
 /**
  * 翻訳で利用する変数部分にさらに翻訳が必要な値がわたってきた際に、
  * 翻訳済みの値を変数部分に再格納するためのラッパー
  */
-export function $T(key: string, args?: Record<string, unknown> | string) {
+export function $T(key: FullKeys<MessageSchema>, args?: Record<string, unknown> | string) {
   if (args === void 0) {
     return _t(key)
   }
@@ -114,17 +114,17 @@ export function tError(
   error: ErrorMessage,
   options?: {
     ignoreErrors?: ErrorMessage['key'][],
-    titleKey?: string,
-    descKey?: string,
+    titleKey?: FullKeys<MessageSchema>,
+    descKey?: FullKeys<MessageSchema> | ''
   }
 ) {
   // 指定されたエラーを無視する
   if (options?.ignoreErrors?.includes(error.key)) return
 
   // Key の更新
-  let useTitleKey = `error.${error.key}.title`
+  let useTitleKey = `error.${error.key}.title` as FullKeys<MessageSchema>
   if (options?.titleKey) useTitleKey = options?.titleKey
-  let useDescKey = `error.${error.key}.desc`
+  let useDescKey = `error.${error.key}.desc` as FullKeys<MessageSchema> | ''
   if (options?.descKey) useDescKey = options?.descKey
 
   // 翻訳を生成

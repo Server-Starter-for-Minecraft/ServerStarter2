@@ -52,8 +52,8 @@ export const useMainStore = defineStore('mainStore', {
     /**
      * ワールドを新規作成する
      */
-    async createNewWorld() {
-      async function creater() {
+    async createNewWorld(duplicateWorldID?: WorldID) {
+      async function createrNew() {
         // NewWorldを生成
         const world = (await window.API.invokeNewWorld()).value
         if (isError(world)) {
@@ -86,11 +86,16 @@ export const useMainStore = defineStore('mainStore', {
         return (await window.API.invokeCreateWorld(world)).value
       }
 
+      async function createrDuplicate(_duplicateWorldID: WorldID) {
+        return (await window.API.invokeDuplicateWorld(_duplicateWorldID)).value
+      }
+
       const worldStore = useWorldStore()
       const consoleStore = useConsoleStore()
       // NewWorldをFrontのリストに追加する
+      const res = await (duplicateWorldID ? createrDuplicate(duplicateWorldID) : createrNew())
       checkError(
-        await creater(),
+        res,
         world => {
           worldStore.worldList[world.id] = toRaw(world)
           this.setWorld(world)

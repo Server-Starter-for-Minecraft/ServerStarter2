@@ -38,6 +38,8 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     eula: booleanFixer(false),
     // カラーテーマ Light/Dark
     theme: literalFixer(['light', 'auto', 'dark'], 'auto'),
+    // 色覚サポート
+    visionSupport: booleanFixer(false),
     // システム言語
     language: fixLocale,
     // 実行者情報

@@ -10,9 +10,8 @@ export const jaHome = {
     title: 'バージョン',
     serverType: 'サーバーの種類を選択',
     versionType: 'バージョンを選択',
-    displayVersion: '一覧に表示するバージョン',
     allVersions: '全てのバージョン',
-    onlyReleased: '正式リリース版のみ',
+    onlyReleased: 'リリース版のみ',
     buildNumber: 'ビルド番号',
     notChange: '(変更不要)',
     recommend: '推奨',
@@ -36,23 +35,48 @@ export const jaHome = {
     checkDialog: '以下のワールドを導入すると、既存のワールドは削除されます<br>既存のワールドを上書きする形で新規ワールドを導入しますか？',
     installBtn: 'ワールドを導入',
   },
+  otherSettings: 'その他の設定',
   saveWorld: {
     title: 'ワールドフォルダ',
     description: 'ワールドデータの保存フォルダを選択',
     addFolder: 'ワールドフォルダを追加',
-    add: '{name}を追加',
+    add: '追加',
+    addBtn: '{name}を追加',
     folderName: 'ワールドフォルダ名',
     select: 'フォルダを選択',
     exist: '{name}は既に存在します',
     inputFolderName: 'フォルダ名を入力してください',
     selectFolder: 'フォルダを選択してください',
     selectFolderBtn: 'フォルダを選択',
-
+    cannotEdit: '起動中のワールドがある状態でワールドフォルダを編集することはできません',
   },
   setting: {
     title: '起動設定',
     memSize: 'メモリサイズ',
     jvmArgument: 'JVM引数'
+  },
+  worldOperation:'ワールドの操作',
+  duplicate: {
+    duplicateDesc: '\
+      ワールドを複製し、サーバーバージョンやプロパティ、OPプレイヤーなどの各種設定を引き継ぎます。<br>\
+      ただし、ShareWorldの設定は複製されないため、改めて設定を行う必要があります。',
+    btn: 'このワールドを複製'
+  },
+  backup: {
+    madeBackup: '{world}のバックアップを作成しました',
+    recovered: 'ワールドの復旧が完了しました',
+    backupDesc: '\
+      このワールドのバックアップを作成します<br>\
+      バックアップしたワールドデータは「バックアップから復旧」より利用することができます',
+    makeBackup : 'バックアップを作成',
+    recoverFromBackup: 'バックアップから復旧',
+    startRecover: '復旧を開始',
+    recoverDialogDate: '\
+      {date}に作成された{world}を現在の既存ワールドに導入します。<br>\
+      既存ワールドをバックアップのワールドで上書きしますか？',
+    recoverDialog: '\
+      {world}を現在の既存ワールドに導入します。<br>\
+      既存ワールドをバックアップのワールドで上書きしますか？',
   },
   deleteWorld: {
     title: 'ワールドの削除',

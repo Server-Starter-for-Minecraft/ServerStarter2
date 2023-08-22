@@ -5,11 +5,11 @@ import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
-import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
+import { CustomMapImporterProp } from './iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import CheckDialog from './checkDialog.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()

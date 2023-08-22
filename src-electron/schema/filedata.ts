@@ -1,4 +1,4 @@
-import { ImageURI } from './brands';
+import { ImageURI, Timestamp } from './brands';
 import { WorldID } from './world';
 
 /** ワールドに保存されたmod/plugin/datapackのデータを表す */
@@ -69,6 +69,11 @@ export type CustomMapData = {
 export type BackupData = {
   kind: 'backup';
   path: string;
+
+  /** ワールド名 */
+  name: string;
+  /** 作成日時(読み取れない可能性あり) */
+  time?: Timestamp;
 };
 
 /** 画像データ(ImageURI) */

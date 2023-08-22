@@ -112,7 +112,7 @@ async function generateEula(
   const result = await execProcess(
     javaPath,
     [...programArgunets, '--nogui'],
-    serverCwdPath.absolute().strQuoted(),
+    serverCwdPath,
     true
   );
 

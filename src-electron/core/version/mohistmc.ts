@@ -37,11 +37,7 @@ async function readyMohistmcVersion(
     args: { version: version },
   });
 
-  const versionPath = papermcVersionsPath.child(
-    `${version.id}-${version.number}`
-  );
-
-  const jarpath = versionPath.child(
+  const jarpath = cwdPath.child(
     `${version.type}-${version.id}-${version.number}.jar`
   );
 
@@ -57,7 +53,7 @@ async function readyMohistmcVersion(
   if (isError(result)) return result;
 
   return {
-    programArguments: ['-jar', jarpath.absolute().strQuoted() ],
+    programArguments: ['-jar', jarpath.absolute().strQuoted()],
     component,
   };
 }

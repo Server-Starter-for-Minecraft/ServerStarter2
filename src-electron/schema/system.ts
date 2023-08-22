@@ -33,6 +33,8 @@ export type SystemUserSetting = {
   eula: boolean;
   // カラーテーマ Light/Dark
   theme: ColorTheme;
+  // 色覚サポート
+  visionSupport: boolean;
   // システム言語
   language: Locale;
   // 実行者情報

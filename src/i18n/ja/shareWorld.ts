@@ -8,6 +8,7 @@ export const jaShareWorld = {
   descriptRemote: 'ワールド共有機能（ShareWorld）を利用するためのデータ保管場所を登録します',
   registerNewRemote: '新規リモートの登録',
   register: '登録',
+  cannotEdit: '起動中のワールドがある状態でリモート設定を編集することはできません',
   addRemote: {
     title: 'リモートを追加',
     dialogTitle: '新規ShareWorldの登録',
