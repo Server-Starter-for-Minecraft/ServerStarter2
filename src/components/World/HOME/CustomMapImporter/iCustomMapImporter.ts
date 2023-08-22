@@ -27,7 +27,13 @@ export async function importCustomMap(customMap: CustomMapData) {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    e => tError(e)
+    e => tError(
+      e,
+      {
+        titleKey: 'utils.errorDialog.failToSaveExistedWorld',
+        descKey: `error.${e.key}.title`
+      }
+    )
     //() => { return { title: '配布ワールドの保存に失敗しました'}}
   )
 }

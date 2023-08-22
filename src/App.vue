@@ -134,7 +134,7 @@ function setSubscribe() {
         v.value,
         undefined,
         //() => { return { title: 'ワールドの設定を保存できませんでした' } }
-        e => tError(e,{titleKey:undefined,descKey: ''})
+        e => tError(e)
       )
     })
   })

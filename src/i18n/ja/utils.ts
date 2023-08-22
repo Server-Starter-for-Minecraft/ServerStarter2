@@ -31,5 +31,8 @@ export const jaUtils = {
   errorDialog: {
     failToGetOwner: 'オーナープレイヤーの取得に失敗しました',
     failOPForOwner: 'OP一覧にオーナープレイヤーを登録できませんでした',
+    failToSaveExistedWorld: '配布ワールドの保存に失敗しました',
+    failSync: 'ShareWorldの同期に失敗しました',
+    failGetShareWorld: 'ShareWorldの取得に失敗しました',
   }
 };

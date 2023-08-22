@@ -32,7 +32,13 @@ export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    e => tError(e)
+    e => tError(
+      e,
+      {
+        titleKey: 'utils.errorDialog.failSync',
+        descKey: `error.${e.key}.title`
+      }
+    )
     //() => { return { title: 'ShareWorldの同期に失敗しました' }}
   )
 

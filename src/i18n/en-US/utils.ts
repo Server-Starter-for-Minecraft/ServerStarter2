@@ -33,5 +33,8 @@ export const enUSUtils: MessageSchema['utils'] = {
   errorDialog: {
     failToGetOwner: 'Failed to get owner player',
     failOPForOwner: 'Failed to register owner player to OP list',
+    failToSaveExistedWorld: 'Failed to save existed world',
+    failSync: 'Failed to sync with ShareWorld',
+    failGetShareWorld: 'Failed to get ShareWorld'
   }
 };

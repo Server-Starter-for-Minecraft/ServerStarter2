@@ -59,7 +59,13 @@ onMounted(async () => {
   checkError(
     res.value,
     remotes => remoteWorlds.value = remotes,
-    e => tError(e)
+    e => tError(
+      e,
+      {
+        titleKey: 'failGetShareWorld',
+        descKey: `error.${e.key}.title`
+      }
+    )
     //() => { return { title: 'ShareWorldの取得に失敗しました' } }
   )
 
