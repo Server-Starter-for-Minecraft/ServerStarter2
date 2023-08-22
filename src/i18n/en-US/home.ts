@@ -74,8 +74,11 @@ export const enUSHome: MessageSchema["home"] = {
     makeBackup : 'Make backup',
     recoverFromBackup: 'Recover from backup',
     startRecover: 'Start recovering',
-    recoverDialog: '\
+    recoverDialogDate: '\
       Introduce {world} created on {date} into the current existing world.<br>\
+      Do you want to overwrite an existing world with a backup world?',
+    recoverDialog: '\
+      Introduce {world} into the current existing world.<br>\
       Do you want to overwrite an existing world with a backup world?',
   },
   deleteWorld: {

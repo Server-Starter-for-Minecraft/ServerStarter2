@@ -70,8 +70,11 @@ export const jaHome = {
     makeBackup : 'バックアップを作成',
     recoverFromBackup: 'バックアップから復旧',
     startRecover: '復旧を開始',
-    recoverDialog: '\
+    recoverDialogDate: '\
       {date}に作成された{world}を現在の既存ワールドに導入します。<br>\
+      既存ワールドをバックアップのワールドで上書きしますか？',
+    recoverDialog: '\
+      {world}を現在の既存ワールドに導入します。<br>\
       既存ワールドをバックアップのワールドで上書きしますか？',
   },
   deleteWorld: {

@@ -42,7 +42,12 @@ async function recoverWorld() {
       @ok-click="recoverWorld"
       @close="onDialogCancel"
     >
-      <p v-html="$T('home.backup.recoverDialog',{date: $d(new Date(Number(backupData.time)), 'dateTime'), world: backupData.name})" />
+    <p v-html="
+        backupData.time ? 
+          $T('home.backup.recoverDialogDate',{date: $d(new Date(Number(backupData.time)), 'dateTime'), world: backupData.name}) : 
+          $T('home.backup.recoverDialog',{world: backupData.name})
+      " 
+    />
     </BaseDialogCard>
   </q-dialog>
 </template>
