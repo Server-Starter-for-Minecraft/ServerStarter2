@@ -44,7 +44,7 @@ export const jaProperty = {
     'spawn-animals': '動物が出現する',
     'spawn-monsters': '敵MOBが出現する',
     'spawn-npcs': '村人が出現する',
-    'spawn-protection':'\
+    'spawn-protection': '\
       ブロック・オブジェクトの設置・破壊が禁止される範囲をスポーン中心からの半径で指定（整数値）\
       ただし，OP権限を有するプレイヤーには無効',
     'view-distance': 'チャンク単位の描画距離',
@@ -89,13 +89,13 @@ export const jaProperty = {
     'enforce-secure-profile': 'Mojang署名の公開鍵を持っているプレイヤーにのみ接続を許可する',
     'enforce-whitelist': 'ホワイトリストによる管理を強制する',
     'white-list': 'ホワイトリストによるプレイヤーのログイン管理を行う',
-    'enable-jmx-monitoring':'JMXによるモニターを有効化',
-    'previews-chat':'チャット送信時に表示するプレビューを有効にする',
+    'enable-jmx-monitoring': 'JMXによるモニターを有効化',
+    'previews-chat': 'チャット送信時に表示するプレビューを有効にする',
     'snooper-enabled': 'サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する',
-    'log-ips': 'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする。',
+    'log-ips': 'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする',
     'text-filtering-config': '不適切なチャットのフィルタリング設定',
   },
-  resetProperty:'\
+  resetProperty: '\
     基本設定の{defaultProperty}に設定を戻します<br>\
     「システム設定」>「プロパティ」 より基本設定を変更できます',
   failed: 'プロパティが読み込めませんでした',

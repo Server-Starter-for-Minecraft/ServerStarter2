@@ -11,6 +11,7 @@ import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialo
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useQuasar } from 'quasar';
+import { tError } from 'src/i18n/utils/tFunc';
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
@@ -35,7 +36,7 @@ async function setWorldContainer(container: WorldContainer) {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    () => { return { title: 'ワールドの保存フォルダを変更できませんでした' } }
+    e => tError(e)
   )
 
   // エラー状態の解除

@@ -4,6 +4,7 @@ import { deepcopy } from "app/src-electron/util/deepcopy";
 import { checkError } from "src/components/Error/Error";
 import { useMainStore } from "src/stores/MainStore";
 import { assets } from "src/assets/assets";
+import { tError } from "src/i18n/utils/tFunc";
 
 export interface CustomMapImporterProp {
   customMap: CustomMapData
@@ -26,6 +27,12 @@ export async function importCustomMap(customMap: CustomMapData) {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    () => { return { title: '配布ワールドの保存に失敗しました'}}
+    e => tError(
+      e,
+      {
+        titleKey: 'utils.errorDialog.failToSaveExistedWorld',
+        descKey: `error.${e.key}.title`
+      }
+    )
   )
 }

@@ -19,7 +19,9 @@ const translationArgs: Record<string, FullKeys<MessageSchema>> = {
   'papermc': 'home.serverType.papermc',
   'forge': 'home.serverType.forge',
   'mohistmc': 'home.serverType.mohistmc',
-  'fabric': 'home.serverType.fabric'
+  'fabric': 'home.serverType.fabric',
+  'file' : 'general.file',
+  'directory': 'general.directory'
 }
 
 type tFunc = (key: string, args?: Record<string, unknown> | string) => string
@@ -74,7 +76,7 @@ export function tProgress(progress: ProgressMessage) {
 }
 
 /**
- * checkError()の第３引数にサンプルコードのように渡すことでエラー時の翻訳文を生成する
+ * checkError()の第４引数にサンプルコードのように渡すことでエラー時の翻訳文を生成する
  * 
  * ```typescript
  * checkError(
@@ -93,33 +95,43 @@ export function tProgress(progress: ProgressMessage) {
  * checkError(
  *   failableVariable,
  *   v => successProcess(v),
- *   e => tError(e, tKey, dKey)
+ *   e => tError(e, {titleKey: tKey, descKey: dKey})
  * )
  * ```
  * 
- * `tKey`のみを渡して`tError(e, tKey)`としても良い
+ * `tKey`のみを渡して`tError(e, {titleKey: tKey})`としても良い
  * 
- * 説明文の表示をオフにして、タイトルは(エラーに対応する翻訳を)表示する場合は`tError(e, undefined, '')`とする
+ * 説明文の表示をオフにして、タイトルは(エラーに対応する翻訳を)表示する場合は`tError(e, {titleKey: tKey, descKey: ''})`とする
+ * 
+ * なお、説明文の翻訳が登録されていないエラーが発生し、`descKey`が指定されていない場合には、説明文の描画を省略する
  * 
  * 翻訳文を作成するときに利用できる変数は`flattenObj()`によって平坦化されるため、
- * ネスト構造になっていたとしても、それらを「.」でつなぐことで当該変数を利用できる
+ * ネスト構造になっていたとしても、それらを「_」でつなぐことで当該変数を利用できる
+ * 
+ * @param ignoreErrors ここで指定したエラーのキーが発生した場合には、エラー画面を表示しない
  */
 export function tError(
   error: ErrorMessage,
-  titleKey?: FullKeys<MessageSchema>,
-  descKey?: FullKeys<MessageSchema> | ''
+  options?: {
+    ignoreErrors?: ErrorMessage['key'][],
+    titleKey?: FullKeys<MessageSchema>,
+    descKey?: FullKeys<MessageSchema> | ''
+  }
 ) {
+  // 指定されたエラーを無視する
+  if (options?.ignoreErrors?.includes(error.key)) return
+
   // Key の更新
   let useTitleKey = `error.${error.key}.title` as FullKeys<MessageSchema>
-  if (titleKey) useTitleKey = titleKey
+  if (options?.titleKey) useTitleKey = options?.titleKey
   let useDescKey = `error.${error.key}.desc` as FullKeys<MessageSchema> | ''
-  if (descKey) useDescKey = descKey
+  if (options?.descKey) useDescKey = options?.descKey
 
   // 翻訳を生成
   const returnObj: ErrorFuncReturns = { title: '', desc: undefined }
   // Errorのタイトルは必ず表示するために、表示をオフにできない仕様
   if (error.arg) {
-    returnObj.title = $T(useTitleKey, flattenObj(error.arg as Record<string, string | number | string[]>))
+    returnObj.title = $T(useTitleKey, omitPath(flattenObj(error.arg as Record<string, string | number | string[]>)))
   }
   else {
     returnObj.title = $T(useTitleKey)
@@ -128,12 +140,24 @@ export function tError(
   // 説明文は空文字列が来たら表示をオフにする
   if (useDescKey !== '') {
     if (error.arg) {
-      returnObj.desc = $T(useDescKey, flattenObj(error.arg as Record<string, string | number | string[]>))
+      returnObj.desc = $T(useDescKey, omitPath(flattenObj(error.arg as Record<string, string | number | string[]>)))
     }
     else {
-      returnObj.desc = $T(useDescKey)
+      returnObj.desc = $T(useDescKey, 'undefined')
     }
   }
 
   return returnObj
+}
+
+/**
+ * 引数の中に`key: path`があった場合、フルパスの中のファイル名を抽出した文字列に変換
+ */
+function omitPath(args: Record<string, string | number | string[]>) {
+  if ('path' in args) {
+    const names = args['path'].toString().split(/\/|\\/)
+    args['path'] = names[names.length - 1]
+  }
+
+  return args
 }

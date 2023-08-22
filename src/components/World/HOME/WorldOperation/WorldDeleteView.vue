@@ -5,9 +5,8 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { moveScrollTop_Home } from '../scroll';
 import { checkError } from 'src/components/Error/Error';
-import { useI18n } from 'vue-i18n';
+import { tError } from 'src/i18n/utils/tFunc';
 
-const { t } = useI18n()
 const mainStore = useMainStore()
 const worldStore = useWorldStore()
 const consoleStore = useConsoleStore()
@@ -39,7 +38,7 @@ async function removeWorld() {
   checkError(
     res.value,
     updateView,
-    () => { return { title: t('home.error.failedDelete', { serverName: mainStore.world.name }) } }
+    e => tError(e)
   )
 }
 </script>

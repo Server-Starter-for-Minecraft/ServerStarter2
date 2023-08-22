@@ -19,31 +19,31 @@ export const enUSProgress: ProgressMessageTranslation = {
       loadSettingFiles: 'Loadtin world setting file',
       formatWorldDirectory: 'Changing world directory',
       reloading: 'Reloading world data',
-			checkUsing: 'Checking usement of the world',
-			movingSaveData: 'Moving world data'
+      checkUsing: 'Checking usement of the world',
+      movingSaveData: 'Moving world data'
     },
-		remote: {
-			check: 'Checking existence of data on the remote',
-			pull: 'Downloading data on the remote',
+    remote: {
+      check: 'Checking existence of data on the remote',
+      pull: 'Downloading data on the remote',
       fixing: 'Fixing remote data',
       desc: {
         getPlayerFromUUID: 'Gettinf player from UUID',
         git: 'Executing git.{method} {stage} stage',
       },
-			push: 'Uploading date on the remote'
-		},
+      push: 'Uploading date on the remote'
+    },
     readyJava: {
       title: 'Preparing java runtime',
       file: 'Generating {path}',
     },
-		readyVersion: {
-			title: 'Preparing {version}',
+    readyVersion: {
+      title: 'Preparing {version}',
       vanilla: {
         fetching: 'Downloading server data',
         saving: 'Saving server data'
       },
       spigot: {
-        loadBuildJavaVersion: 'Checking Java version for build.',
+        loadBuildJavaVersion: 'Checking Java version for build',
         readyBuildJava: 'Preparing Java for build',
         readyBuildtool: 'Preparing build tools',
         loadBuildData: 'Getting build infomation',
@@ -63,7 +63,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       fabric: {
         readyServerData: 'Preparing server data',
       },
-		},
+    },
     load: {
       title: 'Loading world data',
       loadLocalSetting: 'Loading local setting file',
@@ -85,7 +85,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       stage: '{stage} by git',
     },
     run: {
-      before:{
+      before: {
         title: 'Processing before world startup',
         memoryArguments: 'Generating memory arguments in Java',
         userArguments: 'Validating user arguments in Java',

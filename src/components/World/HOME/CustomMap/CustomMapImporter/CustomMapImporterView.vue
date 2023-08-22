@@ -26,8 +26,7 @@ async function importZip() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => tError(e)
-    //() => { return { title: '配布ワールドの導入に失敗しました' } }
+    e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
   )
 }
 /**
@@ -38,8 +37,7 @@ async function importFolder() {
   checkError(
     res,
     w => showCheckDialog(w),
-    e => tError(e)
-    //() => { return { title: '配布ワールドの導入に失敗しました' } }
+    e => tError(e, {ignoreErrors: ['data.path.dialogCanceled']})
   )
 }
 
@@ -64,7 +62,6 @@ onMounted(async () => {
     res.value,
     lws => localWorlds.value = lws,
     e => tError(e),
-    //() => { return { title: 'シングルワールドの読み込みに失敗しました' } }
   )
 
   // 読み込み処理の終了を通知

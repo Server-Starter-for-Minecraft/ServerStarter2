@@ -7,6 +7,7 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCardView from './itemCardView.vue';
+import { tError } from 'src/i18n/utils/tFunc';
 
 type T = DatapackData | PluginData | ModData
 
@@ -40,22 +41,21 @@ async function importNewContent(isFile = false) {
       checkError(
         await window.API.invokePickDialog({type: 'datapack', isFile: isFile}),
         c => addContent2World(c),
-        //"$t('additionalContents.installFailed')"
-        () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
+        e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
       )
       break;
     case 'plugin':
       checkError(
         await window.API.invokePickDialog({type: 'plugin'}),
         c => addContent2World(c),
-        () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
+        e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
       )
       break;
     case 'mod':
       checkError(
         await window.API.invokePickDialog({type: 'mod'}),
         c => addContent2World(c),
-        () => { return { title: `${prop.contentType}の導入は行われませんでした` }}
+        e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
       )
       break;
     default:

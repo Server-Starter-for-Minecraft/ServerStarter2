@@ -4,6 +4,7 @@ import { Remote, RemoteFolder } from "app/src-electron/schema/remote";
 import { deepcopy } from "app/src-electron/util/deepcopy";
 import { checkError } from "src/components/Error/Error";
 import { useMainStore } from "src/stores/MainStore";
+import { tError } from "src/i18n/utils/tFunc";
 
 export interface GitHubSelecterProp {
   remoteData: RemoteFolder
@@ -31,7 +32,13 @@ export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    () => { return { title: 'ShareWorldの同期に失敗しました' }}
+    e => tError(
+      e,
+      {
+        titleKey: 'utils.errorDialog.failSync',
+        descKey: `error.${e.key}.title`
+      }
+    )
   )
 
   return res

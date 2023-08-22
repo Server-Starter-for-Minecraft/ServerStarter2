@@ -94,11 +94,11 @@ export const enUSHome: MessageSchema["home"] = {
       Are you sure to delete the world data?'
   },
   error: {
-      title: 'Warning!',
-      failedGetVersion: '\
+    title: 'Warning!',
+    failedGetVersion: '\
         Failed to get the version {serverVersion}.<br>\
-        You can not choose this server./',
-      failedDelete: 'Failed to delete {serverName} which does not exist.'
+        You can not choose this server.',
+    failedDelete: 'Failed to delete {serverName} which does not exist'
   },
   init: {
     save: 'Save world settings',

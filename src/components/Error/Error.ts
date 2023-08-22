@@ -17,12 +17,12 @@ export type ErrorFuncReturns = { title: string, desc?: string }
  * エラーが発生する可能性のある変数をチェックし、エラーがある場合はエラー画面を表示する
  * @param check エラーチェックをする変数
  * @param successProcess エラーがなかった場合の処理
- * @param errorDescription エラーが起きた場合の説明文（デフォルトは「不明なエラーが発生しました。」）
+ * @param errorDescription エラーが起きた場合の説明文
  */
 export function checkError<S>(
   check: Failable<S>,
   successProcess?: (checked: S) => void,
-  errorDescription?: (error: ErrorMessage) => ErrorFuncReturns
+  errorDescription?: (error: ErrorMessage) => ErrorFuncReturns | undefined
 ) {
   if (isValid(check)) {
     if (successProcess !== void 0) successProcess(check)
@@ -31,10 +31,12 @@ export function checkError<S>(
   else {
     if (errorDescription !== void 0) {
       const errorMessage = errorDescription(check)
-      _openDialogFunc({
-        title: errorMessage.title,
-        desc: errorMessage.desc
-      })
+      if (errorMessage) {
+        _openDialogFunc({
+          title: errorMessage.title,
+          desc: errorMessage.desc
+        })
+      }
     }
 
     // TODO: エラー画面を表示するのはFailableではない未知のエラー（RuntimeError）の時のみとし、

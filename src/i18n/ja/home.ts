@@ -92,7 +92,7 @@ export const jaHome = {
   error: {
     title: '警告',
     failedGetVersion: 'サーバーバージョン{serverVersion}の一覧取得に失敗したため、このサーバーは選択できません。',
-    failedDelete: '{serverName} が存在しないため、削除に失敗しました。',
+    failedDelete: '{serverName} が存在しないため、削除に失敗しました',
   },
   init: {
     save: 'ワールドの設定を保存',

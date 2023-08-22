@@ -36,7 +36,7 @@ function closeCounter() {
         <q-card-section class="row items-center no-wrap">
           <div>
             <div class="text-weight-bold">{{ title }}</div>
-            <div class="text-grey">{{ desc }}</div>
+            <div v-if="desc && desc !== 'undefined'" class="text-grey">{{ desc }}</div>
           </div>
         </q-card-section>
 

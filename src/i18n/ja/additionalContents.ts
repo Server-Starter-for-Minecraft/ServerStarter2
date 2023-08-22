@@ -11,5 +11,5 @@ export const jaAdditionalContents = {
   install: '導入',
   installFromZip: 'Zipから追加',
   installFromFolder: 'フォルダーから追加',
-  needReboot: '変更を反映するにはサーバーの再起動が必要です。',
+  needReboot: '変更を反映するにはサーバーの再起動が必要です',
 }

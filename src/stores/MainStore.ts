@@ -10,6 +10,7 @@ import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
+import { tError } from 'src/i18n/utils/tFunc';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -77,10 +78,7 @@ export const useMainStore = defineStore('mainStore', {
                 })
               }
             },
-            () => { return {
-              title: 'OP一覧にオーナープレイヤーを登録できませんでした',
-              desc: 'オーナープレイヤーのデータ取得に失敗しました'
-            }}
+            e => tError(e,{titleKey: 'utils.errorDialog.failOPForOwner',descKey: `error.${e.key}.title`})
           )
         }
 
@@ -103,7 +101,7 @@ export const useMainStore = defineStore('mainStore', {
           this.setWorld(world)
           consoleStore.initTab()
         },
-        () => { return { title: '新規ワールドの作成に失敗しました' } }
+        e => tError(e)
       )
     },
     /**

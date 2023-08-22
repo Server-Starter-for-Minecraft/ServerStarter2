@@ -1,6 +1,6 @@
 import { MessageSchema } from "src/boot/i18n";
 
-export const enUSShareWorld:MessageSchema['shareWorld'] = {
+export const enUSShareWorld: MessageSchema['shareWorld'] = {
   github: 'GitHub',
   title: 'World Sharing (ShareWorld)',
   desc: '\
@@ -37,7 +37,7 @@ export const enUSShareWorld:MessageSchema['shareWorld'] = {
     desc: '\
       Create a new ShareWorld and synchronize data.{0}\
       Enter the name of the ShareWorld to be used for synchronization.{1}{2}',  
-    caution: 'This name cannot be changed later.',
+    caution: 'This name cannot be changed later',
     inputName: 'Input name of new ShareWorld',
     unavailName: 'Cannot use as a new name for ShareWorld',
   },
@@ -77,13 +77,13 @@ export const enUSShareWorld:MessageSchema['shareWorld'] = {
     delete: {
       title: 'Delete ShareWorld',
       desc: '\
-      Completely delete the shared data in {remotePath}.<br>\
-      The shared ShareWorld data will be deleted, but all participants can continue to activate this world as a local world.',
+        Completely delete the shared data in {remotePath}.<br>\
+        The shared ShareWorld data will be deleted, but all participants can continue to activate this world as a local world.',
       btn: 'Delete ShareWorld',
       dialogTitle: 'Delete remotedata',
       dialogDesc: '\
-      The ShareWorld data for this world will be deleted, and the shared partner will be removed from synchronization as well.<br>\
-      Do you want to delete ShareWorld data for this world?',
+        The ShareWorld data for this world will be deleted, and the shared partner will be removed from synchronization as well.<br>\
+        Do you want to delete ShareWorld data for this world?',
     }
   }
 }

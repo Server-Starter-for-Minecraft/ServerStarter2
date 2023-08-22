@@ -1,6 +1,6 @@
 import { MessageSchema } from "src/boot/i18n";
 
-export const enAutoShutdown:MessageSchema['autoshutdown'] = {
+export const enAutoShutdown: MessageSchema['autoshutdown'] = {
   title: 'Auto shutdown',
   desc: '\
     Shutdown this pc after {time} sec.<br>\

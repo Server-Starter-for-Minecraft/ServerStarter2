@@ -1,6 +1,6 @@
 import { MessageSchema } from "src/boot/i18n";
 
-export const enUSproperty:MessageSchema['property'] = {
+export const enUSproperty: MessageSchema['property'] = {
   main: {
     search: 'search properties',
     resetAll: 'reset all',
@@ -31,7 +31,7 @@ export const enUSproperty:MessageSchema['property'] = {
     'max-players':
       'Number of people who can play on the server at the same time',
     'player-idle-timeout':
-      'If left unattended for a specified number of seconds (= an integer value), the server will kick the user.',
+      'If left unattended for a specified number of seconds (= an integer value), the server will kick the user',
     motd: 'Description displayed on the server selection screen',
     'enable-status': 'Display online status on the server selection screen',
     'level-type': 'World generation value',
@@ -50,7 +50,7 @@ export const enUSproperty:MessageSchema['property'] = {
     'view-distance': 'View distance by a chunk',
     'allow-flight': 'Allowed to fly for more than 5 seconds',
     'entity-broadcast-range-percentage':
-      'Sets the range of entities to be drawn as a percentage when the initial value is 100.',
+      'Sets the range of entities to be drawn as a percentage when the initial value is 100',
     'simulation-distance': 'Sets the range of entities to be simulated',
     'max-chained-neighbor-updates':
       'Limiting the amount of consecutive neighbor updates before skipping',
@@ -58,22 +58,22 @@ export const enUSproperty:MessageSchema['property'] = {
     'rate-limit':
       'Specifies the maximum amount of packets a client can send per second',
     'network-compression-threshold':
-      'Specifies the degree of network compression as an integer.',
+      'Specifies the degree of network compression as an integer',
     'prevent-proxy-connections':
       'Allow connection from VPN or Proxy when set to False',
     'online-mode':
-      'Verify that the connecting player is a legitimate account holder.',
+      'Verify that the connecting player is a legitimate account holder',
     'server-ip': 'IP address to set up a server',
     'server-port': 'Port number used for opening my server',
     'use-native-transport':
-      'Optimize packet communication for servers running on Linux.',
+      'Optimize packet communication for servers running on Linux',
     'enable-query': 'GameSpy4 connection allowed',
     'query.port': 'Query port used for the query server',
     'enable-rcon': 'Allow remote control',
     'rcon.port': 'Port number used for remote control',
     'rcon.password': 'Password used for remote control',
     'broadcast-rcon-to-ops':
-      'Notifies the player with OP when a command is input from a remote control.',
+      'Notifies the player with OP when a command is input from a remote control',
     'broadcast-console-to-ops':
       'Notifies the player with OP authority when a command is entered from the server console',
     'initial-disabled-packs': 'List of datapacks to not be auto-enabled on world creation',
@@ -89,17 +89,17 @@ export const enUSproperty:MessageSchema['property'] = {
     'resource-pack-sha1': 'Hash value of the server resource pack',
     'require-resource-pack':
       'Force players to install server resource packs, otherwise they will not be able to connect to the world',
-    'enforce-secure-profile': 'Allow connections only to players who have Mojang-signed public keys.',
+    'enforce-secure-profile': 'Allow connections only to players who have Mojang-signed public keys',
     'enforce-whitelist': 'Deny participation to non-whitelisted players',
     'white-list': 'Manage player login by the white list',
-    'enable-jmx-monitoring':'Enable monitoring by JMX',
-    'previews-chat':'Enable preview to display when sending chat',
+    'enable-jmx-monitoring': 'Enable monitoring by JMX',
+    'previews-chat': 'Enable preview to display when sending chat',
     'snooper-enabled': 'Sets whether the server sends snoop data regularly to http://snoop.minecraft.net',
-    'log-ips':'When set to false, will prevent player IPs from being included in the log when players join the game',
+    'log-ips': 'When set to false, will prevent player IPs from being included in the log when players join the game',
     'text-filtering-config': 'Filtering configuration of inappropriate chat',
 
   },
-  resetProperty:'\
+  resetProperty: '\
     Reset setting to default setting \"{defaultProperty}\"<br>\
     You can change basic settings from "System Settings" > "Properties".',
   failed: 'Failed to load properties',
@@ -110,6 +110,6 @@ export const enUSproperty:MessageSchema['property'] = {
     downerLimit: '{n} or more',
     upperLimit: '{n} or less',
     multiple: 'multiple of {n}',
-    number:  'Input half size number'
+    number: 'Input half size number'
   },
 };
