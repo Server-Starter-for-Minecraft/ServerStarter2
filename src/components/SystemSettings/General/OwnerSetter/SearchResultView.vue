@@ -4,6 +4,7 @@ import { Player } from 'app/src-electron/schema/player';
 import SearchResultItem from 'src/components/World/Player/utils/SearchResultItem.vue';
 import { $T } from 'src/i18n/utils/tFunc';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { strSort } from 'src/scripts/objSort'
 
 const ownerCandidate = defineModel<PlayerUUID>()
 const playerStore = usePlayerStore()
@@ -36,7 +37,12 @@ function setOwner(player: Player) {
           />
           <!-- 過去に登録実績のあるプレイヤー一覧 -->
           <template
-            v-for="p in playerStore.searchPlayers(Object.values(playerStore.cachePlayers))"
+            v-for="
+              p in playerStore.searchPlayers(
+                Object.values(playerStore.cachePlayers)
+              ).sort(
+                (a, b) => strSort(a.name, b.name)
+              )"
             :key="p"
           >
             <SearchResultItem

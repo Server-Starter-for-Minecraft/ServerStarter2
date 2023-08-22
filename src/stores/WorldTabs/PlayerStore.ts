@@ -3,7 +3,6 @@ import { defineStore } from 'pinia';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { OpLevel, Player, PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { isValid } from 'src/scripts/error';
-import { strSort } from 'src/scripts/objSort';
 import { useSystemStore } from '../SystemStore';
 import { useMainStore } from '../MainStore';
 
@@ -35,7 +34,7 @@ export const usePlayerStore = defineStore('playerStore', {
         )
       }
 
-      return returnPlayers.sort((a, b) => strSort(a.name, b.name));
+      return returnPlayers;
     },
     /**
      * プレイヤーグループの検索

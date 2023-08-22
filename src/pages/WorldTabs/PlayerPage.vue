@@ -100,7 +100,12 @@ function openGroupEditor(group?: PlayerGroup) {
           </div>
           <div v-if="mainStore.world.players.length !== 0" class="row q-gutter-sm q-pa-sm">
             <div
-              v-for="player in playerStore.searchPlayers(mainStore.world.players).sort(playerSortFunc(playerOrder))"
+              v-for="
+                player in deepCopy(
+                  playerStore.searchPlayers(mainStore.world.players)
+                ).sort(
+                  playerSortFunc(playerOrder)
+                )"
               :key="player.uuid"
               class="col-"
             >

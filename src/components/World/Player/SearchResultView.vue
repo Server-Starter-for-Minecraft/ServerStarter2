@@ -4,6 +4,7 @@ import { Player } from 'app/src-electron/schema/player';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { isValid } from 'src/scripts/error';
+import { strSort } from 'src/scripts/objSort';
 import SearchResultItem from './utils/SearchResultItem.vue';
 
 const mainStore = useMainStore()
@@ -54,7 +55,12 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         />
         <!-- 過去に登録実績のあるプレイヤー一覧 -->
         <template
-          v-for="p in playerStore.searchPlayers(filterRegisteredPlayer(Object.values(playerStore.cachePlayers)))"
+          v-for="
+            p in playerStore.searchPlayers(
+              filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
+            ).sort(
+              (a, b) => strSort(a.name, b.name)
+            )"
           :key="p"
         >
           <SearchResultItem
