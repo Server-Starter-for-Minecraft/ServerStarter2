@@ -95,13 +95,13 @@ export function tProgress(progress: ProgressMessage) {
  * checkError(
  *   failableVariable,
  *   v => successProcess(v),
- *   e => tError(e, tKey, dKey)
+ *   e => tError(e, {titleKey: tKey, descKey: dKey})
  * )
  * ```
  * 
- * `tKey`のみを渡して`tError(e, tKey)`としても良い
+ * `tKey`のみを渡して`tError(e, {titleKey: tKey})`としても良い
  * 
- * 説明文の表示をオフにして、タイトルは(エラーに対応する翻訳を)表示する場合は`tError(e, undefined, '')`とする
+ * 説明文の表示をオフにして、タイトルは(エラーに対応する翻訳を)表示する場合は`tError(e, {titleKey: tKey, descKey: ''})`とする
  * 
  * なお、説明文の翻訳が登録されていないエラーが発生し、`descKey`が指定されていない場合には、説明文の描画を省略する
  * 
