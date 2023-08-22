@@ -24,7 +24,6 @@ async function pickFolder() {
     res,
     c => pickPath.value = c,
     e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
-    //() => { return { title: 'フォルダの選択に失敗しました' } }
   )
 }
 </script>

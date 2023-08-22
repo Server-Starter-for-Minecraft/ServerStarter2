@@ -66,7 +66,6 @@ onMounted(async () => {
         descKey: `error.${e.key}.title`
       }
     )
-    //() => { return { title: 'ShareWorldの取得に失敗しました' } }
   )
 
   // 読み込み中のステータスを解除

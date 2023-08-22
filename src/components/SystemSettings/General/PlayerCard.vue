@@ -26,7 +26,6 @@ async function updatePlayer() {
           descKey:`error.${e.key}.title`
         }
       )
-      //() => { return { title: 'オーナープレイヤーの取得に失敗しました' }}
     )
   }
 }

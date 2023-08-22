@@ -59,7 +59,6 @@ async function removeWorld() {
     res.value,
     updateView,
     e => tError(e)
-    //() => { return { title: t('home.error.failedDelete', { serverName: mainStore.world.name }) } }
   )
 }
 

@@ -34,6 +34,5 @@ export async function importCustomMap(customMap: CustomMapData) {
         descKey: `error.${e.key}.title`
       }
     )
-    //() => { return { title: '配布ワールドの保存に失敗しました'}}
   )
 }

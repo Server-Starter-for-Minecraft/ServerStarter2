@@ -103,7 +103,6 @@ export async function runServer() {
 
   // サーバー終了時のエラー確認
   checkError(res.value, undefined, e=>tError(e))
-  //() => { return { title: 'サーバーが異常終了しました' }}
 
   // サーバータブをリセット
   consoleStore.initTab(true)

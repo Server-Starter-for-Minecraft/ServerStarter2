@@ -79,10 +79,6 @@ export const useMainStore = defineStore('mainStore', {
               }
             },
             e => tError(e,{titleKey: 'utils.errorDialog.failOPForOwner',descKey: `error.${e.key}.title`})
-            //() => { return {
-            //  title: 'OP一覧にオーナープレイヤーを登録できませんでした',
-            //  desc: 'オーナープレイヤーのデータ取得に失敗しました'
-            //}}
           )
         }
 
@@ -101,7 +97,6 @@ export const useMainStore = defineStore('mainStore', {
           consoleStore.initTab()
         },
         e => tError(e)
-        //() => { return { title: '新規ワールドの作成に失敗しました' } }
       )
     },
     /**

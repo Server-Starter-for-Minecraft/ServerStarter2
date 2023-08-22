@@ -96,7 +96,6 @@ async function getAllVersion(useCache: boolean) {
         ver.value,
         vers => sysStore.serverVersions.set(versionTypes[i], vers),
         e => tError(e)
-        //() => { return { title: `バージョン(${versionTypes[i]})の取得に失敗しました` } }
       )
     }
   });
@@ -115,7 +114,6 @@ async function getCachePlayers() {
       fp, 
       p => playerStore.cachePlayers[p.uuid] = p, 
       e => tError(e)
-      //() => { return { title: `プレイヤーデータの取得に失敗しました（UUIDなどの取得できなかったプレイヤーデータを表示する？）` } }
       )
     )
 }

@@ -39,7 +39,6 @@ export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
         descKey: `error.${e.key}.title`
       }
     )
-    //() => { return { title: 'ShareWorldの同期に失敗しました' }}
   )
 
   return res
