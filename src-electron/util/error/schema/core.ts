@@ -88,4 +88,9 @@ export type CoreErrors = {
   }>;
 
   failGetGlobalIP: ErrorMessageContent;
+
+  update: {
+    // 最新のリリースに実行可能ファイルが見つからない
+    missingAppSource: ErrorMessageContent;
+  };
 };
