@@ -2,8 +2,9 @@
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { assets } from 'src/assets/assets';
+import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
-import { isValid } from 'src/scripts/error';
+import { tError } from 'src/i18n/utils/tFunc';
 import IconBtn from './IconBtn.vue';
 import ClipImg from './ClipImg.vue';
 import SelectorBtn from './SelectorBtn.vue';
@@ -48,16 +49,23 @@ const imgs = [
 ] as const
 
 async function onUpload() {
+  // 画像の取得を開始
   customImgReload.value = false
   const failableImg = await window.API.invokePickDialog({ type: 'image' })
   
-  if (isValid(failableImg)) {
-    mainStore.iconCandidate = failableImg.data
-  }
-  else {
+  // 取得画像を適用
+  const returnImg = checkError(
+    failableImg,
+    img => mainStore.iconCandidate = img.data,
+    e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+  )
+
+  // 取得画像が不適な場合にデフォルト値を当てる（or 元の画像を反映）
+  if (returnImg === void 0) {
     mainStore.iconCandidate = mainStore.world.avater_path ?? assets.png.unset
   }
 
+  // 画像の取得状態を解除
   customImgReload.value = true
 }
 
