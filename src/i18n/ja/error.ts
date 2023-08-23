@@ -29,6 +29,10 @@ export const jaError: ErrorTranslationTypes = {
       }
     },
     zip: {
+      invalidZipFile:{
+        title: '{path}は不適なZIPファイルです',
+        desc: '{path}を確認してください',
+      },
       isDir: {
         title: 'ZIPファイル中のパスのデータがディレクトリになっています',
         desc: '{path}を確認してください',
