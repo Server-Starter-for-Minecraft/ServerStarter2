@@ -12,7 +12,8 @@ const consoleStore = useConsoleStore()
   <span class="text-caption">{{ $t('home.setting.memSize') }}</span>
   <div class="row" style="max-width: 350px;">
     <SsInput
-      v-model="mainStore.world.memory.size"
+      v-model.number="mainStore.world.memory.size"
+      type="number"
       dense
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col-4 q-pr-md"
