@@ -126,7 +126,7 @@ export async function loadCustomMap(
 }
 
 function longToNumber(value: any): number {
-  return (value[0] << 32n) + value[1];
+  return (value[0] << 32) + value[1];
 }
 
 /**
