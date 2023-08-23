@@ -139,11 +139,9 @@ export function tError(
 
   // 説明文は空文字列が来たら表示をオフにする
   if (useDescKey !== '') {
-    if (error.arg) {
+    const translatedDesc = $T(useDescKey, 'undefined')
+    if (translatedDesc !== 'undefined') {
       returnObj.desc = $T(useDescKey, omitPath(flattenObj(error.arg as Record<string, string | number | string[]>)))
-    }
-    else {
-      returnObj.desc = $T(useDescKey, 'undefined')
     }
   }
 
