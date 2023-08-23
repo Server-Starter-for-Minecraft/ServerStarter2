@@ -14,6 +14,7 @@ import { gitTempPath } from '../../const';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
 import { GroupProgressor } from '../../progress/progress';
 import { getSystemOwnerName } from '../../player/owner';
+import { sleep } from 'app/src-electron/util/sleep';
 
 function logger(): [
   (func: (arg: SimpleGitProgressEvent) => void) => void,
@@ -78,13 +79,22 @@ async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
     await git.remote(['add', DEFAULT_REMOTE_NAME, url]);
   }
 
-  await git.addConfig(
-    'user.name',
-    (await getSystemOwnerName()) ?? '<ANONYMOUS>',
-    undefined,
-    'local'
-  );
-  await git.addConfig('user.email', '', undefined, 'local');
+  let i = 0
+  while (i < 100) {
+    i ++
+    try {
+      await git.addConfig(
+        'user.name',
+        (await getSystemOwnerName()) ?? '<ANONYMOUS>',
+        undefined,
+        'local'
+      );
+      await git.addConfig('user.email', '', undefined, 'local');
+      break;
+    } catch (e) {
+      await sleep(100);
+    }
+  }
 
   return [git, set] as const;
 }
