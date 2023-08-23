@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useSystemStore } from 'src/stores/SystemStore';
-import { NumberServerPropertyAnnotation, StringServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { NumberServerPropertyAnnotation, ServerProperties, StringServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
@@ -12,13 +13,17 @@ interface Prop {
   autofocus?: boolean
 }
 const prop = defineProps<Prop>()
-const model = defineModel<string | number | boolean>({ required: true })
+const model = defineModel<ServerProperties>({ required: true })
+const propertyValue = computed({
+  get: () => model.value[prop.propertyName],
+  set: (newVal) => model.value[prop.propertyName] = newVal
+})
 
 const sysStore = useSystemStore()
 const defaultProperty = sysStore.staticResouces.properties[prop.propertyName] ?? { type: 'string', default: '' }
 
-if (model.value === void 0) {
-  model.value = defaultProperty.default
+if (propertyValue.value === void 0) {
+  propertyValue.value = defaultProperty.default
 }
 
 /**
@@ -65,46 +70,45 @@ function validationMessage(min?:number, max?:number, step?:number) {
 </script>
 
 <template>
-  <div v-if="(typeof model === 'string' || typeof model === 'number') && selectEditer()==='number'" class="row" style="width: 100%;">
-    <!-- 半角数字、バリデーションを強制 -->
-    <ss-input
-      v-model.number="model"
-      dense
-      type="number"
-      :autofocus="autofocus"
-      :rules="[
-        val => numberValidate(
-          val,
-          (defaultProperty as NumberServerPropertyAnnotation)?.min,
-          (defaultProperty as NumberServerPropertyAnnotation)?.max,
-          (defaultProperty as NumberServerPropertyAnnotation)?.step
-          ) || validationMessage(
-          (defaultProperty as NumberServerPropertyAnnotation)?.min,
-          (defaultProperty as NumberServerPropertyAnnotation)?.max,
-          (defaultProperty as NumberServerPropertyAnnotation)?.step
-        )]"
-      style="width: 100%;"
-    />
-  </div>
-  
   <q-toggle
-    v-else-if="typeof model === 'boolean' || selectEditer() === 'boolean'"
-    v-model="model"
-    :label="model?.toString()"
+    v-if="typeof propertyValue === 'boolean' || selectEditer() === 'boolean'"
+    v-model="propertyValue"
+    :label="propertyValue?.toString()"
     style="font-size: 1rem; padding-bottom: 12px;"
+  />
+
+  <!-- 半角数字、バリデーションを強制 -->
+  <ss-input
+    v-else-if="selectEditer() === 'number'"
+    v-model.number="propertyValue"
+    dense
+    type="number"
+    :autofocus="autofocus"
+    :rules="[
+      val => numberValidate(
+        val,
+        (defaultProperty as NumberServerPropertyAnnotation)?.min,
+        (defaultProperty as NumberServerPropertyAnnotation)?.max,
+        (defaultProperty as NumberServerPropertyAnnotation)?.step
+      ) || validationMessage(
+        (defaultProperty as NumberServerPropertyAnnotation)?.min,
+        (defaultProperty as NumberServerPropertyAnnotation)?.max,
+        (defaultProperty as NumberServerPropertyAnnotation)?.step
+      )]"
+    style="width: 100%;"
   />
   
   <SsSelect
     v-else-if="selectEditer() === 'enum'"
     dense
-    v-model="model"
+    v-model="propertyValue"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
     style="padding-bottom: 18px;"
   />
 
   <SsInput
     v-else
-    v-model="model"
+    v-model="propertyValue"
     dense
     :autofocus="autofocus"
     style="width: 100%; padding-bottom: 18px;"

@@ -28,7 +28,7 @@ function cancelSettings() {
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`, $t('property.description.notFound')) }}</div>
-      <InputFieldView v-model="propertiesModel[settingName]" :property-name="settingName" />
+      <InputFieldView v-model="propertiesModel" :property-name="settingName" />
     </q-item-section>
 
     <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>
