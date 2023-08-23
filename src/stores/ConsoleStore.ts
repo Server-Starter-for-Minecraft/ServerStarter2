@@ -89,7 +89,6 @@ export async function runServer() {
   // プログレスのステータスをセットして起動
   consoleStore.initProgress(
     mainStore.selectedWorldID,
-    //`${mainStore.world.version.id} (${mainStore.world.version.type}) / ${mainStore.world.name} を起動中`
     $T(
       'console.booting',
       {
