@@ -29,6 +29,10 @@ export const enUSError: ErrorTranslationTypes = {
       },
     },
     zip: {
+      invalidZipFile:{
+        title: '{path} is invalid',
+        desc: 'PLease check {path}',
+      },
       isDir: {
         title: 'The data in the path in the ZIP file is a directory',
         desc: 'Please check {path}',

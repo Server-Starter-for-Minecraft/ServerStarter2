@@ -72,7 +72,7 @@ function formatDate(date: Date) {
     return n.toString().padStart(digit, '0');
   }
   const YYYY = paddedNumber(date.getFullYear(), 4);
-  const MM = paddedNumber(date.getMonth(), 2);
+  const MM = paddedNumber(date.getMonth() + 1, 2);
   const DD = paddedNumber(date.getDate(), 2);
   const HH = paddedNumber(date.getHours(), 2);
 

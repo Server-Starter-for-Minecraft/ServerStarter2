@@ -1,7 +1,7 @@
 import { Path } from './path';
 import { errorMessage } from './error/construct';
 import { BytesData } from './bytesData';
-import { Failable } from './error/failable';
+import { Failable, safeExecAsync } from './error/failable';
 import { isError } from 'src/scripts/error';
 import * as JSZip from 'jszip';
 import { fromEntries, toEntries } from './obj';
@@ -26,11 +26,15 @@ class ZipHandler {
   > {
     const data = await path.read();
     if (isError(data)) return data;
-    const zipData = await JSZip.loadAsync(new Uint8Array(data.data), {
-      // TODO:shift-jis 固定で大丈夫？
-      decodeFileName: (name) =>
-        decode(Buffer.from(name as Uint8Array), 'shift-jis'),
-    });
+    const zipData = await safeExecAsync(() =>
+      JSZip.loadAsync(new Uint8Array(data.data), {
+        // TODO:shift-jis 固定で大丈夫？
+        decodeFileName: (name) =>
+          decode(Buffer.from(name as Uint8Array), 'shift-jis'),
+      })
+    );
+    if (isError(zipData))
+      return errorMessage.data.zip.invalidZipFile({ path: path.str() });
     const getBytesData = (innerPath: string, v: JSZip.JSZipObject) => {
       let dat: Failable<BytesData> | undefined = undefined;
       return async () => {
@@ -46,7 +50,9 @@ class ZipHandler {
         return dat;
       };
     };
+    console.log('aaaaaaaaaaaaaaaaaaaaa');
     const result = objMap(zipData.files, (k, v) => [k, getBytesData(k, v)]);
+    console.log('bbbbbbbbbbbbbbbbbbb');
     return result;
   }
 }

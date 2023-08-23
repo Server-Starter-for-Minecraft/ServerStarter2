@@ -22,7 +22,14 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
 
   if (await path.isDirectory()) {
     // ディレクトリの場合
-    mcmetaData = await BytesData.fromPath(path.child(MCMETA_FILE));
+    const metaPath = path.child(MCMETA_FILE);
+    // pack.mcmetaが存在しない場合エラー
+    if (!metaPath.exists())
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: metaPath.str(),
+      });
+    mcmetaData = await BytesData.fromPath(metaPath);
   } else {
     if (path.extname() !== '.zip') {
       // zipでないファイル場合
