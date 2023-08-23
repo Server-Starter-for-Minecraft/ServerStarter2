@@ -22,6 +22,11 @@ export type DataErrors = {
   };
 
   zip: {
+    // 無効なzipファイルである場合
+    invalidZipFile: ErrorMessageContent<{
+      // パス
+      path: string;
+    }>;
     // zipの中のパスのデータがファイルではなくディレクトリである場合
     isDir: ErrorMessageContent<{
       // パス
