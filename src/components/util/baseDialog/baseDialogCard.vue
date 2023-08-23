@@ -28,7 +28,7 @@ defineProps<baseDialogProp>()
       />
     </q-card-actions>
 
-    <div v-if="onClose !== void 0" class="absolute-top-right">
+    <div v-if="onClose !== void 0 && !loading" class="absolute-top-right">
       <q-btn
         dense
         flat
