@@ -62,7 +62,7 @@ onMounted(async () => {
     e => tError(
       e,
       {
-        titleKey: 'failGetShareWorld',
+        titleKey: 'utils.errorDialog.failGetShareWorld',
         descKey: `error.${e.key}.title`
       }
     )

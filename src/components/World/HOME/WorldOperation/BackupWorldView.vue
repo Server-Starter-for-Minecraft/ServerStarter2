@@ -7,7 +7,7 @@ import { checkError } from 'src/components/Error/Error';
 import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
-import { $T } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 
 const $q = useQuasar()
 const mainStore = useMainStore()
@@ -42,7 +42,7 @@ async function recoverWorld() {
     }).onOk(() => {
       showingMessage.value = $T('home.backup.recovered')
     }),
-    () => { return { title: 'バックアップデータの取得に失敗しました' }}
+    e => tError(e, {ignoreErrors: ['data.path.dialogCanceled']})
   )
 }
 

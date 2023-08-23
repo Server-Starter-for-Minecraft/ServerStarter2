@@ -34,5 +34,6 @@ export const jaUtils = {
     failToSaveExistedWorld: '配布ワールドの保存に失敗しました',
     failSync: 'ShareWorldの同期に失敗しました',
     failGetShareWorld: 'ShareWorldの取得に失敗しました',
+    recoverFail: 'バックアップデータからの復旧に失敗しました',
   }
 };

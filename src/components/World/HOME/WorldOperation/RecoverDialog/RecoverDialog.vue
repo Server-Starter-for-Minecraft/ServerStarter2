@@ -5,7 +5,8 @@ import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import { RecoverDialogProp } from './iRecoverDialog';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
-import { $T } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
+import { utilLoggers } from 'app/src-electron/util/utilLogger';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -25,7 +26,13 @@ async function recoverWorld() {
   checkError(
     res.value,
     w => mainStore.updateWorld(w),
-    () => { return { title: 'バックアップデータからの復旧に失敗しました' }}
+    e => tError(
+      e, 
+      {
+        titleKey: 'utils.errorDialog.recoverFail',
+        descKey: `error.${e.key}.title`
+      }
+    )
   )
   
   // ダイアログを閉じる
