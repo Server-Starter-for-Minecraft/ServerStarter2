@@ -55,7 +55,7 @@ async function onCardClicked() {
       <SsBtn
         v-show="showMenuBtn || menuOpened"
         dense
-        :label="$t('player.edit')"
+        :label="$t('general.edit')"
         width="3rem"
         class="q-mt-sm q-mr-sm absolute-top-right"
         @click="onEdit"
