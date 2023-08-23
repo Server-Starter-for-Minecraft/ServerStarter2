@@ -121,12 +121,12 @@ export async function loadCustomMap(
     versionName: datContent.Data.Version.Name,
     icon: iconURI,
     isFile: !isDirectory,
-    lastPlayed: longToBigint(datContent.Data.LastPlayed),
+    lastPlayed: longToNumber(datContent.Data.LastPlayed),
   };
 }
 
-function longToBigint(value: any) {
-  return (BigInt(value[0]) << 32n) + BigInt(value[1]);
+function longToNumber(value: any): number {
+  return (value[0] << 32n) + value[1];
 }
 
 /**
