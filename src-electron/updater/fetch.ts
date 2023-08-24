@@ -2,10 +2,9 @@ import { Failable } from '../schema/error';
 import { BytesData } from '../util/bytesData';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
-import { osPlatform } from '../util/os';
 
 const SERVERSTARTER_REPOSITORY_URL =
-  'https://api.github.com/repos/CivilTT/ServerStarter2/releases';
+  'https://api.github.com/repos/txkodo/ServerStarter2ReleaseTest/releases';
 
 /** githubからリリース番号を取得 */
 export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
@@ -13,20 +12,17 @@ export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
   if (isError(fetch)) return fetch;
   const json = await fetch.json<GithubReleaseResponce[]>();
   if (isError(json)) return json;
+  const last = json[0];
+  if (last === undefined) return errorMessage.system.assertion({ message: '' });
 
-  const tag_name = json[-1].tag_name;
-  const match = tag_name.match(/v\.+/);
-  if (match === null)
-    return errorMessage.system.assertion({
-      message: `invalid release tag name: ${tag_name}`,
-    });
+  const tag_name = last.tag_name;
 
-  const [windows, mac, linux] = parseAssets(json[-1].assets);
-  osPlatform === 'linux';
-  if (!windows || !mac || !linux)
-    return errorMessage.core.update.missingAppSource();
+  const [windows, mac, linux] = parseAssets(last.assets);
+
+  // if (!windows || !mac || !linux)
+  if (!windows || !mac) return errorMessage.core.update.missingAppSource();
   return {
-    version: match[1],
+    version: tag_name,
     windows,
     mac,
     linux,
@@ -42,7 +38,7 @@ function parseAssets(assets: GithubReleaseAssetResponce[]) {
       windows = url;
       return;
     }
-    if (url.endsWith('.dmg')) {
+    if (url.endsWith('.pkg')) {
       mac = url;
       return;
     }

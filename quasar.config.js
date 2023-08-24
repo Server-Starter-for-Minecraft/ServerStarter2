@@ -209,6 +209,9 @@ module.exports = configure(function (/* ctx */) {
         win: {
           target: 'msi',
         },
+        mac: {
+          target: 'pkg',
+        },
       },
     },
 

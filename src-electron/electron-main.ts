@@ -6,6 +6,10 @@ import * as os from 'os';
 import { setupIPC } from './ipc/setup';
 import { onQuit } from './lifecycle/lifecycle';
 import { setServerStarterApp } from './lifecycle/exit';
+import { update } from './updater/updater';
+
+// 多重起動していたらすでに起動済みの場合即時終了
+if (!app.requestSingleInstanceLock()) app.quit();
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -20,10 +24,16 @@ try {
 
 let mainWindow: BrowserWindow | undefined;
 
-function createWindow() {
+async function createWindow() {
   /**
    * Initial window options
    */
+
+  // ビルド版の場合アップデートをチェック
+  if (!process.env.DEBUGGING) {
+    await update();
+  }
+
   mainWindow = new BrowserWindow({
     icon: path.resolve(__dirname, 'icons/icon.png'), // tray icon
     minWidth: 650,
@@ -37,7 +47,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(process.env.APP_URL);
-  mainWindow.maximize()
+  mainWindow.maximize();
 
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled

@@ -1,3 +1,4 @@
+import { rootLoggerHierarchy } from '../core/logger';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
@@ -25,11 +26,18 @@ async function checkUpdate() {
  * リモートのバージョンはgithubのリリース情報のtag_nameを参照
  */
 export async function update() {
+  const logger = rootLoggerHierarchy.update({});
+  logger.start(getSystemVersion());
   const update = await checkUpdate();
-  if (update === false) return;
-  if (isError(update)) return;
+  logger.info(update);
+  console.log(update)
 
-  if (osPlatform === 'windows-x64') {
-    await installWindows(update.windows);
-  }
+  if (update === false) {
+    return};
+
+  if (isError(update)) {
+    return};
+
+  if (osPlatform === 'windows-x64') await installWindows(update.windows);
+  logger.success();
 }

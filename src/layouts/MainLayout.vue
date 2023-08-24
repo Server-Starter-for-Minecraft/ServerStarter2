@@ -19,6 +19,7 @@ const sysStore = useSystemStore()
         <WorldList />
       </template>
       <template #after>
+        <p>ver 0.0.1</p>
         <WorldPage />
       </template>
     </q-splitter>
