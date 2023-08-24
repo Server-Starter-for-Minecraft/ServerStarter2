@@ -29,7 +29,7 @@ export async function runServer(world: WorldID) {
 async function putStartConsole(world: WorldID) {
   for (const console of startConsoles) {
     if (serverStopper[world] === undefined) break;
-    api.send.AddConsole(world, console);
+    api.send.AddConsole(world, console, false);
     await sleep(50);
   }
 }
@@ -37,7 +37,7 @@ async function putStartConsole(world: WorldID) {
 async function putStopConsole(world: WorldID) {
   for (const console of stopConsoles) {
     if (serverStopper[world] === undefined) break;
-    api.send.AddConsole(world, console);
+    api.send.AddConsole(world, console, false);
     await sleep(50);
   }
   serverStopper[world]();
@@ -46,7 +46,7 @@ async function putStopConsole(world: WorldID) {
 
 export function runCommand(world: WorldID, command: string): void {
   if (serverStopper[world] !== undefined) {
-    api.send.AddConsole(world, command);
+    api.send.AddConsole(world, command, false);
     if (command === 'stop') {
       putStopConsole(world);
     }

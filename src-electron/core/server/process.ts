@@ -15,20 +15,21 @@ export function serverProcess(
   id: WorldID,
   javaPath: Path,
   args: string[],
-  console: (value: string) => void,
+  console: (value: string, isError: boolean) => void,
   onStart: () => void,
   onFinish: () => void
 ): ServerProcess {
   // javaのサブプロセスを起動
   // TODO: エラー出力先のハンドル
 
-  const addConsole = (chunk: string) => console(chunk);
+  const stdout = (chunk: string) => console(chunk, false);
+  const stderr = (chunk: string) => console(chunk, true);
 
   const process = interactiveProcess(
     javaPath,
     args,
-    addConsole,
-    addConsole,
+    stdout,
+    stderr,
     cwdPath,
     true,
     // アプリケーション終了時/stopコマンドを実行 (実行から10秒のタイムアウトでプロセスキル)
