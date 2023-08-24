@@ -21,7 +21,7 @@ export function runServer(
   progress: GroupProgressor
 ): RunServer {
   let process: ServerProcess | undefined = undefined;
-  async function promise() {
+  async function promise(): Promise<Failable<undefined>> {
     const readyResult = await readyRunServer(cwdPath, id, settings, progress);
     if (isError(readyResult)) return readyResult;
 
@@ -41,8 +41,9 @@ export function runServer(
       onStart,
       onFinish
     );
-    await process;
+    const runresult = await process;
     process = undefined;
+    return runresult;
   }
 
   async function runCommand(command: string): Promise<void> {
