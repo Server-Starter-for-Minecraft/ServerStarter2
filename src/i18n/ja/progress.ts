@@ -77,12 +77,12 @@ export const jaProgress: ProgressMessageTranslation = {
     pull: {
       title: 'リモートからワールドデータをダウンロードしています',
       ready: 'ワールドデータダウンロードの準備中です',
-      stage: 'gitで{stage}中(説明文は要検討)',
+      stage: 'gitで{stage}中',
     },
     push: {
       title: 'リモートにワールドデータをアップロードしています',
       ready: 'ワールドデータアップロードの準備中です',
-      stage: 'gitで{stage}中(説明文は要検討)',
+      stage: 'gitで{stage}中',
     },
     run: {
       before:{
