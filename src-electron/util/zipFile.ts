@@ -50,9 +50,7 @@ class ZipHandler {
         return dat;
       };
     };
-    console.log('aaaaaaaaaaaaaaaaaaaaa');
     const result = objMap(zipData.files, (k, v) => [k, getBytesData(k, v)]);
-    console.log('bbbbbbbbbbbbbbbbbbb');
     return result;
   }
 }
