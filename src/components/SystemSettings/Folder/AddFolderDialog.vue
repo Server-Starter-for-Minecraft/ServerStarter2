@@ -88,10 +88,7 @@ function isErrorContainer(c: WorldContainerSetting) {
         v-if="sysStore.systemSettings.container.filter(isErrorPath).length > 0"
         class="text-caption text-omit text-red q-pt-sm"
       >
-        <!-- TODO: 引数を渡すときに
-            $t('key', omitPath({ 'path': pickPath }))
-          とすればフルパスからフォルダ名のみを抽出した変数を翻訳に渡せる -->
-        {{ `${pickPath}はすでに登録されています` }}
+          {{ $t('home.saveWorld.registered', omitPath({ 'path': pickPath })) }}
       </div>
       <div
         v-if="inputName === ''"
