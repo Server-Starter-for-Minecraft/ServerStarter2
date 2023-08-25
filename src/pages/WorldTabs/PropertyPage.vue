@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { isValid } from 'src/scripts/error';
 import { fromEntries, toEntries } from 'src/scripts/obj';
@@ -18,6 +19,9 @@ const propertyStore = usePropertyStore()
 // システムが規定するデフォルトプロパティ
 const initProperty: ServerProperties = fromEntries(toEntries(sysStore.staticResouces.properties).map(keyVal =>[keyVal[0], keyVal[1].default]))
 
+// 入力領域のスクロールバーの制御
+const scrollAreaRef = ref()
+
 /**
  * 全てのServer Propertyを基本設定に戻す
  */
@@ -27,6 +31,13 @@ function resetAll() {
       mainStore.world.properties[key] = sysStore.systemSettings.world.properties[key]
     }
   })
+}
+
+/**
+ * 画面を一番上に遷移
+ */
+ function scrollTop() {
+  scrollAreaRef.value.setScrollPosition('vertical', 0)
 }
 </script>
 
@@ -48,12 +59,12 @@ function resetAll() {
       </div>
 
       <div class="row fit" style="flex: 1 1 0;">
-        <SideMenuView />
+        <SideMenuView @scroll-top="scrollTop" />
 
         <q-separator vertical inset />
 
         <div class="col">
-          <q-scroll-area :thumb-style="thumbStyle" class="fit">
+          <q-scroll-area ref="scrollAreaRef" :thumb-style="thumbStyle" class="fit">
             <SettingsView v-model="mainStore.world.properties" />
           </q-scroll-area>
         </div>

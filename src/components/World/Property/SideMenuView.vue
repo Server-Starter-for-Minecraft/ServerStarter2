@@ -4,10 +4,16 @@ import { pGroupKey, propertyClasses } from 'src/components/World/Property/classi
 import { keys } from 'src/scripts/obj';
 import { thumbStyle } from '../scrollBar';
 
+interface Prop {
+  onScrollTop: () => void
+}
+const prop = defineProps<Prop>()
+
 const propertyStore = usePropertyStore()
 
 function groupClicked(selectedGroupName: pGroupKey) {
   propertyStore.selectTab = selectedGroupName
+  prop.onScrollTop()
 }
 </script>
 
