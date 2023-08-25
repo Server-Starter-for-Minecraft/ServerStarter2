@@ -40,6 +40,7 @@ export const jaHome = {
     title: 'ワールドフォルダ',
     description: 'ワールドデータの保存フォルダを選択',
     addFolder: 'ワールドフォルダを追加',
+    updateFolder: 'ワールドフォルダを更新',
     add: '追加',
     addBtn: '{name}を追加',
     folderName: 'ワールドフォルダ名',

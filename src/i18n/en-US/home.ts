@@ -43,6 +43,7 @@ export const enUSHome: MessageSchema["home"] = {
     title: 'World folder',
     description: 'Select your folder to save world data',
     addFolder: 'Add world folder',
+    updateFolder: 'Update world folder',
     add: 'add',
     addBtn: 'Add {name}',
     folderName: 'Name of world folder',

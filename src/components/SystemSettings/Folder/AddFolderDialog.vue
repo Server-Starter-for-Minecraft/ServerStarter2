@@ -34,7 +34,7 @@ async function pickFolder() {
       :title="
         containerSettings === void 0
           ? $t('home.saveWorld.addFolder')
-          : 'ワールドフォルダを更新'"
+          : $t('home.saveWorld.updateFolder')"
       :disable="
         sysStore.systemSettings.container.filter(
           c => c.name === inputName && inputName !== containerSettings?.name
@@ -72,7 +72,7 @@ async function pickFolder() {
           ).length > 0"
         class="text-caption text-omit text-red q-pt-sm"
       >
-        {{ $t('home.saveworld.exist',{ name: inputName }) }}
+        {{ $t('home.saveWorld.exist',{ name: inputName }) }}
       </div>
       <div
         v-show="inputName === ''"
