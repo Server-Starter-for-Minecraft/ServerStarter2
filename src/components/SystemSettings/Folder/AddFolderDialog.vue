@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { WorldContainer } from 'app/src-electron/schema/brands';
+import { WorldContainerSetting } from 'app/src-electron/schema/system';
 import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
@@ -26,6 +27,15 @@ async function pickFolder() {
     e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
   )
 }
+
+/**
+ * 指定された設定でContainerを登録しても良いかの確認（trueの時は登録できない）
+ */
+function isErrorContainer(c: WorldContainerSetting) {
+  const isErrorName = c.name === inputName.value && inputName.value !== prop.containerSettings?.name
+  const isErrorPath = c.container === pickPath.value && pickPath.value !== prop.containerSettings?.container
+  return isErrorName || isErrorPath
+}
 </script>
 
 <template>
@@ -36,12 +46,7 @@ async function pickFolder() {
           ? $t('home.saveWorld.addFolder')
           : $t('home.saveWorld.updateFolder')"
       :disable="
-        sysStore.systemSettings.container.filter(
-          c => c.name === inputName && inputName !== containerSettings?.name
-        ).length > 0
-          || sysStore.systemSettings.container.filter(
-              c => c.container === pickPath && pickPath !== containerSettings?.container
-            ).length > 0
+        sysStore.systemSettings.container.filter(isErrorContainer).length > 0
           || inputName === ''
           || pickPath === ''"
       :ok-btn-txt="
