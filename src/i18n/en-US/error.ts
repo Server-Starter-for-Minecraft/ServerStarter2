@@ -20,7 +20,7 @@ export const enUSError: ErrorTranslationTypes = {
   data: {
     url: {
       fetch: {
-        title: 'Failed to get data from {url}',
+        title: 'Failed to get data',
         desc: 'Server status : {status}/{statusText}'
       },
       tooManyRequest: {
@@ -109,7 +109,7 @@ export const enUSError: ErrorTranslationTypes = {
     },
     githubAPI: {
       fetchFailed: {
-        title: 'Failed to fetch data from {url}',
+        title: 'Failed to fetch data from GitHub',
       },
       unknownBlobEncoding: {
         title: 'Incorrect encoding used in blob',
@@ -209,7 +209,7 @@ export const enUSError: ErrorTranslationTypes = {
       },
     },
     missingPersonalAccessToken: {
-      title: 'Personal access token for https://github.com/{owner}/{repo} dose not exist',
+      title: 'Personal access token for {owner}/{repo} dose not exist',
     },
     minecraftEULANotAccepted: {
       title: 'It does not agree to eula for Minecraft',

@@ -20,7 +20,7 @@ export const jaError: ErrorTranslationTypes = {
   data: {
     url: {
       fetch: {
-        title: '{url}からのデータの取得に失敗しました',
+        title: 'データの取得に失敗しました',
         desc: 'サーバー状態:{status}/{statusText}'
       },
       tooManyRequest: {
@@ -109,7 +109,7 @@ export const jaError: ErrorTranslationTypes = {
     },
     githubAPI: {
       fetchFailed:{
-        title: '{url}からのデータの取得に失敗しました',
+        title: 'GitHubからのデータの取得に失敗しました',
       },
       unknownBlobEncoding:{
         title: 'blobのエンコードが異なっています',
@@ -209,7 +209,7 @@ export const jaError: ErrorTranslationTypes = {
       },
     },
     missingPersonalAccessToken: {
-      title: 'https://github.com/{owner}/{repo}のパーソナルアクセストークンが存在しません',
+      title: '{owner}/{repo}のパーソナルアクセストークンが存在しません',
     },
     minecraftEULANotAccepted: {
       title: 'Minecraftのeulaに同意していません',
