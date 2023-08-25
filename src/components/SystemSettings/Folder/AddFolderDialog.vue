@@ -3,13 +3,13 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
+import { tError, omitPath } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import { tError } from 'src/i18n/utils/tFunc';
 
 const prop = defineProps<AddFolderDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -28,13 +28,21 @@ async function pickFolder() {
   )
 }
 
+// 指定された名称が不適か確認（trueの時は不適）
+function isErrorName(c: WorldContainerSetting) {
+  return c.name === inputName.value && inputName.value !== prop.containerSettings?.name
+}
+
+// 指定されたパスが不適か確認（trueの時は不適）
+function isErrorPath(c: WorldContainerSetting) {
+  return c.container === pickPath.value && pickPath.value !== prop.containerSettings?.container
+}
+
 /**
- * 指定された設定でContainerを登録しても良いかの確認（trueの時は登録できない）
+ * 指定された設定でContainerが不適か確認（trueの時は登録できない）
  */
 function isErrorContainer(c: WorldContainerSetting) {
-  const isErrorName = c.name === inputName.value && inputName.value !== prop.containerSettings?.name
-  const isErrorPath = c.container === pickPath.value && pickPath.value !== prop.containerSettings?.container
-  return isErrorName || isErrorPath
+  return isErrorName(c) || isErrorPath(c)
 }
 </script>
 
@@ -71,28 +79,34 @@ function isErrorContainer(c: WorldContainerSetting) {
       </div>
       
       <div
-        v-show="
-          sysStore.systemSettings.container.filter(
-            c => c.name === inputName && inputName !== prop.containerSettings?.name
-          ).length > 0"
+        v-if="sysStore.systemSettings.container.filter(isErrorName).length > 0"
         class="text-caption text-omit text-red q-pt-sm"
       >
         {{ $t('home.saveworld.exist',{ name: inputName }) }}
       </div>
       <div
-        v-show="inputName === ''"
+        v-if="sysStore.systemSettings.container.filter(isErrorPath).length > 0"
+        class="text-caption text-omit text-red q-pt-sm"
+      >
+        <!-- TODO: 引数を渡すときに
+            $t('key', omitPath({ 'path': pickPath }))
+          とすればフルパスからフォルダ名のみを抽出した変数を翻訳に渡せる -->
+        {{ `${pickPath}はすでに登録されています` }}
+      </div>
+      <div
+        v-if="inputName === ''"
         class="text-caption text-omit text-red q-pt-sm"
       >
         {{ $t('home.saveWorld.inputFolderName') }}
       </div>
       <div
-        v-show="pickPath === ''"
+        v-if="pickPath === ''"
         class="text-caption text-omit text-red q-pt-sm"
       >
         {{ $t('home.saveWorld.selectFolder') }}
       </div>
       <div 
-        v-show="pickPath !== ''"
+        v-if="pickPath !== ''"
         class="text-caption text-omit q-pt-sm"
         style="opacity: .6;"
       >

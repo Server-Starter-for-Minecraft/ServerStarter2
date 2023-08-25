@@ -151,7 +151,7 @@ export function tError(
 /**
  * 引数の中に`key: path`があった場合、フルパスの中のファイル名を抽出した文字列に変換
  */
-function omitPath(args: Record<string, string | number | string[]>) {
+export function omitPath(args: Record<string, string | number | string[]>) {
   if ('path' in args) {
     const names = args['path'].toString().split(/\/|\\/)
     args['path'] = names[names.length - 1]
