@@ -46,6 +46,7 @@ export const jaHome = {
     folderName: 'ワールドフォルダ名',
     select: 'フォルダを選択',
     exist: '{name}は既に存在します',
+    registered: '{path}はすでに登録されています',
     inputFolderName: 'フォルダ名を入力してください',
     selectFolder: 'フォルダを選択してください',
     selectFolderBtn: 'フォルダを選択',
