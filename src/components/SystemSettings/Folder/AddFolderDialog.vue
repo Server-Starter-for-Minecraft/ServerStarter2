@@ -31,21 +31,23 @@ async function pickFolder() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      :title="$t('home.saveWorld.addFolder')"
+      :title="
+        containerSettings === void 0
+          ? $t('home.saveWorld.addFolder')
+          : 'ワールドフォルダを更新'"
       :disable="
         sysStore.systemSettings.container.filter(
           c => c.name === inputName && inputName !== containerSettings?.name
         ).length > 0
-          || sysStore.systemSettings.container.map(c => c.container).includes(pickPath)
+          || sysStore.systemSettings.container.filter(
+              c => c.container === pickPath && pickPath !== containerSettings?.container
+            ).length > 0
           || inputName === ''
-          || pickPath === ''
-      "
+          || pickPath === ''"
       :ok-btn-txt="
-        inputName ? 
-        $t('home.saveWorld.addBtn', { name: inputName }) :
-        $t('home.saveWorld.add')
-        "
-
+        inputName
+         ? $t('home.saveWorld.addBtn', { name: inputName })
+         : $t('home.saveWorld.add')"
       @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
       @close="onDialogCancel"
     >
@@ -64,7 +66,10 @@ async function pickFolder() {
       </div>
       
       <div
-        v-show="sysStore.systemSettings.container.filter(c => c.name === inputName && inputName !== prop.containerSettings?.name).length > 0"
+        v-show="
+          sysStore.systemSettings.container.filter(
+            c => c.name === inputName && inputName !== prop.containerSettings?.name
+          ).length > 0"
         class="text-caption text-omit text-red q-pt-sm"
       >
         {{ $t('home.saveworld.exist',{ name: inputName }) }}
