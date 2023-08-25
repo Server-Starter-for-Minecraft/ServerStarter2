@@ -52,7 +52,7 @@ function isErrorContainer(c: WorldContainerSetting) {
       :title="
         containerSettings === void 0
           ? $t('home.saveWorld.addFolder')
-          : 'ワールドフォルダを更新'"
+          : $t('home.saveWorld.updateFolder')"
       :disable="
         sysStore.systemSettings.container.filter(isErrorContainer).length > 0
           || inputName === ''
@@ -82,7 +82,7 @@ function isErrorContainer(c: WorldContainerSetting) {
         v-if="sysStore.systemSettings.container.filter(isErrorName).length > 0"
         class="text-caption text-omit text-red q-pt-sm"
       >
-        {{ $t('home.saveworld.exist',{ name: inputName }) }}
+        {{ $t('home.saveWorld.exist',{ name: inputName }) }}
       </div>
       <div
         v-if="sysStore.systemSettings.container.filter(isErrorPath).length > 0"
