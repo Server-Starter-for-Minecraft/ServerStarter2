@@ -35,6 +35,9 @@ function setOP(setVal: 0 | OpLevel) {
   else {
     setter({ level: setVal, bypassesPlayerLimit: false })
   }
+  
+  // フォーカスのリセット
+  playerStore.unFocus()
 }
 
 function removePlayer() {
