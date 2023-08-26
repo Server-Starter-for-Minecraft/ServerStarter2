@@ -12,15 +12,17 @@ export const installMac = async (pkgurl: string): Promise<void> => {
   if (isError(data)) return;
   await data.write(dest.str(), true);
 
-  const bat = mainPath.child('updater.sh');
-  await bat.writeText(`#!/bin/sh
-echo "updating"
-installer -pkg updater.pkg -target /
+  const sh = mainPath.child('updater.sh');
+  const script = await BytesData.fromText(`#!/bin/sh
+echo "updating ServerStarter2..."
+sudo installer -pkg ${dest.absolute().strQuoted()} -target /
 open -a "${app.getPath('exe')}"
 exit 0
 `);
+  if (isError(script)) return
+  await script.write(sh.str(),true)
 
-  const sub = spawn('open', ['updater.sh'], {
+  const sub = spawn('open', ['-a', 'Terminal', 'updater.sh'], {
     cwd: mainPath.str(),
     env: process.env,
     shell: true,
