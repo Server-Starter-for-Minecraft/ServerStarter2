@@ -7,6 +7,8 @@ export type CoreErrors = {
     // idに対するワールドが存在しない
     invalidWorldId: ErrorMessageContent<{
       id: string;
+      container?: string;
+      name?: string;
     }>;
 
     // 実行中のワールド名/ワールドフォルダは変更できない

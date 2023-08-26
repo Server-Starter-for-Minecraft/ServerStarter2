@@ -81,7 +81,7 @@ export async function getWorld(
 export async function setWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(world.id);
+  const handler = WorldHandler.get(world.id, world.name, world.container);
   if (isError(handler)) return withError(handler);
   return await handler.save(world);
 }
@@ -158,7 +158,7 @@ async function getDefaultWorldName(container: WorldContainer) {
 export async function createWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(world.id);
+  const handler = WorldHandler.get(world.id, world.name, world.container);
   if (isError(handler)) return withError(handler);
   return await handler.create(world);
 }

@@ -152,9 +152,13 @@ export class WorldHandler {
   }
 
   // worldIDからWorldHandlerを取得する
-  static get(id: WorldID): Failable<WorldHandler> {
+  static get(
+    id: WorldID,
+    name?: WorldName,
+    container?: WorldContainer
+  ): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldHandlerMap))
-      return errorMessage.core.world.invalidWorldId({ id });
+      return errorMessage.core.world.invalidWorldId({ id, container, name });
     return WorldHandler.worldHandlerMap[id];
   }
 
@@ -567,7 +571,7 @@ export class WorldHandler {
     // 使用中フラグを削除
     worldSettings.using = false;
 
-    const newHandler = WorldHandler.get(newId);
+    const newHandler = WorldHandler.get(newId, newName, this.container);
     if (isError(newHandler)) throw new Error();
 
     await this.getSavePath().copyTo(newHandler.getSavePath());
