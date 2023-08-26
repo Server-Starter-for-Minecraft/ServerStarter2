@@ -1,6 +1,6 @@
 export const jaPlayer = {
   description: 'プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います',
-  search: 'プレイヤーを検索',
+  search: 'ゲーム中のプレイヤー名を入力',
   registeredPlayer: '追加済みプレイヤー',
   notRegistered: 'プレイヤーが登録されていません',
   notFound: '検索結果無し',
