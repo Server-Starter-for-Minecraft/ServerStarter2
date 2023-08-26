@@ -2,6 +2,7 @@ import { rootLoggerHierarchy } from '../core/logger';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
+import { installMac } from './installer/mac';
 import { installWindows } from './installer/windows';
 import { getSystemVersion } from './version';
 
@@ -30,14 +31,18 @@ export async function update() {
   logger.start(getSystemVersion());
   const update = await checkUpdate();
   logger.info(update);
-  console.log(update)
+  console.log(update);
 
   if (update === false) {
-    return};
+    return;
+  }
 
   if (isError(update)) {
-    return};
+    return;
+  }
 
   if (osPlatform === 'windows-x64') await installWindows(update.windows);
+  if (osPlatform === 'mac-os' || osPlatform === 'mac-os-arm64')
+    await installMac(update.mac);
   logger.success();
 }
