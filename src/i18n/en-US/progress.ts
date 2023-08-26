@@ -37,7 +37,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       file: 'Generating {path}',
     },
     readyVersion: {
-      title: 'Preparing {version}',
+      title: 'Preparing {version_id}({version_type})',
       vanilla: {
         fetching: 'Downloading server data',
         saving: 'Saving server data'
