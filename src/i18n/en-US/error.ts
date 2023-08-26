@@ -166,7 +166,7 @@ export const enUSError: ErrorTranslationTypes = {
   core: {
     world: {
       invalidWorldId: {
-        title: 'Failed to get world data',
+        title: 'The specified world does not exist.',
       },
       cannotChangeRunningWorldName: {
         title: 'You cannot change your world name or saved folder',

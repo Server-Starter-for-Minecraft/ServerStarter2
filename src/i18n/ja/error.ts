@@ -166,7 +166,7 @@ export const jaError: ErrorTranslationTypes = {
   core: {
     world: {
       invalidWorldId: {
-        title: 'ワールドの取得に失敗しました',
+        title: '指定されたワールドが存在しません',
       },
       cannotChangeRunningWorldName: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
