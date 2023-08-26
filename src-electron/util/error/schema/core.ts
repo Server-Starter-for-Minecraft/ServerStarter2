@@ -7,6 +7,13 @@ export type CoreErrors = {
     // idに対するワールドが存在しない
     invalidWorldId: ErrorMessageContent<{
       id: string;
+      container?: string;
+      name?: string;
+    }>;
+
+    // ポート番号が既に使用中
+    serverPortIsUsed: ErrorMessageContent<{
+      port: number;
     }>;
 
     // 実行中のワールド名/ワールドフォルダは変更できない

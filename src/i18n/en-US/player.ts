@@ -2,7 +2,7 @@ import { MessageSchema } from "src/boot/i18n";
 
 export const enUSPlayer: MessageSchema['player'] = {
   description: 'You can set the server\'s OP and players who can enter and leave the server',
-  search: 'Search players',
+  search: 'Enter player name in the game',
   registeredPlayer: 'Registered player',
   notRegistered: 'No players registered',
   notFound: 'No player found',

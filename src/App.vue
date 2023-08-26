@@ -3,7 +3,7 @@ import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { setCssVar, useQuasar } from 'quasar';
-import { setI18nFunc, tError } from './i18n/utils/tFunc';
+import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
@@ -45,8 +45,7 @@ window.API.onStartServer((_event, worldID) => {
 })
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {
-  consoleStore.initProgress(worldID, 'サーバーをシャットダウン中')
-  //consoleStore.initProgress(worldID, t('console.shutdownServer'))
+  consoleStore.initProgress(worldID, $T('console.shutdownServer'))
 })
 // サーバーに送信されたコンソールの処理
 window.API.onAddConsole((_event, worldID, chunk) => {

@@ -33,9 +33,9 @@ import { asyncMap } from 'app/src-electron/util/objmap';
 import { getBackUpPath, parseBackUpPath } from './backup';
 import { Path } from 'app/src-electron/util/path';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
-import { BACKUP_EXT } from '../const';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { allocateTempDir } from '../misc/tempPath';
+import { portInUse } from 'app/src-electron/util/port';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -121,6 +121,8 @@ export class WorldHandler {
   container: WorldContainer;
   id: WorldID;
   runner: RunRebootableServer | undefined;
+  /** サーバーが実行中の場合のみポート番号が入る */
+  port: number | undefined;
 
   private constructor(id: WorldID, name: WorldName, container: WorldContainer) {
     this.promiseSpooler = new PromiseSpooler();
@@ -152,9 +154,13 @@ export class WorldHandler {
   }
 
   // worldIDからWorldHandlerを取得する
-  static get(id: WorldID): Failable<WorldHandler> {
+  static get(
+    id: WorldID,
+    name?: WorldName,
+    container?: WorldContainer
+  ): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldHandlerMap))
-      return errorMessage.core.world.invalidWorldId({ id });
+      return errorMessage.core.world.invalidWorldId({ id, container, name });
     return WorldHandler.worldHandlerMap[id];
   }
 
@@ -567,7 +573,7 @@ export class WorldHandler {
     // 使用中フラグを削除
     worldSettings.using = false;
 
-    const newHandler = WorldHandler.get(newId);
+    const newHandler = WorldHandler.get(newId, newName, this.container);
     if (isError(newHandler)) throw new Error();
 
     await this.getSavePath().copyTo(newHandler.getSavePath());
@@ -744,6 +750,33 @@ export class WorldHandler {
     const settings = constructWorldSettings(beforeWorld);
     const savePath = this.getSavePath();
 
+    // ポート番号を取得
+    let port = 25565;
+    if (isValid(beforeWorld.properties)) {
+      const serverPort = beforeWorld.properties['server-port'];
+      if (typeof serverPort === 'number') port = serverPort;
+    }
+
+    // ポートが使用中か確認
+    let portIsUsed = await portInUse(port);
+
+    // サーバーランナーの中で同じポートをしようとしているものがないか確認
+    portIsUsed ||= Object.values(WorldHandler.worldHandlerMap).some(
+      (x) => x.port === port
+    );
+
+    if (portIsUsed) {
+      return withError(
+        errorMessage.core.world.serverPortIsUsed({
+          port,
+        }),
+        errors
+      );
+    }
+
+    // ポートを登録
+    this.port = port;
+
     // 使用中フラグを立てて保存
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = true;
@@ -779,6 +812,9 @@ export class WorldHandler {
 
     // サーバーの終了を待機
     const serverResult = await runPromise;
+
+    // ポートを削除
+    this.port = undefined;
 
     this.runner = undefined;
 
