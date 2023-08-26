@@ -11,6 +11,11 @@ export type CoreErrors = {
       name?: string;
     }>;
 
+    // ポート番号が既に使用中
+    serverPortIsUsed: ErrorMessageContent<{
+      port: number;
+    }>;
+
     // 実行中のワールド名/ワールドフォルダは変更できない
     cannotChangeRunningWorldName: ErrorMessageContent<{
       name: string;
