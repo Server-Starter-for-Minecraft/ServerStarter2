@@ -6,6 +6,7 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { GroupProgressor } from '../../progress/progress';
+import { Version } from 'app/src-electron/schema/version';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -18,7 +19,8 @@ export async function checkEula(
   javaPath: Path,
   programArgunets: string[],
   serverCwdPath: Path,
-  progress: GroupProgressor
+  progress: GroupProgressor,
+  version: Version
 ): Promise<Failable<boolean>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
@@ -27,7 +29,12 @@ export async function checkEula(
     const sub = progress.subtitle({
       key: 'server.eula.generating',
     });
-    const result = await generateEula(javaPath, programArgunets, serverCwdPath);
+    const result = await generateEula(
+      javaPath,
+      programArgunets,
+      serverCwdPath,
+      version
+    );
     sub.delete();
     // 生成に失敗した場合エラー
     if (isError(result)) return result;
@@ -104,9 +111,16 @@ function parseEula(txt: string): {
 async function generateEula(
   javaPath: Path,
   programArgunets: string[],
-  serverCwdPath: Path
+  serverCwdPath: Path,
+  version: Version
 ): Promise<Failable<undefined>> {
   const eulaPath = serverCwdPath.child('eula.txt');
+
+  // mohistmcはeula.txtを生成して終了しないためこちらで生成してしまう
+  if (version.type === 'mohistmc') {
+    await eulaPath.writeText('eula=false');
+    return;
+  }
 
   // サーバーを仮起動
   const result = await execProcess(

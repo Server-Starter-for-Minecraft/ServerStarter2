@@ -103,7 +103,7 @@ export async function readyRunServer(
     server,
     settings.version,
     javaPath,
-    progress
+    progress,
   );
   if (isError(eulaResult)) return eulaResult;
 
@@ -134,7 +134,8 @@ async function assertEula(
     javaPath,
     server.programArguments,
     cwdPath,
-    progress
+    progress,
+    version
   );
 
   // Eulaチェックに失敗した場合エラー
