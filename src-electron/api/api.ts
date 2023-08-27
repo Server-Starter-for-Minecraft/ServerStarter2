@@ -60,8 +60,11 @@ export interface API extends IAPI {
     /** サーバー実行(前|後)の進捗画面表示 */
     Progress: (world: WorldID, progress: GroupProgress) => void;
 
-    /** コンソールに文字列を追加 */
-    AddConsole: (world: WorldID, chunk: string) => void;
+    /**
+     * コンソールに文字列を追加
+     * isError: stdoutの場合はfalse,stderrの場合はtrue
+     */
+    AddConsole: (world: WorldID, chunk: string, isError: boolean) => void;
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
