@@ -40,7 +40,7 @@ export const jaError: ErrorTranslationTypes = {
     },
     path: {
       loadingFailed: {
-        title: `{type}の読み込みに失敗しました`,
+        title: '{type}の読み込みに失敗しました',
         desc: '{path}を読み込めませんでした'
       },
       alreadyExists: {
@@ -104,7 +104,7 @@ export const jaError: ErrorTranslationTypes = {
         desc: '{path}の生成ができませんでした',
       },
       dialogCanceled:{
-        title: `ファイル選択ウィンドウがキャンセルされました`,
+        title: 'ファイル選択ウィンドウがキャンセルされました',
       },
     },
     githubAPI: {
