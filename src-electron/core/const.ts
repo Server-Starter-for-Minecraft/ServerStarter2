@@ -19,7 +19,7 @@ export const cachePath = mainPath.child('serverstarter/cache');
 export const logPath = mainPath.child('serverstarter/log');
 export const tempPath = mainPath.child('serverstarter/temp');
 
-export const settingPath = mainPath.child('serverstarter/settings.json');
+export const settingPath = mainPath.child('serverstarter/settings.ssconfig');
 
 export const runtimePath = cachePath.child('bin/runtime');
 export const versionsCachePath = cachePath.child('versions');
