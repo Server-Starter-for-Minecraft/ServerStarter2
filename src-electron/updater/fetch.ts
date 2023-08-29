@@ -4,7 +4,7 @@ import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
 
 const SERVERSTARTER_REPOSITORY_URL =
-  'https://api.github.com/repos/txkodo/ServerStarter2ReleaseTest/releases';
+  'https://api.github.com/repos/CivilTT/ServerStarter2/releases';
 
 /** githubからリリース番号を取得 */
 export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
