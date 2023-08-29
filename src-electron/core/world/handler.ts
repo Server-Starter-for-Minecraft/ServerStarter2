@@ -841,6 +841,8 @@ export class WorldHandler {
 
   /** コマンドを実行 */
   async runCommand(command: string) {
+    // コマンドが"/"で始まった場合"/"を削除
+    if (command.startsWith('/')) command = command.slice(1);
     await this.runner?.runCommand(command);
   }
 
