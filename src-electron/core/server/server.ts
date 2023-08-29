@@ -29,7 +29,8 @@ export function runServer(
 
     const onStart = () => api.send.StartServer(id);
     const onFinish = () => api.send.FinishServer(id);
-    const console = (value: string) => api.send.AddConsole(id, value);
+    const console = (value: string, isError: boolean) =>
+      api.send.AddConsole(id, value, isError);
 
     // サーバーの実行を待機
     process = serverProcess(
