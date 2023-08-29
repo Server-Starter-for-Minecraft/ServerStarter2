@@ -34,9 +34,11 @@ function deleteContent() {
     <template #default>
       <q-item class="q-pr-sm">
         <q-item-section>
-          <q-item-label class="contentsName text-omit">{{ content.name }}</q-item-label>
+          <q-item-label class="contentsName text-omit">
+            {{ content.name.replace(/§./g, "").trim() }}
+          </q-item-label>
           <q-item-label v-if="'description' in content" class="text-omit" style="opacity: .7;">
-            {{ content.description }}
+            {{ content.description.replace(/§./g, "").trim() }}
           </q-item-label>
         </q-item-section>
 
