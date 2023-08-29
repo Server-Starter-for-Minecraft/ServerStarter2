@@ -35,7 +35,7 @@ if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
   <div class="row justify-between q-gutter-md q-pb-md items-center">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="fabricVerOps"
+      :options="fabricVerOps?.filter(ver => !isRelease || ver['release'])"
       :label="$t('home.version.versionType')"
       option-label="id"
       :disable="fabrics === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
