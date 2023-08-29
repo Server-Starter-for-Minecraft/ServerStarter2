@@ -8,6 +8,7 @@ import { Failable } from 'app/src-electron/util/error/failable';
 import { decoratePromise } from 'app/src-electron/util/promiseDecorator';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../progress/progress';
+import { trimAnsi } from 'app/src-electron/util/ansi';
 
 export type RunServer = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -30,7 +31,7 @@ export function runServer(
     const onStart = () => api.send.StartServer(id);
     const onFinish = () => api.send.FinishServer(id);
     const console = (value: string, isError: boolean) =>
-      api.send.AddConsole(id, value, isError);
+      api.send.AddConsole(id, trimAnsi(value), isError);
 
     // サーバーの実行を待機
     process = serverProcess(
