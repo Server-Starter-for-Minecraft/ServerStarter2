@@ -20,7 +20,7 @@ export const jaError: ErrorTranslationTypes = {
   data: {
     url: {
       fetch: {
-        title: 'データの取得に失敗しました',
+        title: 'リモートサーバー上のデータの取得に失敗しました',
         desc: 'サーバー状態:{status}/{statusText}',
       },
       tooManyRequest: {
@@ -167,6 +167,10 @@ export const jaError: ErrorTranslationTypes = {
     world: {
       invalidWorldId: {
         title: '指定されたワールドが存在しません',
+      },
+      serverPortIsUsed: {
+        title: '指定された番号のポートは使用中です',
+        desc: 'ポート番号を{port}から変更してください',
       },
       cannotChangeRunningWorldName: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
