@@ -20,8 +20,8 @@ export const jaError: ErrorTranslationTypes = {
   data: {
     url: {
       fetch: {
-        title: '{url}からのデータの取得に失敗しました',
-        desc: 'サーバー状態:{status}/{statusText}'
+        title: 'データの取得に失敗しました',
+        desc: 'サーバー状態:{status}/{statusText}',
       },
       tooManyRequest: {
         title: 'リクエストが多すぎます',
@@ -40,7 +40,7 @@ export const jaError: ErrorTranslationTypes = {
     },
     path: {
       loadingFailed: {
-        title: `{type}の読み込みに失敗しました`,
+        title: '{type}の読み込みに失敗しました',
         desc: '{path}を読み込めませんでした'
       },
       alreadyExists: {
@@ -69,19 +69,19 @@ export const jaError: ErrorTranslationTypes = {
         },
         invalidDatapack: {
           title: '不適なデータパックが選択されました',
-          desc: '{path}を確認してください'
+          desc: '{path}を確認してください',
         },
         invalidPlugin:{
           title: '不適なプラグインファイルが選択されました',
-          desc: '{path}を確認してください'
+          desc: '{path}を確認してください',
         },
         invalidMod:{
           title: '不適なModファイルが選択されました',
-          desc: '{path}を確認してください'
+          desc: '{path}を確認してください',
         },
         invalidCustomMap:{
           title: '不適なカスタムマップが選択されました',
-          desc: '{path}を確認してください'
+          desc: '{path}を確認してください',
         },
         customMapZipWithMultipleLevelDat:{
           title: '{path}のカスタムマップにはlevel.datが複数格納されています',
@@ -101,22 +101,22 @@ export const jaError: ErrorTranslationTypes = {
       },
       creationFiled:{
         title: '{type}の生成に失敗しました',
-        desc: '{path}の生成ができませんでした'
+        desc: '{path}の生成ができませんでした',
       },
       dialogCanceled:{
-        title: `ファイル選択ウィンドウがキャンセルされました`
+        title: 'ファイル選択ウィンドウがキャンセルされました',
       },
     },
     githubAPI: {
       fetchFailed:{
-        title: '{url}からのデータの取得に失敗しました',
+        title: 'GitHubからのデータの取得に失敗しました',
       },
       unknownBlobEncoding:{
         title: 'blobのエンコードが異なっています',
       },
       invalidWorldData:{
         title: 'WorldDataが壊れています',
-        desc: '{owner}/{repo}/{branch}のデータを確認してください'
+        desc: '{owner}/{repo}/{branch}のデータを確認してください',
       },
     },
     failJsonFix: {
@@ -166,7 +166,7 @@ export const jaError: ErrorTranslationTypes = {
   core: {
     world: {
       invalidWorldId: {
-        title: '{id}に対応するワールドが存在しません',
+        title: '指定されたワールドが存在しません',
       },
       cannotChangeRunningWorldName: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
@@ -209,7 +209,7 @@ export const jaError: ErrorTranslationTypes = {
       },
     },
     missingPersonalAccessToken: {
-      title: 'https://github.com/{owner}/{repo}のパーソナルアクセストークンが存在しません',
+      title: '{owner}/{repo}のパーソナルアクセストークンが存在しません',
     },
     minecraftEULANotAccepted: {
       title: 'Minecraftのeulaに同意していません',

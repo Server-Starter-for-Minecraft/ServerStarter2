@@ -14,14 +14,14 @@ export const enUSError: ErrorTranslationTypes = {
     },
     subprocess: {
       title: 'Error occurred when subprocess executing',
-      desc: 'Exitcode: {exitcode}'
+      desc: 'Exitcode: {exitcode}',
     },
   },
   data: {
     url: {
       fetch: {
-        title: 'Failed to get data from {url}',
-        desc: 'Server status : {status}/{statusText}'
+        title: 'Failed to get data',
+        desc: 'Server status : {status}/{statusText}',
       },
       tooManyRequest: {
         title: 'To many requests have sent',
@@ -41,14 +41,14 @@ export const enUSError: ErrorTranslationTypes = {
     path: {
       loadingFailed: {
         title: 'Failed to read the {type}',
-        desc: 'failed for {path}'
+        desc: 'failed for {path}',
       },
       alreadyExists: {
         title: '{type} already exists',
       },
       notFound: {
         title: 'No {type} exists',
-        desc: 'Please check {path}'
+        desc: 'Please check {path}',
       },
       invalidExt: {
         title: 'Extension of {path} is inappropriate',
@@ -101,7 +101,7 @@ export const enUSError: ErrorTranslationTypes = {
       },
       creationFiled: {
         title: 'Failed to create {type}',
-        desc: 'failed to create {path}'
+        desc: 'failed to create {path}',
       },
       dialogCanceled: {
         title: 'Window to select file is cancelled',
@@ -109,14 +109,14 @@ export const enUSError: ErrorTranslationTypes = {
     },
     githubAPI: {
       fetchFailed: {
-        title: 'Failed to fetch data from {url}',
+        title: 'Failed to fetch data from GitHub',
       },
       unknownBlobEncoding: {
         title: 'Incorrect encoding used in blob',
       },
       invalidWorldData: {
         title: 'World data is invalid',
-        desc: 'Please check the data on {owner}/{repo}/{branch}'
+        desc: 'Please check the data on {owner}/{repo}/{branch}',
       },
     },
     failJsonFix: {
@@ -166,7 +166,7 @@ export const enUSError: ErrorTranslationTypes = {
   core: {
     world: {
       invalidWorldId: {
-        title: 'There is no world in {id}',
+        title: 'The specified world does not exist.',
       },
       cannotChangeRunningWorldName: {
         title: 'You cannot change your world name or saved folder',
@@ -187,7 +187,7 @@ export const enUSError: ErrorTranslationTypes = {
     container: {
       noContainerSubscribed: {
         title: 'No WorldContainer is registered',
-        desc: 'Check WorldContainer again'
+        desc: 'Check WorldContainer again',
       },
     },
     version: {
@@ -201,7 +201,7 @@ export const enUSError: ErrorTranslationTypes = {
         },
         missingJar: {
           title: 'Failed to build server',
-          desc: 'failed for version {spigotVersion}'
+          desc: 'failed for version {spigotVersion}',
         },
       },
       vanillaVersionNotExists: {
@@ -209,7 +209,7 @@ export const enUSError: ErrorTranslationTypes = {
       },
     },
     missingPersonalAccessToken: {
-      title: 'Personal access token for https://github.com/{owner}/{repo} dose not exist',
+      title: 'Personal access token for {owner}/{repo} dose not exist',
     },
     minecraftEULANotAccepted: {
       title: 'It does not agree to eula for Minecraft',
