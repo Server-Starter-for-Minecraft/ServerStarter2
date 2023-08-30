@@ -13,10 +13,14 @@ const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 const consoleOpeStore = useConsoleOpeStore()
 
+function stop() {
+  window.API.sendCommand(mainStore.selectedWorldID, 'stop')
+}
+
 async function reboot() {
   const worldID = mainStore.selectedWorldID
   await window.API.invokeReboot(worldID)
-  consoleStore.initTab(worldID, true)
+  consoleStore._world[worldID].console = []
 }
 </script>
 
@@ -30,7 +34,7 @@ async function reboot() {
       color="red"
       width="100px"
       :disable="disable"
-      @click="consoleOpeStore.sendCommand('stop')"
+      @click="stop"
     />
     <SsBtn
       dense

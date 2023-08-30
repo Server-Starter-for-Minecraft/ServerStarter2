@@ -18,8 +18,12 @@ export const useConsoleOpeStore = defineStore('consoleOperationStore', {
       const command = sendCommand ?? this.command
 
       if (command !== '') {
-        this.inputCommands.push(command);
-        this.showIdx = this.inputCommands.length
+        // 直前と同じコマンドが指定された場合は履歴に登録しない
+        if (this.inputCommands[this.inputCommands.length - 1] !== command) {
+          this.inputCommands.push(command);
+          this.showIdx = this.inputCommands.length
+        }
+        // コマンド実行
         window.API.sendCommand(mainStore.selectedWorldID, command);
         this.command = '';
       }
