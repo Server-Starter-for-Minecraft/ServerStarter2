@@ -9,10 +9,11 @@ import { isValid } from 'src/scripts/error';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useI18n } from 'vue-i18n';
 
+type consoleData = { chunk: string, isError: boolean }
 interface WorldConsole {
   [id: WorldID]: {
     status: 'Stop' | 'Ready' | 'Running'
-    console: string[]
+    console: consoleData[]
   }
 }
 
@@ -35,7 +36,7 @@ export const useConsoleStore = defineStore('consoleStore', {
       if (this._world[mainStore.selectedWorldID] === void 0 || force) {
         this._world[mainStore.selectedWorldID] = {
           status: 'Stop',
-          console: new Array<string>()
+          console: new Array<consoleData>()
         }
       }
     },
@@ -50,9 +51,9 @@ export const useConsoleStore = defineStore('consoleStore', {
     /**
      * コンソールに行を追加する 
      */
-    setConsole(worldID: WorldID, consoleLine?: string) {
+    setConsole(worldID: WorldID, consoleLine: string, isError: boolean) {
       this._world[worldID].status = 'Running'
-      if (consoleLine !== void 0) { this._world[worldID].console.push(consoleLine) }
+      if (consoleLine !== void 0) { this._world[worldID].console.push({ chunk: consoleLine, isError: isError }) }
     },
     /**
      * ワールドの実行状態を取得する

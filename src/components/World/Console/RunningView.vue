@@ -40,7 +40,9 @@ consoleStore.$subscribe((mutation, state) => {
     class="q-pa-md fit"
     style="flex: 1 1 0;"
   >
-    <p style="word-break:break-all;">{{ item }}</p>
+    <p :class="item.isError ? 'text-red' : ''" style="word-break:break-all;">
+      {{ item.chunk }}
+    </p>
   </q-virtual-scroll>
 </template>
 

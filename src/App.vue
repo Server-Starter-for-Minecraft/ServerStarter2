@@ -41,15 +41,15 @@ watch(() => $q.dark.isActive, val => {
 
 // サーバー起動時に画面遷移
 window.API.onStartServer((_event, worldID) => {
-  consoleStore.setConsole(worldID, '')
+  consoleStore.setConsole(worldID, '', false)
 })
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {
   consoleStore.initProgress(worldID, $T('console.shutdownServer'))
 })
 // サーバーに送信されたコンソールの処理
-window.API.onAddConsole((_event, worldID, chunk) => {
-  consoleStore.setConsole(worldID, chunk);
+window.API.onAddConsole((_event, worldID, chunk, isError) => {
+  consoleStore.setConsole(worldID, chunk, isError);
 })
 // Eulaの同意処理
 window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) => {
