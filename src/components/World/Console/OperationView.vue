@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
@@ -9,10 +10,13 @@ interface Prop {
 defineProps<Prop>()
 
 const mainStore = useMainStore()
+const consoleStore = useConsoleStore()
 const consoleOpeStore = useConsoleOpeStore()
 
-function reboot() {
-  window.API.invokeReboot(mainStore.selectedWorldID)
+async function reboot() {
+  const worldID = mainStore.selectedWorldID
+  await window.API.invokeReboot(worldID)
+  consoleStore.initTab(worldID, true)
 }
 </script>
 
