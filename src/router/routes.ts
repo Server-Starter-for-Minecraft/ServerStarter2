@@ -1,4 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
+import ConsolePage from 'src/pages/WorldTabs/ConsolePage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -6,7 +7,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('src/pages/WorldTabs/HomePage.vue') },
-      { path: 'console', component: () => import('src/pages/WorldTabs/ConsolePage.vue') },
+      // consoleページはタブが開かれる前にWorldTabから呼び出されることがあるため、先に読み込んでおく
+      { path: 'console', component: ConsolePage },
       { path: 'property', component: () => import('src/pages/WorldTabs/PropertyPage.vue') },
       { path: 'player', component: () => import('src/pages/WorldTabs/PlayerPage.vue') },
       { path: 'contents', component: () => import('src/pages/WorldTabs/ContentsPage.vue') },
