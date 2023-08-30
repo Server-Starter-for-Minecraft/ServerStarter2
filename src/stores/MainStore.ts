@@ -99,7 +99,7 @@ export const useMainStore = defineStore('mainStore', {
         world => {
           worldStore.worldList[world.id] = toRaw(world)
           this.setWorld(world)
-          consoleStore.initTab()
+          consoleStore.initTab(world.id)
         },
         e => tError(e)
       )

@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia';
 import { WorldID } from 'app/src-electron/schema/world';
+import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { useProgressStore } from './ProgressStore';
 import { useMainStore } from './MainStore';
 import { checkError } from 'src/components/Error/Error';
 import { assets } from 'src/assets/assets';
 import { values } from 'src/scripts/obj';
-import { isValid } from 'src/scripts/error';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { useI18n } from 'vue-i18n';
 
 type consoleData = { chunk: string, isError: boolean }
 interface WorldConsole {
@@ -31,10 +30,9 @@ export const useConsoleStore = defineStore('consoleStore', {
      * 
      * @param force すでにデータが存在していてもコンソールとステータスを初期化する
      */
-    initTab(force = false) {
-      const mainStore = useMainStore()
-      if (this._world[mainStore.selectedWorldID] === void 0 || force) {
-        this._world[mainStore.selectedWorldID] = {
+    initTab(worldID: WorldID, force = false) {
+      if (this._world[worldID] === void 0 || force) {
+        this._world[worldID] = {
           status: 'Stop',
           console: new Array<consoleData>()
         }
@@ -82,28 +80,34 @@ export async function runServer() {
   const mainStore = useMainStore()
   const consoleStore = useConsoleStore()
 
+  // 起動時のワールドの状態を保持することで、GUIが別のワールドを表示していても、
+  // 当該ワールドに対して処理が行えるようにする
+  const runWorld = deepcopy(mainStore.world)
+
   // 画像が入っていない場合は既定のアイコンを適用する
-  if (mainStore.world.avater_path === void 0) {
-    mainStore.world.avater_path = assets.png.unset
+  if (runWorld.avater_path === void 0) {
+    runWorld.avater_path = assets.png.unset
   }
 
-  // プログレスのステータスをセットして起動
+  // プログレスのステータスをセット
   consoleStore.initProgress(
-    mainStore.selectedWorldID,
+    runWorld.id,
     $T(
       'console.booting',
       {
-        id: `${mainStore.world.version.id}`,
-        type:`${$T(`home.serverType.${mainStore.world.version.type}`)}`,
-        name:`${mainStore.world.name}`
+        id: `${runWorld.version.id}`,
+        type:`${$T(`home.serverType.${runWorld.version.type}`)}`,
+        name:`${runWorld.name}`
       }
     )
   )
-  const res = await window.API.invokeRunWorld(mainStore.selectedWorldID);
+
+  // サーバーを起動
+  const res = await window.API.invokeRunWorld(runWorld.id);
 
   // サーバー終了時のエラー確認
-  checkError(res.value, undefined, e=>tError(e))
+  checkError(res.value, undefined, e => tError(e))
 
   // サーバータブをリセット
-  consoleStore.initTab(true)
+  consoleStore.initTab(runWorld.id, true)
 }

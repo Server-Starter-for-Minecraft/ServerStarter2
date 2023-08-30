@@ -42,7 +42,7 @@ const runBtnHovered = ref(false);
  */
 function selectWorldIdx() {
   mainStore.setWorld(prop.world)
-  consoleStore.initTab()
+  consoleStore.initTab(prop.world.id)
 }
 </script>
 
