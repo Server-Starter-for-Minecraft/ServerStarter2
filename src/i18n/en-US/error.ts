@@ -170,7 +170,7 @@ export const enUSError: ErrorTranslationTypes = {
       },
       serverPortIsUsed: {
         title: 'The port number in use is specified as the server port',
-        desc: 'Please change the port number from {port}',
+        desc: 'Please change the port number from {port} at property',
       },
       cannotChangeRunningWorldName: {
         title: 'You cannot change your world name or saved folder',
