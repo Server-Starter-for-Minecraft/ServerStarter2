@@ -11,6 +11,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import { getCssVar } from 'quasar';
 
 interface Prop {
   uuid: PlayerUUID
@@ -56,8 +57,11 @@ function getGroups(groups: Record<string, PlayerGroup>) {
 </script>
 
 <template>
-  <BaseActionsCard v-if="player !== void 0" @click="onCardClicked"
-    :class="playerStore.focusCards.has(prop.uuid) ? 'card-active' : ''">
+  <BaseActionsCard
+    v-if="player !== void 0"
+    @click="onCardClicked"
+    :style="playerStore.focusCards.has(prop.uuid) ? { 'border-color': getCssVar('primary') } : ''"
+  >
     <template #default>
       <q-item style="height: 5rem; padding: 14px;">
         <q-item-section avatar top>
@@ -92,10 +96,6 @@ function getGroups(groups: Record<string, PlayerGroup>) {
 </template>
 
 <style scoped lang="scss">
-.card-active {
-  border-color: $primary;
-}
-
 .name {
   font-size: 1.5rem;
 }
