@@ -170,7 +170,7 @@ export const jaError: ErrorTranslationTypes = {
       },
       serverPortIsUsed: {
         title: '指定された番号のポートは使用中です',
-        desc: 'プロパティよりポート番号を{port}から変更してください',
+        desc: 'プロパティ\'server-port\'よりポート番号を{port}から変更してください',
       },
       cannotChangeRunningWorldName: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
