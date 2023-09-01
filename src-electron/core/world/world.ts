@@ -142,7 +142,7 @@ async function getDefaultWorldName(container: WorldContainer) {
   let worldName = NEW_WORLD_NAME;
 
   let result = await validateNewWorldName(container, worldName);
-  let i = 0;
+  let i = 1;
   while (isError(result)) {
     worldName = `${NEW_WORLD_NAME}_${i}`;
     i += 1;

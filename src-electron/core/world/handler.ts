@@ -862,7 +862,7 @@ async function getDuplicateWorldName(
 
   let worldName: string = baseName;
   let result = await validateNewWorldName(container, worldName);
-  let i = 0;
+  let i = 1;
   while (isError(result)) {
     worldName = `${baseName}_${i}`;
     i += 1;
