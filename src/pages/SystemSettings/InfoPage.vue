@@ -97,7 +97,7 @@ function openMIT() {
       />
       <CreaterItem
         :job="$t('systemsetting.info.support')"
-        :names="['nozz', 'Monchi']"
+        :names="['nozz']"
       />
     </div>
   </div>
