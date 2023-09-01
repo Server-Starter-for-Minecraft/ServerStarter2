@@ -33,18 +33,19 @@ export async function update() {
   const update = await checkUpdate();
   logger.info(update);
 
+  
+  if (update === false) {
+    return;
+  }
+  
+  if (isError(update)) {
+    return;
+  }
+
   // lastUpdatedTimeをundefinedに
   const sys = await getSystemSettings();
   sys.system.lastUpdatedTime = undefined;
   await setSystemSettings(sys);
-
-  if (update === false) {
-    return;
-  }
-
-  if (isError(update)) {
-    return;
-  }
 
   if (osPlatform === 'windows-x64') await installWindows(update.windows);
   if (osPlatform === 'mac-os' || osPlatform === 'mac-os-arm64')

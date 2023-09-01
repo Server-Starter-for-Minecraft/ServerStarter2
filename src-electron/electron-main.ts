@@ -39,7 +39,7 @@ async function createWindow() {
   // TODO: アップデートしたときだけ処理を走らせる方法の検討
   const sys = await getSystemSettings();
   if (sys.system.lastUpdatedTime === undefined) {
-    sys.system.lastUpdatedTime = getCurrentTimestamp();
+    sys.system.lastUpdatedTime = getCurrentTimestamp(true);
     await setSystemSettings(sys);
   }
 
