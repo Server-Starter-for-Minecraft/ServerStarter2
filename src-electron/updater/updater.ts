@@ -1,4 +1,5 @@
 import { rootLoggerHierarchy } from '../core/logger';
+import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
@@ -31,7 +32,11 @@ export async function update() {
   logger.start(getSystemVersion());
   const update = await checkUpdate();
   logger.info(update);
-  console.log(update);
+
+  // lastUpdatedTimeをundefinedに
+  const sys = await getSystemSettings();
+  sys.system.lastUpdatedTime = undefined;
+  await setSystemSettings(sys);
 
   if (update === false) {
     return;

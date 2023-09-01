@@ -7,6 +7,8 @@ import { setupIPC } from './ipc/setup';
 import { onQuit } from './lifecycle/lifecycle';
 import { setServerStarterApp } from './lifecycle/exit';
 import { update } from './updater/updater';
+import { getSystemSettings, setSystemSettings } from './core/stores/system';
+import { getCurrentTimestamp } from './util/timestamp';
 
 // 多重起動していたらすでに起動済みの場合即時終了
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -32,6 +34,13 @@ async function createWindow() {
   // ビルド版の場合アップデートをチェック
   if (!process.env.DEBUGGING) {
     await update();
+  }
+
+  // TODO: アップデートしたときだけ処理を走らせる方法の検討
+  const sys = await getSystemSettings();
+  if (sys.system.lastUpdatedTime === undefined) {
+    sys.system.lastUpdatedTime = getCurrentTimestamp();
+    await setSystemSettings(sys);
   }
 
   mainWindow = new BrowserWindow({

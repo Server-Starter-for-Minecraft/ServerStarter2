@@ -10,15 +10,9 @@ export type SystemSettings = {
   remote: SystemRemoteSetting;
   player: SystemPlayerSetting;
   user: SystemUserSetting;
-};
 
-/** 編集済みのシステム設定まとめてここに格納 */
-export type SystemSettingsEdited = {
-  container: WorldContainers;
-  world: SystemWorldSettings;
-  remote: SystemRemoteSetting;
-  player: SystemPlayerSetting;
-  user: SystemUserSetting;
+  /** 基本的にはフロントから編集不可の定数 */
+  system: SystemSystemSetting;
 };
 
 export const locales = ['ja', 'en-US'] as const;
@@ -27,6 +21,11 @@ export type Locale = (typeof locales)[number];
 
 export const colorThemes = ['light', 'auto', 'dark'] as const;
 export type ColorTheme = (typeof colorThemes)[number];
+
+export type SystemSystemSetting = {
+  // 最終アップデート時刻
+  lastUpdatedTime?: number;
+};
 
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
