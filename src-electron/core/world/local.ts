@@ -188,7 +188,15 @@ export async function saveLocalFiles(
       world.avater_path = world.custom_map.icon ?? world.avater_path;
 
       worldSettings = importResult.settings;
-      if (importResult.properties !== undefined) {
+      if (importResult.properties === undefined) {
+        // 配布マップにserver.propertiesの情報が含まれていない場合
+        // gamemode/difficulty/hardcoreをローカスのデータで上書き
+        if (isValid(world.properties)) {
+          world.properties.gamemode = world.custom_map.gamemode;
+          world.properties.difficulty = world.custom_map.difficulty;
+          world.properties.hardcore = world.custom_map.hardcore;
+        }
+      } else {
         // 配布マップにserver.propertiesの情報が含まれていた場合
         if (isValid(world.properties)) {
           // 元のserver.propertiesとマージ
