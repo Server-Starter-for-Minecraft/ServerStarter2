@@ -63,6 +63,12 @@ export type CustomMapData = {
   versionName: string;
   // レベルが最後にロードされたUnix時間(ミリ秒)
   lastPlayed: number;
+  // ゲームモード
+  gamemode: 'survival' | 'creative' | 'adventure' | 'spectator';
+  // ハードコア
+  hardcore: boolean;
+  // difficulty
+  difficulty: 'peaceful' | 'easy' | 'normal' | 'hard';
 };
 
 /** バックアップデータ */

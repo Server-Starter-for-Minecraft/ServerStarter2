@@ -9,5 +9,11 @@ export type LevelDat = {
     };
     // レベルが最後にロードされたUnix時間(ミリ秒)
     LastPlayed: number;
+    // hardcore
+    hardcore: boolean;
+    // 難易度 0はサバイバル, 1はクリエイティブ, 2はアドベンチャー, 3はスペクテイター
+    GameType: 0 | 1 | 2 | 3;
+    // difficulty 0はピースフル、1はイージー、2はノーマル、3はハード
+    Difficulty: 0 | 1 | 2 | 3;
   };
 };

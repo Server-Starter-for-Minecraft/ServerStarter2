@@ -114,6 +114,15 @@ export async function loadCustomMap(
 
   const iconURI = await icon?.encodeURI('image/png');
 
+  const gamemodeMap = [
+    'survival',
+    'creative',
+    'adventure',
+    'spectator',
+  ] as const;
+
+  const difficultyMap = ['peaceful', 'easy', 'normal', 'hard'] as const;
+
   return {
     kind: 'map',
     path: path.path,
@@ -122,6 +131,9 @@ export async function loadCustomMap(
     icon: iconURI,
     isFile: !isDirectory,
     lastPlayed: longToNumber(datContent.Data.LastPlayed),
+    gamemode: gamemodeMap[datContent.Data.GameType],
+    hardcore: datContent.Data.hardcore,
+    difficulty: difficultyMap[datContent.Data.GameType],
   };
 }
 
@@ -148,6 +160,7 @@ export async function importCustomMap(
     new Path(mapData.path),
     cwdPath.child(LEVEL_NAME)
   );
+
   if (isError(properties)) return properties;
 
   // ワールドのディレクトリ構造をvanillaとして扱う
@@ -228,9 +241,11 @@ async function importCustomMapZip(
 
   // 展開したパス直下にserver.propertiesがあった場合読み込んでおく
   let props: ServerProperties | undefined = undefined;
-  if (unzipPath.child(SERVER_PROPERTIES_PATH).exists()) {
-    const p = await serverPropertiesFile.load(unzipPath);
-    if (isValid(p)) props = p;
+  const serverPropertiesPath = unzipPath.child(SERVER_PROPERTIES_PATH);
+
+  if (serverPropertiesPath.exists()) {
+    const newProps = await serverPropertiesFile.load(unzipPath);
+    if (isValid(newProps)) props = newProps;
   }
   // ワールドデータ内部にserver.propertiesが存在する場合
 

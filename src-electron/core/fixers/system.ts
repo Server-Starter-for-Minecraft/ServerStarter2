@@ -2,6 +2,7 @@ import {
   Locale,
   SystemPlayerSetting,
   SystemSettings,
+  SystemSystemSetting,
   SystemUserSetting,
   WorldContainerSetting,
 } from 'app/src-electron/schema/system';
@@ -94,6 +95,13 @@ export const fixSystemRemoteSetting = arrayFixer<RemoteSetting>(
   true
 );
 
+export const fixSystemSystemSetting = objectFixer<SystemSystemSetting>(
+  {
+    lastUpdatedTime: optionalFixer(numberFixer()),
+  },
+  true
+);
+
 /** システム設定まとめてここに格納 */
 export const fixSystemSettings = objectFixer<SystemSettings>(
   {
@@ -102,6 +110,7 @@ export const fixSystemSettings = objectFixer<SystemSettings>(
     remote: fixSystemRemoteSetting,
     player: fixSystemPlayerSetting,
     user: fixSystemUserSetting,
+    system: fixSystemSystemSetting,
   },
   true
 );
