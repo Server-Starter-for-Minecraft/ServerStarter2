@@ -237,9 +237,6 @@ export class WorldHandler {
     const remote = worldSettings.remote;
     if (remote) {
       const pushProgress = progress?.subGroup();
-      pushProgress?.title({
-        key: 'server.push.title',
-      });
 
       const savePath = this.getSavePath();
       const prog = pushProgress?.subGroup();
