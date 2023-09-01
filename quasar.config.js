@@ -205,8 +205,13 @@ module.exports = configure(function (/* ctx */) {
 
       builder: {
         // https://www.electron.build/configuration/configuration
-
         appId: 'ServerStarter2',
+        win: {
+          target: 'msi',
+        },
+        mac: {
+          target: 'pkg',
+        },
       },
     },
 

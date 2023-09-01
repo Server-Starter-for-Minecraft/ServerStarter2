@@ -9,6 +9,15 @@ export type SystemErrors = {
     // エラーの内容
     message: string;
   }>;
+
+  // アサーションエラー(おそらくフロントには表示されないであろうエラー)
+  // title: 不明なエラーが発生しました
+  // desc:  {message}
+  // とかでいいと思う
+  assertion: ErrorMessageContent<{
+    message: string;
+  }>;
+
   // IPC通信で発生するエラー
   ipc: ErrorMessageContent<{
     channel: string;
