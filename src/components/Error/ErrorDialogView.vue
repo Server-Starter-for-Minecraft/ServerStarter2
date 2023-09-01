@@ -3,16 +3,25 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar'
 import { iErrorDialogProps } from './Error'
 
-const prop = defineProps<iErrorDialogProps>()
+defineProps<iErrorDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 
+const hovered = ref(false)
 const animationSpeed  = 200
 const timeCounter = ref(0)
 closeCounter()
 
+/**
+ * Dialogを自動で閉じるためのカウンター
+ */
 function closeCounter() {
-  timeCounter.value += 0.02
+  // ホバー中はカウントを進めない
+  if (!hovered.value) {
+    timeCounter.value += 0.007
+  }
+
+  // カウンターの進行 or Dialogを閉じる
   if (timeCounter.value < 1 + animationSpeed / 10000) {
     setTimeout(closeCounter, 100)
   }
@@ -26,6 +35,8 @@ function closeCounter() {
   <q-dialog
     ref="dialogRef"
     @hide="onDialogHide"
+    @mouseover="hovered = true"
+    @mouseleave="hovered = false"
     seamless
     position="bottom"
     transition-show="slide-left"
