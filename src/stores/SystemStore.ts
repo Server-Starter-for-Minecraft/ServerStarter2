@@ -10,8 +10,7 @@ export const useSystemStore = defineStore('systemStore', {
   state: () => {
     return {
       systemVersion: version,
-      publicIP: '000.111.222.333',
-      privateIP: '192.168.000.111',
+      publicIP: '取得できませんでした',
       serverVersions: new Map<Version['type'], AllVersion<VersionType>>(),
       staticResouces: {} as StaticResouce,
       cacheContents: {

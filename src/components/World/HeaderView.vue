@@ -27,7 +27,7 @@ const statusColor = {
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />
-    <div class="force-oneline">IP {{ sysStore.publicIP }}</div>
+    <div class="force-oneline">IP : {{ sysStore.publicIP }}</div>
   </div>
 </template>
 

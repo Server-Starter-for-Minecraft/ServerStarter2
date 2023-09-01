@@ -123,7 +123,7 @@ export const useMainStore = defineStore('mainStore', {
      */
     updateWorld(world: World | WorldEdited) {
       const worldStore = useWorldStore()
-      worldStore.worldList[this.selectedWorldID] = world
+      worldStore.worldList[world.id] = world
     }
   },
 });

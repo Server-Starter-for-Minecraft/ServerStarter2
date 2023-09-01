@@ -66,6 +66,9 @@ export async function initWindow() {
 }
 
 export async function afterWindow() {
+  // GlobalIPを取得
+  getIP();
+
   // バージョンの読み込み
   getAllVersion(false);
 
@@ -114,8 +117,8 @@ async function getCachePlayers() {
       fp, 
       p => playerStore.cachePlayers[p.uuid] = p, 
       e => tError(e)
-      )
     )
+  )
 }
 
 /**
@@ -126,4 +129,14 @@ export async function getCacheContents() {
   sysStore.cacheContents.datapacks = (await window.API.invokeGetCacheContents('datapack')).value
   sysStore.cacheContents.plugins = (await window.API.invokeGetCacheContents('plugin')).value
   sysStore.cacheContents.mods = (await window.API.invokeGetCacheContents('mod')).value
+}
+
+async function getIP() {
+  const sysStore = useSystemStore();
+  const res = await window.API.invokeGetGlobalIP()
+  checkError(
+    res,
+    ip => sysStore.publicIP = ip,
+    e => tError(e)
+  )
 }
