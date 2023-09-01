@@ -7,7 +7,9 @@ import SsA from 'src/components/util/base/ssA.vue';
 const sysStore = useSystemStore()
 
 // TODO: 本来はこのオプションをバックエンドから取得する
-const latest = false
+// ひとまずは手動でアップデートをすることは想定しないため、true固定
+const latest = true
+const lastUpdateDateTime = sysStore.systemSettings.system.lastUpdatedTime
 
 // TODO: installerのダウンロードなどを行い、システムをアップデートするための準備を行う
 function systemUpdate() {
@@ -26,16 +28,18 @@ function openMIT() {
   <div class="q-px-md" style="margin: auto; width: fit-content;">
     <h1 class="q-pt-md">{{ $t('systemsetting.info.systemVersion') }}</h1>
     <div class="q-pl-md">
+      <!-- バージョン名 -->
       <div class="row items-center">
         <p class="q-ma-none">{{ sysStore.systemVersion }}</p>
         <div class="q-ml-md">
-          <p v-if="latest">{{ $t('systemsetting.info.latest') }}</p>
+          <p v-if="latest" class="q-ma-none">{{ $t('systemsetting.info.latest') }}</p>
           <SsBtn v-else free-width :label="$t('systemsetting.info.update')" color="primary" @click="systemUpdate" />
         </div>
       </div>
-      <!-- TODO: 最終更新日を取得＆保存 -->
-      <div class="text-caption q-pt-sm" tyle="opacity: .6;">
-        {{ $t('systemsetting.info.finalUpdate', { datetime: $d(new Date(), 'dateTime') } ) }}
+      
+      <!-- 最終更新日 -->
+      <div v-if="lastUpdateDateTime" class="text-caption q-pt-sm" tyle="opacity: .6;">
+        {{ $t('systemsetting.info.finalUpdate', { datetime: $d(lastUpdateDateTime, 'dateTime') } ) }}
       </div>
     </div>
 
