@@ -294,6 +294,9 @@ export class WorldHandler {
         // セーブデータを移動
         await this.move(world.name, world.container);
       } else {
+        // 移動をキャンセル
+        world.container = this.container;
+        world.name = this.name;
         errors.push(newWorldName);
       }
     }
