@@ -17,15 +17,17 @@ interface Prop {
   showOperationBtns?: boolean
   active?: boolean
   onClick?: () => void
+  onVisibleClick?: () => void
 }
-defineProps<Prop>()
+const prop = defineProps<Prop>()
 const folder = defineModel<WorldContainerSetting>({ required: true })
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
 
 function switchVisible() {
-  return folder.value.visible = !folder.value.visible
+  folder.value.visible = !folder.value.visible
+  if (prop.onVisibleClick !== void 0) prop.onVisibleClick()
 }
 
 function getCardSytleClass(active?: boolean, disable?: boolean) {

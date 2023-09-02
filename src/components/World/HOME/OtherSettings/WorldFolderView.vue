@@ -1,24 +1,38 @@
 <script setup lang="ts">
-import AddContentsCard from 'src/components/util/AddContentsCard.vue';
-import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
-import { useMainStore } from 'src/stores/MainStore';
 import { ref, toRaw } from 'vue';
-import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { WorldContainer } from 'app/src-electron/schema/brands';
-import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
-import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
-import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useQuasar } from 'quasar';
+import { WorldContainer } from 'app/src-electron/schema/brands';
+import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { tError } from 'src/i18n/utils/tFunc';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { checkError } from 'src/components/Error/Error';
+import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
+import { values } from 'src/scripts/obj';
+import AddContentsCard from 'src/components/util/AddContentsCard.vue';
+import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
+import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
 
 const $q = useQuasar()
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
+const worldStore = useWorldStore()
 const consoleStore = useConsoleStore()
 
 const isWorldContainerLoading = ref(false)
+
+/**
+ * ワールドフォルダの表示非表示を変更するときに、
+ * 表示ワールドを残ったワールド一覧から選択する
+ */
+function changeVisible(container: WorldContainer) {
+  console.log(mainStore.world.container)
+  if (mainStore.world.container === container) {
+    const world = values(worldStore.sortedWorldList)
+    mainStore.setWorld(world[world.length - 1])
+  }
+}
 
 /**
  * ワールドコンテナをセットする際に、データの移動を待機する
@@ -71,6 +85,7 @@ function openFolderEditor() {
         :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
         :active="mainStore.world.container === sysStore.systemSettings.container[n - 1].container"
         @click="setWorldContainer(sysStore.systemSettings.container[n - 1].container)"
+        @visible-click="changeVisible(sysStore.systemSettings.container[n - 1].container)"
       />
     </template>
     <AddContentsCard

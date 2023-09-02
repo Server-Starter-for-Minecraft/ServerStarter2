@@ -5,11 +5,13 @@ import { getCssVar } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { keys } from 'src/scripts/obj';
+import { sortValue } from 'src/scripts/objSort';
+import { moveScrollTop_Home } from '../World/HOME/scroll';
+import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import WorldTab from './WorldTab.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
-import { sortValue } from 'src/scripts/objSort';
-import { moveScrollTop_Home } from '../World/HOME/scroll';
 
 const router = useRouter()
 const sysStore = useSystemStore()
@@ -18,6 +20,19 @@ const searchWorldName = ref('')
 
 const miniChangeWidth = 200
 const drawer = ref(true)
+
+/**
+ * 表示するワールド一覧を更新する際に、表示するワールドがなくなる場合は、
+ * 現在選択しているワールドを補完する
+ * 
+ * (World FolderのVisibilityを変更したときに、表示するものがなくなることがあるため対応)
+ */
+function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
+  if (keys(worlds).length === 0) {
+    worlds[mainStore.world.id] = mainStore.world
+  }
+  return worlds
+}
 
 async function createNewWorld() {
   // 新規ワールドの生成
@@ -73,7 +88,7 @@ async function createNewWorld() {
       <q-list>
         <template
           v-for="(world, idx) in sortValue(
-            mainStore.searchWorld(searchWorldName),
+            interpolateCurrentWorld(mainStore.searchWorld(searchWorldName)),
             (w1, w2) => {
               return (w2.last_date ?? 0) - (w1.last_date ?? 0)
             }
