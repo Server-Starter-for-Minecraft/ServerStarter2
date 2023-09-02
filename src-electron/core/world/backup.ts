@@ -24,7 +24,7 @@ export function getBackUpPath(container: WorldContainer, name: WorldName) {
 
   // {container}/#backups/{name}-YYYY-MM-DD-HH({i})
   let path = directory.child(`${name}-${dateString}.${BACKUP_EXT}`);
-  let i = 0;
+  let i = 1;
   while (path.exists()) {
     path = directory.child(`${name}-${dateString}(${i}).${BACKUP_EXT}`);
     i++;
