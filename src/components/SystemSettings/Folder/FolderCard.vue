@@ -28,10 +28,10 @@ function switchVisible() {
   return folder.value.visible = !folder.value.visible
 }
 
-function getCardSytleClass(active?: boolean, loading?: boolean) {
+function getCardSytleClass(active?: boolean, disable?: boolean) {
   const returnClasses = []
   if (active) returnClasses.push('text-primary')
-  if (loading) returnClasses.push('disable')
+  if (disable) returnClasses.push('disable')
   return returnClasses.join(' ')
 }
 
@@ -73,7 +73,7 @@ function removeFolder() {
     <div class="row">
       <div
         class="col q-pl-md q-py-md"
-        :class="getCardSytleClass(active, loading)"
+        :class="getCardSytleClass(active, disable || loading)"
         style="margin: auto 0;"
       >
         <div class="text-omit" style="font-size: 1.1rem;">{{ folder.name }}</div>
@@ -81,7 +81,7 @@ function removeFolder() {
       </div>
 
       <!-- cardをクリックできるようにする -->
-      <div v-if="onClick !== void 0" class="absolute-top fit">
+      <div v-if="onClick !== void 0 || !disable" class="absolute-top fit">
         <q-btn flat color="transparent" @click="onClick" class="fit"/>
       </div>
 
