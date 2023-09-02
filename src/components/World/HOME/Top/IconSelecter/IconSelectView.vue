@@ -17,6 +17,7 @@ const customImgReload = ref(false)
 const mainStore = useMainStore()
 
 const imgs = [
+  'unset',
   'bamboo_block',
   'bedrock',
   'bookshelf',
@@ -29,7 +30,6 @@ const imgs = [
   'command_block_back',
   'crafting_table_front',
   'diamond_block',
-  'dirt',
   'emerald_block',
   'end_stone',
   'flowering_azalea_leaves',
