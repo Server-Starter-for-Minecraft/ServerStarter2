@@ -5,12 +5,16 @@ import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 export const enUSError: ErrorTranslationTypes = {
   system: {
     runtime: {
-      title: 'Runtime error occurred',
-      desc: 'Error type: {type}, Error message: {message}',
+      title: 'Runtime error occurred({type})',
+      desc: '{message}',
     },
     ipc: {
-      title: 'IPC error occuerred',
-      desc: 'Error type: {type}, Error message: {message}',
+      title: 'IPC error occuerred({type})',
+      desc: '{message}',
+    },
+    assertion: {
+      title: 'Unknown error has occured',
+      desc: '{message}'
     },
     subprocess: {
       title: 'Error occurred when subprocess executing',
@@ -224,5 +228,10 @@ export const enUSError: ErrorTranslationTypes = {
     failGetGlobalIP: {
       title: 'Failed to get global IP address',
     },
+    update: {
+      missingAppSource: {
+        title: 'Update file not found in latest release',
+      }
+    }
   },
 };
