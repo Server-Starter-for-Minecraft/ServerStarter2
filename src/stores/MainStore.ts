@@ -107,9 +107,9 @@ export const useMainStore = defineStore('mainStore', {
     /**
      * 選択されているワールドを削除する
      */
-    removeWorld() {
+    removeWorld(worldID: WorldID) {
       const worldStore = useWorldStore()
-      delete worldStore.worldList[this.selectedWorldID]
+      delete worldStore.worldList[worldID]
     },
     /**
      * ワールドIDで設定したワールドを表示する

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import DangerView from 'src/components/util/danger/dangerView.vue';
 import { values } from 'src/scripts/obj';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { moveScrollTop_Home } from '../scroll';
 import { checkError } from 'src/components/Error/Error';
 import { tError } from 'src/i18n/utils/tFunc';
+import DangerView from 'src/components/util/danger/dangerView.vue';
 
 const mainStore = useMainStore()
 const worldStore = useWorldStore()
@@ -16,19 +16,23 @@ const consoleStore = useConsoleStore()
  */
 async function removeWorld() {
   /** 描画の更新 */
-  function updateView() {
+  async function updateView() {
+    // 表示ワールドの変更に対応できるよう、削除するWorldIDを控えておく
+    const removeWorldID = mainStore.selectedWorldID
 
-    // 描画上のリストから削除
-    mainStore.removeWorld()
-
-    // ワールドが消失した場合は、新規ワールドを自動生成
-    if (values(worldStore.worldList).length === 0) {
-      mainStore.createNewWorld()
+    // ワールドが消失する場合は、新規ワールドを自動生成
+    if (values(worldStore.worldList).length === 1) {
+      // 削除する際にworldStore.worldListが更新されてSetWorldが呼ばれるため、
+      // 表示しているワールドを確実にNewWorld側にしてから削除処理を実行
+      // このためには、削除前にCreateNewWorldする必要あり
+      await mainStore.createNewWorld()
     }
 
+    // 描画上のリストから削除
+    mainStore.removeWorld(removeWorldID)
+
     // ワールドリストの0番目を表示
-    const worlds = values(worldStore.sortedWorldList)
-    mainStore.setWorld(worlds[worlds.length - 1])
+    mainStore.setWorld(values(worldStore.sortedWorldList)[0])
 
     // 画面を一番上に
     moveScrollTop_Home()
