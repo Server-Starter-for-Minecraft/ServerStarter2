@@ -32,7 +32,8 @@ async function removeWorld() {
     mainStore.removeWorld(removeWorldID)
 
     // ワールドリストの0番目を表示
-    mainStore.setWorld(values(worldStore.sortedWorldList)[0])
+    const world = values(worldStore.sortedWorldList)
+    mainStore.setWorld(world[world.length - 1])
 
     // 画面を一番上に
     moveScrollTop_Home()

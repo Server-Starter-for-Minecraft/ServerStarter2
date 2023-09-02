@@ -57,7 +57,8 @@ export async function initWindow() {
     await mainStore.createNewWorld()
   }
   else {
-    mainStore.setWorld(values(worldStore.worldList)[0])
+    const world = values(worldStore.sortedWorldList)
+    mainStore.setWorld(world[world.length - 1])
   }
 
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
