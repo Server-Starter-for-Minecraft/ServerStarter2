@@ -39,7 +39,7 @@ export const jaProperty = {
     'allow-nether': 'ネザーに移動可能',
     'generate-structures': '構造物（村など）の生成をする',
     'generator-settings': 'ワールド生成のカスタマイズ(JSON)',
-    'max-build-height': '建築限界の高さ(仮)',
+    'max-build-height': '建築限界の高さ',
     'max-world-size': 'ワールドのサイズを半径で指定',
     'spawn-animals': '動物が出現する',
     'spawn-monsters': '敵MOBが出現する',
@@ -94,6 +94,7 @@ export const jaProperty = {
     'snooper-enabled': 'サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する',
     'log-ips': 'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする',
     'text-filtering-config': '不適切なチャットのフィルタリング設定',
+    'announce-player-achievements': 'プレイヤーの実績解除をチャットで告知する',
   },
   resetProperty: '\
     基本設定の{defaultProperty}に設定を戻します<br>\
