@@ -58,12 +58,12 @@ function getAdditionalContentsBtns() {
         :label="$t('utils.worldSettingTabs.contents')"
         :btns = "getAdditionalContentsBtns()"
       />
-      <icon-tab-view path="share-world" icon="cloud" :label="$t('utils.worldSettingTabs.cloud')" />
+      <!-- <icon-tab-view path="share-world" icon="cloud" :label="$t('utils.worldSettingTabs.cloud')" /> -->
     </template>
     <template v-else>
       <icon-tab-view path="system" icon="home" :label="$t('utils.systemSettingTabs.home')" />
       <icon-tab-view path="system/property" icon="list_alt" :label="$t('utils.systemSettingTabs.list_alt')" />
-      <icon-tab-view path="system/remote" icon="cloud" :label="$t('utils.systemSettingTabs.cloud')" />
+      <!-- <icon-tab-view path="system/remote" icon="cloud" :label="$t('utils.systemSettingTabs.cloud')" /> -->
       <icon-tab-view path="system/folder" icon="folder" :label="$t('utils.systemSettingTabs.folder')" />
       <icon-tab-view path="system/info" icon="info" :label="$t('utils.systemSettingTabs.info')" />
     </template> 
