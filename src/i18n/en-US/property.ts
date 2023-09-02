@@ -97,6 +97,7 @@ export const enUSproperty: MessageSchema['property'] = {
     'snooper-enabled': 'Sets whether the server sends snoop data regularly to http://snoop.minecraft.net',
     'log-ips': 'When set to false, will prevent player IPs from being included in the log when players join the game',
     'text-filtering-config': 'Filtering configuration of inappropriate chat',
+    'announce-player-achievements': 'Announce the achievement unlock in chat.'
 
   },
   resetProperty: '\

@@ -5,12 +5,16 @@ import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 export const jaError: ErrorTranslationTypes = {
   system: {
     runtime: {
-      title: 'ランタイムエラーが発生しました',
-      desc: 'エラーの型: {type} ,エラーの内容: {message}',
+      title: 'ランタイムエラーが発生しました({type})',
+      desc: '{message}',
     },
     ipc: {
-      title: 'IPC通信でエラーが発生しました',
-      desc: 'エラーの型: {type} ,エラーの内容: {message}',
+      title: 'IPC通信でエラーが発生しました({type})',
+      desc: '{message}',
+    },
+    assertion: {
+      title: '不明なエラーが発生しました',
+      desc: '{message}'
     },
     subprocess: {
       title: 'subprocessの実行時にエラーが発生しました',
@@ -223,6 +227,11 @@ export const jaError: ErrorTranslationTypes = {
     },
     failGetGlobalIP: {
       title: 'グローバルIPの取得に失敗しました',
+    },
+    update: {
+      missingAppSource: {
+        title: '最新のリリースにアップデート用ファイルが見つかりません',
+      }
     }
   },
 };
