@@ -60,6 +60,8 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
               filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
             ).sort(
               (a, b) => strSort(a.name, b.name)
+            ).filter(
+              v => playerStore.newPlayerCandidate?.name !== v.name
             )"
           :key="p"
         >

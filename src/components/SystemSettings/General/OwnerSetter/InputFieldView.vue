@@ -3,6 +3,9 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 
 const playerStore = usePlayerStore()
+
+// ページを読み込んだ時に検索欄をリセット
+playerStore.searchName = ''
 </script>
 
 <template>
