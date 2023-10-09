@@ -2,7 +2,7 @@
 import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { setCssVar, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
@@ -13,6 +13,7 @@ import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
 import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import { deepCopy } from './scripts/deepCopy';
+import { setColor } from './color';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
@@ -36,7 +37,7 @@ $q.dark.set('auto');
 
 // primaryの色を定義
 watch(() => $q.dark.isActive, val => {
-  setPrimary(val)
+  setColor(val, sysStore.systemSettings.user.visionSupport)
 })
 
 // サーバー起動時に画面遷移
@@ -101,7 +102,7 @@ async function setUserSettings() {
   $q.dark.set(isAuto ? 'auto' : isDark)
 
   // primaryの色を定義
-  setPrimary($q.dark.isActive)
+  setColor($q.dark.isActive, sysStore.systemSettings.user.visionSupport)
 }
 
 /**
@@ -140,18 +141,6 @@ function setSubscribe() {
   setSysSettingsSubscriber()
 
   setPlayerSearchSubscriber(playerStore)
-}
-
-/**
- * primaryの色を定義
- */
-function setPrimary(isDark: boolean) {
-  if (isDark) {
-    setCssVar('primary', '#7FFF00')
-  }
-  else {
-    setCssVar('primary', '#1EB000')
-  }
 }
 </script>
 
