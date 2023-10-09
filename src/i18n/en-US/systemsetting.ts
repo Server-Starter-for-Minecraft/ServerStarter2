@@ -6,6 +6,8 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     lang: 'Language',
     langDesc: 'Select your language',
     colorMode: 'Appearance',
+    useVisionSupport : 'Apply vision support',
+    noVisionSupport: 'Don\'t apply vision support',
     autoShutdown: 'Auto-Shutdown',
     shutdownDesc: 'Allow to shutdown your PC after you close the server',
   },
