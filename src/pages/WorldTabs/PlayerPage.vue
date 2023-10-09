@@ -21,6 +21,9 @@ import GroupEditorView from 'src/components/World/Player/GroupEditorView.vue';
 const mainStore = useMainStore()
 const playerStore = usePlayerStore()
 
+// ページを読み込んだ時に検索欄をリセット
+playerStore.searchName = ''
+
 const orderTypes = ['name', 'op'] as const
 const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name')
 function playerSortFunc(orderType: (typeof orderTypes)[number]): (a: PlayerSetting, b: PlayerSetting) => number {
