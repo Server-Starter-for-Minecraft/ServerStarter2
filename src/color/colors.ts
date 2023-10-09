@@ -22,6 +22,3 @@ export const colors: ColorSettings = {
     primary: '#1E8FFF'
   }
 }
-
-
-// TODO: text-red -> text-negativeに変更する

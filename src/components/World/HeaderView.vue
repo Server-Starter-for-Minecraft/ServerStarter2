@@ -8,7 +8,7 @@ const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 const statusColor = {
-  'Stop': 'red',
+  'Stop': 'negative',
   'Ready': 'grey',
   'Running': 'primary'
 }

@@ -8,7 +8,7 @@ import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import { useI18n } from 'vue-i18n';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const prop = defineProps<GithubCheckDialogProp>()
 
@@ -66,7 +66,7 @@ async function setRemote() {
         <i18n-t keypath="shareWorld.newRemote.desc" tag="false">
           <br>
           <br>
-          <span class="text-red text-bold">{{ $t('shareWorld.newRemote.caution') }}</span>
+          <span class="text-negative text-bold">{{ $t('shareWorld.newRemote.caution') }}</span>
         </i18n-t>
       </p>
 

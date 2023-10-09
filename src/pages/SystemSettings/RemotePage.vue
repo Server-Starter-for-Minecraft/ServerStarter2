@@ -22,7 +22,7 @@ function addRemote() {
     <p class="q-my-sm text-body2" style="opacity: .6;">
       {{ $t('shareWorld.descriptRemote') }}
     </p>
-    <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-red">
+    <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-negative">
       {{ $t('shareWorld.cannotEdit') }}
     </p>
 
@@ -38,9 +38,9 @@ function addRemote() {
             style="min-width: calc(13rem + 24px * 2);"
           />
         </div>
-        <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n-1].pat">
+        <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n - 1].pat">
           <GithubCard
-            v-model="sysStore.systemSettings.remote[n-1]"
+            v-model="sysStore.systemSettings.remote[n - 1]"
             show-unlink
             :disable="!consoleStore.isAllWorldStop()"
           />

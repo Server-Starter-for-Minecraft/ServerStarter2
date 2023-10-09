@@ -47,13 +47,14 @@ function deleteContent() {
             dense
             flat
             stack
-            color="red"
+            color="negative"
             icon="close"
             size="1rem"
             @click="deleteContent"
           >
-            <div class="text-red text-center full-width" style="font-size: .8rem;">
-              {{ $t('general.delete') }}</div>
+            <div class="text-negative text-center full-width" style="font-size: .8rem;">
+              {{ $t('general.delete') }}
+            </div>
           </q-btn>
         </q-item-section>
         <q-item-section v-else side>

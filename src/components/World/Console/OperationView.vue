@@ -31,7 +31,7 @@ async function reboot() {
       is-capital
       icon="stop"
       :label="$t('console.stop')"
-      color="red"
+      color="negative"
       width="100px"
       :disable="disable"
       @click="stop"

@@ -84,7 +84,7 @@ function checkUnlinkRepo() {
         v-if="showUnlink"
         :disable="disable"
         :label="$t('shareWorld.githubCard.unregister.remote')"
-        color="red"
+        color="negative"
         @click="checkUnlinkRepo"
       />
       <SsBtn
