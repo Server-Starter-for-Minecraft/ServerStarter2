@@ -4,6 +4,8 @@ export const jaSystemSetting = {
     lang: '言語',
     langDesc: '言語を選択してください',
     colorMode: '配色モード',
+    useVisionSupport: '色覚補正を適用する',
+    noVisionSupport: '色覚補正を適用しない',
     autoShutdown: '自動シャットダウン',
     shutdownDesc: 'サーバー終了後に自動でPCをシャットダウンする',
   },

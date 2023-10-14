@@ -35,7 +35,7 @@ function setOP(setVal: 0 | OpLevel) {
   else {
     setter({ level: setVal, bypassesPlayerLimit: false })
   }
-  
+
   // フォーカスのリセット
   playerStore.unFocus()
 }
@@ -60,8 +60,10 @@ function removePlayer() {
     class="column"
     style="width: 13rem; height: 325px; max-height: 45vh;"
   >
-    <p class="q-pa-sm q-ma-none text-body2">{{ $t('player.editPlayer',{n: playerStore.focusCards.size}) }}</p>
-    
+    <p class="q-pa-sm q-ma-none text-body2">
+      {{ $t('player.editPlayer', { n: playerStore.focusCards.size }) }}
+    </p>
+
     <q-scroll-area style="flex: 1 1 0;">
       <template v-for="opLevel in ([4, 3, 2, 1, 0] as const)" :key="opLevel">
         <OpLevelBtn
@@ -72,12 +74,7 @@ function removePlayer() {
         />
       </template>
       <q-separator inset class="q-mt-xs" />
-      <OpLevelBtn
-        icon="close"
-        :label="$t('player.deletePlayer')"
-        color="red"
-        @click="removePlayer"
-      />
+      <OpLevelBtn icon="close" :label="$t('player.deletePlayer')" color="negative" @click="removePlayer" />
     </q-scroll-area>
   </q-card>
 </template>

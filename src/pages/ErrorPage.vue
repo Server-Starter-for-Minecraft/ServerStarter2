@@ -17,16 +17,16 @@ function closeWindow() {
     <q-card flat class="bg-transparent">
       <q-card-section horizontal>
         <q-card-section class="col-2 flex flex-center">
-          <q-icon name="warning" color="orange" size="5rem"/>
+          <q-icon name="warning" color="orange" size="5rem" />
         </q-card-section>
-    
+
         <q-card-section>
           <div>
             <p>{{ $t('utils.bugReport.title') }}</p>
             <p style="text-decoration: underline;">{{ store.description }}</p>
             <p v-html="$t('utils.bugReport.desc')"></p>
           </div>
-    
+
           <div>
             <p>{{ $t('utils.bugReport.cause') }}</p>
             <p>{{ store.error }}</p>
@@ -36,9 +36,29 @@ function closeWindow() {
 
       <q-card-actions class="justify-center">
         <!-- TODO: バグ報告フォームの整備 -->
-        <q-btn color="red" icon="pest_control" :label="$t('utils.bugReport.reportBtn')" size="1.3rem" class="q-mx-md"/>
-        <q-btn color="blue-1" text-color="blue" icon="img:https://cdn.iconscout.com/icon/free/png-512/free-twitter-87-432551.png?f=avif&w=256" :label="$t('utils.bugReport.contact')" size="1.3rem" class="q-mx-md" @click="showTwitter"/>
-        <q-btn icon="close" :label="$t('utils.bugReport.close')" size="1.3rem" class="q-mx-md" @click="closeWindow"/>
+        <q-btn
+          color="negative"
+          icon="pest_control"
+          :label="$t('utils.bugReport.reportBtn')"
+          size="1.3rem"
+          class="q-mx-md"
+        />
+        <q-btn
+          color="blue-1"
+          text-color="blue"
+          icon="img:https://cdn.iconscout.com/icon/free/png-512/free-twitter-87-432551.png?f=avif&w=256"
+          :label="$t('utils.bugReport.contact')"
+          size="1.3rem"
+          class="q-mx-md"
+          @click="showTwitter"
+        />
+        <q-btn
+          icon="close"
+          :label="$t('utils.bugReport.close')"
+          size="1.3rem"
+          class="q-mx-md"
+          @click="closeWindow"
+        />
       </q-card-actions>
     </q-card>
   </div>

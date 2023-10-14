@@ -39,23 +39,23 @@ async function importNewContent(isFile = false) {
       // TODO: 何もファイルを選択せずに修了した場合もエラー扱いとなるため、
       // 何も選択しなかった場合はエラーを表示せず、不適なファイルが選択された際には適切なエラーを表示するようにする
       checkError(
-        await window.API.invokePickDialog({type: 'datapack', isFile: isFile}),
+        await window.API.invokePickDialog({ type: 'datapack', isFile: isFile }),
         c => addContent2World(c),
-        e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
+        e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       )
       break;
     case 'plugin':
       checkError(
-        await window.API.invokePickDialog({type: 'plugin'}),
+        await window.API.invokePickDialog({ type: 'plugin' }),
         c => addContent2World(c),
-        e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
+        e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       )
       break;
     case 'mod':
       checkError(
-        await window.API.invokePickDialog({type: 'mod'}),
+        await window.API.invokePickDialog({ type: 'mod' }),
         c => addContent2World(c),
-        e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
+        e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       )
       break;
     default:
@@ -102,10 +102,15 @@ function openCacheFolder() {
 
 <template>
   <div class="q-px-md">
-    <h1 class="q-py-xs">{{ $t('additionalContents.management', { type: $t(`additionalContents.${prop.contentType}` )}) }}</h1>
+    <h1 class="q-py-xs">{{ $t('additionalContents.management', { type: $t(`additionalContents.${prop.contentType}`) }) }}
+    </h1>
 
-    <span class="text-caption">{{ $t('additionalContents.installed', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
-    <p v-if="consoleStore.status(mainStore.world.id) !== 'Stop' && contentType !== 'datapack'" class="text-caption text-red q-ma-none">
+    <span class="text-caption">
+      {{ $t('additionalContents.installed', { type: $t(`additionalContents.${prop.contentType}`) }) }}
+    </span>
+    <p v-if="consoleStore.status(mainStore.world.id) !== 'Stop' && contentType !== 'datapack'"
+      class="text-caption text-negative q-ma-none"
+    >
       {{ $t('additionalContents.needReboot') }}
     </p>
     <div class="row q-gutter-md q-pa-sm">
@@ -116,7 +121,7 @@ function openCacheFolder() {
       </template>
       <div v-else class="full-width">
         <p class="q-my-lg text-center text-h5" style="opacity: .6;">
-          {{ $t('additionalContents.notInstalled', { type: $t(`additionalContents.${prop.contentType}` )}) }}
+          {{ $t('additionalContents.notInstalled', { type: $t(`additionalContents.${prop.contentType}`) }) }}
         </p>
       </div>
     </div>
@@ -124,7 +129,9 @@ function openCacheFolder() {
     <q-separator class="q-my-md" />
 
     <div class="row justify-between">
-      <span class="text-caption">{{ $t('additionalContents.add', { type: $t(`additionalContents.${prop.contentType}` ) }) }}</span>
+      <span class="text-caption">
+        {{ $t('additionalContents.add', { type: $t(`additionalContents.${prop.contentType}`) }) }}
+      </span>
       <q-btn
         dense
         flat

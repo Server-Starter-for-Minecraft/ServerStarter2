@@ -12,7 +12,7 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const prop = defineProps<AddFolderDialogProps>()
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const sysStore = useSystemStore()
@@ -24,7 +24,7 @@ async function pickFolder() {
   checkError(
     res,
     c => pickPath.value = c,
-    e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
+    e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
   )
 }
 
@@ -49,18 +49,15 @@ function isErrorContainer(c: WorldContainerSetting) {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      :title="
-        containerSettings === void 0
-          ? $t('home.saveWorld.addFolder')
-          : $t('home.saveWorld.updateFolder')"
-      :disable="
-        sysStore.systemSettings.container.filter(isErrorContainer).length > 0
-          || inputName === ''
-          || pickPath === ''"
-      :ok-btn-txt="
-        inputName
-         ? $t('home.saveWorld.addBtn', { name: inputName })
-         : $t('home.saveWorld.add')"
+      :title="containerSettings === void 0
+        ? $t('home.saveWorld.addFolder')
+        : $t('home.saveWorld.updateFolder')"
+      :disable="sysStore.systemSettings.container.filter(isErrorContainer).length > 0
+        || inputName === ''
+        || pickPath === ''"
+      :ok-btn-txt="inputName
+        ? $t('home.saveWorld.addBtn', { name: inputName })
+        : $t('home.saveWorld.add')"
       @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
       @close="onDialogCancel"
     >
@@ -77,32 +74,32 @@ function isErrorContainer(c: WorldContainerSetting) {
           @click="pickFolder"
         />
       </div>
-      
+
       <div
         v-if="sysStore.systemSettings.container.filter(isErrorName).length > 0"
-        class="text-caption text-omit text-red q-pt-sm"
+        class="text-caption text-omit text-negative q-pt-sm"
       >
-        {{ $t('home.saveWorld.exist',{ name: inputName }) }}
+        {{ $t('home.saveWorld.exist', { name: inputName }) }}
       </div>
       <div
         v-if="sysStore.systemSettings.container.filter(isErrorPath).length > 0"
-        class="text-caption text-omit text-red q-pt-sm"
+        class="text-caption text-omit text-negative q-pt-sm"
       >
-          {{ $t('home.saveWorld.registered', omitPath({ 'path': pickPath })) }}
+        {{ $t('home.saveWorld.registered', omitPath({ 'path': pickPath })) }}
       </div>
       <div
         v-if="inputName === ''"
-        class="text-caption text-omit text-red q-pt-sm"
+        class="text-caption text-omit text-negative q-pt-sm"
       >
         {{ $t('home.saveWorld.inputFolderName') }}
       </div>
       <div
         v-if="pickPath === ''"
-        class="text-caption text-omit text-red q-pt-sm"
+        class="text-caption text-omit text-negative q-pt-sm"
       >
         {{ $t('home.saveWorld.selectFolder') }}
       </div>
-      <div 
+      <div
         v-if="pickPath !== ''"
         class="text-caption text-omit q-pt-sm"
         style="opacity: .6;"

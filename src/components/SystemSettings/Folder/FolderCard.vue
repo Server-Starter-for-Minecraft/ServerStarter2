@@ -53,8 +53,8 @@ function removeFolder() {
   $q.dialog({
     component: DangerDialog,
     componentProps: {
-      dialogTitle: t('systemsetting.folder.unregistTitle',{ name: folder.value.name }),
-      dialogDesc: t('systemsetting.folder.unregistDialog',{ name: folder.value.name }),
+      dialogTitle: t('systemsetting.folder.unregistTitle', { name: folder.value.name }),
+      dialogDesc: t('systemsetting.folder.unregistDialog', { name: folder.value.name }),
       okBtnTxt: t('systemsetting.folder.unregist')
     } as dangerDialogProp
   }).onOk(() => {
@@ -73,18 +73,14 @@ function removeFolder() {
     :style="{ 'border-color': active ? getCssVar('primary') : 'transparent' }"
   >
     <div class="row">
-      <div
-        class="col q-pl-md q-py-md"
-        :class="getCardSytleClass(active, disable || loading)"
-        style="margin: auto 0;"
-      >
+      <div class="col q-pl-md q-py-md" :class="getCardSytleClass(active, disable || loading)" style="margin: auto 0;">
         <div class="text-omit" style="font-size: 1.1rem;">{{ folder.name }}</div>
         <div class="text-caption text-omit" style="opacity: .6;">{{ folder.container }}</div>
       </div>
 
       <!-- cardをクリックできるようにする -->
       <div v-if="onClick !== void 0 || !disable" class="absolute-top fit">
-        <q-btn flat color="transparent" @click="onClick" class="fit"/>
+        <q-btn flat color="transparent" @click="onClick" class="fit" />
       </div>
 
       <div class="row q-gutter-x-sm q-pr-md" style="margin: auto 0;">
@@ -110,7 +106,7 @@ function removeFolder() {
           v-show="showOperationBtns"
           free-width
           :label="$t('systemsetting.folder.unregist')"
-          color="red"
+          color="negative"
           :disable="sysStore.systemSettings.container.length === 1 || disable"
           @click="removeFolder"
         />

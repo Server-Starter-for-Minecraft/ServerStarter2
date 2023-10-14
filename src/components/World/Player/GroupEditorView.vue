@@ -23,7 +23,7 @@ function validateGroupName(name: string) {
   return name !== '' && !(name !== playerStore.selectedGroupName && keys(playerStore.searchGroups()).includes(name))
 }
 function validateMessage(name: string) {
-  return name !== '' ? t('player.groupNameDuplicate',{group: name}) : t('player.insertGroupName')
+  return name !== '' ? t('player.groupNameDuplicate', { group: name }) : t('player.insertGroupName')
 }
 
 /**
@@ -123,8 +123,13 @@ function removeGroup() {
       <q-separator v-show="!playerStore.selectedGroup.isNew" inset />
 
       <q-card-section v-show="!playerStore.selectedGroup.isNew">
-        <q-btn outline :label="$t('player.deleteGroup', { group: playerStore.selectedGroupName })" color="red"
-          @click="removeGroup" class="full-width" />
+        <q-btn
+          outline
+          :label="$t('player.deleteGroup', { group: playerStore.selectedGroupName })"
+          color="negative"
+          @click="removeGroup"
+          class="full-width"
+        />
       </q-card-section>
     </q-scroll-area>
   </q-card>

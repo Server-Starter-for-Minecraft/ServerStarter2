@@ -32,12 +32,12 @@ function openDialog() {
 
 <template>
   <div class="q-py-lg">
-    <h1 class="q-pt-sm text-red">{{ viewTitle }}</h1>
-    <p v-html="viewDesc" class="text-caption q-py-sm"/>
+    <h1 class="q-pt-sm text-negative">{{ viewTitle }}</h1>
+    <p v-html="viewDesc" class="text-caption q-py-sm" />
     <SsBtn
       :label="openDialogBtnText"
       :disable="disable"
-      color="red"
+      color="negative"
       @click="openDialog"
     />
   </div>
