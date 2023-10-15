@@ -15,11 +15,11 @@ const vanillas = sysStore.serverVersions.get('vanilla') as AllVanillaVersion | u
 const vanillaOps = vanillas?.map(
   ver => { return { id: ver.id, type: 'vanilla' as const, release: ver.release }}
 )
-const latestID = vanillaOps?.find(ops => ops.release)?.id
+const latestReleaseID = vanillaOps?.find(ops => ops.release)?.id
 
 // vanillaでないときには最新のバージョンを割り当てる
 if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
-  mainStore.world.version = vanillaOps[0]
+  mainStore.world.version = vanillaOps.find(ops => ops.release) ?? vanillaOps[0]
 }
 </script>
 
@@ -32,10 +32,9 @@ if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
       ).map(
         (ver, idx) => { return {
           data: ver,
-          label: idx === 0 ? `${ver.id} 【${$t('home.version.latestSnapshot')}】` : ver.id === latestID ? `${ver.id} 【${$t('home.version.latestRelease')}】` : ver.id
+          label: ver.id === latestReleaseID ? `${ver.id}【${$t('home.version.latestRelease')}】` : idx === 0 ? `${ver.id}【${$t('home.version.latestSnapshot')}】` : ver.id
         }}
-      )
-      "
+      )"
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"

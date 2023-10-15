@@ -17,7 +17,8 @@ export const enUSHome: MessageSchema["home"] = {
     installer: 'Installer',
     loader: 'Loader',
     latestSnapshot: 'Latest snapshot',
-    latestRelease: 'Latest release'
+    latestRelease: 'Latest release',
+    latestVersion: 'Latest version'
   },
   serverType: {
     vanilla: 'Vanilla (Official)',

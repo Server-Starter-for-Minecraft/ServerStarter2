@@ -28,9 +28,15 @@ if (mainStore.world.version.type !== 'forge' && forgeVerOps !== void 0) {
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="forgeVerOps"
+      :options="forgeVerOps?.map(
+        (ver, idx) => { return {
+          data: ver,
+          label: idx === 0 ? `${ver.id}【${$t('home.version.latestVersion')}】` : ver.id
+        }}
+      )"
       :label="$t('home.version.versionType')"
-      option-label="id"
+      option-label="label"
+      option-value="data"
       :disable="forges === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"

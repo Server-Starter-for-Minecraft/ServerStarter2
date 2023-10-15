@@ -18,7 +18,8 @@ export const jaHome = {
     installer: 'インストーラー',
     loader: 'ローダー',
     latestSnapshot: '最新のスナップショット',
-    latestRelease: '最新のリリース'
+    latestRelease: '最新のリリース',
+    latestVersion: '最新のバージョン'
   },
   serverType: {
     vanilla: 'バニラ (公式)',

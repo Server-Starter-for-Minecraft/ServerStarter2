@@ -10,7 +10,7 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const isRelease = ref(false)
+const isRelease = ref(true)
 const fabrics = sysStore.serverVersions.get('fabric') as AllFabricVersion | undefined
 const fabricVerOps = fabrics?.games.map(
   ver => { return {
@@ -21,13 +21,14 @@ const fabricVerOps = fabrics?.games.map(
     installer: fabrics.installers[0]
   }}
 )
+const latestReleaseID = fabricVerOps?.find(ops => ops.release)?.id
 
 const fabricInstaller = ref(fabrics?.installers[0])
 const fabricLoader = ref(fabrics?.loaders[0])
 
 // fabricでないときには最新のバージョンを割り当てる
 if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
-  mainStore.world.version = fabricVerOps[0]
+  mainStore.world.version = fabricVerOps.find(ops => ops.release) ?? fabricVerOps[0]
 }
 </script>
 
@@ -35,9 +36,17 @@ if (mainStore.world.version.type !== 'fabric' && fabricVerOps !== void 0) {
   <div class="row justify-between q-gutter-md q-pb-md items-center">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="fabricVerOps?.filter(ver => !isRelease || ver['release'])"
+      :options="fabricVerOps?.filter(
+        (ver, idx) => !isRelease || idx == 0 || ver['release']
+      ).map(
+        (ver, idx) => { return {
+          data: ver,
+          label: ver.id === latestReleaseID ? `${ver.id}【${$t('home.version.latestRelease')}】` : idx === 0 ? `${ver.id}【${$t('home.version.latestSnapshot')}】` : ver.id
+        }}
+      )"
       :label="$t('home.version.versionType')"
-      option-label="id"
+      option-label="label"
+      option-value="data"
       :disable="fabrics === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"

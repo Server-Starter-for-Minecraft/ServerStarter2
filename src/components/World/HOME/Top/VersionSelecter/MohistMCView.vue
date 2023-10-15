@@ -47,9 +47,15 @@ function getNumberName(n: number, forgeVersion?: string) {
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="mohistVerOps"
+      :options="mohistVerOps?.map(
+        (ver, idx) => { return {
+          data: ver,
+          label: idx === 0 ? `${ver.id}【${$t('home.version.latestVersion')}】` : ver.id
+        }}
+      )"
       :label="$t('home.version.versionType')"
-      option-label="id"
+      option-label="label"
+      option-value="data"
       :disable="mohists === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"

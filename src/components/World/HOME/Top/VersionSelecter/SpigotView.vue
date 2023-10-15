@@ -23,9 +23,15 @@ if (mainStore.world.version.type !== 'spigot' && spigotOps !== void 0) {
 <template>
   <SsSelect
     v-model="mainStore.world.version"
-    :options="spigotOps"
+    :options="spigotOps?.map(
+      (ver, idx) => { return {
+        data: ver,
+        label: idx === 0 ? `${ver.id}【${$t('home.version.latestVersion')}】` : ver.id
+      }}
+    )"
     :label="$t('home.version.versionType')"
-    option-label="id"
+    option-label="label"
+    option-value="data"
     :disable="spigots === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
     class="col"
   />
