@@ -1,4 +1,3 @@
-import { title } from "process";
 import { MessageSchema } from "src/boot/i18n";
 
 export const enUSHome: MessageSchema["home"] = {
@@ -16,8 +15,9 @@ export const enUSHome: MessageSchema["home"] = {
     notChange: '(No change required)',
     recommend: 'Recommended',
     installer: 'Installer',
-    loader: 'Loader'
-
+    loader: 'Loader',
+    latestSnapshot: 'Latest snapshot',
+    latestRelease: 'Latest release'
   },
   serverType: {
     vanilla: 'Vanilla (Official)',

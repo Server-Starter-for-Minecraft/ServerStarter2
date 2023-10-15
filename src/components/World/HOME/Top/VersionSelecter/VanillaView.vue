@@ -10,11 +10,12 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const isRelease = ref(false)
+const isRelease = ref(true)
 const vanillas = sysStore.serverVersions.get('vanilla') as AllVanillaVersion | undefined
 const vanillaOps = vanillas?.map(
   ver => { return { id: ver.id, type: 'vanilla' as const, release: ver.release }}
 )
+const latestID = vanillaOps?.find(ops => ops.release)?.id
 
 // vanillaでないときには最新のバージョンを割り当てる
 if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
@@ -26,9 +27,18 @@ if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
   <div class="row justify-between q-gutter-md items-center">
     <SsSelect
       v-model="mainStore.world.version"
-      :options="vanillaOps?.filter(ver => !isRelease || ver['release'])"
+      :options="vanillaOps?.filter(
+        (ver, idx) => !isRelease || idx == 0 || ver['release']
+      ).map(
+        (ver, idx) => { return {
+          data: ver,
+          label: idx === 0 ? `${ver.id} 【${$t('home.version.latestSnapshot')}】` : ver.id === latestID ? `${ver.id} 【${$t('home.version.latestRelease')}】` : ver.id
+        }}
+      )
+      "
       :label="$t('home.version.versionType')"
-      option-label="id"
+      option-label="label"
+      option-value="data"
       :disable="vanillas === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"

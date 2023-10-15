@@ -16,7 +16,9 @@ export const jaHome = {
     notChange: '(変更不要)',
     recommend: '推奨',
     installer: 'インストーラー',
-    loader: 'ローダー'
+    loader: 'ローダー',
+    latestSnapshot: '最新のスナップショット',
+    latestRelease: '最新のリリース'
   },
   serverType: {
     vanilla: 'バニラ (公式)',
