@@ -27,5 +27,18 @@ const model = defineModel()
     :option-label="optionLabel"
     :option-value="optionValue"
     style="font-size: .9rem;"
-  />
+  >
+    <template v-slot:option="scope">
+      <slot
+        name="option"
+        :index="scope.index"
+        :opt="scope.opt"
+        :selected="scope.selected"
+        :focused="scope.focused"
+        :toggleOption="scope.toggleOption"
+        :setOptionIndex="scope.setOptionIndex"
+        :itemProps="scope.itemProps"
+      />
+    </template>
+  </q-select>
 </template>
