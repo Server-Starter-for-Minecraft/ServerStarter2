@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { AllVanillaVersion } from 'app/src-electron/schema/version';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
-const sysStore = useSystemStore()
+interface Prop {
+  versionData: AllVanillaVersion
+}
+const prop = defineProps<Prop>()
+
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 const isRelease = ref(true)
-const vanillas = sysStore.serverVersions.get('vanilla') as AllVanillaVersion | undefined
-const vanillaOps = vanillas?.map(
+const vanillaOps = prop.versionData.map(
   ver => { return { id: ver.id, type: 'vanilla' as const, release: ver.release }}
 )
 const latestReleaseID = vanillaOps?.find(ops => ops.release)?.id
@@ -38,7 +40,7 @@ if (mainStore.world.version.type !== 'vanilla' && vanillaOps !== void 0) {
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="vanillas === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
       style="min-width: 8rem;"
     />

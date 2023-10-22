@@ -1,57 +1,92 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { AllPapermcVersion } from 'app/src-electron/schema/version';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
-const sysStore = useSystemStore()
+interface Prop {
+  versionData: AllPapermcVersion
+}
+const prop = defineProps<Prop>()
+
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const papers = sysStore.serverVersions.get('papermc') as AllPapermcVersion | undefined
-const paperVerOps = papers?.map(
-  ver => { return { id: ver.id, type: 'papermc' as const, build: ver.builds[0] }}
-)
-const paperBuildOps = () => {
-  const builds = papers?.filter(ver => ver.id === mainStore.world.version.id)[0].builds
-  return builds?.map(b => { return { id: mainStore.world.version.id, type: 'papermc' as const, build: b }})
+const paperVers = prop.versionData.map(ver => ver.id)
+const paperVer = ref(paperVers[0])
+
+const paperBuilds = () => {
+  return prop.versionData.find(ver => ver.id === paperVer.value)?.builds
 }
+const paperBuild = ref(prop.versionData[0].builds[0])
 
 // paperでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'papermc' && paperVerOps !== void 0) {
-  mainStore.world.version = paperVerOps[0]
+if (mainStore.world.version.type !== 'papermc') {
+  onUpdatedSelection(false)
+}
+else {
+  paperVer.value   = mainStore.world.version.id
+  paperBuild.value = mainStore.world.version.build
+}
+
+/**
+ * バージョンやビルド番号が更新されたら、選択ワールドの情報を更新する
+ * 
+ * バージョンの変更に伴うビルド番号の更新はupdateBuildをTrueにする
+ */
+function onUpdatedSelection(updateBuild: boolean) {
+  // バージョンに応じてビルド番号を更新
+  if (updateBuild) {
+    paperBuild.value = 
+      prop.versionData.find(v => v.id === paperVer.value)?.builds[0]
+      ?? paperBuilds()?.[0]
+      ?? 0
+  }
+
+  mainStore.world.version = {
+    id: paperVer.value,
+    type: 'papermc' as const,
+    build: paperBuild.value
+  }
 }
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
-      v-model="mainStore.world.version"
-      :options="paperVerOps?.map(
+      v-model="paperVer"
+      @update:model-value="onUpdatedSelection(true)"
+      :options="paperVers.map(
         (ver, idx) => { return {
           data: ver,
-          label: idx === 0 ? `${ver.id}【${$t('home.version.latestVersion')}】` : ver.id
+          label: idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver
         }}
       )"
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="papers === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 8rem;"
+      style="min-width: 15rem;"
     />
     <SsSelect
-      v-model="mainStore.world.version"
-      :options="paperBuildOps()?.map((val, idx) => {
-        return { data: val, label: idx === 0 ? `${val.build} (${$t('home.version.recommend')})` : val.build}
+      v-model="paperBuild"
+      @update:model-value="onUpdatedSelection(false)"
+      :options="paperBuilds()?.map((build, idx) => {
+        return {
+          data: build,
+          label: idx === 0
+            ? `${build} (${$t('home.version.recommend')})`
+            : build
+        }
       })"
       :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
-      :disable="papers === void 0 || consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 8rem;"
+      style="min-width: 10rem;"
     />
   </div>
 </template>
