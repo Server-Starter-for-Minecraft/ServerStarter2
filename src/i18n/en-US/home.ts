@@ -1,4 +1,3 @@
-import { title } from "process";
 import { MessageSchema } from "src/boot/i18n";
 
 export const enUSHome: MessageSchema["home"] = {
@@ -16,8 +15,10 @@ export const enUSHome: MessageSchema["home"] = {
     notChange: '(No change required)',
     recommend: 'Recommended',
     installer: 'Installer',
-    loader: 'Loader'
-
+    loader: 'Loader',
+    latestSnapshot: 'Latest snapshot',
+    latestRelease: 'Latest release',
+    latestVersion: 'Latest version'
   },
   serverType: {
     vanilla: 'Vanilla (Official)',
@@ -26,6 +27,14 @@ export const enUSHome: MessageSchema["home"] = {
     forge: 'Forge',
     mohistmc: 'MohistMC',
     fabric: 'Fabric'
+  },
+  serverDescription: {
+    vanilla: 'Official Minecraft server. Provides standard multiplay server.',
+    spigot: 'Typical third party server. Allows plugins to be installed.',
+    papermc: 'A server that makes Spigot run more lightly',
+    forge: 'Most common servers as prerequisite servers for mods',
+    mohistmc: 'Server based on Forge, but allows both mods and plugins to be installed',
+    fabric: 'The premise server for the mods, which is a different system from Forge.'
   },
   icon: 'Change server icon',
   useWorld: {

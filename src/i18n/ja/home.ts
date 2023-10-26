@@ -16,7 +16,10 @@ export const jaHome = {
     notChange: '(変更不要)',
     recommend: '推奨',
     installer: 'インストーラー',
-    loader: 'ローダー'
+    loader: 'ローダー',
+    latestSnapshot: '最新のスナップショット',
+    latestRelease: '最新のリリース',
+    latestVersion: '最新のバージョン'
   },
   serverType: {
     vanilla: 'バニラ (公式)',
@@ -25,6 +28,14 @@ export const jaHome = {
     forge: 'Forge',
     mohistmc: 'MohistMC',
     fabric: 'Fabric'
+  },
+  serverDescription: {
+    vanilla: 'Minecraft公式のサーバー。標準的なマルチプレイの機能を提供する。',
+    spigot: '代表的なサードパーティーサーバー。プラグインの導入ができるようになる。',
+    papermc: 'Spigotをより軽量にしたサーバー',
+    forge: 'MODの前提サーバーとして、最も一般的なサーバー',
+    mohistmc: 'Forgeをベースとしつつ、MODとプラグインの両者を導入可能としたサーバー',
+    fabric: 'MODの前提サーバー。Forgeとは別のシステムとなっている。'
   },
   icon: 'アイコンを変更',
   useWorld: {
