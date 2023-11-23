@@ -121,7 +121,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     version: { type: 'vanilla', ...latestRelease },
     using: false,
     remote: undefined,
-    last_date: getCurrentTimestamp(),
+    last_date: getCurrentTimestamp(true),
     last_user: undefined,
     memory: systemSettings.world.memory,
     javaArguments: systemSettings.world.javaArguments,
