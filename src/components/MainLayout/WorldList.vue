@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
+import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { keys } from 'src/scripts/obj';
 import { sortValue } from 'src/scripts/objSort';
-import { moveScrollTop_Home } from '../World/HOME/scroll';
-import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import WorldTab from './WorldTab.vue';
+import NewWorldBtn from './NewWorldBtn.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
 
-const router = useRouter()
 const sysStore = useSystemStore()
 const mainStore = useMainStore();
 const searchWorldName = ref('')
@@ -32,19 +30,6 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
     worlds[mainStore.world.id] = mainStore.world
   }
   return worlds
-}
-
-async function createNewWorld() {
-  // 新規ワールドの生成
-  await mainStore.createNewWorld()
-
-  // 画面遷移
-  if (router.currentRoute.value.path === '/') {
-    moveScrollTop_Home()
-  }
-  else {
-    router.push('/')
-  }
 }
 </script>
 
@@ -100,12 +85,7 @@ async function createNewWorld() {
       </q-list>
     </q-scroll-area>
 
-    <icon-button-view
-      icon-name="add"
-      :label="$t('worldList.addWorld')"
-      :tooltip="$t('worldList.addWorld')"
-      @click="createNewWorld"
-    />
+    <new-world-btn :mini-change-width="miniChangeWidth" />
     <q-separator class="q-mx-xs" />
     <icon-button-view
       icon-name="settings"
