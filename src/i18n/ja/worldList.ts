@@ -7,6 +7,7 @@ export const jaWorldList = {
     addCustomWorld: '配布ワールドを導入',
     selectZip: 'ZIPファイルを選択',
     selectFolder: 'フォルダを選択',
+    lastPlayed: '({datetime})',
     addSingleWorld: 'シングルワールドを導入',
     loadSingleWorld: 'シングルプレイワールドを<br>読み込み中',
     noSingleWorld: 'シングルプレイワールドは<br>見つかりませんでした',

@@ -34,6 +34,7 @@ async function updateWorld() {
         :icon="customMap.icon ?? assets.png.unset"
         :world-name="customMap.levelName"
         :version-name="customMap.versionName"
+        :last-played="customMap.lastPlayed"
       />
     </BaseDialogCard>
   </q-dialog>

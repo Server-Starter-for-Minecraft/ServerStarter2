@@ -9,6 +9,7 @@ export const enUSWorldList:MessageSchema['worldList'] = {
     addCustomWorld: 'Add Custom world',
     selectZip: 'Select ZIP file',
     selectFolder: 'Select folder',
+    lastPlayed: "({datetime})",
     addSingleWorld: 'Add single world',
     loadSingleWorld: 'Loading<br>single play world',
     noSingleWorld: 'Single play world<br>was not found',

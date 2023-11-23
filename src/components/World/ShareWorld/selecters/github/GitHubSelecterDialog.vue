@@ -31,7 +31,8 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
       remoteData: prop.remoteData,
       rWorldName: selectedRemote.remote.name,
       rIcon: selectedRemote.avater_path,
-      rVersionName: selectedRemote.version.id
+      rVersionName: selectedRemote.version.id,
+      rLastPlayed: selectedRemote.last_date
     } as GithubCheckDialogProp
   }).onOk(() => {
     mainStore.world.version = selectedRemote.version
@@ -48,7 +49,8 @@ function checkSetNewRemote() {
       remoteData: prop.remoteData,
       rWorldName: mainStore.world.name,
       rIcon: mainStore.world.avater_path,
-      rVersionName: mainStore.world.version.id
+      rVersionName: mainStore.world.version.id,
+      rLastPlayed: mainStore.world.last_date
     } as GithubCheckDialogProp
   }).onOk(onDialogOK)
 }
@@ -119,6 +121,7 @@ onMounted(async () => {
               :icon="remoteWorld.avater_path"
               :world-name="remoteWorld.remote.name"
               :version-name="remoteWorld.version.id"
+              :last-played="remoteWorld.last_date"
               @click="checkSetExistedRemote(remoteWorld)"
               style="min-width: 20rem; max-width: 20rem;;"
             />
