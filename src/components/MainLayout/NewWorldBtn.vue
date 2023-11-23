@@ -4,7 +4,7 @@ import { useQuasar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
-import CustomMapImporterView from '../World/HOME/CustomMap/CustomMapImporter/CustomMapImporterView.vue';
+import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
 
 interface Prop {
   miniChangeWidth: number
