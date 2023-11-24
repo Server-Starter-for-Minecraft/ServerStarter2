@@ -22,6 +22,7 @@ type ContentData = {
   icon: string
   name: string
   caption: string
+  disable?: () => boolean
   action: () => void
 }
 const contents: ContentData[] = [
@@ -41,6 +42,7 @@ const contents: ContentData[] = [
     icon: 'content_paste',
     name: '表示中のワールドを複製',
     caption: 'バージョンやプロパティなどの各種設定を引き継いで複製する',
+    disable: () => router.currentRoute.value.path.slice(0, 7) === '/system',
     action: openCustomMapImporter
   },
   {
@@ -104,7 +106,13 @@ function openCustomMapImporter() {
 
     <q-list>
       <template v-for="content in contents" :key="content.name">
-        <q-item clickable v-close-popup @click="content.action" style="height: 3.5rem;">
+        <q-item
+          :disable="content.disable ? content.disable() : false"
+          clickable
+          v-close-popup
+          @click="content.action"
+          style="height: 3.5rem;"
+        >
           <q-item-section avatar>
             <q-icon :name="content.icon" text-color="white" size="1.5rem" />
           </q-item-section>
