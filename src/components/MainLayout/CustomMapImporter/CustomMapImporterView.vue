@@ -128,7 +128,7 @@ onMounted(async () => {
             :key="localWorld.path"
           >
             <WorldItem
-              :icon="localWorld.icon ?? assets.png.unset"
+              :icon="localWorld.icon"
               :world-name="localWorld.levelName"
               :version-name="localWorld.versionName"
               @click="showCheckDialog(localWorld)"

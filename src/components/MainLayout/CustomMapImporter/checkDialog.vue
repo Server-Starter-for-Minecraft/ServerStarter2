@@ -31,7 +31,7 @@ async function updateWorld() {
     >
       <p v-html="$t('home.useWorld.checkDialog')" />
       <WorldItem
-        :icon="customMap.icon ?? assets.png.unset"
+        :icon="customMap.icon"
         :world-name="customMap.levelName"
         :version-name="customMap.versionName"
       />
