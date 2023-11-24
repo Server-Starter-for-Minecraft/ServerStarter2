@@ -43,7 +43,7 @@ export const jaHome = {
     description: 'zip形式の配布ワールドやシングルプレイのワールドを導入する',
     selectWorld: 'ワールドデータを選択',
     checkWorldInstall: 'ワールド導入の確認',
-    checkDialog: '以下のワールドを導入すると、既存のワールドは削除されます<br>既存のワールドを上書きする形で新規ワールドを導入しますか？',
+    checkDialog: '下記に表示中のワールドを新規作成します',
     installBtn: 'ワールドを導入',
   },
   otherSettings: 'その他の設定',

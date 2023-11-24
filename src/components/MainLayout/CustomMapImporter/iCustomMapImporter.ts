@@ -19,6 +19,7 @@ export async function importCustomMap(customMap: CustomMapData) {
   }
   
   // ready world object
+  await mainStore.createNewWorld()
   const world = deepcopy(mainStore.world)
   world.custom_map = toRaw(customMap)
 

@@ -42,9 +42,7 @@ export const enUSHome: MessageSchema["home"] = {
     description: 'Import single world or zip format destribution world',
     selectWorld: 'Select your world data',
     checkWorldInstall: 'Check for world install',
-    checkDialog: '\
-      When the following worlds are introduced, the existing worlds will be deleted.<br>\
-      Do you want to introduce a new world that will overwrite an existing world?',
+    checkDialog: 'I will introduce the following world data',
     installBtn: 'Install world',
   },
   otherSettings: 'Advanced Options',

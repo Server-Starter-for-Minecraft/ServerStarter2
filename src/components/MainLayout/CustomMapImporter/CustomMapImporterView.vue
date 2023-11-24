@@ -42,7 +42,7 @@ async function importFolder() {
 }
 
 /**
- * 配布ワールドで既存のデータを上書きするかの確認を行う
+ * 新規ワールドを生成し，そのワールドを配布ワールドデータに置換する
  */
 function showCheckDialog(customMap: CustomMapData) {
   // 確認Dialogの表示
