@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Ref, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
-import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
+import { RecoverDialogProp } from 'src/components/MainLayout/RecoverDialog/iRecoverDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
-import { $T, tError } from 'src/i18n/utils/tFunc';
 
 const $q = useQuasar()
 const mainStore = useMainStore()

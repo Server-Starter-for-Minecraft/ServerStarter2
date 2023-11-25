@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { checkError } from '../Error/Error';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
 import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
+import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
 import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
+import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
 
 interface Prop {
   miniChangeWidth: number
@@ -51,7 +55,7 @@ const contents: ContentData[] = [
     icon: 'history',
     name: 'バックアップワールドを導入',
     caption: 'バックアップ済みのワールドを追加する',
-    action: openCustomMapImporter
+    action: introduceBackup
   },
 ]
 
@@ -104,6 +108,26 @@ async function duplicateWorld() {
   }).onOk(() => {
     move2HomeTop()
   })
+}
+
+/**
+ * バックアップデータの導入を行う
+ */
+async function introduceBackup() {
+  const res = await window.API.invokePickDialog({ type: 'backup', container: mainStore.world.container })
+  
+  checkError(
+    res,
+    b => $q.dialog({
+      component: RecoverDialog,
+      componentProps: {
+        backupData: b
+      } as RecoverDialogProp
+    }).onOk(() => {
+      move2HomeTop()
+    }),
+    e => tError(e, {ignoreErrors: ['data.path.dialogCanceled']})
+  )
 }
 
 </script>

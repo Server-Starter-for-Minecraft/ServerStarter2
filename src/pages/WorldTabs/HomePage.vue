@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { setScrollTop } from 'src/components/World/HOME/scroll';
-import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
-import WorldFolderView from 'src/components/World/HOME/OtherSettings/WorldFolderView.vue';
 import BootSettingsView from 'src/components/World/HOME/OtherSettings/BootSettingsView.vue';
 import WorldDeleteView from 'src/components/World/HOME/WorldOperation/WorldDeleteView.vue';
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
-import BackupWorldView from 'src/components/World/HOME/WorldOperation/BackupWorldView.vue';
 
 const scrollAreaRef = ref()
 
@@ -22,6 +19,8 @@ setScrollTop(scrollTop)
 </script>
 
 <template>
+  <!-- TODO: 起動ボタンを追加　＆　縮小表示の時にワールド名などの入力欄が狭隘になる問題の修正 -->
+
   <q-scroll-area
     ref="scrollAreaRef"
     class="full-height"
@@ -41,19 +40,11 @@ setScrollTop(scrollTop)
           <WorldIconView />
         </q-item-section>
       </q-item>
-
-      <ExpansionView :title="$t('home.otherSettings')" class="q-pt-xl">
-        <h1 class="q-pt-none">{{ $t('home.saveWorld.title') }}</h1>
-        <WorldFolderView />
         
-        <h1>{{ $t('home.setting.title') }}</h1>
-        <BootSettingsView />
-      </ExpansionView>
-      
-      <h1>{{ $t('home.worldOperation') }}</h1>
-      <BackupWorldView />
+      <h1>{{ $t('home.setting.title') }}</h1>
+      <BootSettingsView />
 
-      <WorldDeleteView />
+      <WorldDeleteView/>
     </div>
   </q-scroll-area>
 </template>
