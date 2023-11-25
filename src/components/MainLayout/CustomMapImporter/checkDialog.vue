@@ -1,40 +1,43 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { assets } from 'src/assets/assets';
-import { CustomMapImporterProp, importCustomMap } from './iCustomMapImporter';
+import { CustomMapImporterProp } from './iCustomMapImporter';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
+import LoadingLogo from 'src/assets/animation/LoadingLogo.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const prop = defineProps<CustomMapImporterProp>()
 
-const loading = ref(false)
+// Dialogの表示と同時に導入を始める
+importProcess()
 
-async function updateWorld() {
-  loading.value = true
-  await importCustomMap(prop.customMap)
+async function importProcess() {
+  await prop.importFunc()
   onDialogOK()
 }
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
+  <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <BaseDialogCard
       :title="$t('home.useWorld.checkWorldInstall')"
-      :ok-btn-txt="$t('home.useWorld.installBtn')"
-      :loading="loading"
-      @ok-click="updateWorld"
       @close="onDialogCancel"
       style="max-width: 100%;"
     >
-      <p v-html="$t('home.useWorld.checkDialog')" />
-      <WorldItem
-        :icon="customMap.icon"
-        :world-name="customMap.levelName"
-        :version-name="customMap.versionName"
-      />
+      <q-item dense class="q-pl-none">
+        <q-item-section>
+          <p v-html="$t('home.useWorld.checkDialog')" />
+          <WorldItem
+            :icon="icon"
+            :world-name="worldName"
+            :version-name="versionName"
+          />
+        </q-item-section>
+        <q-item-section avatar>
+          <LoadingLogo style="width: 4rem;" />
+        </q-item-section>
+      </q-item>
     </BaseDialogCard>
   </q-dialog>
 </template>

@@ -23,7 +23,7 @@ defineProps<Prop>()
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="name text-omit">{{ worldName.replace(/§./g, "").trim() }}</q-item-label>
+      <q-item-label class="name text-omit">{{ String(worldName).replace(/§./g, "").trim() }}</q-item-label>
       <q-item-label class="version">{{ versionName }}</q-item-label>
     </q-item-section>
   </q-item>

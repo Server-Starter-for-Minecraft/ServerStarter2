@@ -1,4 +1,5 @@
 import { toRaw } from "vue";
+import { ImageURI } from "app/src-electron/schema/brands";
 import { CustomMapData } from "app/src-electron/schema/filedata";
 import { deepcopy } from "app/src-electron/util/deepcopy";
 import { checkError } from "src/components/Error/Error";
@@ -7,7 +8,10 @@ import { assets } from "src/assets/assets";
 import { tError } from "src/i18n/utils/tFunc";
 
 export interface CustomMapImporterProp {
-  customMap: CustomMapData
+  icon?: ImageURI,
+  worldName: string,
+  versionName: string,
+  importFunc: () => Promise<void>
 }
 
 export async function importCustomMap(customMap: CustomMapData) {

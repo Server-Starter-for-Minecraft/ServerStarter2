@@ -3,13 +3,11 @@ import { ref } from 'vue';
 import { setScrollTop } from 'src/components/World/HOME/scroll';
 import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
-import CustomMapView from 'src/components/World/HOME/CustomMap/CustomMapView.vue';
 import WorldFolderView from 'src/components/World/HOME/OtherSettings/WorldFolderView.vue';
 import BootSettingsView from 'src/components/World/HOME/OtherSettings/BootSettingsView.vue';
 import WorldDeleteView from 'src/components/World/HOME/WorldOperation/WorldDeleteView.vue';
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
-import DuplicateWorldView from 'src/components/World/HOME/WorldOperation/DuplicateWorldView.vue';
 import BackupWorldView from 'src/components/World/HOME/WorldOperation/BackupWorldView.vue';
 
 const scrollAreaRef = ref()
@@ -53,7 +51,6 @@ setScrollTop(scrollTop)
       </ExpansionView>
       
       <h1>{{ $t('home.worldOperation') }}</h1>
-      <DuplicateWorldView @scroll-top="scrollTop" />
       <BackupWorldView />
 
       <WorldDeleteView />

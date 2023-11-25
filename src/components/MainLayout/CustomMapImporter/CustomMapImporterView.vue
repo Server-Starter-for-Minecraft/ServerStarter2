@@ -2,10 +2,9 @@
 import { Ref, onMounted, ref } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
-import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
-import { CustomMapImporterProp } from './iCustomMapImporter';
+import { CustomMapImporterProp, importCustomMap } from './iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
@@ -49,7 +48,10 @@ function showCheckDialog(customMap: CustomMapData) {
   $q.dialog({
     component: CheckDialog,
     componentProps: {
-      customMap: customMap
+      icon: customMap.icon,
+      worldName: customMap.levelName,
+      versionName: customMap.versionName,
+      importFunc: async () => await importCustomMap(customMap)
     } as CustomMapImporterProp
   }).onOk(() => {
     onDialogOK()

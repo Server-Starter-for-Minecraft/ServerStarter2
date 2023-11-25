@@ -4,7 +4,9 @@ import { useQuasar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
+import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
+import CheckDialog from './CustomMapImporter/checkDialog.vue';
 
 interface Prop {
   miniChangeWidth: number
@@ -23,7 +25,7 @@ type ContentData = {
   name: string
   caption: string
   disable?: () => boolean
-  action: () => void
+  action: () => void | Promise<void>
 }
 const contents: ContentData[] = [
   {
@@ -43,7 +45,7 @@ const contents: ContentData[] = [
     name: '表示中のワールドを複製',
     caption: 'バージョンやプロパティなどの各種設定を引き継いで複製する',
     disable: () => router.currentRoute.value.path.slice(0, 7) === '/system',
-    action: openCustomMapImporter
+    action: duplicateWorld
   },
   {
     icon: 'history',
@@ -55,12 +57,9 @@ const contents: ContentData[] = [
 
 
 /**
- * 新規ワールドを生成
+ * ボタンクリック後に画面遷移する
  */
-async function createNewWorld() {
-  // 新規ワールドの生成
-  await mainStore.createNewWorld()
-
+function move2HomeTop() {
   // 画面遷移
   if (router.currentRoute.value.path === '/') {
     moveScrollTop_Home()
@@ -71,11 +70,39 @@ async function createNewWorld() {
 }
 
 /**
+ * 新規ワールドを生成
+ */
+async function createNewWorld() {
+  // 新規ワールドの生成
+  await mainStore.createNewWorld()
+  move2HomeTop()
+}
+
+/**
  * 配布ワールドとローカルワールドの導入画面を表示する
  */
 function openCustomMapImporter() {
   $q.dialog({
     component: CustomMapImporterView,
+  }).onOk(() => {
+    move2HomeTop()
+  })
+}
+
+/**
+ * 表示中のワールドを複製する
+ */
+async function duplicateWorld() {
+  $q.dialog({
+    component: CheckDialog,
+    componentProps: {
+      icon: mainStore.world.avater_path,
+      worldName: mainStore.world.name,
+      versionName: mainStore.world.version.id,
+      importFunc: async () => await mainStore.createNewWorld(mainStore.world.id)
+    } as CustomMapImporterProp
+  }).onOk(() => {
+    move2HomeTop()
   })
 }
 
