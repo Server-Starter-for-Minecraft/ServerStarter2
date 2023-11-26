@@ -18,8 +18,10 @@ import { enUSEulaDialog } from "./Dialogs/eulaDialog";
 import { enUSOwner } from "./Dialogs/owner";
 import { enOthers } from "./World/others";
 import { enRecoverDialog } from "./Dialogs/recoverDialog";
+import { enTabs } from "./Other/tabs";
 
 export const enUS: MessageSchema = {
+  tabs: enTabs,
   general: enUSGeneral,
   home: enUSHome,
   property: enUSproperty,

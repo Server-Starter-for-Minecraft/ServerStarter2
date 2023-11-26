@@ -17,8 +17,10 @@ import { jaEulaDialog } from "./Dialogs/eulaDialog";
 import { jaOwner } from "./Dialogs/owner";
 import { jaOthers } from "./World/others";
 import { jaRecoverDialog } from "./Dialogs/recoverDialog";
+import { jaTabs } from "./Other/tabs";
 
 export const ja = {
+  tabs: jaTabs,
   general: jaGeneral,
   home: jaHome,
   property: jaProperty,
