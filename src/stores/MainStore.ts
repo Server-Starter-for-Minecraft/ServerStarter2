@@ -1,6 +1,6 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
+import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
@@ -18,7 +18,6 @@ export const useMainStore = defineStore('mainStore', {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
       errorWorlds: new Set<WorldID>(),
-      iconCandidate: undefined as ImageURI | undefined,
       selectedVersionType: 'vanilla' as Version['type']
     };
   },

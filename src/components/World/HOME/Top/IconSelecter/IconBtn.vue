@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ImageURI } from 'app/src-electron/schema/brands';
-import { useMainStore } from 'src/stores/MainStore';
+import { IconSelectReturn } from './iIconSelect';
 
 interface Prop {
   logo: ImageURI
@@ -8,12 +8,10 @@ interface Prop {
 }
 const prop = defineProps<Prop>()
 
-const mainStore = useMainStore()
 const btnSize = 4
 
 function setIcon() {
-  mainStore.iconCandidate = prop.logo
-  prop.onCloseEvent()
+  prop.onCloseEvent({ img: prop.logo } as IconSelectReturn)
 }
 </script>
 

@@ -5,6 +5,7 @@ import SsBtn from 'src/components/util/base/ssBtn.vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import IconSelectView from './IconSelecter/IconSelectView.vue';
+import { IconSelectProp, IconSelectReturn } from './IconSelecter/iIconSelect';
 
 const $q = useQuasar()
 const mainStore = useMainStore()
@@ -16,8 +17,11 @@ const consoleStore = useConsoleStore()
 function openIconSelecter() {
   $q.dialog({
     component: IconSelectView,
-  }).onOk(() => {
-    mainStore.world.avater_path = mainStore.iconCandidate
+    componentProps: {
+      img: mainStore.world.avater_path
+    } as IconSelectProp
+  }).onOk((p: IconSelectReturn) => {
+    mainStore.world.avater_path = p.img
   })
 }
 </script>

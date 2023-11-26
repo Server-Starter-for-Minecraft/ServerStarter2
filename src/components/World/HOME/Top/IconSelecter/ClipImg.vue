@@ -4,12 +4,10 @@ import imageCompression from 'browser-image-compression';
 import "cropperjs/dist/cropper.css";
 import Cropper from 'cropperjs';
 import { ImageURI } from 'app/src-electron/schema/brands';
-import { useMainStore } from 'src/stores/MainStore';
-import { ImageSize } from './iClipImg';
+import { IconImage } from './iIconSelect';
 
-const imgWidth = defineModel<ImageSize>({ required: true })
+const iconImg = defineModel<IconImage>({ required: true })
 
-const mainStore = useMainStore()
 const cropImg = ref()
 let cropper: Cropper | undefined = undefined
 
@@ -18,8 +16,8 @@ function updateImg() {
   var canvas = cropper?.getCroppedCanvas();
 
   // 画像のサイズをセット
-  imgWidth.value.width = canvas?.width
-  imgWidth.value.height = canvas?.height
+  iconImg.value.width = canvas?.width
+  iconImg.value.height = canvas?.height
 
   // canvas要素をBlob形式に変換する
   canvas?.toBlob((blob) => {
@@ -32,7 +30,7 @@ function updateImg() {
       var reader = new FileReader();
       reader.readAsDataURL(compressedBlob);
       reader.onloadend = () => {
-        mainStore.iconCandidate = reader.result as ImageURI;
+        iconImg.value.data = reader.result as ImageURI;
       }
     });
   });
@@ -55,6 +53,9 @@ onMounted(() => {
     cropend: () => {
       updateImg()
     },
+    crop: () => {
+      updateImg()
+    },
     zoom: () => {
       updateImg()
     }
@@ -64,7 +65,7 @@ onMounted(() => {
 
 <template>
   <q-card flat>
-    <img ref="cropImg" alt="Vue logo" :src="mainStore.iconCandidate">
+    <img ref="cropImg" alt="Vue logo" :src="iconImg.data">
   </q-card>
 </template>
 

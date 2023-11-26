@@ -5,15 +5,16 @@ import { assets } from 'src/assets/assets';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
 import { tError } from 'src/i18n/utils/tFunc';
-import { ImageSize } from './iClipImg';
+import { IconImage, IconSelectProp, IconSelectReturn } from './iIconSelect';
 import IconBtn from './IconBtn.vue';
 import ClipImg from './ClipImg.vue';
 import SelectorBtn from './SelectorBtn.vue';
 
+const prop = defineProps<IconSelectProp>()
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const imgSize: Ref<ImageSize> = ref({ width: 0, height: 0 })
+const iconImg: Ref<IconImage> = ref({ data: prop.img, width: 64, height: 64 })
 const isImgClipper = ref(false)
 const customImgReload = ref(false)
 const mainStore = useMainStore()
@@ -58,13 +59,13 @@ async function onUpload() {
   // 取得画像を適用
   const returnImg = checkError(
     failableImg,
-    img => mainStore.iconCandidate = img.data,
+    img => iconImg.value.data = img.data,
     e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
   )
 
   // 取得画像が不適な場合にデフォルト値を当てる（or 元の画像を反映）
   if (returnImg === void 0) {
-    mainStore.iconCandidate = mainStore.world.avater_path ?? assets.png.unset
+    iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset
   }
 
   // 画像の取得状態を解除
@@ -76,7 +77,7 @@ async function onUpload() {
  */
 function showImgClipper() {
   isImgClipper.value = true
-  mainStore.iconCandidate = mainStore.world.avater_path ?? assets.png.unset
+  iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset
   customImgReload.value = true
 }
 
@@ -84,7 +85,7 @@ function showImgClipper() {
  * 指定された画像が十分なサイズを有しているか
  */
 function isErrorSize() {
-  return (imgSize.value.height ?? 0) < 64 || (imgSize.value.width ?? 0) < 64
+  return (iconImg.value.height ?? 0) < 64 || (iconImg.value.width ?? 0) < 64
 }
 </script>
 
@@ -111,7 +112,7 @@ function isErrorSize() {
       <q-card-section v-else>
         <q-item>
           <q-item-section style="image-rendering: pixelated;">
-            <ClipImg v-if="customImgReload" v-model="imgSize" />
+            <ClipImg v-if="customImgReload" v-model="iconImg" />
             <div v-else class="customImgSelecting">
               {{ $t('icon.selecting') }}
             </div>
@@ -127,7 +128,7 @@ function isErrorSize() {
                 {{ $t("icon.prev") }}
               </p>
               <q-avatar square size="4rem">
-                <q-img :src="mainStore.iconCandidate" style="image-rendering: pixelated;"/>
+                <q-img :src="iconImg.data" style="image-rendering: pixelated;"/>
               </q-avatar>
               <p class="text-right full-width q-ma-none" style="font-size: .5rem;">
                 {{ $t('icon.size') }}
@@ -139,7 +140,7 @@ function isErrorSize() {
               :label="$t('icon.reg')"
               :disable="isErrorSize()"
               color="primary"
-              @click="onDialogOK"
+              @click="() => onDialogOK({ img: iconImg.data } as IconSelectReturn)"
             />
           </q-item-section>
         </q-item>
