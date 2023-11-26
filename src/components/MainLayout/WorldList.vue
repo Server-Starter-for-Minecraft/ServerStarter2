@@ -13,6 +13,12 @@ import WorldTab from './WorldTab.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
 
+interface Prop {
+  minWidth: number
+  maxWidth: number
+}
+defineProps<Prop>()
+
 const router = useRouter()
 const sysStore = useSystemStore()
 const mainStore = useMainStore();
@@ -59,7 +65,7 @@ async function createNewWorld() {
     style="height: 100vh;"
   >
     <div class="q-mini-drawer-only">
-      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = 300">
+      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = maxWidth">
         <q-avatar size="2rem">
           <q-icon
             size="2rem"
@@ -75,7 +81,7 @@ async function createNewWorld() {
       :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
       :label="$t('worldList.allWorld')"
       :tooltip="$t('worldList.minimizeList')"
-      @click="sysStore.systemSettings.user.drawerWidth = 100"
+      @click="sysStore.systemSettings.user.drawerWidth = minWidth"
       class="q-mini-drawer-hide"
     />
 
