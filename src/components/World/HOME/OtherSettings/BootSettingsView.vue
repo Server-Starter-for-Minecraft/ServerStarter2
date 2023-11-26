@@ -16,7 +16,7 @@ const consoleStore = useConsoleStore()
       type="number"
       dense
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
-      class="col-4 q-pr-md"
+      class="col-5 q-pr-md"
     />
     <SsSelect
       v-model="mainStore.world.memory.unit"

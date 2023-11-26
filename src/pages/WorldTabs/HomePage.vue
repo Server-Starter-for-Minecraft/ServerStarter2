@@ -25,21 +25,18 @@ setScrollTop(scrollTop)
     style="flex: 1 1 0;"
   >
     <div class="mainField">
-      <q-item class="q-pa-none q-pt-lg">
-        <q-item-section>
+      <div class="row justify-center q-mt-lg">
+        <div class="col q-pr-lg q-mb-md" style="min-width: 12rem;">
           <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
           <WorldNameView />
-
+    
           <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
           <VersionSelecterView />
-        </q-item-section>
-
-        <q-item-section side top>
-          <WorldIconView />
-        </q-item-section>
-      </q-item>
+        </div>
+        <WorldIconView class="q-mb-md" />
+      </div>
         
-      <h1>{{ $t('home.setting.title') }}</h1>
+      <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>
       <BootSettingsView />
 
       <WorldDeleteView/>
