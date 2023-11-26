@@ -44,7 +44,7 @@ function cancelSettings() {
         @click="cancelSettings"
       >
         <q-tooltip>
-          <p class="text-caption q-ma-none" v-html="$t('property.resetProperty', { defaultProperty: defaultProperty })" />
+          <p class="text-caption q-ma-none" v-html="$t('property.resetProperty', { defaultProperty: defaultProperty !== '' ? defaultProperty : $t('property.empty') })" />
         </q-tooltip>
       </q-btn>
     </q-item-section>

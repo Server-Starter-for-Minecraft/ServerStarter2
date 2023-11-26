@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
@@ -8,6 +9,16 @@ import SettingsView from 'src/components/World/Property/SettingsView.vue';
 
 const sysStore = useSystemStore()
 const propertyStore = usePropertyStore()
+
+// 入力領域のスクロールバーの制御
+const scrollAreaRef = ref()
+
+/**
+ * 画面を一番上に遷移
+ */
+function scrollTop() {
+  scrollAreaRef.value.setScrollPosition('vertical', 0)
+}
 </script>
 
 <template>
@@ -20,12 +31,12 @@ const propertyStore = usePropertyStore()
         class="q-pb-md" />
 
       <div class="row fit" style="flex: 1 1 0;">
-        <SideMenuView />
+        <SideMenuView @scroll-top="scrollTop" />
 
         <q-separator vertical inset />
 
         <div class="col">
-          <q-scroll-area :thumb-style="thumbStyle" class="fit">
+          <q-scroll-area ref="scrollAreaRef" :thumb-style="thumbStyle" class="fit">
             <SettingsView v-model="sysStore.systemSettings.world.properties" />
           </q-scroll-area>
         </div>
