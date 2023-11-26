@@ -37,35 +37,10 @@ export const enUSHome: MessageSchema['home'] = {
     fabric: 'The premise server for the mods, which is a different system from Forge.'
   },
   icon: 'Change server icon',
-  otherSettings: 'Advanced Options',
-  saveWorld: {
-    title: 'World folder',
-    description: 'Select your folder to save world data',
-    addFolder: 'Add world folder',
-    updateFolder: 'Update world folder',
-    add: 'add',
-    addBtn: 'Add {name}',
-    folderName: 'Name of world folder',
-    select: 'Select folder',
-    exist: '{name} already exists',
-    registered: '{path} is already registered',
-    inputFolderName: 'Input folder name',
-    selectFolder: 'Select folder',
-    selectFolderBtn: 'Select folder',
-    cannotEdit: 'World folders cannot be edited while a world is running',
-
-  },
   setting: {
     title: 'Start up settings',
     memSize: 'memory size',
     jvmArgument: 'Minecraft JVM arguments'
-  },
-  worldOperation:'World Operations',
-  duplicate: {
-    duplicateDesc: '\
-      Duplicate the world and take over various settings such as server version, properties, OP player, etc.<br>\
-      However, ShareWorld settings are not duplicated and must be configured again.',
-    btn: 'Duplicate this world'
   },
   deleteWorld: {
     title: 'Delete World',

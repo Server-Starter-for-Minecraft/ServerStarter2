@@ -75,24 +75,17 @@ function openFolderEditor() {
 </script>
 
 <template>
-  <p class="text-caption" style="opacity: .6;">{{ $t('home.saveWorld.description') }}</p>
+  <p class="text-caption" style="opacity: .6;">{{ $t('others.worldFolder.description') }}</p>
   <div class="column q-gutter-y-md">
     <!-- v-modelの書き込みに対応するため、わざとインデックスによる呼び出しを利用 -->
     <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
-      <FolderCard
-        v-model="sysStore.systemSettings.container[n - 1]"
-        :loading="isWorldContainerLoading"
+      <FolderCard v-model="sysStore.systemSettings.container[n - 1]" :loading="isWorldContainerLoading"
         :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
         :active="mainStore.world.container === sysStore.systemSettings.container[n - 1].container"
         @click="setWorldContainer(sysStore.systemSettings.container[n - 1].container)"
-        @visible-click="changeVisible(sysStore.systemSettings.container[n - 1].container)"
-      />
+        @visible-click="changeVisible(sysStore.systemSettings.container[n - 1].container)" />
     </template>
-    <AddContentsCard
-      :label="$t('home.saveWorld.addFolder')"
-      min-height="3rem"
-      :card-style="{'min-width': '100%', 'border-radius': '5px'}"
-      @click="openFolderEditor"
-    />
+    <AddContentsCard :label="$t('others.worldFolder.addFolder')" min-height="3rem"
+      :card-style="{ 'min-width': '100%', 'border-radius': '5px' }" @click="openFolderEditor" />
   </div>
 </template>

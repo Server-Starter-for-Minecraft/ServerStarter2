@@ -35,34 +35,10 @@ export const jaHome = {
     fabric: 'MODの前提サーバー。Forgeとは別のシステムとなっている。'
   },
   icon: 'アイコンを変更',
-  otherSettings: 'その他の設定',
-  saveWorld: {
-    title: 'ワールドフォルダ',
-    description: 'ワールドデータの保存フォルダを選択',
-    addFolder: 'ワールドフォルダを追加',
-    updateFolder: 'ワールドフォルダを更新',
-    add: '追加',
-    addBtn: '{name}を追加',
-    folderName: 'ワールドフォルダ名',
-    select: 'フォルダを選択',
-    exist: '{name}は既に存在します',
-    registered: '{path}はすでに登録されています',
-    inputFolderName: 'フォルダ名を入力してください',
-    selectFolder: 'フォルダを選択してください',
-    selectFolderBtn: 'フォルダを選択',
-    cannotEdit: '起動中のワールドがある状態でワールドフォルダを編集することはできません',
-  },
   setting: {
     title: '起動設定',
     memSize: 'メモリサイズ',
     jvmArgument: 'JVM引数'
-  },
-  worldOperation:'ワールドの操作',
-  duplicate: {
-    duplicateDesc: '\
-      ワールドを複製し、サーバーバージョンやプロパティ、OPプレイヤーなどの各種設定を引き継ぎます。<br>\
-      ただし、ShareWorldの設定は複製されないため、改めて設定を行う必要があります。',
-    btn: 'このワールドを複製'
   },
   deleteWorld: {
     title: 'ワールドの削除',
