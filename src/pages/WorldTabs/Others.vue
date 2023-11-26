@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import BackupWorldView from 'src/components/World/MoreSettings/BackupWorldView.vue';
-import WorldFolderView from 'src/components/World/HOME/OtherSettings/WorldFolderView.vue';
+import BackupWorldView from 'src/components/World/Others/BackupWorldView.vue';
+import WorldFolderView from 'src/components/World/Others/WorldFolderView.vue';
 
 </script>
 

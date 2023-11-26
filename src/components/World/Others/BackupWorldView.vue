@@ -26,7 +26,7 @@ async function backupWorld() {
 
   // ボタンの状態をリセット
   loading.value = false
-  showingMessage.value = $T('home.backup.madeBackup',{world: mainStore.world.name})
+  showingMessage.value = $T('others.backup.madeBackup',{world: mainStore.world.name})
 }
 
 async function recoverWorld() {
@@ -40,7 +40,7 @@ async function recoverWorld() {
         backupData: b
       } as RecoverDialogProp
     }).onOk(() => {
-      showingMessage.value = $T('home.backup.recovered')
+      showingMessage.value = $T('others.backup.recovered')
     }),
     e => tError(e, {ignoreErrors: ['data.path.dialogCanceled']})
   )
@@ -59,18 +59,18 @@ onMounted(() => {
   <p 
     class="text-caption q-mt-md" 
     style="opacity: .6;"
-    v-html="$T('home.backup.backupDesc')"
+    v-html="$T('others.backup.backupDesc')"
   >  
   </p>
   <div class="row items-center q-gutter-md">
     <SsBtn
-      :label="$T('home.backup.makeBackup')"
+      :label="$T('others.backup.makeBackup')"
       :loading="loading"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="backupWorld"
     />
     <SsBtn
-      :label="$T('home.backup.recoverFromBackup')"
+      :label="$T('others.backup.recoverFromBackup')"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="recoverWorld"
     />
