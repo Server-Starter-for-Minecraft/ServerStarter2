@@ -134,6 +134,7 @@ async function introduceBackup() {
 
 <template>
   <q-btn-dropdown
+    flat
     square
     fab-mini
     menu-anchor="bottom right"
