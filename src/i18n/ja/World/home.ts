@@ -72,22 +72,6 @@ export const jaHome = {
       ただし、ShareWorldの設定は複製されないため、改めて設定を行う必要があります。',
     btn: 'このワールドを複製'
   },
-  backup: {
-    madeBackup: '{world}のバックアップを作成しました',
-    recovered: 'ワールドの復旧が完了しました',
-    backupDesc: '\
-      このワールドのバックアップを作成します<br>\
-      バックアップしたワールドデータは「バックアップから復旧」より利用することができます',
-    makeBackup : 'バックアップを作成',
-    recoverFromBackup: 'バックアップから復旧',
-    startRecover: '復旧を開始',
-    recoverDialogDate: '\
-      {date}に作成された{world}を現在の既存ワールドに導入します。<br>\
-      既存ワールドをバックアップのワールドで上書きしますか？',
-    recoverDialog: '\
-      {world}を現在の既存ワールドに導入します。<br>\
-      既存ワールドをバックアップのワールドで上書きしますか？',
-  },
   deleteWorld: {
     title: 'ワールドの削除',
     button: 'ワールドを削除する',

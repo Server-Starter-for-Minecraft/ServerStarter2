@@ -41,21 +41,23 @@ async function recoverWorld() {
 </script>
 
 <template>
-  <!-- TODO: 文言を現在の仕様に適合するように修正 -->
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading" >
     <BaseDialogCard
-      :title="$T('home.backup.recoverFromBackup')"
+      :title="$T('recoverDialog.title')"
       :loading="loading"
-      :ok-btn-txt="$T('home.backup.startRecover')"
+      :ok-btn-txt="$T('recoverDialog.startRecover')"
       @ok-click="recoverWorld"
       @close="onDialogCancel"
     >
-    <p v-html="
-        backupData.time
-          ? $T('home.backup.recoverDialogDate',{date: $d(new Date(backupData.time), 'dateTime'), world: backupData.name})
-          : $T('home.backup.recoverDialog',{world: backupData.name})
-      " 
-    />
+      <p>{{ $t('recoverDialog.desc') }}</p>
+      <ul>
+        <li>{{ $T('recoverDialog.backupName', { world: backupData.name }) }}</li>
+        <li>
+          {{ $T('recoverDialog.date', {
+            date: backupData.time ? $d(new Date(backupData.time), 'dateTime') : $t('recoverDialog.failedDate')
+          }) }}
+        </li>
+      </ul>
     </BaseDialogCard>
   </q-dialog>
 </template>

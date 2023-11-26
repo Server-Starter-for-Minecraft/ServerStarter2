@@ -1,6 +1,6 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
-export const enUSHome: MessageSchema["home"] = {
+export const enUSHome: MessageSchema['home'] = {
   worldName: {
     title: 'World Name',
     enterName: 'Enter your world name'
@@ -74,22 +74,6 @@ export const enUSHome: MessageSchema["home"] = {
       Duplicate the world and take over various settings such as server version, properties, OP player, etc.<br>\
       However, ShareWorld settings are not duplicated and must be configured again.',
     btn: 'Duplicate this world'
-  },
-  backup: {
-    madeBackup: 'Made backup of {world}',
-    recovered: 'FInish world recovering',
-    backupDesc: '\
-    Make backup of this world<br>\
-    Backed-up world data can be accessed from "Recover from Backup"',
-    makeBackup : 'Make backup',
-    recoverFromBackup: 'Recover from backup',
-    startRecover: 'Start recovering',
-    recoverDialogDate: '\
-      Introduce {world} created on {date} into the current existing world.<br>\
-      Do you want to overwrite an existing world with a backup world?',
-    recoverDialog: '\
-      Introduce {world} into the current existing world.<br>\
-      Do you want to overwrite an existing world with a backup world?',
   },
   deleteWorld: {
     title: 'Delete World',

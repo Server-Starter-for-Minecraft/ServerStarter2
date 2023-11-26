@@ -15,6 +15,8 @@ import { jaAutoShutdown } from "./Dialogs/autoshutdown";
 import { jaGeneral } from "./Other/general";
 import { jaEulaDialog } from "./Dialogs/eulaDialog";
 import { jaOwner } from "./Dialogs/owner";
+import { jaOthers } from "./World/others";
+import { jaRecoverDialog } from "./Dialogs/recoverDialog";
 
 export const ja = {
   general: jaGeneral,
@@ -34,4 +36,6 @@ export const ja = {
   autoshutdown: jaAutoShutdown,
   eulaDialog: jaEulaDialog,
   owner: jaOwner,
+  others: jaOthers,
+  recoverDialog: jaRecoverDialog
 };
