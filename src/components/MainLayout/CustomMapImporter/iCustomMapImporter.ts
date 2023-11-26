@@ -21,7 +21,7 @@ export async function importCustomMap(customMap: CustomMapData) {
   if (customMap.icon === void 0) {
     customMap.icon = assets.png.unset
   }
-  
+
   // ready world object
   await mainStore.createNewWorld()
   const world = deepcopy(mainStore.world)
@@ -35,7 +35,7 @@ export async function importCustomMap(customMap: CustomMapData) {
     e => tError(
       e,
       {
-        titleKey: 'utils.errorDialog.failToSaveExistedWorld',
+        titleKey: 'error.errorDialog.failToSaveExistedWorld',
         descKey: `error.${e.key}.title`
       }
     )

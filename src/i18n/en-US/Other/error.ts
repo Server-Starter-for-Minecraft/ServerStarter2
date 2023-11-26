@@ -1,8 +1,8 @@
 /* バックエンド周りのエラーの翻訳 */
 
-import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
+import { MessageSchema } from "src/boot/i18n";
 
-export const enUSError: ErrorTranslationTypes = {
+export const enUSError: MessageSchema['error'] = {
   system: {
     runtime: {
       title: 'Runtime error occurred({type})',
@@ -234,4 +234,12 @@ export const enUSError: ErrorTranslationTypes = {
       }
     }
   },
+  errorDialog: {
+    failToGetOwner: 'Failed to get owner player',
+    failOPForOwner: 'Failed to register owner player to OP list',
+    failToSaveExistedWorld: 'Failed to save existed world',
+    failSync: 'Failed to sync with ShareWorld',
+    failGetShareWorld: 'Failed to get ShareWorld',
+    recoverFail: 'Failed to recover world from backup data',
+  }
 };

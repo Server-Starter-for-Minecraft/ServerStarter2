@@ -11,12 +11,4 @@ export const enUSUtils: MessageSchema['utils'] = {
     contact: 'Contact to author',
     close: 'close',
   },
-  errorDialog: {
-    failToGetOwner: 'Failed to get owner player',
-    failOPForOwner: 'Failed to register owner player to OP list',
-    failToSaveExistedWorld: 'Failed to save existed world',
-    failSync: 'Failed to sync with ShareWorld',
-    failGetShareWorld: 'Failed to get ShareWorld',
-    recoverFail: 'Failed to recover world from backup data',
-  }
 };

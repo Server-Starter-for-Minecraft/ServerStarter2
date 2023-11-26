@@ -7,7 +7,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { RecoverDialogProp } from './iRecoverDialog';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const prop = defineProps<RecoverDialogProp>()
 
@@ -27,28 +27,23 @@ async function recoverWorld() {
     res.value,
     w => mainStore.updateWorld(w),
     e => tError(
-      e, 
+      e,
       {
-        titleKey: 'utils.errorDialog.recoverFail',
+        titleKey: 'error.errorDialog.recoverFail',
         descKey: `error.${e.key}.title`
       }
     )
   )
-  
+
   // ダイアログを閉じる
   onDialogOK()
 }
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading" >
-    <BaseDialogCard
-      :title="$T('recoverDialog.title')"
-      :loading="loading"
-      :ok-btn-txt="$T('recoverDialog.startRecover')"
-      @ok-click="recoverWorld"
-      @close="onDialogCancel"
-    >
+  <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
+    <BaseDialogCard :title="$T('recoverDialog.title')" :loading="loading" :ok-btn-txt="$T('recoverDialog.startRecover')"
+      @ok-click="recoverWorld" @close="onDialogCancel">
       <p>{{ $t('recoverDialog.desc') }}</p>
       <ul>
         <li>{{ $T('recoverDialog.backupName', { world: backupData.name }) }}</li>

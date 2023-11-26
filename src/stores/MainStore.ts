@@ -78,7 +78,7 @@ export const useMainStore = defineStore('mainStore', {
                 })
               }
             },
-            e => tError(e,{titleKey: 'utils.errorDialog.failOPForOwner',descKey: `error.${e.key}.title`})
+            e => tError(e, { titleKey: 'error.errorDialog.failOPForOwner', descKey: `error.${e.key}.title` })
           )
         }
 

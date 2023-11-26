@@ -2,7 +2,9 @@
 
 import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 
-export const jaError: ErrorTranslationTypes = {
+type ErrorDialogTitles = { errorDialog: {[key: string]: string} }
+
+export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
   system: {
     runtime: {
       title: 'ランタイムエラーが発生しました({type})',
@@ -234,4 +236,12 @@ export const jaError: ErrorTranslationTypes = {
       }
     }
   },
+  errorDialog: {
+    failToGetOwner: 'オーナープレイヤーの取得に失敗しました',
+    failOPForOwner: 'OP一覧にオーナープレイヤーを登録できませんでした',
+    failToSaveExistedWorld: '配布ワールドの保存に失敗しました',
+    failSync: 'ShareWorldの同期に失敗しました',
+    failGetShareWorld: 'ShareWorldの取得に失敗しました',
+    recoverFail: 'バックアップデータからの復旧に失敗しました',
+  }
 };

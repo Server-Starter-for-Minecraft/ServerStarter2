@@ -19,7 +19,7 @@ export interface GithubCheckDialogProp {
 
 export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
   const mainStore = useMainStore()
-  
+
   // ready world object
   const world = deepcopy(mainStore.world)
   world.remote = rWorld
@@ -35,7 +35,7 @@ export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
     e => tError(
       e,
       {
-        titleKey: 'utils.errorDialog.failSync',
+        titleKey: 'error.errorDialog.failSync',
         descKey: `error.${e.key}.title`
       }
     )
