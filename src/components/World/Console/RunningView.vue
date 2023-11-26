@@ -4,7 +4,6 @@ import { QVirtualScroll } from 'quasar';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 
 const consoleStore = useConsoleStore()
-// TODO: これをPinia側で定義してうまく動くかどうかを確認
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null)
 
 /**

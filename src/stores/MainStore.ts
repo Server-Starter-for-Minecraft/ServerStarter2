@@ -130,7 +130,6 @@ export const useMainStore = defineStore('mainStore', {
 
 /**
  * Worldの変更を検知するためのStore
- * TODO: mainStoreに統合するための方法を検討
  */
 export const useWorldStore = defineStore('worldStore', {
   state: () => {

@@ -19,8 +19,6 @@ setScrollTop(scrollTop)
 </script>
 
 <template>
-  <!-- TODO: 起動ボタンを追加　＆　縮小表示の時にワールド名などの入力欄が狭隘になる問題の修正 -->
-
   <q-scroll-area
     ref="scrollAreaRef"
     class="full-height"

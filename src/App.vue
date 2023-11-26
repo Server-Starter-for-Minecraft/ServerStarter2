@@ -127,7 +127,6 @@ function setSubscribe() {
   // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
   const currentSelectedId = mainStore.selectedWorldID
 
-  // TODO: worldStoreのPrivate化
   worldStore.$subscribe((mutation, state) => {
     window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
       checkError(
