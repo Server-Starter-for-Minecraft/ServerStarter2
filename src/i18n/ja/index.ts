@@ -3,7 +3,7 @@ import { jaHome } from "src/i18n/ja/World/home"
 import { jaConsole } from "./World/console";
 import { jaPlayer } from "./World/player";
 import { jaSystemSetting } from "./Other/systemsetting";
-import { jaUtils } from "./Other/utils";
+import { jaBugReport } from "./Other/bugReport";
 import { jaAdditionalContents } from "./World/additionalContents";
 import { jaError } from "./Other/error";
 import { jaProgress } from "./World/progress";
@@ -27,7 +27,7 @@ export const ja = {
   console: jaConsole,
   player: jaPlayer,
   systemsetting: jaSystemSetting,
-  utils: jaUtils,
+  bugReport: jaBugReport,
   additionalContents: jaAdditionalContents,
   error: jaError,
   progress: jaProgress,

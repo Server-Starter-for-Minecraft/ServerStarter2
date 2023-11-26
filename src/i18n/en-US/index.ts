@@ -4,7 +4,7 @@ import { enUSproperty } from "src/i18n/en-US/World/property";
 import { enUSConsole } from "./World/console";
 import { enUSPlayer } from "./World/player";
 import { enUSSystemSetting } from "./Other/systemsetting";
-import { enUSUtils } from "./Other/utils";
+import { enUSBugReport } from "./Other/bugReport";
 import { enAdditionalContents } from "./World/additionalContents";
 import { enUSError } from "./Other/error";
 import { enUSProgress } from "./World/progress";
@@ -28,7 +28,7 @@ export const enUS: MessageSchema = {
   console: enUSConsole,
   player: enUSPlayer,
   systemsetting: enUSSystemSetting,
-  utils: enUSUtils,
+  bugReport: enUSBugReport,
   additionalContents: enAdditionalContents,
   error: enUSError,
   progress: enUSProgress,
