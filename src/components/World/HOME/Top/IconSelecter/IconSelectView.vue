@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
 import { tError } from 'src/i18n/utils/tFunc';
+import { ImageSize } from './iClipImg';
 import IconBtn from './IconBtn.vue';
 import ClipImg from './ClipImg.vue';
 import SelectorBtn from './SelectorBtn.vue';
@@ -12,6 +13,7 @@ import SelectorBtn from './SelectorBtn.vue';
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
+const imgSize: Ref<ImageSize> = ref({ width: 0, height: 0 })
 const isImgClipper = ref(false)
 const customImgReload = ref(false)
 const mainStore = useMainStore()
@@ -69,10 +71,20 @@ async function onUpload() {
   customImgReload.value = true
 }
 
+/**
+ * 任意画像を適用する画面に切り替え
+ */
 function showImgClipper() {
   isImgClipper.value = true
   mainStore.iconCandidate = mainStore.world.avater_path ?? assets.png.unset
   customImgReload.value = true
+}
+
+/**
+ * 指定された画像が十分なサイズを有しているか
+ */
+function isErrorSize() {
+  return (imgSize.value.height ?? 0) < 64 || (imgSize.value.width ?? 0) < 64
 }
 </script>
 
@@ -99,7 +111,7 @@ function showImgClipper() {
       <q-card-section v-else>
         <q-item>
           <q-item-section style="image-rendering: pixelated;">
-            <ClipImg v-if="customImgReload" />
+            <ClipImg v-if="customImgReload" v-model="imgSize" />
             <div v-else class="customImgSelecting">
               {{ $t('icon.selecting') }}
             </div>
@@ -125,11 +137,15 @@ function showImgClipper() {
             <SelectorBtn
               icon="check"
               :label="$t('icon.reg')"
+              :disable="isErrorSize()"
               color="primary"
               @click="onDialogOK"
             />
           </q-item-section>
         </q-item>
+        <div v-if="isErrorSize()" class="q-pr-md text-red text-right">
+          {{ $t('icon.sizeWarning') }}
+        </div>
       </q-card-section>
 
       <div class="absolute-top-right">

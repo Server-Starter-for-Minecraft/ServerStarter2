@@ -5,6 +5,9 @@ import "cropperjs/dist/cropper.css";
 import Cropper from 'cropperjs';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { useMainStore } from 'src/stores/MainStore';
+import { ImageSize } from './iClipImg';
+
+const imgWidth = defineModel<ImageSize>({ required: true })
 
 const mainStore = useMainStore()
 const cropImg = ref()
@@ -13,6 +16,10 @@ let cropper: Cropper | undefined = undefined
 function updateImg() {
   // Cropper.jsの出力をcanvas要素形式で受け取る
   var canvas = cropper?.getCroppedCanvas();
+
+  // 画像のサイズをセット
+  imgWidth.value.width = canvas?.width
+  imgWidth.value.height = canvas?.height
 
   // canvas要素をBlob形式に変換する
   canvas?.toBlob((blob) => {
