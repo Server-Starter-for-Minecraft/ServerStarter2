@@ -32,6 +32,6 @@ const consoleStore = useConsoleStore()
 <style scoped lang="scss">
 .btn {
   padding: 6px 64px;
-  margin: auto 0;
+  margin: auto 16px;
 }
 </style>

@@ -163,7 +163,7 @@ async function introduceBackup() {
           clickable
           v-close-popup
           @click="content.action"
-          style="height: 3.5rem;"
+          style="height: 4rem;"
         >
           <q-item-section avatar>
             <q-icon :name="content.icon" text-color="white" size="1.5rem" />
