@@ -8,7 +8,8 @@ export const jaTabs = {
     datapack: 'データパック',
     plugin: 'プラグイン',
     mod: 'MOD',
-    cloud: 'ワールド共有',
+    shareWorld: 'ワールド共有',
+    others: 'その他の設定'
   },
   systemSettingTabs: {
     home: '共有設定',

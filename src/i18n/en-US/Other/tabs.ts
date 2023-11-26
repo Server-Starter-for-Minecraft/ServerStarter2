@@ -10,7 +10,8 @@ export const enTabs: MessageSchema['tabs'] = {
     datapack: 'Datapack',
     plugin: 'Plugin',
     mod: 'MOD',
-    cloud: 'ShareWorld',
+    shareWorld: 'ShareWorld',
+    others: 'Others'
   },
   systemSettingTabs: {
     home: 'General',

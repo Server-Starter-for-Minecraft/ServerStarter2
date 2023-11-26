@@ -7,7 +7,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
 import { RecoverDialogProp } from 'src/components/MainLayout/RecoverDialog/iRecoverDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
+import RecoverDialog from 'src/components/MainLayout/RecoverDialog/RecoverDialog.vue';
 
 const $q = useQuasar()
 const mainStore = useMainStore()

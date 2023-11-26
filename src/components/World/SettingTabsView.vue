@@ -44,7 +44,8 @@ function getAdditionalContentsBtns() {
       <icon-tab-view path="player" icon="person" :label="$t('tabs.worldSettingTabs.player')" />
       <icon-tab-dropdown-view v-model="contentsStore.selectedTab" path="contents" icon="extension"
         :label="$t('tabs.worldSettingTabs.contents')" :btns="getAdditionalContentsBtns()" />
-      <!-- <icon-tab-view path="share-world" icon="cloud" :label="$t('tabs.worldSettingTabs.cloud')" /> -->
+      <!-- <icon-tab-view path="share-world" icon="cloud" :label="$t('tabs.worldSettingTabs.shareWorld')" /> -->
+      <icon-tab-view path="others" icon="build" :label="$t('tabs.worldSettingTabs.others')" />
     </template>
     <template v-else>
       <icon-tab-view path="system" icon="home" :label="$t('tabs.systemSettingTabs.home')" />
