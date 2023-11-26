@@ -1,23 +1,21 @@
-// This is just an example,
-// so you can safely delete all default props below
 import { MessageSchema } from "src/boot/i18n";
-import { enUSHome } from "src/i18n/en-US/home";
-import { enUSproperty } from "src/i18n/en-US/property";
-import { enUSConsole } from "./console";
-import { enUSPlayer } from "./player";
-import { enUSSystemSetting } from "./systemsetting";
-import { enUSUtils } from "./utils";
-import { enAdditionalContents } from "./additionalContents";
-import { enUSError } from "./error";
-import { enUSProgress } from "./progress";
-import { enUSWorldList } from "./worldList";
-import { enUSIcon } from "./icon";
-import { enUSShareWorld } from "./shareWorld";
-import { enWelcome } from "./welcome";
-import { enAutoShutdown } from "./autoshutdown";
-import { enUSGeneral } from "./general";
-import { enUSEulaDialog } from "./eulaDialog";
-import { enUSOwner } from "./owner";
+import { enUSHome } from "src/i18n/en-US/World/home";
+import { enUSproperty } from "src/i18n/en-US/World/property";
+import { enUSConsole } from "./World/console";
+import { enUSPlayer } from "./World/player";
+import { enUSSystemSetting } from "./Other/systemsetting";
+import { enUSUtils } from "./Other/utils";
+import { enAdditionalContents } from "./World/additionalContents";
+import { enUSError } from "./Other/error";
+import { enUSProgress } from "./World/progress";
+import { enUSWorldList } from "./Other/worldList";
+import { enUSIcon } from "./Dialogs/icon";
+import { enUSShareWorld } from "./World/shareWorld";
+import { enWelcome } from "./Dialogs/welcome";
+import { enAutoShutdown } from "./Dialogs/autoshutdown";
+import { enUSGeneral } from "./Other/general";
+import { enUSEulaDialog } from "./Dialogs/eulaDialog";
+import { enUSOwner } from "./Dialogs/owner";
 
 export const enUS: MessageSchema = {
   general: enUSGeneral,

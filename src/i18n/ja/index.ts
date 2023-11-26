@@ -1,22 +1,20 @@
-// This is just an example,
-// so you can safely delete all default props below
-import { jaProperty } from "src/i18n/ja/property"
-import { jaHome } from "src/i18n/ja/home"
-import { jaConsole } from "./console";
-import { jaPlayer } from "./player";
-import { jaSystemSetting } from "./systemsetting";
-import { jaUtils } from "./utils";
-import { jaAdditionalContents } from "./additionalContents";
-import { jaError } from "./error";
-import { jaProgress } from "./progress";
-import { jaWorldList } from "./worldList";
-import { jaIcon } from "./icon";
-import { jaShareWorld } from "./shareWorld";
-import { jaWelcome } from "./welcome";
-import { jaAutoShutdown } from "./autoshutdown";
-import { jaGeneral } from "./general";
-import { jaEulaDialog } from "./eulaDialog";
-import { jaOwner } from "./owner";
+import { jaProperty } from "src/i18n/ja/World/property"
+import { jaHome } from "src/i18n/ja/World/home"
+import { jaConsole } from "./World/console";
+import { jaPlayer } from "./World/player";
+import { jaSystemSetting } from "./Other/systemsetting";
+import { jaUtils } from "./Other/utils";
+import { jaAdditionalContents } from "./World/additionalContents";
+import { jaError } from "./Other/error";
+import { jaProgress } from "./World/progress";
+import { jaWorldList } from "./Other/worldList";
+import { jaIcon } from "./Dialogs/icon";
+import { jaShareWorld } from "./World/shareWorld";
+import { jaWelcome } from "./Dialogs/welcome";
+import { jaAutoShutdown } from "./Dialogs/autoshutdown";
+import { jaGeneral } from "./Other/general";
+import { jaEulaDialog } from "./Dialogs/eulaDialog";
+import { jaOwner } from "./Dialogs/owner";
 
 export const ja = {
   general: jaGeneral,
