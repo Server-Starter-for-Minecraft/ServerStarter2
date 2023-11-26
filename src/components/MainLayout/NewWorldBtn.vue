@@ -146,12 +146,12 @@ async function introduceBackup() {
           <q-icon name="add" size="2rem" class="q-py-sm"/>
         </q-item-section>
         <q-item-section>
-          <span style="font-size: 1rem;">{{ $t('worldList.addWorld') }}</span>
+          <span style="font-size: 1rem;">{{ $t('mainLayout.newWorldBtn.addWorld') }}</span>
         </q-item-section>
       </q-item>
       <q-space v-if="!isMini()" />
       <q-tooltip anchor="center middle" self="top middle" :delay="500">
-        {{ $t('worldList.addWorld') }}
+        {{ $t('mainLayout.newWorldBtn.addWorld') }}
       </q-tooltip>
     </template>
 

@@ -42,14 +42,14 @@ async function recoverWorld() {
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" :persistent="loading">
-    <BaseDialogCard :title="$T('recoverDialog.title')" :loading="loading" :ok-btn-txt="$T('recoverDialog.startRecover')"
+    <BaseDialogCard :title="$T('mainLayout.backupDialog.title')" :loading="loading" :ok-btn-txt="$T('mainLayout.backupDialog.startRecover')"
       @ok-click="recoverWorld" @close="onDialogCancel">
-      <p>{{ $t('recoverDialog.desc') }}</p>
+      <p>{{ $t('mainLayout.backupDialog.desc') }}</p>
       <ul>
-        <li>{{ $T('recoverDialog.backupName', { world: backupData.name }) }}</li>
+        <li>{{ $T('mainLayout.backupDialog.backupName', { world: backupData.name }) }}</li>
         <li>
-          {{ $T('recoverDialog.date', {
-            date: backupData.time ? $d(new Date(backupData.time), 'dateTime') : $t('recoverDialog.failedDate')
+          {{ $T('mainLayout.backupDialog.date', {
+            date: backupData.time ? $d(new Date(backupData.time), 'dateTime') : $t('mainLayout.backupDialog.failedDate')
           }) }}
         </li>
       </ul>

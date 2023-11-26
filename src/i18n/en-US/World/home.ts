@@ -37,14 +37,6 @@ export const enUSHome: MessageSchema['home'] = {
     fabric: 'The premise server for the mods, which is a different system from Forge.'
   },
   icon: 'Change server icon',
-  useWorld: {
-    title: 'Import existing world',
-    description: 'Import single world or zip format destribution world',
-    selectWorld: 'Select your world data',
-    checkWorldInstall: 'Check for world install',
-    checkDialog: 'I will introduce the following world data',
-    installBtn: 'Install world',
-  },
   otherSettings: 'Advanced Options',
   saveWorld: {
     title: 'World folder',

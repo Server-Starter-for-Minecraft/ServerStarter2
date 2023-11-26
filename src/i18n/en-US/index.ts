@@ -8,7 +8,7 @@ import { enUSBugReport } from "./Other/bugReport";
 import { enAdditionalContents } from "./World/additionalContents";
 import { enUSError } from "./Other/error";
 import { enUSProgress } from "./World/progress";
-import { enUSWorldList } from "./Other/worldList";
+import { enUSMainLayout } from "./World/mainLayout";
 import { enUSIcon } from "./Dialogs/icon";
 import { enUSShareWorld } from "./World/shareWorld";
 import { enWelcome } from "./Dialogs/welcome";
@@ -17,7 +17,6 @@ import { enUSGeneral } from "./Other/general";
 import { enUSEulaDialog } from "./Dialogs/eulaDialog";
 import { enUSOwner } from "./Dialogs/owner";
 import { enOthers } from "./World/others";
-import { enRecoverDialog } from "./Dialogs/recoverDialog";
 import { enTabs } from "./Other/tabs";
 
 export const enUS: MessageSchema = {
@@ -32,7 +31,7 @@ export const enUS: MessageSchema = {
   additionalContents: enAdditionalContents,
   error: enUSError,
   progress: enUSProgress,
-  worldList: enUSWorldList,
+  mainLayout: enUSMainLayout,
   icon: enUSIcon,
   shareWorld: enUSShareWorld,
   welcome: enWelcome,
@@ -40,5 +39,4 @@ export const enUS: MessageSchema = {
   eulaDialog: enUSEulaDialog,
   owner: enUSOwner,
   others: enOthers,
-  recoverDialog: enRecoverDialog
 };

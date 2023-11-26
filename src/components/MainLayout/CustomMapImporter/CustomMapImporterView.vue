@@ -74,19 +74,19 @@ onMounted(async () => {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      :title="$t('worldList.addSeveralWorld')"
+      :title="$t('mainLayout.customMapImporter.addSeveralWorld')"
       @close="onDialogCancel"
       style="max-width: 50%;"
     >
       <q-card-section>
-        <span class="text-caption">{{ $t('worldList.addCustomWorld') }}</span>
+        <span class="text-caption">{{ $t('mainLayout.customMapImporter.addCustomWorld') }}</span>
         <q-card-actions>
           <div class="row full-width q-gutter-sm">
             <SsBtn
               free-width
               color="primary"
               icon="add"
-              :label="$t('worldList.selectZip')"
+              :label="$t('mainLayout.customMapImporter.selectZip')"
               @click="importZip"
               class="btn col"
             />
@@ -94,7 +94,7 @@ onMounted(async () => {
               free-width
               color="primary"
               icon="add"
-              :label="$t('worldList.selectFolder')"
+              :label="$t('mainLayout.customMapImporter.selectFolder')"
               @click="importFolder"
               class="btn col"
             />
@@ -103,7 +103,7 @@ onMounted(async () => {
       </q-card-section>
 
       <q-card-section>
-        <span class="text-caption">{{ $t('worldList.addSingleWorld') }}</span>
+        <span class="text-caption">{{ $t('mainLayout.customMapImporter.addSingleWorld') }}</span>
         <div v-if="localWorlds.length === 0" class="messageField">
           <div v-if="loading" class="absolute-center messageText row">
             <q-circular-progress
@@ -113,12 +113,12 @@ onMounted(async () => {
               size="2rem"
               class="q-my-sm q-mr-lg"
             />
-            <p v-html="$t('worldList.loadSingleWorld')"></p>
+            <p v-html="$t('mainLayout.customMapImporter.loadSingleWorld')"></p>
           </div>
           <div 
             v-else 
             class="absolute-center messageText"
-            v-html="$t('worldList.noSingleWorld')"
+            v-html="$t('mainLayout.customMapImporter.noSingleWorld')"
           > 
           </div>
         </div>

@@ -52,14 +52,14 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
           />
         </q-avatar>
         <q-tooltip anchor="center middle" self="top middle" :delay="500">
-          {{ $t('worldList.openList') }}
+          {{ $t('mainLayout.openList') }}
         </q-tooltip>
       </q-item>
     </div>
     <icon-button-view
       :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
-      :label="$t('worldList.allWorld')"
-      :tooltip="$t('worldList.minimizeList')"
+      :label="$t('mainLayout.allWorld')"
+      :tooltip="$t('mainLayout.minimizeList')"
       @click="sysStore.systemSettings.user.drawerWidth = 100"
       class="q-mini-drawer-hide"
     />
@@ -89,8 +89,8 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
     <q-separator class="q-mx-xs" />
     <icon-button-view
       icon-name="settings"
-      :label="$t('worldList.systemSetting')"
-      :tooltip="$t('worldList.systemSetting')"
+      :label="$t('mainLayout.systemSetting')"
+      :tooltip="$t('mainLayout.systemSetting')"
       to="/system"
     />
   </q-drawer>

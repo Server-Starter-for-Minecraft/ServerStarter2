@@ -21,13 +21,13 @@ async function importProcess() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <BaseDialogCard
-      :title="$t('home.useWorld.checkWorldInstall')"
+      :title="$t('mainLayout.customMapImporter.checkDialog.title')"
       @close="onDialogCancel"
       style="max-width: 100%;"
     >
       <q-item dense class="q-pl-none">
         <q-item-section>
-          <p v-html="$t('home.useWorld.checkDialog')" />
+          <p v-html="$t('mainLayout.customMapImporter.checkDialog.desc')" />
           <WorldItem
             :icon="icon"
             :world-name="worldName"

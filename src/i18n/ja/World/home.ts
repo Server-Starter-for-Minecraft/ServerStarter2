@@ -35,14 +35,6 @@ export const jaHome = {
     fabric: 'MODの前提サーバー。Forgeとは別のシステムとなっている。'
   },
   icon: 'アイコンを変更',
-  useWorld: {
-    title: '既存ワールドの導入',
-    description: 'zip形式の配布ワールドやシングルプレイのワールドを導入する',
-    selectWorld: 'ワールドデータを選択',
-    checkWorldInstall: 'ワールド導入の確認',
-    checkDialog: '下記に表示中のワールドを新規作成します',
-    installBtn: 'ワールドを導入',
-  },
   otherSettings: 'その他の設定',
   saveWorld: {
     title: 'ワールドフォルダ',

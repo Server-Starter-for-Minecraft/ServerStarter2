@@ -7,7 +7,7 @@ import { jaBugReport } from "./Other/bugReport";
 import { jaAdditionalContents } from "./World/additionalContents";
 import { jaError } from "./Other/error";
 import { jaProgress } from "./World/progress";
-import { jaWorldList } from "./Other/worldList";
+import { jaMainLayout } from "./World/mainLayout";
 import { jaIcon } from "./Dialogs/icon";
 import { jaShareWorld } from "./World/shareWorld";
 import { jaWelcome } from "./Dialogs/welcome";
@@ -16,7 +16,6 @@ import { jaGeneral } from "./Other/general";
 import { jaEulaDialog } from "./Dialogs/eulaDialog";
 import { jaOwner } from "./Dialogs/owner";
 import { jaOthers } from "./World/others";
-import { jaRecoverDialog } from "./Dialogs/recoverDialog";
 import { jaTabs } from "./Other/tabs";
 
 export const ja = {
@@ -31,7 +30,7 @@ export const ja = {
   additionalContents: jaAdditionalContents,
   error: jaError,
   progress: jaProgress,
-  worldList: jaWorldList,
+  mainLayout: jaMainLayout,
   icon: jaIcon,
   shareWorld: jaShareWorld,
   welcome: jaWelcome,
@@ -39,5 +38,4 @@ export const ja = {
   eulaDialog: jaEulaDialog,
   owner: jaOwner,
   others: jaOthers,
-  recoverDialog: jaRecoverDialog
 };
