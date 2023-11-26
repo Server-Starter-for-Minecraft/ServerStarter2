@@ -79,7 +79,7 @@ function removeFolder() {
       </div>
 
       <!-- cardをクリックできるようにする -->
-      <div v-if="onClick !== void 0 || !disable" class="absolute-top fit">
+      <div v-if="onClick !== void 0 && !disable" class="absolute-top fit">
         <q-btn flat color="transparent" @click="onClick" class="fit" />
       </div>
 
