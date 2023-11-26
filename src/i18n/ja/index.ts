@@ -1,21 +1,21 @@
-import { jaProperty } from "src/i18n/ja/World/property"
-import { jaHome } from "src/i18n/ja/World/home"
-import { jaConsole } from "./World/console";
-import { jaPlayer } from "./World/player";
-import { jaSystemSetting } from "./Other/systemsetting";
-import { jaBugReport } from "./Other/bugReport";
-import { jaAdditionalContents } from "./World/additionalContents";
+import { jaProperty } from "src/i18n/ja/Pages/World/property"
+import { jaHome } from "src/i18n/ja/Pages/World/home"
+import { jaConsole } from "./Pages/World/console";
+import { jaPlayer } from "./Pages/World/player";
+import { jaSystemSetting } from "./Pages/systemsetting";
+import { jaBugReport } from "./Pages/bugReport";
+import { jaAdditionalContents } from "./Pages/World/additionalContents";
 import { jaError } from "./Other/error";
-import { jaProgress } from "./World/progress";
-import { jaMainLayout } from "./World/mainLayout";
+import { jaProgress } from "./Pages/World/progress";
+import { jaMainLayout } from "./Pages/mainLayout";
 import { jaIcon } from "./Dialogs/icon";
-import { jaShareWorld } from "./World/shareWorld";
+import { jaShareWorld } from "./Pages/World/shareWorld";
 import { jaWelcome } from "./Dialogs/welcome";
 import { jaAutoShutdown } from "./Dialogs/autoshutdown";
 import { jaGeneral } from "./Other/general";
 import { jaEulaDialog } from "./Dialogs/eulaDialog";
 import { jaOwner } from "./Dialogs/owner";
-import { jaOthers } from "./World/others";
+import { jaOthers } from "./Pages/World/others";
 import { jaTabs } from "./Other/tabs";
 
 export const ja = {
