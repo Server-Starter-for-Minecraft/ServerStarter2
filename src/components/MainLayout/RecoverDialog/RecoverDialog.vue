@@ -51,9 +51,9 @@ async function recoverWorld() {
       @close="onDialogCancel"
     >
     <p v-html="
-        backupData.time ? 
-          $T('home.backup.recoverDialogDate',{date: $d(new Date(Number(backupData.time)), 'dateTime'), world: backupData.name}) : 
-          $T('home.backup.recoverDialog',{world: backupData.name})
+        backupData.time
+          ? $T('home.backup.recoverDialogDate',{date: $d(new Date(backupData.time), 'dateTime'), world: backupData.name})
+          : $T('home.backup.recoverDialog',{world: backupData.name})
       " 
     />
     </BaseDialogCard>
