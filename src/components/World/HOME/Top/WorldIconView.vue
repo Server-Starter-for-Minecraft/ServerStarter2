@@ -28,7 +28,7 @@ function openIconSelecter() {
 
 <template>
   <div class="column q-pt-md">
-    <q-avatar square size="10rem">
+    <q-avatar square size="190px">
       <q-img
         :src="mainStore.world.avater_path ?? assets.png.unset"
         style="image-rendering: pixelated;"
@@ -36,17 +36,15 @@ function openIconSelecter() {
       <q-btn
         dense
         flat
-        size="4.4rem"
-        icon=""
         :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
         @click="openIconSelecter"
-        class="absolute-center"
+        class="absolute-center fit"
       />
     </q-avatar>
 
     <SsBtn
       :label="$t('home.icon')"
-      width="10rem"
+      width="190px"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       @click="openIconSelecter"
       class="q-mt-lg"
