@@ -84,7 +84,7 @@ function onUpdatedSelection(updateBuild: boolean) {
       option-value="data"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 15rem;"
+      style="min-width: 10rem;"
     />
     <SsSelect
       v-model="mohistBuild"
