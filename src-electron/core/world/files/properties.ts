@@ -78,6 +78,8 @@ export const annotations: ServerPropertiesAnnotation = {
     enum: ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
   },
 
+  'log-ips': { type: 'boolean', default: true },
+
   // legacy?
   'max-build-height': { type: 'number', default: 256, step: 8 },
 

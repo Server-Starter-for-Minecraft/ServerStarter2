@@ -133,8 +133,9 @@ onMounted(async () => {
               :icon="localWorld.icon"
               :world-name="localWorld.levelName"
               :version-name="localWorld.versionName"
+              :last-played="localWorld.lastPlayed"
               @click="showCheckDialog(localWorld)"
-              style="min-width: 20rem; max-width: 20rem;;"
+              style="min-width: 20rem; max-width: 20rem;"
             />
           </template>
         </div>

@@ -12,6 +12,12 @@ import NewWorldBtn from './NewWorldBtn.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
 
+interface Prop {
+  minWidth: number
+  maxWidth: number
+}
+defineProps<Prop>()
+
 const sysStore = useSystemStore()
 const mainStore = useMainStore();
 const searchWorldName = ref('')
@@ -44,7 +50,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
     style="height: 100vh;"
   >
     <div class="q-mini-drawer-only">
-      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = 300">
+      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = maxWidth">
         <q-avatar size="2rem">
           <q-icon
             size="2rem"
@@ -60,7 +66,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
       :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
       :label="$t('mainLayout.allWorld')"
       :tooltip="$t('mainLayout.minimizeList')"
-      @click="sysStore.systemSettings.user.drawerWidth = 100"
+      @click="sysStore.systemSettings.user.drawerWidth = minWidth"
       class="q-mini-drawer-hide"
     />
 

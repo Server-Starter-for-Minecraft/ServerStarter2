@@ -64,7 +64,7 @@ function selectWorldIdx() {
       @mouseover="runBtnHovered = true"
       @mouseleave="runBtnHovered = false"
     >
-      <q-avatar square size="4rem">
+      <q-avatar square size="4.5rem">
         <q-img
           :src="world.avater_path ?? assets.png.unset"
           :ratio="1"
@@ -89,16 +89,17 @@ function selectWorldIdx() {
       </q-avatar>
     </q-item-section>
     <q-item-section>
-      <div>
-        <p class="worldName">{{ world.name }}</p>
-        <p class="versionName">
-          {{
-            world.version.type === 'vanilla' 
-              ? world.version.id  
-              :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
-          }}
-        </p>
-      </div>
+      <q-item-label class="worldName">{{ world.name }}</q-item-label>
+      <q-item-label class="versionName">
+        {{
+          world.version.type === 'vanilla' 
+            ? world.version.id  
+            :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
+        }}
+      </q-item-label>
+      <q-item-label v-if="world.last_date" class="date">
+        {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
+      </q-item-label>
     </q-item-section>
     <q-tooltip
       v-if="sysStore.systemSettings.user.drawerWidth < 200"
@@ -114,7 +115,7 @@ function selectWorldIdx() {
 
 <style scoped lang="scss">
 .worldBlock {
-  height: 5.5rem;
+  height: 6.3rem;
 }
 
 .worldName {
@@ -126,6 +127,11 @@ function selectWorldIdx() {
 .versionName {
   font-size: 1rem;
   margin-bottom: 4px;
+}
+
+.date {
+  font-size: .75rem;
+  opacity: .6;
 }
 
 .badge {

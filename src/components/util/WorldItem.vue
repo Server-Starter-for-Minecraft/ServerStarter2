@@ -6,6 +6,7 @@ interface Prop {
   icon?: ImageURI,
   worldName: string,
   versionName: string,
+  lastPlayed?: number,
   onClick?: () => void
 }
 defineProps<Prop>()
@@ -25,6 +26,9 @@ defineProps<Prop>()
     <q-item-section>
       <q-item-label class="name text-omit">{{ String(worldName).replace(/§./g, "").trim() }}</q-item-label>
       <q-item-label class="version">{{ versionName }}</q-item-label>
+      <q-item-label v-if="lastPlayed" class="date">
+        {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(lastPlayed, 'dateTime') } ) }}
+      </q-item-label>
     </q-item-section>
   </q-item>
 </template>
@@ -40,6 +44,11 @@ defineProps<Prop>()
 
 .version {
   font-size: 1rem;
+  opacity: .6;
+}
+
+.date {
+  font-size: .75rem;
   opacity: .6;
 }
 </style>

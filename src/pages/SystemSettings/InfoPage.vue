@@ -39,7 +39,7 @@ function openMIT() {
       </div>
       
       <!-- 最終更新日 -->
-      <div v-if="lastUpdateDateTime" class="text-caption q-pt-sm" tyle="opacity: .6;">
+      <div v-if="lastUpdateDateTime" class="text-caption q-pt-sm" style="opacity: .6;">
         {{ $t('systemsetting.info.finalUpdate', { datetime: $d(lastUpdateDateTime, 'dateTime') } ) }}
       </div>
     </div>

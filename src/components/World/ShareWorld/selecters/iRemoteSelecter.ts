@@ -15,6 +15,7 @@ export interface GithubCheckDialogProp {
   rIcon?: ImageURI
   rVersionName: string
   rWorldName: string
+  rLastPlayed: number
 }
 
 export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
