@@ -13,7 +13,7 @@ const prop = defineProps<Prop>()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const forgeVerOps = prop.versionData.map(ver => ver.id)
+const forgeVerOps = () => { return prop.versionData.map(ver => ver.id) }
 const forgeVer = ref(prop.versionData[0].id)
 
 const forgeBuilds = () => {
@@ -64,7 +64,7 @@ function onUpdatedSelection(updateBuild: boolean) {
     <SsSelect
       v-model="forgeVer"
       @update:model-value="onUpdatedSelection(true)"
-      :options="forgeVerOps?.map(
+      :options="forgeVerOps()?.map(
         (ver, idx) => { return {
           data: ver,
           label: idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver
