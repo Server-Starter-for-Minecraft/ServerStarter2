@@ -7,6 +7,7 @@ import WorldDeleteView from 'src/components/World/HOME/Others/WorldDeleteView.vu
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
 import RunningBtn from 'src/components/World/HOME/RunningBtn.vue';
+import NgrokView from 'src/components/World/HOME/Others/NgrokView.vue';
 
 const scrollAreaRef = ref()
 
@@ -41,6 +42,9 @@ setScrollTop(scrollTop)
       </div>
       
       <!-- Others -->
+      <h1 class="q-pt-lg">ポート開放不要化</h1>
+      <NgrokView />
+
       <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>
       <BootSettingsView />
 
