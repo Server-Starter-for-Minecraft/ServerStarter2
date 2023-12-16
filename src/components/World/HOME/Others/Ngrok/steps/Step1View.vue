@@ -16,7 +16,7 @@ isSkipRegister.value = false
   <div>
     <p class="text-caption">
       本ソフトはポート開放不要化にNgrokを用います<br>
-      アカウントをお持ちでない方は新規登録をお願いします<br>
+      アカウントをお持ちでない方は新規作成をお願いします<br>
       ※アカウントは有料版もありますが，<u>本ソフトは無料アカウントでの利用を想定しています</u>
     </p>
 
@@ -24,7 +24,7 @@ isSkipRegister.value = false
       <!-- 大きな登録ボタンを表示 -->
       <SsBtn
         free-width
-        label="Ngrokのアカウントを新規作成"
+        label="アカウントを新規作成"
         color="primary"
         @click="() => {if (next) { next(2) }}"
         class="col q-pa-lg"

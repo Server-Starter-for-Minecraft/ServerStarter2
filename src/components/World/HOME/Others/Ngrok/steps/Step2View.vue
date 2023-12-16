@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import SsA from 'src/components/util/base/ssA.vue';
 
 const slide = ref(1)
 </script>
@@ -7,9 +8,11 @@ const slide = ref(1)
 <template>
   <div>
     <p class="text-caption">
-      画面に沿ってアカウント登録を完了しましょう！
+      画面に沿ってアカウント登録を完了しましょう！<br>
+      <SsA url="https://dashboard.ngrok.com/signup">
+        こちらをクリックすることで登録画面を開きます
+      </SsA>
     </p>
-
     
     <q-carousel
       v-model="slide"
@@ -28,8 +31,5 @@ const slide = ref(1)
       <q-carousel-slide :name="3" img-src="https://cdn.quasar.dev/img/parallax2.jpg" />
       <q-carousel-slide :name="4" img-src="https://cdn.quasar.dev/img/quasar.jpg" />
     </q-carousel>
-
-
-  
   </div>
 </template>
