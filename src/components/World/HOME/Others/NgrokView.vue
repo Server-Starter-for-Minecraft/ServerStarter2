@@ -13,8 +13,10 @@ function onClick() {
 </script>
 
 <template>
-  <p class="text-caption">ポート開放不要でサーバーを利用できます</p>
-  <p class="text-caption">ServerStarter2でマルチプレイの準備をすべて完了しましょう</p>
+  <p class="text-caption" style="opacity: .6;">
+    「ポート開放」と呼ばれる設定をせずに，友人や外部の方をサーバーに招待するための機能です<br>
+    ServerStarter2でマルチプレイの準備をすべて完了しましょう
+  </p>
 
   <SsBtn
     label="ポート開放不要の設定をする"
