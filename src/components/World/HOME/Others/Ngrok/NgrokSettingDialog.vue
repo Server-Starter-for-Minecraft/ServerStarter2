@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { QStepper, useDialogPluginComponent } from 'quasar';
+import { NgrokDialogProp, NgrokDialogReturns } from './steps/iNgrok';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import Step1View from './steps/Step1View.vue'
 import Step2View from './steps/Step2View.vue';
@@ -9,12 +10,13 @@ import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const prop = defineProps<NgrokDialogProp>()
 
-const step = ref(1)
+const authToken = ref(prop.token)
+const step = ref(prop.token !== '' ? 3 : 1)
 const stepper: Ref<QStepper | undefined> = ref()
 const isSkipRegister = ref(false)
-// TODO: 初期値はSystemSettingsの値を入れる
-const authToken = ref('')
+const isRegisteredNgrok = prop.token !== ''
 </script>
 
 <template>
@@ -36,6 +38,7 @@ const authToken = ref('')
             :name="1"
             title="アカウント登録"
             prefix="1"
+            :disable="isRegisteredNgrok"
             :done="step > 1"
           >
             <Step1View
@@ -48,7 +51,7 @@ const authToken = ref('')
             :name="2"
             title="アカウント登録"
             prefix="2"
-            :disable="isSkipRegister"
+            :disable="isSkipRegister || isRegisteredNgrok"
             :done="!isSkipRegister && step > 2"
           >
             <Step2View />
@@ -66,7 +69,7 @@ const authToken = ref('')
 
       <template #additionalBtns>
         <SsBtn
-          v-show="step !== 1"
+          v-show="step !== 1 && !isRegisteredNgrok"
           flat
           free-width
           @click="stepper?.previous()"
@@ -79,7 +82,11 @@ const authToken = ref('')
           :label="step === 3 ? '登録内容を保存' : '次の設定へ進む'"
           color="primary"
           :disable="step === 3 && authToken === ''"
-          @click="step === 3 ? onDialogOK() : stepper?.next()"
+          @click="
+            step === 3
+              ? onDialogOK({ token: authToken } as NgrokDialogReturns)
+              : stepper?.next()
+          "
         />
       </template>
     </BaseDialogCard>

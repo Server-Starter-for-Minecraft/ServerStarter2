@@ -1,13 +1,25 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { NgrokDialogProp, NgrokDialogReturns } from './Ngrok/steps/iNgrok';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import NgrokSettingDialog from './Ngrok/NgrokSettingDialog.vue';
 
 const $q = useQuasar()
+const sysStore = useSystemStore()
+const mainStore = useMainStore()
+
+const isUseNgrok = () => sysStore.systemSettings.user.ngrokToken !== ''
 
 function onClick() {
   $q.dialog({
-    component: NgrokSettingDialog
+    component: NgrokSettingDialog,
+    componentProps: {
+      token: sysStore.systemSettings.user.ngrokToken
+    } as NgrokDialogProp
+  }).onOk((p: NgrokDialogReturns) => {
+    sysStore.systemSettings.user.ngrokToken = p.token
   })
 }
 </script>
@@ -18,10 +30,26 @@ function onClick() {
     ServerStarter2ですべてのマルチプレイの準備を整えましょう
   </p>
 
-  <SsBtn
-    label="ポート開放不要の設定をする"
-    @click="onClick"
-  />
+  <div class="row q-gutter-md">
+    <SsBtn
+      :label="isUseNgrok() ? 'トークンを更新する' : 'ポート開放不要の設定をする'"
+      @click="onClick"
+    />
+
+    <q-toggle
+      v-if="isUseNgrok()"
+      v-model="mainStore.world.useNgrok"
+      :label="`不要化設定を利用${mainStore.world.useNgrok ? 'する' : 'しない'}`"
+    />
+
+    <!-- デバッグ用ボタン -->
+    <!-- <q-btn
+      color="purple"
+      label="トークンリセット"
+      @click="() => sysStore.systemSettings.user.ngrokToken = ''"
+    /> -->
+  </div>
+
   <!-- 
     １．新しくDialogを立ち上げて，その中で設定を順番に進められるようにする
     ２．以下の流れで設定ができるようにする
