@@ -3,8 +3,17 @@ export const jaConsole = {
   boot: '{name} を起動',
   booting: '{id} ({type})/{name}を起動中',
   abnormalEnd:'サーバーが異常終了しました',
-  stop: '停止',
-  reboot: '再起動',
+  stop: {
+    btn: '停止',
+    withName: '{name} を停止',
+    progress: '停止処理中',
+    progressWithName: '{name} を停止しています',
+  },
+  reboot: {
+    btn: '再起動',
+    progress: '再起動中',
+    progressWithName: '{name} を再起動しています'
+  },
   status: {
     Stop: '停止中',
     Ready: '準備中',

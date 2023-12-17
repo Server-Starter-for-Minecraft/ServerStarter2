@@ -20,26 +20,22 @@ setScrollTop(scrollTop)
 </script>
 
 <template>
-  <q-scroll-area
-    ref="scrollAreaRef"
-    class="full-height"
-    style="flex: 1 1 0;"
-  >
+  <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0;">
     <div class="mainField">
-      <RunningBtn to="/console" :test-font-size="1.1" class="full-width q-mt-xl" />
+      <RunningBtn to="/console" :text-font-size="1.1" class="full-width q-mt-xl" />
 
       <!-- TOP -->
       <div class="row justify-center q-mt-sm q-pb-lg q-gutter-lg">
         <div class="col" style="min-width: 12rem;">
           <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
           <WorldNameView />
-    
+
           <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
           <VersionSelecterView />
         </div>
         <WorldIconView />
       </div>
-      
+
       <!-- Others -->
       <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>
       <BootSettingsView />

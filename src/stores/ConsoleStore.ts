@@ -11,7 +11,9 @@ import { $T, tError } from 'src/i18n/utils/tFunc';
 type consoleData = { chunk: string, isError: boolean }
 interface WorldConsole {
   [id: WorldID]: {
-    status: 'Stop' | 'Ready' | 'Running'
+    status: 'Stop' | 'Ready' | 'Running',
+    clickedStop: boolean,
+    clickedReboot: boolean,
     console: consoleData[]
   }
 }
@@ -34,6 +36,8 @@ export const useConsoleStore = defineStore('consoleStore', {
       if (this._world[worldID] === void 0 || force) {
         this._world[worldID] = {
           status: 'Stop',
+          clickedStop: false,
+          clickedReboot: false,
           console: new Array<consoleData>()
         }
       }
@@ -54,11 +58,48 @@ export const useConsoleStore = defineStore('consoleStore', {
       if (consoleLine !== void 0) { this._world[worldID].console.push({ chunk: consoleLine, isError: isError }) }
     },
     /**
+     * コンソールに行を追加する 
+     */
+    resetReboot(worldID: WorldID) {
+      this._world[worldID].console = []
+      this._world[worldID].clickedReboot = false
+    },
+    /**
      * ワールドの実行状態を取得する
      */
     status(worldID?: WorldID) {
       const id = worldID ?? useMainStore().selectedWorldID
-      return this._world[id]?.status ?? 'Stop'
+      return this._world[id].status
+    },
+    /**
+     * ワールドが停止処理に入っているか否かを取得する
+     */
+    isClickedBtn(worldID: WorldID) {
+      return this._world[worldID].clickedStop || this._world[worldID].clickedReboot
+    },
+    /**
+     * ワールドが停止処理に入っているか否かを取得する
+     */
+    isClickedStop(worldID: WorldID) {
+      return this._world[worldID].clickedStop
+    },
+    /**
+     * ワールドが再起動処理に入っているか否かを取得する
+     */
+    isClickedReboot(worldID: WorldID) {
+      return this._world[worldID].clickedReboot
+    },
+    /**
+     * ワールドが停止処理に入る際にフラグを立てる
+     */
+    clickedStopBtn(worldID: WorldID) {
+      this._world[worldID].clickedStop = true
+    },
+    /**
+     * ワールドが再起動処理に入る際にフラグを立てる
+     */
+    clickedRebootBtn(worldID: WorldID) {
+      this._world[worldID].clickedReboot = true
     },
     /**
      * 全てのワールドが停止中か否かを返す

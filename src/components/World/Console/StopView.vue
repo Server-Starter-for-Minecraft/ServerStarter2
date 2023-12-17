@@ -6,11 +6,8 @@ const consoleStore = useConsoleStore()
 </script>
 
 <template>
-  <div
-    v-if="consoleStore.status() === 'Stop'"
-    class="justify-center row fit"
-  >
-    <running-btn :test-font-size="1.5" class="btn" />
+  <div v-if="consoleStore.status() === 'Stop'" class="justify-center row fit">
+    <running-btn :text-font-size="1.5" class="btn" />
   </div>
 </template>
 
