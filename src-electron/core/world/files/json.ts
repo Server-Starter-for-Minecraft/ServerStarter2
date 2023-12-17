@@ -63,6 +63,9 @@ export type WorldSettings = {
 
   /** ディレクトリ構成 "vanilla" | "plugin" */
   directoryType?: WorldDirectoryTypes;
+
+  /** Ngrokによるポート開放不要化機能を利用するか */
+  useNgrok: boolean;
 };
 
 export async function worldSettingsFixer() {
@@ -99,6 +102,9 @@ export async function worldSettingsFixer() {
 
       /** ディレクトリ構成 "vanilla" | "plugin" */
       directoryType: optionalFixer(literalFixer(['vanilla', 'plugin'])),
+
+      /** Ngrokによるポート開放不要化機能を利用するか */
+      useNgrok: booleanFixer(true)
     },
     false
   );

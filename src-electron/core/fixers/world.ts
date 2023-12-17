@@ -84,6 +84,9 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
 
     /** アイコンのURI */
     avater_path: optionalFixer(stringFixer()),
+
+    /** Ngrokによるポート開放不要化機能を利用するか */
+    useNgrok: booleanFixer(true),
   },
   false
 );

@@ -51,6 +51,8 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     autoShutDown: booleanFixer(false),
     // World Listの横幅
     drawerWidth: numberFixer(300),
+    // NgrokのToken情報
+    ngrokToken: stringFixer()
   },
   true
 );
