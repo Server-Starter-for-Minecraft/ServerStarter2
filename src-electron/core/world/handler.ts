@@ -36,6 +36,8 @@ import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { allocateTempDir } from '../misc/tempPath';
 import { portInUse } from 'app/src-electron/util/port';
+import { getWorld } from './world';
+import { closeNgrok, runNgrok } from '../server/setup/ngrok';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -776,6 +778,9 @@ export class WorldHandler {
 
     // ポートを登録
     this.port = port;
+    // ngrokが必要な場合は起動
+    const ngrokListener = await readyNgrok(this.id, port)
+    if (isError(ngrokListener)) return withError(ngrokListener);
 
     // 使用中フラグを立てて保存
     // 使用中フラグを折って保存を試みる (無理なら諦める)
@@ -815,6 +820,8 @@ export class WorldHandler {
 
     // ポートを削除
     this.port = undefined;
+    // Ngrokを閉じる
+    if (ngrokListener) await closeNgrok(ngrokListener)
 
     this.runner = undefined;
 
@@ -872,4 +879,27 @@ async function getDuplicateWorldName(
     result = await validateNewWorldName(container, worldName);
   }
   return result;
+}
+
+
+/** 
+ * Ngrokを利用する場合の処理
+ * 
+ * Ngrokを利用する場合はlistenerを返す
+ */
+async function readyNgrok(worldID: WorldID, port: number) {
+  const systemSettings = await getSystemSettings();
+  const token = systemSettings.user.ngrokToken;
+  
+  // TODO: @txkodo 想定した実装でない場合は修正
+  // 各ワールドに設定されたUseNgrokの値に応じてNgrokの実行有無を制御
+  const world = await getWorld(worldID);
+  if (isError(world.value)) return world.value;
+
+  if (token !== '' && world.value.useNgrok) {
+    const listener = runNgrok(token, port);
+    return listener;
+  }
+
+  return undefined
 }
