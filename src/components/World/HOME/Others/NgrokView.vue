@@ -15,7 +15,7 @@ function onClick() {
 <template>
   <p class="text-caption" style="opacity: .6;">
     「ポート開放」と呼ばれる設定をせずに，友人や外部の方をサーバーに招待するための機能です<br>
-    ServerStarter2でマルチプレイの準備をすべて完了しましょう
+    ServerStarter2ですべてのマルチプレイの準備を整えましょう
   </p>
 
   <SsBtn
