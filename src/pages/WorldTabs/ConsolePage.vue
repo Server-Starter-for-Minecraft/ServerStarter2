@@ -22,6 +22,6 @@ consoleStore.initTab(mainStore.world.id)
 
     <q-separator inset/>
 
-    <OperationView :disable="consoleStore.status() !== 'Running'"/>
+    <OperationView :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Running'"/>
   </div>
 </template>

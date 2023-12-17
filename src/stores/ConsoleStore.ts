@@ -67,9 +67,8 @@ export const useConsoleStore = defineStore('consoleStore', {
     /**
      * ワールドの実行状態を取得する
      */
-    status(worldID?: WorldID) {
-      const id = worldID ?? useMainStore().selectedWorldID
-      return this._world[id].status
+    status(worldID: WorldID) {
+      return this._world[worldID].status
     },
     /**
      * ワールドが停止処理に入っているか否かを取得する
@@ -110,9 +109,8 @@ export const useConsoleStore = defineStore('consoleStore', {
     /**
      * ワールドのコンソール状態を取得する
      */
-    console(worldID?: WorldID) {
-      const id = worldID ?? useMainStore().selectedWorldID
-      return this._world[id].console
+    console(worldID: WorldID) {
+      return this._world[worldID].console
     }
   }
 })
