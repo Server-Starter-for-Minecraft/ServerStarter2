@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { debounce } from 'quasar';
 import imageCompression from 'browser-image-compression';
 import "cropperjs/dist/cropper.css";
 import Cropper from 'cropperjs';
@@ -47,18 +48,8 @@ onMounted(() => {
     cropBoxMovable: false,
     cropBoxResizable: false,
     toggleDragModeOnDblclick: false,
-    ready: () => {
-      updateImg()
-    },
-    cropend: () => {
-      updateImg()
-    },
-    crop: () => {
-      updateImg()
-    },
-    zoom: () => {
-      updateImg()
-    }
+    ready: updateImg,
+    crop: debounce(updateImg, 100),
   });
 })
 </script>
