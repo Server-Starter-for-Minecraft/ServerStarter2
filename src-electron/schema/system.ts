@@ -48,7 +48,7 @@ export type SystemUserSetting = {
   drawerWidth: number;
 
   // NgrokのToken
-  ngrokToken: string;
+  ngrokToken?: string;
 };
 
 export type WorldContainerSetting = {

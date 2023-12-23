@@ -10,7 +10,7 @@ const $q = useQuasar()
 const sysStore = useSystemStore()
 const mainStore = useMainStore()
 
-const isUseNgrok = () => sysStore.systemSettings.user.ngrokToken !== ''
+const isUseNgrok = () => sysStore.systemSettings.user.ngrokToken ?? '' !== ''
 
 function onClick() {
   $q.dialog({
