@@ -10,6 +10,7 @@ import {
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { GroupProgressor } from '../progress/progress';
+import { writeGitignore } from '../world/files/gitignore';
 
 export const remoteOperators: {
   [K in RemoteFolder as K['type']]: RemoteOperator<K>;
@@ -33,6 +34,9 @@ export async function pushRemoteWorld<T extends RemoteFolder>(
   remote: Remote<T>,
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
+  // gitignoreを生成
+  await writeGitignore(local)
+
   const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
   return await loader.pushWorld(local, remote, progress);
 }
