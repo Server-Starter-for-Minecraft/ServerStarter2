@@ -9,6 +9,7 @@ import { decoratePromise } from 'app/src-electron/util/promiseDecorator';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../progress/progress';
 import { trimAnsi } from 'app/src-electron/util/ansi';
+import { ServerStartNotification } from 'app/src-electron/schema/server';
 
 export type RunServer = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -19,7 +20,8 @@ export function runServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  progress: GroupProgressor
+  progress: GroupProgressor,
+  notification: ServerStartNotification
 ): RunServer {
   let process: ServerProcess | undefined = undefined;
   async function promise(): Promise<Failable<undefined>> {
@@ -28,7 +30,7 @@ export function runServer(
 
     const { javaArgs, javaPath } = readyResult;
 
-    const onStart = () => api.send.StartServer(id);
+    const onStart = () => api.send.StartServer(id, notification);
     const onFinish = () => api.send.FinishServer(id);
     const console = (value: string, isError: boolean) =>
       api.send.AddConsole(id, trimAnsi(value), isError);
@@ -67,7 +69,8 @@ export function runRebootableServer(
   cwdPath: Path,
   id: WorldID,
   settings: WorldSettings,
-  progress: GroupProgressor
+  progress: GroupProgressor,
+  notification: ServerStartNotification
 ) {
   let promise: RunServer;
 
@@ -76,7 +79,7 @@ export function runRebootableServer(
   const resultPromise = async (): Promise<Failable<undefined>> => {
     while (needRun) {
       needRun = false;
-      promise = runServer(cwdPath, id, settings, progress);
+      promise = runServer(cwdPath, id, settings, progress,notification);
       const promiseValue = await promise;
       if (isError(promiseValue)) return promiseValue;
     }

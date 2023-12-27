@@ -38,6 +38,7 @@ import { allocateTempDir } from '../misc/tempPath';
 import { portInUse } from 'app/src-electron/util/port';
 import { getWorld } from './world';
 import { closeNgrok, runNgrok } from '../server/setup/ngrok';
+import { ServerStartNotification } from 'app/src-electron/schema/server';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -803,12 +804,19 @@ export class WorldHandler {
     );
     errors.push(...directoryFormatResult.errors);
 
+
+    const notification: ServerStartNotification = {}
+
+    const ngrokURL = ngrokListener?.url()
+    if (ngrokURL) notification.ngrokURL = ngrokURL
+
     // サーバーの実行を開始
     const runPromise = runRebootableServer(
       savePath,
       this.id,
       settings,
-      progress
+      progress,
+      notification
     );
 
     this.runner = runPromise;
@@ -886,6 +894,7 @@ async function getDuplicateWorldName(
  * Ngrokを利用する場合の処理
  * 
  * Ngrokを利用する場合はlistenerを返す
+ * Ngrokを利用しない場合はundefinedを返す
  */
 async function readyNgrok(worldID: WorldID, port: number) {
   const systemSettings = await getSystemSettings();
