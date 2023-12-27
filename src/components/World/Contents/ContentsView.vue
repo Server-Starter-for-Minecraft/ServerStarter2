@@ -96,7 +96,7 @@ function addContent2World(content: NewFileData<T>) {
  * キャッシュフォルダを開く
  */
 function openCacheFolder() {
-  window.API.sendOpenFolder(sysStore.staticResouces.paths.cache[prop.contentType])
+  window.API.sendOpenFolder(sysStore.staticResouces.paths.cache[prop.contentType], true)
 }
 </script>
 
