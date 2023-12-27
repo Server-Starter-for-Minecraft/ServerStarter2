@@ -30,6 +30,10 @@ export const useMainStore = defineStore('mainStore', {
       state.selectedVersionType = returnWorld.version.type
 
       return returnWorld
+    },
+    worldIP(state) {
+      const worldStore = useWorldStore()
+      return worldStore.worldIPs[state.selectedWorldID]
     }
   },
   actions: {
@@ -123,6 +127,13 @@ export const useMainStore = defineStore('mainStore', {
     updateWorld(world: World | WorldEdited) {
       const worldStore = useWorldStore()
       worldStore.worldList[world.id] = world
+    },
+    /**
+     * Ngrokより割り当てられたIPアドレスを削除する（サーバー終了時を想定）
+     */
+    removeWorldIP(worldID: WorldID) {
+      const worldStore = useWorldStore()
+      worldStore.removeWorldIP(worldID)
     }
   },
 });
@@ -134,6 +145,7 @@ export const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
       worldList: {} as Record<WorldID, WorldEdited>,
+      worldIPs: {} as Record<WorldID, string>
     }
   },
   getters: {
@@ -145,6 +157,16 @@ export const useWorldStore = defineStore('worldStore', {
         recordValueFilter(state.worldList, w => visibleContainers.has(w.container)),
         (a, b) => (a.last_date ?? 0) - (b.last_date ?? 0)
       )
+    }
+  },
+  actions: {
+    setWorldIP(worldID: WorldID, ip?: string) {
+      if (ip && ip !== '') {
+        this.worldIPs[worldID] = ip
+      }
+    },
+    removeWorldIP(worldID: WorldID) {
+      delete this.worldIPs[worldID]
     }
   }
 })

@@ -41,8 +41,9 @@ watch(() => $q.dark.isActive, val => {
 })
 
 // サーバー起動時に画面遷移
-window.API.onStartServer((_event, worldID) => {
+window.API.onStartServer((_event, worldID, notification) => {
   consoleStore.setConsole(worldID, '', false)
+  worldStore.setWorldIP(worldID, notification.ngrokURL)
 })
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {

@@ -149,4 +149,5 @@ export async function runServer() {
 
   // サーバータブをリセット
   consoleStore.initTab(runWorld.id, true)
+  mainStore.removeWorldIP(runWorld.id)
 }
