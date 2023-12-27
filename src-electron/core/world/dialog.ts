@@ -47,13 +47,13 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
     options: {
       type:
-        | 'datapack'
-        | 'world'
-        | 'plugin'
-        | 'mod'
-        | 'image'
-        | 'container'
-        | 'backup';
+      | 'datapack'
+      | 'world'
+      | 'plugin'
+      | 'mod'
+      | 'image'
+      | 'container'
+      | 'backup';
       isFile?: boolean;
       container?: WorldContainer;
     } & DialogOptions
@@ -88,8 +88,8 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
       case 'mod':
       case 'plugin':
         filters.push({
-          extensions: ['jar'],
-          name: 'jar',
+          extensions: ['jar', 'zip'],
+          name: 'jar/zip',
         });
         break;
       case 'datapack':
