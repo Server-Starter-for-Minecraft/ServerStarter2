@@ -21,13 +21,9 @@ setScrollTop(scrollTop)
 </script>
 
 <template>
-  <q-scroll-area
-    ref="scrollAreaRef"
-    class="full-height"
-    style="flex: 1 1 0;"
-  >
+  <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0;">
     <div class="mainField">
-      <RunningBtn to="/console" :test-font-size="1.1" class="full-width q-mt-xl" />
+      <RunningBtn to="/console" :text-font-size="1.1" class="full-width q-mt-xl" />
 
       <!-- TOP -->
       <div class="row justify-center q-mt-sm q-pb-lg q-gutter-lg">

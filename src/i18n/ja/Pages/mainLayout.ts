@@ -8,20 +8,20 @@ export const jaMainLayout = {
     addWorld: 'ワールドを追加',
     content: {
       newWorld: {
-        title: '',
-        desc: ''
+        title: '新規ワールドを追加',
+        desc: '完全に新しいワールドを新規作成する'
       },
       customMap: {
-        title: '',
-        desc: ''
+        title: '既存のワールドを導入',
+        desc: 'zip形式の配布ワールドやシングルプレイのワールドを導入する'
       },
       duplicate: {
-        title: '',
-        desc: ''
+        title: '表示中のワールドを複製',
+        desc: 'バージョンやプロパティなどの各種設定を引き継いで複製する'
       },
       backup: {
-        title: '',
-        desc: ''
+        title: 'バックアップワールドを導入',
+        desc: 'バックアップ済みのワールドを追加する'
       }
     }
   },
@@ -30,7 +30,7 @@ export const jaMainLayout = {
     addCustomWorld: '配布ワールドを導入',
     selectZip: 'ZIPファイルを選択',
     selectFolder: 'フォルダを選択',
-    lastPlayed: "({datetime})",
+    lastPlayed: '({datetime})',
     addSingleWorld: 'シングルワールドを導入',
     loadSingleWorld: 'シングルプレイワールドを<br>読み込み中',
     noSingleWorld: 'シングルプレイワールドは<br>見つかりませんでした',

@@ -10,7 +10,7 @@ interface Prop {
   loading?: boolean
   isCapital?: boolean
   to?: string
-  onClick: () => void
+  onClick?: () => void
 }
 defineProps<Prop>()
 </script>

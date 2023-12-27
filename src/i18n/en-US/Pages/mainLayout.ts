@@ -1,29 +1,29 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSMainLayout: MessageSchema['mainLayout'] = {
   allWorld: 'All Worlds',
   systemSetting: 'System Settings',
   searchWorld: 'Search world',
-  openList: 'Open worldr list',
+  openList: 'Open the world list',
   minimizeList: 'Minimize world list',
   newWorldBtn: {
     addWorld: 'Add new world',
     content: {
       newWorld: {
-        title: '',
-        desc: ''
+        title: 'Create a New WORLD',
+        desc: 'Create a completely new world'
       },
       customMap: {
-        title: '',
-        desc: ''
+        title: 'Introduce a created world',
+        desc: 'Introduce zipped custom maps and single-player worlds'
       },
       duplicate: {
-        title: '',
-        desc: ''
+        title: 'Duplicate the current world',
+        desc: 'Duplicate with various settings such as a server version and properties'
       },
       backup: {
-        title: '',
-        desc: ''
+        title: 'Introduce a backed-up world',
+        desc: 'Adding a backed-up world'
       }
     }
   },
@@ -32,7 +32,7 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     addCustomWorld: 'Add Custom world',
     selectZip: 'Select ZIP file',
     selectFolder: 'Select folder',
-    lastPlayed: "({datetime})",
+    lastPlayed: '({datetime})',
     addSingleWorld: 'Add single world',
     loadSingleWorld: 'Loading<br>single play world',
     noSingleWorld: 'Single play world<br>was not found',

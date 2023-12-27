@@ -26,35 +26,30 @@ const isMini = () => sysStore.systemSettings.user.drawerWidth < prop.miniChangeW
 
 type ContentData = {
   icon: string
-  name: string
-  caption: string
+  i18nKey: string
   disable?: () => boolean
   action: () => void | Promise<void>
 }
 const contents: ContentData[] = [
   {
     icon: 'add_box',
-    name: '新規ワールドを追加',
-    caption: '完全に新しいワールドを新規作成する',
+    i18nKey: 'newWorld',
     action: createNewWorld
   },
   {
     icon: 'public',
-    name: '既存のワールドを導入',
-    caption: 'zip形式の配布ワールドやシングルプレイのワールドを導入する',
+    i18nKey: 'customMap',
     action: openCustomMapImporter
   },
   {
     icon: 'content_paste',
-    name: '表示中のワールドを複製',
-    caption: 'バージョンやプロパティなどの各種設定を引き継いで複製する',
+    i18nKey: 'duplicate',
     disable: () => router.currentRoute.value.path.slice(0, 7) === '/system',
     action: duplicateWorld
   },
   {
     icon: 'history',
-    name: 'バックアップワールドを導入',
-    caption: 'バックアップ済みのワールドを追加する',
+    i18nKey: 'backup',
     action: introduceBackup
   },
 ]
@@ -169,8 +164,8 @@ async function introduceBackup() {
             <q-icon :name="content.icon" text-color="white" size="1.5rem" />
           </q-item-section>
           <q-item-section>
-            <q-item-label class="content-title">{{ content.name }}</q-item-label>
-            <q-item-label class="content-caption">{{ content.caption }}</q-item-label>
+            <q-item-label class="content-title">{{ $t(`mainLayout.newWorldBtn.content.${content.i18nKey}.title`) }}</q-item-label>
+            <q-item-label class="content-caption">{{ $t(`mainLayout.newWorldBtn.content.${content.i18nKey}.desc`) }}</q-item-label>
           </q-item-section>
         </q-item>
       </template>

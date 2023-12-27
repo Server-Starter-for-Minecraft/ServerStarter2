@@ -26,7 +26,7 @@ async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore
   selectWorldIdx()
 
   // Stop状態でない時にはサーバーを起動できないようにする
-  if (cStore.status() !== 'Stop') { return }
+  if (cStore.status(prop.world.id) !== 'Stop') { return }
 
   // サーバーの起動を開始
   await router.push('/console');

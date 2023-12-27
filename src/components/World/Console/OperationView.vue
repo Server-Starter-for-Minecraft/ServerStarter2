@@ -14,13 +14,15 @@ const consoleStore = useConsoleStore()
 const consoleOpeStore = useConsoleOpeStore()
 
 function stop() {
+  consoleStore.clickedStopBtn(mainStore.selectedWorldID)
   window.API.sendCommand(mainStore.selectedWorldID, 'stop')
 }
 
 async function reboot() {
   const worldID = mainStore.selectedWorldID
+  consoleStore.clickedRebootBtn(worldID)
   await window.API.invokeReboot(worldID)
-  consoleStore._world[worldID].console = []
+  consoleStore.resetReboot(worldID)
 }
 </script>
 
@@ -30,19 +32,19 @@ async function reboot() {
       dense
       is-capital
       icon="stop"
-      :label="$t('console.stop')"
+      :label="$t(consoleStore.isClickedStop(mainStore.selectedWorldID) ? 'console.stop.progress' : 'console.stop.btn')"
       color="negative"
-      width="100px"
-      :disable="disable"
+      :width="consoleStore.isClickedStop(mainStore.selectedWorldID) ? '150px' : '100px'"
+      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="stop"
     />
     <SsBtn
       dense
       is-capital
       icon="restart_alt"
-      :label="$t('console.reboot')"
-      width="100px"
-      :disable="disable"
+      :label="$t(consoleStore.isClickedReboot(mainStore.selectedWorldID) ? 'console.reboot.progress' : 'console.reboot.btn')"
+      :width="consoleStore.isClickedReboot(mainStore.selectedWorldID) ? '150px' : '100px'"
+      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="reboot"
       class="q-mx-sm"
     />
@@ -50,7 +52,7 @@ async function reboot() {
       dense
       filled
       clearable
-      :disable="disable"
+      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       v-model="consoleOpeStore.command"
       v-on:keydown.enter="() => consoleOpeStore.sendCommand()"
       v-on:keydown.up="consoleOpeStore.upKey()"

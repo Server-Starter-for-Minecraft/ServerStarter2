@@ -5,8 +5,17 @@ export const enUSConsole:MessageSchema['console'] = {
   boot: 'BOOT {name}',
   booting: 'Booting {id} ({type})/{name}',
   abnormalEnd:'Terminated abnormally',
-  stop: 'stop',
-  reboot: 'reboot',
+  stop: {
+    btn: 'close',
+    withName: 'CLOSE {name}',
+    progress: 'closing',
+    progressWithName: 'Working on closing {name}'
+  },
+  reboot: {
+    btn: 'reboot',
+    progress: 'rebooting',
+    progressWithName: 'Working on rebooting {name}'
+  },
   status: {
     Stop: 'Stop',
     Ready: 'Ready',
