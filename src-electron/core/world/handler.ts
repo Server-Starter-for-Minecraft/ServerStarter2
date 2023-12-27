@@ -857,7 +857,7 @@ export class WorldHandler {
     const notification: ServerStartNotification = { port }
 
     const ngrokURL = ngrokListener?.url()
-    if (ngrokURL) notification.ngrokURL = ngrokURL
+    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6)
 
     // サーバーの実行を開始
     const runPromise = runRebootableServer(
