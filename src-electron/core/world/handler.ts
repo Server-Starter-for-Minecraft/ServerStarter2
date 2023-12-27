@@ -39,6 +39,9 @@ import { portInUse } from 'app/src-electron/util/port';
 import { getWorld } from './world';
 import { closeNgrok, runNgrok } from '../server/setup/ngrok';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
+import { randomInt } from 'crypto';
+import { serverPropertiesFile } from './files/properties';
+import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -708,6 +711,62 @@ export class WorldHandler {
     return result;
   }
 
+  private async checkPortAvailability(port: number): Promise<boolean> {
+    // ポートが使用中か確認
+    let portIsUsed = await portInUse(port);
+
+    // サーバーランナーの中で同じポートを使用しているものがないか確認
+    portIsUsed ||= Object.values(WorldHandler.worldHandlerMap).some(
+      (x) => x.port === port
+    );
+
+    return !portIsUsed
+  }
+
+  /**
+   * 使用可能なポート(1024–49151)を探す
+   * 100回乱数でトライして、見つからなかった場合はエラー
+   */
+  private async getFreePort(): Promise<Failable<number>> {
+    let port = 1024
+    for (let i = 0; i < 100; i++) {
+      port = randomInt(1024, 49152)
+      if (await this.checkPortAvailability(port)) return port;
+    }
+    return errorMessage.core.world.serverPortIsUsed({
+      port,
+    })
+  }
+
+  /**
+   * 使用ポートを決定
+   */
+  private async definePortNumber(beforeWorld: World): Promise<Failable<number>> {
+    if (beforeWorld.useNgrok) {
+      // Ngrokを使用する場合 開いてるポートを適当に使う
+      const portnum = await this.getFreePort()
+      if (isError(portnum)) return portnum
+      return portnum
+    }
+    else {
+      // Ngrokを使用しない場合 ポートが空いてるかチェック
+      let port = 25565;
+      if (isValid(beforeWorld.properties)) {
+        const serverPort = beforeWorld.properties['server-port'];
+        if (typeof serverPort === 'number') port = serverPort;
+      }
+
+      const portIsUsed = !await this.checkPortAvailability(port)
+
+      if (portIsUsed) {
+        errorMessage.core.world.serverPortIsUsed({
+          port,
+        })
+      }
+      return port
+    }
+  }
+
   /** データを同期して サーバーを起動 */
   private async runExec(
     progress: GroupProgressor
@@ -734,6 +793,7 @@ export class WorldHandler {
 
     errors.push(...loadResult.errors);
 
+    /** ワールド起動直前のワールド設定 */
     const beforeWorld = loadResult.value;
 
     // serverstarterの実行者UUID
@@ -754,28 +814,17 @@ export class WorldHandler {
     const savePath = this.getSavePath();
 
     // ポート番号を取得
-    let port = 25565;
-    if (isValid(beforeWorld.properties)) {
-      const serverPort = beforeWorld.properties['server-port'];
-      if (typeof serverPort === 'number') port = serverPort;
-    }
+    const port = await this.definePortNumber(beforeWorld)
+    if (isError(port)) return withError(port, errors)
 
-    // ポートが使用中か確認
-    let portIsUsed = await portInUse(port);
+    // 実行時のサーバープロパティ(ポートだけ違う)
+    const execServerProperties: ServerProperties = { ... (isError(beforeWorld.properties) ? {} : beforeWorld.properties) }
+    const beforeServerPort = execServerProperties['server-port']
+    const beforeQueryport = execServerProperties['query.port']
 
-    // サーバーランナーの中で同じポートをしようとしているものがないか確認
-    portIsUsed ||= Object.values(WorldHandler.worldHandlerMap).some(
-      (x) => x.port === port
-    );
-
-    if (portIsUsed) {
-      return withError(
-        errorMessage.core.world.serverPortIsUsed({
-          port,
-        }),
-        errors
-      );
-    }
+    execServerProperties['server-port'] = port
+    execServerProperties['query.port'] = port
+    serverPropertiesFile.save(savePath, execServerProperties)
 
     // ポートを登録
     this.port = port;
@@ -805,7 +854,7 @@ export class WorldHandler {
     errors.push(...directoryFormatResult.errors);
 
 
-    const notification: ServerStartNotification = {}
+    const notification: ServerStartNotification = { port }
 
     const ngrokURL = ngrokListener?.url()
     if (ngrokURL) notification.ngrokURL = ngrokURL
@@ -851,7 +900,17 @@ export class WorldHandler {
     if (isError(serverResult)) return withError(serverResult);
 
     // ワールド情報を再取得
-    return await this.loadExec(progress);
+    const afterWorld = await this.loadExec(progress);
+
+    // ポート番号を復元
+    if (isValid(afterWorld.value) && isValid(afterWorld.value.properties)) {
+      afterWorld.value.properties["server-port"] = beforeServerPort
+      afterWorld.value.properties["query.port"] = beforeQueryport
+      // プロパティを保存
+      serverPropertiesFile.save(savePath, afterWorld.value.properties)
+    }
+
+    return afterWorld
   }
 
   /** コマンドを実行 */
