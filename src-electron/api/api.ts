@@ -94,7 +94,7 @@ export interface API extends IAPI {
     OpenBrowser: (url: string) => void;
 
     /** pathをエクスプローラーで開く */
-    OpenFolder: (path: string) => void;
+    OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
   };
   invokeWindowToMain: {
     /** 実行中のサーバーを再起動 */
@@ -160,8 +160,8 @@ export interface API extends IAPI {
     GetCacheContents: ((
       type: 'datapack'
     ) => Promise<WithError<CacheFileData<DatapackData>[]>>) &
-      ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData>[]>>) &
-      ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
+    ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData>[]>>) &
+    ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (
@@ -210,26 +210,26 @@ export interface API extends IAPI {
         isFile: boolean;
       } & DialogOptions
     ) => Promise<Failable<CustomMapData>>) &
-      ((
-        options: { type: 'datapack'; isFile: boolean } & DialogOptions
-      ) => Promise<Failable<NewFileData<DatapackData>>>) &
-      ((
-        options: {
-          type: 'plugin';
-        } & DialogOptions
-      ) => Promise<Failable<NewFileData<PluginData>>>) &
-      ((
-        options: { type: 'mod' } & DialogOptions
-      ) => Promise<Failable<NewFileData<ModData>>>) &
-      ((
-        options: { type: 'image' } & DialogOptions
-      ) => Promise<Failable<ImageURIData>>) &
-      ((
-        options: { type: 'container' } & DialogOptions
-      ) => Promise<Failable<WorldContainer>>) &
-      ((
-        options: { type: 'backup'; container: WorldContainer } & DialogOptions
-      ) => Promise<Failable<BackupData>>);
+    ((
+      options: { type: 'datapack'; isFile: boolean } & DialogOptions
+    ) => Promise<Failable<NewFileData<DatapackData>>>) &
+    ((
+      options: {
+        type: 'plugin';
+      } & DialogOptions
+    ) => Promise<Failable<NewFileData<PluginData>>>) &
+    ((
+      options: { type: 'mod' } & DialogOptions
+    ) => Promise<Failable<NewFileData<ModData>>>) &
+    ((
+      options: { type: 'image' } & DialogOptions
+    ) => Promise<Failable<ImageURIData>>) &
+    ((
+      options: { type: 'container' } & DialogOptions
+    ) => Promise<Failable<WorldContainer>>) &
+    ((
+      options: { type: 'backup'; container: WorldContainer } & DialogOptions
+    ) => Promise<Failable<BackupData>>);
   };
 }
 
