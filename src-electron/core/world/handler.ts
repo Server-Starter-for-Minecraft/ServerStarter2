@@ -890,8 +890,7 @@ async function getDuplicateWorldName(
 async function readyNgrok(worldID: WorldID, port: number) {
   const systemSettings = await getSystemSettings();
   const token = systemSettings.user.ngrokToken ?? '';
-  
-  // TODO: @txkodo 想定した実装でない場合は修正
+
   // 各ワールドに設定されたUseNgrokの値に応じてNgrokの実行有無を制御
   const world = await getWorld(worldID);
   if (isError(world.value)) return world.value;
