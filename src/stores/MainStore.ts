@@ -1,6 +1,6 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
+import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
@@ -18,7 +18,6 @@ export const useMainStore = defineStore('mainStore', {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
       errorWorlds: new Set<WorldID>(),
-      iconCandidate: undefined as ImageURI | undefined,
       selectedVersionType: 'vanilla' as Version['type']
     };
   },
@@ -78,7 +77,7 @@ export const useMainStore = defineStore('mainStore', {
                 })
               }
             },
-            e => tError(e,{titleKey: 'utils.errorDialog.failOPForOwner',descKey: `error.${e.key}.title`})
+            e => tError(e, { titleKey: 'error.errorDialog.failOPForOwner', descKey: `error.${e.key}.title` })
           )
         }
 
@@ -130,7 +129,6 @@ export const useMainStore = defineStore('mainStore', {
 
 /**
  * Worldの変更を検知するためのStore
- * TODO: mainStoreに統合するための方法を検討
  */
 export const useWorldStore = defineStore('worldStore', {
   state: () => {

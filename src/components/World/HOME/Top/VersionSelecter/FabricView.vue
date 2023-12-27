@@ -14,8 +14,8 @@ const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
 const isRelease = ref(true)
-const latestReleaseVer = prop.versionData.games.find(ops => ops.release)
-const fabricVer = ref(latestReleaseVer ?? prop.versionData.games[0])
+const latestReleaseVer = () => { return prop.versionData.games.find(ops => ops.release) }
+const fabricVer = ref(latestReleaseVer() ?? prop.versionData.games[0])
 
 const fabricInstaller = ref(prop.versionData.installers[0])
 const fabricLoader = ref(prop.versionData.loaders[0])
@@ -57,7 +57,7 @@ function onUpdatedSelection() {
       ).map(
         (ver, idx) => { return {
           data: ver,
-          label: ver.id === latestReleaseVer?.id ? `${ver.id}【${$t('home.version.latestRelease')}】` : idx === 0 ? `${ver.id}【${$t('home.version.latestSnapshot')}】` : ver.id
+          label: ver.id === latestReleaseVer()?.id ? `${ver.id}【${$t('home.version.latestRelease')}】` : idx === 0 ? `${ver.id}【${$t('home.version.latestSnapshot')}】` : ver.id
         }}
       )"
       :label="$t('home.version.versionType')"

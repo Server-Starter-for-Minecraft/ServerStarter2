@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { QVirtualScroll } from 'quasar';
+import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 
+const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
-// TODO: これをPinia側で定義してうまく動くかどうかを確認
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null)
 
 /**
  * コンソールの一番下に自動でスクロールする
  */
 function scroll2End() {
-  virtualListRef.value?.scrollTo(consoleStore.console().length, 'start-force')
+  virtualListRef.value?.scrollTo(consoleStore.console(mainStore.selectedWorldID).length, 'start-force')
 }
 setTimeout(scroll2End, 0)
 
@@ -33,9 +34,9 @@ consoleStore.$subscribe((mutation, state) => {
   /> -->
 
   <q-virtual-scroll
-    v-if="consoleStore.status() === 'Running'"
+    v-if="consoleStore.status(mainStore.selectedWorldID) === 'Running'"
     ref="virtualListRef"
-    :items="consoleStore.console()"
+    :items="consoleStore.console(mainStore.selectedWorldID)"
     v-slot="{ item }"
     class="q-pa-md fit"
     style="flex: 1 1 0;"

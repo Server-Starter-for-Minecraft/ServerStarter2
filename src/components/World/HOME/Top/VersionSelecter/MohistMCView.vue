@@ -13,8 +13,8 @@ const prop = defineProps<Prop>()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const mohistVers = prop.versionData.map(ver => ver.id)
-const mohistVer = ref(mohistVers[0])
+const mohistVers = () => { return prop.versionData.map(ver => ver.id) }
+const mohistVer = ref(mohistVers()[0])
 
 const mohistBuilds = () => {
   return prop.versionData.find(ver => ver.id === mohistVer.value)?.builds
@@ -53,10 +53,7 @@ function getNumberName(n: number, forgeVersion?: string) {
 function onUpdatedSelection(updateBuild: boolean) {
   // バージョンに応じてビルド番号を更新
   if (updateBuild) {
-    mohistBuild.value = 
-      prop.versionData.find(v => v.id === mohistVer.value)?.builds[0]
-      ?? mohistBuilds()?.[0]
-      ?? { number: 0 }
+    mohistBuild.value = mohistBuilds()?.[0] ?? { number: 0 }
   }
 
   mainStore.world.version = {
@@ -73,7 +70,7 @@ function onUpdatedSelection(updateBuild: boolean) {
     <SsSelect
       v-model="mohistVer"
       @update:model-value="onUpdatedSelection(true)"
-      :options="mohistVers.map(
+      :options="mohistVers().map(
         (ver, idx) => { return {
           data: ver,
           label: idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver
@@ -84,7 +81,7 @@ function onUpdatedSelection(updateBuild: boolean) {
       option-value="data"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 15rem;"
+      style="min-width: 10rem;"
     />
     <SsSelect
       v-model="mohistBuild"

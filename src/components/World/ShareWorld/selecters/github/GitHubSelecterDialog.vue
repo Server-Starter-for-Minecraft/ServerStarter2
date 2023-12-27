@@ -12,7 +12,7 @@ import ExistedGitHubDialog from './ExistedGitHubDialog.vue';
 import NewGitHubDialog from './NewGitHubDialog.vue';
 import { tError } from 'src/i18n/utils/tFunc';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const prop = defineProps<GitHubSelecterProp>()
 
@@ -64,7 +64,7 @@ onMounted(async () => {
     e => tError(
       e,
       {
-        titleKey: 'utils.errorDialog.failGetShareWorld',
+        titleKey: 'error.errorDialog.failGetShareWorld',
         descKey: `error.${e.key}.title`
       }
     )
@@ -77,21 +77,13 @@ onMounted(async () => {
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <BaseDialogCard
-      :title="$t('shareWorld.sync',{path: `${remoteData.owner}/${remoteData.repo}`})"
-      @close="onDialogCancel"
-    >
+    <BaseDialogCard :title="$t('shareWorld.sync', { path: `${remoteData.owner}/${remoteData.repo}` })"
+      @close="onDialogCancel">
       <q-card-section>
         <span class="text-caption">{{ $t('shareWorld.selectRemote.title') }}</span>
         <q-card-actions>
-          <SsBtn
-            free-width
-            color="primary"
-            icon="add"
-            :label="$t('shareWorld.selectRemote.makeShareWorld')"
-            @click="checkSetNewRemote"
-            class="btn col"
-          />
+          <SsBtn free-width color="primary" icon="add" :label="$t('shareWorld.selectRemote.makeShareWorld')"
+            @click="checkSetNewRemote" class="btn col" />
         </q-card-actions>
       </q-card-section>
 
@@ -99,19 +91,10 @@ onMounted(async () => {
         <span class="text-caption">{{ $t('shareWorld.selectRemote.syncExistWorld') }}</span>
         <div v-if="remoteWorlds.length === 0" class="messageField">
           <div v-if="loading" class="absolute-center messageText row items-center">
-            <q-circular-progress
-              indeterminate
-              rounded
-              color="grey"
-              size="2rem"
-              class="q-my-sm q-mr-lg"
-            />
+            <q-circular-progress indeterminate rounded color="grey" size="2rem" class="q-my-sm q-mr-lg" />
             <p class="q-ma-none">{{ $t('shareWorld.selectRemote.loading') }}</p>
           </div>
-          <div 
-            v-else 
-            class="absolute-center messageText"
-          >
+          <div v-else class="absolute-center messageText">
             {{ $t('shareWorld.selectRemote.notFound') }}
           </div>
         </div>

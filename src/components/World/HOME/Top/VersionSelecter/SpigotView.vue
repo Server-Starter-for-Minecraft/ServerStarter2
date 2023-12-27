@@ -12,20 +12,20 @@ const prop = defineProps<Prop>()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const spigotOps = prop.versionData.map(
+const spigotOps = () => { return prop.versionData.map(
   ver => { return { id: ver.id, type: 'spigot' as const }}
-)
+)}
 
 // spigotでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'spigot' && spigotOps !== void 0) {
-  mainStore.world.version = spigotOps[0]
+if (mainStore.world.version.type !== 'spigot') {
+  mainStore.world.version = spigotOps()[0]
 }
 </script>
 
 <template>
   <SsSelect
     v-model="mainStore.world.version"
-    :options="spigotOps?.map(
+    :options="spigotOps()?.map(
       (ver, idx) => { return {
         data: ver,
         label: idx === 0 ? `${ver.id}【${$t('home.version.latestVersion')}】` : ver.id

@@ -27,29 +27,19 @@ function openFolderEditor() {
 <template>
   <div class="q-pa-md">
     <p class="q-my-sm text-body2" style="opacity: .6;">
-      {{ $t('home.saveWorld.description') }}
+      {{ $t('others.worldFolder.description') }}
     </p>
     <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-negative">
-      {{ $t('home.saveWorld.cannotEdit') }}
+      {{ $t('others.worldFolder.cannotEdit') }}
     </p>
 
     <div class="column q-py-sm q-gutter-y-md">
-      <template
-        v-for="n in sysStore.systemSettings.container.length"
-        :key="sysStore.systemSettings.container[n-1]"
-      >
-        <FolderCard
-          show-operation-btns
-          v-model="sysStore.systemSettings.container[n - 1]"
-          :disable="!consoleStore.isAllWorldStop()"
-        />
+      <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
+        <FolderCard show-operation-btns v-model="sysStore.systemSettings.container[n - 1]"
+          :disable="!consoleStore.isAllWorldStop()" />
       </template>
-      <AddContentsCard
-        :label="$t('home.saveWorld.addFolder')"
-        min-height="4rem"
-        :card-style="{ 'min-width': '100%', 'border-radius': '5px' }"
-        @click="openFolderEditor"
-      />
+      <AddContentsCard :label="$t('others.worldFolder.addFolder')" min-height="4rem"
+        :card-style="{ 'min-width': '100%', 'border-radius': '5px' }" @click="openFolderEditor" />
     </div>
   </div>
 </template>

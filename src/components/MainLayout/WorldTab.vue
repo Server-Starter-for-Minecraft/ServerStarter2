@@ -26,7 +26,7 @@ async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore
   selectWorldIdx()
 
   // Stop状態でない時にはサーバーを起動できないようにする
-  if (cStore.status() !== 'Stop') { return }
+  if (cStore.status(prop.world.id) !== 'Stop') { return }
 
   // サーバーの起動を開始
   await router.push('/console');
@@ -98,7 +98,7 @@ function selectWorldIdx() {
         }}
       </q-item-label>
       <q-item-label v-if="world.last_date" class="date">
-        {{ $t('worldList.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
+        {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
       </q-item-label>
     </q-item-section>
     <q-tooltip
@@ -115,7 +115,7 @@ function selectWorldIdx() {
 
 <style scoped lang="scss">
 .worldBlock {
-  height: 6.5rem;
+  height: 6.3rem;
 }
 
 .worldName {

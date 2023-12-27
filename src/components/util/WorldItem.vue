@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ImageURI } from 'app/src-electron/schema/brands';
+import { assets } from 'src/assets/assets';
 
 interface Prop {
   icon?: ImageURI,
@@ -18,15 +19,15 @@ defineProps<Prop>()
   >
     <q-item-section avatar top>
       <q-avatar square size="5rem">
-        <q-img :src="icon" class="lowImg" />
+        <q-img :src="icon ?? assets.png.unset" class="lowImg" />
       </q-avatar>
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="name text-omit">{{ worldName.replace(/§./g, "").trim() }}</q-item-label>
+      <q-item-label class="name text-omit">{{ String(worldName).replace(/§./g, "").trim() }}</q-item-label>
       <q-item-label class="version">{{ versionName }}</q-item-label>
       <q-item-label v-if="lastPlayed" class="date">
-        {{ $t('worldList.lastPlayed', { datetime: $d(lastPlayed, 'dateTime') } ) }}
+        {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(lastPlayed, 'dateTime') } ) }}
       </q-item-label>
     </q-item-section>
   </q-item>

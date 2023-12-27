@@ -20,15 +20,16 @@ const consoleStore = useConsoleStore()
 const { t } = useI18n()
 
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
-const vanillas  = sysStore.serverVersions.get('vanilla')  as AllVanillaVersion  | undefined
-const spigots   = sysStore.serverVersions.get('spigot')   as AllSpigotVersion   | undefined
-const papermcs  = sysStore.serverVersions.get('papermc')  as AllPapermcVersion  | undefined
-const forges    = sysStore.serverVersions.get('forge')    as AllForgeVersion    | undefined
-const mohistmcs = sysStore.serverVersions.get('mohistmc') as AllMohistmcVersion | undefined
-const fabrics   = sysStore.serverVersions.get('fabric')   as AllFabricVersion   | undefined
-const validVersionTypes = versionTypes.filter(
+// validVersionTypesを通過したバージョンのみ選択できるようにするため，getでは値を必ず取得できる
+const vanillas  = () => { return sysStore.serverVersions.get('vanilla')  as AllVanillaVersion  }
+const spigots   = () => { return sysStore.serverVersions.get('spigot')   as AllSpigotVersion   }
+const papermcs  = () => { return sysStore.serverVersions.get('papermc')  as AllPapermcVersion  }
+const forges    = () => { return sysStore.serverVersions.get('forge')    as AllForgeVersion    }
+const mohistmcs = () => { return sysStore.serverVersions.get('mohistmc') as AllMohistmcVersion }
+const fabrics   = () => { return sysStore.serverVersions.get('fabric')   as AllFabricVersion   }
+const validVersionTypes = () => { return versionTypes.filter(
   serverType => sysStore.serverVersions.get(serverType) !== void 0
-)
+)}
 
 function createServerMap(serverType: Version['type']) {
   return {
@@ -44,7 +45,7 @@ function createServerMap(serverType: Version['type']) {
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelectScope
     v-model="mainStore.selectedVersionType"
-    :options="validVersionTypes.map(createServerMap)"
+    :options="validVersionTypes().map(createServerMap)"
     options-selected-class="text-primary"
     :label="$t('home.version.serverType')"
     :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
@@ -61,10 +62,10 @@ function createServerMap(serverType: Version['type']) {
   </SsSelectScope>
 
   <!-- バージョンの一覧を取得できていないときには、編集ができないようにする -->
-  <Vanilla  v-if="mainStore.selectedVersionType      === 'vanilla'  && vanillas"  :version-data="vanillas" />
-  <Spigot   v-else-if="mainStore.selectedVersionType === 'spigot'   && spigots"   :version-data="spigots" />
-  <PaperMC  v-else-if="mainStore.selectedVersionType === 'papermc'  && papermcs"  :version-data="papermcs" />
-  <Forge    v-else-if="mainStore.selectedVersionType === 'forge'    && forges"    :version-data="forges" />
-  <MohistMC v-else-if="mainStore.selectedVersionType === 'mohistmc' && mohistmcs" :version-data="mohistmcs" />
-  <Fabric   v-else-if="mainStore.selectedVersionType === 'fabric'   && fabrics"   :version-data="fabrics" />
+  <Vanilla  v-if="mainStore.selectedVersionType      === 'vanilla' " :version-data="vanillas() " />
+  <Spigot   v-else-if="mainStore.selectedVersionType === 'spigot'  " :version-data="spigots()  " />
+  <PaperMC  v-else-if="mainStore.selectedVersionType === 'papermc' " :version-data="papermcs() " />
+  <Forge    v-else-if="mainStore.selectedVersionType === 'forge'   " :version-data="forges()   " />
+  <MohistMC v-else-if="mainStore.selectedVersionType === 'mohistmc'" :version-data="mohistmcs()" />
+  <Fabric   v-else-if="mainStore.selectedVersionType === 'fabric'  " :version-data="fabrics()  " />
 </template>
