@@ -16,7 +16,7 @@ function onClick() {
   $q.dialog({
     component: NgrokSettingDialog,
     componentProps: {
-      token: sysStore.systemSettings.user.ngrokToken
+      token: sysStore.systemSettings.user.ngrokToken ?? ''
     } as NgrokDialogProp
   }).onOk((p: NgrokDialogReturns) => {
     sysStore.systemSettings.user.ngrokToken = p.token
