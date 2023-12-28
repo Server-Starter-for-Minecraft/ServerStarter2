@@ -48,3 +48,7 @@ export function uniqueArrayDict<T extends Record<string, any>>(dicts: T[], key: 
 
   return uniqueArray
 }
+
+export function uniqueArray<T>(array: T[]) {
+  return [...new Set(array)]
+}
