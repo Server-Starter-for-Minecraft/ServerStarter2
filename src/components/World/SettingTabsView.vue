@@ -44,14 +44,14 @@ function getAdditionalContentsBtns() {
       <icon-tab-view path="player" icon="person" :label="$t('tabs.worldSettingTabs.player')" />
       <icon-tab-dropdown-view v-model="contentsStore.selectedTab" path="contents" icon="extension"
         :label="$t('tabs.worldSettingTabs.contents')" :btns="getAdditionalContentsBtns()" />
-      <!-- <icon-tab-view path="share-world" icon="cloud" :label="$t('tabs.worldSettingTabs.shareWorld')" /> -->
+      <icon-tab-view path="share-world" icon="cloud" :label="$t('tabs.worldSettingTabs.shareWorld')" />
       <icon-tab-view path="others" icon="build" :label="$t('tabs.worldSettingTabs.others')" />
     </template>
     <template v-else>
       <icon-tab-view path="system" icon="home" :label="$t('tabs.systemSettingTabs.home')" />
       <icon-tab-view path="system/property" icon="list_alt" :label="$t('tabs.systemSettingTabs.list_alt')" />
-      <!-- <icon-tab-view path="system/remote" icon="cloud" :label="$t('tabs.systemSettingTabs.cloud')" /> -->
       <icon-tab-view path="system/folder" icon="folder" :label="$t('tabs.systemSettingTabs.folder')" />
+      <icon-tab-view path="system/remote" icon="cloud" :label="$t('tabs.systemSettingTabs.cloud')" />
       <icon-tab-view path="system/info" icon="info" :label="$t('tabs.systemSettingTabs.info')" />
     </template>
   </q-tabs>
