@@ -7,6 +7,7 @@ import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
@@ -20,6 +21,7 @@ import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
 const worldStore = useWorldStore()
+const propertyStore = usePropertyStore()
 const playerStore = usePlayerStore()
 const consoleStore = useConsoleStore()
 const progressStore = useProgressStore();
@@ -44,6 +46,7 @@ watch(() => $q.dark.isActive, val => {
 window.API.onStartServer((_event, worldID, notification) => {
   consoleStore.setConsole(worldID, '', false)
   worldStore.setWorldIP(worldID, notification.ngrokURL)
+  propertyStore.setServerPort(worldID, notification.port)
 })
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {
