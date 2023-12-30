@@ -110,6 +110,10 @@ export const jaError: ErrorTranslationTypes = {
       dialogCanceled:{
         title: 'ファイル選択ウィンドウがキャンセルされました',
       },
+      shellError:{
+        title: '不明なエラーが発生しました',
+        desc: '{message}'
+      },
     },
     githubAPI: {
       fetchFailed:{

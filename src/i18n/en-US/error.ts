@@ -110,6 +110,10 @@ export const enUSError: ErrorTranslationTypes = {
       dialogCanceled: {
         title: 'Window to select file is cancelled',
       },
+      shellError:{
+        title: 'Unknown error occured',
+        desc: '{message}'
+      },
     },
     githubAPI: {
       fetchFailed: {
@@ -122,6 +126,7 @@ export const enUSError: ErrorTranslationTypes = {
         title: 'World data is invalid',
         desc: 'Please check the data on {owner}/{repo}/{branch}',
       },
+      
     },
     failJsonFix: {
       title: 'Failed to fix JSON file',
