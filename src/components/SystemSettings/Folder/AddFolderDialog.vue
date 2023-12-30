@@ -10,6 +10,7 @@ import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 const prop = defineProps<AddFolderDialogProps>()
 defineEmits({...useDialogPluginComponent.emitsObject})
@@ -108,6 +109,7 @@ function isErrorContainer(c: WorldContainerSetting) {
         style="opacity: .6;"
       >
         {{ pickPath }}
+        <SsTooltip :name="pickPath" anchor="bottom start" self="center start" />
       </div>
     </BaseDialogCard>
   </q-dialog>
