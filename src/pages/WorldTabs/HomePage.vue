@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import { setScrollTop } from 'src/components/World/HOME/scroll';
 import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
-import BootSettingsView from 'src/components/World/HOME/Others/BootSettingsView.vue';
 import WorldDeleteView from 'src/components/World/HOME/Others/WorldDeleteView.vue';
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
@@ -35,10 +34,6 @@ setScrollTop(scrollTop)
         </div>
         <WorldIconView />
       </div>
-
-      <!-- Others -->
-      <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>
-      <BootSettingsView />
 
       <WorldDeleteView />
     </div>
