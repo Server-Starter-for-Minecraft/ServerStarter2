@@ -78,7 +78,7 @@ export interface WorldBase extends WorldAbbr {
   avater_path?: ImageURI;
 
   /** Ngrokによるポート開放不要化機能を利用するか */
-  ngrokSetting: NgrokSetting;
+  ngrok_setting: NgrokSetting;
 }
 
 export type WorldAdditional = {

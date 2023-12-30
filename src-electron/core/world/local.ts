@@ -139,7 +139,7 @@ export async function loadLocalFiles(
     additional: additional.value,
     properties,
     players,
-    ngrokSetting: worldSettings.ngrokSetting,
+    ngrok_setting: worldSettings.ngrok_setting,
   };
 
   return withError(world, errors);
@@ -257,7 +257,7 @@ export function constructWorldSettings(world: World | WorldEdited) {
     last_user: world.last_user,
     last_id: world.last_id,
     using: world.using,
-    ngrokSetting: world.ngrokSetting,
+    ngrok_setting: world.ngrok_setting,
   };
   return worldSettings;
 }

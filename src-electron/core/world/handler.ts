@@ -743,7 +743,7 @@ export class WorldHandler {
    * 使用ポートを決定
    */
   private async definePortNumber(beforeWorld: World): Promise<Failable<number>> {
-    if (beforeWorld.ngrokSetting.useNgrok) {
+    if (beforeWorld.ngrok_setting.use_ngrok) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
       const portnum = await this.getFreePort()
       if (isError(portnum)) return portnum
@@ -964,8 +964,8 @@ async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<List
   const world = await getWorld(worldID);
   if (isError(world.value)) return world.value;
 
-  if (token !== '' && world.value.ngrokSetting.useNgrok) {
-    const listener = runNgrok(token, port, world.value.ngrokSetting.remote_addr);
+  if (token !== '' && world.value.ngrok_setting.use_ngrok) {
+    const listener = runNgrok(token, port, world.value.ngrok_setting.remote_addr);
     return listener;
   }
 

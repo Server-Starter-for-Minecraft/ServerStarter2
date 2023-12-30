@@ -1,6 +1,6 @@
 
 /** Ngrokの設定 */
 export type NgrokSetting = {
-    useNgrok: boolean
+    use_ngrok: boolean
     remote_addr?: string
 }
