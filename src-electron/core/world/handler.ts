@@ -42,6 +42,7 @@ import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { randomInt } from 'crypto';
 import { serverPropertiesFile } from './files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { Listener } from '@ngrok/ngrok';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -955,7 +956,7 @@ async function getDuplicateWorldName(
  * Ngrokを利用する場合はlistenerを返す
  * Ngrokを利用しない場合はundefinedを返す
  */
-async function readyNgrok(worldID: WorldID, port: number) {
+async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<Listener | undefined>> {
   const systemSettings = await getSystemSettings();
   const token = systemSettings.user.ngrokToken ?? '';
 
@@ -964,7 +965,7 @@ async function readyNgrok(worldID: WorldID, port: number) {
   if (isError(world.value)) return world.value;
 
   if (token !== '' && world.value.ngrokSetting.useNgrok) {
-    const listener = runNgrok(token, port);
+    const listener = runNgrok(token, port, world.value.ngrokSetting.remote_addr);
     return listener;
   }
 
