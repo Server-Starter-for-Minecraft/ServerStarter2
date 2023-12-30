@@ -22,6 +22,15 @@ const forgeVersionsPath = versionsCachePath.child('forge');
 
 const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
 
+/** @param ext:拡張子(.jar/.sh/.bat) */
+function constructExecPath(
+  cwdPath: Path,
+  version: ForgeVersion,
+  ext: string
+) {
+  return cwdPath.child(`${version.type}-${version.id}${ext}`);
+}
+
 export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
   /** forgeのサーバーデータをダウンロード */
   async readyVersion(
@@ -37,10 +46,8 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
     const component = await getJavaComponent(version.id);
     if (isError(component)) return component;
 
-    const jarpath = cwdPath.child(`${version.type}-${version.id}.jar`);
-
     // 実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
-    let programArguments = await getProgramArguments(cwdPath, jarpath);
+    let programArguments = await getProgramArguments(cwdPath, version);
 
     // 実行可能なファイルが存在しなかった場合
     if (isError(programArguments)) {
@@ -48,14 +55,14 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
       const r = progress?.subtitle({
         key: 'server.readyVersion.forge.readyServerData',
       });
-      const install = await installForgeVersion(version, cwdPath, jarpath);
+      const install = await installForgeVersion(version, cwdPath);
       r?.delete();
 
       // インストールに失敗した場合エラー
       if (isError(install)) return install;
 
       // 再び実行可能なファイル(jar/bat/sh)存在するかを確認し適切なコマンド引数を得る
-      programArguments = await getProgramArguments(cwdPath, jarpath);
+      programArguments = await getProgramArguments(cwdPath, version);
       console.log(programArguments);
 
       // 実行可能なファイルが存在しなかった場合インストールに失敗したとみなしエラー
@@ -75,9 +82,11 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
 
 async function installForgeVersion(
   version: ForgeVersion,
-  cwdPath: Path,
-  jarpath: Path
+  cwdPath: Path
 ) {
+  // 元のforge関連のファイルを削除
+  await uninstallForgeVersion(cwdPath)
+
   const installerPath = cwdPath.child('forge-' + version.id + '-installer.jar');
 
   // インストーラーのダウンロードURLを取得
@@ -100,34 +109,58 @@ async function installForgeVersion(
 
     // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
     const match = filename.match(
-      /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal)?.jar/
+      /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal|-shim)?.jar/
     );
     if (match) {
-      await file.rename(jarpath);
+      await file.rename(constructExecPath(cwdPath, version, ".jar"));
       return;
+    }
+
+    // 生成されたbatのファイル名を変更 (batを生成するバージョンだった場合)
+    if (filename === "run.bat") {
+      await file.rename(constructExecPath(cwdPath, version, ".bat"));
+    }
+
+    // 生成されたshのファイル名を変更 (shを生成するバージョンだった場合)
+    if (filename === "run.sh") {
+      await file.rename(constructExecPath(cwdPath, version, ".sh"));
     }
   }
 }
 
-async function getProgramArguments(serverCwdPath: Path, jarpath: Path) {
+async function uninstallForgeVersion(
+  cwdPath: Path
+) {
+  for (const file of await cwdPath.iter()) {
+    const filename = file.basename();
+    // forge関連の実行系ファイルを削除
+    const match = filename.match(
+      /forge-.*\.(jar|bat|sh)/
+    );
+    if (match) await file.remove();
+  }
+}
+
+async function getProgramArguments(serverCwdPath: Path, version: ForgeVersion) {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
   let runPath: Path;
   if (osPlatform == 'windows-x64') {
     // windows
-    runPath = serverCwdPath.child('run.bat');
+    runPath = constructExecPath(serverCwdPath, version, ".bat")
     if (runPath.exists()) {
       // 1.17.1以降
       return await getProgramArgumentsFromBat(runPath);
     }
   } else {
     // UNIX(macOS,linux)
-    runPath = serverCwdPath.child('run.sh');
+    runPath = constructExecPath(serverCwdPath, version, ".sh")
     if (runPath.exists()) {
       // 1.17.1以降
       return await getProgramArgumentsFromSh(runPath);
     }
   }
 
+  const jarpath = constructExecPath(serverCwdPath, version, ".jar")
   if (jarpath.exists()) return ['-jar', jarpath.absolute().strQuoted()];
 
   return errorMessage.data.path.notFound({
