@@ -22,7 +22,7 @@ const slide = ref(1)
       navigation
       padding
       arrows
-      class="text-white shadow-1 rounded-borders"
+      class="shadow-1 rounded-borders"
     >
       <q-carousel-slide :name="1">
         <BaseCard title="アカウント登録" :img="assets.png.signUp" :img-width="9">
