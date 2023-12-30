@@ -9,9 +9,10 @@ import { values } from 'src/scripts/obj';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 
 type consoleData = { chunk: string, isError: boolean }
+type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog'
 interface WorldConsole {
   [id: WorldID]: {
-    status: 'Stop' | 'Ready' | 'Running',
+    status: WorldStatus,
     clickedStop: boolean,
     clickedReboot: boolean,
     console: consoleData[]
@@ -56,6 +57,14 @@ export const useConsoleStore = defineStore('consoleStore', {
     setConsole(worldID: WorldID, consoleLine: string, isError: boolean) {
       this._world[worldID].status = 'Running'
       if (consoleLine !== void 0) { this._world[worldID].console.push({ chunk: consoleLine, isError: isError }) }
+    },
+    /**
+     * 一括でコンソールの中身を登録する
+     */
+    setAllConsole(worldID: WorldID, consoleLines: string[], status: WorldStatus) {
+      this._world[worldID].status = status
+      this._world[worldID].console = []
+      consoleLines.forEach(l => this._world[worldID].console.push({ chunk: l, isError: false }))
     },
     /**
      * コンソールに行を追加する 

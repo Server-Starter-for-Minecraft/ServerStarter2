@@ -24,10 +24,14 @@ async function reboot() {
   await window.API.invokeReboot(worldID)
   consoleStore.resetReboot(worldID)
 }
+
+function closeLog() {
+  consoleStore.initTab(mainStore.selectedWorldID, true)
+}
 </script>
 
 <template>
-  <div class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+  <div v-if="consoleStore.status(mainStore.selectedWorldID) !== 'CheckLog'" class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
     <SsBtn
       dense
       is-capital
@@ -71,5 +75,17 @@ async function reboot() {
         />
       </template>
     </q-input>
+  </div>
+  
+  <div v-else class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+    <q-space />
+    <SsBtn
+      dense
+      is-capital
+      icon="close"
+      label="閉じる"
+      @click="closeLog"
+      class="q-py-sm"
+    />
   </div>
 </template>

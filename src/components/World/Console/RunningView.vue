@@ -34,7 +34,7 @@ consoleStore.$subscribe((mutation, state) => {
   /> -->
 
   <q-virtual-scroll
-    v-if="consoleStore.status(mainStore.selectedWorldID) === 'Running'"
+    v-if="['Running', 'CheckLog'].includes(consoleStore.status(mainStore.selectedWorldID))"
     ref="virtualListRef"
     :items="consoleStore.console(mainStore.selectedWorldID)"
     v-slot="{ item }"

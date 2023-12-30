@@ -20,6 +20,7 @@ export const enUSConsole:MessageSchema['console'] = {
     Stop: 'Stop',
     Ready: 'Ready',
     Running: 'Running',
+    CheckLog: 'Checking Log'
   },
   shutdownServer: 'Shutdowning server',
   command: 'Command',

@@ -18,6 +18,7 @@ export const jaConsole = {
     Stop: '停止中',
     Ready: '準備中',
     Running: '起動中',
+    CheckLog: 'ログ確認中'
   },
   shutdownServer: 'サーバーをシャットダウン中',
   command: 'コマンドを入力',

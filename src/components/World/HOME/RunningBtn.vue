@@ -25,7 +25,7 @@ function stopServer() {
     v-if="consoleStore.status(mainStore.world.id) !== 'Running'"
     free-width
     color="primary"
-    :disable="mainStore.errorWorlds.has(mainStore.world.id) || consoleStore.status(mainStore.world.id) === 'Ready'"
+    :disable="mainStore.errorWorlds.has(mainStore.world.id) || consoleStore.status(mainStore.world.id) !== 'Stop'"
     :to="to"
     @click="runServer"
     :style="{'height': `${3 ** (textFontSize + 0.1)}rem`}"
