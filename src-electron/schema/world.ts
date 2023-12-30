@@ -17,6 +17,7 @@ import {
   WorldFileData,
 } from './filedata';
 import { MemorySettings } from './memory';
+import { NgrokSetting } from './ngrok';
 import { PlayerSetting } from './player';
 import { Remote } from './remote';
 import { ServerProperties } from './serverproperty';
@@ -77,7 +78,7 @@ export interface WorldBase extends WorldAbbr {
   avater_path?: ImageURI;
 
   /** Ngrokによるポート開放不要化機能を利用するか */
-  useNgrok: boolean;
+  ngrokSetting: NgrokSetting;
 }
 
 export type WorldAdditional = {

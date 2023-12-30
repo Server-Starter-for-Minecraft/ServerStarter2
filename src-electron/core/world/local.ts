@@ -42,14 +42,14 @@ function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
 
   ops.forEach(
     ({ uuid, name, level, bypassesPlayerLimit }) =>
-      (map[uuid] = {
-        uuid,
-        name,
-        op: {
-          level,
-          bypassesPlayerLimit,
-        },
-      })
+    (map[uuid] = {
+      uuid,
+      name,
+      op: {
+        level,
+        bypassesPlayerLimit,
+      },
+    })
   );
 
   return Object.values(map);
@@ -139,7 +139,7 @@ export async function loadLocalFiles(
     additional: additional.value,
     properties,
     players,
-    useNgrok: worldSettings.useNgrok,
+    ngrokSetting: worldSettings.ngrokSetting,
   };
 
   return withError(world, errors);
@@ -257,7 +257,7 @@ export function constructWorldSettings(world: World | WorldEdited) {
     last_user: world.last_user,
     last_id: world.last_id,
     using: world.using,
-    useNgrok: world.useNgrok,
+    ngrokSetting: world.ngrokSetting,
   };
   return worldSettings;
 }

@@ -38,8 +38,8 @@ function onClick() {
 
     <q-toggle
       v-if="isUseNgrok()"
-      v-model="mainStore.world.useNgrok"
-      :label="`不要化設定を利用${mainStore.world.useNgrok ? 'する' : 'しない'}`"
+      v-model="mainStore.world.ngrokSetting.useNgrok"
+      :label="`不要化設定を利用${mainStore.world.ngrokSetting.useNgrok ? 'する' : 'しない'}`"
     />
 
     <!-- デバッグ用ボタン -->
