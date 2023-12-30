@@ -22,13 +22,13 @@ function closeWindow() {
 
         <q-card-section>
           <div>
-            <p>{{ $t('utils.bugReport.title') }}</p>
+            <p>{{ $t('bugReport.title') }}</p>
             <p style="text-decoration: underline;">{{ store.description }}</p>
-            <p v-html="$t('utils.bugReport.desc')"></p>
+            <p v-html="$t('bugReport.desc')"></p>
           </div>
 
           <div>
-            <p>{{ $t('utils.bugReport.cause') }}</p>
+            <p>{{ $t('bugReport.cause') }}</p>
             <p>{{ store.error }}</p>
           </div>
         </q-card-section>
@@ -39,7 +39,7 @@ function closeWindow() {
         <q-btn
           color="negative"
           icon="pest_control"
-          :label="$t('utils.bugReport.reportBtn')"
+          :label="$t('bugReport.reportBtn')"
           size="1.3rem"
           class="q-mx-md"
         />
@@ -47,14 +47,14 @@ function closeWindow() {
           color="blue-1"
           text-color="blue"
           icon="img:https://cdn.iconscout.com/icon/free/png-512/free-twitter-87-432551.png?f=avif&w=256"
-          :label="$t('utils.bugReport.contact')"
+          :label="$t('bugReport.contact')"
           size="1.3rem"
           class="q-mx-md"
           @click="showTwitter"
         />
         <q-btn
           icon="close"
-          :label="$t('utils.bugReport.close')"
+          :label="$t('bugReport.close')"
           size="1.3rem"
           class="q-mx-md"
           @click="closeWindow"

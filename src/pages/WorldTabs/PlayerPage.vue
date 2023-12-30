@@ -86,7 +86,6 @@ function openGroupEditor(group?: PlayerGroup) {
         <div class="q-py-md fit">
           <div v-show="playerStore.searchName !== ''" class="q-pb-md">
             <span class="text-caption">{{ $t('player.newPlayer') }}</span>
-            <!-- TODO: 検索結果UIを更新 -->
             <SearchResultView />
           </div>
 

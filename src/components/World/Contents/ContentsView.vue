@@ -36,8 +36,6 @@ async function importNewContent(isFile = false) {
   // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
   switch (prop.contentType) {
     case 'datapack':
-      // TODO: 何もファイルを選択せずに修了した場合もエラー扱いとなるため、
-      // 何も選択しなかった場合はエラーを表示せず、不適なファイルが選択された際には適切なエラーを表示するようにする
       checkError(
         await window.API.invokePickDialog({ type: 'datapack', isFile: isFile }),
         c => addContent2World(c),

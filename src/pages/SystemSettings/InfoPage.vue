@@ -8,6 +8,7 @@ const sysStore = useSystemStore()
 
 // TODO: 本来はこのオプションをバックエンドから取得する
 // ひとまずは手動でアップデートをすることは想定しないため、true固定
+// v2.0.0では，強制的に最新のバージョンへアップデートするため，手動でのバージョン更新は起きない
 const latest = true
 const lastUpdateDateTime = sysStore.systemSettings.system.lastUpdatedTime
 

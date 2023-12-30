@@ -3,6 +3,7 @@ import { World } from 'app/src-electron/schema/world';
 import { checkError } from './components/Error/Error';
 import { useMainStore, useWorldStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
+import { useConsoleStore } from './stores/ConsoleStore';
 import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
 import { fromEntries, values } from './scripts/obj';
 import { tError } from './i18n/utils/tFunc';
@@ -12,6 +13,7 @@ export async function initWindow() {
   const sysStore = useSystemStore();
   const mainStore = useMainStore();
   const worldStore = useWorldStore();
+  const consoleStore = useConsoleStore()
 
   // static resourcesの読み込み
   sysStore.staticResouces = await window.API.invokeGetStaticResouce()
@@ -51,6 +53,7 @@ export async function initWindow() {
     })
 
     worldStore.worldList = fromEntries(localWorlds.map(w => [w.id, w]));
+    localWorlds.forEach(w => consoleStore.initTab(w.id))
   }
 
   if (Object.keys(worldStore.worldList).length === 0) {

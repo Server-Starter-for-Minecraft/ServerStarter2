@@ -20,7 +20,7 @@ const sysStore = useSystemStore()
       <q-icon name="search" size="2rem" class="q-py-sm"/>
     </q-item-section>
     <q-item-section>
-      <ss-input v-model="model" :label="$t('worldList.searchWorld')"/>
+      <ss-input v-model="model" :label="$t('mainLayout.searchWorld')"/>
     </q-item-section>
     <q-tooltip
       v-if="expandDrawerBtnClickable"
@@ -28,7 +28,7 @@ const sysStore = useSystemStore()
       self="top middle"
       :delay="500"
     >
-      {{ $t('worldList.searchWorld') }}
+      {{ $t('mainLayout.searchWorld') }}
     </q-tooltip>
   </q-item>
 </template>

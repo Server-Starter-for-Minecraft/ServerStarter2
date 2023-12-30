@@ -13,8 +13,8 @@ const prop = defineProps<Prop>()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
-const paperVers = prop.versionData.map(ver => ver.id)
-const paperVer = ref(paperVers[0])
+const paperVers = () => { return prop.versionData.map(ver => ver.id) }
+const paperVer = ref(paperVers()[0])
 
 const paperBuilds = () => {
   return prop.versionData.find(ver => ver.id === paperVer.value)?.builds
@@ -38,10 +38,7 @@ else {
 function onUpdatedSelection(updateBuild: boolean) {
   // バージョンに応じてビルド番号を更新
   if (updateBuild) {
-    paperBuild.value = 
-      prop.versionData.find(v => v.id === paperVer.value)?.builds[0]
-      ?? paperBuilds()?.[0]
-      ?? 0
+    paperBuild.value = paperBuilds()?.[0] ?? 0
   }
 
   mainStore.world.version = {
@@ -57,7 +54,7 @@ function onUpdatedSelection(updateBuild: boolean) {
     <SsSelect
       v-model="paperVer"
       @update:model-value="onUpdatedSelection(true)"
-      :options="paperVers.map(
+      :options="paperVers().map(
         (ver, idx) => { return {
           data: ver,
           label: idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver
@@ -68,7 +65,7 @@ function onUpdatedSelection(updateBuild: boolean) {
       option-value="data"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 15rem;"
+      style="min-width: 10rem;"
     />
     <SsSelect
       v-model="paperBuild"

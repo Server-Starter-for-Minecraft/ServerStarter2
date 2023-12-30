@@ -1,40 +1,42 @@
-// This is just an example,
-// so you can safely delete all default props below
 import { MessageSchema } from "src/boot/i18n";
-import { enUSHome } from "src/i18n/en-US/home";
-import { enUSproperty } from "src/i18n/en-US/property";
-import { enUSConsole } from "./console";
-import { enUSPlayer } from "./player";
-import { enUSSystemSetting } from "./systemsetting";
-import { enUSUtils } from "./utils";
-import { enAdditionalContents } from "./additionalContents";
-import { enUSError } from "./error";
-import { enUSProgress } from "./progress";
-import { enUSWorldList } from "./worldList";
-import { enUSIcon } from "./icon";
-import { enUSShareWorld } from "./shareWorld";
-import { enWelcome } from "./welcome";
-import { enAutoShutdown } from "./autoshutdown";
-import { enUSGeneral } from "./general";
-import { enUSEulaDialog } from "./eulaDialog";
-import { enUSOwner } from "./owner";
+import { enUSHome } from "src/i18n/en-US/Pages/World/home";
+import { enUSproperty } from "src/i18n/en-US/Pages/World/property";
+import { enUSConsole } from "./Pages/World/console";
+import { enUSPlayer } from "./Pages/World/player";
+import { enUSSystemSetting } from "./Pages/systemsetting";
+import { enUSBugReport } from "./Pages/bugReport";
+import { enAdditionalContents } from "./Pages/World/additionalContents";
+import { enUSError } from "./Other/error";
+import { enUSProgress } from "./Pages/World/progress";
+import { enUSMainLayout } from "./Pages/mainLayout";
+import { enUSIcon } from "./Dialogs/icon";
+import { enUSShareWorld } from "./Pages/World/shareWorld";
+import { enWelcome } from "./Dialogs/welcome";
+import { enAutoShutdown } from "./Dialogs/autoshutdown";
+import { enUSGeneral } from "./Other/general";
+import { enUSEulaDialog } from "./Dialogs/eulaDialog";
+import { enUSOwner } from "./Dialogs/owner";
+import { enOthers } from "./Pages/World/others";
+import { enTabs } from "./Other/tabs";
 
 export const enUS: MessageSchema = {
+  tabs: enTabs,
   general: enUSGeneral,
   home: enUSHome,
   property: enUSproperty,
   console: enUSConsole,
   player: enUSPlayer,
   systemsetting: enUSSystemSetting,
-  utils: enUSUtils,
+  bugReport: enUSBugReport,
   additionalContents: enAdditionalContents,
   error: enUSError,
   progress: enUSProgress,
-  worldList: enUSWorldList,
+  mainLayout: enUSMainLayout,
   icon: enUSIcon,
   shareWorld: enUSShareWorld,
   welcome: enWelcome,
   autoshutdown: enAutoShutdown,
   eulaDialog: enUSEulaDialog,
   owner: enUSOwner,
+  others: enOthers,
 };

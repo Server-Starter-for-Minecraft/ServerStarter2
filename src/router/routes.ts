@@ -13,6 +13,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'player', component: () => import('src/pages/WorldTabs/PlayerPage.vue') },
       { path: 'contents', component: () => import('src/pages/WorldTabs/ContentsPage.vue') },
       { path: 'share-world', component: () => import('src/pages/WorldTabs/ShareWorldPage.vue') },
+      { path: 'others', component: () => import('src/pages/WorldTabs/OthersPage.vue') },
 
       {
         path: 'system/',
