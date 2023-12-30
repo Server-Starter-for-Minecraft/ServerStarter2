@@ -132,7 +132,9 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
       plugins: [],
       mods: [],
     },
-    useNgrok: true,
+    ngrokSetting: {
+      useNgrok: true
+    },
   };
 
   return withError(world);
