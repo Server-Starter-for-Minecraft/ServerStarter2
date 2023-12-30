@@ -172,6 +172,9 @@ export const enUSError: MessageSchema['error'] = {
       invalidWorldId: {
         title: 'The specified world does not exist.',
       },
+      missingLatestLog:{
+        title: 'Previous server log does not exist',
+      },
       serverPortIsUsed: {
         title: 'The port number in use is specified as the server port',
         desc: 'Please change the port number from {port} at property \'server-port\'',
