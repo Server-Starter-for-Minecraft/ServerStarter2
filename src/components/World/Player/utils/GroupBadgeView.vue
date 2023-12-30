@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   groupName: string
@@ -23,7 +24,10 @@ async function onCardClicked() {
     @click="onCardClicked"
   >
     <q-icon name="circle" :style="{'color': color}" />
-    <span class="name text-omit">{{ groupName }}</span>
+    <span class="name text-omit">
+      {{ groupName }}
+      <SsTooltip :name="groupName" anchor="bottom start" self="center start" />
+    </span>
   </q-chip>
 </template>
 

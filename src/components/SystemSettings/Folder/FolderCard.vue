@@ -8,6 +8,7 @@ import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 const { t } = useI18n()
 
@@ -78,8 +79,14 @@ function removeFolder() {
         :class="getCardSytleClass(active, disable || loading)"
         style="margin: auto 0;"
       >
-        <div class="text-omit" style="font-size: 1.1rem;">{{ folder.name }}</div>
-        <div class="text-caption text-omit" style="opacity: .6;">{{ folder.container }}</div>
+        <div class="text-omit" style="font-size: 1.1rem;">
+          {{ folder.name }}
+          <SsTooltip :name="folder.name" anchor="bottom start" self="center start" />
+        </div>
+        <div class="text-caption text-omit" style="opacity: .6;">
+          {{ folder.container }}
+          <SsTooltip :name="folder.container" anchor="bottom start" self="center start" />
+        </div>
       </div>
 
       <!-- cardをクリックできるようにする -->

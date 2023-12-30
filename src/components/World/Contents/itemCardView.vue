@@ -2,6 +2,7 @@
 import { AllFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
 import { useMainStore } from 'src/stores/MainStore';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 type T = DatapackData | ModData | PluginData
 
@@ -24,6 +25,13 @@ function deleteContent() {
     mainStore.world.additional[`${prop.contentType}s`].map(c => c.name).indexOf(prop.content.name), 1
   )
 }
+
+const transformedName = prop.content.name.replace(/§./g, '').trim();
+let transformedDescription = '';
+// 条件分岐で content.description の有無を確認
+if ('description' in prop.content && prop.content.description) {
+  transformedDescription = prop.content.description.replace(/§./g, '').trim();
+}
 </script>
 
 <template>
@@ -35,10 +43,12 @@ function deleteContent() {
       <q-item class="q-pr-sm">
         <q-item-section>
           <q-item-label class="contentsName text-omit">
-            {{ content.name.replace(/§./g, "").trim() }}
+            {{ transformedName }}
+            <SsTooltip :name="transformedName" anchor="bottom start" self="center start" />
           </q-item-label>
           <q-item-label v-if="'description' in content" class="text-omit" style="opacity: .7;">
             {{ content.description.replace(/§./g, "").trim() }}
+            <SsTooltip :name="transformedDescription" anchor="bottom start" self="center start" />
           </q-item-label>
         </q-item-section>
 

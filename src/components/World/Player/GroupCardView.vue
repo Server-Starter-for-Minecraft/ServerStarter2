@@ -5,6 +5,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   name: string
@@ -37,10 +38,16 @@ async function onCardClicked() {
         :style="{'border-left': `1rem solid ${color}`, 'border-radius': '15px'}"
       >
         <div v-if="showMenuBtn || menuOpened" style="width: calc(100% - 3.5rem);">
-          <div class="groupName text-omit">{{ name }}</div>
+          <div class="groupName text-omit">
+            {{ name }}
+            <SsTooltip :name="name" anchor="bottom start" self="center start" />
+          </div>
         </div>
         <div v-else>
-          <div class="groupName text-omit">{{ name }}</div>
+          <div class="groupName text-omit">
+            {{ name }}
+            <SsTooltip :name="name" anchor="bottom start" self="center start" />
+          </div>
         </div>
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
         <div class="row q-gutter-md q-pt-sm">

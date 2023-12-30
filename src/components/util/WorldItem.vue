@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ImageURI } from 'app/src-electron/schema/brands';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   icon?: ImageURI,
@@ -7,7 +8,10 @@ interface Prop {
   versionName: string,
   onClick?: () => void
 }
-defineProps<Prop>()
+const props = defineProps<Prop>()
+
+const transformedWorldName = props.worldName.replace(/§./g, "").trim()
+
 </script>
 
 <template>
@@ -22,7 +26,10 @@ defineProps<Prop>()
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="name text-omit">{{ worldName.replace(/§./g, "").trim() }}</q-item-label>
+      <q-item-label class="name text-omit">
+        {{ transformedWorldName }}
+        <SsTooltip :name="transformedWorldName" anchor="bottom start" self="center start" />
+      </q-item-label>
       <q-item-label class="version">{{ versionName }}</q-item-label>
     </q-item-section>
   </q-item>

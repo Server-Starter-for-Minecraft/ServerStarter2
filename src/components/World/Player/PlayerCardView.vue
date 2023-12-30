@@ -12,6 +12,7 @@ import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import { getCssVar } from 'quasar';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   uuid: PlayerUUID
@@ -69,7 +70,10 @@ function getGroups(groups: Record<string, PlayerGroup>) {
         </q-item-section>
 
         <q-item-section top>
-          <q-item-label class="name text-omit">{{ player.name }}</q-item-label>
+          <q-item-label class="name text-omit">
+            {{ player.name }}
+            <SsTooltip :name="player.name" anchor="bottom start" self="center start" />
+          </q-item-label>
           <q-item-label v-show="opLevel !== void 0" caption style="opacity: 0.7;">
             {{ $t('player.opLevel') }} {{ opLevel }}
           </q-item-label>
