@@ -3,6 +3,7 @@ export const jaConsole = {
   boot: '{name} を起動',
   booting: '{id} ({type})/{name}を起動中',
   abnormalEnd:'サーバーが異常終了しました',
+  showLog: '直前のサーバログを表示',
   stop: {
     btn: '停止',
     withName: '{name} を停止',

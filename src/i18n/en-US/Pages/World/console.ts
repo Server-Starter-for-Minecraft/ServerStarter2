@@ -5,6 +5,7 @@ export const enUSConsole:MessageSchema['console'] = {
   boot: 'BOOT {name}',
   booting: 'Booting {id} ({type})/{name}',
   abnormalEnd:'Terminated abnormally',
+  showLog: 'Show the previous server log',
   stop: {
     btn: 'close',
     withName: 'CLOSE {name}',

@@ -83,7 +83,7 @@ function closeLog() {
       dense
       is-capital
       icon="close"
-      label="閉じる"
+      :label="$t('general.close')"
       @click="closeLog"
       class="q-py-sm"
     />

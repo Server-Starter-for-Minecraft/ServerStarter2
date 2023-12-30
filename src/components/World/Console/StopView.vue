@@ -23,8 +23,8 @@ async function showLog() {
   <div v-if="consoleStore.status(mainStore.selectedWorldID) === 'Stop'" class="justify-center column fit">
     <running-btn :text-font-size="1.5" class="btn" style="width: fit-content; margin: 0 auto;" />
     <ss-btn
-      label="直前のサーバログを表示"
-      width="14rem"
+      :label="$t('console.showLog')"
+      width="16rem"
       @click="showLog"
       style="font-size: 1rem; margin: 1rem auto;"
     />
