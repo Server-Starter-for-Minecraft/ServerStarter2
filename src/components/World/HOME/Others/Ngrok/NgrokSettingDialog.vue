@@ -36,7 +36,7 @@ const isRegisteredNgrok = prop.token !== ''
         >
           <q-step
             :name="1"
-            title="アカウント登録"
+            title="はじめに"
             prefix="1"
             :disable="isRegisteredNgrok"
             :done="step > 1"

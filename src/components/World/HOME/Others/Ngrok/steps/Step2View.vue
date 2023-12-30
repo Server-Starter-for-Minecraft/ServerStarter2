@@ -47,10 +47,16 @@ const slide = ref(1)
       </q-carousel-slide>
       <q-carousel-slide :name="4">
         <BaseCard title="接続方法" :img="assets.png.mcInput" :img-width="10">
-          <p>ServerStarter2でサーバーを起動すると画面の右上に<span class="text-negative">起動ごとに値が変更される</span>IPアドレスが表示されます</p>
+          <p>ServerStarter2でサーバーを起動すると画面の右上に<span class=""><b><u>起動ごとに値が変更される</u></b></span>IPアドレスが表示されます</p>
           <p>このアドレスをMinecraftのマルチプレイサーバーのアドレス欄に入力することで，サーバーに接続することができます！</p>
         </BaseCard>
       </q-carousel-slide>
     </q-carousel>
   </div>
 </template>
+
+<style scoped lang="scss">
+p {
+  line-height: 1.5rem;
+}
+</style>
