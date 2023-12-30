@@ -42,7 +42,7 @@ async function updatePlayer() {
 
       <q-item-section>
         <q-item-label class="name text-omit">
-          {{ 'teststring' }}
+          {{ player.name }}
           <SsTooltip :name="player.name" anchor="bottom start" self="center start" />
         </q-item-label>
         <q-item-label class="text-caption text-omit" style="opacity: 0.7;">

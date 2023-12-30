@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { AllFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
 import { useMainStore } from 'src/stores/MainStore';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
@@ -26,12 +27,13 @@ function deleteContent() {
   )
 }
 
-const transformedName = prop.content.name.replace(/§./g, '').trim();
-let transformedDescription = '';
-// 条件分岐で content.description の有無を確認
-if ('description' in prop.content && prop.content.description) {
-  transformedDescription = prop.content.description.replace(/§./g, '').trim();
-}
+const transformedName = computed(() => prop.content.name.replace(/§./g, '').trim());
+const transformedDescription = computed(()=>(
+  'description' in prop.content 
+    ? prop.content.description.replace(/§./g, '').trim() 
+    : ''
+  ));
+
 </script>
 
 <template>
@@ -47,7 +49,7 @@ if ('description' in prop.content && prop.content.description) {
             <SsTooltip :name="transformedName" anchor="bottom start" self="center start" />
           </q-item-label>
           <q-item-label v-if="'description' in content" class="text-omit" style="opacity: .7;">
-            {{ content.description.replace(/§./g, "").trim() }}
+            {{ transformedDescription }}
             <SsTooltip :name="transformedDescription" anchor="bottom start" self="center start" />
           </q-item-label>
         </q-item-section>

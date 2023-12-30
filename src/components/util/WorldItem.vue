@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
@@ -10,7 +11,7 @@ interface Prop {
 }
 const props = defineProps<Prop>()
 
-const transformedWorldName = props.worldName.replace(/§./g, "").trim()
+const transformedWorldName = computed(() => props.worldName.replace(/§./g, "").trim())
 
 </script>
 
