@@ -147,7 +147,7 @@ export interface API extends IAPI {
     ) => Promise<WithError<Failable<World>>>;
 
     /** ワールドの最新のログを取得する */
-    FetchLatestWorldLog: (world: WorldEdited) => Promise<Failable<string[]>>;
+    FetchLatestWorldLog: (world: WorldID) => Promise<Failable<string[]>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
@@ -163,8 +163,8 @@ export interface API extends IAPI {
     GetCacheContents: ((
       type: 'datapack'
     ) => Promise<WithError<CacheFileData<DatapackData>[]>>) &
-      ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData>[]>>) &
-      ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
+    ((type: 'plugin') => Promise<WithError<CacheFileData<PluginData>[]>>) &
+    ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
     GetVersions: (
@@ -213,26 +213,26 @@ export interface API extends IAPI {
         isFile: boolean;
       } & DialogOptions
     ) => Promise<Failable<CustomMapData>>) &
-      ((
-        options: { type: 'datapack'; isFile: boolean } & DialogOptions
-      ) => Promise<Failable<NewFileData<DatapackData>>>) &
-      ((
-        options: {
-          type: 'plugin';
-        } & DialogOptions
-      ) => Promise<Failable<NewFileData<PluginData>>>) &
-      ((
-        options: { type: 'mod' } & DialogOptions
-      ) => Promise<Failable<NewFileData<ModData>>>) &
-      ((
-        options: { type: 'image' } & DialogOptions
-      ) => Promise<Failable<ImageURIData>>) &
-      ((
-        options: { type: 'container' } & DialogOptions
-      ) => Promise<Failable<WorldContainer>>) &
-      ((
-        options: { type: 'backup'; container: WorldContainer } & DialogOptions
-      ) => Promise<Failable<BackupData>>);
+    ((
+      options: { type: 'datapack'; isFile: boolean } & DialogOptions
+    ) => Promise<Failable<NewFileData<DatapackData>>>) &
+    ((
+      options: {
+        type: 'plugin';
+      } & DialogOptions
+    ) => Promise<Failable<NewFileData<PluginData>>>) &
+    ((
+      options: { type: 'mod' } & DialogOptions
+    ) => Promise<Failable<NewFileData<ModData>>>) &
+    ((
+      options: { type: 'image' } & DialogOptions
+    ) => Promise<Failable<ImageURIData>>) &
+    ((
+      options: { type: 'container' } & DialogOptions
+    ) => Promise<Failable<WorldContainer>>) &
+    ((
+      options: { type: 'backup'; container: WorldContainer } & DialogOptions
+    ) => Promise<Failable<BackupData>>);
   };
 }
 
