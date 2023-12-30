@@ -243,5 +243,17 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     failSync: 'ShareWorldの同期に失敗しました',
     failGetShareWorld: 'ShareWorldの取得に失敗しました',
     recoverFail: 'バックアップデータからの復旧に失敗しました',
-  }
+  },
+  lib: {
+    ngrok: {
+      unreservedAdress: {
+        title: 'TCPアドレスが予約されていません',
+        desc: '{address}は予約されていません',
+      },
+      unknown: {
+        title: 'ポート開放不要化機能で不明なエラーが発生しました',
+        desc: '{message}',
+      },
+    },
+  },
 };

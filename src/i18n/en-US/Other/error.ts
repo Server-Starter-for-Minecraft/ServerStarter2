@@ -241,5 +241,17 @@ export const enUSError: MessageSchema['error'] = {
     failSync: 'Failed to sync with ShareWorld',
     failGetShareWorld: 'Failed to get ShareWorld',
     recoverFail: 'Failed to recover world from backup data',
-  }
+  },
+  lib: {
+    ngrok: {
+      unreservedAdress: {
+        title: 'TCP Address is not reserved',
+        desc: '{address} is not bound',
+      },
+      unknown: {
+        title: 'Unknown error occured at ngrok',
+        desc: '{message}',
+      },
+    },
+  },
 };
