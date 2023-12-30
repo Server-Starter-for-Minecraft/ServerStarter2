@@ -18,7 +18,7 @@ export async function openFolder(path: string, autocreate: boolean): Promise<Fai
     })
   }
 
-  await dirpath.mkdir()
+  await dirpath.mkdir(true)
   const openResult = await shell.openPath(path);
   if (openResult !== "") {
     return errorMessage.data.path.shellError({
