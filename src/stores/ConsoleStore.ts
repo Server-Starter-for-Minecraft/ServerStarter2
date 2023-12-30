@@ -145,7 +145,11 @@ export async function runServer() {
   const res = await window.API.invokeRunWorld(runWorld.id);
 
   // サーバー終了時のエラー確認
-  checkError(res.value, undefined, e => tError(e))
+  checkError(
+    res.value,
+    w => mainStore.updateWorld(w),
+    e => tError(e)
+  )
 
   // サーバータブをリセット
   consoleStore.initTab(runWorld.id, true)
