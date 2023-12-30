@@ -22,7 +22,7 @@ const isRegisteredNgrok = prop.token !== ''
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      title="ポート開放不要化"
+      :title="$t('home.ngrok.title')"
       @close="onDialogCancel"
       style="width: 40rem; max-width: 100%;"
     >
@@ -36,7 +36,7 @@ const isRegisteredNgrok = prop.token !== ''
         >
           <q-step
             :name="1"
-            title="はじめに"
+            :title="$t('home.ngrok.dialog.firstPage.title')"
             prefix="1"
             :disable="isRegisteredNgrok"
             :done="step > 1"
@@ -49,7 +49,7 @@ const isRegisteredNgrok = prop.token !== ''
           
           <q-step
             :name="2"
-            title="アカウント登録"
+            :title="$t('home.ngrok.dialog.secondPage.title')"
             prefix="2"
             :disable="isSkipRegister || isRegisteredNgrok"
             :done="!isSkipRegister && step > 2"
@@ -59,7 +59,7 @@ const isRegisteredNgrok = prop.token !== ''
   
           <q-step
             :name="3"
-            title="トークンを登録"
+            :title="$t('home.ngrok.dialog.thirdPage.title')"
             prefix="3"
           >
             <Step3View v-model="authToken" />
@@ -73,13 +73,13 @@ const isRegisteredNgrok = prop.token !== ''
           flat
           free-width
           @click="stepper?.previous()"
-          label="戻る"
+          :label="$t('general.back')"
           class="q-mr-sm"
         />
         <SsBtn
           v-show="step !== 1"
           outline
-          :label="step === 3 ? '登録内容を保存' : '次の設定へ進む'"
+          :label="step === 3 ? $t('home.ngrok.dialog.save') : $t('home.ngrok.dialog.goNext')"
           color="primary"
           :disable="step === 3 && authToken === ''"
           @click="

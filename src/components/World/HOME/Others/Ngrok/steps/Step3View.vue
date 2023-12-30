@@ -8,16 +8,20 @@ const authToken = defineModel<string>({ required: true })
 <template>
   <div>
     <p class="text-caption">
-      NgrokアカウントとServerStarter2を紐づけます<br>
-      <SsA url="https://dashboard.ngrok.com/get-started/your-authtoken">
-        認証トークンを取得するウェブページ
-      </SsA>
-      を開き，表示されたトークンを下に入力してください
+      <i18n-t 
+        keypath="home.ngrok.dialog.thirdPage.desc"
+        tag="label"
+        for="home.ngrok.dialog.thirdPage.link"
+      >
+        <br>
+        <SsA url="https://dashboard.ngrok.com/get-started/your-authtoken">
+          {{ $t('home.ngrok.dialog.thirdPage.link') }}
+        </SsA>
+      </i18n-t>
     </p>
-
     <SsInput
       v-model="authToken"
-      placeholder="トークンを入力"
+      :placeholder="$t('home.ngrok.dialog.thirdPage.inputToken')"
       secret
     />  
   </div>

@@ -10,7 +10,7 @@ const slide = ref(1)
 <template>
   <div>
     <p class="text-caption">
-      画面に沿ってアカウント登録を完了しましょう！
+      {{ $t('home.ngrok.dialog.secondPage.dialogTitle') }}
     </p>
     
     <q-carousel
@@ -25,30 +25,38 @@ const slide = ref(1)
       class="shadow-1 rounded-borders"
     >
       <q-carousel-slide :name="1">
-        <BaseCard title="アカウント登録" :img="assets.png.signUp" :img-width="9">
+        <BaseCard 
+          :title="$t('home.ngrok.dialog.secondPage.title')"
+          :img="assets.png.signUp"
+          :img-width="9"
+        >
           <p>
-            Ngrokのアカウント登録は
+            <i18n-t 
+              keypath="home.ngrok.dialog.secondPage.signup.desc"
+              tag="label"
+              for="home.ngrok.dialog.secondPage.signup.link" 
+            />
             <SsA url="https://dashboard.ngrok.com/signup">
-              こちらの登録画面で行います
+              {{ $t('home.ngrok.dialog.secondPage.signup.link') }}
             </SsA>
           </p>
-          <p>任意のユーザー名，メールアドレス，パスワードを記入してSign upをクリックしましょう！</p>
+          <p>{{ $t('home.ngrok.dialog.secondPage.signup.register') }}</p>
         </BaseCard>
       </q-carousel-slide>
       <q-carousel-slide :name="2">
-        <BaseCard title="Eメールの認証" :img="assets.png.verifyEmail" :img-width="16">
-          <p>登録したE-mailにNgrokよりメールが届くため，メールに記載されたURLをクリックして認証を完了しましょう</p>
+        <BaseCard :title="$t('home.ngrok.dialog.secondPage.auth.title')" :img="assets.png.verifyEmail" :img-width="16">
+          <p>{{ $t('home.ngrok.dialog.secondPage.auth.desc') }}</p>
         </BaseCard>
       </q-carousel-slide>
       <q-carousel-slide :name="3">
-        <BaseCard title="アンケートへ回答" :img="assets.png.welcome" :img-width="10">
-          <p>これで登録は完了ですが，最後にNgrokからのアンケートを画像に倣って回答をお願いします</p>
+        <BaseCard :title="$t('home.ngrok.dialog.secondPage.question.title')" :img="assets.png.welcome" :img-width="10">
+          <p>{{ $t('home.ngrok.dialog.secondPage.question.desc') }}</p>
         </BaseCard>
       </q-carousel-slide>
       <q-carousel-slide :name="4">
-        <BaseCard title="接続方法" :img="assets.png.mcInput" :img-width="10">
-          <p>ServerStarter2でサーバーを起動すると画面の右上に<span class=""><b><u>起動ごとに値が変更される</u></b></span>IPアドレスが表示されます</p>
-          <p>このアドレスをMinecraftのマルチプレイサーバーのアドレス欄に入力することで，サーバーに接続することができます！</p>
+        <BaseCard :title="$t('home.ngrok.dialog.secondPage.howToConnect.title')" :img="assets.png.mcInput" :img-width="10">
+          <p v-html="$t('home.ngrok.dialog.secondPage.howToConnect.desc')"/>
+          <p>{{ $t('home.ngrok.dialog.secondPage.howToConnect.connect') }}</p>
         </BaseCard>
       </q-carousel-slide>
     </q-carousel>

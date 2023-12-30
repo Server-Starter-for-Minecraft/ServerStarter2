@@ -49,9 +49,49 @@ export const enUSHome: MessageSchema['home'] = {
     toggleON: 'Using this feature',
     toggleOFF: 'Not using this feature',
     dialog: {
-      firstPage: {},
-      secondPage: {},
-      thirdPage: {},
+      firstPage: {
+        title: 'Firstly',
+        desc: '\
+          This software uses a tool called Ngrok to eliminate the need to open ports.<br>\
+          If you do not have an account, please create a new account.<br>\
+          (*<u>This software is designed to be used with a free account</u>, although paid accounts are also available',
+        register: 'Create a new account',
+        alreadyRegistered: 'Already have an account?'
+      },
+      secondPage: {
+        title: 'Sign up',
+        dialogTitle : 'Follow the prompts to complete your account registration!',
+        signup: {
+          desc: 'To register for an Ngrok account,{0}',
+          link: 'please click here for the sign up page.',
+          register: 'Fill in the blanks and click Sign up!',
+        },
+        auth: {
+          title: 'Email verification',
+          desc: 'You will receive an Email from Ngrok to your registered Email address. Click on the URL in the Email to complete the verification.',
+        },
+        question: {
+          title: 'Responses to Questionnaire',
+          desc: 'Registration is now complete, but please answer the questionnaire from Ngrok at the end, as shown in the image.',
+        },
+        howToConnect: {
+          title: 'How to connect',
+          desc: 'When you start the server, you will see an IP address in the upper right corner <b><u>that changes value each time the server is started</u></b>.',
+          connect: 'You can connect to the server by entering this address into the Server Address of the Minecraft!',
+        },
+      },
+      thirdPage: {
+        title: 'Register token',
+        desc: '\
+        Connect your Ngrok account to ServerStarter2{0}\
+        Open {1} and input the displayed token below\
+        ',
+        link: 'page to get an authentication token',
+        inputToken: 'Input Token'
+      },
+      goNext: 'Go next setting',
+      save: 'Save your registration',
+      imageDetail: 'Image Detail',
     }
   },
   setting: {

@@ -14,17 +14,13 @@ isSkipRegister.value = false
 
 <template>
   <div>
-    <p class="text-caption">
-      本ソフトはポート開放不要化にNgrokと呼ばれるツールを用います<br>
-      アカウントをお持ちでない方はアカウントの新規作成をお願いします<br>
-      ※アカウントは有料版もありますが，<u>本ソフトは無料アカウントでの利用を想定しています</u>
-    </p>
+    <p class="text-caption" v-html="$t('home.ngrok.dialog.firstPage.desc')"/>
 
     <div class="column q-gutter-lg q-mt-xs">
       <!-- 大きな登録ボタンを表示 -->
       <SsBtn
         free-width
-        label="アカウントを新規作成"
+        :label="$t('home.ngrok.dialog.firstPage.register')"
         color="primary"
         @click="() => {if (next) { next(2) }}"
         class="col q-pa-lg"
@@ -34,7 +30,7 @@ isSkipRegister.value = false
       <!-- ボタンを表示 -->
       <SsBtn
         free-width
-        label="すでにアカウントをお持ちの方"
+        :label="$t('home.ngrok.dialog.firstPage.alreadyRegistered')"
         @click="() => {
           isSkipRegister = true
           if (next) { next(3) }

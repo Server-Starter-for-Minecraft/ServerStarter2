@@ -47,9 +47,49 @@ export const jaHome = {
     toggleON: '不要化設定を利用する',
     toggleOFF: '不要化設定を利用しない',
     dialog: {
-      firstPage: {},
-      secondPage: {},
-      thirdPage: {},
+      firstPage: {
+        title: 'はじめに',
+        desc: '\
+          本ソフトはポート開放不要化にNgrokと呼ばれるツールを用います<br>\
+          アカウントをお持ちでない方はアカウントの新規作成をお願いします<br>\
+          ※アカウントは有料版もありますが，<u>本ソフトは無料アカウントでの利用を想定しています</u>',
+        register: 'アカウントを新規作成',
+        alreadyRegistered: 'すでにアカウントをお持ちの方',
+      },
+      secondPage: {
+        title: 'アカウント登録',
+        dialogTitle : '画面に沿ってアカウント登録を完了しましょう！',
+        signup: {
+          desc: 'Ngrokのアカウント登録は{0}',
+          link: 'こちらの登録画面で行います',
+          register: '任意のユーザー名，メールアドレス，パスワードを記入してSign upをクリックしましょう！',
+        },
+        auth: {
+          title: 'Eメールの認証',
+          desc: '登録したE-mailにNgrokよりメールが届くため，メールに記載されたURLをクリックして認証を完了しましょう',
+        },
+        question: {
+          title: 'アンケートへの回答',
+          desc: 'これで登録は完了ですが，最後にNgrokからのアンケートを画像に倣って回答をお願いします',
+        },
+        howToConnect: {
+          title: '接続方法',
+          desc: 'ServerStarter2でサーバーを起動すると画面の右上に<b><u>起動ごとに値が変更される</u></b>IPアドレスが表示されます',
+          connect: 'このアドレスをMinecraftのマルチプレイサーバーのアドレス欄に入力することで，サーバーに接続することができます！',
+        },
+      },
+      thirdPage: {
+        title: 'トークンを登録',
+        desc: '\
+        NgrokアカウントとServerStarter2を紐づけます{0}\
+        {1}を開き，表示されたトークンを下に入力してください\
+        ',
+        link: '認証トークンを取得するウェブページ',
+        inputToken: 'トークンを入力',
+      },
+      goNext: '次の設定へ進む',
+      save: '登録内容を保存',
+      imageDetail: '画像の詳細',
     }
   },
   setting: {

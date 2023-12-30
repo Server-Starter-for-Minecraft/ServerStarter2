@@ -11,7 +11,7 @@ defineProps<ImgDialogProp>()
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-     title="画像の詳細"
+     :title="$t('home.ngrok.dialog.imageDetail')"
      @close="onDialogOK"
      :style="{'width': `${imgWidth}rem`}"
     >
