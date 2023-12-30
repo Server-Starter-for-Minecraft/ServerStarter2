@@ -35,6 +35,23 @@ export const jaHome = {
     fabric: 'MODの前提サーバー。Forgeとは別のシステムとなっている。'
   },
   icon: 'アイコンを変更',
+  ngrok: {
+    title: 'ポート開放不要化',
+    desc: '\
+      「ポート開放」と呼ばれる設定をせずに，友人や外部の方をサーバーに招待するための機能です<br/>\
+      ServerStarter2ですべてのマルチプレイの準備を整えましょう',
+    descWarningNoRegist: 'この設定はすべてのサーバーが停止しているときにのみ設定することができます',
+    descWarningRegisted: 'トークンの更新はすべてのサーバーが停止しているときにのみ設定することができます',
+    btn: 'ポート開放不要の設定をする',
+    btnRegisted: 'トークンを更新する',
+    toggleON: '不要化設定を利用する',
+    toggleOFF: '不要化設定を利用しない',
+    dialog: {
+      firstPage: {},
+      secondPage: {},
+      thirdPage: {},
+    }
+  },
   setting: {
     title: '起動設定',
     memSize: 'メモリサイズ',

@@ -38,7 +38,7 @@ setScrollTop(scrollTop)
       </div>
       
       <!-- Others -->
-      <h1 class="q-pt-lg">ポート開放不要化</h1>
+      <h1 class="q-pt-lg">{{ $t('home.ngrok.title') }}</h1>
       <NgrokView />
 
       <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>

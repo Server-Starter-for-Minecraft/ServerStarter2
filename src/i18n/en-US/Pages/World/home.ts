@@ -37,6 +37,23 @@ export const enUSHome: MessageSchema['home'] = {
     fabric: 'The premise server for the mods, which is a different system from Forge.'
   },
   icon: 'Change server icon',
+  ngrok: {
+    title: 'No need to PORT MAPPING',
+    desc: '\
+      This feature allows you to invite your friends to join your server without having to configure the \"PORT MAPPING\".<br/>\
+      Get ready for all the multi-play settings with ServerStarter2!',
+    descWarningNoRegist: 'This setting can only be set when all servers are stopped',
+    descWarningRegisted: 'Token updates can only be set when all servers are stopped',
+    btn: 'Configure this feature',
+    btnRegisted: 'Update your token',
+    toggleON: 'Using this feature',
+    toggleOFF: 'Not using this feature',
+    dialog: {
+      firstPage: {},
+      secondPage: {},
+      thirdPage: {},
+    }
+  },
   setting: {
     title: 'Start up settings',
     memSize: 'memory size',

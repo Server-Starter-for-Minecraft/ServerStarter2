@@ -28,18 +28,19 @@ function onClick() {
 
 <template>
   <p class="text-caption">
-    <span style="opacity: 0.6">
-      「ポート開放」と呼ばれる設定をせずに，友人や外部の方をサーバーに招待するための機能です<br />
-      ServerStarter2ですべてのマルチプレイの準備を整えましょう
+    <span v-html="$t('home.ngrok.desc')" style="opacity: 0.6" />
+    <br v-if="!consoleStore.isAllWorldStop()" />
+    <span
+      v-if="!consoleStore.isAllWorldStop()"
+      class="text-negative"
+    >
+      {{ $t(isUseNgrok() ? 'home.ngrok.descWarningRegisted' : 'home.ngrok.descWarningNoRegist') }}
     </span>
-    <span v-if="!consoleStore.isAllWorldStop()" class="text-negative"><br/>この設定はすべてのサーバーが停止しているときにのみ設定することができます</span>
   </p>
 
   <div class="row q-gutter-md">
     <SsBtn
-      :label="
-        isUseNgrok() ? 'トークンを更新する' : 'ポート開放不要の設定をする'
-      "
+      :label="$t(isUseNgrok() ? 'home.ngrok.btnRegisted' : 'home.ngrok.btn')"
       :disable="!consoleStore.isAllWorldStop()"
       @click="onClick"
     />
@@ -47,9 +48,7 @@ function onClick() {
     <q-toggle
       v-if="isUseNgrok()"
       v-model="mainStore.world.ngrok_setting.use_ngrok"
-      :label="`不要化設定を利用${
-        mainStore.world.ngrok_setting.use_ngrok ? 'する' : 'しない'
-      }`"
+      :label="$t(mainStore.world.ngrok_setting.use_ngrok ? 'home.ngrok.toggleON' : 'home.ngrok.toggleOFF')"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     />
 
