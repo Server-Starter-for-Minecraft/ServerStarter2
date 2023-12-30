@@ -254,5 +254,14 @@ export async function fetchLatestWorldLog(
 
   if (isError(handler)) return handler;
 
-  return await new WorldLogHandler(handler.getSavePath()).loadLatest()
+  const log = await new WorldLogHandler(handler.getSavePath()).loadLatest()
+
+  if (isError(log)) {
+    return errorMessage.core.world.missingLatestLog({
+      name: handler.name,
+      container: handler.container
+    })
+  }
+
+  return log
 }
