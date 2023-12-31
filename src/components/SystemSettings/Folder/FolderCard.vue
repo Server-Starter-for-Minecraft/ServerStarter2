@@ -32,7 +32,7 @@ function switchVisible() {
 }
 
 function getCardSytleClass(active?: boolean, disable?: boolean) {
-  const returnClasses = []
+  const returnClasses = ['column']
   if (active) returnClasses.push('text-primary')
   if (disable) returnClasses.push('disable')
   return returnClasses.join(' ')
@@ -73,51 +73,47 @@ function removeFolder() {
     class="card fit"
     :style="{ 'border-color': active ? getCssVar('primary') : 'transparent' }"
   >
-    <div class="row">
-      <div class="col q-pl-md q-py-md" :class="getCardSytleClass(active, disable || loading)" style="margin: auto 0;">
-        <div class="text-omit" style="font-size: 1.1rem;">
-          {{ folder.name }}
-          <SsTooltip :name="folder.name" anchor="bottom start" self="center start" />
-        </div>
-        <div class="text-caption text-omit" style="opacity: .6;">
-          {{ folder.container }}
-          <SsTooltip :name="folder.container" anchor="bottom start" self="center start" />
-        </div>
+    <q-item
+      :clickable="onClick !== void 0 && !disable"
+      :class="getCardSytleClass(active, disable || loading)"
+    >
+      <div class="text-omit" style="font-size: 1.1rem;">
+        {{ folder.name }}
+        <SsTooltip :name="folder.name" anchor="bottom start" self="center start" />
       </div>
+      <div class="text-caption text-omit" style="opacity: .6;">
+        {{ folder.container }}
+        <SsTooltip :name="folder.container" anchor="bottom start" self="center start" />
+      </div>
+    </q-item>
 
-      <!-- cardをクリックできるようにする -->
-      <div v-if="onClick !== void 0 && !disable" class="absolute-top fit">
-        <q-btn flat color="transparent" @click="onClick" class="fit" />
-      </div>
-
-      <div class="row q-gutter-x-sm q-pr-md" style="margin: auto 0;">
-        <ss-btn
-          dense
-          free-width
-          :icon="folder.visible ? 'visibility' : 'visibility_off'"
-          :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible || disable"
-          @click="switchVisible"
-        >
-          <q-tooltip>
-            {{ folder.visible ? $t('systemsetting.folder.tooltipVisible') : $t('systemsetting.folder.tooltipInvisible') }}
-          </q-tooltip>
-        </ss-btn>
-        <ss-btn
-          v-show="showOperationBtns && folder.name !== 'default'"
-          free-width
-          :label="$t('general.edit')"
-          :disable="disable"
-          @click="editFolder"
-        />
-        <ss-btn
-          v-show="showOperationBtns"
-          free-width
-          :label="$t('systemsetting.folder.unregist')"
-          color="negative"
-          :disable="sysStore.systemSettings.container.length === 1 || disable"
-          @click="removeFolder"
-        />
-      </div>
+    <div class="absolute-center-right block row q-gutter-x-sm q-pr-md">
+      <ss-btn
+        dense
+        free-width
+        :icon="folder.visible ? 'visibility' : 'visibility_off'"
+        :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible || disable"
+        @click="switchVisible"
+      >
+        <q-tooltip>
+          {{ folder.visible ? $t('systemsetting.folder.tooltipVisible') : $t('systemsetting.folder.tooltipInvisible') }}
+        </q-tooltip>
+      </ss-btn>
+      <ss-btn
+        v-show="showOperationBtns && folder.name !== 'default'"
+        free-width
+        :label="$t('general.edit')"
+        :disable="disable"
+        @click="editFolder"
+      />
+      <ss-btn
+        v-show="showOperationBtns"
+        free-width
+        :label="$t('systemsetting.folder.unregist')"
+        color="negative"
+        :disable="sysStore.systemSettings.container.length === 1 || disable"
+        @click="removeFolder"
+      />
     </div>
 
     <div class="absolute-center">
@@ -142,5 +138,12 @@ function removeFolder() {
   opacity: .6;
   outline: 0;
   cursor: not-allowed;
+}
+
+.absolute-center-right {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(0, -50%);
 }
 </style>
