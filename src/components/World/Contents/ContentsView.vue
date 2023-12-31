@@ -5,9 +5,9 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { checkError } from 'src/components/Error/Error';
+import { tError } from 'src/i18n/utils/tFunc';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCardView from './itemCardView.vue';
-import { tError } from 'src/i18n/utils/tFunc';
 
 type T = DatapackData | PluginData | ModData
 
@@ -93,8 +93,9 @@ function addContent2World(content: NewFileData<T>) {
 /**
  * キャッシュフォルダを開く
  */
-function openCacheFolder() {
-  window.API.sendOpenFolder(sysStore.staticResouces.paths.cache[prop.contentType], true)
+async function openCacheFolder() {
+  const res = await window.API.sendOpenFolder(sysStore.staticResouces.paths.cache[prop.contentType], true)
+  checkError(res, undefined, e => tError(e))
 }
 </script>
 
