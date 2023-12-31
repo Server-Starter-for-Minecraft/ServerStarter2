@@ -20,6 +20,6 @@ defineProps<Prop>()
       <q-icon size="3rem" :name="src" />
     </q-avatar>
 
-    <SsTooltip :name="label" anchor="bottom middle" self="top middle" :delay="500"/>
+    <SsTooltip :name="label" anchor="bottom middle" self="top middle"/>
   </q-btn>
 </template>

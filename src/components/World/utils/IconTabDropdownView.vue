@@ -59,7 +59,6 @@ function btnClicked(btn: DropBtn) {
       :name="label"
       anchor="center middle"
       self="top middle"
-      :delay="0"
     />
 
   </div>

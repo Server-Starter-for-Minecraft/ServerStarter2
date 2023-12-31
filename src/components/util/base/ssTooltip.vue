@@ -39,7 +39,6 @@ interface Prop {
   self?: Self
   fontSize?: string
   maxWidth?: string
-  delay?: number
 }
 defineProps<Prop>()
 </script>
@@ -48,7 +47,7 @@ defineProps<Prop>()
   <q-tooltip
     :anchor="anchor"
     :self="self"
-    :delay="delay !== undefined ? delay : 1000"
+    :delay="500"
     class="bg-transparent"
   >
     <div

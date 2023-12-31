@@ -27,7 +27,6 @@ const sysStore = useSystemStore()
       :name="$t('mainLayout.searchWorld')"
       anchor="center middle"
       self="top middle"
-      :delay="500"
     />
   </q-item>
 </template>

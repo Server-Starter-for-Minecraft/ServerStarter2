@@ -147,7 +147,7 @@ async function introduceBackup() {
         </q-item-section>
       </q-item>
       <q-space v-if="!isMini()" />
-      <SsTooltip :name="$t('mainLayout.newWorldBtn.addWorld')" anchor="center middle" self="top middle" :delay="500"/>
+      <SsTooltip :name="$t('mainLayout.newWorldBtn.addWorld')" anchor="center middle" self="top middle"/>
     </template>
 
     <q-list>

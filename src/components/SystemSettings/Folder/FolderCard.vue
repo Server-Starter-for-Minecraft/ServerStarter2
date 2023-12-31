@@ -103,7 +103,6 @@ function removeFolder() {
           "
           anchor="center middle"
           self="top middle"
-          :delay="300"
         />
       </ss-btn>
       <ss-btn

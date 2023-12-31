@@ -29,7 +29,6 @@ async function to() {
       :name="label"
       anchor="center middle"
       self="top middle"
-      :delay="0"
     />
   </q-tab>
 </template>

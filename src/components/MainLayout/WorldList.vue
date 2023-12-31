@@ -58,7 +58,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
             :name="assets.svg.menuicon($q.dark.isActive ? 'white' : 'black')"
           />
         </q-avatar>
-        <SsTooltip :name="$t('mainLayout.openList')" anchor="center middle" self="top middle" :delay="500"/>
+        <SsTooltip :name="$t('mainLayout.openList')" anchor="center middle" self="top middle"/>
       </q-item>
     </div>
     <icon-button-view
