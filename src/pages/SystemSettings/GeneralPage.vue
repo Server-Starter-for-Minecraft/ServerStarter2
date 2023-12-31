@@ -4,6 +4,7 @@ import { useQuasar } from 'quasar';
 import { colorThemes, ColorTheme, Locale } from 'app/src-electron/schema/system';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { assets } from 'src/assets/assets';
+import { setColor } from 'src/color';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ColorThemeBtn from 'src/components/SystemSettings/General/ColorThemeBtn.vue';
 import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
@@ -71,6 +72,16 @@ function showOwnerDialog() {
         />
       </template>
     </div>
+    <q-toggle
+      v-model="sysStore.systemSettings.user.visionSupport"
+      @update:model-value="val => setColor($q.dark.isActive, val)"
+      :label="
+        sysStore.systemSettings.user.visionSupport
+          ? $t('systemsetting.general.useVisionSupport')
+          : $t('systemsetting.general.noVisionSupport')"
+      class="q-pt-lg"
+      style="font-size: 1rem;"
+    />
 
     <h1>{{ $t("systemsetting.general.autoShutdown") }}</h1>
     <q-checkbox

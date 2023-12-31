@@ -53,6 +53,7 @@ async function setRemote() {
         :icon="rIcon"
         :world-name="rWorldName"
         :version-name="rVersionName"
+        :last-played="rLastPlayed"
         style="min-width: 20rem; max-width: 20rem;;"
       />
     </BaseDialogCard>

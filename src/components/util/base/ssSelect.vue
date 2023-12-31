@@ -20,7 +20,6 @@ const model = defineModel()
     :options="options"
     :label="label"
     :dense="dense"
-    class="font"
     :popup-content-style="{fontSize: '0.9rem'}"
     :disable="disable"
     emit-value
@@ -28,6 +27,5 @@ const model = defineModel()
     :option-label="optionLabel"
     :option-value="optionValue"
     style="font-size: .9rem;"
-  >
-  </q-select>
+  />
 </template>

@@ -13,7 +13,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
     <BaseDialogCard
       :overline="dialogOverline"
       :title="dialogTitle"
-      color="red"
+      color="negative"
       :ok-btn-txt="okBtnTxt"
       @ok-click="onDialogOK"
       @close="onDialogCancel"

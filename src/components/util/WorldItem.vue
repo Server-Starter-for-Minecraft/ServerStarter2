@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ImageURI } from 'app/src-electron/schema/brands';
+import { assets } from 'src/assets/assets';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   icon?: ImageURI,
   worldName: string,
   versionName: string,
+  lastPlayed?: number,
   onClick?: () => void
 }
 const props = defineProps<Prop>()
@@ -22,7 +24,7 @@ const transformedWorldName = computed(() => props.worldName.replace(/§./g, "").
   >
     <q-item-section avatar top>
       <q-avatar square size="5rem">
-        <q-img :src="icon" class="lowImg" />
+        <q-img :src="icon ?? assets.png.unset" class="lowImg" />
       </q-avatar>
     </q-item-section>
 
@@ -32,6 +34,9 @@ const transformedWorldName = computed(() => props.worldName.replace(/§./g, "").
         <SsTooltip :name="transformedWorldName" anchor="bottom start" self="center start" />
       </q-item-label>
       <q-item-label class="version">{{ versionName }}</q-item-label>
+      <q-item-label v-if="lastPlayed" class="date">
+        {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(lastPlayed, 'dateTime') } ) }}
+      </q-item-label>
     </q-item-section>
   </q-item>
 </template>
@@ -47,6 +52,11 @@ const transformedWorldName = computed(() => props.worldName.replace(/§./g, "").
 
 .version {
   font-size: 1rem;
+  opacity: .6;
+}
+
+.date {
+  font-size: .75rem;
   opacity: .6;
 }
 </style>

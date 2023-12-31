@@ -17,7 +17,13 @@ const mainStore = useMainStore()
 const propertyStore = usePropertyStore()
 
 // システムが規定するデフォルトプロパティ
-const initProperty: ServerProperties = fromEntries(toEntries(sysStore.staticResouces.properties).map(keyVal =>[keyVal[0], keyVal[1].default]))
+const initProperty: ServerProperties = fromEntries(
+  toEntries(
+    sysStore.staticResouces.properties
+  ).map(
+    keyVal => [keyVal[0], keyVal[1].default]
+  )
+)
 
 // 入力領域のスクロールバーの制御
 const scrollAreaRef = ref()
@@ -36,7 +42,7 @@ function resetAll() {
 /**
  * 画面を一番上に遷移
  */
- function scrollTop() {
+function scrollTop() {
   scrollAreaRef.value.setScrollPosition('vertical', 0)
 }
 </script>
@@ -45,13 +51,18 @@ function resetAll() {
   <div class="mainField">
     <div v-if="isValid(mainStore.world.properties)" class="column fit">
       <div class="row q-py-md">
-        <SsInput dense v-model="propertyStore.searchName" :placeholder="$t('property.main.search')" class="col" />
+        <SsInput
+          dense
+          v-model="propertyStore.searchName"
+          :placeholder="$t('property.main.search')"
+          class="col"
+        />
 
         <SsBtn
           dense
           :label="$t('property.main.resetAll')"
           icon="do_not_disturb_on_total_silence"
-          color="red"
+          color="negative"
           width="6rem"
           @click="resetAll"
           class="q-ml-md"

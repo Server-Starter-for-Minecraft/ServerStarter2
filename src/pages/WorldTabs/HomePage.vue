@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { setScrollTop } from 'src/components/World/HOME/scroll';
-import ExpansionView from 'src/components/World/HOME/expansionView.vue';
 import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
-import CustomMapView from 'src/components/World/HOME/CustomMap/CustomMapView.vue';
-import WorldFolderView from 'src/components/World/HOME/OtherSettings/WorldFolderView.vue';
-import BootSettingsView from 'src/components/World/HOME/OtherSettings/BootSettingsView.vue';
-import WorldDeleteView from 'src/components/World/HOME/WorldOperation/WorldDeleteView.vue';
+import BootSettingsView from 'src/components/World/HOME/Others/BootSettingsView.vue';
+import WorldDeleteView from 'src/components/World/HOME/Others/WorldDeleteView.vue';
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
-import DuplicateWorldView from 'src/components/World/HOME/WorldOperation/DuplicateWorldView.vue';
-import BackupWorldView from 'src/components/World/HOME/WorldOperation/BackupWorldView.vue';
+import RunningBtn from 'src/components/World/HOME/RunningBtn.vue';
 
 const scrollAreaRef = ref()
 
@@ -24,40 +20,25 @@ setScrollTop(scrollTop)
 </script>
 
 <template>
-  <q-scroll-area
-    ref="scrollAreaRef"
-    class="full-height"
-    style="flex: 1 1 0;"
-  >
+  <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0;">
     <div class="mainField">
-      <q-item class="q-pa-none q-pt-lg">
-        <q-item-section>
+      <RunningBtn to="/console" :text-font-size="1.1" class="full-width q-mt-xl" />
+
+      <!-- TOP -->
+      <div class="row justify-center q-mt-sm q-pb-lg q-gutter-lg">
+        <div class="col" style="min-width: 12rem;">
           <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
           <WorldNameView />
 
           <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
           <VersionSelecterView />
-        </q-item-section>
+        </div>
+        <WorldIconView />
+      </div>
 
-        <q-item-section side top>
-          <WorldIconView />
-        </q-item-section>
-      </q-item>
-
-      <h1>{{ $t('home.useWorld.title') }}</h1>
-      <CustomMapView />
-
-      <ExpansionView :title="$t('home.otherSettings')" class="q-pt-xl">
-        <h1 class="q-pt-none">{{ $t('home.saveWorld.title') }}</h1>
-        <WorldFolderView />
-        
-        <h1>{{ $t('home.setting.title') }}</h1>
-        <BootSettingsView />
-      </ExpansionView>
-      
-      <h1>{{ $t('home.worldOperation') }}</h1>
-      <DuplicateWorldView @scroll-top="scrollTop" />
-      <BackupWorldView />
+      <!-- Others -->
+      <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>
+      <BootSettingsView />
 
       <WorldDeleteView />
     </div>

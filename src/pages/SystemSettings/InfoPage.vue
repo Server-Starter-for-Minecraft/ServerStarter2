@@ -8,6 +8,7 @@ const sysStore = useSystemStore()
 
 // TODO: 本来はこのオプションをバックエンドから取得する
 // ひとまずは手動でアップデートをすることは想定しないため、true固定
+// v2.0.0では，強制的に最新のバージョンへアップデートするため，手動でのバージョン更新は起きない
 const latest = true
 const lastUpdateDateTime = sysStore.systemSettings.system.lastUpdatedTime
 
@@ -38,7 +39,7 @@ function openMIT() {
       </div>
       
       <!-- 最終更新日 -->
-      <div v-if="lastUpdateDateTime" class="text-caption q-pt-sm" tyle="opacity: .6;">
+      <div v-if="lastUpdateDateTime" class="text-caption q-pt-sm" style="opacity: .6;">
         {{ $t('systemsetting.info.finalUpdate', { datetime: $d(lastUpdateDateTime, 'dateTime') } ) }}
       </div>
     </div>

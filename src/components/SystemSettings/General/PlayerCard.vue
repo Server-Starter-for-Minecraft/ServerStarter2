@@ -24,8 +24,8 @@ async function updatePlayer() {
       e => tError(
         e,
         {
-          titleKey:'utils.errorDialog.failToGetOwner',
-          descKey:`error.${e.key}.title`
+          titleKey: 'error.errorDialog.failToGetOwner',
+          descKey: `error.${e.key}.title`
         }
       )
     )
