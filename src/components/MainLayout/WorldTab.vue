@@ -115,7 +115,7 @@ function selectWorldIdx() {
 
 <style scoped lang="scss">
 .worldBlock {
-  height: 6.3rem;
+  height: 6.5rem;
 }
 
 .worldName {
