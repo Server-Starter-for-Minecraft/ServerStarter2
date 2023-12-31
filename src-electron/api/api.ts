@@ -146,6 +146,9 @@ export interface API extends IAPI {
       backup: BackupData
     ) => Promise<WithError<Failable<World>>>;
 
+    /** ワールドの最新のログを取得する */
+    FetchLatestWorldLog: (world: WorldID) => Promise<Failable<string[]>>;
+
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
      * 検索したことのあるデータの取得は高速

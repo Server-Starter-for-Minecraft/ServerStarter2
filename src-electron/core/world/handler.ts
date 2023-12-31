@@ -36,6 +36,7 @@ import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { allocateTempDir } from '../misc/tempPath';
 import { portInUse } from 'app/src-electron/util/port';
+import { WorldLogHandler } from './loghandler';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {

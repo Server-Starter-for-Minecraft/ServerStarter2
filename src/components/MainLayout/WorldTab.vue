@@ -83,7 +83,8 @@ function selectWorldIdx() {
         />
         <div v-show="consoleStore.status(world.id) !== 'Stop'" class="absolute-top-right badge">
           <q-badge outline rounded style="background-color: #262626; aspect-ratio: 1;" >
-            <q-icon :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" size="1rem" />
+            <q-icon v-if="consoleStore.status(world.id) === 'CheckLog'" name="notes" size="1rem" />
+            <q-icon v-else :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" size="1rem" />
           </q-badge>
         </div>
       </q-avatar>

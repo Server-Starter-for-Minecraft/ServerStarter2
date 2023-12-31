@@ -112,6 +112,11 @@ export class Path {
     await fs.writeFile(this.path, content);
   }
 
+  async appendText(content: string) {
+    await this.parent().mkdir(true);
+    await fs.appendFile(this.path, content);
+  }
+
   /** 同期書き込み(非推奨) */
   writeTextSync(content: string) {
     this.parent().mkdirSync(true);

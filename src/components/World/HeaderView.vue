@@ -10,7 +10,8 @@ const consoleStore = useConsoleStore()
 const statusColor = {
   'Stop': 'negative',
   'Ready': 'grey',
-  'Running': 'primary'
+  'Running': 'primary',
+  'CheckLog': 'grey'
 }
 </script>
 

@@ -178,6 +178,9 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       invalidWorldId: {
         title: '指定されたワールドが存在しません',
       },
+      missingLatestLog:{
+        title: '直前のサーバログが存在しません',
+      },
       serverPortIsUsed: {
         title: '指定された番号のポートは使用中です',
         desc: 'プロパティ\'server-port\'よりポート番号を{port}から変更してください',
