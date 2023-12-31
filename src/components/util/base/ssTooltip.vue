@@ -39,6 +39,7 @@ interface Prop {
   self?: Self
   fontSize?: string
   maxWidth?: string
+  delay?: number
 }
 defineProps<Prop>()
 </script>
@@ -47,7 +48,7 @@ defineProps<Prop>()
   <q-tooltip
     :anchor="anchor"
     :self="self"
-    :delay="1000"
+    :delay="delay !== undefined ? delay : 1000"
     class="bg-transparent"
   >
     <div
@@ -63,8 +64,7 @@ defineProps<Prop>()
         word-break: break-word;
         border-radius: 5px;
       "
-    >
-      {{ name }}
-    </div>
+      v-html="name"
+    />
   </q-tooltip>
 </template>
