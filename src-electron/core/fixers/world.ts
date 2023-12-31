@@ -10,6 +10,7 @@ import {
   arrayFixer,
   booleanFixer,
   defaultFixer,
+  defaultObjFixer,
   extendFixer,
   numberFixer,
   objectFixer,
@@ -100,7 +101,7 @@ export const fixSystemWorldSettings = objectFixer<SystemWorldSettings>(
 
     memory: defaultFixer(fixMemorySettings, DEFAULT_MEMORY),
 
-    properties: defaultFixer(fixServerProperties, DEFAULT_SERVER_PROPERTIES),
+    properties: defaultObjFixer(fixServerProperties, DEFAULT_SERVER_PROPERTIES),
   },
   true
 );

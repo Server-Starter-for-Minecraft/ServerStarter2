@@ -95,7 +95,7 @@ export interface API extends IAPI {
     OpenBrowser: (url: string) => void;
 
     /** pathをエクスプローラーで開く */
-    OpenFolder: (path: string) => void;
+    OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
   };
   invokeWindowToMain: {
     /** 実行中のサーバーを再起動 */
