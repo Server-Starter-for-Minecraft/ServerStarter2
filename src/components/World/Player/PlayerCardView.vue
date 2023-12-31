@@ -64,25 +64,26 @@ function getGroups(groups: Record<string, PlayerGroup>) {
     :style="playerStore.focusCards.has(prop.uuid) ? { 'border-color': getCssVar('primary') } : ''"
   >
     <template #default>
-      <q-item style="height: 5rem; padding: 14px;">
+      <q-item style="height: 5rem; padding: 14px;" class="full-width">
         <q-item-section avatar top>
           <PlayerHeadView :player="player" size="2.5rem" />
+  
+          <q-item-section top style="max-width: 8rem;" class="q-pl-md">
+            <q-item-label class="name text-omit">
+              {{ player.name }}
+              <SsTooltip :name="player.name" anchor="bottom start" self="center start" />
+            </q-item-label>
+            <q-item-label v-show="opLevel !== void 0" caption style="opacity: 0.7;">
+              {{ $t('player.opLevel') }} {{ opLevel }}
+            </q-item-label>
+          </q-item-section>
         </q-item-section>
 
-        <q-item-section top>
-          <q-item-label class="name text-omit">
-            {{ player.name }}
-            <SsTooltip :name="player.name" anchor="bottom start" self="center start" />
-          </q-item-label>
-          <q-item-label v-show="opLevel !== void 0" caption style="opacity: 0.7;">
-            {{ $t('player.opLevel') }} {{ opLevel }}
-          </q-item-label>
-        </q-item-section>
-        <q-item-section side top>
-          <q-avatar square size="2rem">
-            <q-icon size="2rem" :name="assets.svg[`level${opLevel ?? 0}`]()" />
-          </q-avatar>
-        </q-item-section>
+        <q-space />
+
+        <q-avatar square size="2rem" class="absolute-top-right q-ma-md">
+          <q-icon size="2rem" :name="assets.svg[`level${opLevel ?? 0}`]()" />
+        </q-avatar>
       </q-item>
     </template>
 

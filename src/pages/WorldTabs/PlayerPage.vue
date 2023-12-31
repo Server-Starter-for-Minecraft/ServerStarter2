@@ -60,6 +60,7 @@ function openGroupEditor(group?: PlayerGroup) {
 </script>
 
 <template>
+  {{ playerStore.focusCards }}
   <div v-if="isValid(mainStore.world.players)" class="column fit q-px-md">
     <div class="row full-height">
       <q-scroll-area

@@ -18,7 +18,7 @@ defineProps<Prop>()
   >
     <template #default>
       <div
-        class="absolute-center row items-center"
+        class="justify-center row items-center fit"
         style="width: max-content;"
       >
         <q-icon name="add" size="2rem" class="q-mr-sm"/>
