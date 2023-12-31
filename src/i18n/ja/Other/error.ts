@@ -113,7 +113,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: 'ファイル選択ウィンドウがキャンセルされました',
       },
       shellError:{
-        title: '不明なエラーが発生しました',
+        title: 'ファイルを開く際に不明なエラーが発生しました',
         desc: '{message}'
       },
     },

@@ -111,7 +111,7 @@ export const enUSError: MessageSchema['error'] = {
         title: 'Window to select file is cancelled',
       },
       shellError:{
-        title: 'Unknown error occured',
+        title: 'Unknown error occured when opening the file',
         desc: '{message}'
       },
     },
