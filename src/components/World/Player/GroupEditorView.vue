@@ -6,6 +6,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import { useI18n } from 'vue-i18n';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 const sysStore = useSystemStore()
 const playerStore = usePlayerStore()
@@ -103,9 +104,7 @@ function removeGroup() {
                 :style="{ 'color': colorOp.code }"
                 @click="playerStore.selectedGroup.color = colorOp.code"
               >
-                <q-tooltip class="text-body2">
-                  {{ $t(`player.color.${colorOp.label}`) }}
-                </q-tooltip>
+                <SsTooltip :name="$t(`player.color.${colorOp.label}`)" anchor="bottom middle" self="top middle" :delay="0"/>
               </q-btn>
             </template>
           </div>

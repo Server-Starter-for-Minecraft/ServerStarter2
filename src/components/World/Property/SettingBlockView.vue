@@ -2,6 +2,7 @@
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import InputFieldView from './InputFieldView.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   settingName: string
@@ -43,9 +44,11 @@ function cancelSettings() {
         color="negative"
         @click="cancelSettings"
       >
-        <q-tooltip>
-          <p class="text-caption q-ma-none" v-html="$t('property.resetProperty', { defaultProperty: defaultProperty !== '' ? defaultProperty : $t('property.empty') })" />
-        </q-tooltip>
+        <SsTooltip 
+          :name="$t('property.resetProperty', { defaultProperty: defaultProperty !== '' ? defaultProperty : $t('property.empty') })"
+          anchor="center middle"
+          self="top middle"
+        />
       </q-btn>
     </q-item-section>
   </q-item>

@@ -95,9 +95,16 @@ function removeFolder() {
         :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible || disable"
         @click="switchVisible"
       >
-        <q-tooltip>
-          {{ folder.visible ? $t('systemsetting.folder.tooltipVisible') : $t('systemsetting.folder.tooltipInvisible') }}
-        </q-tooltip>
+        <SsTooltip 
+          :name="
+          folder.visible 
+            ? $t('systemsetting.folder.tooltipVisible') 
+            : $t('systemsetting.folder.tooltipInvisible')
+          "
+          anchor="center middle"
+          self="top middle"
+          :delay="300"
+        />
       </ss-btn>
       <ss-btn
         v-show="showOperationBtns && folder.name !== 'default'"

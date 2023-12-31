@@ -11,6 +11,7 @@ import WorldTab from './WorldTab.vue';
 import NewWorldBtn from './NewWorldBtn.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   minWidth: number
@@ -57,9 +58,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
             :name="assets.svg.menuicon($q.dark.isActive ? 'white' : 'black')"
           />
         </q-avatar>
-        <q-tooltip anchor="center middle" self="top middle" :delay="500">
-          {{ $t('mainLayout.openList') }}
-        </q-tooltip>
+        <SsTooltip :name="$t('mainLayout.openList')" anchor="center middle" self="top middle" :delay="500"/>
       </q-item>
     </div>
     <icon-button-view

@@ -7,6 +7,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Props {
   world: WorldEdited;
@@ -101,15 +102,13 @@ function selectWorldIdx() {
         {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
       </q-item-label>
     </q-item-section>
-    <q-tooltip
+    <SsTooltip 
       v-if="sysStore.systemSettings.user.drawerWidth < 200"
+      :name="world.name"
       anchor="center middle"
       self="top middle"
-      :delay="500"
-      class="text-body2"
-    >
-      {{ world.name }}
-    </q-tooltip>
+    />
+    
   </q-item>
 </template>
 

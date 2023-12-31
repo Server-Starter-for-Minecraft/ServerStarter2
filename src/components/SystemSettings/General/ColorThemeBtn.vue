@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Prop {
   src: string
   active?: boolean
@@ -19,8 +20,6 @@ defineProps<Prop>()
       <q-icon size="3rem" :name="src" />
     </q-avatar>
 
-    <q-tooltip class="text-body2">
-      {{ label }}
-    </q-tooltip>
+    <SsTooltip :name="label" anchor="bottom middle" self="top middle" :delay="500"/>
   </q-btn>
 </template>
