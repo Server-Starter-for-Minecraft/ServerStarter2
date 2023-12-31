@@ -57,7 +57,10 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
-    :style="{ 'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent' }"
+    :style="{
+      'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent',
+      'max-width': `${sysStore.systemSettings.user.drawerWidth}px`
+    }"
   >
     <q-item-section
       avatar
@@ -89,7 +92,7 @@ function selectWorldIdx() {
       </q-avatar>
     </q-item-section>
     <q-item-section>
-      <q-item-label class="worldName">{{ world.name }}</q-item-label>
+      <q-item-label class="worldName text-omit">{{ world.name }}</q-item-label>
       <q-item-label class="versionName">
         {{
           world.version.type === 'vanilla' 
@@ -97,18 +100,22 @@ function selectWorldIdx() {
             :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
         }}
       </q-item-label>
-      <q-item-label v-if="world.last_date" class="date">
+      <q-item-label v-if="world.last_date" class="date text-omit">
         {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
       </q-item-label>
     </q-item-section>
     <q-tooltip
-      v-if="sysStore.systemSettings.user.drawerWidth < 200"
-      anchor="center middle"
-      self="top middle"
+      anchor="center end"
+      self="center start"
       :delay="500"
       class="text-body2"
     >
-      {{ world.name }}
+      {{ world.name }}<br />
+      {{
+        world.version.type === 'vanilla' 
+          ? world.version.id  
+          :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
+      }}
     </q-tooltip>
   </q-item>
 </template>
