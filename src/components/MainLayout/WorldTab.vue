@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -8,6 +8,7 @@ import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { $T } from 'src/i18n/utils/tFunc';
 
 interface Props {
   world: WorldEdited;
@@ -45,6 +46,12 @@ function selectWorldIdx() {
   mainStore.setWorld(prop.world)
   consoleStore.initTab(prop.world.id)
 }
+
+const tooltipText = computed(() => {
+  return `${prop.world.name}<br />
+          ${prop.world.version.type === 'vanilla' 
+            ? prop.world.version.id  
+            : `${prop.world.version.id} (${$T(`home.serverType.${prop.world.version.type}`)})`}`});
 </script>
 
 <template>
@@ -105,19 +112,11 @@ function selectWorldIdx() {
         {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
       </q-item-label>
     </q-item-section>
-    <q-tooltip
+    <SsTooltip
+      :name="tooltipText"
       anchor="center end"
       self="center start"
-      :delay="500"
-      class="text-body2"
-    >
-      {{ world.name }}<br />
-      {{
-        world.version.type === 'vanilla' 
-          ? world.version.id  
-          :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
-      }}
-    </q-tooltip>
+    />
   </q-item>
 </template>
 
