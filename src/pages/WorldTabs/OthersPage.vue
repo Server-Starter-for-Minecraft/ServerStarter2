@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BootSettingsView from 'src/components/World/HOME/Others/BootSettingsView.vue';
+import BootSettingsView from 'src/components/World/Others/BootSettingsView.vue';
 import BackupWorldView from 'src/components/World/Others/BackupWorldView.vue';
 import WorldFolderView from 'src/components/World/Others/WorldFolderView.vue';
 
