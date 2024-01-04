@@ -104,7 +104,7 @@ function removeGroup() {
                 :style="{ 'color': colorOp.code }"
                 @click="playerStore.selectedGroup.color = colorOp.code"
               >
-                <SsTooltip :name="$t(`player.color.${colorOp.label}`)" anchor="bottom middle" self="top middle"/>
+                <SsTooltip :name="$t(`player.color.${colorOp.label}`)" anchor="bottom middle" self="center middle"/>
               </q-btn>
             </template>
           </div>
