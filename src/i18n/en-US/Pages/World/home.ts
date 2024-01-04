@@ -42,8 +42,8 @@ export const enUSHome: MessageSchema['home'] = {
     desc: '\
       This feature allows you to invite your friends to join your server without having to configure the \"PORT MAPPING\".<br/>\
       Get ready for all the multi-play settings with ServerStarter2!',
-    descWarningNoRegist: 'This setting can only be set when all servers are stopped',
-    descWarningRegisted: 'Token updates can only be set when all servers are stopped',
+    descWarningNoRegist: 'This setting can only be set when all servers are stopped.',
+    descWarningRegisted: 'Token updates can only be set when all servers are stopped.',
     btn: 'Configure this feature',
     btnRegisted: 'Update your token',
     toggleON: 'Using this feature',
@@ -54,7 +54,7 @@ export const enUSHome: MessageSchema['home'] = {
         desc: '\
           This software uses a tool called Ngrok to eliminate the need to open ports.<br>\
           If you do not have an account, please create a new account.<br>\
-          (*<u>This software is designed to be used with a free account</u>, although paid accounts are also available',
+          (*<u>This software is designed to be used with a free account</u>, although paid accounts are also available.',
         register: 'Create a new account',
         alreadyRegistered: 'Already have an account?'
       },
@@ -83,8 +83,8 @@ export const enUSHome: MessageSchema['home'] = {
       thirdPage: {
         title: 'Register token',
         desc: '\
-        Connect your Ngrok account to ServerStarter2{0}\
-        Open {1} and input the displayed token below\
+        Connect your Ngrok account to ServerStarter2.{0}\
+        Open {1} and input the displayed token below.\
         ',
         link: 'page to get an authentication token',
         inputToken: 'Input Token'
