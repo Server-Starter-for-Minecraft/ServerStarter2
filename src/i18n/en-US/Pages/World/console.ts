@@ -2,7 +2,7 @@ import { MessageSchema } from "src/boot/i18n";
 
 export const enUSConsole:MessageSchema['console'] = {
   init: 'Booting ServerStarter2...',
-  boot: 'BOOT {name}',
+  boot: 'BOOT &nbsp; <span class="text-omit col">{name}</span>',
   booting: 'Booting {id} ({type})/{name}',
   abnormalEnd:'Terminated abnormally',
   stop: {
