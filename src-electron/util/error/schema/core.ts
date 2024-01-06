@@ -11,6 +11,13 @@ export type CoreErrors = {
       name?: string;
     }>;
 
+    // 最新のログファイルが存在しない場合
+    missingLatestLog: ErrorMessageContent<{
+      name?: string;
+      container?: string;
+    }>;
+
+
     // ポート番号が既に使用中
     serverPortIsUsed: ErrorMessageContent<{
       port: number;

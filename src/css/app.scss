@@ -10,6 +10,10 @@ h1 {
   padding-bottom: 0rem;
 }
 
+body {
+  user-select: none;
+}
+
 // テキストを１行に制限してはみ出した分は省略する
 .text-omit {
   white-space: nowrap;
@@ -19,7 +23,7 @@ h1 {
 
 // スクロールバー
 html {
-  overflow: overlay; 
+  overflow: overlay;
 }
 ::-webkit-scrollbar {
   width: 10px;
@@ -27,7 +31,7 @@ html {
 }
 ::-webkit-scrollbar-track {
   background: transparent;
-} 
+}
 ::-webkit-scrollbar-thumb {
   background-color: rgba($color: grey, $alpha: 0.5);
   border-radius: 100px;
@@ -65,5 +69,5 @@ html {
   height: 100%;
   width: 80%;
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0 auto 32px auto;
 }

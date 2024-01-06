@@ -8,7 +8,6 @@ import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import SsSelect from 'src/components/util/base/ssSelect.vue';
 import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
 import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
 import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
@@ -53,7 +52,7 @@ function openGroupEditor(group?: PlayerGroup) {
     playerStore.selectedGroup = deepCopy(Object.assign(group, { isNew: false }))
     playerStore.selectedGroupName = group.name
   }
-  
+
   // Editorを開く
   playerStore.openGroupEditor = true
 }
@@ -70,13 +69,19 @@ function openGroupEditor(group?: PlayerGroup) {
           {{ $t('player.description') }}
         </p>
 
-        <SsInput
-          v-model="playerStore.searchName"
-          dense
-          :placeholder="$t('player.search')"
-          :debounce="200"
-          class="q-pb-md col"
-        />
+        <div class="row items-center q-gutter-x-md q-pb-md ">
+          <SsInput
+            v-model="playerStore.searchName"
+            dense
+            :placeholder="$t('player.search')"
+            :debounce="200"
+            class="col"
+          />
+          <q-btn-group push>
+            <q-btn outline no-caps :label="$t('player.order.name')" :color="playerOrder === 'name' ? 'primary' : ''" @click="playerOrder = 'name'" />
+            <q-btn outline no-caps :label="$t('player.order.op')" :color="playerOrder === 'op' ? 'primary' : ''" @click="playerOrder = 'op'" />
+          </q-btn-group>
+        </div>
 
         <PlayerJoinToggleView
           v-if="isValid(mainStore.world.properties)"
@@ -89,17 +94,7 @@ function openGroupEditor(group?: PlayerGroup) {
             <SearchResultView />
           </div>
 
-          <div class="row full-width items-center">
-            <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
-            <q-space />
-            <SsSelect
-              dense
-              v-model="playerOrder"
-              :options="orderTypes"
-              :label="$t('player.sort')"
-              style="width: 6.5rem; margin-right: 10px;"
-            />
-          </div>
+          <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
           <div v-if="mainStore.world.players.length !== 0" class="row q-gutter-sm q-pa-sm">
             <div
               v-for="

@@ -43,6 +43,7 @@ import { randomInt } from 'crypto';
 import { serverPropertiesFile } from './files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { Listener } from '@ngrok/ngrok';
+import { WorldLogHandler } from './loghandler';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -526,6 +527,9 @@ export class WorldHandler {
     delete worldSettings.remote;
     await this.saveLocalServerJson(worldSettings);
 
+    // ワールドの最終プレイを現在時刻に
+    world.last_date = getCurrentTimestamp()
+
     // データを保存
     return await this.saveExec(world);
   }
@@ -886,6 +890,9 @@ export class WorldHandler {
     progress.title({
       key: 'server.run.after.title',
     });
+
+    // ワールドの最終プレイを現在時刻に
+    settings.last_date = getCurrentTimestamp()
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = false;

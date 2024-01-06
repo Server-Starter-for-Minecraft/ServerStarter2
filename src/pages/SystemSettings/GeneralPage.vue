@@ -83,13 +83,6 @@ function showOwnerDialog() {
       style="font-size: 1rem;"
     />
 
-    <h1>{{ $t("systemsetting.general.autoShutdown") }}</h1>
-    <q-checkbox
-      v-model="sysStore.systemSettings.user.autoShutDown"
-      :label="$t('systemsetting.general.shutdownDesc')"
-      style="font-size: 1rem;"
-    />
-
     <h1>{{ $t('owner.register') }}</h1>
     <p class="q-my-sm text-body2" style="opacity: .5;">
       {{ $t('owner.generalDesc') }}

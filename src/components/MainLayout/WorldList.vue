@@ -72,6 +72,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
 
     <search-world-view
       v-model="searchWorldName"
+      :expand-width="maxWidth"
       :expand-drawer-btn-clickable="sysStore.systemSettings.user.drawerWidth < miniChangeWidth"
     />
 

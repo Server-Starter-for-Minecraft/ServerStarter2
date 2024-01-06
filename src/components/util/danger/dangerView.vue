@@ -31,7 +31,7 @@ function openDialog() {
 </script>
 
 <template>
-  <div class="q-py-lg">
+  <div class="q-pt-lg">
     <h1 class="q-pt-sm text-negative">{{ viewTitle }}</h1>
     <p v-html="viewDesc" class="text-caption q-pb-sm" />
     <SsBtn

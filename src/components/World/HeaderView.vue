@@ -13,7 +13,8 @@ const copied = ref(false)
 const statusColor = {
   'Stop': 'negative',
   'Ready': 'grey',
-  'Running': 'primary'
+  'Running': 'primary',
+  'CheckLog': 'grey'
 }
 
 function copyIP() {
@@ -29,7 +30,7 @@ function copyIP() {
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">{{ mainStore.world.name }}</div>
-      <div 
+      <div
         :class="`text-${statusColor[consoleStore.status(mainStore.world.id)]}`"
         class="q-mr-md"
       >
@@ -39,7 +40,9 @@ function copyIP() {
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />
     <div class="row q-gutter-sm items-center">
-      <div class="force-oneline">IP : {{ mainStore.worldIP ?? sysStore.publicIP }}</div>
+      <div class="force-oneline">
+        <span class="user-select">IP : {{ mainStore.worldIP ?? sysStore.publicIP }}</span>
+      </div>
       <q-btn
         dense
         flat
@@ -59,5 +62,9 @@ function copyIP() {
 
 .force-oneline {
   white-space: nowrap;
+}
+
+.user-select {
+  user-select: text;
 }
 </style>

@@ -10,6 +10,7 @@ import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../progress/progress';
 import { trimAnsi } from 'app/src-electron/util/ansi';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
+import { WorldLogHandler } from '../world/loghandler';
 
 export type RunServer = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -30,10 +31,18 @@ export function runServer(
 
     const { javaArgs, javaPath } = readyResult;
 
+    // latest.logをアーカイブ化する
+    const loghandler = new WorldLogHandler(cwdPath)
+    await loghandler.archive()
+
     const onStart = () => api.send.StartServer(id, notification);
     const onFinish = () => api.send.FinishServer(id);
-    const console = (value: string, isError: boolean) =>
-      api.send.AddConsole(id, trimAnsi(value), isError);
+    const console = (value: string, isError: boolean) => {
+      const trimmed = trimAnsi(value)
+      // コンソールの内容をGUIに表示
+      api.send.AddConsole(id, trimmed, isError);
+      loghandler.append(trimmed)
+    }
 
     // サーバーの実行を待機
     process = serverProcess(
@@ -47,6 +56,10 @@ export function runServer(
     );
     const runresult = await process;
     process = undefined;
+
+    // 一時保管したlogをリセット
+    await loghandler.flash()
+
     return runresult;
   }
 

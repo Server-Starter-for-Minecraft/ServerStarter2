@@ -34,14 +34,14 @@ consoleStore.$subscribe((mutation, state) => {
   /> -->
 
   <q-virtual-scroll
-    v-if="consoleStore.status(mainStore.selectedWorldID) === 'Running'"
+    v-if="['Running', 'CheckLog'].includes(consoleStore.status(mainStore.selectedWorldID))"
     ref="virtualListRef"
     :items="consoleStore.console(mainStore.selectedWorldID)"
     v-slot="{ item }"
     class="q-pa-md fit"
     style="flex: 1 1 0;"
   >
-    <p :class="item.isError ? 'text-negative' : ''" style="word-break:break-all;">
+    <p :class="item.isError ? 'text-negative' : ''" style="word-break: break-all; user-select: text;">
       {{ item.chunk }}
     </p>
   </q-virtual-scroll>
