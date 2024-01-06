@@ -9,7 +9,7 @@ export const jaPlayer = {
   changeOP: 'OPレベルの変更',
   makeGroup: 'グループを作成',
   deletePlayer: 'プレイヤーを削除',
-  selectPlayerFromLeft: 'プレイヤーを左から選択してください',
+  selectPlayerFromLeft: 'プレイヤーを選択してください',
   selectPlayer: 'プレイヤーを選択してください',
   editGroup: 'グループを編集',
   newGroup: '新規グループ',
