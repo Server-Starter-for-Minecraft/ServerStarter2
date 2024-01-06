@@ -22,12 +22,12 @@ async function showLog() {
 <template>
   <div
     v-if="consoleStore.status(mainStore.selectedWorldID) === 'Stop'"
-    class="justify-center column fit"
+    class="column justify-center fit"
+    style="flex: 1 1 0;"
   >
     <RunningBtn
       :text-font-size="1.5"
       class="btn"
-      style="width: fit-content; margin: 0 auto;"
     />
     <SsBtn
       :label="$t('console.showLog')"
@@ -40,7 +40,8 @@ async function showLog() {
 
 <style scoped lang="scss">
 .btn {
-  padding: 6px 64px;
-  margin: auto 16px;
+  width: fit-content;
+  max-width: 90%;
+  margin: 0 auto;
 }
 </style>

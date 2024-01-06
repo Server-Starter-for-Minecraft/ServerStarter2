@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Props {
   icon: string
   text: string
@@ -14,6 +15,6 @@ defineProps<Props>()
 <template>
   <q-btn flat :icon="icon" :color="color" :size="size" :to="to" :disable="disable" @click="onClick">
     <span class="gt-md q-pl-sm">{{ text }}</span>
-    <q-tooltip :offset="[10, 10]" class="lt-md" :style="{ 'font-size': size }">{{ text }}</q-tooltip>
+    <SsTooltip :name="text" anchor="center middle" self="top middle" />
   </q-btn>
 </template>

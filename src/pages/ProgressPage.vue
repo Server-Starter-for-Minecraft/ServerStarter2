@@ -8,9 +8,9 @@ const progressStore = useProgressStore();
 </script>
 
 <template>
-  <div class="justify-center column items-center fit">
-    <div style="width: 30rem;">
-      <h1 style="font-weight: bold;">{{ progressStore.getProgress(mainStore.world.id).title }}</h1>
+  <div class="fit" style="position: relative;">
+    <div class="q-pa-md absolute-center" style="width: 40rem; max-width: 100%;">
+      <h1 class="q-pa-none" style="font-weight: bold;">{{ progressStore.getProgress(mainStore.world.id).title }}</h1>
       <ProgressView :progress="progressStore.getProgress(mainStore.world.id)?.progress" />
     </div>
   </div>

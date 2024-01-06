@@ -10,6 +10,7 @@ import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 const prop = defineProps<AddFolderDialogProps>()
 defineEmits({ ...useDialogPluginComponent.emitsObject })
@@ -48,14 +49,31 @@ function isErrorContainer(c: WorldContainerSetting) {
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <BaseDialogCard :title="containerSettings === void 0
-      ? $t('others.worldFolder.addFolder')
-      : $t('others.worldFolder.updateFolder')" :disable="sysStore.systemSettings.container.filter(isErrorContainer).length > 0
-    || inputName === ''
-    || pickPath === ''" :ok-btn-txt="inputName
-    ? $t('others.worldFolder.addBtn', { name: inputName })
-    : $t('others.worldFolder.add')"
-      @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)" @close="onDialogCancel">
+    <BaseDialogCard
+      :title="containerSettings === void 0
+        ? $t('others.worldFolder.addFolder')
+        : $t('others.worldFolder.updateFolder')"
+      @close="onDialogCancel"
+    >
+    <template #additionalBtns>
+      <ss-btn
+        color="primary"
+        :disable="
+          sysStore.systemSettings.container.filter(isErrorContainer).length > 0
+            || inputName === ''
+            || pickPath === ''"
+        @click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
+        class="row items-center"
+      >
+        <span
+          v-if="inputName !== ''"
+          class="col row"
+          v-html="$t('others.worldFolder.addBtn', { name: inputName })"
+        />
+        <span v-else>{{ $t('others.worldFolder.add') }}</span>
+      </ss-btn>
+    </template>
+
       <div class="row q-gutter-md">
         <SsInput v-model="inputName" :label="$t('others.worldFolder.folderName')" autofocus class="col" />
         <SsBtn free-width :label="$t('others.worldFolder.selectFolderBtn')" @click="pickFolder" />
@@ -77,6 +95,7 @@ function isErrorContainer(c: WorldContainerSetting) {
       </div>
       <div v-if="pickPath !== ''" class="text-caption text-omit q-pt-sm" style="opacity: .6;">
         {{ pickPath }}
+        <SsTooltip :name="pickPath" anchor="bottom start" self="center start" />
       </div>
     </BaseDialogCard>
   </q-dialog>

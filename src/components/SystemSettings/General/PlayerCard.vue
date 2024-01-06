@@ -5,6 +5,8 @@ import { Player } from 'app/src-electron/schema/player';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadView from 'src/components/World/Player/utils/PlayerHeadView.vue';
 import { tError } from 'src/i18n/utils/tFunc';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+
 
 const owner = defineModel<PlayerUUID>()
 
@@ -39,8 +41,14 @@ async function updatePlayer() {
       </q-item-section>
 
       <q-item-section>
-        <q-item-label class="name text-omit">{{ player.name }}</q-item-label>
-        <q-item-label class="text-caption text-omit" style="opacity: 0.7;">{{ player.uuid }}</q-item-label>
+        <q-item-label class="name text-omit">
+          {{ player.name }}
+          <SsTooltip :name="player.name" anchor="bottom start" self="center start" />
+        </q-item-label>
+        <q-item-label class="text-caption text-omit" style="opacity: 0.7;">
+          {{ player.uuid }}
+          <SsTooltip :name="player.uuid" anchor="bottom start" self="center start" />
+        </q-item-label>
       </q-item-section>
     </q-item>
 

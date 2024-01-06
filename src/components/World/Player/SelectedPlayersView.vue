@@ -19,7 +19,7 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
   <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0;">
     <p class="q-pt-sm q-pl-sm q-pa-none q-ma-none text-body2">{{ $t('player.select', playerStore.focusCards.size) }}</p>
     
-    <q-card-actions style="margin-left: 10px; margin-right: 10px;">
+    <q-card-actions class="q-mx-sm">
       <q-btn
         outline
         :label="$t('player.deselect',playerStore.focusCards.size)"
@@ -32,9 +32,9 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
     <q-scroll-area
       style="flex: 1 1 0;"
     >
-      <div class="row">
-        <div v-if="playerStore.focusCards.size === 0">
-          <p class="col q-my-none q-ml-sm text-caption text-grey">
+      <div class="row q-gutter-md q-pa-sm">
+        <div v-if="playerStore.focusCards.size === 0" class="fit">
+          <p class="col text-caption text-grey text-center">
             {{ $t('player.selectPlayerFromLeft') }}
           </p>
         </div>

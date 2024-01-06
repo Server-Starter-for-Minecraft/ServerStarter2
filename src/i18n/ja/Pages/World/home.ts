@@ -105,8 +105,8 @@ export const jaHome = {
       十分に注意して削除してください。',
     dialogTitle: 'ワールドを削除します',
     dialogDesc: '\
-      {deleteName}のデータは永久に失われ、元に戻すことはできません。<br>\
-      本当にワールドを削除しますか？',
+      <span class="text-omit col-" style="max-width: 10rem;">{deleteName}</span>のデータは永久に失われ、元に戻すことはできません。\
+      <span>本当にワールドを削除しますか？</span>',
   },
   error: {
     title: '警告',

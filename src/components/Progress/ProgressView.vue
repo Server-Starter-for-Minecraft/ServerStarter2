@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { GroupProgress, Progress } from 'app/src-electron/schema/progress';
-import { tProgress } from 'src/i18n/utils/tFunc'
+import { tProgress } from 'src/i18n/utils/tFunc';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   progress?: GroupProgress
 }
-defineProps<Prop>()
+const prop = defineProps<Prop>()
 
 function flatProgress(ps?: Progress[]) {
   function appendProgress(progress?: Progress[]) {
@@ -24,12 +26,27 @@ function flatProgress(ps?: Progress[]) {
 
   return returnObj
 }
+const linearMessage = computed(() => flatProgress(prop.progress?.value).filter(p => p.type === 'console')[0]?.value.toString())
 </script>
 
 <template>
   <template v-for="p in flatProgress(progress?.value)" :key="p">
-    <p v-if="p.type === 'title'" class="q-pt-lg q-ma-none" style="font-size: 1rem;">{{ tProgress(p.value) }}</p>
-    <p v-else-if="p.type === 'subtitle'" class="text-caption q-ma-none" style="opacity: .6;">{{ tProgress(p.value) }}</p>
+    <p v-if="p.type === 'title'" class="q-pt-lg q-ma-none text-omit" style="font-size: 1rem;">
+      {{ tProgress(p.value) }}
+      <SsTooltip 
+        :name="tProgress(p.value)"
+        anchor="bottom start"
+        self="center start"
+      />
+    </p>
+    <p v-else-if="p.type === 'subtitle'" class="text-caption q-ma-none text-omit" style="opacity: .6;">
+      {{ tProgress(p.value) }}
+      <SsTooltip 
+        :name="tProgress(p.value)"
+        anchor="bottom start"
+        self="center start"
+      />
+    </p>
 
     <div v-else-if="p.type === 'numeric'" class="q-pt-lg">
       <q-linear-progress rounded size="15px" :value="p.value/(p.max ?? 100)" color="primary" />
@@ -43,7 +60,12 @@ function flatProgress(ps?: Progress[]) {
   <div v-show="flatProgress(progress?.value).filter(p => p.type === 'console').length > 0" class="q-pt-lg">
     <q-linear-progress indeterminate rounded size="15px" color="primary" />
     <p class="text-caption text-omit" style="opacity: .6;">
-      {{ flatProgress(progress?.value).filter(p => p.type === 'console')[0]?.value }}
+      {{ linearMessage }}
+      <SsTooltip 
+        :name="linearMessage"
+        anchor="bottom start"
+        self="center start"
+      />
     </p>
   </div>
 </template>

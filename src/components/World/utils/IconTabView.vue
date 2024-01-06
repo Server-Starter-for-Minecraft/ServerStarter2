@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   path: string
@@ -23,8 +24,11 @@ async function to() {
     @click="disableRouter ? undefined : to()"
   >
     <slot/>
-    <q-tooltip v-if="!($q.screen.gt.md || $route.path===`/${path}`)">
-      {{ label }}
-    </q-tooltip>
+    <SsTooltip
+      v-if="!($q.screen.gt.md || $route.path===`/${path}`) && label"
+      :name="label"
+      anchor="center middle"
+      self="top middle"
+    />
   </q-tab>
 </template>

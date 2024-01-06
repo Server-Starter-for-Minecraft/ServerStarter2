@@ -9,6 +9,7 @@ import { deleteFromValue } from 'src/scripts/obj';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import UpdatePatDialog from './UpdatePatDialog.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   disable?: boolean
@@ -61,15 +62,24 @@ function checkUnlinkRepo() {
       <div class="caption q-pb-sm">{{ $t('shareWorld.github') }}</div>
       <div class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.account') }}</div>
-        <div class="dataText text-omit">{{ remote.folder.owner }}</div>
+        <div class="dataText text-omit">
+          {{ remote.folder.owner }}
+          <SsTooltip :name="remote.folder.owner" anchor="bottom start" self="center start" />
+        </div>
       </div>
       <div class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.repository') }}</div>
-        <div class="dataText text-omit">{{ remote.folder.repo }}</div>
+        <div class="dataText text-omit">
+          {{ remote.folder.repo }}
+          <SsTooltip :name="remote.folder.repo" anchor="bottom start" self="center start" />
+        </div>
       </div>
       <div v-if="worldName" class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.worldName') }}</div>
-        <div class="dataText text-omit">{{ worldName }}</div>
+        <div class="dataText text-omit">
+          {{ worldName }}
+          <SsTooltip :name="worldName" anchor="bottom start" self="center start" />
+        </div>
       </div>
     </q-card-section>
 

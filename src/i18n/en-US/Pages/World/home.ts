@@ -107,8 +107,8 @@ export const enUSHome: MessageSchema['home'] = {
       Please be careful to execute.',
     dialogTitle: 'Delete your world data',
     dialogDesc: '\
-      Your {deleteName} data will be deleted permanently.<br>\
-      Are you sure to delete the world data?'
+      Your  &nbsp;  <span class="text-omit col-" style="max-width: 10rem;">{deleteName}</span> &nbsp; data will be deleted permanently.<br>\
+      <span>Are you sure to delete the world data?</span>'
   },
   error: {
     title: 'Warning!',

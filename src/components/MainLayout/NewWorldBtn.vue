@@ -11,6 +11,7 @@ import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
 import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   miniChangeWidth: number
@@ -146,9 +147,7 @@ async function introduceBackup() {
         </q-item-section>
       </q-item>
       <q-space v-if="!isMini()" />
-      <q-tooltip anchor="center middle" self="top middle" :delay="500">
-        {{ $t('mainLayout.newWorldBtn.addWorld') }}
-      </q-tooltip>
+      <SsTooltip :name="$t('mainLayout.newWorldBtn.addWorld')" anchor="center middle" self="top middle"/>
     </template>
 
     <q-list>

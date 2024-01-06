@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { AllFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
 import { useMainStore } from 'src/stores/MainStore';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 type T = DatapackData | ModData | PluginData
 
@@ -24,6 +26,14 @@ function deleteContent() {
     mainStore.world.additional[`${prop.contentType}s`].map(c => c.name).indexOf(prop.content.name), 1
   )
 }
+
+const transformedName = computed(() => prop.content.name.replace(/§./g, '').trim());
+const transformedDescription = computed(()=>(
+  'description' in prop.content 
+    ? prop.content.description.replace(/§./g, '').trim() 
+    : ''
+  ));
+
 </script>
 
 <template>
@@ -35,10 +45,12 @@ function deleteContent() {
       <q-item class="q-pr-sm">
         <q-item-section>
           <q-item-label class="contentsName text-omit">
-            {{ content.name.replace(/§./g, "").trim() }}
+            {{ transformedName }}
+            <SsTooltip :name="transformedName" anchor="bottom start" self="center start" />
           </q-item-label>
           <q-item-label v-if="'description' in content" class="text-omit" style="opacity: .7;">
-            {{ content.description.replace(/§./g, "").trim() }}
+            {{ transformedDescription }}
+            <SsTooltip :name="transformedDescription" anchor="bottom start" self="center start" />
           </q-item-label>
         </q-item-section>
 

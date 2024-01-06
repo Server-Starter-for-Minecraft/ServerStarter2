@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -7,6 +7,8 @@ import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { $T } from 'src/i18n/utils/tFunc';
 
 interface Props {
   world: WorldEdited;
@@ -44,6 +46,12 @@ function selectWorldIdx() {
   mainStore.setWorld(prop.world)
   consoleStore.initTab(prop.world.id)
 }
+
+const tooltipText = computed(() => {
+  return `${prop.world.name}<br />
+          ${prop.world.version.type === 'vanilla' 
+            ? prop.world.version.id  
+            : `${prop.world.version.id} (${$T(`home.serverType.${prop.world.version.type}`)})`}`});
 </script>
 
 <template>
@@ -57,7 +65,10 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
-    :style="{ 'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent' }"
+    :style="{
+      'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent',
+      'max-width': `${sysStore.systemSettings.user.drawerWidth}px`
+    }"
   >
     <q-item-section
       avatar
@@ -90,7 +101,7 @@ function selectWorldIdx() {
       </q-avatar>
     </q-item-section>
     <q-item-section>
-      <q-item-label class="worldName">{{ world.name }}</q-item-label>
+      <q-item-label class="worldName text-omit">{{ world.name }}</q-item-label>
       <q-item-label class="versionName">
         {{
           world.version.type === 'vanilla' 
@@ -98,19 +109,15 @@ function selectWorldIdx() {
             :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
         }}
       </q-item-label>
-      <q-item-label v-if="world.last_date" class="date">
+      <q-item-label v-if="world.last_date" class="date text-omit">
         {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
       </q-item-label>
     </q-item-section>
-    <q-tooltip
-      v-if="sysStore.systemSettings.user.drawerWidth < 200"
-      anchor="center middle"
-      self="top middle"
-      :delay="500"
-      class="text-body2"
-    >
-      {{ world.name }}
-    </q-tooltip>
+    <SsTooltip
+      :name="tooltipText"
+      anchor="center end"
+      self="center start"
+    />
   </q-item>
 </template>
 

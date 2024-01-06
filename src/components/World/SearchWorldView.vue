@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from '../util/base/ssInput.vue';
-
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Prop {
   expandWidth: number
   expandDrawerBtnClickable: boolean
@@ -20,8 +20,11 @@ const sysStore = useSystemStore()
     <q-item-section>
       <ss-input v-model="model" :label="$t('mainLayout.searchWorld')" />
     </q-item-section>
-    <q-tooltip v-if="expandDrawerBtnClickable" anchor="center middle" self="top middle" :delay="500">
-      {{ $t('mainLayout.searchWorld') }}
-    </q-tooltip>
+    <SsTooltip
+      v-if="expandDrawerBtnClickable"
+      :name="$t('mainLayout.searchWorld')"
+      anchor="center middle"
+      self="top middle"
+    />
   </q-item>
 </template>
