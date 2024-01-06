@@ -46,6 +46,9 @@ export type SystemUserSetting = {
   autoShutDown: boolean;
   // ワールドリストの幅
   drawerWidth: number;
+
+  // NgrokのToken
+  ngrokToken?: string;
 };
 
 export type WorldContainerSetting = {

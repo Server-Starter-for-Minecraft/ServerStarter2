@@ -1,4 +1,5 @@
 import { ImageURI, PlayerUUID, RemoteWorldName, Timestamp } from './brands';
+import { NgrokSetting } from './ngrok';
 import { Version } from './version';
 
 export type GithubRemoteFolder = {
@@ -43,4 +44,7 @@ export type RemoteWorld = {
 
   /** アイコンのURI */
   avater_path?: ImageURI;
+
+  /** Ngrokによるポート開放不要化機能を利用するか */
+  ngrok_setting: NgrokSetting;
 };

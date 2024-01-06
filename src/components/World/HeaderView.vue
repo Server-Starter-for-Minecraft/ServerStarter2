@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -8,11 +9,21 @@ const sysStore = useSystemStore()
 const mainStore = useMainStore()
 const consoleStore = useConsoleStore()
 
+const copied = ref(false)
+
 const statusColor = {
   'Stop': 'negative',
   'Ready': 'grey',
   'Running': 'primary',
   'CheckLog': 'grey'
+}
+
+function copyIP() {
+  navigator.clipboard.writeText(mainStore.worldIP ?? sysStore.publicIP)
+    .then(() => {
+      copied.value = true
+      setTimeout(() => { copied.value = false }, 10000)
+    })
 }
 </script>
 
@@ -32,7 +43,19 @@ const statusColor = {
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />
-    <div class="force-oneline">IP : <span class="user-select">{{ sysStore.publicIP }}</span></div>
+    <div class="row q-gutter-sm items-center">
+      <div class="force-oneline">
+        <span class="user-select">IP : {{ mainStore.worldIP ?? sysStore.publicIP }}</span>
+      </div>
+      <q-btn
+        dense
+        flat
+        size=".6rem"
+        :icon="copied ? 'done' : 'content_copy'"
+        :color="copied ? 'primary' : ''"
+        @click="copyIP"
+      />
+    </div>
   </div>
 </template>
 

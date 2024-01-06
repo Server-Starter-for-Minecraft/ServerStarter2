@@ -20,13 +20,16 @@ async function showLog() {
 </script>
 
 <template>
-  <div v-if="consoleStore.status(mainStore.selectedWorldID) === 'Stop'" class="column justify-center fit" style="flex: 1 1 0;">
+  <div
+    v-if="consoleStore.status(mainStore.selectedWorldID) === 'Stop'"
+    class="column justify-center fit"
+    style="flex: 1 1 0;"
+  >
     <RunningBtn
-      to="/console"
       :text-font-size="1.5"
       class="btn"
     />
-    <ss-btn
+    <SsBtn
       :label="$t('console.showLog')"
       width="16rem"
       @click="showLog"

@@ -33,7 +33,7 @@ function openDialog() {
 <template>
   <div class="q-pt-lg">
     <h1 class="q-pt-sm text-negative">{{ viewTitle }}</h1>
-    <p v-html="viewDesc" class="text-caption q-py-sm" />
+    <p v-html="viewDesc" class="text-caption q-pb-sm" />
     <SsBtn
       :label="openDialogBtnText"
       :disable="disable"

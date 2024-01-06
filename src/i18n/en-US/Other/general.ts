@@ -8,4 +8,5 @@ export const enUSGeneral:MessageSchema['general'] = {
   file: 'file',
   directory: 'directory',
   skip: 'skip',
+  back: 'back',
 };

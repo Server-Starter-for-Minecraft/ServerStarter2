@@ -20,6 +20,8 @@ import { ServerSettingFile } from './base';
 import { getSystemSettings } from '../../stores/system';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { ngrok_settingFixer } from '../../fixers/ngrok';
+import { NgrokSetting } from 'app/src-electron/schema/ngrok';
 
 /**
  * ワールドのディレクトリ構成
@@ -63,6 +65,9 @@ export type WorldSettings = {
 
   /** ディレクトリ構成 "vanilla" | "plugin" */
   directoryType?: WorldDirectoryTypes;
+
+  /** Ngrokによるポート開放不要化機能を利用するか */
+  ngrok_setting: NgrokSetting;
 };
 
 export async function worldSettingsFixer() {
@@ -99,6 +104,9 @@ export async function worldSettingsFixer() {
 
       /** ディレクトリ構成 "vanilla" | "plugin" */
       directoryType: optionalFixer(literalFixer(['vanilla', 'plugin'])),
+
+      /** Ngrokによるポート開放不要化機能を利用するか */
+      ngrok_setting: ngrok_settingFixer
     },
     false
   );
