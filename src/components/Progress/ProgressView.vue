@@ -31,8 +31,22 @@ const linearMessage = computed(() => flatProgress(prop.progress?.value).filter(p
 
 <template>
   <template v-for="p in flatProgress(progress?.value)" :key="p">
-    <p v-if="p.type === 'title'" class="q-pt-lg q-ma-none" style="font-size: 1rem;">{{ tProgress(p.value) }}</p>
-    <p v-else-if="p.type === 'subtitle'" class="text-caption q-ma-none" style="opacity: .6;">{{ tProgress(p.value) }}</p>
+    <p v-if="p.type === 'title'" class="q-pt-lg q-ma-none text-omit" style="font-size: 1rem;">
+      {{ tProgress(p.value) }}
+      <SsTooltip 
+        :name="tProgress(p.value)"
+        anchor="bottom start"
+        self="center start"
+      />
+    </p>
+    <p v-else-if="p.type === 'subtitle'" class="text-caption q-ma-none text-omit" style="opacity: .6;">
+      {{ tProgress(p.value) }}
+      <SsTooltip 
+        :name="tProgress(p.value)"
+        anchor="bottom start"
+        self="center start"
+      />
+    </p>
 
     <div v-else-if="p.type === 'numeric'" class="q-pt-lg">
       <q-linear-progress rounded size="15px" :value="p.value/(p.max ?? 100)" color="primary" />

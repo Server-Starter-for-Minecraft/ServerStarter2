@@ -71,3 +71,11 @@ html {
   max-width: 1000px;
   margin: 0 auto 32px auto;
 }
+
+
+// コンテンツを鉛直方向にのみスクロールさせるエリアを生成
+.vertical-scroll {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}

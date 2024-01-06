@@ -21,30 +21,32 @@ setScrollTop(scrollTop)
 </script>
 
 <template>
-  <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0;">
+  <div class="vertical-scroll">
     <div class="mainField">
       <RunningBtn to="/console" :text-font-size="1.1" class="full-width q-mt-xl" />
-
+  
       <!-- TOP -->
       <div class="row justify-center q-mt-sm q-pb-lg q-gutter-lg">
         <div class="col" style="min-width: 12rem;">
           <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
           <WorldNameView />
-
+  
           <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
           <VersionSelecterView />
         </div>
         <WorldIconView />
       </div>
-
+  
       <h1 class="q-pt-lg">{{ $t("systemsetting.general.autoShutdown") }}</h1>
       <q-checkbox
         v-model="sysStore.systemSettings.user.autoShutDown"
         :label="$t('systemsetting.general.shutdownDesc')"
         style="font-size: 1rem;"
       />
-
+  
       <WorldDeleteView />
     </div>
-  </q-scroll-area>
+  </div>
+  <!-- <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0;">
+  </q-scroll-area> -->
 </template>

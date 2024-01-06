@@ -8,7 +8,7 @@ const consoleStore = useConsoleStore()
 </script>
 
 <template>
-  <div v-if="consoleStore.status(mainStore.selectedWorldID) === 'Ready'" class="fit">
+  <div v-if="consoleStore.status(mainStore.selectedWorldID) === 'Ready'" class="vertical-scroll" style="flex: 1 1 0; ">
     <progress-page/>
   </div>
 </template>

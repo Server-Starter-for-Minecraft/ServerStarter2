@@ -13,7 +13,7 @@ consoleStore.initTab(mainStore.world.id)
 </script>
 
 <template>
-  <div class="column fit">
+  <div class="wrap-column fit">
     <div class="column" style="flex: 1 1 0;">
       <StopView/>
       <ReadyView/>
@@ -25,3 +25,12 @@ consoleStore.initTab(mainStore.world.id)
     <OperationView :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Running'"/>
   </div>
 </template>
+
+<style scoped lang="scss">
+// class="column"を使うと，改行不要の設定が入ることで，
+// 幅の調整が効かなくなってしまうため，縦に並べるスタイルを独自に定義
+.wrap-column {
+  flex-direction: column;
+  display: flex;
+}
+</style>
