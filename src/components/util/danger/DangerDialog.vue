@@ -18,7 +18,11 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
       @ok-click="onDialogOK"
       @close="onDialogCancel"
     >
-      <p v-html="dialogDesc" class="q-my-none" style="font-size: .8rem; opacity: .8;" />
+      <div
+        v-html="dialogDesc"
+        class="q-my-none flex "
+        style="font-size: .8rem; opacity: .8;"
+      />
     </BaseDialogCard>
   </q-dialog>
 </template>
