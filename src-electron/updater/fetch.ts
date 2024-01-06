@@ -3,12 +3,18 @@ import { BytesData } from '../util/bytesData';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
 
-const SERVERSTARTER_REPOSITORY_URL =
-  'https://api.github.com/repos/CivilTT/ServerStarter2/releases';
-
 /** githubからリリース番号を取得 */
 export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
+
+  // 環境変数SERVERSTARTER_MODEが"debug"だった場合はリリースの取得元を変更
+  const isDebug = process.env.SERVERSTARTER_MODE === "debug"
+
+  const SERVERSTARTER_REPOSITORY_URL = isDebug ?
+    'https://api.github.com/repos/CivilTT/ServerStarter2-ReleaseTest/releases' :
+    'https://api.github.com/repos/CivilTT/ServerStarter2/releases';
+
   const fetch = await BytesData.fromURL(SERVERSTARTER_REPOSITORY_URL);
+
   if (isError(fetch)) return fetch;
   const json = await fetch.json<GithubReleaseResponce[]>();
   if (isError(json)) return json;
