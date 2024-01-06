@@ -2,7 +2,10 @@ import { defineStore } from 'pinia';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { pGroupKey, propertyClasses } from 'src/components/World/Property/classifications';
 import { keys, values } from 'src/scripts/obj';
-import { $T } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
+import { WorldID } from 'app/src-electron/schema/world';
+import { useWorldStore } from '../MainStore';
+import { checkError } from 'src/components/Error/Error';
 import { uniqueArray } from 'src/scripts/objFillter';
 
 const disableProperties = ['level-name']
@@ -51,6 +54,17 @@ export const usePropertyStore = defineStore('propertyStore', {
      */
     selectPropertyTab(groupName: pGroupKey) {
       return this.selectTab === groupName
+    },
+    /**
+     * サーバーポート番号を書き換えて登録する
+     */
+    setServerPort(worldID: WorldID, port: number) {
+      const worldStore = useWorldStore()
+      checkError(
+        worldStore.worldList[worldID].properties,
+        p => p['server-port'] = port,
+        e => tError(e)
+      )
     }
   }
 });

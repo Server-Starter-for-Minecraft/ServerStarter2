@@ -14,6 +14,7 @@
     "build": "quasar build -m electron"
   },
   "dependencies": {
+    "@ngrok/ngrok": "^0.9.1",
     "@quasar/extras": "^1.16.4",
     "browser-image-compression": "^2.0.2",
     "cheerio": "^1.0.0-rc.12",

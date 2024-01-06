@@ -24,6 +24,7 @@ import {
   RemoteSetting,
   RemoteWorld,
 } from '../schema/remote';
+import { ServerStartNotification } from '../schema/server';
 
 /**
  * ## APIの利用方法
@@ -52,7 +53,7 @@ import {
 export interface API extends IAPI {
   sendMainToWindow: {
     /** サーバー開始時のメッセージ */
-    StartServer: (world: WorldID) => void;
+    StartServer: (world: WorldID, notification: ServerStartNotification) => void;
 
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;

@@ -7,6 +7,7 @@ import WorldDeleteView from 'src/components/World/HOME/Others/WorldDeleteView.vu
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
 import RunningBtn from 'src/components/World/HOME/RunningBtn.vue';
+import NgrokView from 'src/components/World/HOME/Others/NgrokView.vue';
 
 const sysStore = useSystemStore()
 const scrollAreaRef = ref()
@@ -30,12 +31,15 @@ setScrollTop(scrollTop)
         <div class="col" style="min-width: 12rem;">
           <h1 class="q-pt-none">{{ $t("home.worldName.title") }}</h1>
           <WorldNameView />
-
+    
           <h1 class="q-pt-md">{{ $t("home.version.title") }}</h1>
           <VersionSelecterView />
         </div>
         <WorldIconView />
       </div>
+      <!-- Others -->
+      <h1 class="q-pt-lg">{{ $t('home.ngrok.title') }}</h1>
+      <NgrokView />
 
       <h1 class="q-pt-lg">{{ $t("systemsetting.general.autoShutdown") }}</h1>
       <q-checkbox

@@ -29,6 +29,7 @@ import { fixPlayerSetting } from './player';
 import { fixMemorySettings } from './memory';
 import { DEFAULT_MEMORY, DEFAULT_SERVER_PROPERTIES } from '../const';
 import { fixServerProperties } from './serverproperty';
+import { ngrok_settingFixer } from './ngrok';
 
 export const fixWorldID = fixUUID as Fixer<WorldID>;
 
@@ -85,6 +86,9 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
 
     /** アイコンのURI */
     avater_path: optionalFixer(stringFixer()),
+
+    /** Ngrokによるポート開放不要化機能を利用するか */
+    ngrok_setting: ngrok_settingFixer
   },
   false
 );
