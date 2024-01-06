@@ -520,6 +520,9 @@ export class WorldHandler {
     delete worldSettings.remote;
     await this.saveLocalServerJson(worldSettings);
 
+    // ワールドの最終プレイを現在時刻に
+    world.last_date = getCurrentTimestamp()
+
     // データを保存
     return await this.saveExec(world);
   }
@@ -822,6 +825,9 @@ export class WorldHandler {
     progress.title({
       key: 'server.run.after.title',
     });
+
+    // ワールドの最終プレイを現在時刻に
+    settings.last_date = getCurrentTimestamp()
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = false;
