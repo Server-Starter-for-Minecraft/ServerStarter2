@@ -112,6 +112,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       dialogCanceled:{
         title: 'ファイル選択ウィンドウがキャンセルされました',
       },
+      shellError:{
+        title: 'ファイルを開く際に不明なエラーが発生しました',
+        desc: '{message}'
+      },
     },
     githubAPI: {
       fetchFailed:{
@@ -173,6 +177,9 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     world: {
       invalidWorldId: {
         title: '指定されたワールドが存在しません',
+      },
+      missingLatestLog:{
+        title: '直前のサーバログが存在しません',
       },
       serverPortIsUsed: {
         title: '指定された番号のポートは使用中です',

@@ -110,6 +110,10 @@ export const enUSError: MessageSchema['error'] = {
       dialogCanceled: {
         title: 'Window to select file is cancelled',
       },
+      shellError:{
+        title: 'Unknown error occured when opening the file',
+        desc: '{message}'
+      },
     },
     githubAPI: {
       fetchFailed: {
@@ -122,6 +126,7 @@ export const enUSError: MessageSchema['error'] = {
         title: 'World data is invalid',
         desc: 'Please check the data on {owner}/{repo}/{branch}',
       },
+      
     },
     failJsonFix: {
       title: 'Failed to fix JSON file',
@@ -171,6 +176,9 @@ export const enUSError: MessageSchema['error'] = {
     world: {
       invalidWorldId: {
         title: 'The specified world does not exist.',
+      },
+      missingLatestLog:{
+        title: 'Previous server log does not exist',
       },
       serverPortIsUsed: {
         title: 'The port number in use is specified as the server port',

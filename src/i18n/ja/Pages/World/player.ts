@@ -1,4 +1,8 @@
 export const jaPlayer = {
+  order: {
+    name: '名前順',
+    op: 'OP順'
+  },
   description: 'プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います',
   search: 'ゲーム中のプレイヤー名を入力',
   registeredPlayer: '追加済みプレイヤー',

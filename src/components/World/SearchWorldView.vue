@@ -3,6 +3,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from '../util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Prop {
+  expandWidth: number
   expandDrawerBtnClickable: boolean
 }
 const model = defineModel<string | number>()
@@ -12,15 +13,12 @@ const sysStore = useSystemStore()
 </script>
 
 <template>
-  <q-item
-    :clickable="expandDrawerBtnClickable"
-    @click="sysStore.systemSettings.user.drawerWidth = 300"
-  >
+  <q-item :clickable="expandDrawerBtnClickable" @click="sysStore.systemSettings.user.drawerWidth = expandWidth">
     <q-item-section avatar>
-      <q-icon name="search" size="2rem" class="q-py-sm"/>
+      <q-icon name="search" size="2rem" class="q-py-sm" />
     </q-item-section>
     <q-item-section>
-      <ss-input v-model="model" :label="$t('mainLayout.searchWorld')"/>
+      <ss-input v-model="model" :label="$t('mainLayout.searchWorld')" />
     </q-item-section>
     <SsTooltip
       v-if="expandDrawerBtnClickable"

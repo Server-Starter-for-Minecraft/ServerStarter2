@@ -11,7 +11,8 @@ const consoleStore = useConsoleStore()
 const statusColor = {
   'Stop': 'negative',
   'Ready': 'grey',
-  'Running': 'primary'
+  'Running': 'primary',
+  'CheckLog': 'grey'
 }
 </script>
 
@@ -31,7 +32,7 @@ const statusColor = {
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />
-    <div class="force-oneline">IP : {{ sysStore.publicIP }}</div>
+    <div class="force-oneline">IP : <span class="user-select">{{ sysStore.publicIP }}</span></div>
   </div>
 </template>
 
@@ -42,5 +43,9 @@ const statusColor = {
 
 .force-oneline {
   white-space: nowrap;
+}
+
+.user-select {
+  user-select: text;
 }
 </style>
