@@ -2,6 +2,7 @@ import { Failable } from '../schema/error';
 import { BytesData } from '../util/bytesData';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
+import { osPlatform } from '../util/os';
 
 /** githubからリリース番号を取得 */
 export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
@@ -24,8 +25,20 @@ export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
 
   const [windows, mac, linux] = parseAssets(last.assets);
 
-  // if (!windows || !mac || !linux)
-  if (!windows || !mac) return errorMessage.core.update.missingAppSource();
+
+  switch (osPlatform) {
+    case "linux":
+      if (linux === undefined) return errorMessage.core.update.missingAppSource();
+      break
+    case "mac-os":
+    case "mac-os-arm64":
+      if (mac === undefined) return errorMessage.core.update.missingAppSource();
+      break
+    case "windows-x64":
+      if (windows === undefined) return errorMessage.core.update.missingAppSource();
+      break
+  }
+
   return {
     version: tag_name,
     windows,
