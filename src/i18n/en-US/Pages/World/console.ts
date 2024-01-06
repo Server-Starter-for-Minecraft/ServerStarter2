@@ -8,14 +8,15 @@ export const enUSConsole:MessageSchema['console'] = {
   showLog: 'Show the previous server log',
   stop: {
     btn: 'close',
-    withName: 'CLOSE {name}',
+    withName: 'CLOSE &nbsp; <span class="text-omit col">{name}</span>',
     progress: 'closing',
-    progressWithName: 'Working on closing {name}'
+    progressWithName: 'Working on closing &nbsp; <span class="text-omit col">{name}</span>',
   },
   reboot: {
     btn: 'reboot',
     progress: 'rebooting',
-    progressWithName: 'Working on rebooting {name}'
+    progressWithName: 'Working on rebooting &nbsp; <span class="text-omit col">{name}</span>',
+
   },
   status: {
     Stop: 'Stop',

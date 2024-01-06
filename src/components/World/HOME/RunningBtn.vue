@@ -25,7 +25,10 @@ function stopServer() {
     v-if="consoleStore.status(mainStore.world.id) !== 'Running'"
     free-width
     color="primary"
-    :disable="mainStore.errorWorlds.has(mainStore.world.id) || consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="
+      mainStore.errorWorlds.has(mainStore.world.id) ||
+      consoleStore.status(mainStore.world.id) !== 'Stop'
+    "
     :to="to"
     @click="runServer"
     :style="{ height: `${3 ** (textFontSize + 0.1)}rem` }"
@@ -60,6 +63,7 @@ function stopServer() {
     free-width
     disable
     :style="{ height: `${3 ** (textFontSize + 0.1)}rem` }"
+    class="row items-center"
   >
     <!-- フォントサイズに応じてアイコンのサイズが自動で調整されるようにする -->
     <q-avatar
@@ -67,10 +71,13 @@ function stopServer() {
       :size="`${textFontSize + 0.8}rem`"
       class="q-mr-md"
     />
-    <span :style="{ 'font-size': `${textFontSize}rem` }">
-      {{
+    <span
+      class="col row"
+      :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
+      v-html="
         $t('console.reboot.progressWithName', { name: mainStore.world.name })
-      }}
+      "
+    >
     </span>
   </ss-btn>
 
@@ -81,6 +88,7 @@ function stopServer() {
     :disable="consoleStore.isClickedBtn(mainStore.selectedWorldID)"
     @click="stopServer"
     :style="{ height: `${3 ** (textFontSize + 0.1)}rem` }"
+    class="row items-center"
   >
     <!-- フォントサイズに応じてアイコンのサイズが自動で調整されるようにする -->
     <q-avatar
@@ -88,15 +96,19 @@ function stopServer() {
       :size="`${textFontSize + 0.8}rem`"
       class="q-mr-md"
     />
-    <span :style="{ 'font-size': `${textFontSize}rem` }">
-      {{
+
+    <span
+      class="col row"
+      :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
+      v-html="
         $t(
           consoleStore.isClickedBtn(mainStore.selectedWorldID)
             ? 'console.stop.progressWithName'
             : 'console.stop.withName',
           { name: mainStore.world.name }
         )
-      }}
+      "
+    >
     </span>
   </ss-btn>
 </template>
