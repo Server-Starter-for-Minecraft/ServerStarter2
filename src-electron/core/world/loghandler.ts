@@ -55,7 +55,7 @@ export class WorldLogHandler {
     }
 
     /** 
-     * latest.logが存在しない場合は一時記録用のログファイルの内容をlatest.logとし、一時記録用のログファイルをリセット
+     * latest.logを削除し、一時記録用のログファイルの内容をlatest.logとする
      */
     async flash() {
         const tmp = await this.tempPath.get()
@@ -64,10 +64,10 @@ export class WorldLogHandler {
         const latest = this.LatestLogPath
 
         if (!latest.exists()) {
-            tmp.moveTo(latest)
-        } else {
-            tmp.remove()
+            await latest.remove()
         }
+
+        await tmp.moveTo(latest)
     }
 
     /** latest.logの内容を取得 */
