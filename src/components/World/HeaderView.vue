@@ -19,7 +19,7 @@ const statusColor = {
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">{{ mainStore.world.name }}</div>
-      <div 
+      <div
         :class="`text-${statusColor[consoleStore.status(mainStore.world.id)]}`"
         class="q-mr-md"
       >
@@ -28,7 +28,7 @@ const statusColor = {
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />
-    <div class="force-oneline">IP : {{ sysStore.publicIP }}</div>
+    <div class="force-oneline">IP : <span class="user-select">{{ sysStore.publicIP }}</span></div>
   </div>
 </template>
 
@@ -39,5 +39,9 @@ const statusColor = {
 
 .force-oneline {
   white-space: nowrap;
+}
+
+.user-select {
+  user-select: text;
 }
 </style>
