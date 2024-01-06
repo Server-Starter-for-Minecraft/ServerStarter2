@@ -2,9 +2,10 @@ import { Failable } from '../schema/error';
 import { BytesData } from '../util/bytesData';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
+import { OsPlatform } from '../util/os';
 
 /** githubからリリース番号を取得 */
-export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
+export async function getLatestRelease(osPLatform: OsPlatform): Promise<Failable<GithubRelease>> {
 
   // 環境変数SERVERSTARTER_MODEが"debug"だった場合はリリースの取得元を変更
   const isDebug = process.env.SERVERSTARTER_MODE === "debug"
@@ -18,49 +19,36 @@ export async function getLatestRelease(): Promise<Failable<GithubRelease>> {
   if (isError(fetch)) return fetch;
   const json = await fetch.json<GithubReleaseResponce[]>();
   if (isError(json)) return json;
-  const last = json[0];
-  if (last === undefined) return errorMessage.system.assertion({ message: '' });
 
-  const tag_name = last.tag_name;
 
-  const [windows, mac, linux] = parseAssets(last.assets);
 
-  // if (!windows || !mac || !linux)
-  if (!windows || !mac) return errorMessage.core.update.missingAppSource();
-  return {
-    version: tag_name,
-    windows,
-    mac,
-    linux,
-  };
+  for (const i of json) {
+    const url = parseAssets(i.assets, osPLatform);
+    if (url) return {
+      platform: osPLatform,
+      version: i.tag_name,
+      url
+    }
+  }
+
+  return errorMessage.system.assertion({ message: '' });
 }
 
-function parseAssets(assets: GithubReleaseAssetResponce[]) {
-  let windows: string | undefined = undefined;
-  let mac: string | undefined = undefined;
-  let linux: string | undefined = undefined;
-  assets.forEach(({ browser_download_url: url }) => {
-    if (url.endsWith('.msi')) {
-      windows = url;
-      return;
-    }
-    if (url.endsWith('.pkg')) {
-      mac = url;
-      return;
-    }
-    if (url.endsWith('.AppImage')) {
-      linux = url;
-      return;
-    }
-  });
-  return [windows, mac, linux];
+function parseAssets(assets: GithubReleaseAssetResponce[], osPLatform: OsPlatform) {
+  const suffix = {
+    'linux': '.AppImage',
+    'mac-os': ".pkg",
+    'mac-os-arm64': ".pkg",
+    'windows-x64': ".msi",
+  }[osPLatform]
+
+  return assets.find(({ browser_download_url: url }) => url.endsWith(suffix))?.browser_download_url;
 }
 
 export type GithubRelease = {
+  platform: OsPlatform
   version: string;
-  windows: string;
-  mac: string;
-  linux: string;
+  url: string
 };
 
 type GithubReleaseResponce = {
