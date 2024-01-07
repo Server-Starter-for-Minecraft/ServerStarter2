@@ -14,7 +14,7 @@ import { getSystemVersion } from './version';
  */
 async function checkUpdate() {
   const currentVersion = await getSystemVersion();
-  const latestRelease = await getLatestRelease();
+  const latestRelease = await getLatestRelease(osPlatform);
   // アップデートの取得に失敗
   if (isError(latestRelease)) return latestRelease;
   // アップデートなし
@@ -33,11 +33,11 @@ export async function update() {
   const update = await checkUpdate();
   logger.info(update);
 
-  
+
   if (update === false) {
     return;
   }
-  
+
   if (isError(update)) {
     return;
   }
@@ -47,8 +47,8 @@ export async function update() {
   sys.system.lastUpdatedTime = undefined;
   await setSystemSettings(sys);
 
-  if (osPlatform === 'windows-x64') await installWindows(update.windows);
+  if (osPlatform === 'windows-x64') await installWindows(update.url);
   if (osPlatform === 'mac-os' || osPlatform === 'mac-os-arm64')
-    await installMac(update.mac);
+    await installMac(update.url);
   logger.success();
 }
