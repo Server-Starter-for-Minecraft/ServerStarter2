@@ -75,6 +75,7 @@ function removeFolder() {
   >
     <q-item
       :clickable="onClick !== void 0 && !disable"
+      @click="onClick"
       :class="getCardSytleClass(active, disable || loading)"
     >
       <div class="text-omit" style="font-size: 1.1rem;">
