@@ -31,10 +31,10 @@ export const enUSHome: MessageSchema['home'] = {
   serverDescription: {
     vanilla: 'Official Minecraft server. Provides standard multiplay server.',
     spigot: 'Typical third party server. Allows plugins to be installed.',
-    papermc: 'A server that makes Spigot run more lightly',
-    forge: 'Most common servers as prerequisite servers for mods',
-    mohistmc: 'Server based on Forge, but allows both mods and plugins to be installed',
-    fabric: 'The premise server for the mods, which is a different system from Forge.'
+    papermc: 'A server that makes Spigot run more lightly.',
+    forge: 'Most common servers that the base for mods.',
+    mohistmc: 'Server based on Forge, but allows both mods and plugins to be installed.',
+    fabric: 'The server that the base for mods, which is a different system from Forge.'
   },
   icon: 'Change server icon',
   ngrok: {
