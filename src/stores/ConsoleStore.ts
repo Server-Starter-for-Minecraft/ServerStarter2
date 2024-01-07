@@ -9,9 +9,12 @@ import { values } from 'src/scripts/obj';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 
 type consoleData = { chunk: string, isError: boolean }
+type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog'
 interface WorldConsole {
   [id: WorldID]: {
-    status: 'Stop' | 'Ready' | 'Running'
+    status: WorldStatus,
+    clickedStop: boolean,
+    clickedReboot: boolean,
     console: consoleData[]
   }
 }
@@ -34,6 +37,8 @@ export const useConsoleStore = defineStore('consoleStore', {
       if (this._world[worldID] === void 0 || force) {
         this._world[worldID] = {
           status: 'Stop',
+          clickedStop: false,
+          clickedReboot: false,
           console: new Array<consoleData>()
         }
       }
@@ -54,11 +59,55 @@ export const useConsoleStore = defineStore('consoleStore', {
       if (consoleLine !== void 0) { this._world[worldID].console.push({ chunk: consoleLine, isError: isError }) }
     },
     /**
+     * 一括でコンソールの中身を登録する
+     */
+    setAllConsole(worldID: WorldID, consoleLines: string[], status: WorldStatus) {
+      this._world[worldID].status = status
+      this._world[worldID].console = []
+      consoleLines.forEach(l => this._world[worldID].console.push({ chunk: l, isError: false }))
+    },
+    /**
+     * コンソールに行を追加する 
+     */
+    resetReboot(worldID: WorldID) {
+      this._world[worldID].console = []
+      this._world[worldID].clickedReboot = false
+    },
+    /**
      * ワールドの実行状態を取得する
      */
-    status(worldID?: WorldID) {
-      const id = worldID ?? useMainStore().selectedWorldID
-      return this._world[id]?.status ?? 'Stop'
+    status(worldID: WorldID) {
+      return this._world[worldID].status
+    },
+    /**
+     * ワールドが停止処理に入っているか否かを取得する
+     */
+    isClickedBtn(worldID: WorldID) {
+      return this._world[worldID].clickedStop || this._world[worldID].clickedReboot
+    },
+    /**
+     * ワールドが停止処理に入っているか否かを取得する
+     */
+    isClickedStop(worldID: WorldID) {
+      return this._world[worldID].clickedStop
+    },
+    /**
+     * ワールドが再起動処理に入っているか否かを取得する
+     */
+    isClickedReboot(worldID: WorldID) {
+      return this._world[worldID].clickedReboot
+    },
+    /**
+     * ワールドが停止処理に入る際にフラグを立てる
+     */
+    clickedStopBtn(worldID: WorldID) {
+      this._world[worldID].clickedStop = true
+    },
+    /**
+     * ワールドが再起動処理に入る際にフラグを立てる
+     */
+    clickedRebootBtn(worldID: WorldID) {
+      this._world[worldID].clickedReboot = true
     },
     /**
      * 全てのワールドが停止中か否かを返す
@@ -69,9 +118,8 @@ export const useConsoleStore = defineStore('consoleStore', {
     /**
      * ワールドのコンソール状態を取得する
      */
-    console(worldID?: WorldID) {
-      const id = worldID ?? useMainStore().selectedWorldID
-      return this._world[id].console
+    console(worldID: WorldID) {
+      return this._world[worldID].console
     }
   }
 })
@@ -106,8 +154,13 @@ export async function runServer() {
   const res = await window.API.invokeRunWorld(runWorld.id);
 
   // サーバー終了時のエラー確認
-  checkError(res.value, undefined, e => tError(e))
+  checkError(
+    res.value,
+    w => mainStore.updateWorld(w),
+    e => tError(e)
+  )
 
   // サーバータブをリセット
   consoleStore.initTab(runWorld.id, true)
+  mainStore.removeWorldIP(runWorld.id)
 }

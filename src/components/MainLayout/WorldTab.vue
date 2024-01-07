@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -7,6 +7,8 @@ import { useMainStore } from 'src/stores/MainStore';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { $T } from 'src/i18n/utils/tFunc';
 
 interface Props {
   world: WorldEdited;
@@ -26,7 +28,7 @@ async function startServer(mStore: typeof mainStore, cStore: typeof consoleStore
   selectWorldIdx()
 
   // Stop状態でない時にはサーバーを起動できないようにする
-  if (cStore.status() !== 'Stop') { return }
+  if (cStore.status(prop.world.id) !== 'Stop') { return }
 
   // サーバーの起動を開始
   await router.push('/console');
@@ -44,6 +46,12 @@ function selectWorldIdx() {
   mainStore.setWorld(prop.world)
   consoleStore.initTab(prop.world.id)
 }
+
+const tooltipText = computed(() => {
+  return `${prop.world.name}<br />
+          ${prop.world.version.type === 'vanilla' 
+            ? prop.world.version.id  
+            : `${prop.world.version.id} (${$T(`home.serverType.${prop.world.version.type}`)})`}`});
 </script>
 
 <template>
@@ -57,14 +65,17 @@ function selectWorldIdx() {
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
-    :style="{ 'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent' }"
+    :style="{
+      'border-left': mainStore.selectedWorldID === world.id && $route.path.slice(0, 7) !== '/system' ? `.3rem solid ${getCssVar('primary')}` : '.3rem solid transparent',
+      'max-width': `${sysStore.systemSettings.user.drawerWidth}px`
+    }"
   >
     <q-item-section
       avatar
       @mouseover="runBtnHovered = true"
       @mouseleave="runBtnHovered = false"
     >
-      <q-avatar square size="4rem">
+      <q-avatar square size="4.5rem">
         <q-img
           :src="world.avater_path ?? assets.png.unset"
           :ratio="1"
@@ -83,38 +94,36 @@ function selectWorldIdx() {
         />
         <div v-show="consoleStore.status(world.id) !== 'Stop'" class="absolute-top-right badge">
           <q-badge outline rounded style="background-color: #262626; aspect-ratio: 1;" >
-            <q-icon :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" size="1rem" />
+            <q-icon v-if="consoleStore.status(world.id) === 'CheckLog'" name="notes" size="1rem" />
+            <q-icon v-else :name="assets.svg.systemLogo_filled(getCssVar('primary')?.replace('#', '%23'))" size="1rem" />
           </q-badge>
         </div>
       </q-avatar>
     </q-item-section>
     <q-item-section>
-      <div>
-        <p class="worldName">{{ world.name }}</p>
-        <p class="versionName">
-          {{
-            world.version.type === 'vanilla' 
-              ? world.version.id  
-              :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
-          }}
-        </p>
-      </div>
+      <q-item-label class="worldName text-omit">{{ world.name }}</q-item-label>
+      <q-item-label class="versionName">
+        {{
+          world.version.type === 'vanilla' 
+            ? world.version.id  
+            :`${world.version.id} (${$t(`home.serverType.${world.version.type}`)})` 
+        }}
+      </q-item-label>
+      <q-item-label v-if="world.last_date" class="date text-omit">
+        {{ $t('mainLayout.customMapImporter.lastPlayed', { datetime: $d(world.last_date, 'dateTime') } ) }}
+      </q-item-label>
     </q-item-section>
-    <q-tooltip
-      v-if="sysStore.systemSettings.user.drawerWidth < 200"
-      anchor="center middle"
-      self="top middle"
-      :delay="500"
-      class="text-body2"
-    >
-      {{ world.name }}
-    </q-tooltip>
+    <SsTooltip
+      :name="tooltipText"
+      anchor="center end"
+      self="center start"
+    />
   </q-item>
 </template>
 
 <style scoped lang="scss">
 .worldBlock {
-  height: 5.5rem;
+  height: 6.5rem;
 }
 
 .worldName {
@@ -126,6 +135,11 @@ function selectWorldIdx() {
 .versionName {
   font-size: 1rem;
   margin-bottom: 4px;
+}
+
+.date {
+  font-size: .75rem;
+  opacity: .6;
 }
 
 .badge {

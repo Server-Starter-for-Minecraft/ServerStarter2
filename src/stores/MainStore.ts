@@ -1,6 +1,6 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { ImageURI, WorldName } from 'app/src-electron/schema/brands';
+import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
@@ -18,7 +18,6 @@ export const useMainStore = defineStore('mainStore', {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
       errorWorlds: new Set<WorldID>(),
-      iconCandidate: undefined as ImageURI | undefined,
       selectedVersionType: 'vanilla' as Version['type']
     };
   },
@@ -31,6 +30,10 @@ export const useMainStore = defineStore('mainStore', {
       state.selectedVersionType = returnWorld.version.type
 
       return returnWorld
+    },
+    worldIP(state) {
+      const worldStore = useWorldStore()
+      return worldStore.worldIPs[state.selectedWorldID]
     }
   },
   actions: {
@@ -78,7 +81,7 @@ export const useMainStore = defineStore('mainStore', {
                 })
               }
             },
-            e => tError(e,{titleKey: 'utils.errorDialog.failOPForOwner',descKey: `error.${e.key}.title`})
+            e => tError(e, { titleKey: 'error.errorDialog.failOPForOwner', descKey: `error.${e.key}.title` })
           )
         }
 
@@ -124,18 +127,25 @@ export const useMainStore = defineStore('mainStore', {
     updateWorld(world: World | WorldEdited) {
       const worldStore = useWorldStore()
       worldStore.worldList[world.id] = world
+    },
+    /**
+     * Ngrokより割り当てられたIPアドレスを削除する（サーバー終了時を想定）
+     */
+    removeWorldIP(worldID: WorldID) {
+      const worldStore = useWorldStore()
+      worldStore.removeWorldIP(worldID)
     }
   },
 });
 
 /**
  * Worldの変更を検知するためのStore
- * TODO: mainStoreに統合するための方法を検討
  */
 export const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
       worldList: {} as Record<WorldID, WorldEdited>,
+      worldIPs: {} as Record<WorldID, string>
     }
   },
   getters: {
@@ -147,6 +157,16 @@ export const useWorldStore = defineStore('worldStore', {
         recordValueFilter(state.worldList, w => visibleContainers.has(w.container)),
         (a, b) => (a.last_date ?? 0) - (b.last_date ?? 0)
       )
+    }
+  },
+  actions: {
+    setWorldIP(worldID: WorldID, ip?: string) {
+      if (ip && ip !== '') {
+        this.worldIPs[worldID] = ip
+      }
+    },
+    removeWorldIP(worldID: WorldID) {
+      delete this.worldIPs[worldID]
     }
   }
 })

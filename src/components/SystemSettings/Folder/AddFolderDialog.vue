@@ -10,9 +10,10 @@ import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 const prop = defineProps<AddFolderDialogProps>()
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const sysStore = useSystemStore()
@@ -24,7 +25,7 @@ async function pickFolder() {
   checkError(
     res,
     c => pickPath.value = c,
-    e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
+    e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
   )
 }
 
@@ -49,65 +50,52 @@ function isErrorContainer(c: WorldContainerSetting) {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      :title="
-        containerSettings === void 0
-          ? $t('home.saveWorld.addFolder')
-          : $t('home.saveWorld.updateFolder')"
-      :disable="
-        sysStore.systemSettings.container.filter(isErrorContainer).length > 0
-          || inputName === ''
-          || pickPath === ''"
-      :ok-btn-txt="
-        inputName
-         ? $t('home.saveWorld.addBtn', { name: inputName })
-         : $t('home.saveWorld.add')"
-      @ok-click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
+      :title="containerSettings === void 0
+        ? $t('others.worldFolder.addFolder')
+        : $t('others.worldFolder.updateFolder')"
       @close="onDialogCancel"
     >
+    <template #additionalBtns>
+      <ss-btn
+        color="primary"
+        :disable="
+          sysStore.systemSettings.container.filter(isErrorContainer).length > 0
+            || inputName === ''
+            || pickPath === ''"
+        @click="onDialogOK({ name: inputName, container: pickPath } as AddFolderDialogReturns)"
+        class="row items-center"
+      >
+        <span
+          v-if="inputName !== ''"
+          class="col row"
+          v-html="$t('others.worldFolder.addBtn', { name: inputName })"
+        />
+        <span v-else>{{ $t('others.worldFolder.add') }}</span>
+      </ss-btn>
+    </template>
+
       <div class="row q-gutter-md">
-        <SsInput
-          v-model="inputName"
-          :label="$t('home.saveWorld.folderName')"
-          autofocus
-          class="col"
-        />
-        <SsBtn
-          free-width
-          :label="$t('home.saveWorld.selectFolderBtn')"
-          @click="pickFolder"
-        />
+        <SsInput v-model="inputName" :label="$t('others.worldFolder.folderName')" autofocus class="col" />
+        <SsBtn free-width :label="$t('others.worldFolder.selectFolderBtn')" @click="pickFolder" />
       </div>
-      
-      <div
-        v-if="sysStore.systemSettings.container.filter(isErrorName).length > 0"
-        class="text-caption text-omit text-red q-pt-sm"
-      >
-        {{ $t('home.saveWorld.exist',{ name: inputName }) }}
+
+      <div v-if="sysStore.systemSettings.container.filter(isErrorName).length > 0"
+        class="text-caption text-omit text-negative q-pt-sm">
+        {{ $t('others.worldFolder.exist', { name: inputName }) }}
       </div>
-      <div
-        v-if="sysStore.systemSettings.container.filter(isErrorPath).length > 0"
-        class="text-caption text-omit text-red q-pt-sm"
-      >
-          {{ $t('home.saveWorld.registered', omitPath({ 'path': pickPath })) }}
+      <div v-if="sysStore.systemSettings.container.filter(isErrorPath).length > 0"
+        class="text-caption text-omit text-negative q-pt-sm">
+        {{ $t('others.worldFolder.registered', omitPath({ 'path': pickPath })) }}
       </div>
-      <div
-        v-if="inputName === ''"
-        class="text-caption text-omit text-red q-pt-sm"
-      >
-        {{ $t('home.saveWorld.inputFolderName') }}
+      <div v-if="inputName === ''" class="text-caption text-omit text-negative q-pt-sm">
+        {{ $t('others.worldFolder.inputFolderName') }}
       </div>
-      <div
-        v-if="pickPath === ''"
-        class="text-caption text-omit text-red q-pt-sm"
-      >
-        {{ $t('home.saveWorld.selectFolder') }}
+      <div v-if="pickPath === ''" class="text-caption text-omit text-negative q-pt-sm">
+        {{ $t('others.worldFolder.selectFolder') }}
       </div>
-      <div 
-        v-if="pickPath !== ''"
-        class="text-caption text-omit q-pt-sm"
-        style="opacity: .6;"
-      >
+      <div v-if="pickPath !== ''" class="text-caption text-omit q-pt-sm" style="opacity: .6;">
         {{ pickPath }}
+        <SsTooltip :name="pickPath" anchor="bottom start" self="center start" />
       </div>
     </BaseDialogCard>
   </q-dialog>

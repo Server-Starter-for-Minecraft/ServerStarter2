@@ -7,5 +7,5 @@ export const isContentsExists: contentExists = {
   'papermc' : { datapack: true, plugin: true , mod: false },
   'forge'   : { datapack: true, plugin: false, mod: true  },
   'mohistmc': { datapack: true, plugin: true , mod: true  },
-  'fabric'  : { datapack: true, plugin: true , mod: true  },
-} 
+  'fabric'  : { datapack: true, plugin: false, mod: true  },
+}

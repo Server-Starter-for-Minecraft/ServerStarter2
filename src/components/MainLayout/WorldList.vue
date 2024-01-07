@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
+import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { keys } from 'src/scripts/obj';
 import { sortValue } from 'src/scripts/objSort';
-import { moveScrollTop_Home } from '../World/HOME/scroll';
-import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import WorldTab from './WorldTab.vue';
+import NewWorldBtn from './NewWorldBtn.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
-const router = useRouter()
+interface Prop {
+  minWidth: number
+  maxWidth: number
+}
+defineProps<Prop>()
+
 const sysStore = useSystemStore()
 const mainStore = useMainStore();
 const searchWorldName = ref('')
@@ -33,19 +38,6 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
   }
   return worlds
 }
-
-async function createNewWorld() {
-  // 新規ワールドの生成
-  await mainStore.createNewWorld()
-
-  // 画面遷移
-  if (router.currentRoute.value.path === '/') {
-    moveScrollTop_Home()
-  }
-  else {
-    router.push('/')
-  }
-}
 </script>
 
 <template>
@@ -59,28 +51,27 @@ async function createNewWorld() {
     style="height: 100vh;"
   >
     <div class="q-mini-drawer-only">
-      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = 300">
+      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = maxWidth">
         <q-avatar size="2rem">
           <q-icon
             size="2rem"
             :name="assets.svg.menuicon($q.dark.isActive ? 'white' : 'black')"
           />
         </q-avatar>
-        <q-tooltip anchor="center middle" self="top middle" :delay="500">
-          {{ $t('worldList.openList') }}
-        </q-tooltip>
+        <SsTooltip :name="$t('mainLayout.openList')" anchor="center middle" self="top middle"/>
       </q-item>
     </div>
     <icon-button-view
       :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
-      :label="$t('worldList.allWorld')"
-      :tooltip="$t('worldList.minimizeList')"
-      @click="sysStore.systemSettings.user.drawerWidth = 100"
+      :label="$t('mainLayout.allWorld')"
+      :tooltip="$t('mainLayout.minimizeList')"
+      @click="sysStore.systemSettings.user.drawerWidth = minWidth"
       class="q-mini-drawer-hide"
     />
 
     <search-world-view
       v-model="searchWorldName"
+      :expand-width="maxWidth"
       :expand-drawer-btn-clickable="sysStore.systemSettings.user.drawerWidth < miniChangeWidth"
     />
 
@@ -100,17 +91,12 @@ async function createNewWorld() {
       </q-list>
     </q-scroll-area>
 
-    <icon-button-view
-      icon-name="add"
-      :label="$t('worldList.addWorld')"
-      :tooltip="$t('worldList.addWorld')"
-      @click="createNewWorld"
-    />
+    <new-world-btn :mini-change-width="miniChangeWidth" />
     <q-separator class="q-mx-xs" />
     <icon-button-view
       icon-name="settings"
-      :label="$t('worldList.systemSetting')"
-      :tooltip="$t('worldList.systemSetting')"
+      :label="$t('mainLayout.systemSetting')"
+      :tooltip="$t('mainLayout.systemSetting')"
       to="/system"
     />
   </q-drawer>

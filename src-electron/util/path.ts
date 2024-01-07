@@ -85,7 +85,7 @@ export class Path {
   }
 
   async rename(newpath: Path) {
-    newpath.parent().mkdir(true);
+    await newpath.parent().mkdir(true);
     await fs.rename(this.path, newpath.absolute().str());
   }
 
@@ -93,28 +93,38 @@ export class Path {
     if (!this.exists()) await fs.mkdir(this.path, { recursive });
   }
 
+  /** 同期ディレクトリ生成(非推奨) */
+  mkdirSync(recursive = false) {
+    if (!this.exists()) fs.mkdirSync(this.path, { recursive });
+  }
+
   async mklink(target: Path) {
     await new Promise((resolve) => fs.link(target.path, this.path, resolve));
   }
 
   async write(content: BytesData) {
-    this.parent().mkdir(true);
+    await this.parent().mkdir(true);
     await content.write(this.path);
   }
 
   async writeText(content: string) {
-    this.parent().mkdir(true);
+    await this.parent().mkdir(true);
     await fs.writeFile(this.path, content);
+  }
+
+  async appendText(content: string) {
+    await this.parent().mkdir(true);
+    await fs.appendFile(this.path, content);
   }
 
   /** 同期書き込み(非推奨) */
   writeTextSync(content: string) {
-    this.parent().mkdir(true);
+    this.parent().mkdirSync(true);
     fs.writeFileSync(this.path, content);
   }
 
   async writeJson<T>(content: T) {
-    this.parent().mkdir(true);
+    await this.parent().mkdir(true);
     await fs.writeFile(this.path, JSON.stringify(content));
   }
 
@@ -170,7 +180,7 @@ export class Path {
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
     async function recursiveMove(path: Path, target: Path) {
       if (await path.isDirectory()) {
-        target.mkdir(true);
+        await target.mkdir(true);
         await asyncForEach(await path.iter(), async (child) => {
           await recursiveMove(child, target.child(child.basename()));
         });

@@ -3,6 +3,7 @@ interface Prop {
   icon: string
   label: string
   color?: string
+  disable?: boolean
   onClick: () => void
 }
 defineProps<Prop>()
@@ -13,6 +14,7 @@ defineProps<Prop>()
     dense
     outline
     stack
+    :disable="disable"
     :color="color"
     :icon="icon"
     @click="onClick"

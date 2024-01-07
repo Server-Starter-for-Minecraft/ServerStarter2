@@ -14,35 +14,41 @@ const consoleStore = useConsoleStore()
 const consoleOpeStore = useConsoleOpeStore()
 
 function stop() {
+  consoleStore.clickedStopBtn(mainStore.selectedWorldID)
   window.API.sendCommand(mainStore.selectedWorldID, 'stop')
 }
 
 async function reboot() {
   const worldID = mainStore.selectedWorldID
+  consoleStore.clickedRebootBtn(worldID)
   await window.API.invokeReboot(worldID)
-  consoleStore._world[worldID].console = []
+  consoleStore.resetReboot(worldID)
+}
+
+function closeLog() {
+  consoleStore.initTab(mainStore.selectedWorldID, true)
 }
 </script>
 
 <template>
-  <div class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+  <div v-if="consoleStore.status(mainStore.selectedWorldID) !== 'CheckLog'" class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
     <SsBtn
       dense
       is-capital
       icon="stop"
-      :label="$t('console.stop')"
-      color="red"
-      width="100px"
-      :disable="disable"
+      :label="$t(consoleStore.isClickedStop(mainStore.selectedWorldID) ? 'console.stop.progress' : 'console.stop.btn')"
+      color="negative"
+      :width="consoleStore.isClickedStop(mainStore.selectedWorldID) ? '150px' : '100px'"
+      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="stop"
     />
     <SsBtn
       dense
       is-capital
       icon="restart_alt"
-      :label="$t('console.reboot')"
-      width="100px"
-      :disable="disable"
+      :label="$t(consoleStore.isClickedReboot(mainStore.selectedWorldID) ? 'console.reboot.progress' : 'console.reboot.btn')"
+      :width="consoleStore.isClickedReboot(mainStore.selectedWorldID) ? '150px' : '100px'"
+      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="reboot"
       class="q-mx-sm"
     />
@@ -50,7 +56,7 @@ async function reboot() {
       dense
       filled
       clearable
-      :disable="disable"
+      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       v-model="consoleOpeStore.command"
       v-on:keydown.enter="() => consoleOpeStore.sendCommand()"
       v-on:keydown.up="consoleOpeStore.upKey()"
@@ -69,5 +75,17 @@ async function reboot() {
         />
       </template>
     </q-input>
+  </div>
+  
+  <div v-else class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+    <q-space />
+    <SsBtn
+      dense
+      is-capital
+      icon="close"
+      :label="$t('general.close')"
+      @click="closeLog"
+      class="q-py-sm"
+    />
   </div>
 </template>

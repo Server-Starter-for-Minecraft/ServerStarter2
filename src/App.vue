@@ -2,23 +2,26 @@
 import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { setCssVar, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { initSystemSettings, useSystemStore, setSysSettingsSubscriber } from './stores/SystemStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import { setPlayerSearchSubscriber, usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
 import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import { deepCopy } from './scripts/deepCopy';
+import { setColor } from './color';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue'
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore()
 const worldStore = useWorldStore()
+const propertyStore = usePropertyStore()
 const playerStore = usePlayerStore()
 const consoleStore = useConsoleStore()
 const progressStore = useProgressStore();
@@ -36,12 +39,14 @@ $q.dark.set('auto');
 
 // primaryの色を定義
 watch(() => $q.dark.isActive, val => {
-  setPrimary(val)
+  setColor(val, sysStore.systemSettings.user.visionSupport)
 })
 
 // サーバー起動時に画面遷移
-window.API.onStartServer((_event, worldID) => {
+window.API.onStartServer((_event, worldID, notification) => {
   consoleStore.setConsole(worldID, '', false)
+  worldStore.setWorldIP(worldID, notification.ngrokURL)
+  propertyStore.setServerPort(worldID, notification.port)
 })
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {
@@ -101,7 +106,7 @@ async function setUserSettings() {
   $q.dark.set(isAuto ? 'auto' : isDark)
 
   // primaryの色を定義
-  setPrimary($q.dark.isActive)
+  setColor($q.dark.isActive, sysStore.systemSettings.user.visionSupport)
 }
 
 /**
@@ -126,7 +131,6 @@ function setSubscribe() {
   // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
   const currentSelectedId = mainStore.selectedWorldID
 
-  // TODO: worldStoreのPrivate化
   worldStore.$subscribe((mutation, state) => {
     window.API.invokeSetWorld(toRaw(mainStore.world)).then(v => {
       checkError(
@@ -140,18 +144,6 @@ function setSubscribe() {
   setSysSettingsSubscriber()
 
   setPlayerSearchSubscriber(playerStore)
-}
-
-/**
- * primaryの色を定義
- */
-function setPrimary(isDark: boolean) {
-  if (isDark) {
-    setCssVar('primary', '#7FFF00')
-  }
-  else {
-    setCssVar('primary', '#1EB000')
-  }
 }
 </script>
 

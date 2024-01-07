@@ -4,6 +4,7 @@ import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { checkError } from 'src/components/Error/Error';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerHeadView from './PlayerHeadView.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   uuid: PlayerUUID
@@ -28,16 +29,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <q-item>
+  <q-item class="q-px-none" style="width: 3rem;">
     <q-item-section>
       <q-avatar square size="2rem" class="full-width">
         <PlayerHeadView :player="player" size="1.9rem" />
         <q-btn flat rounded dense icon="cancel" size="10px" @click="playerStore.unFocus(uuid)" class="cancelBtn" />
       </q-avatar>
-      <q-item-label class="text-center q-pt-xs">
+      <q-item-label class="text-center q-pt-xs text-omit">
         {{ player.name }}
       </q-item-label>
     </q-item-section>
+    <SsTooltip :name="player.name" anchor="center middle" self="top middle" />
   </q-item>
 </template>
 
@@ -45,6 +47,6 @@ onMounted(async () => {
 .cancelBtn {
   position: absolute;
   top: -9px;
-  right: -11px;
+  right: -5px;
 }
 </style>

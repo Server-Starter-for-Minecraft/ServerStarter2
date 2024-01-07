@@ -1,6 +1,6 @@
 {
   "name": "ServerStarter2",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "start Minecraft server only ONE click !",
   "productName": "ServerStarter2",
   "author": "CivilTT, txkodo",
@@ -14,6 +14,7 @@
     "build": "quasar build -m electron"
   },
   "dependencies": {
+    "@ngrok/ngrok": "^0.9.1",
     "@quasar/extras": "^1.16.4",
     "browser-image-compression": "^2.0.2",
     "cheerio": "^1.0.0-rc.12",

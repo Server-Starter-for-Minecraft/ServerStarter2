@@ -87,6 +87,7 @@ export async function getWorld(
     last_date: json.last_date,
     last_user: json.last_user,
     avater_path: isValid(icon) ? icon : undefined,
+    ngrok_setting: json.ngrok_setting,
   };
 }
 

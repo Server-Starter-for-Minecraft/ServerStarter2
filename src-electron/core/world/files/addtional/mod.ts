@@ -6,7 +6,7 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { MOD_CACHE_PATH } from 'app/src-electron/core/const';
 
 async function loader(path: Path): Promise<Failable<ModData>> {
-  if (path.extname() !== '.jar')
+  if (path.extname() !== '.jar' && path.extname() !== '.zip')
     return errorMessage.data.path.invalidContent.invalidMod({
       path: path.path,
       type: 'file',

@@ -1,5 +1,5 @@
 // app global css in SCSS form
-p {
+p, li {
   font-size: 14pt;
 }
 
@@ -8,6 +8,10 @@ h1 {
   line-height: 1em;
   padding-top: 2.5rem;
   padding-bottom: 0rem;
+}
+
+body {
+  user-select: none;
 }
 
 // テキストを１行に制限してはみ出した分は省略する
@@ -19,7 +23,7 @@ h1 {
 
 // スクロールバー
 html {
-  overflow: overlay; 
+  overflow: overlay;
 }
 ::-webkit-scrollbar {
   width: 10px;
@@ -27,7 +31,7 @@ html {
 }
 ::-webkit-scrollbar-track {
   background: transparent;
-} 
+}
 ::-webkit-scrollbar-thumb {
   background-color: rgba($color: grey, $alpha: 0.5);
   border-radius: 100px;
@@ -65,5 +69,13 @@ html {
   height: 100%;
   width: 80%;
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0 auto 32px auto;
+}
+
+
+// コンテンツを鉛直方向にのみスクロールさせるエリアを生成
+.vertical-scroll {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
 }

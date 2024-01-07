@@ -21,6 +21,7 @@ import { Failable, WithError } from 'app/src-electron/schema/error';
 import { WorldProgressor } from '../progress/progress';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { WorldLogHandler } from './loghandler';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -121,7 +122,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     version: { type: 'vanilla', ...latestRelease },
     using: false,
     remote: undefined,
-    last_date: getCurrentTimestamp(),
+    last_date: getCurrentTimestamp(true),
     last_user: undefined,
     memory: systemSettings.world.memory,
     javaArguments: systemSettings.world.javaArguments,
@@ -131,6 +132,9 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
       datapacks: [],
       plugins: [],
       mods: [],
+    },
+    ngrok_setting: {
+      use_ngrok: true
     },
   };
 
@@ -241,4 +245,26 @@ export async function reboot(worldID: WorldID): Promise<void> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return;
   await handler.reboot();
+}
+
+/**
+ * ワールドの最新のログを取得する
+ */
+export async function fetchLatestWorldLog(
+  worldID: WorldID
+): Promise<Failable<string[]>> {
+  const handler = WorldHandler.get(worldID);
+
+  if (isError(handler)) return handler;
+
+  const log = await new WorldLogHandler(handler.getSavePath()).loadLatest()
+
+  if (isError(log)) {
+    return errorMessage.core.world.missingLatestLog({
+      name: handler.name,
+      container: handler.container
+    })
+  }
+
+  return log
 }

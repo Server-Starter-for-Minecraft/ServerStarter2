@@ -6,7 +6,7 @@ import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
 
 defineProps<EulaDialogProp>()
-defineEmits({...useDialogPluginComponent.emitsObject})
+defineEmits({ ...useDialogPluginComponent.emitsObject })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 </script>
 
@@ -17,18 +17,18 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
       :okBtnTxt="$t('eulaDialog.agree')"
       @okClick="onDialogOK"
     >
-      <template #default>        
+      <template #default>
         <p class="q-my-none" style="font-size: .8rem; opacity: .8;">
           <i18n-t keypath="eulaDialog.desc" tag="label">
             <SsA :url="eulaURL">{{ $t('eulaDialog.eula') }}</SsA>
             <br>
-      </i18n-t>
+          </i18n-t>
         </p>
       </template>
       <template #additionalBtns>
         <SsBtn
           :label="$t('eulaDialog.disagree')"
-          color="red"
+          color="negative"
           @click="onDialogCancel"
         />
       </template>

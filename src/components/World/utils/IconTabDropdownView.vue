@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import DropBtnView from './dropBtnView.vue'
+import DropBtnView from './dropBtnView.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 type DropBtn = {
   label: string
@@ -53,8 +54,12 @@ function btnClicked(btn: DropBtn) {
     <!-- indicator -->
     <div v-show="$route.path.slice(0, 9) === '/contents'" class="absolute-bottom bg-primary" style="height: 2px;"/>
 
-    <q-tooltip v-if="!($q.screen.gt.md || $route.path.slice(0, 9) === '/contents')">
-      {{ label }}
-    </q-tooltip>
+    <SsTooltip
+      v-if="!($q.screen.gt.md || $route.path.slice(0, 9) === '/contents')"
+      :name="label"
+      anchor="center middle"
+      self="top middle"
+    />
+
   </div>
 </template>

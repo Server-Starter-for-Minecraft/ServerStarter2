@@ -60,6 +60,14 @@ export type DataErrors = {
 
     // ファイル選択ウィンドウがキャンセルされた場合
     dialogCanceled: ErrorMessageContent;
+
+    // electron.shellの操作から帰ってくる不明なエラー
+    // 内容はmessageにはいる
+    shellError: ErrorMessageContent<{
+      type: 'file' | 'directory';
+      path: string;
+      message: string
+    }>
   };
 
   // githubAPI周りのエラー

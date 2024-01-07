@@ -18,7 +18,7 @@ closeCounter()
 function closeCounter() {
   // ホバー中はカウントを進めない
   if (!hovered.value) {
-    timeCounter.value += 0.007
+    timeCounter.value += 0.02
   }
 
   // カウンターの進行 or Dialogを閉じる

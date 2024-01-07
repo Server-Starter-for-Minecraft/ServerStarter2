@@ -60,6 +60,8 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
               filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
             ).sort(
               (a, b) => strSort(a.name, b.name)
+            ).filter(
+              v => playerStore.newPlayerCandidate?.name !== v.name
             )"
           :key="p"
         >
@@ -78,9 +80,19 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
 </template>
 
 <style scoped lang="scss">
+.body--light {
+  .card {
+    border-color: black;
+  }
+}
+
+.body--dark {
+  .card {
+    border-color: white;
+  }
+}
+
 .card {
-  // TODO: lightモードに対応
-  border-color: white;
   border-radius: 15px;
 }
 </style>

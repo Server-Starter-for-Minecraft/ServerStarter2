@@ -18,8 +18,8 @@ defineProps<Prop>()
   >
     <template #default>
       <div
-        class="absolute-center row items-center"
-        style="width: max-content;"
+        class="justify-center row items-center fit"
+        :style="{'width': 'max-content', 'min-height': minHeight}"
       >
         <q-icon name="add" size="2rem" class="q-mr-sm"/>
         <span style="font-size: 1rem;">{{ label }}</span>

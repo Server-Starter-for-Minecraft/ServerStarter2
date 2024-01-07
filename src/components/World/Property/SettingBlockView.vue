@@ -2,6 +2,7 @@
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import InputFieldView from './InputFieldView.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   settingName: string
@@ -27,29 +28,29 @@ function cancelSettings() {
 
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
-      <div class="text-caption" style="opacity: .5;">{{ $t(`property.description['${settingName}']`, $t('property.description.notFound')) }}</div>
+      <div class="text-caption" style="opacity: .5;">
+        {{ $t(`property.description['${settingName}']`, $t('property.description.notFound')) }}
+      </div>
       <InputFieldView v-model="propertiesModel" :property-name="settingName" />
     </q-item-section>
 
     <q-item-section v-show="$router.currentRoute.value.path !== '/system/property'" side>
-      <q-btn 
-        v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()" 
-        flat 
+      <q-btn
+        v-show="propertiesModel[settingName].toString() !== defaultProperty.toString()"
+        flat
         dense
-        icon="do_not_disturb_on" 
-        size="1rem" 
-        color="red" 
+        icon="do_not_disturb_on"
+        size="1rem"
+        color="negative"
         @click="cancelSettings"
-        >
-        <q-tooltip>
-          <p 
-            class="text-caption q-ma-none"
-            v-html = "$t('property.resetProperty', { defaultProperty: defaultProperty })"
-          />
-        </q-tooltip>
+      >
+        <SsTooltip 
+          :name="$t('property.resetProperty', { defaultProperty: defaultProperty !== '' ? defaultProperty : $t('property.empty') })"
+          anchor="center middle"
+          self="top middle"
+        />
       </q-btn>
     </q-item-section>
-
   </q-item>
 </template>
 
