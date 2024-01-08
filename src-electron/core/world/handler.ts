@@ -746,8 +746,8 @@ export class WorldHandler {
   /**
    * 使用ポートを決定
    */
-  private async definePortNumber(beforeWorld: World): Promise<Failable<number>> {
-    if (beforeWorld.ngrok_setting.use_ngrok) {
+  private async definePortNumber(beforeWorld: World, ngrokToken: string | undefined): Promise<Failable<number>> {
+    if (beforeWorld.ngrok_setting.use_ngrok && ngrokToken) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
       const portnum = await this.getFreePort()
       if (isError(portnum)) return portnum
@@ -819,7 +819,7 @@ export class WorldHandler {
     const savePath = this.getSavePath();
 
     // ポート番号を取得
-    const port = await this.definePortNumber(beforeWorld)
+    const port = await this.definePortNumber(beforeWorld, sysSettings.user.ngrokToken)
     if (isError(port)) return withError(port, errors)
 
     // 実行時のサーバープロパティ(ポートだけ違う)
