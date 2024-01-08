@@ -44,6 +44,7 @@ export const fixForgeVersion = objectFixer<ForgeVersion>(
     id: stringFixer(),
     type: literalFixer(['forge']),
     forge_version: stringFixer(),
+    download_url: stringFixer(),
   },
   false
 );

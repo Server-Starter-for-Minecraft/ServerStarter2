@@ -6,56 +6,66 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
-  versionData: AllForgeVersion
+  versionData: AllForgeVersion;
 }
-const prop = defineProps<Prop>()
+const prop = defineProps<Prop>();
 
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
 
-const forgeVerOps = () => { return prop.versionData.map(ver => ver.id) }
-const forgeVer = ref(prop.versionData[0].id)
+const forgeVerOps = () => {
+  return prop.versionData.map((ver) => ver.id);
+};
+const forgeVer = ref(prop.versionData[0].id);
 
 const forgeBuilds = () => {
-  return prop.versionData.find(ver => ver.id === forgeVer.value)?.forge_versions
-}
-const forgeBuilder = ref(prop.versionData[0].forge_versions[0])
+  return prop.versionData.find((ver) => ver.id === forgeVer.value)
+    ?.forge_versions;
+};
+const forgeBuilder = ref(prop.versionData[0].forge_versions[0]);
 
 /**
  * 推奨ビルド番号 or ビルド一覧の先頭を「(推奨)」として提示する
  */
 const recommendBuildIdx = () => {
   const idxNumber = forgeBuilds()?.findIndex(
-    build => prop.versionData.find(v => v.id === forgeVer.value)?.recommended === build
-  )
-  return idxNumber === -1 ? 0 : idxNumber
-}
+    (build) =>
+      prop.versionData.find((v) => v.id === forgeVer.value)?.recommended
+        ?.version === build?.version
+  );
+  return idxNumber === -1 ? 0 : idxNumber;
+};
 
 // forgeでないときには最新のバージョンを割り当てる
 if (mainStore.world.version.type !== 'forge') {
-  onUpdatedSelection(false)
-}
-else {
-  forgeVer.value     = mainStore.world.version.id
-  forgeBuilder.value = mainStore.world.version.forge_version
+  onUpdatedSelection(false);
+} else {
+  forgeVer.value = mainStore.world.version.id;
+  forgeBuilder.value = {
+    version: mainStore.world.version.forge_version,
+    url: mainStore.world.version.download_url,
+  };
 }
 
 /**
  * バージョンやビルド番号が更新されたら、選択ワールドの情報を更新する
- * 
+ *
  * バージョンの変更に伴うビルド番号の更新はupdateBuildをTrueにする
  */
 function onUpdatedSelection(updateBuild: boolean) {
   // バージョンに応じてビルド番号を更新
   if (updateBuild) {
-    forgeBuilder.value = prop.versionData.find(v => v.id === forgeVer.value)?.recommended ?? forgeBuilds()?.[0] ?? ''
+    forgeBuilder.value = prop.versionData.find((v) => v.id === forgeVer.value)
+      ?.recommended ??
+      forgeBuilds()?.[0] ?? { version: '', url: '' };
   }
 
   mainStore.world.version = {
     id: forgeVer.value,
     type: 'forge' as const,
-    forge_version: forgeBuilder.value
-  }
+    forge_version: forgeBuilder.value.version,
+    download_url: forgeBuilder.value.url,
+  };
 }
 </script>
 
@@ -64,36 +74,42 @@ function onUpdatedSelection(updateBuild: boolean) {
     <SsSelect
       v-model="forgeVer"
       @update:model-value="onUpdatedSelection(true)"
-      :options="forgeVerOps()?.map(
-        (ver, idx) => { return {
-          data: ver,
-          label: idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver
-        }}
-      )"
+      :options="
+        forgeVerOps()?.map((ver, idx) => {
+          return {
+            data: ver,
+            label:
+              idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver,
+          };
+        })
+      "
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 10rem;"
+      style="min-width: 10rem"
     />
     <SsSelect
       v-model="forgeBuilder"
       @update:model-value="onUpdatedSelection(false)"
-      :options="forgeBuilds()?.map((build, idx) => {
-        return {
-          data: build,
-          label: recommendBuildIdx() === idx
-            ? `${build} (${$t('home.version.recommend')})`
-            : build
-        }
-      })"
+      :options="
+        forgeBuilds()?.map((build, idx) => {
+          return {
+            data: build,
+            label:
+              recommendBuildIdx() === idx
+                ? `${build.version} (${$t('home.version.recommend')})`
+                : build.version,
+          };
+        })
+      "
       :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
       class="col"
-      style="min-width: 10rem;"
+      style="min-width: 10rem"
     />
   </div>
 </template>

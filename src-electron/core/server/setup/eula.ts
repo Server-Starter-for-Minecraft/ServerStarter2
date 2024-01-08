@@ -1,12 +1,13 @@
 import { api } from '../../api';
 import { Path } from '../../../util/path';
 import { Failable } from '../../../util/error/failable';
-import { execProcess } from '../../../util/subprocess';
+import { execProcess, interactiveProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { GroupProgressor } from '../../progress/progress';
 import { Version } from 'app/src-electron/schema/version';
+import { sleep } from 'app/src-electron/util/sleep';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -123,12 +124,26 @@ async function generateEula(
   }
 
   // サーバーを仮起動
-  const result = await execProcess(
+  const process = interactiveProcess(
     javaPath,
     [...programArgunets, '--nogui'],
+    value => {
+      if (value.match("Failed to load eula.txt")) {
+        process.kill()
+      }
+    },
+    () => { },
     serverCwdPath,
     true
   );
+
+  // 60秒経っても終了していない場合はプロセスキル
+  (async () => {
+    await sleep(60 * 1000)
+    if (!process.finished()) process.kill()
+  })()
+
+  const result = await process
 
   if (isError(result)) return result;
 

@@ -18,11 +18,12 @@ export type AllSpigotVersion = { id: string }[];
 export type PapermcVersion = { id: string; type: 'papermc'; build: number };
 export type AllPapermcVersion = { id: string; builds: number[] }[];
 
-export type ForgeVersion = { id: string; type: 'forge'; forge_version: string };
+export type ForgeVersion = { id: string; type: 'forge'; forge_version: string, download_url: string };
+
 export type AllForgeVersion = {
   id: string;
-  forge_versions: string[];
-  recommended?: string;
+  forge_versions: { version: string, url: string }[];
+  recommended?: { version: string, url: string };
 }[];
 
 export type MohistmcVersion = {

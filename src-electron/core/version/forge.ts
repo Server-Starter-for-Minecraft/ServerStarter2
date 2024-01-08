@@ -90,7 +90,7 @@ async function installForgeVersion(
   const installerPath = cwdPath.child('forge-' + version.id + '-installer.jar');
 
   // インストーラーのダウンロードURLを取得
-  const serverURL = await getForgeDownloadUrl(version);
+  const serverURL = version.download_url;
 
   // インストーラーを取得
   const serverData = await BytesData.fromURL(serverURL);
@@ -214,6 +214,7 @@ async function getProgramArgumentsFromSh(shPath: Path) {
 async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   // TODO: forgeのインストール時に使用するjavaのバージョン17で大丈夫？
   // jre-legacyだとエラー出たのでとりあえずこれを使っている
+
   const javaPath = await readyJava('java-runtime-gamma', false);
   if (isError(javaPath)) return javaPath;
 
@@ -236,11 +237,6 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   return await process;
 }
 
-/** forgeのjarのダウンロードパスを返す 存在検証はしない */
-export async function getForgeDownloadUrl(version: ForgeVersion) {
-  return `https://maven.minecraftforge.net/net/minecraftforge/forge/${version.id}-${version.forge_version}/forge-${version.id}-${version.forge_version}-installer.jar`;
-}
-
 export async function getAllForgeVersions(): Promise<
   Failable<AllForgeVersion>
 > {
@@ -259,7 +255,7 @@ export async function getAllForgeVersions(): Promise<
     if (match) ids.push(match[1]);
   });
 
-  // 各バージョン後ごとの全ビルドを並列取得してflat化
+  // 各バージョンごとの全ビルドを並列取得してflat化
   const versions = (await Promise.all(ids.map(scrapeForgeVersions))).filter(
     isValid
   );
@@ -295,21 +291,39 @@ export async function scrapeForgeVersions(
   const page = await BytesData.fromURL(versionUrl);
   if (isError(page)) return page;
 
-  const forge_versions: string[] = [];
+  const forge_versions: { version: string, url: string }[] = [];
 
   const $ = cheerio.load(await page.text());
-  $('tbody > tr > td.download-version').each((_, elem) => {
-    const element = $(elem);
+  $('.download-list > tbody > tr').each((_, elem) => {
+    const downloadVersion = $(".download-version", elem)
+
+    downloadVersion.children()
     // 子要素を消して直接のテキストだけを取得
-    element.children().remove();
-    const path = element.text();
-    if (typeof path === 'string') {
-      forge_versions.push(path.trim());
+    downloadVersion.children().remove();
+    const version = downloadVersion.text().trim();
+
+    const url = $(".download-links > li", elem).map((_, x) => {
+      const children = $(x).children()
+
+      const isInstaller = children.first().text().trim() === "Installer"
+
+      if (!isInstaller) return
+
+      return children.children().last().attr()?.href
+    }).filter(x => x !== undefined)[0]
+
+
+    if (version && url) {
+      forge_versions.push({
+        version,
+        url
+      });
     }
   });
 
   // recommendedを取得
-  let recommended: string | undefined = undefined;
+  let recommended: { version: string, url: string } | undefined = undefined;
+
   $('div.downloads > div.download > div.title > small').each((i, elem) => {
     if (i !== 1) return;
 
@@ -321,8 +335,7 @@ export async function scrapeForgeVersions(
     const match = path.match(/^[\d\.]+ - (.+)$/);
     if (match === null) return;
     const reco = match[1];
-    if (!forge_versions.includes(reco)) return;
-    recommended = reco;
+    recommended = forge_versions.find(x => x.version === reco)
   });
 
   return {
