@@ -94,20 +94,21 @@ export class WorldHandler {
 
   /** ローカルに保存されたワールド設定Jsonを読み込む */
   private async loadLocalServerJson() {
-    const savePath = this.localLocation.path;
-    return await serverJsonFile.load(savePath);
+    return await serverJsonFile.load(this.localLocation.path);
   }
 
   /** ワールド設定Jsonをローカルに保存 */
   private async saveLocalServerJson(settings: WorldSettings) {
-    const savePath = this.localLocation.path;
-    return await serverJsonFile.save(savePath, settings);
+    return await serverJsonFile.save(this.localLocation.path, settings);
   }
 
+  /** ローカルの設定ファイルを読み込む */
   private async loadLocal() {
-    const savePath = this.localLocation.path;
-    // ローカルの設定ファイルを読み込む
-    return await loadLocalFiles(savePath, this.id, this.localLocation);
+    return await loadLocalFiles(
+      this.localLocation.path,
+      this.id,
+      this.localLocation
+    );
   }
 
   async save(
