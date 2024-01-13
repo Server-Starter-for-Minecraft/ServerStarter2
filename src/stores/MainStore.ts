@@ -11,6 +11,7 @@ import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
+import { values } from 'src/scripts/obj';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -127,6 +128,15 @@ export const useMainStore = defineStore('mainStore', {
     updateWorld(world: World | WorldEdited) {
       const worldStore = useWorldStore()
       worldStore.worldList[world.id] = world
+    },
+    /**
+     * すべてのワールドに対してprocessで指定した処理を行う
+     */
+    processAllWorld(process: (world: WorldEdited) => void) {
+      const worldStore = useWorldStore()
+      values(worldStore.worldList).forEach(
+        w => process(w)
+      )
     },
     /**
      * Ngrokより割り当てられたIPアドレスを削除する（サーバー終了時を想定）
