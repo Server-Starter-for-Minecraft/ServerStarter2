@@ -34,6 +34,7 @@ import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { importCustomMap } from './cusomMap';
 import { pullRemoteWorld } from '../remote/remote';
 import { GroupProgressor } from '../progress/progress';
+import { WorldLocalLocation } from './handler/localLocation';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -72,8 +73,7 @@ function fromPlayers(players: PlayerSetting[]): [Ops, Whitelist] {
 export async function loadLocalFiles(
   savePath: Path,
   id: WorldID,
-  name: WorldName,
-  container: WorldContainer
+  location: WorldLocalLocation
 ): Promise<WithError<Failable<World>>> {
   // server_settings.json
   // server.properties
@@ -126,8 +126,8 @@ export async function loadLocalFiles(
   // worldオブジェクトを生成
   const world: World = {
     id,
-    name,
-    container,
+    name: location.name,
+    container: location.container,
     avater_path,
     version: worldSettings.version,
     using: worldSettings.using,
@@ -160,8 +160,9 @@ export async function saveLocalFiles(
     const result = await loadLocalFiles(
       savePath,
       world.id,
-      world.name,
-      world.container
+      new WorldLocalLocation(
+        world.name,
+        world.container)
     );
     result.errors.push(...errors);
     return result;

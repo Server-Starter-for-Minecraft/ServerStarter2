@@ -11,7 +11,7 @@ import {
 import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
-import { WorldHandler } from './handler';
+import { WorldHandler } from './handler/handler';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { serverJsonFile } from './files/json';
@@ -22,6 +22,7 @@ import { WorldProgressor } from '../progress/progress';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { WorldLogHandler } from './loghandler';
+import { WorldLocalLocation } from './handler/localLocation';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -57,8 +58,10 @@ async function getWorldAbbr(
   const name = path.basename() as WorldName;
   const container = worldContainer as WorldContainer;
 
+  const location = new WorldLocalLocation(name, container)
+
   // WorldHandlerに登録
-  const id = WorldHandler.register(name, container);
+  const id = WorldHandler.register(location);
 
   const result: WorldAbbr = {
     id,
@@ -82,7 +85,7 @@ export async function getWorld(
 export async function setWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(world.id, world.name, world.container);
+  const handler = WorldHandler.get(world.id);
   if (isError(handler)) return withError(handler);
   return await handler.save(world);
 }
@@ -112,8 +115,10 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
 
   const name = await getDefaultWorldName(container);
 
+  const location = new WorldLocalLocation(name, container)
+
   // WorldHandlerに登録
-  const id = WorldHandler.register(name, container);
+  const id = WorldHandler.register(location);
 
   const world: World = {
     name,
@@ -162,7 +167,7 @@ async function getDefaultWorldName(container: WorldContainer) {
 export async function createWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(world.id, world.name, world.container);
+  const handler = WorldHandler.get(world.id);
   if (isError(handler)) return withError(handler);
   return await handler.create(world);
 }
@@ -187,7 +192,7 @@ export async function duplicateWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.duplicate(name);
+  return await handler.duplicate(name ? new WorldLocalLocation(name, handler.localLocation.container) : undefined);
 }
 
 /**
@@ -257,12 +262,12 @@ export async function fetchLatestWorldLog(
 
   if (isError(handler)) return handler;
 
-  const log = await new WorldLogHandler(handler.getSavePath()).loadLatest()
+  const log = await new WorldLogHandler(handler.localLocation.path).loadLatest()
 
   if (isError(log)) {
     return errorMessage.core.world.missingLatestLog({
-      name: handler.name,
-      container: handler.container
+      name: handler.localLocation.name,
+      container: handler.localLocation.container
     })
   }
 

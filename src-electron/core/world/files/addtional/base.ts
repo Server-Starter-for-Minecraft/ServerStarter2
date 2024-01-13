@@ -15,7 +15,7 @@ import {
 } from 'app/src-electron/schema/filedata';
 import { WorldID } from 'app/src-electron/schema/world';
 import { zip } from 'app/src-electron/util/zip';
-import { WorldHandler } from '../../handler';
+import { WorldHandler } from '../../handler/handler';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { api } from 'app/src-electron/core/api';
 
