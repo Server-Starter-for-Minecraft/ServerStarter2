@@ -86,6 +86,7 @@ export const jaHome = {
         ',
         link: '認証トークンを取得するウェブページ',
         inputToken: 'トークンを入力',
+        checkbox: 'すべてのワールドに対してNgrokを利用する',
       },
       goNext: '次の設定へ進む',
       save: '登録内容を保存',
