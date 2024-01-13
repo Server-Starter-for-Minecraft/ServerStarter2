@@ -18,6 +18,13 @@ function systemUpdate() {
 }
 
 /**
+ * システムログフォルダを開く
+ */
+function openLog() {
+  window.API.sendOpenFolder(sysStore.staticResouces.paths.log, true)
+}
+
+/**
  * MIT LICENSEのファイルを開く
  */
 function openMIT() {
@@ -44,7 +51,22 @@ function openMIT() {
       </div>
     </div>
 
-    <h1>{{  $t('systemsetting.info.externalLink') }}</h1>
+    <h1>{{ $t('systemsetting.info.systemLog') }}</h1>
+    <div class="q-pl-md">
+      <div 
+        class="text-caption"
+        style="opacity: .6;"
+      >
+        {{ $t('systemsetting.info.systemLogDesc') }}
+      </div>
+      <SsBtn
+        :label="$t('systemsetting.info.openSystemLog')"
+        @click="openLog"
+        class="q-mt-md"
+      />
+    </div>
+
+    <h1>{{ $t('systemsetting.info.externalLink') }}</h1>
     <div class="q-pl-md">
       <div class="row">
         <p class="q-ma-none" style="width: 12rem;">{{ $t('systemsetting.info.homepage') }}</p>
