@@ -46,6 +46,7 @@ import { PromiseSpooler } from 'app/src-electron/util/promiseSpooler';
 import { WorldLocalLocation, moveLocalData } from './localLocation';
 import { toEntries } from 'app/src-electron/util/obj';
 import { tryMove } from './move';
+import { pull, push } from './remote';
 
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
@@ -108,55 +109,6 @@ export class WorldHandler {
     return await serverJsonFile.save(savePath, settings);
   }
 
-  /** リモートがあるかをチェックして、ある場合はpull */
-  private async pull(progress?: GroupProgressor) {
-    // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-
-    const sub = progress?.subtitle({ key: 'server.local.loadSettingFiles' });
-    const worldSettings = await this.loadLocalServerJson();
-    sub?.delete();
-
-    if (isError(worldSettings)) return worldSettings;
-
-    // リモートが存在する場合Pull
-    if (worldSettings.remote) {
-      const remote = worldSettings.remote;
-      const savePath = this.localLocation.path;
-
-      const pull = await pullRemoteWorld(
-        savePath,
-        remote,
-        progress?.subGroup()
-      );
-
-      // Pullに失敗した場合エラー
-      if (isError(pull)) return pull;
-    }
-  }
-
-  private async push(progress?: GroupProgressor) {
-    // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    const prog = progress?.subtitle({ key: 'server.remote.check' });
-    const worldSettings = await this.loadLocalServerJson();
-    prog?.delete();
-
-    if (isError(worldSettings)) return worldSettings;
-
-    // リモートが存在する場合Push
-    const remote = worldSettings.remote;
-    if (remote) {
-      const pushProgress = progress?.subGroup();
-
-      const savePath = this.localLocation.path;
-      const prog = pushProgress?.subGroup();
-      const push = await pushRemoteWorld(savePath, remote, prog);
-      pushProgress?.delete();
-
-      // Pushに失敗した場合エラー
-      if (isError(push)) return push;
-    }
-  }
-
   private async loadLocal() {
     const savePath = this.localLocation.path;
     // ローカルの設定ファイルを読み込む
@@ -199,18 +151,15 @@ export class WorldHandler {
 
     const savePath = this.localLocation.path;
 
-    // リモートからpull
-    const pullResult = this.pull(progress);
-    if (isError(pullResult)) return withError(pullResult);
-
-    const loadLocalServerJson = () => this.loadLocalServerJson();
-
-    // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
+    // ローカルに保存されたワールド設定Jsonを読み込む
     const sub = progress?.subtitle({ key: 'server.load.loadLocalSetting' });
-    const worldSettings = await loadLocalServerJson();
+    const worldSettings = await this.loadLocalServerJson();
+    if (isError(worldSettings)) return withError(worldSettings);
     sub?.delete();
 
-    if (isError(worldSettings)) return withError(worldSettings);
+    // リモートからpull
+    const pullResult = pull(this.localLocation, worldSettings, progress);
+    if (isError(pullResult)) return withError(pullResult);
 
     // 使用中の場合、現状のデータを再読み込みして終了
     if (worldSettings.using) {
@@ -238,8 +187,8 @@ export class WorldHandler {
     saveLocalFilesprogress?.delete();
 
     // リモートの存在を確認して存在したらpush
-    const push = await this.push(progress);
-    if (isError(push)) return withError(push, errors);
+    const pushResult = await push(this.localLocation, worldSettings, progress);
+    if (isError(pushResult)) return withError(pushResult, errors);
 
     return result;
   }
@@ -322,16 +271,18 @@ export class WorldHandler {
     const world = local.value;
     if (isError(world)) return local;
 
+    const worldSettings = constructWorldSettings(world)
+
     // フラグを折ってjsonに保存
     world.using = false;
     await serverJsonFile.save(
       this.localLocation.path,
-      constructWorldSettings(world)
+      worldSettings
     );
 
     // リモートにpush
-    const push = await this.push();
-    if (isError(push)) return withError(push);
+    const pushResult = await push(this.localLocation, worldSettings);
+    if (isError(pushResult)) return withError(pushResult);
 
     return local;
   }
@@ -371,7 +322,7 @@ export class WorldHandler {
     }
     // リモートからpull
     const group = progress?.subGroup();
-    const pullResult = await this.pull(group);
+    const pullResult = await pull(this.localLocation, worldSettings, group);
     group?.delete();
     if (isError(pullResult)) return withError(pullResult);
 
@@ -704,7 +655,7 @@ export class WorldHandler {
         errors
       );
 
-    const settings = constructWorldSettings(beforeWorld);
+    const worldSettings = constructWorldSettings(beforeWorld);
     const savePath = this.localLocation.path;
 
     // ポート番号を取得
@@ -728,21 +679,21 @@ export class WorldHandler {
 
     // 使用中フラグを立てて保存
     // 使用中フラグを折って保存を試みる (無理なら諦める)
-    settings.using = true;
-    settings.last_user = sysSettings.user.owner;
-    settings.last_date = getCurrentTimestamp();
-    settings.last_id = sysSettings.user.id;
+    worldSettings.using = true;
+    worldSettings.last_user = sysSettings.user.owner;
+    worldSettings.last_date = getCurrentTimestamp();
+    worldSettings.last_id = sysSettings.user.id;
     const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
-    await serverJsonFile.save(savePath, settings);
+    await serverJsonFile.save(savePath, worldSettings);
     sub.delete();
 
     // pushを実行 TODO: 失敗時の処理
-    await this.push(progress);
+    const beforeBushResult = await push(this.localLocation, worldSettings, progress);
 
     // pluginとvanillaでファイル構造を切り替える
     const directoryFormatResult = await formatWorldDirectory(
       savePath,
-      settings.version,
+      worldSettings.version,
       progress
     );
     errors.push(...directoryFormatResult.errors);
@@ -757,7 +708,7 @@ export class WorldHandler {
     const runPromise = runRebootableServer(
       savePath,
       this.id,
-      settings,
+      worldSettings,
       progress,
       notification
     );
@@ -781,17 +732,17 @@ export class WorldHandler {
     });
 
     // ワールドの最終プレイを現在時刻に
-    settings.last_date = getCurrentTimestamp()
+    worldSettings.last_date = getCurrentTimestamp()
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
-    settings.using = false;
+    worldSettings.using = false;
     beforeWorld.last_date = getCurrentTimestamp();
     const saveSub = progress.subtitle({ key: 'server.save.localSetting' });
-    await serverJsonFile.save(savePath, settings);
+    await serverJsonFile.save(savePath, worldSettings);
     saveSub.delete();
 
-    // pushを実行
-    await this.push(progress);
+    // pushを実行 TODO: 失敗時の処理
+    const afterPushResult = await push(this.localLocation, worldSettings, progress);
 
     // サーバーの実行が失敗していたらエラー
     if (isError(serverResult)) return withError(serverResult);
