@@ -1,6 +1,4 @@
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { pullRemoteWorld, pushRemoteWorld } from '../../remote/remote';
-import { WorldName } from 'app/src-electron/schema/brands';
 import { failabilify } from 'app/src-electron/util/error/failable';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from '../name';
@@ -43,11 +41,10 @@ import { serverPropertiesFile } from '../files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { Listener } from '@ngrok/ngrok';
 import { PromiseSpooler } from 'app/src-electron/util/promiseSpooler';
-import { WorldLocalLocation, moveLocalData } from './localLocation';
+import { WorldLocalLocation } from './localLocation';
 import { toEntries } from 'app/src-electron/util/obj';
 import { tryMove } from './move';
 import { pull, push } from './remote';
-
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
@@ -89,9 +86,7 @@ export class WorldHandler {
   }
 
   // worldIDからWorldHandlerを取得する
-  static get(
-    id: WorldID
-  ): Failable<WorldHandler> {
+  static get(id: WorldID): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldHandlerMap))
       return errorMessage.core.world.invalidWorldId({ id });
     return WorldHandler.worldHandlerMap[id];
@@ -144,10 +139,14 @@ export class WorldHandler {
   ): Promise<WithError<Failable<World>>> {
     const errors: ErrorMessage[] = [];
 
-    const newLocalLocation = WorldLocalLocation.fromWorldEdited(world)
+    const newLocalLocation = WorldLocalLocation.fromWorldEdited(world);
 
     // ワールドデータを移動
-    this.localLocation = await tryMove(this.localLocation, newLocalLocation, errors)
+    this.localLocation = await tryMove(
+      this.localLocation,
+      newLocalLocation,
+      errors
+    );
 
     const savePath = this.localLocation.path;
 
@@ -199,7 +198,7 @@ export class WorldHandler {
   ): Promise<WithError<Failable<World>>> {
     const errors: ErrorMessage[] = [];
 
-    const newLocalLocation = WorldLocalLocation.fromWorldEdited(world)
+    const newLocalLocation = WorldLocalLocation.fromWorldEdited(world);
 
     // ワールド名に変更があった場合エラーに追加
     if (!this.localLocation.eq(newLocalLocation)) {
@@ -271,14 +270,11 @@ export class WorldHandler {
     const world = local.value;
     if (isError(world)) return local;
 
-    const worldSettings = constructWorldSettings(world)
+    const worldSettings = constructWorldSettings(world);
 
     // フラグを折ってjsonに保存
     world.using = false;
-    await serverJsonFile.save(
-      this.localLocation.path,
-      worldSettings
-    );
+    await serverJsonFile.save(this.localLocation.path, worldSettings);
 
     // リモートにpush
     const pushResult = await push(this.localLocation, worldSettings);
@@ -341,7 +337,7 @@ export class WorldHandler {
   private async createExec(
     world: WorldEdited
   ): Promise<WithError<Failable<World>>> {
-    this.localLocation = WorldLocalLocation.fromWorldEdited(world)
+    this.localLocation = WorldLocalLocation.fromWorldEdited(world);
 
     const savePath = this.localLocation.path;
 
@@ -367,7 +363,7 @@ export class WorldHandler {
     await this.saveLocalServerJson(worldSettings);
 
     // ワールドの最終プレイを現在時刻に
-    world.last_date = getCurrentTimestamp()
+    world.last_date = getCurrentTimestamp();
 
     // データを保存
     return await this.saveExec(world);
@@ -388,7 +384,9 @@ export class WorldHandler {
   }
 
   /** ワールドを複製 */
-  async duplicate(location?: WorldLocalLocation): Promise<WithError<Failable<World>>> {
+  async duplicate(
+    location?: WorldLocalLocation
+  ): Promise<WithError<Failable<World>>> {
     const func = () => this.duplicateExec(location);
     return await this.promiseSpooler.spool(func);
   }
@@ -408,9 +406,10 @@ export class WorldHandler {
     }
 
     // 複製先のワールドの名前を設定
-    const newlocation = location === undefined
-      ? (await getDuplicateWorldName(this.localLocation))
-      : location
+    const newlocation =
+      location === undefined
+        ? await getDuplicateWorldName(this.localLocation)
+        : location;
 
     // WorldIDを取得
     const newId = WorldHandler.register(newlocation);
@@ -565,7 +564,7 @@ export class WorldHandler {
       (x) => x.port === port
     );
 
-    return !portIsUsed
+    return !portIsUsed;
   }
 
   /**
@@ -573,27 +572,28 @@ export class WorldHandler {
    * 100回乱数でトライして、見つからなかった場合はエラー
    */
   private async getFreePort(): Promise<Failable<number>> {
-    let port = 1024
+    let port = 1024;
     for (let i = 0; i < 100; i++) {
-      port = randomInt(1024, 49152)
+      port = randomInt(1024, 49152);
       if (await this.checkPortAvailability(port)) return port;
     }
     return errorMessage.core.world.serverPortIsUsed({
       port,
-    })
+    });
   }
 
   /**
    * 使用ポートを決定
    */
-  private async definePortNumber(beforeWorld: World): Promise<Failable<number>> {
+  private async definePortNumber(
+    beforeWorld: World
+  ): Promise<Failable<number>> {
     if (beforeWorld.ngrok_setting.use_ngrok) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
-      const portnum = await this.getFreePort()
-      if (isError(portnum)) return portnum
-      return portnum
-    }
-    else {
+      const portnum = await this.getFreePort();
+      if (isError(portnum)) return portnum;
+      return portnum;
+    } else {
       // Ngrokを使用しない場合 ポートが空いてるかチェック
       let port = 25565;
       if (isValid(beforeWorld.properties)) {
@@ -601,14 +601,14 @@ export class WorldHandler {
         if (typeof serverPort === 'number') port = serverPort;
       }
 
-      const portIsUsed = !await this.checkPortAvailability(port)
+      const portIsUsed = !(await this.checkPortAvailability(port));
 
       if (portIsUsed) {
         errorMessage.core.world.serverPortIsUsed({
           port,
-        })
+        });
       }
-      return port
+      return port;
     }
   }
 
@@ -659,22 +659,24 @@ export class WorldHandler {
     const savePath = this.localLocation.path;
 
     // ポート番号を取得
-    const port = await this.definePortNumber(beforeWorld)
-    if (isError(port)) return withError(port, errors)
+    const port = await this.definePortNumber(beforeWorld);
+    if (isError(port)) return withError(port, errors);
 
     // 実行時のサーバープロパティ(ポートだけ違う)
-    const execServerProperties: ServerProperties = { ... (isError(beforeWorld.properties) ? {} : beforeWorld.properties) }
-    const beforeServerPort = execServerProperties['server-port']
-    const beforeQueryport = execServerProperties['query.port']
+    const execServerProperties: ServerProperties = {
+      ...(isError(beforeWorld.properties) ? {} : beforeWorld.properties),
+    };
+    const beforeServerPort = execServerProperties['server-port'];
+    const beforeQueryport = execServerProperties['query.port'];
 
-    execServerProperties['server-port'] = port
-    execServerProperties['query.port'] = port
-    serverPropertiesFile.save(savePath, execServerProperties)
+    execServerProperties['server-port'] = port;
+    execServerProperties['query.port'] = port;
+    serverPropertiesFile.save(savePath, execServerProperties);
 
     // ポートを登録
     this.port = port;
     // ngrokが必要な場合は起動
-    const ngrokListener = await readyNgrok(this.id, port)
+    const ngrokListener = await readyNgrok(this.id, port);
     if (isError(ngrokListener)) return withError(ngrokListener);
 
     // 使用中フラグを立てて保存
@@ -688,7 +690,11 @@ export class WorldHandler {
     sub.delete();
 
     // pushを実行 TODO: 失敗時の処理
-    const beforeBushResult = await push(this.localLocation, worldSettings, progress);
+    const beforeBushResult = await push(
+      this.localLocation,
+      worldSettings,
+      progress
+    );
 
     // pluginとvanillaでファイル構造を切り替える
     const directoryFormatResult = await formatWorldDirectory(
@@ -698,11 +704,10 @@ export class WorldHandler {
     );
     errors.push(...directoryFormatResult.errors);
 
+    const notification: ServerStartNotification = { port };
 
-    const notification: ServerStartNotification = { port }
-
-    const ngrokURL = ngrokListener?.url()
-    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6)
+    const ngrokURL = ngrokListener?.url();
+    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6);
 
     // サーバーの実行を開始
     const runPromise = runRebootableServer(
@@ -723,7 +728,7 @@ export class WorldHandler {
     // ポートを削除
     this.port = undefined;
     // Ngrokを閉じる
-    if (ngrokListener) await closeNgrok(ngrokListener)
+    if (ngrokListener) await closeNgrok(ngrokListener);
 
     this.runner = undefined;
 
@@ -732,7 +737,7 @@ export class WorldHandler {
     });
 
     // ワールドの最終プレイを現在時刻に
-    worldSettings.last_date = getCurrentTimestamp()
+    worldSettings.last_date = getCurrentTimestamp();
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     worldSettings.using = false;
@@ -742,7 +747,11 @@ export class WorldHandler {
     saveSub.delete();
 
     // pushを実行 TODO: 失敗時の処理
-    const afterPushResult = await push(this.localLocation, worldSettings, progress);
+    const afterPushResult = await push(
+      this.localLocation,
+      worldSettings,
+      progress
+    );
 
     // サーバーの実行が失敗していたらエラー
     if (isError(serverResult)) return withError(serverResult);
@@ -752,13 +761,13 @@ export class WorldHandler {
 
     // ポート番号を復元
     if (isValid(afterWorld.value) && isValid(afterWorld.value.properties)) {
-      afterWorld.value.properties["server-port"] = beforeServerPort
-      afterWorld.value.properties["query.port"] = beforeQueryport
+      afterWorld.value.properties['server-port'] = beforeServerPort;
+      afterWorld.value.properties['query.port'] = beforeQueryport;
       // プロパティを保存
-      serverPropertiesFile.save(savePath, afterWorld.value.properties)
+      serverPropertiesFile.save(savePath, afterWorld.value.properties);
     }
 
-    return afterWorld
+    return afterWorld;
   }
 
   /** コマンドを実行 */
@@ -775,9 +784,7 @@ export class WorldHandler {
 }
 
 /** 複製する際のワールド名を取得 */
-async function getDuplicateWorldName(
-  location: WorldLocalLocation
-) {
+async function getDuplicateWorldName(location: WorldLocalLocation) {
   let baseName: string = location.name;
   const match = baseName.match(/^(.*)_\d+$/);
   if (match !== null) {
@@ -795,14 +802,16 @@ async function getDuplicateWorldName(
   return new WorldLocalLocation(result, location.container);
 }
 
-
-/** 
+/**
  * Ngrokを利用する場合の処理
- * 
+ *
  * Ngrokを利用する場合はlistenerを返す
  * Ngrokを利用しない場合はundefinedを返す
  */
-async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<Listener | undefined>> {
+async function readyNgrok(
+  worldID: WorldID,
+  port: number
+): Promise<Failable<Listener | undefined>> {
   const systemSettings = await getSystemSettings();
   const token = systemSettings.user.ngrokToken ?? '';
 
@@ -811,9 +820,13 @@ async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<List
   if (isError(world.value)) return world.value;
 
   if (token !== '' && world.value.ngrok_setting.use_ngrok) {
-    const listener = runNgrok(token, port, world.value.ngrok_setting.remote_addr);
+    const listener = runNgrok(
+      token,
+      port,
+      world.value.ngrok_setting.remote_addr
+    );
     return listener;
   }
 
-  return undefined
+  return undefined;
 }

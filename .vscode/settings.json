@@ -23,5 +23,8 @@
       "code": ":bowl_with_spoon:",
       "description": "Create empty commit"
     }
-  ]
+  ],
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

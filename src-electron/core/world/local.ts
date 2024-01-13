@@ -1,10 +1,6 @@
 import { Path } from 'app/src-electron/util/path';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import {
-  PlayerUUID,
-  WorldContainer,
-  WorldName,
-} from 'app/src-electron/schema/brands';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import {
   WorldDirectoryTypes,
   WorldSettings,
@@ -43,14 +39,14 @@ function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
 
   ops.forEach(
     ({ uuid, name, level, bypassesPlayerLimit }) =>
-    (map[uuid] = {
-      uuid,
-      name,
-      op: {
-        level,
-        bypassesPlayerLimit,
-      },
-    })
+      (map[uuid] = {
+        uuid,
+        name,
+        op: {
+          level,
+          bypassesPlayerLimit,
+        },
+      })
   );
 
   return Object.values(map);
@@ -160,9 +156,7 @@ export async function saveLocalFiles(
     const result = await loadLocalFiles(
       savePath,
       world.id,
-      new WorldLocalLocation(
-        world.name,
-        world.container)
+      new WorldLocalLocation(world.name, world.container)
     );
     result.errors.push(...errors);
     return result;

@@ -58,7 +58,7 @@ async function getWorldAbbr(
   const name = path.basename() as WorldName;
   const container = worldContainer as WorldContainer;
 
-  const location = new WorldLocalLocation(name, container)
+  const location = new WorldLocalLocation(name, container);
 
   // WorldHandlerに登録
   const id = WorldHandler.register(location);
@@ -115,7 +115,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
 
   const name = await getDefaultWorldName(container);
 
-  const location = new WorldLocalLocation(name, container)
+  const location = new WorldLocalLocation(name, container);
 
   // WorldHandlerに登録
   const id = WorldHandler.register(location);
@@ -139,7 +139,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
       mods: [],
     },
     ngrok_setting: {
-      use_ngrok: true
+      use_ngrok: true,
     },
   };
 
@@ -192,7 +192,11 @@ export async function duplicateWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.duplicate(name ? new WorldLocalLocation(name, handler.localLocation.container) : undefined);
+  return await handler.duplicate(
+    name
+      ? new WorldLocalLocation(name, handler.localLocation.container)
+      : undefined
+  );
 }
 
 /**
@@ -262,14 +266,16 @@ export async function fetchLatestWorldLog(
 
   if (isError(handler)) return handler;
 
-  const log = await new WorldLogHandler(handler.localLocation.path).loadLatest()
+  const log = await new WorldLogHandler(
+    handler.localLocation.path
+  ).loadLatest();
 
   if (isError(log)) {
     return errorMessage.core.world.missingLatestLog({
       name: handler.localLocation.name,
-      container: handler.localLocation.container
-    })
+      container: handler.localLocation.container,
+    });
   }
 
-  return log
+  return log;
 }
