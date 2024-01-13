@@ -14,19 +14,19 @@ import { Path } from 'app/src-electron/util/path';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable } from 'app/src-electron/schema/error';
+import { WorldLocalLocation } from './handler/localLocation';
+import { DateFormatter } from 'app/src-electron/util/dateFormatter';
 
-export function getBackUpPath(container: WorldContainer, name: WorldName) {
+export function getBackUpPath(location: WorldLocalLocation) {
   const time = new Date(getCurrentTimestamp());
-  const dateString = formatDate(time);
-  const directory = worldContainerToPath(container).child(
-    BACKUP_DIRECTORY_NAME
-  );
+  const dateString = dateFormatter.format(time);
+  const directory = location.path.parent().child(BACKUP_DIRECTORY_NAME);
 
   // {container}/#backups/{name}-YYYY-MM-DD-HH({i})
-  let path = directory.child(`${name}-${dateString}.${BACKUP_EXT}`);
+  let path = directory.child(`${location.name}-${dateString}.${BACKUP_EXT}`);
   let i = 1;
   while (path.exists()) {
-    path = directory.child(`${name}-${dateString}(${i}).${BACKUP_EXT}`);
+    path = directory.child(`${location.name}-${dateString}(${i}).${BACKUP_EXT}`);
     i++;
   }
   return path;
@@ -66,18 +66,9 @@ export async function parseBackUpPath(
   };
 }
 
-/** YYYY-MM-DD-HH */
-function formatDate(date: Date) {
-  function paddedNumber(n: number, digit: number) {
-    return n.toString().padStart(digit, '0');
-  }
-  const YYYY = paddedNumber(date.getFullYear(), 4);
-  const MM = paddedNumber(date.getMonth() + 1, 2);
-  const DD = paddedNumber(date.getDate(), 2);
-  const HH = paddedNumber(date.getHours(), 2);
 
-  return `${YYYY}-${MM}-${DD}-${HH}`;
-}
+/** YYYY-MM-DD-HH */
+const dateFormatter = new DateFormatter(date => `${date.YYYY}-${date.MM}-${date.DD}-${date.HH}`)
 
 /** YYYY-MM-DD-HH */
 function deformatDate(yyyy: string, mm: string, dd: string, hh: string) {

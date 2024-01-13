@@ -1,20 +1,17 @@
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
-import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
-import { worldContainerToPath } from './worldContainer';
 import { failabilify } from 'app/src-electron/util/error/failable';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { validateNewWorldName } from './name';
+import { validateNewWorldName } from '../name';
 import { genUUID } from 'app/src-electron/tools/uuid';
-import { WorldSettings, serverJsonFile } from './files/json';
+import { WorldSettings, serverJsonFile } from '../files/json';
 import {
   constructWorldSettings,
   formatWorldDirectory,
   loadLocalFiles,
   saveLocalFiles,
-} from './local';
-import { RunRebootableServer, runRebootableServer } from '../server/server';
-import { getSystemSettings } from '../stores/system';
+} from '../local';
+import { RunRebootableServer, runRebootableServer } from '../../server/server';
+import { getSystemSettings } from '../../stores/system';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
@@ -23,120 +20,47 @@ import {
   Failable,
   WithError,
 } from 'app/src-electron/schema/error';
-import { GroupProgressor } from '../progress/progress';
+import { GroupProgressor } from '../../progress/progress';
 import { sleep } from 'app/src-electron/util/sleep';
-import { api } from '../api';
+import { api } from '../../api';
 import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
-import { getOpDiff } from './players';
+import { getOpDiff } from '../players';
 import { includes } from 'app/src-electron/util/array';
 import { asyncMap } from 'app/src-electron/util/objmap';
-import { getBackUpPath, parseBackUpPath } from './backup';
+import { getBackUpPath, parseBackUpPath } from '../backup';
 import { Path } from 'app/src-electron/util/path';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { BackupData } from 'app/src-electron/schema/filedata';
-import { allocateTempDir } from '../misc/tempPath';
+import { allocateTempDir } from '../../misc/tempPath';
 import { portInUse } from 'app/src-electron/util/port';
-import { getWorld } from './world';
-import { closeNgrok, runNgrok } from '../server/setup/ngrok';
+import { getWorld } from '../world';
+import { closeNgrok, runNgrok } from '../../server/setup/ngrok';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { randomInt } from 'crypto';
-import { serverPropertiesFile } from './files/properties';
+import { serverPropertiesFile } from '../files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { Listener } from '@ngrok/ngrok';
-import { WorldLogHandler } from './loghandler';
-
-/** 複数の処理を並列で受け取って直列で処理 */
-class PromiseSpooler {
-  /** 待機中の処理のQueue */
-  spoolingQueue: [
-    () => Promise<any>,
-    (value: any | PromiseLike<any>) => void,
-    undefined | string
-  ][];
-  running: boolean;
-
-  constructor() {
-    this.spoolingQueue = [];
-    this.running = false;
-  }
-
-  async pushItem<T>(
-    spoolingQueue: [
-      () => Promise<any>,
-      (value: any) => void,
-      string | undefined
-    ][],
-    process: () => Promise<T>,
-    resolve: (value: T | PromiseLike<T>) => void,
-    channel: string | undefined
-  ) {
-    if (channel !== undefined) {
-      const lastItem = spoolingQueue[spoolingQueue.length - 1];
-      if (lastItem !== undefined) {
-        const [, lastResolve, lastChannel] = lastItem;
-        if (lastChannel === channel) {
-          const newResolve = (value: T) => {
-            lastResolve(value);
-            resolve(value);
-          };
-          // チャンネルが同じ場合は処理を上書き
-          // resolveは統合
-          lastItem[0] = process;
-          lastItem[1] = newResolve;
-          return;
-        }
-      }
-    }
-    // それ以外の場合処理を追加
-    spoolingQueue.push([process, resolve, channel]);
-  }
-
-  /** channelを指定すると同じchannelの処理は連続せず上書きされる */
-  async spool<T>(spollingItem: () => Promise<T>, channel?: string) {
-    const pushItem = (
-      process: () => Promise<T>,
-      resolve: (value: T | PromiseLike<T>) => void,
-      channel: string | undefined
-    ) => this.pushItem(this.spoolingQueue, process, resolve, channel);
-
-    const resultPromise = new Promise<T>((resolve) => {
-      pushItem(spollingItem, resolve, channel);
-    });
-    this.start();
-    return resultPromise;
-  }
-
-  private async start() {
-    if (this.running) return;
-    this.running = true;
-    while (true) {
-      const item = this.spoolingQueue.shift();
-      if (item === undefined) break;
-      const [process, resolve] = item;
-      const result = await process();
-      resolve(result);
-    }
-    this.running = false;
-  }
-}
+import { PromiseSpooler } from 'app/src-electron/util/promiseSpooler';
+import { WorldLocalLocation } from './localLocation';
+import { toEntries } from 'app/src-electron/util/obj';
+import { tryMove } from './move';
+import { pull, push } from './remote';
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
 export class WorldHandler {
   private static worldHandlerMap: Record<WorldID, WorldHandler> = {};
 
   promiseSpooler: PromiseSpooler;
-  name: WorldName;
-  container: WorldContainer;
+  localLocation: WorldLocalLocation;
   id: WorldID;
   runner: RunRebootableServer | undefined;
   /** サーバーが実行中の場合のみポート番号が入る */
   port: number | undefined;
 
-  private constructor(id: WorldID, name: WorldName, container: WorldContainer) {
+  private constructor(id: WorldID, location: WorldLocalLocation) {
     this.promiseSpooler = new PromiseSpooler();
     this.id = id;
-    this.name = name;
-    this.container = container;
+    this.localLocation = location;
     this.runner = undefined;
   }
 
@@ -148,118 +72,42 @@ export class WorldHandler {
   }
 
   /** WorldAbbr/WorldNewができた段階でここに登録し、idを生成 */
-  static register(name: WorldName, container: WorldContainer): WorldID {
-    const registered = Object.entries(WorldHandler.worldHandlerMap).find(
-      ([, value]) => value.container == container && value.name == name
+  static register(location: WorldLocalLocation): WorldID {
+    const registered = toEntries(WorldHandler.worldHandlerMap).find(
+      ([, value]) => value.localLocation.eq(location)
     );
     // 既に登録済みの場合登録されたidを返す
     if (registered !== undefined) {
-      return registered[0] as WorldID;
+      return registered[0];
     }
-    const id = genUUID() as WorldID;
-    WorldHandler.worldHandlerMap[id] = new WorldHandler(id, name, container);
+    const id = genUUID<WorldID>();
+    WorldHandler.worldHandlerMap[id] = new WorldHandler(id, location);
     return id;
   }
 
   // worldIDからWorldHandlerを取得する
-  static get(
-    id: WorldID,
-    name?: WorldName,
-    container?: WorldContainer
-  ): Failable<WorldHandler> {
+  static get(id: WorldID): Failable<WorldHandler> {
     if (!(id in WorldHandler.worldHandlerMap))
-      return errorMessage.core.world.invalidWorldId({ id, container, name });
+      return errorMessage.core.world.invalidWorldId({ id });
     return WorldHandler.worldHandlerMap[id];
-  }
-
-  /** 現在のワールドの保存場所を返す */
-  getSavePath() {
-    return worldContainerToPath(this.container).child(this.name);
-  }
-
-  /** セーブデータを移動する*/
-  private async move(name: WorldName, container: WorldContainer) {
-    // 現在のワールドの保存場所
-    const currentPath = this.getSavePath();
-    // 変更される保存先
-    const targetPath = worldContainerToPath(container).child(name);
-
-    // パスに変化がない場合はなにもしない
-    if (currentPath.path === targetPath.path) return;
-
-    // 保存ディレクトリを移動する
-    await currentPath.moveTo(targetPath);
-
-    // 保存先を変更
-    this.name = name;
-    this.container = container;
   }
 
   /** ローカルに保存されたワールド設定Jsonを読み込む */
   private async loadLocalServerJson() {
-    const savePath = this.getSavePath();
+    const savePath = this.localLocation.path;
     return await serverJsonFile.load(savePath);
   }
 
   /** ワールド設定Jsonをローカルに保存 */
   private async saveLocalServerJson(settings: WorldSettings) {
-    const savePath = this.getSavePath();
+    const savePath = this.localLocation.path;
     return await serverJsonFile.save(savePath, settings);
   }
 
-  /** リモートがあるかをチェックして、ある場合はpull */
-  private async pull(progress?: GroupProgressor) {
-    // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-
-    const sub = progress?.subtitle({ key: 'server.local.loadSettingFiles' });
-    const worldSettings = await this.loadLocalServerJson();
-    sub?.delete();
-
-    if (isError(worldSettings)) return worldSettings;
-
-    // リモートが存在する場合Pull
-    if (worldSettings.remote) {
-      const remote = worldSettings.remote;
-      const savePath = this.getSavePath();
-
-      const pull = await pullRemoteWorld(
-        savePath,
-        remote,
-        progress?.subGroup()
-      );
-
-      // Pullに失敗した場合エラー
-      if (isError(pull)) return pull;
-    }
-  }
-
-  private async push(progress?: GroupProgressor) {
-    // ローカルに保存されたワールド設定Jsonを読み込む(リモートの存在を確認するため)
-    const prog = progress?.subtitle({ key: 'server.remote.check' });
-    const worldSettings = await this.loadLocalServerJson();
-    prog?.delete();
-
-    if (isError(worldSettings)) return worldSettings;
-
-    // リモートが存在する場合Push
-    const remote = worldSettings.remote;
-    if (remote) {
-      const pushProgress = progress?.subGroup();
-
-      const savePath = this.getSavePath();
-      const prog = pushProgress?.subGroup();
-      const push = await pushRemoteWorld(savePath, remote, prog);
-      pushProgress?.delete();
-
-      // Pushに失敗した場合エラー
-      if (isError(push)) return push;
-    }
-  }
-
   private async loadLocal() {
-    const savePath = this.getSavePath();
+    const savePath = this.localLocation.path;
     // ローカルの設定ファイルを読み込む
-    return await loadLocalFiles(savePath, this.id, this.name, this.container);
+    return await loadLocalFiles(savePath, this.id, this.localLocation);
   }
 
   async save(
@@ -269,6 +117,7 @@ export class WorldHandler {
     const func = () => this.saveExec(world, progress);
     return await this.promiseSpooler.spool(func, 'SAVE');
   }
+
   /** サーバーのデータを保存 */
   private async saveExec(
     world: WorldEdited,
@@ -290,46 +139,33 @@ export class WorldHandler {
   ): Promise<WithError<Failable<World>>> {
     const errors: ErrorMessage[] = [];
 
-    // ワールド名に変更があった場合正常な名前かどうかを確認してワールドの保存場所を変更
-    const worldNameHasChanged =
-      this.container !== world.container || this.name !== world.name;
-    if (worldNameHasChanged) {
-      const newWorldName = await validateNewWorldName(
-        world.container,
-        world.name
-      );
-      if (isValid(newWorldName)) {
-        // セーブデータを移動
-        await this.move(world.name, world.container);
-      } else {
-        // 移動をキャンセル
-        world.container = this.container;
-        world.name = this.name;
-        errors.push(newWorldName);
-      }
-    }
+    const newLocalLocation = WorldLocalLocation.fromWorldEdited(world);
 
-    const savePath = this.getSavePath();
+    // ワールドデータを移動
+    this.localLocation = await tryMove(
+      this.localLocation,
+      newLocalLocation,
+      errors
+    );
 
-    // リモートからpull
-    const pullResult = this.pull(progress);
-    if (isError(pullResult)) return withError(pullResult);
+    const savePath = this.localLocation.path;
 
-    const loadLocalServerJson = () => this.loadLocalServerJson();
-
-    // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
+    // ローカルに保存されたワールド設定Jsonを読み込む
     const sub = progress?.subtitle({ key: 'server.load.loadLocalSetting' });
-    const worldSettings = await loadLocalServerJson();
+    const worldSettings = await this.loadLocalServerJson();
+    if (isError(worldSettings)) return withError(worldSettings);
     sub?.delete();
 
-    if (isError(worldSettings)) return withError(worldSettings);
+    // リモートからpull
+    const pullResult = pull(this.localLocation, worldSettings, progress);
+    if (isError(pullResult)) return withError(pullResult);
 
     // 使用中の場合、現状のデータを再読み込みして終了
     if (worldSettings.using) {
       errors.push(
         errorMessage.core.world.worldAleradyRunning({
-          container: this.container,
-          name: this.name,
+          container: this.localLocation.container,
+          name: this.localLocation.name,
         })
       );
       const sub = progress?.subtitle({ key: 'server.local.reloading' });
@@ -350,8 +186,8 @@ export class WorldHandler {
     saveLocalFilesprogress?.delete();
 
     // リモートの存在を確認して存在したらpush
-    const push = await this.push(progress);
-    if (isError(push)) return withError(push, errors);
+    const pushResult = await push(this.localLocation, worldSettings, progress);
+    if (isError(pushResult)) return withError(pushResult, errors);
 
     return result;
   }
@@ -362,19 +198,19 @@ export class WorldHandler {
   ): Promise<WithError<Failable<World>>> {
     const errors: ErrorMessage[] = [];
 
+    const newLocalLocation = WorldLocalLocation.fromWorldEdited(world);
+
     // ワールド名に変更があった場合エラーに追加
-    const worldNameHasChanged =
-      this.container !== world.container || this.name !== world.name;
-    if (worldNameHasChanged) {
+    if (!this.localLocation.eq(newLocalLocation)) {
       errors.push(
         errorMessage.core.world.cannotChangeRunningWorldName({
-          container: this.container,
-          name: this.name,
+          container: this.localLocation.container,
+          name: this.localLocation.name,
         })
       );
     }
 
-    const savePath = this.getSavePath();
+    const savePath = this.localLocation.path;
 
     // 現状のサーバー設定データ
     const current = await this.loadLocal();
@@ -434,16 +270,15 @@ export class WorldHandler {
     const world = local.value;
     if (isError(world)) return local;
 
+    const worldSettings = constructWorldSettings(world);
+
     // フラグを折ってjsonに保存
     world.using = false;
-    await serverJsonFile.save(
-      this.getSavePath(),
-      constructWorldSettings(world)
-    );
+    await serverJsonFile.save(this.localLocation.path, worldSettings);
 
     // リモートにpush
-    const push = await this.push();
-    if (isError(push)) return withError(push);
+    const pushResult = await push(this.localLocation, worldSettings);
+    if (isError(pushResult)) return withError(pushResult);
 
     return local;
   }
@@ -483,7 +318,7 @@ export class WorldHandler {
     }
     // リモートからpull
     const group = progress?.subGroup();
-    const pullResult = await this.pull(group);
+    const pullResult = await pull(this.localLocation, worldSettings, group);
     group?.delete();
     if (isError(pullResult)) return withError(pullResult);
 
@@ -502,16 +337,16 @@ export class WorldHandler {
   private async createExec(
     world: WorldEdited
   ): Promise<WithError<Failable<World>>> {
-    this.container = world.container;
-    this.name = world.name;
-    const savePath = this.getSavePath();
+    this.localLocation = WorldLocalLocation.fromWorldEdited(world);
+
+    const savePath = this.localLocation.path;
 
     const errors: ErrorMessage[] = [];
 
     // ワールド名が使用不能だった場合(たぶん起こらない)
     const worldNameValidated = validateNewWorldName(
-      world.container,
-      world.name
+      this.localLocation.container,
+      this.localLocation.name
     );
     if (isError(worldNameValidated)) {
       return withError(worldNameValidated, errors);
@@ -528,7 +363,7 @@ export class WorldHandler {
     await this.saveLocalServerJson(worldSettings);
 
     // ワールドの最終プレイを現在時刻に
-    world.last_date = getCurrentTimestamp()
+    world.last_date = getCurrentTimestamp();
 
     // データを保存
     return await this.saveExec(world);
@@ -541,7 +376,7 @@ export class WorldHandler {
 
   /** ワールドを削除(リモ－トは削除しない) */
   private async deleteExec(): Promise<WithError<Failable<undefined>>> {
-    const result = await failabilify(() => this.getSavePath().remove())();
+    const result = await failabilify(() => this.localLocation.path.remove())();
     if (isError(result)) return withError(result);
 
     delete WorldHandler.worldHandlerMap[this.id];
@@ -549,31 +384,35 @@ export class WorldHandler {
   }
 
   /** ワールドを複製 */
-  async duplicate(name?: WorldName): Promise<WithError<Failable<World>>> {
-    const func = () => this.duplicateExec(name);
+  async duplicate(
+    location?: WorldLocalLocation
+  ): Promise<WithError<Failable<World>>> {
+    const func = () => this.duplicateExec(location);
     return await this.promiseSpooler.spool(func);
   }
 
   /** ワールドを複製 */
   private async duplicateExec(
-    name?: WorldName
+    location?: WorldLocalLocation
   ): Promise<WithError<Failable<World>>> {
     // 実行中は複製できない
     if (this.runner !== undefined) {
       return withError(
         errorMessage.core.world.cannotDuplicateRunningWorld({
-          container: this.container,
-          name: this.name,
+          container: this.localLocation.container,
+          name: this.localLocation.name,
         })
       );
     }
 
     // 複製先のワールドの名前を設定
-    const newName =
-      name ?? (await getDuplicateWorldName(this.container, this.name));
+    const newlocation =
+      location === undefined
+        ? await getDuplicateWorldName(this.localLocation)
+        : location;
 
     // WorldIDを取得
-    const newId = WorldHandler.register(newName, this.container);
+    const newId = WorldHandler.register(newlocation);
 
     // ワールド設定ファイルの内容を読み込む
     const worldSettings = await this.loadLocalServerJson();
@@ -584,10 +423,10 @@ export class WorldHandler {
     // 使用中フラグを削除
     worldSettings.using = false;
 
-    const newHandler = WorldHandler.get(newId, newName, this.container);
+    const newHandler = WorldHandler.get(newId);
     if (isError(newHandler)) throw new Error();
 
-    await this.getSavePath().copyTo(newHandler.getSavePath());
+    await this.localLocation.path.copyTo(newHandler.localLocation.path);
 
     // 設定ファイルを上書き
     await newHandler.saveLocalServerJson(worldSettings);
@@ -603,7 +442,7 @@ export class WorldHandler {
 
   /** ワールドをバックアップ */
   private async backupExec(): Promise<WithError<Failable<BackupData>>> {
-    const backupPath = getBackUpPath(this.container, this.name);
+    const backupPath = getBackUpPath(this.localLocation);
 
     // リモートのデータを一時的に削除
     const localJson = await this.loadLocalServerJson();
@@ -614,7 +453,7 @@ export class WorldHandler {
     localJson.remote = remote;
 
     // tarファイルを生成
-    const tar = await createTar(this.getSavePath(), true);
+    const tar = await createTar(this.localLocation.path, true);
 
     // リモートのデータを復旧
     await this.saveLocalServerJson(localJson);
@@ -651,7 +490,7 @@ export class WorldHandler {
         })
       );
     }
-    const savePath = this.getSavePath();
+    const savePath = this.localLocation.path;
 
     // 展開先の一時フォルダ
     const tempDir = await allocateTempDir();
@@ -725,7 +564,7 @@ export class WorldHandler {
       (x) => x.port === port
     );
 
-    return !portIsUsed
+    return !portIsUsed;
   }
 
   /**
@@ -733,27 +572,28 @@ export class WorldHandler {
    * 100回乱数でトライして、見つからなかった場合はエラー
    */
   private async getFreePort(): Promise<Failable<number>> {
-    let port = 1024
+    let port = 1024;
     for (let i = 0; i < 100; i++) {
-      port = randomInt(1024, 49152)
+      port = randomInt(1024, 49152);
       if (await this.checkPortAvailability(port)) return port;
     }
     return errorMessage.core.world.serverPortIsUsed({
       port,
-    })
+    });
   }
 
   /**
    * 使用ポートを決定
    */
-  private async definePortNumber(beforeWorld: World): Promise<Failable<number>> {
+  private async definePortNumber(
+    beforeWorld: World
+  ): Promise<Failable<number>> {
     if (beforeWorld.ngrok_setting.use_ngrok) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
-      const portnum = await this.getFreePort()
-      if (isError(portnum)) return portnum
-      return portnum
-    }
-    else {
+      const portnum = await this.getFreePort();
+      if (isError(portnum)) return portnum;
+      return portnum;
+    } else {
       // Ngrokを使用しない場合 ポートが空いてるかチェック
       let port = 25565;
       if (isValid(beforeWorld.properties)) {
@@ -761,14 +601,14 @@ export class WorldHandler {
         if (typeof serverPort === 'number') port = serverPort;
       }
 
-      const portIsUsed = !await this.checkPortAvailability(port)
+      const portIsUsed = !(await this.checkPortAvailability(port));
 
       if (portIsUsed) {
         errorMessage.core.world.serverPortIsUsed({
           port,
-        })
+        });
       }
-      return port
+      return port;
     }
   }
 
@@ -785,8 +625,8 @@ export class WorldHandler {
     if (this.runner !== undefined)
       return withError(
         errorMessage.core.world.worldAleradyRunning({
-          container: this.container,
-          name: this.name,
+          container: this.localLocation.container,
+          name: this.localLocation.name,
         })
       );
 
@@ -808,67 +648,72 @@ export class WorldHandler {
     if (beforeWorld.using)
       return withError(
         errorMessage.core.world.worldAleradyRunning({
-          container: this.container,
-          name: this.name,
+          container: this.localLocation.container,
+          name: this.localLocation.name,
           owner: beforeWorld.last_user,
         }),
         errors
       );
 
-    const settings = constructWorldSettings(beforeWorld);
-    const savePath = this.getSavePath();
+    const worldSettings = constructWorldSettings(beforeWorld);
+    const savePath = this.localLocation.path;
 
     // ポート番号を取得
-    const port = await this.definePortNumber(beforeWorld)
-    if (isError(port)) return withError(port, errors)
+    const port = await this.definePortNumber(beforeWorld);
+    if (isError(port)) return withError(port, errors);
 
     // 実行時のサーバープロパティ(ポートだけ違う)
-    const execServerProperties: ServerProperties = { ... (isError(beforeWorld.properties) ? {} : beforeWorld.properties) }
-    const beforeServerPort = execServerProperties['server-port']
-    const beforeQueryport = execServerProperties['query.port']
+    const execServerProperties: ServerProperties = {
+      ...(isError(beforeWorld.properties) ? {} : beforeWorld.properties),
+    };
+    const beforeServerPort = execServerProperties['server-port'];
+    const beforeQueryport = execServerProperties['query.port'];
 
-    execServerProperties['server-port'] = port
-    execServerProperties['query.port'] = port
-    serverPropertiesFile.save(savePath, execServerProperties)
+    execServerProperties['server-port'] = port;
+    execServerProperties['query.port'] = port;
+    serverPropertiesFile.save(savePath, execServerProperties);
 
     // ポートを登録
     this.port = port;
     // ngrokが必要な場合は起動
-    const ngrokListener = await readyNgrok(this.id, port)
+    const ngrokListener = await readyNgrok(this.id, port);
     if (isError(ngrokListener)) return withError(ngrokListener);
 
     // 使用中フラグを立てて保存
     // 使用中フラグを折って保存を試みる (無理なら諦める)
-    settings.using = true;
-    settings.last_user = sysSettings.user.owner;
-    settings.last_date = getCurrentTimestamp();
-    settings.last_id = sysSettings.user.id;
+    worldSettings.using = true;
+    worldSettings.last_user = sysSettings.user.owner;
+    worldSettings.last_date = getCurrentTimestamp();
+    worldSettings.last_id = sysSettings.user.id;
     const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
-    await serverJsonFile.save(savePath, settings);
+    await serverJsonFile.save(savePath, worldSettings);
     sub.delete();
 
     // pushを実行 TODO: 失敗時の処理
-    await this.push(progress);
+    const beforeBushResult = await push(
+      this.localLocation,
+      worldSettings,
+      progress
+    );
 
     // pluginとvanillaでファイル構造を切り替える
     const directoryFormatResult = await formatWorldDirectory(
       savePath,
-      settings.version,
+      worldSettings.version,
       progress
     );
     errors.push(...directoryFormatResult.errors);
 
+    const notification: ServerStartNotification = { port };
 
-    const notification: ServerStartNotification = { port }
-
-    const ngrokURL = ngrokListener?.url()
-    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6)
+    const ngrokURL = ngrokListener?.url();
+    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6);
 
     // サーバーの実行を開始
     const runPromise = runRebootableServer(
       savePath,
       this.id,
-      settings,
+      worldSettings,
       progress,
       notification
     );
@@ -883,7 +728,7 @@ export class WorldHandler {
     // ポートを削除
     this.port = undefined;
     // Ngrokを閉じる
-    if (ngrokListener) await closeNgrok(ngrokListener)
+    if (ngrokListener) await closeNgrok(ngrokListener);
 
     this.runner = undefined;
 
@@ -892,17 +737,21 @@ export class WorldHandler {
     });
 
     // ワールドの最終プレイを現在時刻に
-    settings.last_date = getCurrentTimestamp()
+    worldSettings.last_date = getCurrentTimestamp();
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
-    settings.using = false;
+    worldSettings.using = false;
     beforeWorld.last_date = getCurrentTimestamp();
     const saveSub = progress.subtitle({ key: 'server.save.localSetting' });
-    await serverJsonFile.save(savePath, settings);
+    await serverJsonFile.save(savePath, worldSettings);
     saveSub.delete();
 
-    // pushを実行
-    await this.push(progress);
+    // pushを実行 TODO: 失敗時の処理
+    const afterPushResult = await push(
+      this.localLocation,
+      worldSettings,
+      progress
+    );
 
     // サーバーの実行が失敗していたらエラー
     if (isError(serverResult)) return withError(serverResult);
@@ -912,13 +761,13 @@ export class WorldHandler {
 
     // ポート番号を復元
     if (isValid(afterWorld.value) && isValid(afterWorld.value.properties)) {
-      afterWorld.value.properties["server-port"] = beforeServerPort
-      afterWorld.value.properties["query.port"] = beforeQueryport
+      afterWorld.value.properties['server-port'] = beforeServerPort;
+      afterWorld.value.properties['query.port'] = beforeQueryport;
       // プロパティを保存
-      serverPropertiesFile.save(savePath, afterWorld.value.properties)
+      serverPropertiesFile.save(savePath, afterWorld.value.properties);
     }
 
-    return afterWorld
+    return afterWorld;
   }
 
   /** コマンドを実行 */
@@ -935,35 +784,34 @@ export class WorldHandler {
 }
 
 /** 複製する際のワールド名を取得 */
-async function getDuplicateWorldName(
-  container: WorldContainer,
-  name: WorldName
-) {
-  let baseName: string = name;
-  const match = name.match(/^(.*)_\d+$/);
+async function getDuplicateWorldName(location: WorldLocalLocation) {
+  let baseName: string = location.name;
+  const match = baseName.match(/^(.*)_\d+$/);
   if (match !== null) {
     baseName = match[1];
   }
 
   let worldName: string = baseName;
-  let result = await validateNewWorldName(container, worldName);
+  let result = await validateNewWorldName(location.container, worldName);
   let i = 1;
   while (isError(result)) {
     worldName = `${baseName}_${i}`;
     i += 1;
-    result = await validateNewWorldName(container, worldName);
+    result = await validateNewWorldName(location.container, worldName);
   }
-  return result;
+  return new WorldLocalLocation(result, location.container);
 }
 
-
-/** 
+/**
  * Ngrokを利用する場合の処理
- * 
+ *
  * Ngrokを利用する場合はlistenerを返す
  * Ngrokを利用しない場合はundefinedを返す
  */
-async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<Listener | undefined>> {
+async function readyNgrok(
+  worldID: WorldID,
+  port: number
+): Promise<Failable<Listener | undefined>> {
   const systemSettings = await getSystemSettings();
   const token = systemSettings.user.ngrokToken ?? '';
 
@@ -972,9 +820,13 @@ async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<List
   if (isError(world.value)) return world.value;
 
   if (token !== '' && world.value.ngrok_setting.use_ngrok) {
-    const listener = runNgrok(token, port, world.value.ngrok_setting.remote_addr);
+    const listener = runNgrok(
+      token,
+      port,
+      world.value.ngrok_setting.remote_addr
+    );
     return listener;
   }
 
-  return undefined
+  return undefined;
 }

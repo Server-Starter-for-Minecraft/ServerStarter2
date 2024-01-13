@@ -11,5 +11,20 @@
   },
   "[svg]": {
     "editor.defaultFormatter": "jock.svg"
+  },
+  "gitmoji.addCustomEmoji": [
+    {
+      "emoji": "🖌️",
+      "code": ":paintbrush:",
+      "description": "Add or update UI plan"
+    },
+    {
+      "emoji": "🥣",
+      "code": ":bowl_with_spoon:",
+      "description": "Create empty commit"
+    }
+  ],
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
