@@ -134,9 +134,19 @@ export const useMainStore = defineStore('mainStore', {
      */
     processAllWorld(process: (world: WorldEdited) => void) {
       const worldStore = useWorldStore()
-      values(worldStore.worldList).forEach(
-        w => process(w)
-      )
+      values(worldStore.worldList).forEach(w => {
+        process(w)
+        
+        // App.vueのSubscriberは表示中のワールドに対する更新を行うため，
+        // 非表示ワールドの更新は別途ここで作動させる
+        window.API.invokeSetWorld(toRaw(w)).then(v => {
+          checkError(
+            v.value,
+            undefined,
+            e => tError(e)
+          )
+        })
+      });
     },
     /**
      * Ngrokより割り当てられたIPアドレスを削除する（サーバー終了時を想定）
