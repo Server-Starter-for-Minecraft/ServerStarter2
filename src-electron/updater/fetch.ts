@@ -1,8 +1,7 @@
 import { Failable } from '../schema/error';
-import { BytesData } from '../util/bytesData';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
-import { listReleases } from '../util/github/schema/release';
+import { ReleaseAsset, listReleases } from '../util/github/schema/release';
 import { OsPlatform } from '../util/os';
 
 /** githubからリリース番号を取得 */
@@ -37,7 +36,7 @@ export async function getLatestRelease(
 }
 
 function parseAssets(
-  assets: GithubReleaseAssetResponce[],
+  assets: ReleaseAsset[],
   osPLatform: OsPlatform
 ) {
   const suffix = {
@@ -55,17 +54,4 @@ export type GithubRelease = {
   platform: OsPlatform;
   version: string;
   url: string;
-};
-
-type GithubReleaseResponce = {
-  tag_name: string;
-  name: string;
-  draft: boolean;
-  prerelease: boolean;
-  published_at: string;
-  assets: GithubReleaseAssetResponce[];
-};
-
-type GithubReleaseAssetResponce = {
-  browser_download_url: string;
 };
