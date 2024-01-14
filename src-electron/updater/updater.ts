@@ -33,14 +33,12 @@ export async function update() {
   const update = await checkUpdate();
   logger.info(update);
 
+  if (update === false) return;
 
-  if (update === false) {
-    return;
-  }
+  if (isError(update)) return;
 
-  if (isError(update)) {
-    return;
-  }
+  // 環境変数DEBUGGING==true(yarn devで起動した場合)実際のアップデート処理は行わない
+  if (process.env.DEBUGGING) return;
 
   // lastUpdatedTimeをundefinedに
   const sys = await getSystemSettings();
