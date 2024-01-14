@@ -6,6 +6,7 @@ export interface NgrokDialogProp {
 
 export interface NgrokDialogReturns {
   token: string
+  isAllUesNgrok: boolean
 }
 
 export interface ImgDialogProp {

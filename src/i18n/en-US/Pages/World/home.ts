@@ -87,7 +87,8 @@ export const enUSHome: MessageSchema['home'] = {
         Open {1} and input the displayed token below.\
         ',
         link: 'page to get an authentication token',
-        inputToken: 'Input Token'
+        inputToken: 'Input Token',
+        checkbox: 'Using this feature for all world',
       },
       goNext: 'Go next setting',
       save: 'Save your registration',

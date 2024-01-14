@@ -22,6 +22,9 @@ function onClick() {
     } as NgrokDialogProp,
   }).onOk((p: NgrokDialogReturns) => {
     sysStore.systemSettings.user.ngrokToken = p.token;
+    if (p.isAllUesNgrok) {
+      mainStore.processAllWorld(w => w.ngrok_setting.use_ngrok = true)
+    }
   });
 }
 </script>

@@ -12,11 +12,19 @@ defineEmits({...useDialogPluginComponent.emitsObject})
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const prop = defineProps<NgrokDialogProp>()
 
-const authToken = ref(prop.token)
-const step = ref(prop.token !== '' ? 3 : 1)
+const step3Model: Ref<NgrokDialogReturns> = ref({
+  token: prop.token,
+  isAllUesNgrok: false
+})
+const isRegisteredNgrok = prop.token !== ''
+const step = ref(isRegisteredNgrok ? 3 : 1)
 const stepper: Ref<QStepper | undefined> = ref()
 const isSkipRegister = ref(false)
-const isRegisteredNgrok = prop.token !== ''
+
+// 一番最初の設定の際のみは初期値をTrueにする
+if (!isRegisteredNgrok) {
+  step3Model.value.isAllUesNgrok = true
+}
 </script>
 
 <template>
@@ -62,7 +70,7 @@ const isRegisteredNgrok = prop.token !== ''
             :title="$t('home.ngrok.dialog.thirdPage.title')"
             prefix="3"
           >
-            <Step3View v-model="authToken" />
+            <Step3View v-model="step3Model" />
           </q-step>  
         </q-stepper>
       </template>
@@ -81,10 +89,10 @@ const isRegisteredNgrok = prop.token !== ''
           outline
           :label="step === 3 ? $t('home.ngrok.dialog.save') : $t('home.ngrok.dialog.goNext')"
           color="primary"
-          :disable="step === 3 && authToken === ''"
+          :disable="step === 3 && step3Model.token === ''"
           @click="
             step === 3
-              ? onDialogOK({ token: authToken } as NgrokDialogReturns)
+              ? onDialogOK(step3Model)
               : stepper?.next()
           "
         />

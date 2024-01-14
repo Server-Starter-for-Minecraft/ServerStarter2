@@ -3,6 +3,7 @@ import {
   DATAPACK_CACHE_PATH,
   MOD_CACHE_PATH,
   PLUGIN_CACHE_PATH,
+  logPath,
 } from './const';
 import { minecraftColors } from './static/color';
 import * as server_properties from './world/files/properties';
@@ -11,6 +12,7 @@ export const staticResoure: StaticResouce = {
   properties: server_properties.annotations,
   minecraftColors,
   paths: {
+    log: logPath.str(),
     cache: {
       datapack: DATAPACK_CACHE_PATH.str(),
       plugin: PLUGIN_CACHE_PATH.str(),
