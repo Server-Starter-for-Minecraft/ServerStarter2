@@ -9,8 +9,12 @@ Minecraftのマルチプレイサーバーを簡単に起動します！
 <br>
 <br>
 
-## ServerStarter(以前のバージョン)から移行してきた方
-
+<details>
+  <summary>
+    ServerStarter(以前のバージョン)から移行してきた方
+  </summary>
+  <div>
+<br>
 前作となるServerStarterをご利用いただいていた方々が本ソフトウェアへ移行する際の手順を下記に提示しております
 
 試験的に掲載しておりますので，問題がなければ[公式HP](https://civiltt.github.io/ServerStarter/)にも同様の内容を掲載いたします．
@@ -33,7 +37,11 @@ Minecraftのマルチプレイサーバーを簡単に起動します！
     1. その中にある「world」という名前のフォルダをクリック
     1. その状態で右下の「フォルダを選択」をクリック
       ![SelectFolderPart](https://github.com/CivilTT/ServerStarter2/assets/89191801/c389cfa6-e9e0-4322-94ac-98aecf57f8c5)
+
 1. 画像のような確認画面が表示されるため，「ワールドを導入」をクリック
   ![ImportCheck](https://github.com/CivilTT/ServerStarter2/assets/89191801/2856d55c-23eb-40c7-9aef-373f86aa9a87)
 1. しばらくするとワールドがServerStarter2に導入される
   ![FinalPage](https://github.com/CivilTT/ServerStarter2/assets/89191801/036bcf07-4565-4ebe-a707-29aca1839b42)
+
+  </div>
+</details>
