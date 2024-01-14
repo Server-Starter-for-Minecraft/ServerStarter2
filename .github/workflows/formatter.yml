@@ -20,4 +20,4 @@ jobs:
         if: env.GIT_DIFF
       - uses: stefanzweifel/git-auto-commit-action@v4 # フォーマットしたファイルをコミット 
         with:
-          commit_message: Apply Prettier Change
+          commit_message: 🚨 Apply Prettier Change
