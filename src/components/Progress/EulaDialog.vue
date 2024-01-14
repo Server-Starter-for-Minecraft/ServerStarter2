@@ -5,9 +5,10 @@ import BaseDialogCard from '../util/baseDialog/baseDialogCard.vue';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
 
-defineProps<EulaDialogProp>()
-defineEmits({ ...useDialogPluginComponent.emitsObject })
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineProps<EulaDialogProp>();
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
 </script>
 
 <template>
@@ -18,10 +19,10 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
       @okClick="onDialogOK"
     >
       <template #default>
-        <p class="q-my-none" style="font-size: .8rem; opacity: .8;">
+        <p class="q-my-none" style="font-size: 0.8rem; opacity: 0.8">
           <i18n-t keypath="eulaDialog.desc" tag="label">
             <SsA :url="eulaURL">{{ $t('eulaDialog.eula') }}</SsA>
-            <br>
+            <br />
           </i18n-t>
         </p>
       </template>

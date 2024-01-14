@@ -5,16 +5,16 @@ import SsBtn from '../base/ssBtn.vue';
 import DangerDialog from './DangerDialog.vue';
 
 interface Prop {
-  disable?: boolean
-  viewTitle: string
-  viewDesc: string
-  dialogTitle: string
-  dialogDesc: string
-  openDialogBtnText: string
-  onAction: () => void
+  disable?: boolean;
+  viewTitle: string;
+  viewDesc: string;
+  dialogTitle: string;
+  dialogDesc: string;
+  openDialogBtnText: string;
+  onAction: () => void;
 }
-const prop = defineProps<Prop>()
-const $q = useQuasar()
+const prop = defineProps<Prop>();
+const $q = useQuasar();
 
 function openDialog() {
   $q.dialog({
@@ -22,11 +22,11 @@ function openDialog() {
     componentProps: {
       dialogTitle: prop.dialogTitle,
       dialogDesc: prop.dialogDesc,
-      okBtnTxt: prop.openDialogBtnText
-    } as dangerDialogProp
+      okBtnTxt: prop.openDialogBtnText,
+    } as dangerDialogProp,
   }).onOk(() => {
-    prop.onAction()
-  })
+    prop.onAction();
+  });
 }
 </script>
 

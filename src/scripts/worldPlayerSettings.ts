@@ -22,10 +22,10 @@ export function SetPlayerEditable(player: PlayerSetting, editable: boolean) {
 }
 
 /** ワールドのプレイヤーを編集可能かどうかにかかわらず削除 */
-export function RemovePlayer(player: PlayerSetting) { }
+export function RemovePlayer(player: PlayerSetting) {}
 
 /** ワールドにプレイヤーグループを追加 */
-export function AddPlayerGroup(group: PlayerGroupSetting) { }
+export function AddPlayerGroup(group: PlayerGroupSetting) {}
 
 /** ワールドからプレイヤーグループを削除 */
-export function RemovePlayerGroup(group: PlayerGroupSetting) { }
+export function RemovePlayerGroup(group: PlayerGroupSetting) {}

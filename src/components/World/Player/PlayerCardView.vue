@@ -15,46 +15,43 @@ import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
-  uuid: PlayerUUID
-  opLevel?: 1 | 2 | 3 | 4
+  uuid: PlayerUUID;
+  opLevel?: 1 | 2 | 3 | 4;
 }
-const prop = defineProps<Prop>()
+const prop = defineProps<Prop>();
 
-const sysStore = useSystemStore()
-const playerStore = usePlayerStore()
-const player = ref(playerStore.cachePlayers[prop.uuid])
-const isBelongingGroups = computed(() => getGroups(sysStore.systemSettings.player.groups).length > 0)
+const sysStore = useSystemStore();
+const playerStore = usePlayerStore();
+const player = ref(playerStore.cachePlayers[prop.uuid]);
+const isBelongingGroups = computed(
+  () => getGroups(sysStore.systemSettings.player.groups).length > 0
+);
 
 // キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
 onMounted(async () => {
   if (player.value === void 0) {
-    checkError(
-      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
-      p => {
-        player.value = p
-        playerStore.addPlayer(p)
-      }
-    )
+    checkError(await window.API.invokeGetPlayer(prop.uuid, 'uuid'), (p) => {
+      player.value = p;
+      playerStore.addPlayer(p);
+    });
   }
-})
+});
 
 function onCardClicked() {
   if (playerStore.focusCards.has(prop.uuid)) {
-    playerStore.unFocus(prop.uuid)
-  }
-  else {
-    playerStore.addFocus(prop.uuid)
+    playerStore.unFocus(prop.uuid);
+  } else {
+    playerStore.addFocus(prop.uuid);
   }
 }
 
 function getGroups(groups: Record<string, PlayerGroup>) {
-  return keys(groups).filter(
-    name => groups[name].players.includes(prop.uuid)
-  ).map(
-    name => { return { name: name, color: groups[name].color } }
-  ).sort(
-    (a, b) => strSort(a.name, b.name)
-  )
+  return keys(groups)
+    .filter((name) => groups[name].players.includes(prop.uuid))
+    .map((name) => {
+      return { name: name, color: groups[name].color };
+    })
+    .sort((a, b) => strSort(a.name, b.name));
 }
 </script>
 
@@ -62,19 +59,31 @@ function getGroups(groups: Record<string, PlayerGroup>) {
   <BaseActionsCard
     v-if="player !== void 0"
     @click="onCardClicked"
-    :style="playerStore.focusCards.has(prop.uuid) ? { 'border-color': getCssVar('primary') } : ''"
+    :style="
+      playerStore.focusCards.has(prop.uuid)
+        ? { 'border-color': getCssVar('primary') }
+        : ''
+    "
   >
     <template #default>
-      <q-item style="height: 5rem; padding: 14px;" class="full-width">
+      <q-item style="height: 5rem; padding: 14px" class="full-width">
         <q-item-section avatar top>
           <PlayerHeadView :player="player" size="2.5rem" />
-  
-          <q-item-section top style="max-width: 8rem;" class="q-pl-md">
+
+          <q-item-section top style="max-width: 8rem" class="q-pl-md">
             <q-item-label class="name text-omit">
               {{ player.name }}
-              <SsTooltip :name="player.name" anchor="bottom start" self="center start" />
+              <SsTooltip
+                :name="player.name"
+                anchor="bottom start"
+                self="center start"
+              />
             </q-item-label>
-            <q-item-label v-show="opLevel !== void 0" caption style="opacity: 0.7;">
+            <q-item-label
+              v-show="opLevel !== void 0"
+              caption
+              style="opacity: 0.7"
+            >
               {{ $t('player.opLevel') }} {{ opLevel }}
             </q-item-label>
           </q-item-section>
@@ -91,10 +100,13 @@ function getGroups(groups: Record<string, PlayerGroup>) {
       <q-card-section
         v-show="isBelongingGroups"
         class="q-py-none"
-        style="opacity: 0;"
+        style="opacity: 0"
       >
         <div class="q-gutter-xs q-pb-sm" style="width: 12.5rem">
-          <template v-for="g in getGroups(sysStore.systemSettings.player.groups)" :key="g">
+          <template
+            v-for="g in getGroups(sysStore.systemSettings.player.groups)"
+            :key="g"
+          >
             <group-badge-view :group-name="g.name" :color="g.color" />
           </template>
         </div>
@@ -107,7 +119,10 @@ function getGroups(groups: Record<string, PlayerGroup>) {
         class="q-py-none absolute-bottom"
       >
         <div class="q-gutter-xs q-pb-sm">
-          <template v-for="g in getGroups(sysStore.systemSettings.player.groups)" :key="g">
+          <template
+            v-for="g in getGroups(sysStore.systemSettings.player.groups)"
+            :key="g"
+          >
             <group-badge-view :group-name="g.name" :color="g.color" />
           </template>
         </div>

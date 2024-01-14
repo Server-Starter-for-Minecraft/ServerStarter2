@@ -17,7 +17,6 @@ export type CoreErrors = {
       container?: string;
     }>;
 
-
     // ポート番号が既に使用中
     serverPortIsUsed: ErrorMessageContent<{
       port: number;

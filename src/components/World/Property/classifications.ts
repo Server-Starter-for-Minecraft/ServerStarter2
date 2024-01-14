@@ -1,4 +1,5 @@
-export type pGroupKey = 'base'
+export type pGroupKey =
+  | 'base'
   | 'player'
   | 'server'
   | 'generator'
@@ -9,14 +10,11 @@ export type pGroupKey = 'base'
   | 'command'
   | 'resourcepack'
   | 'security'
-  | 'other'
+  | 'other';
 
 export const propertyClasses: Record<pGroupKey, string[]> = {
-  'base': [
-    'difficulty',
-    'gamemode',
-  ],
-  'player': [
+  base: ['difficulty', 'gamemode'],
+  player: [
     'difficulty',
     'hardcore',
     'force-gamemode',
@@ -26,11 +24,8 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'max-players',
     'player-idle-timeout',
   ],
-  'server': [
-    'motd',
-    'enable-status',
-  ],
-  'generator': [
+  server: ['motd', 'enable-status'],
+  generator: [
     'level-type',
     'level-seed',
     'allow-nether',
@@ -39,12 +34,8 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'max-build-height',
     'max-world-size',
   ],
-  'spawning': [
-    'spawn-animals',
-    'spawn-monsters',
-    'spawn-npcs',
-  ],
-  'world': [
+  spawning: ['spawn-animals', 'spawn-monsters', 'spawn-npcs'],
+  world: [
     'spawn-protection',
     'view-distance',
     'allow-flight',
@@ -53,7 +44,7 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'max-chained-neighbor-updates',
     'sync-chunk-writes',
   ],
-  'network': [
+  network: [
     'rate-limit',
     'network-compression-threshold',
     'prevent-proxy-connections',
@@ -71,7 +62,7 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'broadcast-rcon-to-ops',
     'broadcast-console-to-ops',
   ],
-  'command': [
+  command: [
     'initial-disabled-packs',
     'initial-enabled-packs',
     'max-tick-time',
@@ -79,16 +70,12 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'function-permission-level',
     'op-permission-level',
   ],
-  'resourcepack': [
+  resourcepack: [
     'resource-pack',
     'resource-pack-prompt',
     'resource-pack-sha1',
     'require-resource-pack',
   ],
-  'security': [
-    'enforce-secure-profile',
-    'enforce-whitelist',
-    'white-list',
-  ],
-  'other': []
-}
+  security: ['enforce-secure-profile', 'enforce-whitelist', 'white-list'],
+  other: [],
+};

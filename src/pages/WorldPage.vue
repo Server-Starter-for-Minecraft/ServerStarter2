@@ -5,9 +5,9 @@ import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 
 <template>
   <div class="column full-width window-height">
-    <HeaderView/>
-    <SettingTabsView/>
-    
+    <HeaderView />
+    <SettingTabsView />
+
     <div class="fit col">
       <router-view />
     </div>

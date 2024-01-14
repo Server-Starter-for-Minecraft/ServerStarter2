@@ -1,10 +1,10 @@
 <script setup lang="ts">
 interface Prop {
-  icon: string
-  text: string
-  onClick: () => void
+  icon: string;
+  text: string;
+  onClick: () => void;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 </script>
 
 <template>

@@ -7,19 +7,21 @@ import { isValid } from 'src/scripts/error';
 import { strSort } from 'src/scripts/objSort';
 import SearchResultItem from './utils/SearchResultItem.vue';
 
-const mainStore = useMainStore()
-const playerStore = usePlayerStore()
+const mainStore = useMainStore();
+const playerStore = usePlayerStore();
 
 /**
  * 与えられたPlayerリストに対して、
- * 
+ *
  * - Worldに登録済みのプレイヤー
  * - 検索名称に完全一致するプレイヤー
- * 
+ *
  * を除外したリストを返す
  */
 function filterRegisteredPlayer(players: Player[]) {
-  return players.filter(p => !(hasPlayerInWorld(p.uuid) || p.name === playerStore.searchName))
+  return players.filter(
+    (p) => !(hasPlayerInWorld(p.uuid) || p.name === playerStore.searchName)
+  );
 }
 
 /**
@@ -27,10 +29,9 @@ function filterRegisteredPlayer(players: Player[]) {
  */
 function hasPlayerInWorld(playerUUID?: PlayerUUID) {
   if (playerUUID !== void 0 && isValid(mainStore.world.players)) {
-    return mainStore.world.players.some(wp => wp.uuid === playerUUID)
-  }
-  else {
-    return true
+    return mainStore.world.players.some((wp) => wp.uuid === playerUUID);
+  } else {
+    return true;
   }
 }
 </script>
@@ -38,10 +39,13 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
 <template>
   <q-card flat bordered class="card q-ma-sm">
     <q-card-section
-      v-if="(
-        playerStore.searchPlayers(filterRegisteredPlayer(Object.values(playerStore.cachePlayers))).length
-          + (!hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid) ? 1 : 0)
-        ) > 0"
+      v-if="
+        playerStore.searchPlayers(
+          filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
+        ).length +
+          (!hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid) ? 1 : 0) >
+        0
+      "
       class="q-pa-sm"
     >
       <q-list separator>
@@ -55,14 +59,12 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         />
         <!-- 過去に登録実績のあるプレイヤー一覧 -->
         <template
-          v-for="
-            p in playerStore.searchPlayers(
+          v-for="p in playerStore
+            .searchPlayers(
               filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
-            ).sort(
-              (a, b) => strSort(a.name, b.name)
-            ).filter(
-              v => playerStore.newPlayerCandidate?.name !== v.name
-            )"
+            )
+            .sort((a, b) => strSort(a.name, b.name))
+            .filter((v) => playerStore.newPlayerCandidate?.name !== v.name)"
           :key="p"
         >
           <SearchResultItem

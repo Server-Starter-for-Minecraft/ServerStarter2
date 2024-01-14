@@ -22,7 +22,7 @@ try {
       path.join(app.getPath('userData'), 'DevTools Extensions')
     );
   }
-} catch (_) { }
+} catch (_) {}
 
 let mainWindow: BrowserWindow | undefined;
 
@@ -32,7 +32,7 @@ async function createWindow() {
    */
 
   // ビルド版 かつ 環境変数SERVERSTARTER_MODEがnoupdateでない 場合アップデートをチェック
-  if (!process.env.DEBUGGING && process.env.SERVERSTARTER_MODE !== "noupdate") {
+  if (!process.env.DEBUGGING && process.env.SERVERSTARTER_MODE !== 'noupdate') {
     await update();
   }
 

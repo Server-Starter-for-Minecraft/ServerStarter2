@@ -11,17 +11,17 @@ declare global {
 declare module 'vue-i18n' {
   export interface DefineDateTimeFormat {
     date: {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    },
+      year: 'numeric';
+      month: 'short';
+      day: 'numeric';
+    };
     dateTime: {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      weekday: 'short' | 'long',
-      hour: 'numeric',
-      minute: 'numeric',
-    }
+      year: 'numeric';
+      month: 'short';
+      day: 'numeric';
+      weekday: 'short' | 'long';
+      hour: 'numeric';
+      minute: 'numeric';
+    };
   }
 }
