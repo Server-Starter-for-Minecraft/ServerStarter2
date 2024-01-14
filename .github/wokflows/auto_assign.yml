@@ -10,7 +10,6 @@ jobs:
     permissions:
       issues: write
     steps:
-      - run: 'echo i_am_${{github.event.pull_request.user.login}}'
       - name: 'Auto-assign PR'
         uses: pozil/auto-assign-issue@v1
         with:
