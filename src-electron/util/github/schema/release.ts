@@ -13,7 +13,7 @@ export type ReleaseAsset = {
   download_count: number;
   created_at: string;
   updated_at: string;
-  uploader: {};
+  uploader: any;
 };
 
 export type Release = {
@@ -33,7 +33,7 @@ export type Release = {
   prerelease: boolean;
   created_at: string;
   published_at: string;
-  author: {};
+  author: any;
   assets: ReleaseAsset[];
 };
 
