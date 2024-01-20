@@ -4,7 +4,7 @@ Start Minecraft server only ONE click !
 
 Minecraft のマルチプレイサーバーを簡単に起動します！
 
-詳細は[公式 HP](https://civiltt.github.io/ServerStarter/)をご確認ください！
+詳細は[公式HP](https://server-starter-for-minecraft.github.io)をご確認ください！
 
 <br>
 <br>
@@ -17,11 +17,11 @@ Minecraft のマルチプレイサーバーを簡単に起動します！
 <br>
 前作となるServerStarterをご利用いただいていた方々が本ソフトウェアへ移行する際の手順を下記に提示しております
 
-試験的に掲載しておりますので，問題がなければ[公式 HP](https://civiltt.github.io/ServerStarter/)にも同様の内容を掲載いたします．
+試験的に掲載しておりますので，問題がなければ[公式HP](https://server-starter-for-minecraft.github.io)にも同様の内容を掲載いたします．
 
 万一，うまく移行できないなどありましたら，恐れ入りますが Issues に投稿していただけますと幸いです．
 
-1. [公式 HP](https://civiltt.github.io/ServerStarter/)にアクセスし，ServerStarter2 をダウンロード＆インストールする
+1. [公式HP](https://server-starter-for-minecraft.github.io)にアクセスし，ServerStarter2をダウンロード＆インストールする
 1. インストール後に画面を起動した際に，「既存ワールドの導入」にある「ワールドデータを選択」をクリックする
    ![ImportWorldBtn](https://github.com/CivilTT/ServerStarter2/assets/89191801/14e2a859-3a79-4587-b653-dc9299f06a23)
 1. 「フォルダを選択」をクリックする
