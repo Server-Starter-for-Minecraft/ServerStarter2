@@ -206,11 +206,21 @@ module.exports = configure(function (/* ctx */) {
       builder: {
         // https://www.electron.build/configuration/configuration
         appId: 'ServerStarter2',
+        asarUnpack: [
+          'node_modules/sharp/**',
+        ],
         win: {
           target: 'msi',
         },
         mac: {
           target: 'pkg',
+        },
+        linux: {
+          target: [
+            'AppImage',
+            'deb',
+            'rpm',
+          ],
         },
       },
     },
