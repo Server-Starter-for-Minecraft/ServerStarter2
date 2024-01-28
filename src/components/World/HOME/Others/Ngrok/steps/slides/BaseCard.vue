@@ -6,44 +6,46 @@ import { ImgDialogProp } from '../iNgrok';
 import { ref } from 'vue';
 
 interface Prop {
-  title: string
-  img: ImageURI
-  imgWidth: number
+  title: string;
+  img: ImageURI;
+  imgWidth: number;
 }
-const prop = defineProps<Prop>()
+const prop = defineProps<Prop>();
 
-const $q = useQuasar()
-const zoomBtnHovered = ref(false)
+const $q = useQuasar();
+const zoomBtnHovered = ref(false);
 
 function onImgClick() {
   $q.dialog({
     component: ImgDialog,
     componentProps: {
       img: prop.img,
-      imgWidth: prop.imgWidth * 2.5
-    } as ImgDialogProp
-  })
+      imgWidth: prop.imgWidth * 2.5,
+    } as ImgDialogProp,
+  });
 }
 </script>
 
 <template>
   <q-card-section horizontal class="full-height">
     <q-card-section>
-      <div class="text-h5 q-mt-sm q-mb-lg"><u>{{ title }}</u></div>
+      <div class="text-h5 q-mt-sm q-mb-lg">
+        <u>{{ title }}</u>
+      </div>
       <div class="text-caption">
         <slot />
       </div>
     </q-card-section>
 
     <q-space />
-    
+
     <q-avatar
       class="col-5"
-      :style="{'width': `${imgWidth}rem`}"
-      style="margin: auto 0;"
+      :style="{ width: `${imgWidth}rem` }"
+      style="margin: auto 0"
       @mouseover="zoomBtnHovered = true"
       @mouseleave="zoomBtnHovered = false"
-    > 
+    >
       <q-img :src="img" />
       <q-btn
         v-show="zoomBtnHovered"

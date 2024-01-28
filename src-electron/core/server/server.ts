@@ -32,17 +32,17 @@ export function runServer(
     const { javaArgs, javaPath } = readyResult;
 
     // latest.logをアーカイブ化する
-    const loghandler = new WorldLogHandler(cwdPath)
-    await loghandler.archive()
+    const loghandler = new WorldLogHandler(cwdPath);
+    await loghandler.archive();
 
     const onStart = () => api.send.StartServer(id, notification);
     const onFinish = () => api.send.FinishServer(id);
     const console = (value: string, isError: boolean) => {
-      const trimmed = trimAnsi(value)
+      const trimmed = trimAnsi(value);
       // コンソールの内容をGUIに表示
       api.send.AddConsole(id, trimmed, isError);
-      loghandler.append(trimmed)
-    }
+      loghandler.append(trimmed);
+    };
 
     // サーバーの実行を待機
     process = serverProcess(
@@ -58,7 +58,7 @@ export function runServer(
     process = undefined;
 
     // 一時保管したlogをリセット
-    await loghandler.flash()
+    await loghandler.flash();
 
     return runresult;
   }
@@ -92,7 +92,7 @@ export function runRebootableServer(
   const resultPromise = async (): Promise<Failable<undefined>> => {
     while (needRun) {
       needRun = false;
-      promise = runServer(cwdPath, id, settings, progress,notification);
+      promise = runServer(cwdPath, id, settings, progress, notification);
       const promiseValue = await promise;
       if (isError(promiseValue)) return promiseValue;
     }

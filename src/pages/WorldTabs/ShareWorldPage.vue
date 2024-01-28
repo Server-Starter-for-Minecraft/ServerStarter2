@@ -4,20 +4,17 @@ import ExistRemoteView from 'src/components/World/ShareWorld/ExistRemoteView.vue
 import NewRemoteView from 'src/components/World/ShareWorld/NewRemoteView.vue';
 import SsA from 'src/components/util/base/ssA.vue';
 
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 </script>
 
 <template>
-  <q-scroll-area
-    class="full-height"
-    style="flex: 1 1 0;"
-  >
+  <q-scroll-area class="full-height" style="flex: 1 1 0">
     <div class="mainField">
       <h1 class="q-pt-lg q-pb-md q-ma-none">{{ $t('shareWorld.title') }}</h1>
-      
-      <div class="q-pb-lg text-body2" style="opacity: .6;">
+
+      <div class="q-pb-lg text-body2" style="opacity: 0.6">
         <i18n-t keypath="shareWorld.desc" tag="label" for="shareWorld.link">
-          <br>
+          <br />
           <SsA url="https://civiltt.github.io/ServerStarter/ShareWorld">
             {{ $t('shareWorld.link') }}
           </SsA>
@@ -25,7 +22,7 @@ const mainStore = useMainStore()
       </div>
 
       <NewRemoteView v-if="mainStore.world.remote === void 0" />
-      <ExistRemoteView v-else :remote="mainStore.world.remote"/>
+      <ExistRemoteView v-else :remote="mainStore.world.remote" />
     </div>
   </q-scroll-area>
 </template>

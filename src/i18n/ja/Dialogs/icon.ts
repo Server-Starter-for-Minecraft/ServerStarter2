@@ -7,5 +7,5 @@ export const jaIcon = {
   prev: 'プレビュー',
   reg: '登録',
   size: '64 x 64 px',
-  sizeWarning: '画像サイズは縦横64px以上が必要です'
+  sizeWarning: '画像サイズは縦横64px以上が必要です',
 };

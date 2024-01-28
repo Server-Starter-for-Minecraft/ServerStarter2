@@ -165,6 +165,6 @@ export const searchPlayer = async (
 
 export const getDefaultWorld = async () => {
   await sleep(100);
-  console.log(`[getDefaultWorld]`);
+  console.log('[getDefaultWorld]');
   return getNewWorld();
 };

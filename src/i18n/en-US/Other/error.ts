@@ -1,6 +1,6 @@
 /* バックエンド周りのエラーの翻訳 */
 
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSError: MessageSchema['error'] = {
   system: {
@@ -14,7 +14,7 @@ export const enUSError: MessageSchema['error'] = {
     },
     assertion: {
       title: 'Unknown error has occured',
-      desc: '{message}'
+      desc: '{message}',
     },
     subprocess: {
       title: 'Error occurred when subprocess executing',
@@ -33,7 +33,7 @@ export const enUSError: MessageSchema['error'] = {
       },
     },
     zip: {
-      invalidZipFile:{
+      invalidZipFile: {
         title: '{path} is invalid',
         desc: 'PLease check {path}',
       },
@@ -88,7 +88,8 @@ export const enUSError: MessageSchema['error'] = {
           desc: 'Please check {path}',
         },
         customMapZipWithMultipleLevelDat: {
-          title: 'There are too many level.dat in the custom map saved in {path}',
+          title:
+            'There are too many level.dat in the custom map saved in {path}',
         },
         invalidWorldSettingJson: {
           title: 'The file of world settings is invalid',
@@ -110,9 +111,9 @@ export const enUSError: MessageSchema['error'] = {
       dialogCanceled: {
         title: 'Window to select file is cancelled',
       },
-      shellError:{
+      shellError: {
         title: 'Unknown error occured when opening the file',
-        desc: '{message}'
+        desc: '{message}',
       },
     },
     githubAPI: {
@@ -126,7 +127,6 @@ export const enUSError: MessageSchema['error'] = {
         title: 'World data is invalid',
         desc: 'Please check the data on {owner}/{repo}/{branch}',
       },
-      
     },
     failJsonFix: {
       title: 'Failed to fix JSON file',
@@ -177,19 +177,20 @@ export const enUSError: MessageSchema['error'] = {
       invalidWorldId: {
         title: 'The specified world does not exist.',
       },
-      missingLatestLog:{
+      missingLatestLog: {
         title: 'Previous server log does not exist',
       },
       serverPortIsUsed: {
         title: 'The port number in use is specified as the server port',
-        desc: 'Please change the port number from {port} at property \'server-port\'',
+        desc: "Please change the port number from {port} at property 'server-port'",
       },
       cannotChangeRunningWorldName: {
         title: 'You cannot change your world name or saved folder',
         desc: 'Close your world and do it again',
       },
       cannotDuplicateRunningWorld: {
-        title: 'The name of the running world and the folder where it is saved cannot be changed',
+        title:
+          'The name of the running world and the folder where it is saved cannot be changed',
         desc: 'Stop world {name} and try again',
       },
       worldAleradyRunning: {
@@ -239,8 +240,8 @@ export const enUSError: MessageSchema['error'] = {
     update: {
       missingAppSource: {
         title: 'Update file not found in latest release',
-      }
-    }
+      },
+    },
   },
   errorDialog: {
     failToGetOwner: 'Failed to get owner player',

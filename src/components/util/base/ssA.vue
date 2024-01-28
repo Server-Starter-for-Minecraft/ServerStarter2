@@ -1,11 +1,11 @@
 <script setup lang="ts">
 interface Prop {
-  url: string
+  url: string;
 }
-const prop = defineProps<Prop>()
+const prop = defineProps<Prop>();
 
 function openURL() {
-  window.API.sendOpenBrowser(prop.url)
+  window.API.sendOpenBrowser(prop.url);
 }
 </script>
 

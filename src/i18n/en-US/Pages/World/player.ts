@@ -1,11 +1,12 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSPlayer: MessageSchema['player'] = {
   order: {
     name: 'NAME order',
-    op: 'OP order'
+    op: 'OP order',
   },
-  description: 'You can set the server\'s OP and players who can enter and leave the server',
+  description:
+    "You can set the server's OP and players who can enter and leave the server",
   search: 'Enter player name in the game',
   registeredPlayer: 'Registered player',
   notRegistered: 'No players registered',
@@ -47,8 +48,10 @@ export const enUSPlayer: MessageSchema['player'] = {
   updateGroup: 'Update this group',
   deleteGroup: 'Delete this group',
   groupNameDuplicate: '{group} already exists',
-  makeNewGroupDecide: 'Make new group  with selected {n} player | Make new group  with selected {n} players',
-  updateGroupDecide: 'Update this group with selected {n} player | Update this group with selected {n} players',
+  makeNewGroupDecide:
+    'Make new group  with selected {n} player | Make new group  with selected {n} players',
+  updateGroupDecide:
+    'Update this group with selected {n} player | Update this group with selected {n} players',
   opLevel: 'OP level',
   noOp: 'No OP',
   addPlayer: 'Register this player',
@@ -56,7 +59,8 @@ export const enUSPlayer: MessageSchema['player'] = {
   failed: 'Failed to load player settings',
   select: ' Not selected | {n} player selected | {n} players selected',
   deselect: 'Deselect {n} player | Deselect {n} players',
-  editPlayer: 'Editing OP level for {n} player|Editing OP level for {n} players',
+  editPlayer:
+    'Editing OP level for {n} player|Editing OP level for {n} players',
   sort: 'sort',
   resetPlayerSettings: 'Reset Player settings',
 };

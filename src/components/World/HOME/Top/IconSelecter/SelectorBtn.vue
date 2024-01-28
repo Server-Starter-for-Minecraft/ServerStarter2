@@ -1,12 +1,12 @@
 <script setup lang="ts">
 interface Prop {
-  icon: string
-  label: string
-  color?: string
-  disable?: boolean
-  onClick: () => void
+  icon: string;
+  label: string;
+  color?: string;
+  disable?: boolean;
+  onClick: () => void;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 </script>
 
 <template>
@@ -18,7 +18,7 @@ defineProps<Prop>()
     :color="color"
     :icon="icon"
     @click="onClick"
-    style="width: 4rem; height: 4rem;"
+    style="width: 4rem; height: 4rem"
   >
     <span class="ImgSelectBtn">{{ label }}</span>
   </q-btn>

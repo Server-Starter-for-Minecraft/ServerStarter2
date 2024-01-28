@@ -1,17 +1,17 @@
 <script setup lang="ts">
 interface Prop {
-  title: string
+  title: string;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 </script>
 
 <template>
   <q-expansion-item
-    :header-style="{marginLeft: '-16px', fontSize: '1.2rem'}"
+    :header-style="{ marginLeft: '-16px', fontSize: '1.2rem' }"
     :label="title"
   >
     <div class="q-pt-md">
-      <slot/>
+      <slot />
     </div>
   </q-expansion-item>
 </template>

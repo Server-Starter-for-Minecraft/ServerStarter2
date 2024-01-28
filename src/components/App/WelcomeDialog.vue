@@ -54,7 +54,7 @@ function changeLocale(loc: Locale) {
             <SsA url="https://civiltt.github.io/ServerStarter/credit">
               {{ $t('welcome.link') }}
             </SsA>
-            <br>
+            <br />
           </i18n-t>
         </p>
         <q-checkbox v-model="isAgree" :label="$t('welcome.agreeTerm')" />

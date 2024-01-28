@@ -4,6 +4,5 @@ export const jaAutoShutdown = {
     {time}秒後にこのPCをシャットダウンします。<br>\
     キャンセルの場合は、シャットダウンしません。',
   cancel: 'キャンセル',
-  ok: 'OK ({time}秒後にシャットダウン)'
-
-}
+  ok: 'OK ({time}秒後にシャットダウン)',
+};

@@ -59,9 +59,9 @@ function invoke<C extends string>(
 ): FrontInvoke<C, Func<any[], Promise<any>>> {
   return ((...args: any[]) =>
     ipcRenderer.invoke(channel, ...args)) as FrontInvoke<
-      C,
-      Func<any[], Promise<any>>
-    >;
+    C,
+    Func<any[], Promise<any>>
+  >;
 }
 
 // MainでWindowの処理を非同期で待機

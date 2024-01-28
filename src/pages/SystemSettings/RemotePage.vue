@@ -6,23 +6,26 @@ import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.v
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import NewRemoteDialog from 'src/components/SystemSettings/Remote/NewRemoteDialog.vue';
 
-const $q = useQuasar()
-const sysStore = useSystemStore()
-const consoleStore = useConsoleStore()
+const $q = useQuasar();
+const sysStore = useSystemStore();
+const consoleStore = useConsoleStore();
 
 function addRemote() {
   $q.dialog({
-    component: NewRemoteDialog
-  })
+    component: NewRemoteDialog,
+  });
 }
 </script>
 
 <template>
   <div class="q-pa-md">
-    <p class="q-my-sm text-body2" style="opacity: .6;">
+    <p class="q-my-sm text-body2" style="opacity: 0.6">
       {{ $t('shareWorld.descriptRemote') }}
     </p>
-    <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-negative">
+    <p
+      v-if="!consoleStore.isAllWorldStop()"
+      class="q-my-sm text-body2 text-negative"
+    >
       {{ $t('shareWorld.cannotEdit') }}
     </p>
 
@@ -35,10 +38,13 @@ function addRemote() {
             min-height="250px"
             :card-style="{ 'border-radius': '6px' }"
             @click="addRemote"
-            style="min-width: calc(13rem + 24px * 2);"
+            style="min-width: calc(13rem + 24px * 2)"
           />
         </div>
-        <div v-for="n in sysStore.systemSettings.remote.length" :key="sysStore.systemSettings.remote[n - 1].pat">
+        <div
+          v-for="n in sysStore.systemSettings.remote.length"
+          :key="sysStore.systemSettings.remote[n - 1].pat"
+        >
           <GithubCard
             v-model="sysStore.systemSettings.remote[n - 1]"
             show-unlink

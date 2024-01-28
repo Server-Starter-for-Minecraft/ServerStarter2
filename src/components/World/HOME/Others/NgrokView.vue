@@ -23,7 +23,7 @@ function onClick() {
   }).onOk((p: NgrokDialogReturns) => {
     sysStore.systemSettings.user.ngrokToken = p.token;
     if (p.isAllUesNgrok) {
-      mainStore.processAllWorld(w => w.ngrok_setting.use_ngrok = true)
+      mainStore.processAllWorld((w) => (w.ngrok_setting.use_ngrok = true));
     }
   });
 }
@@ -33,11 +33,14 @@ function onClick() {
   <p class="text-caption">
     <span v-html="$t('home.ngrok.desc')" style="opacity: 0.6" />
     <br v-if="!consoleStore.isAllWorldStop()" />
-    <span
-      v-if="!consoleStore.isAllWorldStop()"
-      class="text-negative"
-    >
-      {{ $t(isUseNgrok() ? 'home.ngrok.descWarningRegisted' : 'home.ngrok.descWarningNoRegist') }}
+    <span v-if="!consoleStore.isAllWorldStop()" class="text-negative">
+      {{
+        $t(
+          isUseNgrok()
+            ? 'home.ngrok.descWarningRegisted'
+            : 'home.ngrok.descWarningNoRegist'
+        )
+      }}
     </span>
   </p>
 
@@ -51,7 +54,13 @@ function onClick() {
     <q-toggle
       v-if="isUseNgrok()"
       v-model="mainStore.world.ngrok_setting.use_ngrok"
-      :label="$t(mainStore.world.ngrok_setting.use_ngrok ? 'home.ngrok.toggleON' : 'home.ngrok.toggleOFF')"
+      :label="
+        $t(
+          mainStore.world.ngrok_setting.use_ngrok
+            ? 'home.ngrok.toggleON'
+            : 'home.ngrok.toggleOFF'
+        )
+      "
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     />
 

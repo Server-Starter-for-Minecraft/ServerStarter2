@@ -9,7 +9,7 @@ export const jaTabs = {
     plugin: 'プラグイン',
     mod: 'MOD',
     shareWorld: 'ワールド共有',
-    others: 'その他の設定'
+    others: 'その他の設定',
   },
   systemSettingTabs: {
     home: '共有設定',
@@ -18,4 +18,4 @@ export const jaTabs = {
     folder: 'ワールドフォルダ',
     info: 'システム情報',
   },
-}
+};

@@ -23,11 +23,7 @@ const forgeVersionsPath = versionsCachePath.child('forge');
 const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
 
 /** @param ext:拡張子(.jar/.sh/.bat) */
-function constructExecPath(
-  cwdPath: Path,
-  version: ForgeVersion,
-  ext: string
-) {
+function constructExecPath(cwdPath: Path, version: ForgeVersion, ext: string) {
   return cwdPath.child(`${version.type}-${version.id}${ext}`);
 }
 
@@ -80,12 +76,9 @@ export const forgeVersionLoader: VersionLoader<ForgeVersion> = {
   needEulaAgreement: needEulaAgreementVanilla,
 };
 
-async function installForgeVersion(
-  version: ForgeVersion,
-  cwdPath: Path
-) {
+async function installForgeVersion(version: ForgeVersion, cwdPath: Path) {
   // 元のforge関連のファイルを削除
-  await uninstallForgeVersion(cwdPath)
+  await uninstallForgeVersion(cwdPath);
 
   const installerPath = cwdPath.child('forge-' + version.id + '-installer.jar');
 
@@ -112,31 +105,27 @@ async function installForgeVersion(
       /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal|-shim)?.jar/
     );
     if (match) {
-      await file.rename(constructExecPath(cwdPath, version, ".jar"));
+      await file.rename(constructExecPath(cwdPath, version, '.jar'));
       return;
     }
 
     // 生成されたbatのファイル名を変更 (batを生成するバージョンだった場合)
-    if (filename === "run.bat") {
-      await file.rename(constructExecPath(cwdPath, version, ".bat"));
+    if (filename === 'run.bat') {
+      await file.rename(constructExecPath(cwdPath, version, '.bat'));
     }
 
     // 生成されたshのファイル名を変更 (shを生成するバージョンだった場合)
-    if (filename === "run.sh") {
-      await file.rename(constructExecPath(cwdPath, version, ".sh"));
+    if (filename === 'run.sh') {
+      await file.rename(constructExecPath(cwdPath, version, '.sh'));
     }
   }
 }
 
-async function uninstallForgeVersion(
-  cwdPath: Path
-) {
+async function uninstallForgeVersion(cwdPath: Path) {
   for (const file of await cwdPath.iter()) {
     const filename = file.basename();
     // forge関連の実行系ファイルを削除
-    const match = filename.match(
-      /forge-.*\.(jar|bat|sh)/
-    );
+    const match = filename.match(/forge-.*\.(jar|bat|sh)/);
     if (match) await file.remove();
   }
 }
@@ -146,21 +135,21 @@ async function getProgramArguments(serverCwdPath: Path, version: ForgeVersion) {
   let runPath: Path;
   if (osPlatform == 'windows-x64') {
     // windows
-    runPath = constructExecPath(serverCwdPath, version, ".bat")
+    runPath = constructExecPath(serverCwdPath, version, '.bat');
     if (runPath.exists()) {
       // 1.17.1以降
       return await getProgramArgumentsFromBat(runPath);
     }
   } else {
     // UNIX(macOS,linux)
-    runPath = constructExecPath(serverCwdPath, version, ".sh")
+    runPath = constructExecPath(serverCwdPath, version, '.sh');
     if (runPath.exists()) {
       // 1.17.1以降
       return await getProgramArgumentsFromSh(runPath);
     }
   }
 
-  const jarpath = constructExecPath(serverCwdPath, version, ".jar")
+  const jarpath = constructExecPath(serverCwdPath, version, '.jar');
   if (jarpath.exists()) return ['-jar', jarpath.absolute().strQuoted()];
 
   return errorMessage.data.path.notFound({
@@ -291,38 +280,39 @@ export async function scrapeForgeVersions(
   const page = await BytesData.fromURL(versionUrl);
   if (isError(page)) return page;
 
-  const forge_versions: { version: string, url: string }[] = [];
+  const forge_versions: { version: string; url: string }[] = [];
 
   const $ = cheerio.load(await page.text());
   $('.download-list > tbody > tr').each((_, elem) => {
-    const downloadVersion = $(".download-version", elem)
+    const downloadVersion = $('.download-version', elem);
 
-    downloadVersion.children()
+    downloadVersion.children();
     // 子要素を消して直接のテキストだけを取得
     downloadVersion.children().remove();
     const version = downloadVersion.text().trim();
 
-    const url = $(".download-links > li", elem).map((_, x) => {
-      const children = $(x).children()
+    const url = $('.download-links > li', elem)
+      .map((_, x) => {
+        const children = $(x).children();
 
-      const isInstaller = children.first().text().trim() === "Installer"
+        const isInstaller = children.first().text().trim() === 'Installer';
 
-      if (!isInstaller) return
+        if (!isInstaller) return;
 
-      return children.children().last().attr()?.href
-    }).filter(x => x !== undefined)[0]
-
+        return children.children().last().attr()?.href;
+      })
+      .filter((x) => x !== undefined)[0];
 
     if (version && url) {
       forge_versions.push({
         version,
-        url
+        url,
       });
     }
   });
 
   // recommendedを取得
-  let recommended: { version: string, url: string } | undefined = undefined;
+  let recommended: { version: string; url: string } | undefined = undefined;
 
   $('div.downloads > div.download > div.title > small').each((i, elem) => {
     if (i !== 1) return;
@@ -335,7 +325,7 @@ export async function scrapeForgeVersions(
     const match = path.match(/^[\d\.]+ - (.+)$/);
     if (match === null) return;
     const reco = match[1];
-    recommended = forge_versions.find(x => x.version === reco)
+    recommended = forge_versions.find((x) => x.version === reco);
   });
 
   return {

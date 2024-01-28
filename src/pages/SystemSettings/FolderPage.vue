@@ -7,39 +7,52 @@ import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 
-const $q = useQuasar()
-const sysStore = useSystemStore()
-const consoleStore = useConsoleStore()
+const $q = useQuasar();
+const sysStore = useSystemStore();
+const consoleStore = useConsoleStore();
 
 function openFolderEditor() {
   $q.dialog({
-    component: AddFolderDialog
+    component: AddFolderDialog,
   }).onOk((payload: AddFolderDialogReturns) => {
     sysStore.systemSettings.container.push({
       name: payload.name,
       visible: true,
-      container: payload.container
-    })
-  })
+      container: payload.container,
+    });
+  });
 }
 </script>
 
 <template>
   <div class="q-pa-md">
-    <p class="q-my-sm text-body2" style="opacity: .6;">
+    <p class="q-my-sm text-body2" style="opacity: 0.6">
       {{ $t('others.worldFolder.description') }}
     </p>
-    <p v-if="!consoleStore.isAllWorldStop()" class="q-my-sm text-body2 text-negative">
+    <p
+      v-if="!consoleStore.isAllWorldStop()"
+      class="q-my-sm text-body2 text-negative"
+    >
       {{ $t('others.worldFolder.cannotEdit') }}
     </p>
 
     <div class="column q-py-sm q-gutter-y-md">
-      <template v-for="n in sysStore.systemSettings.container.length" :key="sysStore.systemSettings.container[n-1]">
-        <FolderCard show-operation-btns v-model="sysStore.systemSettings.container[n - 1]"
-          :disable="!consoleStore.isAllWorldStop()" />
+      <template
+        v-for="n in sysStore.systemSettings.container.length"
+        :key="sysStore.systemSettings.container[n - 1]"
+      >
+        <FolderCard
+          show-operation-btns
+          v-model="sysStore.systemSettings.container[n - 1]"
+          :disable="!consoleStore.isAllWorldStop()"
+        />
       </template>
-      <AddContentsCard :label="$t('others.worldFolder.addFolder')" min-height="4rem"
-        :card-style="{ 'min-width': '100%', 'border-radius': '5px' }" @click="openFolderEditor" />
+      <AddContentsCard
+        :label="$t('others.worldFolder.addFolder')"
+        min-height="4rem"
+        :card-style="{ 'min-width': '100%', 'border-radius': '5px' }"
+        @click="openFolderEditor"
+      />
     </div>
   </div>
 </template>

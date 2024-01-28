@@ -61,7 +61,7 @@ export const getBackListener = (
 
     RunWorld: runWorld,
 
-    FetchLatestWorldLog:fetchLatestWorldLog,
+    FetchLatestWorldLog: fetchLatestWorldLog,
 
     GetPlayer: getPlayer,
 

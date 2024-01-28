@@ -5,17 +5,19 @@ export const jaShareWorld = {
   ワールド共有機能（ShareWorld）は複数のプレイヤー間で、どのプレイヤーがサーバーを起動しても常に最新のワールドを遊べるようにするための機能です。{0}\
   使い方の詳細は{1}をご参照ください。',
   link: '公式HP',
-  descriptRemote: 'ワールド共有機能（ShareWorld）を利用するためのデータ保管場所を登録します',
+  descriptRemote:
+    'ワールド共有機能（ShareWorld）を利用するためのデータ保管場所を登録します',
   registerNewRemote: '新規リモートの登録',
   register: '登録',
-  cannotEdit: '起動中のワールドがある状態でリモート設定を編集することはできません',
+  cannotEdit:
+    '起動中のワールドがある状態でリモート設定を編集することはできません',
   addRemote: {
     title: 'リモートを追加',
     dialogTitle: '新規ShareWorldの登録',
     account: 'アカウントの種類',
     user: 'ユーザー名',
     repository: 'リポジトリ名',
-    inputValue: '値を入力してください'
+    inputValue: '値を入力してください',
   },
   githubCard: {
     account: 'アカウント',
@@ -32,10 +34,11 @@ export const jaShareWorld = {
       desc: '\
         ServerStarter2 から 「{owner}/{repo}」の登録を解除します。<br>\
         GitHub上のリポジトリは削除されませんが、「{owner}/{repo}」を用いてワールドを再共有することは出来なくなります。',
-    }
+    },
   },
   sync: '{path}と同期',
-  existedDialog: '\
+  existedDialog:
+    '\
     {rWorldName}とワールドデータを同期します。<br>\
     このワールドのデータは選択したShareWorldのデータによって上書きされます。<br>\
     ワールドを同期しますか？',
@@ -58,16 +61,19 @@ export const jaShareWorld = {
   },
   existRemote: {
     syncWorldTitle: '同期中のShareWorldデータ',
-    syncWorldDesc: '\
+    syncWorldDesc:
+      '\
       このワールドは{0}と同期されています。{1}\
       {2}ではこの同期データをブラウザ上で確認することができます。',
     unregister: {
       unregistSyncTitle: 'ワールドの同期を解除',
-      unregistSyncDesc: '\
+      unregistSyncDesc:
+        '\
         {remotePath}との同期を解除します。<br>\
         ShareWorldが削除されることはありませんが、{worldName}の更新データは共有されなくなります。',
       dialogTitle: '同期を解除します',
-      dialogDesc: '\
+      dialogDesc:
+        '\
         同期を解除すると、これ以降にこのサーバーで遊んだ内容は同期されません。<br>\
         共有を解除しますか？',
     },
@@ -78,9 +84,10 @@ export const jaShareWorld = {
         共有しているShareWorldのデータは削除されますが、全ての参加者はローカルワールドとして引き続きこのワールドを起動することができます。',
       btn: 'ShareWorldを削除',
       dialogTitle: 'リモートデータを削除します',
-      dialogDesc: '\
+      dialogDesc:
+        '\
         このワールドはShareWorldのデータが削除されるため、共有相手も同期が解除されます。<br>\
         このワールドのShareWorldデータを削除しますか？',
-    }
-  }
-}
+    },
+  },
+};

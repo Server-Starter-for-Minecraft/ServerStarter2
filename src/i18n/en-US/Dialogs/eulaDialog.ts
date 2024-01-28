@@ -1,4 +1,4 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSEulaDialog: MessageSchema['eulaDialog'] = {
   title: 'Agree Minecraft EULA',
@@ -7,5 +7,5 @@ export const enUSEulaDialog: MessageSchema['eulaDialog'] = {
     This server is subject to the terms of {0}.{1}\
     Please read before use.',
   eula: 'Minecraft EULA',
-  disagree: 'Disagree EULA'
-}
+  disagree: 'Disagree EULA',
+};

@@ -122,7 +122,7 @@ export function validateJson<T extends Validator>(
 
     case 'record':
       if (typeof value === 'object') {
-        let success = true;
+        const success = true;
         const result: any = {};
         for (const e of Object.entries(value)) {
           const [k, v] = e;

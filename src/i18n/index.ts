@@ -11,7 +11,7 @@ type MessageSchema = typeof ja;
 // 3. このmessagesに追加
 const messages: Record<Locale, MessageSchema> = {
   'en-US': enUS,
-  'ja': ja
+  ja: ja,
 };
 
 export default messages;

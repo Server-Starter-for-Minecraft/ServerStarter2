@@ -20,6 +20,7 @@ export async function getLatestRelease(
     PAT
   );
 
+
   if (isError(json)) return json;
 
   for (const i of json) {

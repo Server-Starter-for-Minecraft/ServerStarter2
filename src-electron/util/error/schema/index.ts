@@ -10,7 +10,7 @@ export type ErrorMessageTypes = {
   data: DataErrors;
   value: ValueErrors;
   core: CoreErrors;
-  lib: LibErrors
+  lib: LibErrors;
 };
 
 export type FlattenErrorMessageTypes = FlattenErrors<ErrorMessageTypes>;
