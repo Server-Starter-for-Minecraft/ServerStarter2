@@ -32,7 +32,7 @@ async function createWindow() {
    */
 
   // 環境変数SERVERSTARTER_MODEがnoupdateでない場合アップデートをチェック
-  if (process.env.SERVERSTARTER_MODE !== "noupdate") {
+  if (process.env.SERVERSTARTER_MODE !== 'noupdate') {
     await update();
   }
 
