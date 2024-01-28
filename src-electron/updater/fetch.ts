@@ -12,7 +12,7 @@ export async function getLatestRelease(
   const json = await listReleases(
     'Server-Starter-for-Minecraft',
     'ServerStarter2',
-    PAT
+    pat
   );
 
   if (isError(json)) return json;
