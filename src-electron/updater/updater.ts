@@ -12,9 +12,9 @@ import { getSystemVersion } from './version';
  * 本体バージョンはpackage.jsonのversionを参照
  * リモートのバージョンはgithubのリリース情報のtag_nameを参照
  */
-async function checkUpdate() {
+async function checkUpdate(pat: string | undefined) {
   const currentVersion = await getSystemVersion();
-  const latestRelease = await getLatestRelease(osPlatform);
+  const latestRelease = await getLatestRelease(osPlatform, pat);
   // アップデートの取得に失敗
   if (isError(latestRelease)) return latestRelease;
   // アップデートなし
@@ -30,7 +30,14 @@ async function checkUpdate() {
 export async function update() {
   const logger = rootLoggerHierarchy.update({});
   logger.start(getSystemVersion());
-  const update = await checkUpdate();
+
+  // 環境変数SERVERSTARTER_MODEが"debug"だった場合は環境変数SERVERSTARTER_TOKENからgitのPATを取得
+  const PAT =
+    process.env.SERVERSTARTER_MODE === 'debug'
+      ? process.env.SERVERSTARTER_TOKEN
+      : undefined;
+
+  const update = await checkUpdate(PAT);
   logger.info(update);
 
   if (update === false) return;
@@ -45,8 +52,8 @@ export async function update() {
   sys.system.lastUpdatedTime = undefined;
   await setSystemSettings(sys);
 
-  if (osPlatform === 'windows-x64') await installWindows(update.url);
+  if (osPlatform === 'windows-x64') await installWindows(update.url, PAT);
   if (osPlatform === 'mac-os' || osPlatform === 'mac-os-arm64')
-    await installMac(update.url);
+    await installMac(update.url, PAT);
   logger.success();
 }

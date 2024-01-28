@@ -25,3 +25,22 @@ export async function getJsonResponse<T>(
   const json = await responce.json<T>();
   return json;
 }
+
+type BytesRequestHeader = {
+  Authorization?: string;
+};
+
+/** github上のurlからバイトデータを取得 */
+export async function getBytesFile(
+  url: string,
+  pat?: string
+): Promise<Failable<BytesData>> {
+  // PATの認証情報をヘッダーに付与してfetch
+  const requestHeader: BytesRequestHeader = {};
+
+  if (pat !== undefined) requestHeader.Authorization = `Bearer ${pat}`;
+
+  const responce = await BytesData.fromURL(url, undefined, requestHeader);
+
+  return responce;
+}

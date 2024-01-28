@@ -6,20 +6,14 @@ import { OsPlatform } from '../util/os';
 
 /** githubからリリース番号を取得 */
 export async function getLatestRelease(
-  osPLatform: OsPlatform
+  osPLatform: OsPlatform,
+  pat: string | undefined
 ): Promise<Failable<GithubRelease>> {
-  // 環境変数SERVERSTARTER_MODEが"debug"だった場合は環境変数SERVERSTARTER_TOKENからgitのPATを取得
-  const PAT =
-    process.env.SERVERSTARTER_MODE === 'debug'
-      ? process.env.SERVERSTARTER_TOKEN
-      : undefined;
-
   const json = await listReleases(
     'Server-Starter-for-Minecraft',
     'ServerStarter2',
     PAT
   );
-
 
   if (isError(json)) return json;
 
@@ -36,10 +30,7 @@ export async function getLatestRelease(
   return errorMessage.system.assertion({ message: '' });
 }
 
-function parseAssets(
-  assets: ReleaseAsset[],
-  osPLatform: OsPlatform
-) {
+function parseAssets(assets: ReleaseAsset[], osPLatform: OsPlatform) {
   const suffix = {
     linux: '.AppImage',
     'mac-os': '.pkg',
