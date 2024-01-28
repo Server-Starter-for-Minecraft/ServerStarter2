@@ -11,7 +11,7 @@ export const enTabs: MessageSchema['tabs'] = {
     plugin: 'Plugin',
     mod: 'MOD',
     shareWorld: 'ShareWorld',
-    others: 'Others'
+    others: 'Others',
   },
   systemSettingTabs: {
     home: 'General',
@@ -20,4 +20,4 @@ export const enTabs: MessageSchema['tabs'] = {
     folder: 'World Folders',
     info: 'System infomation',
   },
-}
+};

@@ -1,17 +1,17 @@
 import { ErrorMessage, Failable } from 'app/src-electron/schema/error';
 import { isValid } from 'src/scripts/error';
 
-let _openDialogFunc: (args: iErrorDialogProps) => void
+let _openDialogFunc: (args: iErrorDialogProps) => void;
 export function setOpenDialogFunc(func: (args: iErrorDialogProps) => void) {
-  _openDialogFunc = func
+  _openDialogFunc = func;
 }
 
 export interface iErrorDialogProps {
-  title: string
-  desc?: string
+  title: string;
+  desc?: string;
 }
 
-export type ErrorFuncReturns = { title: string, desc?: string }
+export type ErrorFuncReturns = { title: string; desc?: string };
 
 /**
  * エラーが発生する可能性のある変数をチェックし、エラーがある場合はエラー画面を表示する
@@ -25,17 +25,16 @@ export function checkError<S>(
   errorDescription?: (error: ErrorMessage) => ErrorFuncReturns | undefined
 ) {
   if (isValid(check)) {
-    if (successProcess !== void 0) successProcess(check)
-    return check
-  }
-  else {
+    if (successProcess !== void 0) successProcess(check);
+    return check;
+  } else {
     if (errorDescription !== void 0) {
-      const errorMessage = errorDescription(check)
+      const errorMessage = errorDescription(check);
       if (errorMessage) {
         _openDialogFunc({
           title: errorMessage.title,
-          desc: errorMessage.desc
-        })
+          desc: errorMessage.desc,
+        });
       }
     }
 
@@ -51,6 +50,6 @@ export function checkError<S>(
 export function sendError(title: string, desc?: string) {
   _openDialogFunc({
     title: title,
-    desc: desc
-  })
+    desc: desc,
+  });
 }

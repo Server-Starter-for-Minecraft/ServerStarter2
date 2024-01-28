@@ -5,11 +5,12 @@ import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
-const prop = defineProps<updatePatProp>()
-defineEmits({ ...useDialogPluginComponent.emitsObject })
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const prop = defineProps<updatePatProp>();
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
 
-const inputPat = ref(prop.oldPat)
+const inputPat = ref(prop.oldPat);
 </script>
 
 <template>
@@ -28,7 +29,9 @@ const inputPat = ref(prop.oldPat)
         autofocus
         v-model="inputPat"
         :placeholder="$t('shareWorld.githubCard.inputPAT')"
-        v-on:keydown.enter="onDialogOK({ newPat: inputPat } as updatePatDialogReturns)"
+        v-on:keydown.enter="
+          onDialogOK({ newPat: inputPat } as updatePatDialogReturns)
+        "
       />
     </BaseDialogCard>
   </q-dialog>

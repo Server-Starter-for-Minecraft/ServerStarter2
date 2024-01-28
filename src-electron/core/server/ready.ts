@@ -103,7 +103,7 @@ export async function readyRunServer(
     server,
     settings.version,
     javaPath,
-    progress,
+    progress
   );
   if (isError(eulaResult)) return eulaResult;
 

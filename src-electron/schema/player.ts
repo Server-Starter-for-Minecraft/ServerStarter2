@@ -20,7 +20,7 @@ export type PlayerGroup = {
   /** グループ名 */
   name: string;
   /** グループのカラー(#入りコード) */
-  color: string
+  color: string;
   /** 所属するプレイヤーのUUIDのリスト */
   players: PlayerUUID[];
 };

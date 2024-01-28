@@ -11,21 +11,21 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     content: {
       newWorld: {
         title: 'Create a New WORLD',
-        desc: 'Create a completely new world'
+        desc: 'Create a completely new world',
       },
       customMap: {
         title: 'Introduce a created world',
-        desc: 'Introduce zipped custom maps and single-player worlds'
+        desc: 'Introduce zipped custom maps and single-player worlds',
       },
       duplicate: {
         title: 'Duplicate the current world',
-        desc: 'Duplicate with various settings such as a server version and properties'
+        desc: 'Duplicate with various settings such as a server version and properties',
       },
       backup: {
         title: 'Introduce a backed-up world',
-        desc: 'Adding a backed-up world'
-      }
-    }
+        desc: 'Adding a backed-up world',
+      },
+    },
   },
   customMapImporter: {
     addSeveralWorld: 'Add various worlds',
@@ -39,7 +39,7 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     checkDialog: {
       title: 'Introducing new world',
       desc: 'I am introducing the following world data',
-    }
+    },
   },
   backupDialog: {
     title: 'Create a new World from backup world',
@@ -48,5 +48,5 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     failedDate: 'Failed to read data',
     backupName: 'World name：{world}',
     startRecover: 'Start recovering',
-  }
+  },
 };

@@ -14,6 +14,6 @@ export const enUS: iTranslate = {
   success: 'Action was successful',
   error: {
     system: { runtime: 'Error', ipc: 'a', subprocess: 'c' },
-    data: {}
+    data: {},
   },
 };

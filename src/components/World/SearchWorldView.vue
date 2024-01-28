@@ -3,17 +3,20 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from '../util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Prop {
-  expandWidth: number
-  expandDrawerBtnClickable: boolean
+  expandWidth: number;
+  expandDrawerBtnClickable: boolean;
 }
-const model = defineModel<string | number>()
-defineProps<Prop>()
+const model = defineModel<string | number>();
+defineProps<Prop>();
 
-const sysStore = useSystemStore()
+const sysStore = useSystemStore();
 </script>
 
 <template>
-  <q-item :clickable="expandDrawerBtnClickable" @click="sysStore.systemSettings.user.drawerWidth = expandWidth">
+  <q-item
+    :clickable="expandDrawerBtnClickable"
+    @click="sysStore.systemSettings.user.drawerWidth = expandWidth"
+  >
     <q-item-section avatar>
       <q-icon name="search" size="2rem" class="q-py-sm" />
     </q-item-section>

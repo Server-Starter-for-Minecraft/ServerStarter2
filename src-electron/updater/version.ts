@@ -1,6 +1,6 @@
 import { app } from 'electron';
 
-/** 
+/**
  * ServerStarter本体のバージョンを取得
  */
 export async function getSystemVersion() {

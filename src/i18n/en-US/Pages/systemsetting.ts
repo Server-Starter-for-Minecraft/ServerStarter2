@@ -1,4 +1,4 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSSystemSetting: MessageSchema['systemsetting'] = {
   title: 'Settings',
@@ -6,8 +6,8 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     lang: 'Language',
     langDesc: 'Select your language',
     colorMode: 'Appearance',
-    useVisionSupport : 'Apply vision support',
-    noVisionSupport: 'Don\'t apply vision support',
+    useVisionSupport: 'Apply vision support',
+    noVisionSupport: "Don't apply vision support",
     autoShutdown: 'Auto-Shutdown',
     shutdownDesc: 'Allow to shutdown your PC after you close the server',
   },
@@ -18,11 +18,13 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
   remote: {},
   folder: {
     unregistTitle: 'Unregister {name}',
-    unregistDialog: '\
+    unregistDialog:
+      '\
       Unregister {name} from the ServerStarter2 world save list. <br>\
       Unregistered folders and their internal data will not be deleted.',
     tooltipVisible: 'Display worlds saved in this folder in the world list',
-    tooltipInvisible: 'Do not display worlds saved in this folder in the world list',
+    tooltipInvisible:
+      'Do not display worlds saved in this folder in the world list',
     unregist: 'Unregister',
   },
   info: {
@@ -39,7 +41,8 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     dm: '(Please contact us via DM)',
     license: 'License',
     MIT: 'MIT License',
-    licenseDesc: '\
+    licenseDesc:
+      '\
       Modification and redistribution of the system without permission from the creator is prohibited.<br>\
       Please refer to the ServerStarter2 Terms of Use and License Agreement for more information.',
     developer: 'Developer',

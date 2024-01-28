@@ -6,5 +6,5 @@ export const jaGeneral = {
   file: 'ファイル',
   directory: 'ディレクトリ',
   skip: 'スキップ',
-  back: '戻る', 
+  back: '戻る',
 };

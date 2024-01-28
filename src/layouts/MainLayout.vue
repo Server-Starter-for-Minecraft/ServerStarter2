@@ -3,9 +3,9 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import WorldList from 'src/components/MainLayout/WorldList.vue';
 import WorldPage from 'src/pages/WorldPage.vue';
 
-const sysStore = useSystemStore()
-const minLeftWidth = 115
-const maxLeftWidth = 400
+const sysStore = useSystemStore();
+const minLeftWidth = 115;
+const maxLeftWidth = 400;
 </script>
 
 <template>
@@ -15,7 +15,7 @@ const maxLeftWidth = 400
       :limits="[minLeftWidth, maxLeftWidth]"
       unit="px"
       emit-immediately
-      style="height: 100vh; width: 100vw;"
+      style="height: 100vh; width: 100vw"
     >
       <template #before>
         <WorldList :min-width="minLeftWidth" :max-width="maxLeftWidth" />

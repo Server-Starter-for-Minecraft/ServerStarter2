@@ -10,18 +10,20 @@ import SearchResultView from './SearchResultView.vue';
 import InputFieldView from './InputFieldView.vue';
 import PlayerCard from '../PlayerCard.vue';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
-const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
-defineProps<OwnerDialogProp>()
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+defineProps<OwnerDialogProp>();
 
-const sysStore = useSystemStore()
-const ownerCandidate: Ref<PlayerUUID | undefined> = ref(sysStore.systemSettings.user.owner)
+const sysStore = useSystemStore();
+const ownerCandidate: Ref<PlayerUUID | undefined> = ref(
+  sysStore.systemSettings.user.owner
+);
 
 function registOwner() {
   if (ownerCandidate.value) {
-    sysStore.systemSettings.user.owner = ownerCandidate.value
+    sysStore.systemSettings.user.owner = ownerCandidate.value;
   }
-  onDialogOK()
+  onDialogOK();
 }
 </script>
 
@@ -35,12 +37,11 @@ function registOwner() {
       @close="onDialogOK"
     >
       <template #default>
-        <p 
+        <p
           class="q-my-sm text-body2"
-          style="opacity: .5;"
+          style="opacity: 0.5"
           v-html="$t('owner.dialogDesc')"
-        >
-        </p>
+        ></p>
 
         <InputFieldView class="q-my-md" />
         <SearchResultView v-model="ownerCandidate" />
@@ -52,10 +53,7 @@ function registOwner() {
       </template>
 
       <template v-if="persistent" #additionalBtns>
-        <SsBtn
-          :label="$t('general.skip')"
-          @click="onDialogOK"
-        />
+        <SsBtn :label="$t('general.skip')" @click="onDialogOK" />
       </template>
     </BaseDialogCard>
   </q-dialog>

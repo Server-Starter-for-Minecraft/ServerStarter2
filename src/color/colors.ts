@@ -1,24 +1,28 @@
 type ColorSetting = {
-  primary: string
-}
+  primary: string;
+};
 
-export type ColorThemes = 'light' | 'dark' | 'light-diversity' | 'dark-diversity'
+export type ColorThemes =
+  | 'light'
+  | 'dark'
+  | 'light-diversity'
+  | 'dark-diversity';
 
 type ColorSettings = {
-  [key in ColorThemes]: ColorSetting
-}
+  [key in ColorThemes]: ColorSetting;
+};
 
 export const colors: ColorSettings = {
-  'light': {
+  light: {
     primary: '#1EB000',
   },
-  'dark': {
-    primary: '#7FFF00'
+  dark: {
+    primary: '#7FFF00',
   },
   'light-diversity': {
-    primary: '#0032D4'
+    primary: '#0032D4',
   },
   'dark-diversity': {
-    primary: '#1E8FFF'
-  }
-}
+    primary: '#1E8FFF',
+  },
+};

@@ -9,21 +9,21 @@ export const jaMainLayout = {
     content: {
       newWorld: {
         title: '新規ワールドを追加',
-        desc: '完全に新しいワールドを新規作成する'
+        desc: '完全に新しいワールドを新規作成する',
       },
       customMap: {
         title: '既存のワールドを導入',
-        desc: 'zip形式の配布ワールドやシングルプレイのワールドを導入する'
+        desc: 'zip形式の配布ワールドやシングルプレイのワールドを導入する',
       },
       duplicate: {
         title: '表示中のワールドを複製',
-        desc: 'バージョンやプロパティなどの各種設定を引き継いで複製する'
+        desc: 'バージョンやプロパティなどの各種設定を引き継いで複製する',
       },
       backup: {
         title: 'バックアップワールドを導入',
-        desc: 'バックアップ済みのワールドを追加する'
-      }
-    }
+        desc: 'バックアップ済みのワールドを追加する',
+      },
+    },
   },
   customMapImporter: {
     addSeveralWorld: '各種ワールドの導入',
@@ -46,5 +46,5 @@ export const jaMainLayout = {
     failedDate: '日時を取得できませんでした',
     backupName: 'ワールド名：{world}',
     startRecover: '作成を開始',
-  }
+  },
 };

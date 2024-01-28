@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
-import { GithubRemoteSetting, RemoteFolder } from 'app/src-electron/schema/remote';
+import {
+  GithubRemoteSetting,
+  RemoteFolder,
+} from 'app/src-electron/schema/remote';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
@@ -12,27 +15,27 @@ import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
-  disable?: boolean
-  showUnlink?: boolean
-  onRegisterClick?: (remoteData: RemoteFolder) => void
-  worldName?: string
+  disable?: boolean;
+  showUnlink?: boolean;
+  onRegisterClick?: (remoteData: RemoteFolder) => void;
+  worldName?: string;
 }
-const prop = defineProps<Prop>()
-const remote = defineModel<GithubRemoteSetting>({ required: true })
+const prop = defineProps<Prop>();
+const remote = defineModel<GithubRemoteSetting>({ required: true });
 
-const $q = useQuasar()
-const sysStore = useSystemStore()
-const { t } = useI18n()
+const $q = useQuasar();
+const sysStore = useSystemStore();
+const { t } = useI18n();
 
 function openPatEditor() {
   $q.dialog({
     component: UpdatePatDialog,
     componentProps: {
-      oldPat: remote.value.pat
-    } as updatePatProp
+      oldPat: remote.value.pat,
+    } as updatePatProp,
   }).onOk((payload: updatePatDialogReturns) => {
-    remote.value.pat = payload.newPat
-  })
+    remote.value.pat = payload.newPat;
+  });
 }
 
 function checkUnlinkRepo() {
@@ -40,19 +43,18 @@ function checkUnlinkRepo() {
     component: DangerDialog,
     componentProps: {
       dialogOverline: t('shareWorld.github'),
-      dialogTitle: t(
-        'shareWorld.githubCard.unregister.dialog',
-        { name: remote.value.folder.repo }
-      ),
-      dialogDesc: t(
-        'shareWorld.githubCard.unregister.desc',
-        { owner: remote.value.folder.owner, repo: remote.value.folder.repo }
-      ),
-      okBtnTxt: t('shareWorld.githubCard.unregister.decide')
-    } as dangerDialogProp
+      dialogTitle: t('shareWorld.githubCard.unregister.dialog', {
+        name: remote.value.folder.repo,
+      }),
+      dialogDesc: t('shareWorld.githubCard.unregister.desc', {
+        owner: remote.value.folder.owner,
+        repo: remote.value.folder.repo,
+      }),
+      okBtnTxt: t('shareWorld.githubCard.unregister.decide'),
+    } as dangerDialogProp,
   }).onOk(() => {
-    deleteFromValue(sysStore.systemSettings.remote, remote.value)
-  })
+    deleteFromValue(sysStore.systemSettings.remote, remote.value);
+  });
 }
 </script>
 
@@ -64,21 +66,33 @@ function checkUnlinkRepo() {
         <div class="caption">{{ $t('shareWorld.githubCard.account') }}</div>
         <div class="dataText text-omit">
           {{ remote.folder.owner }}
-          <SsTooltip :name="remote.folder.owner" anchor="bottom start" self="center start" />
+          <SsTooltip
+            :name="remote.folder.owner"
+            anchor="bottom start"
+            self="center start"
+          />
         </div>
       </div>
       <div class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.repository') }}</div>
         <div class="dataText text-omit">
           {{ remote.folder.repo }}
-          <SsTooltip :name="remote.folder.repo" anchor="bottom start" self="center start" />
+          <SsTooltip
+            :name="remote.folder.repo"
+            anchor="bottom start"
+            self="center start"
+          />
         </div>
       </div>
       <div v-if="worldName" class="q-py-sm">
         <div class="caption">{{ $t('shareWorld.githubCard.worldName') }}</div>
         <div class="dataText text-omit">
           {{ worldName }}
-          <SsTooltip :name="worldName" anchor="bottom start" self="center start" />
+          <SsTooltip
+            :name="worldName"
+            anchor="bottom start"
+            self="center start"
+          />
         </div>
       </div>
     </q-card-section>
@@ -110,8 +124,8 @@ function checkUnlinkRepo() {
 
 <style scoped lang="scss">
 .caption {
-  font-size: .6rem;
-  opacity: .6;
+  font-size: 0.6rem;
+  opacity: 0.6;
   padding-bottom: 4px;
 }
 

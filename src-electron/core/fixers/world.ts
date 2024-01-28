@@ -88,7 +88,7 @@ export const fixWorldBase = extendFixer<WorldBase, WorldAbbr>(
     avater_path: optionalFixer(stringFixer()),
 
     /** Ngrokによるポート開放不要化機能を利用するか */
-    ngrok_setting: ngrok_settingFixer
+    ngrok_setting: ngrok_settingFixer,
   },
   false
 );

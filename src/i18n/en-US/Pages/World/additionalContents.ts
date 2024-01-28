@@ -1,4 +1,4 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enAdditionalContents: MessageSchema['additionalContents'] = {
   datapack: 'datapack',
@@ -14,4 +14,4 @@ export const enAdditionalContents: MessageSchema['additionalContents'] = {
   installFromZip: 'New install from Zip',
   installFromFolder: 'New install from Folder',
   needReboot: 'A server restart is required for the changes to take effect',
-}
+};

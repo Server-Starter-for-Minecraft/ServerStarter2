@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
+import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import SettingBlockView from './SettingBlockView.vue';
 
-const model = defineModel<ServerProperties>({ required: true })
-const propertyStore = usePropertyStore()
+const model = defineModel<ServerProperties>({ required: true });
+const propertyStore = usePropertyStore();
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const propertyStore = usePropertyStore()
     </template>
   </div>
   <div v-else>
-    <p class="q-pl-md" style="font-size: .8rem; padding-top: 14px;">
+    <p class="q-pl-md" style="font-size: 0.8rem; padding-top: 14px">
       {{ $t('property.notFound') }}
     </p>
   </div>

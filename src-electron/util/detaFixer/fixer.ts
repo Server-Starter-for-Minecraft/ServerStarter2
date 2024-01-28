@@ -20,13 +20,13 @@ export function literalFixer<T extends primitive>(
     values.includes(arg)
       ? arg
       : defaultValue !== undefined
-        ? defaultValue
-        : FAIL;
+      ? defaultValue
+      : FAIL;
 }
 
 /** 定数を返すFixer */
 export function constFixer<T>(value: T): Fixer<T> {
-  return (arg: any) => value
+  return (arg: any) => value;
 }
 
 export function stringFixer<T extends string = string>(): Fixer<T | FAIL>;
@@ -436,7 +436,6 @@ export function extendFixer<T, B extends Partial<T>>(
   ) as Fixer<T | FAIL>;
 }
 
-
 /** デフォルト値を指定し、
  * - デフォルト値のみに存在する値を挿入
  * - デフォルト値に存在しない値を削除
@@ -447,27 +446,27 @@ export function defaultObjFixer<A extends object>(
   defaultValue: A
 ): Fixer<A> {
   return (arg: any) => {
-    const fixed = fixer(arg)
+    const fixed = fixer(arg);
 
     if (fixed === FAIL) {
       return defaultValue;
     }
 
-    const defaultKeys = new Set(Object.keys(defaultValue))
-    const fixedKeys = new Set(Object.keys(fixed))
+    const defaultKeys = new Set(Object.keys(defaultValue));
+    const fixedKeys = new Set(Object.keys(fixed));
 
     for (const l of defaultKeys) {
       if (!fixedKeys.has(l)) {
-        (fixed as any)[l] = (defaultKeys as any)[l]
+        (fixed as any)[l] = (defaultKeys as any)[l];
       }
     }
 
     for (const l of fixedKeys) {
       if (!defaultKeys.has(l)) {
-        delete (fixed as any)[l]
+        delete (fixed as any)[l];
       }
     }
 
-    return fixed
-  }
+    return fixed;
+  };
 }

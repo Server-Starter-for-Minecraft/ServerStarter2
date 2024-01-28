@@ -5,16 +5,17 @@ import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import LoadingLogo from 'src/assets/animation/LoadingLogo.vue';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-const prop = defineProps<CustomMapImporterProp>()
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
+const prop = defineProps<CustomMapImporterProp>();
 
 // Dialogの表示と同時に導入を始める
-importProcess()
+importProcess();
 
 async function importProcess() {
-  await prop.importFunc()
-  onDialogOK()
+  await prop.importFunc();
+  onDialogOK();
 }
 </script>
 
@@ -23,7 +24,7 @@ async function importProcess() {
     <BaseDialogCard
       :title="$t('mainLayout.customMapImporter.checkDialog.title')"
       @close="onDialogCancel"
-      style="max-width: 100%;"
+      style="max-width: 100%"
     >
       <q-item dense class="q-pl-none">
         <q-item-section>
@@ -35,7 +36,7 @@ async function importProcess() {
           />
         </q-item-section>
         <q-item-section avatar>
-          <LoadingLogo style="width: 4rem;" />
+          <LoadingLogo style="width: 4rem" />
         </q-item-section>
       </q-item>
     </BaseDialogCard>

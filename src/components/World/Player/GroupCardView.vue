@@ -8,36 +8,42 @@ import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
-  name: string
-  color: string
-  players: PlayerUUID[]
-  onEdit: () => void
+  name: string;
+  color: string;
+  players: PlayerUUID[];
+  onEdit: () => void;
 }
-const prop = defineProps<Prop>()
+const prop = defineProps<Prop>();
 
-const playerStore = usePlayerStore()
-const showMenuBtn = ref(false)
-const menuOpened = ref(false)
+const playerStore = usePlayerStore();
+const showMenuBtn = ref(false);
+const menuOpened = ref(false);
 
-const cachePlayers = ref(playerStore.cachePlayers)
+const cachePlayers = ref(playerStore.cachePlayers);
 
 async function onCardClicked() {
-  playerStore.selectGroup(prop.name)
+  playerStore.selectGroup(prop.name);
 }
 </script>
 
 <template>
   <BaseActionsCard
     @mouseover="showMenuBtn = true"
-    @mouseout="showMenuBtn  = false"
+    @mouseout="showMenuBtn = false"
     @click="onCardClicked"
   >
     <template #default>
       <q-card-section
         class="fit q-pt-xs"
-        :style="{'border-left': `1rem solid ${color}`, 'border-radius': '15px'}"
+        :style="{
+          'border-left': `1rem solid ${color}`,
+          'border-radius': '15px',
+        }"
       >
-        <div v-if="showMenuBtn || menuOpened" style="width: calc(100% - 3.5rem);">
+        <div
+          v-if="showMenuBtn || menuOpened"
+          style="width: calc(100% - 3.5rem)"
+        >
           <div class="groupName text-omit">
             {{ name }}
             <SsTooltip :name="name" anchor="bottom start" self="center start" />

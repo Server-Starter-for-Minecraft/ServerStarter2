@@ -4,7 +4,12 @@ import { version } from '../../package.json';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { StaticResouce } from 'app/src-electron/schema/static';
-import { CacheFileData, DatapackData, ModData, PluginData } from 'app/src-electron/schema/filedata';
+import {
+  CacheFileData,
+  DatapackData,
+  ModData,
+  PluginData,
+} from 'app/src-electron/schema/filedata';
 
 export const useSystemStore = defineStore('systemStore', {
   state: () => {
@@ -14,20 +19,19 @@ export const useSystemStore = defineStore('systemStore', {
       serverVersions: new Map<VersionType, AllVersion<VersionType>>(),
       staticResouces: {} as StaticResouce,
       cacheContents: {
-        'datapacks': [] as CacheFileData<DatapackData>[],
-        'plugins': [] as CacheFileData<PluginData>[],
-        'mods': [] as CacheFileData<ModData>[],
-      }
+        datapacks: [] as CacheFileData<DatapackData>[],
+        plugins: [] as CacheFileData<PluginData>[],
+        mods: [] as CacheFileData<ModData>[],
+      },
     };
   },
   getters: {
     systemSettings() {
-      const sysSettingsStore = useSystemSettingsStore()
-      return sysSettingsStore.systemSettings
-    }
-  }
+      const sysSettingsStore = useSystemSettingsStore();
+      return sysSettingsStore.systemSettings;
+    },
+  },
 });
-
 
 /**
  * SystemSettings専用のStore
@@ -35,25 +39,25 @@ export const useSystemStore = defineStore('systemStore', {
 const useSystemSettingsStore = defineStore('systemSettingsStore', {
   state: () => {
     return {
-      systemSettings: {} as SystemSettings
-    }
-  }
-})
+      systemSettings: {} as SystemSettings,
+    };
+  },
+});
 
 /**
  * システム設定（変数）の初期化
  */
 export function initSystemSettings(sysSettings: SystemSettings) {
-  const sysSettingsStore = useSystemSettingsStore()
-  sysSettingsStore.systemSettings = sysSettings
+  const sysSettingsStore = useSystemSettingsStore();
+  sysSettingsStore.systemSettings = sysSettings;
 }
 
 /**
  * システム設定（変数）の監視
  */
 export function setSysSettingsSubscriber() {
-  const sysSettingsStore = useSystemSettingsStore()
+  const sysSettingsStore = useSystemSettingsStore();
   sysSettingsStore.$subscribe((mutation, state) => {
-    window.API.invokeSetSystemSettings(toRaw(state.systemSettings))
-  })
+    window.API.invokeSetSystemSettings(toRaw(state.systemSettings));
+  });
 }
