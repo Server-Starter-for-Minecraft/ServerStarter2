@@ -8,7 +8,7 @@ jobs:
       - uses: technote-space/get-diff-action@v6 #差分を取得する
         with:
           PATTERNS: |
-            **/*.{ts,tsx,js,jsx,json}
+            **/*.{ts,tsx,js,jsx,json,vue}
       - uses: actions/setup-node@v3 #nodeをインストール & キャッシュを取得
         with:
           node-version: 18
