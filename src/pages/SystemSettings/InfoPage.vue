@@ -67,16 +67,16 @@ function openMIT() {
     </div>
 
     <h1>{{ $t('systemsetting.info.externalLink') }}</h1>
-    <div class="q-pl-md">
+    <div class="q-pl-md q-py-sm q-gutter-sm">
       <div class="row">
         <p class="q-ma-none" style="width: 12rem;">{{ $t('systemsetting.info.homepage') }}</p>
-        <SsA url="https://civiltt.github.io/ServerStarter/" class="text-body2">
-          https://civiltt.github.io/ServerStarter/
+        <SsA url="https://server-starter-for-minecraft.github.io" class="text-body2" style="width: 20rem;">
+          https://server-starter-for-minecraft.github.io
         </SsA>
       </div>
       <div class="row q-pt-sm">
         <p class="q-ma-none" style="width: 12rem;">{{ $t('systemsetting.info.contact') }}</p>
-        <div class="row" style="flex: 1 1 0">
+        <div class="row" style="width: 20rem">
           <SsA url="https://twitter.com/CivilT_T" class="text-body2">
             https://twitter.com/CivilT_T
           </SsA>
