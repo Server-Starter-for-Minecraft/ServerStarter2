@@ -218,8 +218,6 @@ module.exports = configure(function (/* ctx */) {
         linux: {
           target: [
             'AppImage',
-            'deb',
-            'rpm',
           ],
         },
       },
