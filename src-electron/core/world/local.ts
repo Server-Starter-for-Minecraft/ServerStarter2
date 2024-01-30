@@ -42,14 +42,14 @@ function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
 
   ops.forEach(
     ({ uuid, name, level, bypassesPlayerLimit }) =>
-    (map[uuid] = {
-      uuid,
-      name,
-      op: {
-        level,
-        bypassesPlayerLimit,
-      },
-    })
+      (map[uuid] = {
+        uuid,
+        name,
+        op: {
+          level,
+          bypassesPlayerLimit,
+        },
+      })
   );
 
   return Object.values(map);

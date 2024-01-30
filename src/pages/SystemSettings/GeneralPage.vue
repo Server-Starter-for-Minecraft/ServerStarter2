@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
-import { colorThemes, ColorTheme, Locale } from 'app/src-electron/schema/system';
+import {
+  colorThemes,
+  ColorTheme,
+  Locale,
+} from 'app/src-electron/schema/system';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { assets } from 'src/assets/assets';
 import { setColor } from 'src/color';
@@ -11,23 +15,23 @@ import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
 
-const sysStore = useSystemStore()
-const t = useI18n()
+const sysStore = useSystemStore();
+const t = useI18n();
 const $q = useQuasar();
 
-const localeOptions: { value: Locale, label: string }[] = [
+const localeOptions: { value: Locale; label: string }[] = [
   { value: 'ja', label: '日本語' },
-  { value: 'en-US', label: 'English' }
-]
+  { value: 'en-US', label: 'English' },
+];
 
 function changeLocale(loc: Locale) {
-  t.locale.value = loc
+  t.locale.value = loc;
 }
 
 function changeTheme(colorTheme: ColorTheme) {
   // システム設定に登録
-  sysStore.systemSettings.user.theme = colorTheme
-  
+  sysStore.systemSettings.user.theme = colorTheme;
+
   // 設定を画面に反映
   switch (colorTheme) {
     case 'auto':
@@ -44,24 +48,24 @@ function changeTheme(colorTheme: ColorTheme) {
 
 function showOwnerDialog() {
   $q.dialog({
-    component: OwnerDialog
-  })
+    component: OwnerDialog,
+  });
 }
 </script>
 
 <template>
   <div class="mainField">
-    <h1 class="q-mt-none">{{ $t("systemsetting.general.lang") }}</h1>
+    <h1 class="q-mt-none">{{ $t('systemsetting.general.lang') }}</h1>
     <SsSelect
       dense
       v-model="sysStore.systemSettings.user.language"
-      @update:model-value="newVal => changeLocale(newVal)"
+      @update:model-value="(newVal) => changeLocale(newVal)"
       :options="localeOptions"
       option-label="label"
       option-value="value"
     />
 
-    <h1>{{ $t("systemsetting.general.colorMode") }}</h1>
+    <h1>{{ $t('systemsetting.general.colorMode') }}</h1>
     <div class="row q-gutter-lg">
       <template v-for="theme in colorThemes" :key="theme">
         <ColorThemeBtn
@@ -74,22 +78,27 @@ function showOwnerDialog() {
     </div>
     <q-toggle
       v-model="sysStore.systemSettings.user.visionSupport"
-      @update:model-value="val => setColor($q.dark.isActive, val)"
+      @update:model-value="(val) => setColor($q.dark.isActive, val)"
       :label="
         sysStore.systemSettings.user.visionSupport
           ? $t('systemsetting.general.useVisionSupport')
-          : $t('systemsetting.general.noVisionSupport')"
+          : $t('systemsetting.general.noVisionSupport')
+      "
       class="q-pt-lg"
-      style="font-size: 1rem;"
+      style="font-size: 1rem"
     />
 
     <h1>{{ $t('owner.register') }}</h1>
-    <p class="q-my-sm text-body2" style="opacity: .5;">
+    <p class="q-my-sm text-body2" style="opacity: 0.5">
       {{ $t('owner.generalDesc') }}
     </p>
     <PlayerCard v-model="sysStore.systemSettings.user.owner" />
     <SsBtn
-      :label="`${sysStore.systemSettings.user.owner ? $t('owner.change') : $t('owner.register') }`"
+      :label="`${
+        sysStore.systemSettings.user.owner
+          ? $t('owner.change')
+          : $t('owner.register')
+      }`"
       :color="!sysStore.systemSettings.user.owner ? 'primary' : undefined"
       @click="showOwnerDialog"
       class="q-my-md"

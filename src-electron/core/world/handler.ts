@@ -528,7 +528,7 @@ export class WorldHandler {
     await this.saveLocalServerJson(worldSettings);
 
     // ワールドの最終プレイを現在時刻に
-    world.last_date = getCurrentTimestamp()
+    world.last_date = getCurrentTimestamp();
 
     // データを保存
     return await this.saveExec(world);
@@ -725,7 +725,7 @@ export class WorldHandler {
       (x) => x.port === port
     );
 
-    return !portIsUsed
+    return !portIsUsed;
   }
 
   /**
@@ -733,27 +733,29 @@ export class WorldHandler {
    * 100回乱数でトライして、見つからなかった場合はエラー
    */
   private async getFreePort(): Promise<Failable<number>> {
-    let port = 1024
+    let port = 1024;
     for (let i = 0; i < 100; i++) {
-      port = randomInt(1024, 49152)
+      port = randomInt(1024, 49152);
       if (await this.checkPortAvailability(port)) return port;
     }
     return errorMessage.core.world.serverPortIsUsed({
       port,
-    })
+    });
   }
 
   /**
    * 使用ポートを決定
    */
-  private async definePortNumber(beforeWorld: World, ngrokToken: string | undefined): Promise<Failable<number>> {
+  private async definePortNumber(
+    beforeWorld: World,
+    ngrokToken: string | undefined
+  ): Promise<Failable<number>> {
     if (beforeWorld.ngrok_setting.use_ngrok && ngrokToken) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
-      const portnum = await this.getFreePort()
-      if (isError(portnum)) return portnum
-      return portnum
-    }
-    else {
+      const portnum = await this.getFreePort();
+      if (isError(portnum)) return portnum;
+      return portnum;
+    } else {
       // Ngrokを使用しない場合 ポートが空いてるかチェック
       let port = 25565;
       if (isValid(beforeWorld.properties)) {
@@ -761,14 +763,14 @@ export class WorldHandler {
         if (typeof serverPort === 'number') port = serverPort;
       }
 
-      const portIsUsed = !await this.checkPortAvailability(port)
+      const portIsUsed = !(await this.checkPortAvailability(port));
 
       if (portIsUsed) {
         errorMessage.core.world.serverPortIsUsed({
           port,
-        })
+        });
       }
-      return port
+      return port;
     }
   }
 
@@ -819,22 +821,27 @@ export class WorldHandler {
     const savePath = this.getSavePath();
 
     // ポート番号を取得
-    const port = await this.definePortNumber(beforeWorld, sysSettings.user.ngrokToken)
-    if (isError(port)) return withError(port, errors)
+    const port = await this.definePortNumber(
+      beforeWorld,
+      sysSettings.user.ngrokToken
+    );
+    if (isError(port)) return withError(port, errors);
 
     // 実行時のサーバープロパティ(ポートだけ違う)
-    const execServerProperties: ServerProperties = { ... (isError(beforeWorld.properties) ? {} : beforeWorld.properties) }
-    const beforeServerPort = execServerProperties['server-port']
-    const beforeQueryport = execServerProperties['query.port']
+    const execServerProperties: ServerProperties = {
+      ...(isError(beforeWorld.properties) ? {} : beforeWorld.properties),
+    };
+    const beforeServerPort = execServerProperties['server-port'];
+    const beforeQueryport = execServerProperties['query.port'];
 
-    execServerProperties['server-port'] = port
-    execServerProperties['query.port'] = port
-    serverPropertiesFile.save(savePath, execServerProperties)
+    execServerProperties['server-port'] = port;
+    execServerProperties['query.port'] = port;
+    serverPropertiesFile.save(savePath, execServerProperties);
 
     // ポートを登録
     this.port = port;
     // ngrokが必要な場合は起動
-    const ngrokListener = await readyNgrok(this.id, port)
+    const ngrokListener = await readyNgrok(this.id, port);
     if (isError(ngrokListener)) return withError(ngrokListener);
 
     // 使用中フラグを立てて保存
@@ -858,11 +865,10 @@ export class WorldHandler {
     );
     errors.push(...directoryFormatResult.errors);
 
+    const notification: ServerStartNotification = { port };
 
-    const notification: ServerStartNotification = { port }
-
-    const ngrokURL = ngrokListener?.url()
-    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6)
+    const ngrokURL = ngrokListener?.url();
+    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6);
 
     // サーバーの実行を開始
     const runPromise = runRebootableServer(
@@ -883,7 +889,7 @@ export class WorldHandler {
     // ポートを削除
     this.port = undefined;
     // Ngrokを閉じる
-    if (ngrokListener) await closeNgrok(ngrokListener)
+    if (ngrokListener) await closeNgrok(ngrokListener);
 
     this.runner = undefined;
 
@@ -892,7 +898,7 @@ export class WorldHandler {
     });
 
     // ワールドの最終プレイを現在時刻に
-    settings.last_date = getCurrentTimestamp()
+    settings.last_date = getCurrentTimestamp();
 
     // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = false;
@@ -912,13 +918,13 @@ export class WorldHandler {
 
     // ポート番号を復元
     if (isValid(afterWorld.value) && isValid(afterWorld.value.properties)) {
-      afterWorld.value.properties["server-port"] = beforeServerPort
-      afterWorld.value.properties["query.port"] = beforeQueryport
+      afterWorld.value.properties['server-port'] = beforeServerPort;
+      afterWorld.value.properties['query.port'] = beforeQueryport;
       // プロパティを保存
-      serverPropertiesFile.save(savePath, afterWorld.value.properties)
+      serverPropertiesFile.save(savePath, afterWorld.value.properties);
     }
 
-    return afterWorld
+    return afterWorld;
   }
 
   /** コマンドを実行 */
@@ -956,14 +962,16 @@ async function getDuplicateWorldName(
   return result;
 }
 
-
-/** 
+/**
  * Ngrokを利用する場合の処理
- * 
+ *
  * Ngrokを利用する場合はlistenerを返す
  * Ngrokを利用しない場合はundefinedを返す
  */
-async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<Listener | undefined>> {
+async function readyNgrok(
+  worldID: WorldID,
+  port: number
+): Promise<Failable<Listener | undefined>> {
   const systemSettings = await getSystemSettings();
   const token = systemSettings.user.ngrokToken ?? '';
 
@@ -972,9 +980,13 @@ async function readyNgrok(worldID: WorldID, port: number): Promise<Failable<List
   if (isError(world.value)) return world.value;
 
   if (token !== '' && world.value.ngrok_setting.use_ngrok) {
-    const listener = runNgrok(token, port, world.value.ngrok_setting.remote_addr);
+    const listener = runNgrok(
+      token,
+      port,
+      world.value.ngrok_setting.remote_addr
+    );
     return listener;
   }
 
-  return undefined
+  return undefined;
 }

@@ -33,7 +33,6 @@ export async function update() {
   const update = await checkUpdate();
   logger.info(update);
 
-
   if (update === false) {
     return;
   }

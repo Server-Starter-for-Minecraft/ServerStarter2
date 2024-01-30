@@ -1,16 +1,16 @@
 interface updatePatDialogProp {
-  oldPat: string
+  oldPat: string;
 }
 
 interface unlinkDialogProp {
-  title: string
-  owner: string
-  repo: string
+  title: string;
+  owner: string;
+  repo: string;
 }
 
-export type updatePatProp = updatePatDialogProp
-export type unlinkRepoProp = unlinkDialogProp
+export type updatePatProp = updatePatDialogProp;
+export type unlinkRepoProp = unlinkDialogProp;
 
 export interface updatePatDialogReturns {
-  newPat: string
+  newPat: string;
 }

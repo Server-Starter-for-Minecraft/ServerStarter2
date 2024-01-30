@@ -2,16 +2,16 @@
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 
 interface Prop {
-  disable?: boolean
-  src?: string
-  icon?: string
-  label: string
-  color?: string
-  onClick: () => void
+  disable?: boolean;
+  src?: string;
+  icon?: string;
+  label: string;
+  color?: string;
+  onClick: () => void;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 
-const playerStore = usePlayerStore()
+const playerStore = usePlayerStore();
 </script>
 
 <template>

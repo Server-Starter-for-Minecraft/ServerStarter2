@@ -1,10 +1,11 @@
 export const jaOthers = {
   backup: {
     title: 'バックアップの管理',
-    backupDesc: '\
+    backupDesc:
+      '\
       このワールドのバックアップを作成します<br>\
       バックアップしたワールドデータは「バックアップから復旧」より利用することができます',
-    makeBackup : 'バックアップを作成',
+    makeBackup: 'バックアップを作成',
     recoverFromBackup: 'バックアップから復旧',
     madeBackup: '{world}のバックアップを作成しました',
     recovered: 'ワールドの復旧が完了しました',
@@ -23,6 +24,7 @@ export const jaOthers = {
     inputFolderName: 'フォルダ名を入力してください',
     selectFolder: 'フォルダを選択してください',
     selectFolderBtn: 'フォルダを選択',
-    cannotEdit: '起動中のワールドがある状態でワールドフォルダを編集することはできません',
-  }
-}
+    cannotEdit:
+      '起動中のワールドがある状態でワールドフォルダを編集することはできません',
+  },
+};

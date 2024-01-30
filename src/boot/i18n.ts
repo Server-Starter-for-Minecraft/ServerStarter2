@@ -27,7 +27,7 @@ export default boot(({ app }) => {
     locale: 'ja',
     legacy: false,
     messages,
-    datetimeFormats
+    datetimeFormats,
   });
 
   // Set i18n instance on app

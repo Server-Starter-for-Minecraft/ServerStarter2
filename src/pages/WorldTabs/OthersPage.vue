@@ -2,15 +2,10 @@
 import BootSettingsView from 'src/components/World/Others/BootSettingsView.vue';
 import BackupWorldView from 'src/components/World/Others/BackupWorldView.vue';
 import WorldFolderView from 'src/components/World/Others/WorldFolderView.vue';
-
 </script>
 
 <template>
-  <q-scroll-area
-    ref="scrollAreaRef"
-    class="full-height"
-    style="flex: 1 1 0;"
-  >
+  <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0">
     <div class="mainField">
       <!-- Others -->
       <h1 class="q-pt-lg">{{ $t('home.setting.title') }}</h1>

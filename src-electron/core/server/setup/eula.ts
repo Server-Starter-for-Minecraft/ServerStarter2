@@ -127,23 +127,23 @@ async function generateEula(
   const process = interactiveProcess(
     javaPath,
     [...programArgunets, '--nogui'],
-    value => {
-      if (value.match("Failed to load eula.txt")) {
-        process.kill()
+    (value) => {
+      if (value.match('Failed to load eula.txt')) {
+        process.kill();
       }
     },
-    () => { },
+    () => {},
     serverCwdPath,
     true
   );
 
   // 60秒経っても終了していない場合はプロセスキル
   (async () => {
-    await sleep(60 * 1000)
-    if (!process.finished()) process.kill()
-  })()
+    await sleep(60 * 1000);
+    if (!process.finished()) process.kill();
+  })();
 
-  const result = await process
+  const result = await process;
 
   if (isError(result)) return result;
 

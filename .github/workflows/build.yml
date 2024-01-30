@@ -1,0 +1,190 @@
+name: Build
+
+# secrets.GITHUB_TOKENにリポジトリへの書き込みを許可
+permissions:
+  contents: write
+
+# 同時起動とキャンセルを不可に
+concurrency:
+  group: 'build'
+  cancel-in-progress: false
+
+# github上の操作で起動
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Select release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  # バージョンの更新とコミットの処理
+  create-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # package.jsonのversionを更新
+      - uses: Server-Starter-for-Minecraft/VersionUpdater@v1
+        id: get_version
+        with:
+          update-type: ${{inputs.type}}
+
+      # gitにcommitしてpush
+      - run: |
+          git config --local user.name github-actions[bot]
+          git config --local user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .
+          git commit -m "🔖 Release ${{ steps.get_version.outputs.next-version }}"
+          git push
+          git checkout -b release/v${{ steps.get_version.outputs.next-version }}
+          git push -u origin release/v${{ steps.get_version.outputs.next-version }}
+    outputs:
+      current-version: ${{steps.get_version.outputs.current-version }}
+      next-version: ${{steps.get_version.outputs.next-version }}
+
+  # 各osでelectronをビルド
+  build-electron:
+    needs: create-commit
+
+    defaults:
+      run:
+        shell: bash
+
+    # 各osで並列ビルド
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Nodejsを使用
+      - name: Setup NodeJS Environment 18
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: 'yarn'
+
+      # create-commitで行った更新をpullし、ビルドを実行
+      - name: Pull and Build
+        run: |
+          git pull
+          yarn install
+          yarn build
+
+      # Windowsのビルドデータを指定のパスに移動
+      - name: Move BuildData Win
+        if: matrix.os == 'windows-latest'
+        run: mv "${{github.workspace}}/dist/electron/Packaged/ServerStarter2 ${{ needs.create-commit.outputs.next-version }}.msi" ${{ matrix.os }}
+
+      # Macのビルドデータを指定のパスに移動
+      - name: Move BuildData Mac
+        if: matrix.os == 'macos-latest'
+        run: mv "${{github.workspace}}/dist/electron/Packaged/ServerStarter2-${{ needs.create-commit.outputs.next-version }}.pkg" ${{ matrix.os }}
+
+      # ビルドデータをArtifactとして一時保存
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}
+          path: ${{ matrix.os }}
+          retention-days: 1
+
+  # リリースを作成
+  create-release:
+    needs:
+      - create-commit
+      - build-electron
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+      # リリースとリリースノートを作成
+      - name: Create a Release and Release note
+        id: create_release
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: v${{ needs.create-commit.outputs.next-version }}
+          name: ${{ github.event.pull_request.title }}
+          version: v${{ needs.create-commit.outputs.next-version }}
+          publish: false # draft状態で作成
+          prerelease: false
+
+  # ビルドデータをアップロード
+  upload-build:
+    needs:
+      - create-commit
+      - create-release
+    runs-on: ubuntu-latest
+
+    # 各osのビルドデータを並列処理
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            ext: pkg
+          - os: windows-latest
+            ext: msi
+
+    steps:
+      # 一時保存したアーティファクトをダウンロード
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.os }}
+
+      # リリースにビルドデータをアップロード
+      - name: Upload a Release Asset
+        id: upload_release_asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ matrix.os }}
+          asset_name: ServerStarter-v${{ needs.create-commit.outputs.next-version }}.${{ matrix.ext }}
+          asset_content_type: appliction/${{ matrix.ext }}
+
+  # Discordに通知
+  notify:
+    needs:
+      - create-commit
+      - upload-build
+
+    runs-on: ubuntu-latest
+
+    # 失敗した場合も通知する
+    if: always()
+
+    steps:
+      # ワークフローが失敗したかどうかを調べる
+      - uses: technote-space/workflow-conclusion-action@v1
+
+      # discordに通知
+      - name: notify via discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          title: Draft Release v${{ needs.create-commit.outputs.next-version }}
+          description: |
+            Click [here](https://github.com/${{ github.repository }}/releases) to open releases!
+          url: 'https://github.com/${{ github.repository }}/releases'
+          nocontext: true
+          username: GitHub Actions
+          webhook: ${{ secrets.DISCORD_WEBHOOK_BUILD }}
+          status: ${{ env.WORKFLOW_CONCLUSION }}

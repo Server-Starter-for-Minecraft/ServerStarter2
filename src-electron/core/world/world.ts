@@ -134,7 +134,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
       mods: [],
     },
     ngrok_setting: {
-      use_ngrok: true
+      use_ngrok: true,
     },
   };
 
@@ -257,14 +257,14 @@ export async function fetchLatestWorldLog(
 
   if (isError(handler)) return handler;
 
-  const log = await new WorldLogHandler(handler.getSavePath()).loadLatest()
+  const log = await new WorldLogHandler(handler.getSavePath()).loadLatest();
 
   if (isError(log)) {
     return errorMessage.core.world.missingLatestLog({
       name: handler.name,
-      container: handler.container
-    })
+      container: handler.container,
+    });
   }
 
-  return log
+  return log;
 }

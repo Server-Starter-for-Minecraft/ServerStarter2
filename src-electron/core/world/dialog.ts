@@ -47,13 +47,13 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
   async function result(
     options: {
       type:
-      | 'datapack'
-      | 'world'
-      | 'plugin'
-      | 'mod'
-      | 'image'
-      | 'container'
-      | 'backup';
+        | 'datapack'
+        | 'world'
+        | 'plugin'
+        | 'mod'
+        | 'image'
+        | 'container'
+        | 'backup';
       isFile?: boolean;
       container?: WorldContainer;
     } & DialogOptions

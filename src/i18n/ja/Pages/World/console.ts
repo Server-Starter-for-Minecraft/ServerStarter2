@@ -8,19 +8,21 @@ export const jaConsole = {
     btn: '停止',
     withName: '<span class="text-omit col">{name}</span> &nbsp; を停止',
     progress: '停止処理中',
-    progressWithName: '<span class="text-omit col">{name}</span> &nbsp; を停止しています',
+    progressWithName:
+      '<span class="text-omit col">{name}</span> &nbsp; を停止しています',
   },
   reboot: {
     btn: '再起動',
     progress: '再起動中',
-    progressWithName: '<span class="text-omit col">{name}</span> &nbsp; を再起動しています',
+    progressWithName:
+      '<span class="text-omit col">{name}</span> &nbsp; を再起動しています',
   },
   status: {
     Stop: '停止中',
     Ready: '準備中',
     Running: '起動中',
-    CheckLog: 'ログ確認中'
+    CheckLog: 'ログ確認中',
   },
   shutdownServer: 'サーバーをシャットダウン中',
   command: 'コマンドを入力',
-}
+};

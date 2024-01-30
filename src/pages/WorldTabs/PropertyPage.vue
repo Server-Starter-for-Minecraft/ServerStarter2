@@ -4,7 +4,7 @@ import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { isValid } from 'src/scripts/error';
 import { fromEntries, toEntries } from 'src/scripts/obj';
 import { thumbStyle } from 'src/components/World/scrollBar';
-import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore'
+import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
@@ -12,38 +12,38 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
-const sysStore = useSystemStore()
-const mainStore = useMainStore()
-const propertyStore = usePropertyStore()
+const sysStore = useSystemStore();
+const mainStore = useMainStore();
+const propertyStore = usePropertyStore();
 
 // システムが規定するデフォルトプロパティ
 const initProperty: ServerProperties = fromEntries(
-  toEntries(
-    sysStore.staticResouces.properties
-  ).map(
-    keyVal => [keyVal[0], keyVal[1].default]
-  )
-)
+  toEntries(sysStore.staticResouces.properties).map((keyVal) => [
+    keyVal[0],
+    keyVal[1].default,
+  ])
+);
 
 // 入力領域のスクロールバーの制御
-const scrollAreaRef = ref()
+const scrollAreaRef = ref();
 
 /**
  * 全てのServer Propertyを基本設定に戻す
  */
 function resetAll() {
-  Object.keys(sysStore.systemSettings.world.properties).map(key => {
+  Object.keys(sysStore.systemSettings.world.properties).map((key) => {
     if (isValid(mainStore.world.properties)) {
-      mainStore.world.properties[key] = sysStore.systemSettings.world.properties[key]
+      mainStore.world.properties[key] =
+        sysStore.systemSettings.world.properties[key];
     }
-  })
+  });
 }
 
 /**
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.setScrollPosition('vertical', 0)
+  scrollAreaRef.value.setScrollPosition('vertical', 0);
 }
 </script>
 
@@ -69,20 +69,24 @@ function scrollTop() {
         />
       </div>
 
-      <div class="row fit" style="flex: 1 1 0;">
+      <div class="row fit" style="flex: 1 1 0">
         <SideMenuView @scroll-top="scrollTop" />
 
         <q-separator vertical inset />
 
         <div class="col">
-          <q-scroll-area ref="scrollAreaRef" :thumb-style="thumbStyle" class="fit">
+          <q-scroll-area
+            ref="scrollAreaRef"
+            :thumb-style="thumbStyle"
+            class="fit"
+          >
             <SettingsView v-model="mainStore.world.properties" />
           </q-scroll-area>
         </div>
       </div>
     </div>
 
-    <div v-else class="fit" style="position: relative;">
+    <div v-else class="fit" style="position: relative">
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
         <SsBtn

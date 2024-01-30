@@ -7,9 +7,9 @@ import { IconSelectProp, IconSelectReturn } from './IconSelecter/iIconSelect';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import IconSelectView from './IconSelecter/IconSelectView.vue';
 
-const $q = useQuasar()
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
+const $q = useQuasar();
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
 
 /**
  * ワールドアイコンの選択（作成）画面を表示する
@@ -18,11 +18,11 @@ function openIconSelecter() {
   $q.dialog({
     component: IconSelectView,
     componentProps: {
-      img: mainStore.world.avater_path
-    } as IconSelectProp
+      img: mainStore.world.avater_path,
+    } as IconSelectProp,
   }).onOk((p: IconSelectReturn) => {
-    mainStore.world.avater_path = p.img
-  })
+    mainStore.world.avater_path = p.img;
+  });
 }
 </script>
 
@@ -31,7 +31,7 @@ function openIconSelecter() {
     <q-avatar square size="10rem">
       <q-img
         :src="mainStore.world.avater_path ?? assets.png.unset"
-        style="image-rendering: pixelated;"
+        style="image-rendering: pixelated"
       />
       <q-btn
         dense

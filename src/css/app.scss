@@ -1,5 +1,6 @@
 // app global css in SCSS form
-p, li {
+p,
+li {
   font-size: 14pt;
 }
 
@@ -37,7 +38,6 @@ html {
   border-radius: 100px;
 }
 
-
 // dark mode or light mode
 body.body--light {
   background-color: #fafafa;
@@ -46,7 +46,6 @@ body.body--light {
 body.body--dark {
   background-color: #262626;
 }
-
 
 // adjust font size
 html {
@@ -63,7 +62,6 @@ html {
   }
 }
 
-
 // コンテンツの表示領域を定義
 .mainField {
   height: 100%;
@@ -71,7 +69,6 @@ html {
   max-width: 1000px;
   margin: 0 auto 32px auto;
 }
-
 
 // コンテンツを鉛直方向にのみスクロールさせるエリアを生成
 .vertical-scroll {

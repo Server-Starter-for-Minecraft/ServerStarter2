@@ -5,40 +5,54 @@ import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 interface Prop {
-  disable?: boolean
+  disable?: boolean;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
-const consoleOpeStore = useConsoleOpeStore()
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
+const consoleOpeStore = useConsoleOpeStore();
 
 function stop() {
-  consoleStore.clickedStopBtn(mainStore.selectedWorldID)
-  window.API.sendCommand(mainStore.selectedWorldID, 'stop')
+  consoleStore.clickedStopBtn(mainStore.selectedWorldID);
+  window.API.sendCommand(mainStore.selectedWorldID, 'stop');
 }
 
 async function reboot() {
-  const worldID = mainStore.selectedWorldID
-  consoleStore.clickedRebootBtn(worldID)
-  await window.API.invokeReboot(worldID)
-  consoleStore.resetReboot(worldID)
+  const worldID = mainStore.selectedWorldID;
+  consoleStore.clickedRebootBtn(worldID);
+  await window.API.invokeReboot(worldID);
+  consoleStore.resetReboot(worldID);
 }
 
 function closeLog() {
-  consoleStore.initTab(mainStore.selectedWorldID, true)
+  consoleStore.initTab(mainStore.selectedWorldID, true);
 }
 </script>
 
 <template>
-  <div v-if="consoleStore.status(mainStore.selectedWorldID) !== 'CheckLog'" class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+  <div
+    v-if="consoleStore.status(mainStore.selectedWorldID) !== 'CheckLog'"
+    class="row q-mx-md"
+    style="padding-top: 14px; padding-bottom: 14px"
+  >
     <SsBtn
       dense
       is-capital
       icon="stop"
-      :label="$t(consoleStore.isClickedStop(mainStore.selectedWorldID) ? 'console.stop.progress' : 'console.stop.btn')"
+      :label="
+        $t(
+          consoleStore.isClickedStop(mainStore.selectedWorldID)
+            ? 'console.stop.progress'
+            : 'console.stop.btn'
+        )
+      "
       color="negative"
-      :width="consoleStore.isClickedStop(mainStore.selectedWorldID) ? '150px' : '100px'"
+      :width="
+        consoleStore.isClickedStop(mainStore.selectedWorldID)
+          ? '150px'
+          : '100px'
+      "
       :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="stop"
     />
@@ -46,8 +60,18 @@ function closeLog() {
       dense
       is-capital
       icon="restart_alt"
-      :label="$t(consoleStore.isClickedReboot(mainStore.selectedWorldID) ? 'console.reboot.progress' : 'console.reboot.btn')"
-      :width="consoleStore.isClickedReboot(mainStore.selectedWorldID) ? '150px' : '100px'"
+      :label="
+        $t(
+          consoleStore.isClickedReboot(mainStore.selectedWorldID)
+            ? 'console.reboot.progress'
+            : 'console.reboot.btn'
+        )
+      "
+      :width="
+        consoleStore.isClickedReboot(mainStore.selectedWorldID)
+          ? '150px'
+          : '100px'
+      "
       :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="reboot"
       class="q-mx-sm"
@@ -76,8 +100,12 @@ function closeLog() {
       </template>
     </q-input>
   </div>
-  
-  <div v-else class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px;">
+
+  <div
+    v-else
+    class="row q-mx-md"
+    style="padding-top: 14px; padding-bottom: 14px"
+  >
     <q-space />
     <SsBtn
       dense
