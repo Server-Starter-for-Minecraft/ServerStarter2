@@ -85,7 +85,10 @@ function openMIT() {
         <p class="q-ma-none" style="width: 12rem">
           {{ $t('systemsetting.info.homepage') }}
         </p>
-        <SsA url="https://server-starter-for-minecraft.github.io" class="text-body2">
+        <SsA
+          url="https://server-starter-for-minecraft.github.io"
+          class="text-body2"
+        >
           https://server-starter-for-minecraft.github.io
         </SsA>
       </div>
