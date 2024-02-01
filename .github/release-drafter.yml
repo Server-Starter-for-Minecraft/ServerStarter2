@@ -19,6 +19,9 @@ categories:
   - title: '✅ Tests'
     label: 'test'
 
+exclude-labels:
+  - 'release'
+
 template: |
   ## What’s Changed
 
