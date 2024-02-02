@@ -1,6 +1,7 @@
 import { rootLoggerHierarchy } from '../core/logger';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { isError } from '../util/error/error';
+import { getBytesFile } from '../util/github/rest';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
 import { installMac } from './installer/mac';

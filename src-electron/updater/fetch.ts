@@ -39,7 +39,7 @@ function parseAssets(assets: ReleaseAsset[], osPLatform: OsPlatform) {
   }[osPLatform];
 
   return assets.find(({ browser_download_url: url }) => url.endsWith(suffix))
-    ?.browser_download_url;
+    ?.url;
 }
 
 export type GithubRelease = {
