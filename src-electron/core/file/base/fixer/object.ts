@@ -1,0 +1,31 @@
+import { Fixer, isFail } from './fixer';
+import { Number } from './primitive';
+
+const object = global.Object;
+
+export function Object<T extends object>(pattern: {
+  [K in keyof T]: Fixer<T[K], false>;
+}): Fixer<T, false>;
+export function Object<T extends object>(pattern: {
+  [K in keyof T]: Fixer<T[K], boolean>;
+}): Fixer<T, true>;
+export function Object<T extends object>(pattern: {
+  [K in keyof T]: Fixer<T[K], boolean>;
+}): Fixer<T, boolean> {
+  const func = (value: any, path: string) => {
+    if (typeof value !== 'object' || value instanceof Array || value === null) {
+      value = {};
+    }
+
+    const result: any = {};
+
+    for (const [k, fixer] of object.entries<Fixer<any, boolean>>(pattern)) {
+      const fixed = fixer.fix(value[k], path ? path + '.' + k : k);
+      if (isFail(fixed)) return fixed;
+      result[k] = fixed;
+    }
+    return result as T;
+  };
+
+  return new Fixer(func);
+}

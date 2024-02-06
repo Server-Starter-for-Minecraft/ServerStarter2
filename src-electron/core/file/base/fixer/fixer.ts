@@ -9,7 +9,7 @@ export type Fail = {
   paths: string[];
 };
 
-export function fail(paths: string[]) {
+export function fail(paths: string[]): Fail {
   return {
     [FAIL]: FAIL,
     paths,
@@ -21,7 +21,10 @@ export function isFail(value: any): value is Fail {
 }
 
 export class Fixer<T, FAILABLE extends boolean> {
-  func: (value: any, path: string) => FAILABLE extends true ? T | Fail : T;
+  private func: (
+    value: any,
+    path: string
+  ) => FAILABLE extends true ? T | Fail : T;
 
   constructor(
     func: (value: any, path: string) => FAILABLE extends true ? T | Fail : T
