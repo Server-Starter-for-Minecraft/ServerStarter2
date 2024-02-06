@@ -27,4 +27,7 @@ export type PlayerSettings$1 = {
 export const PlayerSettings$1 = fixObject<PlayerSettings$1>({
   groups: fixRecord(PlayerGroup$1, RecordFixMode.Skip),
   players: fixArray(fixString, ArrayFixMode.Skip),
+}).default({
+  groups: {},
+  players: [],
 });
