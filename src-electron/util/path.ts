@@ -4,6 +4,7 @@ import type { BytesData } from './bytesData';
 import { Failable } from './error/failable';
 import { asyncForEach } from './objmap';
 import { isError } from './error/error';
+import { errorMessage } from './error/construct';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
@@ -135,7 +136,11 @@ export class Path {
   async readJson<T>(): Promise<Failable<T>> {
     const data = await (await loadBytesData()).fromPath(this);
     if (isError(data)) return data;
-    return await data.json();
+    try {
+      return await data.json();
+    } catch {
+      return errorMessage.data.path.parse.invalidJson({ path: this.path });
+    }
   }
 
   async readText(): Promise<Failable<string>> {
