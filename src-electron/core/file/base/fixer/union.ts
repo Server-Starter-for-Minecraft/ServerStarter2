@@ -1,5 +1,4 @@
 import { Fixer, fail, isFail } from './fixer';
-import { Boolean, Number, String } from './primitive';
 
 export function Union<T extends any[]>(
   ...fixers: {
