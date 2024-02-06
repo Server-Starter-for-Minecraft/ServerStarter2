@@ -1,6 +1,7 @@
 import { fixDefault } from './default';
 import { fixMap } from './map';
 import { fixOptional } from './optional';
+import { fixUnion } from './union';
 
 const FAIL = Symbol();
 
@@ -20,6 +21,11 @@ export function isFail(value: any): value is Fail {
   return value[FAIL] === FAIL;
 }
 
+type And<X extends boolean, Y extends boolean> = X extends true
+  ? Y extends true
+    ? true
+    : false
+  : false;
 export class Fixer<T, FAILABLE extends boolean> {
   private func: (
     value: any,
@@ -49,5 +55,14 @@ export class Fixer<T, FAILABLE extends boolean> {
   /** Fixした結果に関数を適用*/
   map<U>(func: (value: T) => U): Fixer<U, FAILABLE> {
     return fixMap(this, func);
+  }
+
+  or<U, F extends boolean>(
+    fallback: Fixer<U, F>
+  ): Fixer<T | U, And<FAILABLE, F>> {
+    return fixUnion<[T, U]>(
+      this as Fixer<T, true>,
+      fallback as Fixer<U, true>
+    ) as Fixer<T | U, And<FAILABLE, F>>;
   }
 }
