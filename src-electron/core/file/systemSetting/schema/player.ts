@@ -24,10 +24,12 @@ export type PlayerSettings$1 = {
   players: string[];
 };
 
-export const PlayerSettings$1 = fixObject<PlayerSettings$1>({
-  groups: fixRecord(PlayerGroup$1, RecordFixMode.Skip),
-  players: fixArray(fixString, ArrayFixMode.Skip),
-}).default({
+export const defaultPlayerSettings$1 = {
   groups: {},
   players: [],
-});
+};
+
+export const PlayerSettings$1 = fixObject<PlayerSettings$1>({
+  groups: fixRecord(PlayerGroup$1, RecordFixMode.Skip).default({}),
+  players: fixArray(fixString, ArrayFixMode.Skip).default([]),
+}).default(defaultPlayerSettings$1);

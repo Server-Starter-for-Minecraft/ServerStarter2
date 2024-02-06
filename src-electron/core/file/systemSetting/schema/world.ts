@@ -57,7 +57,7 @@ export type WorldSettings$1 = {
   properties: ServerProperties$1;
 };
 
-const defaultWorldSettings$1: WorldSettings$1 = {
+export const defaultWorldSettings$1: WorldSettings$1 = {
   javaArguments: undefined,
 
   memory: {
@@ -74,4 +74,4 @@ export const WorldSettings$1 = fixObject<WorldSettings$1>({
   memory: MemorySettings$1.default(defaultWorldSettings$1.memory),
 
   properties: ServerProperties$1.default(defaultWorldSettings$1.properties),
-});
+}).default(defaultWorldSettings$1);

@@ -39,7 +39,7 @@ export type UserSettings$1 = {
   ngrokToken?: string;
 };
 
-const defaultUserSettings$1: UserSettings$1 = {
+export const defaultUserSettings$1: UserSettings$1 = {
   eula: false,
 
   // カラーテーマ Light/Dark
