@@ -1,20 +1,19 @@
-import { Fixer, isFail } from './fixer';
-import { Number } from './primitive';
+import { Fixer, fail, isFail } from './fixer';
 
 const object = global.Object;
 
 export function Object<T extends object>(pattern: {
   [K in keyof T]: Fixer<T[K], false>;
-}): Fixer<T, false>;
+}): Fixer<T, true>;
 export function Object<T extends object>(pattern: {
   [K in keyof T]: Fixer<T[K], boolean>;
 }): Fixer<T, true>;
 export function Object<T extends object>(pattern: {
   [K in keyof T]: Fixer<T[K], boolean>;
-}): Fixer<T, boolean> {
+}): Fixer<T, true> {
   const func = (value: any, path: string) => {
     if (typeof value !== 'object' || value instanceof Array || value === null) {
-      value = {};
+      return fail([path]);
     }
 
     const result: any = {};
