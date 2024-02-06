@@ -21,7 +21,7 @@ function write(settings: SystemSettings) {
 // 設定ファイルの読み込み
 function read() {
   let parsed: any;
-  
+
   try {
     // ファイルから読み取り
     const encrypted = readFileSync(settingPath.str());

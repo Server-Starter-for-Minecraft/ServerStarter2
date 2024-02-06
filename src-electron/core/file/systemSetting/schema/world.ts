@@ -8,7 +8,6 @@ export type WorldSettings$1 = {
   properties: ServerProperties$1;
 };
 
-
 export type MemoryUnit$1 =
   | 'B'
   | 'KB'
