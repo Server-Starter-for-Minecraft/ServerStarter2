@@ -9,15 +9,15 @@ export enum ArrayFixMode {
 
 export function fixArray<T>(
   fixer: Fixer<T, false>,
-  mode: ArrayFixMode
+  mode?: ArrayFixMode
 ): Fixer<T[], true>;
 export function fixArray<T>(
   fixer: Fixer<T, true>,
-  mode: ArrayFixMode
+  mode?: ArrayFixMode
 ): Fixer<T[], true>;
 export function fixArray<T>(
   fixer: Fixer<T, boolean>,
-  mode: ArrayFixMode
+  mode: ArrayFixMode = ArrayFixMode.Skip
 ): Fixer<T[], true> {
   const func = (value: any, path: string) => {
     if (!(value instanceof global.Array)) {

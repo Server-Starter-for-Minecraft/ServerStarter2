@@ -9,15 +9,15 @@ export enum RecordFixMode {
 
 export function fixRecord<T>(
   fixer: Fixer<T, false>,
-  mode: RecordFixMode
+  mode?: RecordFixMode
 ): Fixer<Record<string, T>, true>;
 export function fixRecord<T>(
   fixer: Fixer<T, true>,
-  mode: RecordFixMode
+  mode?: RecordFixMode
 ): Fixer<Record<string, T>, true>;
 export function fixRecord<T>(
   fixer: Fixer<T, boolean>,
-  mode: RecordFixMode
+  mode: RecordFixMode = RecordFixMode.Skip
 ): Fixer<Record<string, T>, true> {
   const func = (value: any, path: string) => {
     if (!(value instanceof global.Array)) {
