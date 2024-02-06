@@ -1,6 +1,6 @@
 import { Fail, Fixer, isFail } from './fixer';
 
-export function Optional<T>(
+export function fixOptional<T>(
   fixer: Fixer<T, boolean>
 ): Fixer<T | undefined, false> {
   const func = (value: any, path: string) => {

@@ -1,3 +1,7 @@
+import { fixArray, ArrayFixMode } from '../../base/fixer/array';
+import { fixObject } from '../../base/fixer/object';
+import { fixString } from '../../base/fixer/primitive';
+
 export type PlayerSettings$1 = {
   groups: { [name: string]: PlayerGroup$1 };
   players: string[];
@@ -12,3 +16,9 @@ export type PlayerGroup$1 = {
   /** 所属するプレイヤーのUUIDのリスト */
   players: string[];
 };
+
+export const PlayerGroup$1 = fixObject<PlayerGroup$1>({
+  name: fixString,
+  color: fixString,
+  players: fixArray(fixString, ArrayFixMode.Skip),
+});

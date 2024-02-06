@@ -7,15 +7,15 @@ export enum ArrayFixMode {
   Throw,
 }
 
-export function Array<T>(
+export function fixArray<T>(
   fixer: Fixer<T, false>,
   mode: ArrayFixMode
 ): Fixer<T[], true>;
-export function Array<T>(
+export function fixArray<T>(
   fixer: Fixer<T, true>,
   mode: ArrayFixMode
 ): Fixer<T[], true>;
-export function Array<T>(
+export function fixArray<T>(
   fixer: Fixer<T, boolean>,
   mode: ArrayFixMode
 ): Fixer<T[], true> {

@@ -1,6 +1,6 @@
-import { Default } from './default';
-import { Map } from './map';
-import { Optional } from './optional';
+import { fixDefault } from './default';
+import { fixMap } from './map';
+import { fixOptional } from './optional';
 
 const FAIL = Symbol();
 
@@ -38,16 +38,16 @@ export class Fixer<T, FAILABLE extends boolean> {
 
   /** Fixに失敗した際にFailではなくデフォルト値を使用 */
   default(dafult: T): Fixer<T, false> {
-    return Default(this, dafult);
+    return fixDefault(this, dafult);
   }
 
   /** Fixに失敗した際にFailではなくデフォルト値を使用 */
   optional(): Fixer<T | undefined, false> {
-    return Optional(this);
+    return fixOptional(this);
   }
 
   /** Fixした結果に関数を適用*/
   map<U>(func: (value: T) => U): Fixer<U, FAILABLE> {
-    return Map(this, func);
+    return fixMap(this, func);
   }
 }

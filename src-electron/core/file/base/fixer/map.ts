@@ -1,6 +1,6 @@
 import { Fail, Fixer, isFail } from './fixer';
 
-export function Map<T, U, F extends boolean>(
+export function fixMap<T, U, F extends boolean>(
   fixer: Fixer<T, F>,
   func: (value: T) => U
 ): Fixer<U, F> {

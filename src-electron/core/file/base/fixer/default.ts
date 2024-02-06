@@ -1,6 +1,6 @@
 import { Fail, Fixer, isFail } from './fixer';
 
-export function Default<T>(
+export function fixDefault<T>(
   fixer: Fixer<T, boolean>,
   dafult: T
 ): Fixer<T, false> {

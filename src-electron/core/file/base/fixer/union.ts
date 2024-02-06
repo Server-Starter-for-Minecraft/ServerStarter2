@@ -1,16 +1,16 @@
 import { Fixer, fail, isFail } from './fixer';
 
-export function Union<T extends any[]>(
+export function fixUnion<T extends any[]>(
   ...fixers: {
     [K in keyof T]: Fixer<T[K], false>;
   }
 ): Fixer<T[number], false>;
-export function Union<T extends any[]>(
+export function fixUnion<T extends any[]>(
   ...fixers: {
     [K in keyof T]: Fixer<T[K], true>;
   }
 ): Fixer<T[number], true>;
-export function Union<T extends any[]>(
+export function fixUnion<T extends any[]>(
   ...fixers: {
     [K in keyof T]: Fixer<T[K], boolean>;
   }

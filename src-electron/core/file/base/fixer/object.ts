@@ -2,13 +2,13 @@ import { Fixer, fail, isFail } from './fixer';
 
 const object = global.Object;
 
-export function Object<T extends object>(pattern: {
+export function fixObject<T extends object>(pattern: {
   [K in keyof T]: Fixer<T[K], false>;
 }): Fixer<T, true>;
-export function Object<T extends object>(pattern: {
+export function fixObject<T extends object>(pattern: {
   [K in keyof T]: Fixer<T[K], boolean>;
 }): Fixer<T, true>;
-export function Object<T extends object>(pattern: {
+export function fixObject<T extends object>(pattern: {
   [K in keyof T]: Fixer<T[K], boolean>;
 }): Fixer<T, true> {
   const func = (value: any, path: string) => {
