@@ -24,8 +24,9 @@ export function fixArray<T>(
       return fail([path]);
     }
     const fixed: T[] = [];
-    for (const item of value) {
-      const fixedItem = fixer.fix(item, path);
+    for (let i = 0; i < value.length; i++) {
+      const item = value[i];
+      const fixedItem = fixer.fix(item, `${path}[${i}]`);
       if (isFail(fixedItem)) {
         if (mode === ArrayFixMode.Skip) continue;
         return fixedItem;
