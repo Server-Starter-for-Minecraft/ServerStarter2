@@ -108,6 +108,11 @@ export class Path {
     await content.write(this.path);
   }
 
+  async writeBufferSync(content: Buffer) {
+    this.parent().mkdirSync(true);
+    fs.writeFileSync(this.path, content);
+  }
+
   async writeText(content: string) {
     await this.parent().mkdir(true);
     await fs.writeFile(this.path, content);
