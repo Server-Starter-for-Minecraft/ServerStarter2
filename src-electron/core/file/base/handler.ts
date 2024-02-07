@@ -1,9 +1,9 @@
-import { Fixer } from 'app/src-electron/util/detaFixer/fixer';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { isDeepStrictEqual } from 'util';
+import { Fixer } from './fixer/fixer';
 
 /**
  * JSON形式の設定ファイルを扱うためのクラス
@@ -11,10 +11,10 @@ import { isDeepStrictEqual } from 'util';
  */
 export class JsonFileHandler<T> {
   path: Path;
-  fixer: Fixer<T>;
+  fixer: Fixer<T, false>;
   value: Failable<T>;
 
-  constructor(path: Path, fixer: Fixer<T>) {
+  constructor(path: Path, fixer: Fixer<T, false>) {
     this.path = path;
     this.fixer = fixer;
 
@@ -31,7 +31,7 @@ export class JsonFileHandler<T> {
   async load(flush = false): Promise<Failable<T>> {
     if (flush || isError(this.value)) {
       const json = await this.path.readJson<T>();
-      this.value = this.fixer(json);
+      this.value = this.fixer.fix(json);
       // fix結果がfix前と異なっていた場合
       if (!isDeepStrictEqual(this.value, json)) {
         await this.save(this.value);

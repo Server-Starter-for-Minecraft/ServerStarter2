@@ -34,9 +34,13 @@ export type MemorySettings$1 = {
   size: number;
   unit: MemoryUnit$1;
 };
+export const defaultMemorySettings$1: MemorySettings$1 = {
+  size: 2,
+  unit: 'GB',
+};
 export const MemorySettings$1 = fixObject<MemorySettings$1>({
-  size: fixNumber,
-  unit: MemoryUnit$1,
+  size: fixNumber.default(defaultMemorySettings$1.size),
+  unit: MemoryUnit$1.default(defaultMemorySettings$1.unit),
 });
 
 /** サーバープロパティのデータ */

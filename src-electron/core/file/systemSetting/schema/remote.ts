@@ -15,6 +15,9 @@ export const GithubRemoteFolder$1 = fixObject<GithubRemoteFolder$1>({
   repo: fixString,
 });
 
+export type RemoteFolder$1 = GithubRemoteFolder$1;
+export const RemoteFolder$1 = GithubRemoteFolder$1;
+
 export type GithubRemoteSetting$1 = {
   folder: GithubRemoteFolder$1;
   pat: string;
@@ -33,3 +36,12 @@ export const RemoteSettings$1 = fixArray(
   RemoteSetting$1,
   ArrayFixMode.Skip
 ).default([]);
+
+export type Remote$1 = {
+  folder: RemoteFolder$1;
+  name: string;
+};
+export const Remote$1 = fixObject({
+  folder: RemoteFolder$1,
+  name: fixString,
+});
