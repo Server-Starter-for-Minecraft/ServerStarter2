@@ -18,6 +18,7 @@ export function fail(paths: string[]): Fail {
 }
 
 export function isFail(value: any): value is Fail {
+  if (value === undefined) return false;
   return value[FAIL] === FAIL;
 }
 
