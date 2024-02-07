@@ -2,6 +2,7 @@ import { genUUID } from 'app/src-electron/tools/uuid';
 import { fixConst } from '../../base/fixer/const';
 import { fixObject } from '../../base/fixer/object';
 import { fixBoolean, fixNumber, fixString } from '../../base/fixer/primitive';
+import { fixUUID } from '../../base/fixer/regex';
 
 /** 言語 */
 export type Locale$1 = 'ja' | 'en-US';
@@ -81,7 +82,7 @@ export const UserSettings$1 = fixObject<UserSettings$1>({
   language: Locale$1.default(defaultUserSettings$1.language),
 
   // 実行者情報
-  owner: fixString.optional(),
+  owner: fixUUID.optional(),
 
   /** 実行環境ID(特に変更の必要なし) */
   id: fixString,
