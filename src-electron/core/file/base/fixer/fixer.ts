@@ -54,8 +54,10 @@ export class Fixer<T, FAILABLE extends boolean> {
   }
 
   /** Fixした結果に関数を適用*/
-  map<U>(func: (value: T) => U): Fixer<U, FAILABLE> {
-    return fixMap(this, func);
+  map<U>(func: (value: T, path: string) => U | Fail): Fixer<U, true>;
+  map<U>(func: (value: T, path: string) => U): Fixer<U, FAILABLE>;
+  map<U>(func: (value: T, path: string) => U | Fail): Fixer<U, boolean> {
+    return fixMap(this, func) as Fixer<U, boolean>;
   }
 
   or<U, F extends boolean>(
