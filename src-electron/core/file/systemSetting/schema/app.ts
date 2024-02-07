@@ -1,6 +1,6 @@
 import { fixConst } from '../../base/fixer/const';
 import { fixObject } from '../../base/fixer/object';
-import { ContainersSettings$1 } from './container';
+import { ContainersSettings$1, defaultContainersSettings$1 } from './container';
 import { PlayerSettings$1, defaultPlayerSettings$1 } from './player';
 import { RemoteSettings$1 } from './remote';
 import { SystemSettings$1 } from './system';
@@ -25,13 +25,6 @@ export const AppSettings$0 = fixObject<AppSettings$0>({
   player: PlayerSettings$1,
   user: UserSettings$1,
   system: SystemSettings$1,
-}).default({
-  container: [],
-  world: defaultWorldSettings$1,
-  remote: [],
-  player: defaultPlayerSettings$1,
-  user: defaultUserSettings$1,
-  system: {},
 });
 
 function upgradeAppSettings$0$1(old: AppSettings$0): AppSettings$1 {
@@ -50,9 +43,9 @@ export type AppSettings$1 = {
   system: SystemSettings$1;
 };
 
-const defualtAppSettings$1: AppSettings$1 = {
+export const defualtAppSettings$1: AppSettings$1 = {
   __ver__: 1,
-  container: [],
+  container: defaultContainersSettings$1,
   world: defaultWorldSettings$1,
   remote: [],
   player: defaultPlayerSettings$1,
@@ -69,4 +62,6 @@ export const AppSettings$1 = fixObject<AppSettings$1>({
   player: PlayerSettings$1,
   user: UserSettings$1,
   system: SystemSettings$1,
-}).or(AppSettings$0.map(upgradeAppSettings$0$1));
+})
+  .or(AppSettings$0.map(upgradeAppSettings$0$1))
+  .default(defualtAppSettings$1);
