@@ -4,10 +4,9 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 
 export const WORLD_SETTINGS_PATH = 'server_settings.json';
 
-const 
+const;
 
 export const serverJsonFile: ServerSettingFile<WorldSettings> = {
-
   async load(cwdPath) {
     const jsonPath = cwdPath.child(WORLD_SETTINGS_PATH);
 
