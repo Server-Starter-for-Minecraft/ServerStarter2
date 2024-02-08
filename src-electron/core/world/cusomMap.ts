@@ -5,7 +5,6 @@ import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
 import { LEVEL_NAME, unzipPath } from '../const';
-import { WorldSettings } from './files/json';
 import {
   SERVER_PROPERTIES_PATH,
   serverPropertiesFile,
@@ -17,6 +16,7 @@ import { modFiles } from './files/addtional/mod';
 import { asyncMap } from 'app/src-electron/util/objmap';
 import { pluginFiles } from './files/addtional/plugin';
 import { datapackFiles } from './files/addtional/datapack';
+import { WorldSettings$1 } from '../file/schama/worldSetting';
 
 const LEVEL_DAT = 'level.dat';
 
@@ -148,10 +148,10 @@ function longToNumber(value: any): number {
 export async function importCustomMap(
   mapData: CustomMapData,
   cwdPath: Path,
-  settings: WorldSettings
+  settings: WorldSettings$1
 ): Promise<
   Failable<{
-    settings: WorldSettings;
+    settings: WorldSettings$1;
     properties?: ServerProperties;
   }>
 > {

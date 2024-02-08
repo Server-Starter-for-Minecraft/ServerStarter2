@@ -1,6 +1,6 @@
 import { ServerSettingFile } from './base';
-import { getWorldSettingsHandler } from '../../file/worldSetting/handler';
-import { WorldSettings$1 } from '../../file/worldSetting/schema/setting';
+import { getWorldSettingsHandler } from '../../file/handler/worldSetting';
+import { WorldSettings$1 } from '../../file/schama/worldSetting';
 
 export const WORLD_SETTINGS_PATH = 'server_settings.json';
 

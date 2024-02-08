@@ -1,6 +1,6 @@
 import { settingPath } from '../const';
-import { AppSettingHandler } from '../file/systemSetting/handler';
-import { AppSettings$1 } from '../file/systemSetting/schema/app';
+import { AppSettingHandler } from '../file/handler/appSetting';
+import { AppSettings$1 } from '../file/schama/app';
 
 const appSettings = new AppSettingHandler(settingPath, AppSettings$1);
 

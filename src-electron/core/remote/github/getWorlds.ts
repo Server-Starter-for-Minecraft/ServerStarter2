@@ -14,12 +14,9 @@ import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncMap } from 'app/src-electron/util/objmap';
 import { LEVEL_NAME } from '../../const';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import {
-  WORLD_SETTINGS_PATH,
-  WorldSettings,
-  worldSettingsFixer,
-} from '../../world/files/json';
+import { WORLD_SETTINGS_PATH } from '../../world/files/json';
 import { ImageURI, RemoteWorldName } from 'app/src-electron/schema/brands';
+import { WorldSettings$1 } from '../../file/schama/worldSetting';
 
 export async function getWorlds(
   remoteFolder: GithubRemoteFolder
@@ -94,11 +91,10 @@ export async function getWorld(
 async function getWorldJson(
   maybeGithubBlob: GithubBlob | GithubTree | undefined,
   error: ErrorMessage
-): Promise<Failable<WorldSettings>> {
+): Promise<Failable<WorldSettings$1>> {
   if (!(maybeGithubBlob instanceof GithubBlob)) return error;
 
-  const fixer = await worldSettingsFixer();
-  const json = await maybeGithubBlob.loadJson(fixer);
+  const json = await maybeGithubBlob.loadJson(WorldSettings$1);
   return json;
 }
 
