@@ -1,5 +1,5 @@
-import { fixConst } from '../../base/fixer/const';
-import { fixObject } from '../../base/fixer/object';
+import { fixConst } from '../base/fixer/const';
+import { fixObject } from '../base/fixer/object';
 import {
   AppContainersSettings$1,
   defaultAppContainersSettings$1,
@@ -16,16 +16,16 @@ export type AppSettings$0 = {
   world: AppWorldSettings$1;
   remote: AppRemoteSettings$1;
   player: AppPlayerSettings$1;
-  user: UserSettings$1;
-  system: SystemSettings$1;
+  user: AppUserSettings$1;
+  system: AppSystemSettings$1;
 };
 
 // スキーマ設定前のやつ
 export const AppSettings$0 = fixObject<AppSettings$0>({
-  container: ContainersSettings$1,
-  world: WorldSettings$1,
-  remote: RemoteSettings$1,
-  player: PlayerSettings$1,
+  container: AppContainersSettings$1,
+  world: AppWorldSettings$1,
+  remote: AppRemoteSettings$1,
+  player: AppPlayerSettings$1,
   user: AppUserSettings$1,
   system: AppSystemSettings$1,
 });
@@ -42,8 +42,8 @@ export type AppSettings$1 = {
   world: AppWorldSettings$1;
   remote: AppRemoteSettings$1;
   player: AppPlayerSettings$1;
-  user: UserSettings$1;
-  system: SystemSettings$1;
+  user: AppUserSettings$1;
+  system: AppSystemSettings$1;
 };
 
 export const defualtAppSettings$1: AppSettings$1 = {
@@ -59,10 +59,10 @@ export const defualtAppSettings$1: AppSettings$1 = {
 export const AppSettings$1 = fixObject<AppSettings$1>({
   // スキーマバージョン
   __ver__: fixConst(1),
-  container: ContainersSettings$1,
-  world: WorldSettings$1,
-  remote: RemoteSettings$1,
-  player: PlayerSettings$1,
+  container: AppContainersSettings$1,
+  world: AppWorldSettings$1,
+  remote: AppRemoteSettings$1,
+  player: AppPlayerSettings$1,
   user: AppUserSettings$1,
   system: AppSystemSettings$1,
 })

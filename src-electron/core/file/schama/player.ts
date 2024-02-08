@@ -1,8 +1,8 @@
-import { fixArray, ArrayFixMode } from '../../base/fixer/array';
-import { fixObject } from '../../base/fixer/object';
-import { fixString } from '../../base/fixer/primitive';
-import { RecordFixMode, fixRecord } from '../../base/fixer/record';
-import { fixUUID } from '../../base/fixer/regex';
+import { fixArray, ArrayFixMode } from '../base/fixer/array';
+import { fixUUID } from '../base/fixer/brand';
+import { fixObject } from '../base/fixer/object';
+import { fixString } from '../base/fixer/primitive';
+import { RecordFixMode, fixRecord } from '../base/fixer/record';
 
 /** システムのプレイヤーグループ設定 */
 export type PlayerGroup$1 = {

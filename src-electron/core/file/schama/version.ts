@@ -1,7 +1,7 @@
-import { fixConst } from '../../base/fixer/const';
-import { fixObject } from '../../base/fixer/object';
-import { fixBoolean, fixNumber, fixString } from '../../base/fixer/primitive';
-import { fixUnion } from '../../base/fixer/union';
+import { fixConst } from '../base/fixer/const';
+import { fixObject } from '../base/fixer/object';
+import { fixBoolean, fixNumber, fixString } from '../base/fixer/primitive';
+import { fixUnion } from '../base/fixer/union';
 
 export type VersionType$1 =
   | 'vanilla'

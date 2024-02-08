@@ -1,7 +1,9 @@
-import { ArrayFixMode, fixArray } from '../../base/fixer/array';
-import { fixConst } from '../../base/fixer/const';
-import { fixObject } from '../../base/fixer/object';
-import { fixString } from '../../base/fixer/primitive';
+import { RemoteWorldName } from 'app/src-electron/schema/brands';
+import { ArrayFixMode, fixArray } from '../base/fixer/array';
+import { fixConst } from '../base/fixer/const';
+import { fixObject } from '../base/fixer/object';
+import { fixString } from '../base/fixer/primitive';
+import { fixRemoteWorldName } from '../base/fixer/brand';
 
 export type GithubRemoteFolder$1 = {
   type: 'github';
@@ -39,9 +41,9 @@ export const AppRemoteSettings$1 = fixArray(
 
 export type Remote$1 = {
   folder: RemoteFolder$1;
-  name: string;
+  name: RemoteWorldName;
 };
-export const Remote$1 = fixObject({
+export const Remote$1 = fixObject<Remote$1>({
   folder: RemoteFolder$1,
-  name: fixString,
+  name: fixRemoteWorldName,
 });

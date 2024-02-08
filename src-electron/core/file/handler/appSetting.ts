@@ -1,4 +1,3 @@
-import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
 import { safeStorage } from 'electron';
 import { isDeepStrictEqual } from 'util';

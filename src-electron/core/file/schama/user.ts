@@ -1,8 +1,8 @@
 import { genUUID } from 'app/src-electron/tools/uuid';
-import { fixConst } from '../../base/fixer/const';
-import { fixObject } from '../../base/fixer/object';
-import { fixBoolean, fixNumber, fixString } from '../../base/fixer/primitive';
-import { fixUUID } from '../../base/fixer/regex';
+import { fixConst } from '../base/fixer/const';
+import { fixObject } from '../base/fixer/object';
+import { fixBoolean, fixNumber, fixString } from '../base/fixer/primitive';
+import { fixUUID } from '../base/fixer/brand';
 
 /** 言語 */
 export type Locale$1 = 'ja' | 'en-US';

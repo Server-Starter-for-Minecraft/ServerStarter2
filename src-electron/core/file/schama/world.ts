@@ -1,9 +1,9 @@
 import { DEFAULT_SERVER_PROPERTIES } from 'app/src-electron/core/const';
-import { fixConst } from '../../base/fixer/const';
-import { fixObject } from '../../base/fixer/object';
-import { fixBoolean, fixNumber, fixString } from '../../base/fixer/primitive';
-import { fixRecord } from '../../base/fixer/record';
-import { fixUnion } from '../../base/fixer/union';
+import { fixConst } from '../base/fixer/const';
+import { fixObject } from '../base/fixer/object';
+import { fixBoolean, fixNumber, fixString } from '../base/fixer/primitive';
+import { fixRecord } from '../base/fixer/record';
+import { fixUnion } from '../base/fixer/union';
 
 export type MemoryUnit$1 =
   | 'B'

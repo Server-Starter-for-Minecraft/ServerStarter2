@@ -1,6 +1,6 @@
-import { fixArray, ArrayFixMode } from '../../base/fixer/array';
-import { fixObject } from '../../base/fixer/object';
-import { fixBoolean, fixString } from '../../base/fixer/primitive';
+import { fixArray, ArrayFixMode } from '../base/fixer/array';
+import { fixObject } from '../base/fixer/object';
+import { fixBoolean, fixString } from '../base/fixer/primitive';
 
 export type Container$1 = {
   container: string;
