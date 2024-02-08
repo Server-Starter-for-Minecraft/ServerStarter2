@@ -72,7 +72,4 @@ export const WorldSettings$1 = fixObject<WorldSettings$1>({
   using: fixBoolean.optional(),
   directoryType: WorldDirectoryTypes$1.optional(),
   ngrok_setting: NgrokSetting$1.default(defaultNgrokSetting$1),
-}).default({
-  memory: defaultMemorySettings$1,
-  ngrok_setting: defaultNgrokSetting$1,
 });
