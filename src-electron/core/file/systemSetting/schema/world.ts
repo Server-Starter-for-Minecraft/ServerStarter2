@@ -52,7 +52,7 @@ export const ServerProperties$1 = fixRecord(
 );
 
 /** serverstarterのシステム設定内のワールド設定 */
-export type WorldSettings$1 = {
+export type AppWorldSettings$1 = {
   /** Javaの実行時引数 */
   javaArguments?: string;
 
@@ -61,7 +61,7 @@ export type WorldSettings$1 = {
   properties: ServerProperties$1;
 };
 
-export const defaultWorldSettings$1: WorldSettings$1 = {
+export const defaultAppWorldSettings$1: AppWorldSettings$1 = {
   javaArguments: undefined,
 
   memory: {
@@ -72,10 +72,10 @@ export const defaultWorldSettings$1: WorldSettings$1 = {
   properties: DEFAULT_SERVER_PROPERTIES,
 };
 
-export const WorldSettings$1 = fixObject<WorldSettings$1>({
+export const AppWorldSettings$1 = fixObject<AppWorldSettings$1>({
   javaArguments: fixString.optional(),
 
-  memory: MemorySettings$1.default(defaultWorldSettings$1.memory),
+  memory: MemorySettings$1.default(defaultAppWorldSettings$1.memory),
 
-  properties: ServerProperties$1.default(defaultWorldSettings$1.properties),
-}).default(defaultWorldSettings$1);
+  properties: ServerProperties$1.default(defaultAppWorldSettings$1.properties),
+}).default(defaultAppWorldSettings$1);

@@ -20,17 +20,17 @@ export const PlayerGroup$1 = fixObject<PlayerGroup$1>({
   players: fixArray(fixUUID, ArrayFixMode.Skip),
 });
 
-export type PlayerSettings$1 = {
+export type AppPlayerSettings$1 = {
   groups: { [name: string]: PlayerGroup$1 };
   players: string[];
 };
 
-export const defaultPlayerSettings$1 = {
+export const defaultAppPlayerSettings$1 = {
   groups: {},
   players: [],
 };
 
-export const PlayerSettings$1 = fixObject<PlayerSettings$1>({
+export const AppPlayerSettings$1 = fixObject<AppPlayerSettings$1>({
   groups: fixRecord(PlayerGroup$1, RecordFixMode.Skip).default({}),
   players: fixArray(fixUUID, ArrayFixMode.Skip).default([]),
-}).default(defaultPlayerSettings$1);
+}).default(defaultAppPlayerSettings$1);

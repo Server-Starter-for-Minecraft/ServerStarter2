@@ -31,8 +31,8 @@ export const GithubRemoteSetting$1 = fixObject<GithubRemoteSetting$1>({
 export type RemoteSetting$1 = GithubRemoteSetting$1;
 export const RemoteSetting$1 = GithubRemoteSetting$1;
 
-export type RemoteSettings$1 = RemoteSetting$1[];
-export const RemoteSettings$1 = fixArray(
+export type AppRemoteSettings$1 = RemoteSetting$1[];
+export const AppRemoteSettings$1 = fixArray(
   RemoteSetting$1,
   ArrayFixMode.Skip
 ).default([]);

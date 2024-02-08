@@ -11,7 +11,7 @@ export const Locale$1 = fixConst<Locale$1>('ja', 'en-US');
 export type ColorTheme$1 = 'light' | 'auto' | 'dark';
 export const ColorTheme$1 = fixConst<ColorTheme$1>('light', 'auto', 'dark');
 
-export type UserSettings$1 = {
+export type AppUserSettings$1 = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
 
@@ -40,7 +40,7 @@ export type UserSettings$1 = {
   ngrokToken?: string;
 };
 
-export const defaultUserSettings$1: UserSettings$1 = {
+export const defaultAppUserSettings$1: AppUserSettings$1 = {
   eula: false,
 
   // カラーテーマ Light/Dark
@@ -68,18 +68,18 @@ export const defaultUserSettings$1: UserSettings$1 = {
   ngrokToken: undefined,
 };
 
-export const UserSettings$1 = fixObject<UserSettings$1>({
+export const AppUserSettings$1 = fixObject<AppUserSettings$1>({
   // ServerStarterの利用規約同意状況
-  eula: fixBoolean.default(defaultUserSettings$1.eula),
+  eula: fixBoolean.default(defaultAppUserSettings$1.eula),
 
   // カラーテーマ Light/Dark
-  theme: ColorTheme$1.default(defaultUserSettings$1.theme),
+  theme: ColorTheme$1.default(defaultAppUserSettings$1.theme),
 
   // 色覚サポート
-  visionSupport: fixBoolean.default(defaultUserSettings$1.visionSupport),
+  visionSupport: fixBoolean.default(defaultAppUserSettings$1.visionSupport),
 
   // システム言語
-  language: Locale$1.default(defaultUserSettings$1.language),
+  language: Locale$1.default(defaultAppUserSettings$1.language),
 
   // 実行者情報
   owner: fixUUID.optional(),
@@ -88,11 +88,11 @@ export const UserSettings$1 = fixObject<UserSettings$1>({
   id: fixString,
 
   // 自動シャットダウン
-  autoShutDown: fixBoolean.default(defaultUserSettings$1.autoShutDown),
+  autoShutDown: fixBoolean.default(defaultAppUserSettings$1.autoShutDown),
 
   // ワールドリストの幅
-  drawerWidth: fixNumber.default(defaultUserSettings$1.drawerWidth),
+  drawerWidth: fixNumber.default(defaultAppUserSettings$1.drawerWidth),
 
   // NgrokのToken
   ngrokToken: fixString.optional(),
-}).default(defaultUserSettings$1);
+}).default(defaultAppUserSettings$1);

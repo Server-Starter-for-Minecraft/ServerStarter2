@@ -14,9 +14,9 @@ export const Container$1 = fixObject<Container$1>({
   name: fixString,
 });
 
-export type ContainersSettings$1 = Container$1[];
+export type AppContainersSettings$1 = Container$1[];
 
-export const defaultContainersSettings$1: ContainersSettings$1 = [
+export const defaultAppContainersSettings$1: AppContainersSettings$1 = [
   {
     container: './servers',
     name: 'servers',
@@ -24,10 +24,10 @@ export const defaultContainersSettings$1: ContainersSettings$1 = [
   },
 ];
 
-export const ContainersSettings$1 = fixArray<Container$1>(
+export const AppContainersSettings$1 = fixArray<Container$1>(
   Container$1,
   ArrayFixMode.Skip
 )
   // 一つもコンテナが存在しない場合は defaultContainersSettings$1 を設定する
-  .map((x) => (x.length === 0 ? defaultContainersSettings$1 : x))
-  .default(defaultContainersSettings$1);
+  .map((x) => (x.length === 0 ? defaultAppContainersSettings$1 : x))
+  .default(defaultAppContainersSettings$1);
