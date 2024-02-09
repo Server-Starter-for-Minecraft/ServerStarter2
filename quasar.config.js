@@ -214,7 +214,7 @@ module.exports = configure(function (/* ctx */) {
           target: 'pkg',
         },
         linux: {
-          target: ['AppImage','deb','rpm'],
+          target: ['AppImage', 'deb', 'rpm'],
         },
       },
     },
