@@ -98,7 +98,7 @@ export interface API extends IAPI {
     OpenBrowser: (url: string) => void;
 
     /** pathをエクスプローラーで開く */
-    OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
+    OpenFolder: (path: string, autocreate: boolean) => void;
   };
   invokeWindowToMain: {
     /** 実行中のサーバーを再起動 */
@@ -123,6 +123,11 @@ export interface API extends IAPI {
     /** Worldの情報を上書き リモートがある場合リモートの情報も上書き
      * 戻り値の値が実際にセットされた値になる */
     SetWorld: (world: WorldEdited) => Promise<WithError<Failable<World>>>;
+    /** Worldに配布マップ等をインポートし、ワールド設定を統合 */
+    ImportWorld: (
+      worldId: WorldID,
+      mapData: CustomMapData
+    ) => Promise<WithError<Failable<World>>>;
     /** 新しいWorldのデータを生成 ディレクトリ等は生成されない */
     NewWorld: () => Promise<WithError<Failable<World>>>;
     /** Worldを生成 実際にディレクトリを生成し、リモートがある場合リモートも生成する */
