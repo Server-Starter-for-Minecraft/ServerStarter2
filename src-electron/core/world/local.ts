@@ -34,39 +34,6 @@ import { WorldSettings$1 } from '../file/schama/worldSetting';
 import { Remote$1 } from '../file/schama/remote';
 import { Remote } from 'app/src-electron/schema/remote';
 
-function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
-  const map: Record<PlayerUUID, PlayerSetting> = {};
-
-  whitelist.forEach(({ uuid, name }) => (map[uuid] = { uuid, name }));
-
-  ops.forEach(
-    ({ uuid, name, level, bypassesPlayerLimit }) =>
-      (map[uuid] = {
-        uuid,
-        name,
-        op: {
-          level,
-          bypassesPlayerLimit,
-        },
-      })
-  );
-
-  return Object.values(map);
-}
-
-function fromPlayers(players: PlayerSetting[]): [Ops, Whitelist] {
-  const whitelist: Whitelist = [];
-  const ops: Ops = [];
-
-  players.forEach(({ uuid, name, op }) => {
-    whitelist.push({ uuid, name });
-    if (op !== undefined) {
-      ops.push({ uuid, name, ...op });
-    }
-  });
-
-  return [ops, whitelist];
-}
 // ローカルのサーバーディレクトリからWorld情報を取得
 export async function loadLocalFiles(
   savePath: Path,
