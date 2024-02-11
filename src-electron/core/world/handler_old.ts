@@ -43,7 +43,6 @@ import { randomInt } from 'crypto';
 import { serverPropertiesFile } from './files/properties';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { Listener } from '@ngrok/ngrok';
-import { WorldLogHandler } from './loghandler';
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
