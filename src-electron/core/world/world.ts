@@ -11,7 +11,7 @@ import {
 import { WorldContainer, WorldName } from 'src-electron/schema/brands';
 import { vanillaVersionLoader } from '../version/vanilla';
 import { getSystemSettings } from '../stores/system';
-import { WorldHandler } from './handler';
+import { WorldHandler } from './handler_old';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { validateNewWorldName } from './name';
 import { serverJsonFile } from './files/json';
