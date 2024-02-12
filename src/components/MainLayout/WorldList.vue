@@ -14,29 +14,29 @@ import IconButtonView from '../World/utils/IconButtonView.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
-  minWidth: number
-  maxWidth: number
+  minWidth: number;
+  maxWidth: number;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 
-const sysStore = useSystemStore()
+const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const searchWorldName = ref('')
+const searchWorldName = ref('');
 
-const miniChangeWidth = 200
-const drawer = ref(true)
+const miniChangeWidth = 200;
+const drawer = ref(true);
 
 /**
  * 表示するワールド一覧を更新する際に、表示するワールドがなくなる場合は、
  * 現在選択しているワールドを補完する
- * 
+ *
  * (World FolderのVisibilityを変更したときに、表示するものがなくなることがあるため対応)
  */
 function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
   if (keys(worlds).length === 0) {
-    worlds[mainStore.world.id] = mainStore.world
+    worlds[mainStore.world.id] = mainStore.world;
   }
-  return worlds
+  return worlds;
 }
 </script>
 
@@ -46,23 +46,34 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
     :width="sysStore.systemSettings.user.drawerWidth"
     :breakpoint="0"
     :mini="sysStore.systemSettings.user.drawerWidth < miniChangeWidth"
-    :mini-width="Math.min(miniChangeWidth, sysStore.systemSettings.user.drawerWidth)"
+    :mini-width="
+      Math.min(miniChangeWidth, sysStore.systemSettings.user.drawerWidth)
+    "
     class="column"
-    style="height: 100vh;"
+    style="height: 100vh"
   >
     <div class="q-mini-drawer-only">
-      <q-item clickable @click="sysStore.systemSettings.user.drawerWidth = maxWidth">
+      <q-item
+        clickable
+        @click="sysStore.systemSettings.user.drawerWidth = maxWidth"
+      >
         <q-avatar size="2rem">
           <q-icon
             size="2rem"
             :name="assets.svg.menuicon($q.dark.isActive ? 'white' : 'black')"
           />
         </q-avatar>
-        <SsTooltip :name="$t('mainLayout.openList')" anchor="center middle" self="top middle"/>
+        <SsTooltip
+          :name="$t('mainLayout.openList')"
+          anchor="center middle"
+          self="top middle"
+        />
       </q-item>
     </div>
     <icon-button-view
-      :icon-src="assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))"
+      :icon-src="
+        assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))
+      "
       :label="$t('mainLayout.allWorld')"
       :tooltip="$t('mainLayout.minimizeList')"
       @click="sysStore.systemSettings.user.drawerWidth = minWidth"
@@ -72,7 +83,9 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
     <search-world-view
       v-model="searchWorldName"
       :expand-width="maxWidth"
-      :expand-drawer-btn-clickable="sysStore.systemSettings.user.drawerWidth < miniChangeWidth"
+      :expand-drawer-btn-clickable="
+        sysStore.systemSettings.user.drawerWidth < miniChangeWidth
+      "
     />
 
     <q-scroll-area class="fit col">
@@ -81,7 +94,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
           v-for="(world, idx) in sortValue(
             interpolateCurrentWorld(mainStore.searchWorld(searchWorldName)),
             (w1, w2) => {
-              return (w2.last_date ?? 0) - (w1.last_date ?? 0)
+              return (w2.last_date ?? 0) - (w1.last_date ?? 0);
             }
           )"
           :key="world"

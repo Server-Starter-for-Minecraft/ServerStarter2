@@ -1,49 +1,47 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 import { initWindow, afterWindow } from 'app/src/init';
 import { useSystemStore } from 'src/stores/SystemStore';
-import WelcomeDialog from 'src/components/App/WelcomeDialog.vue'
+import WelcomeDialog from 'src/components/App/WelcomeDialog.vue';
 import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
 import { OwnerDialogProp } from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
 
 const $q = useQuasar();
-const router = useRouter()
-const sysStore = useSystemStore()
+const router = useRouter();
+const sysStore = useSystemStore();
 
 // 利用規約へ同意
 if (!sysStore.systemSettings.user.eula) {
   $q.dialog({
-    component: WelcomeDialog
+    component: WelcomeDialog,
   }).onOk(() => {
-    sysStore.systemSettings.user.eula = true
+    sysStore.systemSettings.user.eula = true;
 
     // オーナープレイヤーの登録催促
     $q.dialog({
       component: OwnerDialog,
       componentProps: {
-        persistent: true
-      } as OwnerDialogProp
+        persistent: true,
+      } as OwnerDialogProp,
     }).onOk(() => {
       // 起動時処理
-      asyncProcess()
-    })
-  })
-}
-else {
+      asyncProcess();
+    });
+  });
+} else {
   // 起動時処理
-  asyncProcess()
+  asyncProcess();
 }
-
 
 /**
  * 非同期処理によるWorldやVersionの読み込みをはじめとした起動時処理
  */
 async function asyncProcess() {
-  await initWindow()
-  afterWindow()
-  
-  await router.replace('/')
+  await initWindow();
+  afterWindow();
+
+  await router.replace('/');
 }
 </script>
 
@@ -58,10 +56,10 @@ async function asyncProcess() {
         color="primary"
         track-color="grey-3"
         class="q-ma-md"
-        style="margin: auto 0;"
+        style="margin: auto 0"
       />
 
-      <h1 style="font-weight: bold;">{{ $t('console.init') }}</h1>
+      <h1 style="font-weight: bold">{{ $t('console.init') }}</h1>
     </div>
   </div>
 </template>

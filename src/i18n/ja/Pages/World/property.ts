@@ -41,7 +41,8 @@ export const jaProperty = {
     'spawn-animals': '動物が出現する',
     'spawn-monsters': '敵MOBが出現する',
     'spawn-npcs': '村人が出現する',
-    'spawn-protection': '\
+    'spawn-protection':
+      '\
       ブロック・オブジェクトの設置・破壊が禁止される範囲をスポーン中心からの半径で指定（整数値）\
       ただし，OP権限を有するプレイヤーには無効',
     'view-distance': 'チャンク単位の描画距離',
@@ -71,7 +72,8 @@ export const jaProperty = {
       'リモートコントロールからコマンドが入力された際に，OP権限を有するプレイヤーに通知する',
     'broadcast-console-to-ops':
       'サーバーコンソールからコマンドが入力された際に，OP権限を有するプレイヤーに通知する',
-    'initial-disabled-packs': 'ワールド生成時に自動的に有効にしないデータパック',
+    'initial-disabled-packs':
+      'ワールド生成時に自動的に有効にしないデータパック',
     'initial-enabled-packs': 'ワールド生成時に有効にするデータパック',
     'max-tick-time':
       'サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定',
@@ -83,17 +85,21 @@ export const jaProperty = {
     'resource-pack-sha1': 'サーバーリソースパックのハッシュ値',
     'require-resource-pack':
       'サーバーリソースパックの導入を強制し，導入しない場合はワールドに接続できない',
-    'enforce-secure-profile': 'Mojang署名の公開鍵を持っているプレイヤーにのみ接続を許可する',
+    'enforce-secure-profile':
+      'Mojang署名の公開鍵を持っているプレイヤーにのみ接続を許可する',
     'enforce-whitelist': 'ホワイトリストによる管理を強制する',
     'white-list': 'ホワイトリストによるプレイヤーのログイン管理を行う',
     'enable-jmx-monitoring': 'JMXによるモニターを有効化',
     'previews-chat': 'チャット送信時に表示するプレビューを有効にする',
-    'snooper-enabled': 'サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する',
-    'log-ips': 'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする',
+    'snooper-enabled':
+      'サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する',
+    'log-ips':
+      'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする',
     'text-filtering-config': '不適切なチャットのフィルタリング設定',
     'announce-player-achievements': 'プレイヤーの実績解除をチャットで告知する',
   },
-  resetProperty: '\
+  resetProperty:
+    '\
     基本設定の{defaultProperty}に設定を戻します<br>\
     「システム設定」>「プロパティ」 より基本設定を変更できます',
   empty: '(空欄)',
@@ -105,6 +111,6 @@ export const jaProperty = {
     downerLimit: '{n}以上',
     upperLimit: '{n}以下',
     multiple: '{n}の倍数',
-    number: '半角数字を入力してください'
+    number: '半角数字を入力してください',
   },
 };

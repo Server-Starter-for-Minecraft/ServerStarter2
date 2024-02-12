@@ -4,7 +4,7 @@ import { assets } from 'src/assets/assets';
 import SsA from 'src/components/util/base/ssA.vue';
 import BaseCard from './slides/BaseCard.vue';
 
-const slide = ref(1)
+const slide = ref(1);
 </script>
 
 <template>
@@ -12,7 +12,7 @@ const slide = ref(1)
     <p class="text-caption">
       {{ $t('home.ngrok.dialog.secondPage.dialogTitle') }}
     </p>
-    
+
     <q-carousel
       v-model="slide"
       animated
@@ -25,16 +25,16 @@ const slide = ref(1)
       class="shadow-1 rounded-borders"
     >
       <q-carousel-slide :name="1">
-        <BaseCard 
+        <BaseCard
           :title="$t('home.ngrok.dialog.secondPage.title')"
           :img="assets.png.signUp"
           :img-width="9"
         >
           <p>
-            <i18n-t 
+            <i18n-t
               keypath="home.ngrok.dialog.secondPage.signup.desc"
               tag="label"
-              for="home.ngrok.dialog.secondPage.signup.link" 
+              for="home.ngrok.dialog.secondPage.signup.link"
             />
             <SsA url="https://dashboard.ngrok.com/signup">
               {{ $t('home.ngrok.dialog.secondPage.signup.link') }}
@@ -44,18 +44,30 @@ const slide = ref(1)
         </BaseCard>
       </q-carousel-slide>
       <q-carousel-slide :name="2">
-        <BaseCard :title="$t('home.ngrok.dialog.secondPage.auth.title')" :img="assets.png.verifyEmail" :img-width="16">
+        <BaseCard
+          :title="$t('home.ngrok.dialog.secondPage.auth.title')"
+          :img="assets.png.verifyEmail"
+          :img-width="16"
+        >
           <p>{{ $t('home.ngrok.dialog.secondPage.auth.desc') }}</p>
         </BaseCard>
       </q-carousel-slide>
       <q-carousel-slide :name="3">
-        <BaseCard :title="$t('home.ngrok.dialog.secondPage.question.title')" :img="assets.png.welcome" :img-width="10">
+        <BaseCard
+          :title="$t('home.ngrok.dialog.secondPage.question.title')"
+          :img="assets.png.welcome"
+          :img-width="10"
+        >
           <p>{{ $t('home.ngrok.dialog.secondPage.question.desc') }}</p>
         </BaseCard>
       </q-carousel-slide>
       <q-carousel-slide :name="4">
-        <BaseCard :title="$t('home.ngrok.dialog.secondPage.howToConnect.title')" :img="assets.png.mcInput" :img-width="10">
-          <p v-html="$t('home.ngrok.dialog.secondPage.howToConnect.desc')"/>
+        <BaseCard
+          :title="$t('home.ngrok.dialog.secondPage.howToConnect.title')"
+          :img="assets.png.mcInput"
+          :img-width="10"
+        >
+          <p v-html="$t('home.ngrok.dialog.secondPage.howToConnect.desc')" />
           <p>{{ $t('home.ngrok.dialog.secondPage.howToConnect.connect') }}</p>
         </BaseCard>
       </q-carousel-slide>

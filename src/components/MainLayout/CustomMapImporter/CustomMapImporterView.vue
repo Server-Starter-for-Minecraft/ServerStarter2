@@ -10,34 +10,41 @@ import WorldItem from 'src/components/util/WorldItem.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import CheckDialog from './checkDialog.vue';
 
-defineEmits({...useDialogPluginComponent.emitsObject})
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
 
-const $q = useQuasar()
-const localWorlds:Ref<CustomMapData[]> = ref([])
-const loading = ref(true)
+const $q = useQuasar();
+const localWorlds: Ref<CustomMapData[]> = ref([]);
+const loading = ref(true);
 
 /**
  * 配布ワールドのZip版を導入
  */
 async function importZip() {
-  const res = await window.API.invokePickDialog({ type: 'world', isFile: true })
+  const res = await window.API.invokePickDialog({
+    type: 'world',
+    isFile: true,
+  });
   checkError(
     res,
-    w => showCheckDialog(w),
-    e => tError(e, {ignoreErrors:['data.path.dialogCanceled']})
-  )
+    (w) => showCheckDialog(w),
+    (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+  );
 }
 /**
  * 配布ワールドのフォルダ版を導入
  */
 async function importFolder() {
-  const res = await window.API.invokePickDialog({ type: 'world', isFile: false })
+  const res = await window.API.invokePickDialog({
+    type: 'world',
+    isFile: false,
+  });
   checkError(
     res,
-    w => showCheckDialog(w),
-    e => tError(e, {ignoreErrors: ['data.path.dialogCanceled']})
-  )
+    (w) => showCheckDialog(w),
+    (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+  );
 }
 
 /**
@@ -51,24 +58,24 @@ function showCheckDialog(customMap: CustomMapData) {
       icon: customMap.icon,
       worldName: customMap.levelName,
       versionName: customMap.versionName,
-      importFunc: async () => await importCustomMap(customMap)
-    } as CustomMapImporterProp
+      importFunc: async () => await importCustomMap(customMap),
+    } as CustomMapImporterProp,
   }).onOk(() => {
-    onDialogOK()
-  })
+    onDialogOK();
+  });
 }
 
 onMounted(async () => {
-  const res = await window.API.invokeGetLocalSaveData()
+  const res = await window.API.invokeGetLocalSaveData();
   checkError(
     res.value,
-    lws => localWorlds.value = lws,
-    e => tError(e),
-  )
+    (lws) => (localWorlds.value = lws),
+    (e) => tError(e)
+  );
 
   // 読み込み処理の終了を通知
-  loading.value = false
-})
+  loading.value = false;
+});
 </script>
 
 <template>
@@ -76,10 +83,12 @@ onMounted(async () => {
     <BaseDialogCard
       :title="$t('mainLayout.customMapImporter.addSeveralWorld')"
       @close="onDialogCancel"
-      style="max-width: 50%;"
+      style="max-width: 50%"
     >
       <q-card-section>
-        <span class="text-caption">{{ $t('mainLayout.customMapImporter.addCustomWorld') }}</span>
+        <span class="text-caption">{{
+          $t('mainLayout.customMapImporter.addCustomWorld')
+        }}</span>
         <q-card-actions>
           <div class="row full-width q-gutter-sm">
             <SsBtn
@@ -103,7 +112,9 @@ onMounted(async () => {
       </q-card-section>
 
       <q-card-section>
-        <span class="text-caption">{{ $t('mainLayout.customMapImporter.addSingleWorld') }}</span>
+        <span class="text-caption">{{
+          $t('mainLayout.customMapImporter.addSingleWorld')
+        }}</span>
         <div v-if="localWorlds.length === 0" class="messageField">
           <div v-if="loading" class="absolute-center messageText row">
             <q-circular-progress
@@ -115,12 +126,11 @@ onMounted(async () => {
             />
             <p v-html="$t('mainLayout.customMapImporter.loadSingleWorld')"></p>
           </div>
-          <div 
-            v-else 
+          <div
+            v-else
             class="absolute-center messageText"
             v-html="$t('mainLayout.customMapImporter.noSingleWorld')"
-          > 
-          </div>
+          ></div>
         </div>
         <div class="row q-gutter-sm justify-center">
           <template
@@ -135,7 +145,7 @@ onMounted(async () => {
               :version-name="localWorld.versionName"
               :last-played="localWorld.lastPlayed"
               @click="showCheckDialog(localWorld)"
-              style="min-width: 20rem; max-width: 20rem;"
+              style="min-width: 20rem; max-width: 20rem"
             />
           </template>
         </div>
@@ -158,6 +168,6 @@ onMounted(async () => {
 .messageText {
   width: max-content;
   font-size: 1rem;
-  opacity: .6;
+  opacity: 0.6;
 }
 </style>

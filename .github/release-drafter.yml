@@ -1,0 +1,25 @@
+# リリースノートのテンプレートファイル
+# release-drafter/release-drafter@v5で使用
+
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'emergency'
+  - title: '🔧 Refactoring'
+    label: 'refactor'
+  - title: '📖 Documentation'
+    label: 'documentation'
+  - title: '✅ Tests'
+    label: 'test'
+
+template: |
+  ## What’s Changed
+
+  $CHANGES

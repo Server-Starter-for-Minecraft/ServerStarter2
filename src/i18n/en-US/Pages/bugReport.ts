@@ -1,4 +1,4 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSBugReport: MessageSchema['bugReport'] = {
   title: 'Sorry to inconvenience you',

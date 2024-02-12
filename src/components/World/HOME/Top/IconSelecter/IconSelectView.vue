@@ -10,14 +10,15 @@ import IconBtn from './IconBtn.vue';
 import ClipImg from './ClipImg.vue';
 import SelectorBtn from './SelectorBtn.vue';
 
-const prop = defineProps<IconSelectProp>()
-defineEmits({...useDialogPluginComponent.emitsObject})
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const prop = defineProps<IconSelectProp>();
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
 
-const iconImg: Ref<IconImage> = ref({ data: prop.img, width: 64, height: 64 })
-const isImgClipper = ref(false)
-const customImgReload = ref(false)
-const mainStore = useMainStore()
+const iconImg: Ref<IconImage> = ref({ data: prop.img, width: 64, height: 64 });
+const isImgClipper = ref(false);
+const customImgReload = ref(false);
+const mainStore = useMainStore();
 
 const imgs = [
   'unset',
@@ -48,44 +49,44 @@ const imgs = [
   'redstone_lamp_on',
   'stone_bricks',
   'tnt_side',
-  'tube_coral_block'
-] as const
+  'tube_coral_block',
+] as const;
 
 async function onUpload() {
   // 画像の取得を開始
-  customImgReload.value = false
-  const failableImg = await window.API.invokePickDialog({ type: 'image' })
-  
+  customImgReload.value = false;
+  const failableImg = await window.API.invokePickDialog({ type: 'image' });
+
   // 取得画像を適用
   const returnImg = checkError(
     failableImg,
-    img => iconImg.value.data = img.data,
-    e => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
-  )
+    (img) => (iconImg.value.data = img.data),
+    (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+  );
 
   // 取得画像が不適な場合にデフォルト値を当てる（or 元の画像を反映）
   if (returnImg === void 0) {
-    iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset
+    iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset;
   }
 
   // 画像の取得状態を解除
-  customImgReload.value = true
+  customImgReload.value = true;
 }
 
 /**
  * 任意画像を適用する画面に切り替え
  */
 function showImgClipper() {
-  isImgClipper.value = true
-  iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset
-  customImgReload.value = true
+  isImgClipper.value = true;
+  iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset;
+  customImgReload.value = true;
 }
 
 /**
  * 指定された画像が十分なサイズを有しているか
  */
 function isErrorSize() {
-  return (iconImg.value.height ?? 0) < 64 || (iconImg.value.width ?? 0) < 64
+  return (iconImg.value.height ?? 0) < 64 || (iconImg.value.width ?? 0) < 64;
 }
 </script>
 
@@ -93,11 +94,11 @@ function isErrorSize() {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card>
       <h1 class="q-pa-none q-ml-md q-pt-sm">
-        {{ $t("icon.setIcon") }}
+        {{ $t('icon.setIcon') }}
       </h1>
 
       <q-card-section v-if="!isImgClipper">
-        <div class="q-gutter-md justify-center flex" style="margin-left: -24px;">
+        <div class="q-gutter-md justify-center flex" style="margin-left: -24px">
           <SelectorBtn
             icon="add"
             :label="$t('icon.selcIcon')"
@@ -108,10 +109,10 @@ function isErrorSize() {
           </template>
         </div>
       </q-card-section>
-      
+
       <q-card-section v-else>
         <q-item>
-          <q-item-section style="image-rendering: pixelated;">
+          <q-item-section style="image-rendering: pixelated">
             <ClipImg v-if="customImgReload" v-model="iconImg" />
             <div v-else class="customImgSelecting">
               {{ $t('icon.selecting') }}
@@ -124,13 +125,19 @@ function isErrorSize() {
               @click="onUpload"
             />
             <div class="q-py-md">
-              <p class="text-center full-width q-ma-none" style="font-size: .6rem;">
-                {{ $t("icon.prev") }}
+              <p
+                class="text-center full-width q-ma-none"
+                style="font-size: 0.6rem"
+              >
+                {{ $t('icon.prev') }}
               </p>
               <q-avatar square size="4rem">
-                <q-img :src="iconImg.data" style="image-rendering: pixelated;"/>
+                <q-img :src="iconImg.data" style="image-rendering: pixelated" />
               </q-avatar>
-              <p class="text-right full-width q-ma-none" style="font-size: .5rem;">
+              <p
+                class="text-right full-width q-ma-none"
+                style="font-size: 0.5rem"
+              >
                 {{ $t('icon.size') }}
               </p>
             </div>
@@ -150,7 +157,15 @@ function isErrorSize() {
       </q-card-section>
 
       <div class="absolute-top-right">
-        <q-btn dense flat round icon="close" size="1rem" class="q-ma-sm" @click="onDialogCancel" />
+        <q-btn
+          dense
+          flat
+          round
+          icon="close"
+          size="1rem"
+          class="q-ma-sm"
+          @click="onDialogCancel"
+        />
       </div>
     </q-card>
   </q-dialog>
@@ -164,6 +179,6 @@ function isErrorSize() {
   justify-content: center;
   align-items: center;
   font-size: 1rem;
-  opacity: .6;
+  opacity: 0.6;
 }
 </style>

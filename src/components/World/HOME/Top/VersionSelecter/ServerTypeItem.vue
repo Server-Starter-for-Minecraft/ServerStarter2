@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps(['itemProps', 'label', 'description', 'icon'])
+defineProps(['itemProps', 'label', 'description', 'icon']);
 </script>
 
 <template>
@@ -11,7 +11,9 @@ defineProps(['itemProps', 'label', 'description', 'icon'])
     </q-item-section>
     <q-item-section>
       <q-item-label>{{ label }}</q-item-label>
-      <q-item-label caption style="opacity: .7;">{{ description }}</q-item-label>
+      <q-item-label caption style="opacity: 0.7">{{
+        description
+      }}</q-item-label>
     </q-item-section>
   </q-item>
 </template>

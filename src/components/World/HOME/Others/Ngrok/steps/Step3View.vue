@@ -3,18 +3,18 @@ import { NgrokDialogReturns } from './iNgrok';
 import SsA from 'src/components/util/base/ssA.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
-const model = defineModel<NgrokDialogReturns>({ required: true })
+const model = defineModel<NgrokDialogReturns>({ required: true });
 </script>
 
 <template>
   <div>
     <p class="text-caption">
-      <i18n-t 
+      <i18n-t
         keypath="home.ngrok.dialog.thirdPage.desc"
         tag="label"
         for="home.ngrok.dialog.thirdPage.link"
       >
-        <br>
+        <br />
         <SsA url="https://dashboard.ngrok.com/get-started/your-authtoken">
           {{ $t('home.ngrok.dialog.thirdPage.link') }}
         </SsA>
@@ -30,7 +30,7 @@ const model = defineModel<NgrokDialogReturns>({ required: true })
       v-model="model.isAllUesNgrok"
       :label="$t('home.ngrok.dialog.thirdPage.checkbox')"
       class="q-pt-lg"
-      style="font-size: 1rem;"
+      style="font-size: 1rem"
     />
   </div>
 </template>

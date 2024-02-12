@@ -66,8 +66,8 @@ export type DataErrors = {
     shellError: ErrorMessageContent<{
       type: 'file' | 'directory';
       path: string;
-      message: string
-    }>
+      message: string;
+    }>;
   };
 
   // githubAPI周りのエラー

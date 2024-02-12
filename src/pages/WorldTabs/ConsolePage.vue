@@ -1,28 +1,30 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import StopView from 'src/components/World/Console/StopView.vue'
-import ReadyView from 'src/components/World/Console/ReadyView.vue'
-import RunningView from 'src/components/World/Console/RunningView.vue'
-import OperationView from 'src/components/World/Console/OperationView.vue'
+import StopView from 'src/components/World/Console/StopView.vue';
+import ReadyView from 'src/components/World/Console/ReadyView.vue';
+import RunningView from 'src/components/World/Console/RunningView.vue';
+import OperationView from 'src/components/World/Console/OperationView.vue';
 
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
 // ワールドタブを選択せずにこの画面に到達した場合にStatusなどをセットする
-consoleStore.initTab(mainStore.world.id)
+consoleStore.initTab(mainStore.world.id);
 </script>
 
 <template>
   <div class="wrap-column fit">
-    <div class="column" style="flex: 1 1 0;">
-      <StopView/>
-      <ReadyView/>
-      <RunningView/>
+    <div class="column" style="flex: 1 1 0">
+      <StopView />
+      <ReadyView />
+      <RunningView />
     </div>
 
-    <q-separator inset/>
+    <q-separator inset />
 
-    <OperationView :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Running'"/>
+    <OperationView
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Running'"
+    />
   </div>
 </template>
 

@@ -1,4 +1,4 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSproperty: MessageSchema['property'] = {
   main: {
@@ -76,8 +76,10 @@ export const enUSproperty: MessageSchema['property'] = {
       'Notifies the player with OP when a command is input from a remote control',
     'broadcast-console-to-ops':
       'Notifies the player with OP authority when a command is entered from the server console',
-    'initial-disabled-packs': 'List of datapacks to not be auto-enabled on world creation',
-    'initial-enabled-packs': 'List of datapacks to be enabled on world creation',
+    'initial-disabled-packs':
+      'List of datapacks to not be auto-enabled on world creation',
+    'initial-enabled-packs':
+      'List of datapacks to be enabled on world creation',
     'max-tick-time':
       'Time in milliseconds between server inoperability and forced shutdown',
     'enable-command-block': 'Allow command block execution',
@@ -89,19 +91,22 @@ export const enUSproperty: MessageSchema['property'] = {
     'resource-pack-sha1': 'Hash value of the server resource pack',
     'require-resource-pack':
       'Force players to install server resource packs, otherwise they will not be able to connect to the world',
-    'enforce-secure-profile': 'Allow connections only to players who have Mojang-signed public keys',
+    'enforce-secure-profile':
+      'Allow connections only to players who have Mojang-signed public keys',
     'enforce-whitelist': 'Deny participation to non-whitelisted players',
     'white-list': 'Manage player login by the white list',
     'enable-jmx-monitoring': 'Enable monitoring by JMX',
     'previews-chat': 'Enable preview to display when sending chat',
-    'snooper-enabled': 'Sets whether the server sends snoop data regularly to http://snoop.minecraft.net',
-    'log-ips': 'When set to false, will prevent player IPs from being included in the log when players join the game',
+    'snooper-enabled':
+      'Sets whether the server sends snoop data regularly to http://snoop.minecraft.net',
+    'log-ips':
+      'When set to false, will prevent player IPs from being included in the log when players join the game',
     'text-filtering-config': 'Filtering configuration of inappropriate chat',
-    'announce-player-achievements': 'Announce the achievement unlock in chat.'
-
+    'announce-player-achievements': 'Announce the achievement unlock in chat.',
   },
-  resetProperty: '\
-    Reset setting to default setting \"{defaultProperty}\"<br>\
+  resetProperty:
+    '\
+    Reset setting to default setting "{defaultProperty}"<br>\
     You can change basic settings from "System Settings" > "Properties".',
   empty: '(Empty)',
   failed: 'Failed to load properties',
@@ -112,6 +117,6 @@ export const enUSproperty: MessageSchema['property'] = {
     downerLimit: '{n} or more',
     upperLimit: '{n} or less',
     multiple: 'multiple of {n}',
-    number: 'Input half size number'
+    number: 'Input half size number',
   },
 };

@@ -1,38 +1,43 @@
-import { fromEntries, toEntries } from "./obj"
-
+import { fromEntries, toEntries } from './obj';
 
 export function recordKeyFillter<K extends string, L extends K, V>(
   rec: Record<K, V>,
   predicate: (key: K) => key is L
-): Record<L, V>
+): Record<L, V>;
 
 export function recordKeyFillter<K extends string, V>(
   rec: Record<K, V>,
   predicate: (key: K) => boolean
-): Record<K, V>
+): Record<K, V>;
 
 export function recordKeyFillter<K extends string, V>(
   rec: Record<K, V>,
   predicate: (key: K) => boolean
 ) {
-  const entries = toEntries(rec).filter(([k,]) => predicate(k))
-  return fromEntries(entries)
+  const entries = toEntries(rec).filter(([k]) => predicate(k));
+  return fromEntries(entries);
 }
 
 export function recordValueFilter<K extends string, V>(
   rec: Record<K, V>,
   predicate: (value: V) => boolean
 ) {
-  const entries = toEntries(rec).filter(([,v]) => predicate(v))
-  return fromEntries(entries)
+  const entries = toEntries(rec).filter(([, v]) => predicate(v));
+  return fromEntries(entries);
 }
 
-export async function asyncFilter<T>(array: T[], asyncCallback:(v: T) => Promise<boolean>) {
+export async function asyncFilter<T>(
+  array: T[],
+  asyncCallback: (v: T) => Promise<boolean>
+) {
   const bits = await Promise.all(array.map(asyncCallback));
   return array.filter((_, i) => bits[i]);
 }
 
-export function uniqueArrayDict<T extends Record<string, any>>(dicts: T[], key: keyof T) {
+export function uniqueArrayDict<T extends Record<string, any>>(
+  dicts: T[],
+  key: keyof T
+) {
   // 特定のキーを基にしたSetを作る
   const set = new Set(dicts.map((obj) => obj[key]));
 
@@ -46,9 +51,9 @@ export function uniqueArrayDict<T extends Record<string, any>>(dicts: T[], key: 
     return result;
   });
 
-  return uniqueArray
+  return uniqueArray;
 }
 
 export function uniqueArray<T>(array: T[]) {
-  return [...new Set(array)]
+  return [...new Set(array)];
 }

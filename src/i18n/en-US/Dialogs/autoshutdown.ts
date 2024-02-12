@@ -1,4 +1,4 @@
-import { MessageSchema } from "src/boot/i18n";
+import { MessageSchema } from 'src/boot/i18n';
 
 export const enAutoShutdown: MessageSchema['autoshutdown'] = {
   title: 'Auto shutdown',
@@ -6,6 +6,5 @@ export const enAutoShutdown: MessageSchema['autoshutdown'] = {
     Shutdown this pc after {time} sec.<br>\
     If canceled, it will not shutdown.',
   cancel: 'Cancel',
-  ok: 'OK (shutdown after {time} sec.)'
-
-}
+  ok: 'OK (shutdown after {time} sec.)',
+};

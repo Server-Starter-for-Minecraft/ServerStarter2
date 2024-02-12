@@ -1,9 +1,10 @@
 export const jaPlayer = {
   order: {
     name: '名前順',
-    op: 'OP順'
+    op: 'OP順',
   },
-  description: 'プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います',
+  description:
+    'プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います',
   search: 'ゲーム中のプレイヤー名を入力',
   registeredPlayer: '追加済みプレイヤー',
   notRegistered: 'プレイヤーが登録されていません',
@@ -19,7 +20,7 @@ export const jaPlayer = {
   newGroup: '新規グループ',
   groupName: 'グループ名',
   groupColor: 'カラー',
-  color:{
+  color: {
     dark_red: 'dark_red',
     red: 'red',
     gold: 'gold',
@@ -45,8 +46,10 @@ export const jaPlayer = {
   updateGroup: 'グループを更新',
   deleteGroup: 'グループを削除',
   groupNameDuplicate: '{group}はすでに存在します',
-  makeNewGroupDecide: '選択中の{n}人をメンバーとするグループを作成します|選択中の{n}人をメンバーとするグループを作成します',
-  updateGroupDecide: 'グループメンバーを選択中の{n}人で設定します|グループメンバーを選択中の{n}人で設定します',
+  makeNewGroupDecide:
+    '選択中の{n}人をメンバーとするグループを作成します|選択中の{n}人をメンバーとするグループを作成します',
+  updateGroupDecide:
+    'グループメンバーを選択中の{n}人で設定します|グループメンバーを選択中の{n}人で設定します',
   opLevel: 'OPレベル',
   noOp: 'OP権限なし',
   addPlayer: 'このプレイヤーを追加',

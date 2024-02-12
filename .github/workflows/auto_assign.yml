@@ -1,5 +1,9 @@
 name: AutoPullRequestAssign
 
+permissions:
+  issues: write
+  pull-requests: write
+
 on:
   pull_request:
     types: [opened]
@@ -7,12 +11,19 @@ on:
 jobs:
   auto-assign:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
-      - name: 'Auto-assign PR'
+      - name: Check if organization member
+        id: is_organization_member
+        uses: JamesSingleton/is-organization-member@1.0.0
+        with:
+          organization: Server-Starter-for-Minecraft
+          username: ${{ github.event.pull_request.user.login }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto Assign Pull Request
+        if: ${{ steps.is_organization_member.outputs.result == 'true' }}
         uses: pozil/auto-assign-issue@v1
         with:
-          repo-token: ${{ secrets.ACTION_ACCESS_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           assignees: ${{github.event.pull_request.user.login}}
           numOfAssignee: 1

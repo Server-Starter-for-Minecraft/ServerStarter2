@@ -6,16 +6,18 @@ import { tError } from 'src/i18n/utils/tFunc';
 import RunningBtn from '../HOME/RunningBtn.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
 
 async function showLog() {
-  const logs = await window.API.invokeFetchLatestWorldLog(mainStore.selectedWorldID)
+  const logs = await window.API.invokeFetchLatestWorldLog(
+    mainStore.selectedWorldID
+  );
   checkError(
     logs,
-    l => consoleStore.setAllConsole(mainStore.selectedWorldID, l, 'CheckLog'),
-    e => tError(e)
-  )
+    (l) => consoleStore.setAllConsole(mainStore.selectedWorldID, l, 'CheckLog'),
+    (e) => tError(e)
+  );
 }
 </script>
 
@@ -23,17 +25,14 @@ async function showLog() {
   <div
     v-if="consoleStore.status(mainStore.selectedWorldID) === 'Stop'"
     class="column justify-center fit"
-    style="flex: 1 1 0;"
+    style="flex: 1 1 0"
   >
-    <RunningBtn
-      :text-font-size="1.5"
-      class="btn"
-    />
+    <RunningBtn :text-font-size="1.5" class="btn" />
     <SsBtn
       :label="$t('console.showLog')"
       width="16rem"
       @click="showLog"
-      style="font-size: 1rem; margin: 1rem auto;"
+      style="font-size: 1rem; margin: 1rem auto"
     />
   </div>
 </template>
