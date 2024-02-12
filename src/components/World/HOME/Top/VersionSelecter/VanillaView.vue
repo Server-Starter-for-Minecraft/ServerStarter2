@@ -38,7 +38,7 @@ let currentVersion = mainStore.world.version;
 
 /**
  * 警告画面は新規ワールド（配布ワールドやバックアップを含む）ではないワールドに対して，バージョンダウンを行うときに警告する
- * 
+ *
  * ただし，複製で追加された新規ワールドに対しては，通常ワールド同様に警告を出す
  */
 async function openWarningDialog(newVer: VanillaVersion) {
@@ -53,12 +53,12 @@ async function openWarningDialog(newVer: VanillaVersion) {
         okBtnTxt: '危険性を理解して変更する',
       } as dangerDialogProp,
     })
-    .onOk(() => {
-      currentVersion = newVer;
-    })
-    .onCancel(() => {
-      mainStore.world.version = currentVersion;
-    });
+      .onOk(() => {
+        currentVersion = newVer;
+      })
+      .onCancel(() => {
+        mainStore.world.version = currentVersion;
+      });
   } else {
     currentVersion = newVer;
   }

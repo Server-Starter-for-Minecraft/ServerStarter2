@@ -29,9 +29,7 @@ export function deleteFromValue<T>(arr: T[], val: T) {
   arr.splice(arr.indexOf(val), 1);
 }
 
-export async function getHashData(
-  object: any
-) {
+export async function getHashData(object: any) {
   const uint8 = new TextEncoder().encode(JSON.stringify(object));
   const digest = await crypto.subtle.digest('SHA-256', uint8);
   return Array.from(new Uint8Array(digest))
