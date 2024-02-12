@@ -6,7 +6,7 @@ import {
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
-import { isExistKey } from 'src/scripts/obj';
+import { getHashData, isExistKey } from 'src/scripts/obj';
 import { useMainStore } from '../MainStore';
 import { isContentsExists } from 'src/components/World/Contents/contentsPage';
 
@@ -53,9 +53,3 @@ export const useContentsStore = defineStore('contentsStore', {
     },
   },
 });
-
-async function getHashData(contents: AllFileData<Contents>) {
-  const uint8  = new TextEncoder().encode(JSON.stringify(contents))
-  const digest = await crypto.subtle.digest('SHA-256', uint8)
-  return Array.from(new Uint8Array(digest)).map(v => v.toString(16).padStart(2,'0')).join('')
-}

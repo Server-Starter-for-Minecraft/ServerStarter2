@@ -8,6 +8,7 @@ import {
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
+import { newerVerIdx } from './versionComparator';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
@@ -35,45 +36,32 @@ if (mainStore.world.version.type !== 'vanilla') {
 }
 let currentVersion = mainStore.world.version;
 
-function openWarningDialog(newVer: VanillaVersion) {
-  // Dialog内容の確認用
-  // Version比較が実装された段階で，下記のコードに切り替える
-  $q.dialog({
-    component: DangerDialog,
-    componentProps: {
-      dialogTitle: 'バージョンダウンの確認',
-      dialogDesc:
-        'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンの変更を行いますか？',
-      okBtnTxt: '危険性を理解して変更する',
-    } as dangerDialogProp,
-  })
+/**
+ * 警告画面は新規ワールド（配布ワールドやバックアップを含む）ではないワールドに対して，バージョンダウンを行うときに警告する
+ * 
+ * ただし，複製で追加された新規ワールドに対しては，通常ワールド同様に警告を出す
+ */
+async function openWarningDialog(newVer: VanillaVersion) {
+  const verComp = await newerVerIdx(vanillaOps(), currentVersion, newVer);
+  if (!mainStore.isNewWorld(mainStore.world.id) && verComp === -1) {
+    $q.dialog({
+      component: DangerDialog,
+      componentProps: {
+        dialogTitle: 'バージョンダウンの確認',
+        dialogDesc:
+          'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンの変更を行いますか？',
+        okBtnTxt: '危険性を理解して変更する',
+      } as dangerDialogProp,
+    })
     .onOk(() => {
-      console.log('Accept version down');
       currentVersion = newVer;
     })
     .onCancel(() => {
-      console.log('Denied version down');
       mainStore.world.version = currentVersion;
     });
-
-  // 【切り替え用コード】
-  // if (!mainStore.isNewWorld(mainStore.world.id) && /** newVer < oldVer */) {
-  //   $q.dialog({
-  //     component: DangerDialog,
-  //     componentProps: {
-  //       dialogTitle: 'バージョンダウンの確認',
-  //       dialogDesc: 'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンダウンを行いますか？',
-  //       okBtnTxt: '危険性を理解してバージョンダウンを行う',
-  //     } as dangerDialogProp,
-  //   }).onOk(() => {
-  //     currentVersion = newVer
-  //   }).onCancel(() => {
-  //     mainStore.world.version = currentVersion
-  //   });
-  // }
-  // else {
-  //   currentVersion = newVer
-  // }
+  } else {
+    currentVersion = newVer;
+  }
 }
 </script>
 

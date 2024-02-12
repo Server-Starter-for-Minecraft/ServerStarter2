@@ -109,7 +109,7 @@ export const useMainStore = defineStore('mainStore', {
         res,
         (world) => {
           worldStore.worldList[world.id] = toRaw(world);
-          worldStore.newWorlds.add(world.id);
+          if (!duplicateWorldID) worldStore.newWorlds.add(world.id);
           this.setWorld(world);
           consoleStore.initTab(world.id);
         },
