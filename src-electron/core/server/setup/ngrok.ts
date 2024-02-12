@@ -18,14 +18,15 @@ export async function runNgrok(
       addr: port,
       authtoken: token,
       remote_addr,
-      binPath: path => path.replace('app.asar', 'app.asar.unpacked'),
+      binPath: (path) => path.replace('app.asar', 'app.asar.unpacked'),
     });
 
-    return listener
-  }
-  catch (e) {
-    if ((e as NgrokError)?.errorCode === 'ERR_NGROK_307'
-      && remote_addr !== undefined) {
+    return listener;
+  } catch (e) {
+    if (
+      (e as NgrokError)?.errorCode === 'ERR_NGROK_307' &&
+      remote_addr !== undefined
+    ) {
       return errorMessage.lib.ngrok.unreservedAdress({
         adress: remote_addr,
       });
