@@ -88,6 +88,7 @@ function openMIT() {
         <SsA
           url="https://server-starter-for-minecraft.github.io"
           class="text-body2"
+          style="width: 20rem"
         >
           https://server-starter-for-minecraft.github.io
         </SsA>
