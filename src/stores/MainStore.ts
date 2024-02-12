@@ -9,6 +9,7 @@ import { sortValue } from 'src/scripts/objSort';
 import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
+import { useContentsStore } from './WorldTabs/ContentsStore';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { values } from 'src/scripts/obj';
@@ -108,6 +109,7 @@ export const useMainStore = defineStore('mainStore', {
         res,
         (world) => {
           worldStore.worldList[world.id] = toRaw(world);
+          worldStore.newWorlds.add(world.id);
           this.setWorld(world);
           consoleStore.initTab(world.id);
         },
@@ -157,6 +159,26 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       worldStore.removeWorldIP(worldID);
     },
+    /**
+     * 当該ワールドが新規作成され，まだ起動されたことがないワールドか否かをチェック
+     */
+    isNewWorld(worldID: WorldID) {
+      const worldStore = useWorldStore();
+      return worldStore.newWorlds.has(worldID);
+    },
+    /**
+     * ワールドが起動されたときに必要な処理を実行する
+     *
+     * - newWorldsから当該ワールドを除外
+     * - 追加コンテンツの新規登録フラグを削除
+     */
+    startedWorld(worldID: WorldID) {
+      const worldStore = useWorldStore();
+      worldStore.newWorlds.delete(worldID);
+
+      const contentsStore = useContentsStore();
+      delete contentsStore.newContents[worldID];
+    },
   },
 });
 
@@ -168,6 +190,7 @@ export const useWorldStore = defineStore('worldStore', {
     return {
       worldList: {} as Record<WorldID, WorldEdited>,
       worldIPs: {} as Record<WorldID, string>,
+      newWorlds: new Set<WorldID>(),
     };
   },
   getters: {

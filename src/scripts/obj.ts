@@ -18,6 +18,13 @@ export const values = <K extends string | number | symbol, V>(
   object: Record<K, V>
 ): V[] => Object.values(object) as V[];
 
+export function isExistKey<K extends string | number | symbol, V>(
+  object: Record<K, V>,
+  key: K
+) {
+  return !!keys(object).find(k => k === key);
+}
+
 export function deleteFromValue<T>(arr: T[], val: T) {
   arr.splice(arr.indexOf(val), 1);
 }

@@ -57,7 +57,7 @@ function openWarningDialog(newVer: VanillaVersion) {
     });
 
   // 【切り替え用コード】
-  // if (/** newVer < oldVer */) {
+  // if (!mainStore.isNewWorld(mainStore.world.id) && /** newVer < oldVer */) {
   //   $q.dialog({
   //     component: DangerDialog,
   //     componentProps: {

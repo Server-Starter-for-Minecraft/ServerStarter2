@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useQuasar } from 'quasar';
 import {
   AllFileData,
   DatapackData,
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
+import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 type T = DatapackData | ModData | PluginData;
 
@@ -20,21 +25,44 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const mainStore = useMainStore();
+const contentsStore = useContentsStore();
 
-function addContent() {
+async function addContent() {
+  await contentsStore.setNewContents(mainStore.world.id, prop.content);
   (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(
     prop.content
   );
 }
 
-function deleteContent() {
-  mainStore.world.additional[`${prop.contentType}s`].splice(
-    mainStore.world.additional[`${prop.contentType}s`]
-      .map((c) => c.name)
-      .indexOf(prop.content.name),
-    1
-  );
+async function deleteContent() {
+  function __delete() {
+    mainStore.world.additional[`${prop.contentType}s`].splice(
+      mainStore.world.additional[`${prop.contentType}s`]
+        .map((c) => c.name)
+        .indexOf(prop.content.name),
+      1
+    );
+  }
+
+  // 起動前に登録された追加コンテンツに対して警告を出さない
+  if (await contentsStore.isNewContents(mainStore.world.id, prop.content)) {
+    __delete();
+  } else {
+    $q.dialog({
+      component: DangerDialog,
+      componentProps: {
+        dialogTitle: `${$T(`additionalContents.${prop.contentType}`)}の削除`,
+        dialogDesc: `起動履歴のあるワールドから${$T(
+          `additionalContents.${prop.contentType}`
+        )}を削除する操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上で削除しますか？`,
+        okBtnTxt: '危険性を理解して削除する',
+      } as dangerDialogProp,
+    }).onOk(() => {
+      __delete();
+    });
+  }
 }
 
 const transformedName = computed(() =>
