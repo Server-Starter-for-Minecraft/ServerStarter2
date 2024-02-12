@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllVanillaVersion, VanillaVersion } from 'app/src-electron/schema/version';
+import {
+  AllVanillaVersion,
+  VanillaVersion,
+} from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
@@ -13,7 +16,7 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
-const $q = useQuasar()
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
@@ -30,7 +33,7 @@ if (mainStore.world.version.type !== 'vanilla') {
   mainStore.world.version =
     vanillaOps().find((ops) => ops.release) ?? vanillaOps()[0];
 }
-let currentVersion = mainStore.world.version
+let currentVersion = mainStore.world.version;
 
 function openWarningDialog(newVer: VanillaVersion) {
   // Dialog内容の確認用
@@ -39,16 +42,19 @@ function openWarningDialog(newVer: VanillaVersion) {
     component: DangerDialog,
     componentProps: {
       dialogTitle: 'バージョンダウンの確認',
-      dialogDesc: 'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンの変更を行いますか？',
+      dialogDesc:
+        'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンの変更を行いますか？',
       okBtnTxt: '危険性を理解して変更する',
     } as dangerDialogProp,
-  }).onOk(() => {
-    console.log('Accept version down')
-    currentVersion = newVer
-  }).onCancel(() => {
-    console.log('Denied version down')
-    mainStore.world.version = currentVersion
   })
+    .onOk(() => {
+      console.log('Accept version down');
+      currentVersion = newVer;
+    })
+    .onCancel(() => {
+      console.log('Denied version down');
+      mainStore.world.version = currentVersion;
+    });
 
   // 【切り替え用コード】
   // if (/** newVer < oldVer */) {
@@ -75,7 +81,7 @@ function openWarningDialog(newVer: VanillaVersion) {
   <div class="row justify-between q-gutter-md items-center">
     <SsSelect
       v-model="mainStore.world.version"
-      @update:model-value="newVal => openWarningDialog(newVal)"
+      @update:model-value="(newVal) => openWarningDialog(newVal)"
       :options="
         vanillaOps()
           ?.filter((ver, idx) => !isRelease || idx == 0 || ver['release'])
