@@ -20,6 +20,11 @@ export const enUSHome: MessageSchema['home'] = {
     latestRelease: 'Latest release',
     latestVersion: 'Latest version',
   },
+  versionDown: {
+    title: 'Checking downgrade the server',
+    desc: 'This world was last played in newer version and loading it in this version could cause corruption!<br>Do you really want to set this version?',
+    okbtn: 'Yes, set this version'
+  },
   serverType: {
     vanilla: 'Vanilla (Official)',
     spigot: 'Spigot',

@@ -14,4 +14,9 @@ export const enAdditionalContents: MessageSchema['additionalContents'] = {
   installFromZip: 'New install from Zip',
   installFromFolder: 'New install from Folder',
   needReboot: 'A server restart is required for the changes to take effect',
+  deleteDialog: {
+    title: 'Checking delete the {type}',
+    desc: 'This world was last played with this {type} and loading it without this {type} could cause corruption!<br>Do you really want to delete this?',
+    okbtn: 'Yes, delete this'
+  }
 };

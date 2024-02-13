@@ -5,6 +5,7 @@ import {
   AllVanillaVersion,
   VanillaVersion,
 } from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
@@ -47,10 +48,9 @@ async function openWarningDialog(newVer: VanillaVersion) {
     $q.dialog({
       component: DangerDialog,
       componentProps: {
-        dialogTitle: 'バージョンダウンの確認',
-        dialogDesc:
-          'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンの変更を行いますか？',
-        okBtnTxt: '危険性を理解して変更する',
+        dialogTitle: $T('home.versionDown.title'),
+        dialogDesc: $T('home.versionDown.desc'),
+        okBtnTxt: $T('home.versionDown.okbtn'),
       } as dangerDialogProp,
     })
       .onOk(() => {

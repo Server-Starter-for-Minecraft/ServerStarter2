@@ -53,11 +53,9 @@ async function deleteContent() {
     $q.dialog({
       component: DangerDialog,
       componentProps: {
-        dialogTitle: `${$T(`additionalContents.${prop.contentType}`)}の削除`,
-        dialogDesc: `起動履歴のあるワールドから${$T(
-          `additionalContents.${prop.contentType}`
-        )}を削除する操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上で削除しますか？`,
-        okBtnTxt: '危険性を理解して削除する',
+        dialogTitle: $T('additionalContents.deleteDialog.title', {type: prop.contentType}),
+        dialogDesc: $T('additionalContents.deleteDialog.desc', {type: prop.contentType}),
+        okBtnTxt: $T('additionalContents.deleteDialog.okbtn'),
       } as dangerDialogProp,
     }).onOk(() => {
       __delete();

@@ -18,6 +18,11 @@ export const jaHome = {
     latestRelease: '最新のリリース',
     latestVersion: '最新のバージョン',
   },
+  versionDown: {
+    title: 'バージョンダウンの確認',
+    desc: 'サーバーのバージョンを下げる操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上でバージョンの変更を行いますか？',
+    okbtn: '危険性を理解して変更する',
+  },
   serverType: {
     vanilla: 'バニラ (公式)',
     spigot: 'Spigot',
