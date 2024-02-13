@@ -20,10 +20,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
       @ok-click="onDialogOK"
     >
       <template #additionalBtns>
-        <SsBtn
-          :label="$t('general.cancel')"
-          @click="onDialogCancel"
-        />
+        <SsBtn :label="$t('general.cancel')" @click="onDialogCancel" />
       </template>
       <div
         v-html="dialogDesc"

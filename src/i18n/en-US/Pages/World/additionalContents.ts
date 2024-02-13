@@ -17,6 +17,6 @@ export const enAdditionalContents: MessageSchema['additionalContents'] = {
   deleteDialog: {
     title: 'Checking delete the {type}',
     desc: 'This world was last played with this {type} and loading it without this {type} could cause corruption!<br>Do you really want to delete this?',
-    okbtn: 'Yes, delete this'
-  }
+    okbtn: 'Yes, delete this',
+  },
 };

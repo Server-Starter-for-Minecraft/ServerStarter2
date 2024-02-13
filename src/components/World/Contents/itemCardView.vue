@@ -53,8 +53,12 @@ async function deleteContent() {
     $q.dialog({
       component: DangerDialog,
       componentProps: {
-        dialogTitle: $T('additionalContents.deleteDialog.title', {type: prop.contentType}),
-        dialogDesc: $T('additionalContents.deleteDialog.desc', {type: prop.contentType}),
+        dialogTitle: $T('additionalContents.deleteDialog.title', {
+          type: prop.contentType,
+        }),
+        dialogDesc: $T('additionalContents.deleteDialog.desc', {
+          type: prop.contentType,
+        }),
         okBtnTxt: $T('additionalContents.deleteDialog.okbtn'),
       } as dangerDialogProp,
     }).onOk(() => {
