@@ -18,6 +18,7 @@ export async function runNgrok(
       addr: port,
       authtoken: token,
       remote_addr,
+      binPath: (path) => path.replace('app.asar', 'app.asar.unpacked'),
     });
 
     return listener;
