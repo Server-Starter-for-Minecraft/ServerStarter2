@@ -14,12 +14,13 @@ import { getSystemVersion } from './version';
  * リモートのバージョンはgithubのリリース情報のtag_nameを参照
  */
 async function checkUpdate(pat: string | undefined) {
+  /** 接頭辞vのついていないSemVar e.g. "1.2.3" */
   const currentVersion = await getSystemVersion();
   const latestRelease = await getLatestRelease(osPlatform, pat);
   // アップデートの取得に失敗
   if (isError(latestRelease)) return latestRelease;
   // アップデートなし
-  if (currentVersion === latestRelease.version) return false;
+  if ('v' + currentVersion === latestRelease.version) return false;
   return latestRelease;
 }
 

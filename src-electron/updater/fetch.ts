@@ -44,6 +44,7 @@ function parseAssets(assets: ReleaseAsset[], osPLatform: OsPlatform) {
 
 export type GithubRelease = {
   platform: OsPlatform;
+  /** 接頭辞vのついたSemVar e.g. "v1.2.3" */
   version: string;
   url: string;
 };
