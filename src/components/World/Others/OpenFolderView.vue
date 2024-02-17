@@ -2,11 +2,9 @@
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import { useMainStore } from 'src/stores/MainStore';
 
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
-function openFolder() {
-
-}
+function openFolder() {}
 </script>
 
 <template>
@@ -14,10 +12,6 @@ function openFolder() {
     <div class="text-caption" style="opacity: 0.6">
       ワールドデータの保存場所となっているフォルダを開く
     </div>
-    <SsBtn
-      label="フォルダを開く"
-      @click="openFolder"
-      class="q-mt-md"
-    />
+    <SsBtn label="フォルダを開く" @click="openFolder" class="q-mt-md" />
   </div>
 </template>
