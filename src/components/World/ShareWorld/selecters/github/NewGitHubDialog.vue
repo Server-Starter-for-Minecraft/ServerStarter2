@@ -65,8 +65,8 @@ async function setRemote() {
       :ok-btn-txt="$t('shareWorld.newRemote.btn')"
       :loading="loading"
       :disable="!isValidName"
+      :onClose="loading ? undefined : onDialogCancel"
       @ok-click="setRemote"
-      @close="onDialogCancel"
     >
       <p style="font-size: 0.8rem; opacity: 0.8">
         <i18n-t keypath="shareWorld.newRemote.desc" tag="false">

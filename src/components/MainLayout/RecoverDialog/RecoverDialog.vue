@@ -48,8 +48,8 @@ async function recoverWorld() {
       :title="$T('mainLayout.backupDialog.title')"
       :loading="loading"
       :ok-btn-txt="$T('mainLayout.backupDialog.startRecover')"
+      :onClose="loading ? undefined : onDialogCancel"
       @ok-click="recoverWorld"
-      @close="onDialogCancel"
     >
       <p>{{ $t('mainLayout.backupDialog.desc') }}</p>
       <ul>

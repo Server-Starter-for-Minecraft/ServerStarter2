@@ -61,8 +61,8 @@ async function okClick() {
       :title="$t('shareWorld.registerNewRemote')"
       :loading="loading"
       :ok-btn-txt="$t('shareWorld.register')"
+      :onClose="loading ? undefined : onDialogCancel"
       @ok-click="okClick"
-      @close="onDialogCancel"
     >
       <div class="q-pb-sm">
         <div class="caption" style="opacity: 0.6">

@@ -16,13 +16,13 @@ const scrollAreaRef = ref();
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.setScrollPosition('vertical', 0);
+  scrollAreaRef.value.scrollTop = 0;
 }
 setScrollTop(scrollTop);
 </script>
 
 <template>
-  <div class="vertical-scroll">
+  <div ref="scrollAreaRef" class="vertical-scroll">
     <div class="mainField">
       <RunningBtn
         to="/console"
@@ -56,6 +56,4 @@ setScrollTop(scrollTop);
       <WorldDeleteView />
     </div>
   </div>
-  <!-- <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0;">
-  </q-scroll-area> -->
 </template>
