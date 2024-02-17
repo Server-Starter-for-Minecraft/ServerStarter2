@@ -16,7 +16,7 @@ const scrollAreaRef = ref();
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.scrollTop = 0
+  scrollAreaRef.value.scrollTop = 0;
 }
 setScrollTop(scrollTop);
 </script>
