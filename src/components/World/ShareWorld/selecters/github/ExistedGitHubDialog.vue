@@ -47,8 +47,8 @@ async function setRemote() {
       "
       :ok-btn-txt="$t('shareWorld.sync', { path: `${rWorldName}` })"
       :loading="loading"
+      :onClose="loading ? undefined : onDialogCancel"
       @ok-click="setRemote"
-      @close="onDialogCancel"
     >
       <p
         style="font-size: 0.8rem; opacity: 0.8"

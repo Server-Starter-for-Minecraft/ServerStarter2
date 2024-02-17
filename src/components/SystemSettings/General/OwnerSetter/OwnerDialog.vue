@@ -33,8 +33,8 @@ function registOwner() {
       :title="$t('owner.set')"
       :okBtnTxt="$t('owner.registBtn')"
       :disable="ownerCandidate === void 0"
+      :onClose="persistent ? undefined : onDialogOK"
       @okClick="registOwner"
-      @close="onDialogOK"
     >
       <template #default>
         <p

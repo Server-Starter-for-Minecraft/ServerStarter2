@@ -23,7 +23,6 @@ async function importProcess() {
   <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <BaseDialogCard
       :title="$t('mainLayout.customMapImporter.checkDialog.title')"
-      @close="onDialogCancel"
       style="max-width: 100%"
     >
       <q-item dense class="q-pl-none">
