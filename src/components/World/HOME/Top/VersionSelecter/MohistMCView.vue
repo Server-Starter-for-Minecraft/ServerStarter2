@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { AllMohistmcVersion } from 'app/src-electron/schema/version';
+import { computed } from 'vue';
+import { useQuasar } from 'quasar';
+import {
+  AllMohistmcVersion,
+  MohistmcVersion,
+} from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { openWarningDialog } from './versionComparator';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
@@ -10,66 +15,85 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+let currentMohistVer: MohistmcVersion;
 
-const mohistVers = () => {
-  return prop.versionData.map((ver) => ver.id);
-};
-const mohistVer = ref(mohistVers()[0]);
-
-const mohistBuilds = () => {
-  return prop.versionData.find((ver) => ver.id === mohistVer.value)?.builds;
-};
-const mohistBuild = ref(prop.versionData[0].builds[0]);
-
-// mohistでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'mohistmc') {
-  onUpdatedSelection(false);
-} else {
-  mohistVer.value = mainStore.world.version.id;
-  mohistBuild.value = {
-    number: mainStore.world.version.number,
-    forge_version: mainStore.world.version.forge_version,
-  };
-}
+type mohistBuildType = { number: number; forge_version?: string | undefined };
 
 /**
  * 描画する際にForgeの対応番号を記載する
  */
-function getNumberName(n: number, forgeVersion?: string) {
-  if (forgeVersion !== void 0) {
-    return `${n} (Forge: ${forgeVersion})`;
+function getNumberName(build: mohistBuildType) {
+  if (build.forge_version !== void 0) {
+    return `${build.number} (Forge: ${build.forge_version})`;
   } else {
-    return n;
+    return build.number;
   }
 }
 
-/**
- * バージョンやビルド番号が更新されたら、選択ワールドの情報を更新する
- *
- * バージョンの変更に伴うビルド番号の更新はupdateBuildをTrueにする
- */
-function onUpdatedSelection(updateBuild: boolean) {
-  // バージョンに応じてビルド番号を更新
-  if (updateBuild) {
-    mohistBuild.value = mohistBuilds()?.[0] ?? { number: 0 };
-  }
-
-  mainStore.world.version = {
-    id: mohistVer.value,
+function buildMohistVer(id: string, build: mohistBuildType) {
+  return {
+    id: id,
     type: 'mohistmc' as const,
-    number: mohistBuild.value.number,
-    forge_version: mohistBuild.value.forge_version,
+    forge_version: build.forge_version,
+    number: build.number,
   };
 }
+
+const mohistVers = () => {
+  return prop.versionData.map((ver) => ver.id);
+};
+const mohistVer = computed({
+  get: () => {
+    // 前のバージョンがMohistに存在しないバージョンの時は，最新バージョンを割り当てる
+    if (mohistVers().indexOf(mainStore.world.version.id) === -1) {
+      return mohistVers()[0];
+    }
+    return mainStore.world.version.id;
+  },
+  set: (val) => {
+    const newVer = buildMohistVer(val, mohistBuilds(val)[0]);
+    openWarningDialog($q, mohistVers(), currentMohistVer, newVer, 'id');
+  },
+});
+
+const mohistBuilds = (mVer: string) => {
+  return (
+    prop.versionData.find((ver) => ver.id === mVer)?.builds ?? [
+      {
+        number: 0,
+        forge_version: undefined,
+      },
+    ]
+  );
+};
+const mohistBuild = computed({
+  get: () => {
+    // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
+    if (mainStore.world.version.type !== 'mohistmc') {
+      return mohistBuilds(mohistVer.value)[0];
+    }
+    return {
+      number: mainStore.world.version.number,
+      forge_version: mainStore.world.version.forge_version,
+    };
+  },
+  set: (val) => {
+    mainStore.world.version = buildMohistVer(mohistVer.value, val);
+  },
+});
+
+// 表示内容と内部データを整合させる
+currentMohistVer = buildMohistVer(mohistVer.value, mohistBuild.value);
+mainStore.world.version = currentMohistVer;
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="mohistVer"
-      @update:model-value="onUpdatedSelection(true)"
       :options="
         mohistVers().map((ver, idx) => {
           return {
@@ -88,17 +112,14 @@ function onUpdatedSelection(updateBuild: boolean) {
     />
     <SsSelect
       v-model="mohistBuild"
-      @update:model-value="onUpdatedSelection(false)"
       :options="
-        mohistBuilds()?.map((val, idx) => {
+        mohistBuilds(mohistVer).map((val, idx) => {
           return {
             data: val,
             label:
               idx === 0
-                ? `${getNumberName(val.number, val.forge_version)} (${$t(
-                    'home.version.recommend'
-                  )})`
-                : getNumberName(val.number, val.forge_version),
+                ? `${getNumberName(val)} (${$t('home.version.recommend')})`
+                : getNumberName(val),
           };
         })
       "

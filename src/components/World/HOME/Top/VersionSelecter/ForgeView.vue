@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { AllForgeVersion } from 'app/src-electron/schema/version';
+import { computed } from 'vue';
+import { useQuasar } from 'quasar';
+import { AllForgeVersion, ForgeVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { openWarningDialog } from './versionComparator';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
@@ -10,72 +12,91 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+let currentForgeVer: ForgeVersion;
 
-const forgeVerOps = () => {
-  return prop.versionData.map((ver) => ver.id);
-};
-const forgeVer = ref(prop.versionData[0].id);
-
-const forgeBuilds = () => {
-  return prop.versionData.find((ver) => ver.id === forgeVer.value)
-    ?.forge_versions;
-};
-const forgeBuilder = ref(prop.versionData[0].forge_versions[0]);
+type forgeVersType = { version: string; url: string };
 
 /**
  * 推奨ビルド番号 or ビルド一覧の先頭を「(推奨)」として提示する
  */
-const recommendBuildIdx = () => {
-  const idxNumber = forgeBuilds()?.findIndex(
-    (build) =>
-      prop.versionData.find((v) => v.id === forgeVer.value)?.recommended
-        ?.version === build?.version
+function getRecommendBuildIdx(fVer: string) {
+  const recommendBuild =
+    prop.versionData.find((v) => v.id === fVer)?.recommended?.version ?? '';
+
+  const idxNumber = forgeBuilds(fVer).findIndex(
+    (b) => recommendBuild === b.version
   );
   return idxNumber === -1 ? 0 : idxNumber;
-};
-
-// forgeでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'forge') {
-  onUpdatedSelection(false);
-} else {
-  forgeVer.value = mainStore.world.version.id;
-  forgeBuilder.value = {
-    version: mainStore.world.version.forge_version,
-    url: mainStore.world.version.download_url,
-  };
 }
 
-/**
- * バージョンやビルド番号が更新されたら、選択ワールドの情報を更新する
- *
- * バージョンの変更に伴うビルド番号の更新はupdateBuildをTrueにする
- */
-function onUpdatedSelection(updateBuild: boolean) {
-  // バージョンに応じてビルド番号を更新
-  if (updateBuild) {
-    forgeBuilder.value = prop.versionData.find((v) => v.id === forgeVer.value)
-      ?.recommended ??
-      forgeBuilds()?.[0] ?? { version: '', url: '' };
-  }
-
-  mainStore.world.version = {
-    id: forgeVer.value,
+function buildForgeVer(id: string, fVer: forgeVersType) {
+  return {
+    id: id,
     type: 'forge' as const,
-    forge_version: forgeBuilder.value.version,
-    download_url: forgeBuilder.value.url,
+    forge_version: fVer.version,
+    download_url: fVer.url,
   };
 }
+
+const forgeVers = () => {
+  return prop.versionData.map((ver) => ver.id);
+};
+const forgeVer = computed({
+  get: () => {
+    // 前のバージョンがForgeに存在しないバージョンの時は，最新バージョンを割り当てる
+    if (forgeVers().indexOf(mainStore.world.version.id) === -1) {
+      return forgeVers()[0];
+    }
+    return mainStore.world.version.id;
+  },
+  set: (val) => {
+    const buildIdx = getRecommendBuildIdx(val);
+    const newVer = buildForgeVer(val, forgeBuilds(val)[buildIdx]);
+    openWarningDialog($q, forgeVers(), currentForgeVer, newVer, 'id');
+  },
+});
+
+const forgeBuilds = (fVer: string) => {
+  return (
+    prop.versionData.find((ver) => ver.id === fVer)?.forge_versions ?? [
+      {
+        version: '',
+        url: '',
+      },
+    ]
+  );
+};
+const forgeBuild = computed({
+  get: () => {
+    // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
+    if (mainStore.world.version.type !== 'forge') {
+      const buildIdx = getRecommendBuildIdx(forgeVer.value);
+      return forgeBuilds(forgeVer.value)[buildIdx];
+    }
+    return {
+      version: mainStore.world.version.forge_version,
+      url: mainStore.world.version.download_url,
+    };
+  },
+  set: (val) => {
+    mainStore.world.version = buildForgeVer(forgeVer.value, val);
+  },
+});
+
+// 表示内容と内部データを整合させる
+currentForgeVer = buildForgeVer(forgeVer.value, forgeBuild.value);
+mainStore.world.version = currentForgeVer;
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="forgeVer"
-      @update:model-value="onUpdatedSelection(true)"
       :options="
-        forgeVerOps()?.map((ver, idx) => {
+        forgeVers().map((ver, idx) => {
           return {
             data: ver,
             label:
@@ -91,14 +112,13 @@ function onUpdatedSelection(updateBuild: boolean) {
       style="min-width: 10rem"
     />
     <SsSelect
-      v-model="forgeBuilder"
-      @update:model-value="onUpdatedSelection(false)"
+      v-model="forgeBuild"
       :options="
-        forgeBuilds()?.map((build, idx) => {
+        forgeBuilds(forgeVer).map((build, idx) => {
           return {
             data: build,
             label:
-              recommendBuildIdx() === idx
+              getRecommendBuildIdx(forgeVer) === idx
                 ? `${build.version} (${$t('home.version.recommend')})`
                 : build.version,
           };

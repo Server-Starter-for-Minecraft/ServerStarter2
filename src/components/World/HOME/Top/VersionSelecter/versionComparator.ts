@@ -6,8 +6,6 @@ import { useMainStore } from 'src/stores/MainStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
-let firstSelectedVersion: Version;
-
 /**
  * 新しい方のバージョンの引数番号を返す
  *
@@ -17,28 +15,24 @@ let firstSelectedVersion: Version;
  * - `ver1`が新しい場合，戻り値は`1`
  * - 両者が同じ場合，戻り値は`0`
  */
-export async function newerVerIdx<T extends Version>(
-  ops: T[],
+function newerVerIdx<T extends Version>(
+  ops: any[],
   ver_1: T,
-  ver1: T
+  ver1: T,
+  prop: keyof T
 ) {
-  const hashs = await getHashs(ops);
-  const idx_1 = hashs.indexOf(await getHashData(ver_1));
-  const idx1 = hashs.indexOf(await getHashData(ver1));
+  const idx_1 = ops.indexOf(ver_1[prop]);
+  const idx1 = ops.indexOf(ver1[prop]);
 
   const returnVal = idx_1 - idx1;
   return idx_1 === idx1 ? 0 : returnVal / Math.abs(returnVal);
 }
 
-function getHashs<T extends Version>(ops: T[]) {
-  return Promise.all(ops.map((v) => getHashData(v)));
-}
-
 /**
- * ワールド読み込み時に選択されているワールドを登録
+ * 配列内のすべてのデータをHash化して，Hashの一覧を返す
  */
-export function setCurrentServerVersion(ver: Version) {
-  firstSelectedVersion = ver;
+export function getHashs<T>(ops: T[]) {
+  return Promise.all(ops.map((v) => getHashData(v)));
 }
 
 /**
@@ -48,11 +42,13 @@ export function setCurrentServerVersion(ver: Version) {
  */
 export async function openWarningDialog<T extends Version>(
   $q: QVueGlobals,
-  vers: T[],
-  newVer: T
+  ops: any[],
+  currentVer: T,
+  newVer: T,
+  prop: keyof T
 ) {
   const mainStore = useMainStore();
-  const verComp = await newerVerIdx(vers, firstSelectedVersion, newVer);
+  const verComp = newerVerIdx(ops, currentVer, newVer, prop);
   if (!mainStore.isNewWorld(mainStore.world.id) && verComp === -1) {
     $q.dialog({
       component: DangerDialog,
@@ -61,8 +57,11 @@ export async function openWarningDialog<T extends Version>(
         dialogDesc: $T('home.versionDown.desc'),
         okBtnTxt: $T('home.versionDown.okbtn'),
       } as dangerDialogProp,
-    }).onCancel(() => {
-      mainStore.world.version = firstSelectedVersion;
+    }).onOk(() => {
+      mainStore.world.version = newVer;
     });
+  }
+  else {
+    mainStore.world.version = newVer;
   }
 }
