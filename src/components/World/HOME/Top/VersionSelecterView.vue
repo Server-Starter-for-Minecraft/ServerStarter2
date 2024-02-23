@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
 import {
   AllFabricVersion,
@@ -10,10 +12,12 @@ import {
   Version,
   versionTypes,
 } from 'app/src-electron/schema/version';
+import { WorldID } from 'app/src-electron/schema/world';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { assets } from 'src/assets/assets';
+import { openVerTypeWarningDialog } from './VersionSelecter/versionComparator';
 import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
 import ServerTypeItem from './VersionSelecter/ServerTypeItem.vue';
 import Vanilla from './VersionSelecter/VanillaView.vue';
@@ -23,6 +27,7 @@ import Forge from './VersionSelecter/ForgeView.vue';
 import MohistMC from './VersionSelecter/MohistMCView.vue';
 import Fabric from './VersionSelecter/FabricView.vue';
 
+const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
@@ -48,11 +53,9 @@ const mohistmcs = () => {
 const fabrics = () => {
   return sysStore.serverVersions.get('fabric') as AllFabricVersion;
 };
-const validVersionTypes = () => {
-  return versionTypes.filter(
-    (serverType) => sysStore.serverVersions.get(serverType) !== void 0
-  );
-};
+const validVersionTypes = versionTypes.filter(
+  (serverType) => sysStore.serverVersions.get(serverType) !== void 0
+);
 
 function createServerMap(serverType: Version['type']) {
   return {
@@ -62,13 +65,33 @@ function createServerMap(serverType: Version['type']) {
     icon: assets.png[serverType],
   };
 }
+
+let currentWorldID: WorldID;
+let __currentServerType = mainStore.selectedVersionType;
+const currentServerType = () => {
+  // 選択されたワールドが変更されたときに，「元のサーバー種類」を更新する
+  if (mainStore.world.id !== currentWorldID) {
+    currentWorldID = mainStore.world.id
+    __currentServerType = mainStore.selectedVersionType
+  }
+  return __currentServerType
+}
+
+const selectedVerType = computed({
+  get: () => {
+    return mainStore.selectedVersionType;
+  },
+  set: (val) => {
+    openVerTypeWarningDialog($q, currentServerType(), val);
+  },
+});
 </script>
 
 <template>
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelectScope
-    v-model="mainStore.selectedVersionType"
-    :options="validVersionTypes().map(createServerMap)"
+    v-model="selectedVerType"
+    :options="validVersionTypes.map(createServerMap)"
     options-selected-class="text-primary"
     :label="$t('home.version.serverType')"
     :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"

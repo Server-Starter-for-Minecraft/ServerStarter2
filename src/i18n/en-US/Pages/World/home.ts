@@ -20,6 +20,11 @@ export const enUSHome: MessageSchema['home'] = {
     latestRelease: 'Latest release',
     latestVersion: 'Latest version',
   },
+  versionChange: {
+    title: 'Checking change the server type',
+    desc: 'This world was last played in defferent server and loading it in this server could cause corruption!<br>Do you really want to set this server?',
+    okbtn: 'Yes, set this server',
+  },
   versionDown: {
     title: 'Checking downgrade the server',
     desc: 'This world was last played in newer version and loading it in this version could cause corruption!<br>Do you really want to set this version?',
