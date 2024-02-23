@@ -32,7 +32,7 @@ export const useMainStore = defineStore('mainStore', {
 
       return returnWorld;
     },
-    /** 
+    /**
      * バージョンダウンの警告ダイアログのような，
      * 以前のデータとの比較が必要な処理への利用を想定する
      */
@@ -124,7 +124,7 @@ export const useMainStore = defineStore('mainStore', {
         (e) => tError(e)
       );
 
-      return returnWorldID
+      return returnWorldID;
     },
     /**
      * 選択されているワールドを削除する
@@ -171,7 +171,7 @@ export const useMainStore = defineStore('mainStore', {
     },
     /**
      * 最新のワールドデータをworldBackに同期する
-     * 
+     *
      * 同期することで，「ワールド起動前のデータ」を更新する
      */
     syncBackWorld(worldID?: WorldID) {
