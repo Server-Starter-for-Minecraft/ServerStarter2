@@ -137,10 +137,11 @@ async function generateEula(
     true
   );
 
-  // 60秒経っても終了していない場合はプロセスキル
+  // 60秒経っても終了していない場合はプロセスキルし、eula.txtをこちらで生成する
   (async () => {
     await sleep(60 * 1000);
     if (!process.finished()) process.kill();
+    await eulaPath.writeText('eula=false');
   })();
 
   const result = await process;
