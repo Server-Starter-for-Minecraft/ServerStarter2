@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllPapermcVersion,
-  PapermcVersion,
-} from 'app/src-electron/schema/version';
+import { AllPapermcVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { openWarningDialog } from './versionComparator';
@@ -18,7 +15,6 @@ const prop = defineProps<Prop>();
 const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-let currentPaperVer: PapermcVersion;
 
 function buildPaperVer(id: string, build: number) {
   return {
@@ -41,7 +37,13 @@ const paperVer = computed({
   },
   set: (val) => {
     const newVer = buildPaperVer(val, paperBuilds(val)[0]);
-    openWarningDialog($q, paperVers(), currentPaperVer, newVer, 'id');
+    openWarningDialog(
+      $q,
+      paperVers(),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
   },
 });
 
@@ -62,8 +64,7 @@ const paperBuild = computed({
 });
 
 // 表示内容と内部データを整合させる
-currentPaperVer = buildPaperVer(paperVer.value, paperBuild.value);
-mainStore.world.version = currentPaperVer;
+mainStore.world.version = buildPaperVer(paperVer.value, paperBuild.value);
 </script>
 
 <template>

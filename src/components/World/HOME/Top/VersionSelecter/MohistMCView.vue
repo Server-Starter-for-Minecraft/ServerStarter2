@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllMohistmcVersion,
-  MohistmcVersion,
-} from 'app/src-electron/schema/version';
+import { AllMohistmcVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { openWarningDialog } from './versionComparator';
@@ -18,7 +15,6 @@ const prop = defineProps<Prop>();
 const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-let currentMohistVer: MohistmcVersion;
 
 type mohistBuildType = { number: number; forge_version?: string | undefined };
 
@@ -55,7 +51,13 @@ const mohistVer = computed({
   },
   set: (val) => {
     const newVer = buildMohistVer(val, mohistBuilds(val)[0]);
-    openWarningDialog($q, mohistVers(), currentMohistVer, newVer, 'id');
+    openWarningDialog(
+      $q,
+      mohistVers(),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
   },
 });
 
@@ -86,8 +88,7 @@ const mohistBuild = computed({
 });
 
 // 表示内容と内部データを整合させる
-currentMohistVer = buildMohistVer(mohistVer.value, mohistBuild.value);
-mainStore.world.version = currentMohistVer;
+mainStore.world.version = buildMohistVer(mohistVer.value, mohistBuild.value);
 </script>
 
 <template>

@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllSpigotVersion,
-  SpigotVersion,
-} from 'app/src-electron/schema/version';
+import { AllSpigotVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { openWarningDialog } from './versionComparator';
@@ -18,7 +15,6 @@ const prop = defineProps<Prop>();
 const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-let currentSpigotVer: SpigotVersion;
 
 function buildSpigotVer(id: string) {
   return {
@@ -40,13 +36,18 @@ const spigotVer = computed({
   },
   set: (val) => {
     const newVer = buildSpigotVer(val);
-    openWarningDialog($q, spigotVers(), currentSpigotVer, newVer, 'id');
+    openWarningDialog(
+      $q,
+      spigotVers(),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
   },
 });
 
 // 表示内容と内部データを整合させる
-currentSpigotVer = buildSpigotVer(spigotVer.value);
-mainStore.world.version = currentSpigotVer;
+mainStore.world.version = buildSpigotVer(spigotVer.value);
 </script>
 
 <template>
@@ -57,9 +58,7 @@ mainStore.world.version = currentSpigotVer;
         return {
           data: ver,
           label:
-            idx === 0
-              ? `${ver}【${$t('home.version.latestVersion')}】`
-              : ver,
+            idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver,
         };
       })
     "

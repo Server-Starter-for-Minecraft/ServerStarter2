@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia';
-import { WorldID } from 'app/src-electron/schema/world';
 import {
   AllFileData,
   DatapackData,
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
-import { getHashData, isExistKey } from 'src/scripts/obj';
 import { useMainStore } from '../MainStore';
 import { isContentsExists } from 'src/components/World/Contents/contentsPage';
 
@@ -16,7 +14,6 @@ export const useContentsStore = defineStore('contentsStore', {
   state: () => {
     return {
       selectedTab: 'datapack' as 'datapack' | 'plugin' | 'mod',
-      newContents: {} as Record<WorldID, Set<string>>,
     };
   },
   actions: {
@@ -33,22 +30,12 @@ export const useContentsStore = defineStore('contentsStore', {
       return this.selectedTab;
     },
     /**
-     * ワールド起動前に追加されたコンテンツを記録
-     */
-    async setNewContents(worldID: WorldID, contents: AllFileData<Contents>) {
-      if (!isExistKey(this.newContents, worldID)) {
-        this.newContents[worldID] = new Set<string>();
-      }
-
-      this.newContents[worldID].add(await getHashData(contents));
-    },
-    /**
      * 当該コンテンツがワールド起動前に登録されたものか否かをチェック
      */
-    async isNewContents(worldID: WorldID, contents: AllFileData<Contents>) {
-      return (
-        isExistKey(this.newContents, worldID) &&
-        this.newContents[worldID].has(await getHashData(contents))
+    isNewContents(contents: AllFileData<Contents>) {
+      const mainStore = useMainStore();
+      return !mainStore.worldBack?.additional[`${this.selectedTab}s`].find(
+        (c) => c.name === contents.name
       );
     },
   },

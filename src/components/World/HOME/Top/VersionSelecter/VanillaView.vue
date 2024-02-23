@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllVanillaVersion,
-  VanillaVersion,
-} from 'app/src-electron/schema/version';
+import { AllVanillaVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { openWarningDialog } from './versionComparator';
@@ -21,7 +18,6 @@ const consoleStore = useConsoleStore();
 
 const isRelease = ref(true);
 const latestReleaseID = prop.versionData.find((ops) => ops.release)?.id;
-let currentVanillaVer: VanillaVersion;
 
 function buildVanillaVer(ver: { id: string; release: boolean }) {
   return {
@@ -47,7 +43,7 @@ const vanillaVer = computed({
     openWarningDialog(
       $q,
       prop.versionData.map((ops) => ops.id),
-      currentVanillaVer,
+      mainStore.worldBack?.version ?? newVer,
       newVer,
       'id'
     );
@@ -55,8 +51,7 @@ const vanillaVer = computed({
 });
 
 // 表示内容と内部データを整合させる
-currentVanillaVer = buildVanillaVer(vanillaVer.value);
-mainStore.world.version = currentVanillaVer;
+mainStore.world.version = buildVanillaVer(vanillaVer.value);
 </script>
 
 <template>

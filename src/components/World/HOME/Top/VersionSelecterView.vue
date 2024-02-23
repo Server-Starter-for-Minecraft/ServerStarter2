@@ -12,7 +12,6 @@ import {
   Version,
   versionTypes,
 } from 'app/src-electron/schema/version';
-import { WorldID } from 'app/src-electron/schema/world';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -66,23 +65,12 @@ function createServerMap(serverType: Version['type']) {
   };
 }
 
-let currentWorldID: WorldID;
-let __currentServerType = mainStore.selectedVersionType;
-const currentServerType = () => {
-  // 選択されたワールドが変更されたときに，「元のサーバー種類」を更新する
-  if (mainStore.world.id !== currentWorldID) {
-    currentWorldID = mainStore.world.id
-    __currentServerType = mainStore.selectedVersionType
-  }
-  return __currentServerType
-}
-
 const selectedVerType = computed({
   get: () => {
     return mainStore.selectedVersionType;
   },
   set: (val) => {
-    openVerTypeWarningDialog($q, currentServerType(), val);
+    openVerTypeWarningDialog($q, mainStore.worldBack?.version.type ?? val, val);
   },
 });
 </script>

@@ -29,14 +29,13 @@ const $q = useQuasar();
 const mainStore = useMainStore();
 const contentsStore = useContentsStore();
 
-async function addContent() {
-  await contentsStore.setNewContents(mainStore.world.id, prop.content);
+function addContent() {
   (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(
     prop.content
   );
 }
 
-async function deleteContent() {
+function deleteContent() {
   function __delete() {
     mainStore.world.additional[`${prop.contentType}s`].splice(
       mainStore.world.additional[`${prop.contentType}s`]
@@ -47,7 +46,7 @@ async function deleteContent() {
   }
 
   // 起動前に登録された追加コンテンツに対して警告を出さない
-  if (await contentsStore.isNewContents(mainStore.world.id, prop.content)) {
+  if (contentsStore.isNewContents(prop.content)) {
     __delete();
   } else {
     $q.dialog({

@@ -9,7 +9,6 @@ import { sortValue } from 'src/scripts/objSort';
 import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
-import { useContentsStore } from './WorldTabs/ContentsStore';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { values } from 'src/scripts/obj';
@@ -32,6 +31,14 @@ export const useMainStore = defineStore('mainStore', {
       state.selectedVersionType = returnWorld.version.type;
 
       return returnWorld;
+    },
+    /** 
+     * バージョンダウンの警告ダイアログのような，
+     * 以前のデータとの比較が必要な処理への利用を想定する
+     */
+    worldBack(state): WorldEdited | undefined {
+      const worldStore = useWorldStore();
+      return worldStore.worldList[state.selectedWorldID];
     },
     worldIP(state) {
       const worldStore = useWorldStore();
@@ -105,16 +112,19 @@ export const useMainStore = defineStore('mainStore', {
       const res = await (duplicateWorldID
         ? createrDuplicate(duplicateWorldID)
         : createrNew());
+      let returnWorldID: WorldID | undefined;
       checkError(
         res,
         (world) => {
+          returnWorldID = world.id;
           worldStore.worldList[world.id] = toRaw(world);
-          if (!duplicateWorldID) worldStore.newWorlds.add(world.id);
           this.setWorld(world);
           consoleStore.initTab(world.id);
         },
         (e) => tError(e)
       );
+
+      return returnWorldID
     },
     /**
      * 選択されているワールドを削除する
@@ -160,24 +170,25 @@ export const useMainStore = defineStore('mainStore', {
       worldStore.removeWorldIP(worldID);
     },
     /**
-     * 当該ワールドが新規作成され，まだ起動されたことがないワールドか否かをチェック
+     * 最新のワールドデータをworldBackに同期する
+     * 
+     * 同期することで，「ワールド起動前のデータ」を更新する
      */
-    isNewWorld(worldID: WorldID) {
+    syncBackWorld(worldID?: WorldID) {
       const worldStore = useWorldStore();
-      return worldStore.newWorlds.has(worldID);
+      if (worldID) {
+        worldStore.worldListBack[worldID] = worldStore.worldList[worldID];
+      } else {
+        worldStore.worldListBack = worldStore.worldList;
+      }
     },
     /**
      * ワールドが起動されたときに必要な処理を実行する
      *
-     * - newWorldsから当該ワールドを除外
-     * - 追加コンテンツの新規登録フラグを削除
+     * - worldBackのデータを更新
      */
     startedWorld(worldID: WorldID) {
-      const worldStore = useWorldStore();
-      worldStore.newWorlds.delete(worldID);
-
-      const contentsStore = useContentsStore();
-      delete contentsStore.newContents[worldID];
+      this.syncBackWorld(worldID);
     },
   },
 });
@@ -188,9 +199,9 @@ export const useMainStore = defineStore('mainStore', {
 export const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
+      worldListBack: {} as Record<WorldID, WorldEdited>,
       worldList: {} as Record<WorldID, WorldEdited>,
       worldIPs: {} as Record<WorldID, string>,
-      newWorlds: new Set<WorldID>(),
     };
   },
   getters: {

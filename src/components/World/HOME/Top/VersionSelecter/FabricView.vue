@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllFabricVersion,
-  FabricVersion,
-} from 'app/src-electron/schema/version';
+import { AllFabricVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { openWarningDialog } from './versionComparator';
@@ -21,7 +18,6 @@ const consoleStore = useConsoleStore();
 
 const isRelease = ref(true);
 const latestReleaseID = prop.versionData.games.find((ops) => ops.release)?.id;
-let currentFabricVer: FabricVersion;
 
 function buildFabricVer(
   ver: { id: string; release: boolean },
@@ -60,7 +56,7 @@ const fabricVer = computed({
     openWarningDialog(
       $q,
       prop.versionData.games.map((ops) => ops.id),
-      currentFabricVer,
+      mainStore.worldBack?.version ?? newVer,
       newVer,
       'id'
     );
@@ -71,8 +67,11 @@ const fabricInstaller = ref(prop.versionData.installers[0]);
 const fabricLoader = ref(prop.versionData.loaders[0]);
 
 // 表示内容と内部データを整合させる
-currentFabricVer = buildFabricVer(fabricVer.value, fabricInstaller.value, fabricLoader.value);
-mainStore.world.version = currentFabricVer;
+mainStore.world.version = buildFabricVer(
+  fabricVer.value,
+  fabricInstaller.value,
+  fabricLoader.value
+);
 </script>
 
 <template>

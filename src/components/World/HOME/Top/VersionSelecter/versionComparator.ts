@@ -83,9 +83,8 @@ function __openWarningDialog<T>(
   dialogTextKey: string,
   prop?: keyof T
 ) {
-  const mainStore = useMainStore();
   const verComp = newerVerIdx(ops, currentVal, newVal, prop);
-  if (!mainStore.isNewWorld(mainStore.world.id) && verComp === -1) {
+  if (verComp === -1) {
     $q.dialog({
       component: DangerDialog,
       componentProps: {

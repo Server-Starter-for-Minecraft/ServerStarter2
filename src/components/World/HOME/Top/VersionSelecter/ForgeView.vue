@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllForgeVersion, ForgeVersion } from 'app/src-electron/schema/version';
+import { AllForgeVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { openWarningDialog } from './versionComparator';
@@ -15,7 +15,6 @@ const prop = defineProps<Prop>();
 const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-let currentForgeVer: ForgeVersion;
 
 type forgeVersType = { version: string; url: string };
 
@@ -55,7 +54,13 @@ const forgeVer = computed({
   set: (val) => {
     const buildIdx = getRecommendBuildIdx(val);
     const newVer = buildForgeVer(val, forgeBuilds(val)[buildIdx]);
-    openWarningDialog($q, forgeVers(), currentForgeVer, newVer, 'id');
+    openWarningDialog(
+      $q,
+      forgeVers(),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
   },
 });
 
@@ -87,8 +92,7 @@ const forgeBuild = computed({
 });
 
 // 表示内容と内部データを整合させる
-currentForgeVer = buildForgeVer(forgeVer.value, forgeBuild.value);
-mainStore.world.version = currentForgeVer;
+mainStore.world.version = buildForgeVer(forgeVer.value, forgeBuild.value);
 </script>
 
 <template>
