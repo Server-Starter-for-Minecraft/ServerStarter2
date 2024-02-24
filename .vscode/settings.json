@@ -38,7 +38,7 @@
     {
       "code": ":recycle:",
       "emoji": "♻️",
-      "description": "コードのリファクタリング / Code refactoring."
+      "description": "コードのリファクタリング / Refactor code."
     },
     {
       "code": ":construction:",
@@ -51,7 +51,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ 修正 / fixes ■■■"
+      "description": "■■■ 修正 / Fixes ■■■"
     },
     {
       "code": ":ambulance:",
@@ -66,7 +66,7 @@
     {
       "code": ":adhesive_bandage:",
       "emoji": "🩹",
-      "description": "軽微なバグ修正 / Simple fix for a non-critical issue."
+      "description": "軽微な修正 / Simple fix for a non-critical issue."
     },
     {
       "code": ":pencil2:",
@@ -79,7 +79,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ 表示 / appearance ■■■"
+      "description": "■■■ 表示 / Appearance ■■■"
     },
     {
       "code": ":lipstick:",
@@ -97,7 +97,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ ノート / notations ■■■"
+      "description": "■■■ ノート / Notations ■■■"
     },
     {
       "code": ":bulb:",
@@ -115,7 +115,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ テスト / tests ■■■"
+      "description": "■■■ テスト / Tests ■■■"
     },
     {
       "code": ":white_check_mark:",
@@ -138,7 +138,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ リソース変更 / resource changes ■■■"
+      "description": "■■■ リソース変更 / Resource changes ■■■"
     },
     {
       "code": ":label:",
@@ -171,7 +171,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ ログ / logs ■■■"
+      "description": "■■■ ログ / Logs ■■■"
     },
     {
       "code": ":loud_sound:",
@@ -189,7 +189,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ 設定 / settings ■■■"
+      "description": "■■■ 設定 / Settings ■■■"
     },
     {
       "code": ":wrench:",
@@ -209,7 +209,7 @@
     {
       "code": ":page_facing_up:",
       "emoji": "📄",
-      "description": "Add or update license."
+      "description": "ライセンスを追加,更新 / Add or update license."
     },
     {
       "emoji": "",
@@ -230,20 +230,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ 非推奨 / deprecated ■■■"
-    },
-    {
-      "code": ":poop:",
-      "emoji": "💩",
-      "description": "修正が必要なコードを追加 / Write bad code that needs to be improved."
-    },
-    {
-      "emoji": "",
-      "description": ""
-    },
-    {
-      "emoji": "",
-      "description": "■■■ ブランチ / branches ■■■"
+      "description": "■■■ ブランチ / Branches ■■■"
     },
     {
       "code": ":rewind:",
@@ -261,7 +248,7 @@
     },
     {
       "emoji": "",
-      "description": "■■■ 依存関係 / dependencies ■■■"
+      "description": "■■■ 依存関係 / Dependencies ■■■"
     },
     {
       "code": ":heavy_plus_sign:",
@@ -289,7 +276,20 @@
     },
     {
       "emoji": "",
-      "description": "■■■ 使用禁止 / do not use ■■■"
+      "description": "■■■ 非推奨 / Deprecated ■■■"
+    },
+    {
+      "code": ":poop:",
+      "emoji": "💩",
+      "description": "修正が必要なコードを追加 / Write bad code that needs to be improved."
+    },
+    {
+      "emoji": "",
+      "description": ""
+    },
+    {
+      "emoji": "",
+      "description": "■■■ 使用禁止 / Prohibited ■■■"
     },
     {
       "code": ":bookmark:",
