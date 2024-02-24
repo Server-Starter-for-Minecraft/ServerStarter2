@@ -178,7 +178,9 @@ export const useMainStore = defineStore('mainStore', {
     syncBackWorld(worldID?: WorldID) {
       const worldStore = useWorldStore();
       if (worldID) {
-        worldStore.worldListBack[worldID] = deepcopy(worldStore.worldList[worldID]);
+        worldStore.worldListBack[worldID] = deepcopy(
+          worldStore.worldList[worldID]
+        );
       } else {
         worldStore.worldListBack = deepcopy(worldStore.worldList);
       }
