@@ -166,8 +166,8 @@ export interface API extends IAPI {
      */
     GetWorldPaths: (
       world: WorldID,
-      type: 'base' |  'datapacks' | 'plugins' | 'mods'
-    ) => Promise<string>;
+      type: 'base' | 'datapacks' | 'plugins' | 'mods'
+    ) => Promise<Failable<string>>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
