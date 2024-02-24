@@ -7,12 +7,6 @@
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "eslint.codeActionsOnSave.mode": "all",
   "typescript.tsdk": "node_modules/typescript/lib",
-  "[xml]": {
-    "editor.defaultFormatter": "redhat.vscode-xml"
-  },
-  "[svg]": {
-    "editor.defaultFormatter": "jock.svg"
-  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
