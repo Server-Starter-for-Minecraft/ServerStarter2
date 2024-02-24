@@ -17,11 +17,13 @@ export const jaSystemSetting = {
   remote: {},
   folder: {
     unregistTitle: '{name}の登録を解除します',
-    unregistDialog: '\
+    unregistDialog:
+      '\
       ServerStarterのワールド保存先一覧より{name}の登録を解除します。<br>\
       解除したフォルダとその内部データが削除されることはありません。',
     tooltipVisible: 'ワールド一覧にこのフォルダに保存されたワールドを表示する',
-    tooltipInvisible: 'ワールド一覧にこのフォルダに保存されたワールドを表示しない',
+    tooltipInvisible:
+      'ワールド一覧にこのフォルダに保存されたワールドを表示しない',
     unregist: '登録解除',
   },
   info: {
@@ -30,7 +32,8 @@ export const jaSystemSetting = {
     update: '最新版に更新',
     finalUpdate: '最終更新日：{datetime}',
     systemLog: 'システムログ',
-    systemLogDesc: 'ServerStarter2本体のログファイルを格納しているフォルダを開く',
+    systemLogDesc:
+      'ServerStarter2本体のログファイルを格納しているフォルダを開く',
     openSystemLog: 'ログを開く',
     externalLink: '外部リンク',
     homepage: '公式ホームページ',
@@ -38,7 +41,8 @@ export const jaSystemSetting = {
     dm: '（DMよりご連絡ください）',
     license: 'ライセンス',
     MIT: 'MIT License',
-    licenseDesc: '\
+    licenseDesc:
+      '\
       製作者への許可なくシステムを改変して再配布することを禁じています。<br>\
       詳細はServerStarter2の利用規約、並びにライセンス条項をご確認ください。',
     developer: '製作者',

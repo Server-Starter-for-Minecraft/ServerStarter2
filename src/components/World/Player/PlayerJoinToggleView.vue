@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 
-const model = defineModel<ServerProperties>({ required: true })
+const model = defineModel<ServerProperties>({ required: true });
 
 const playerJoinToggle = computed({
   get() {
@@ -12,13 +12,13 @@ const playerJoinToggle = computed({
     model.value['white-list'] = newValue;
     model.value['enforce-whitelist'] = newValue;
   },
-})
+});
 </script>
 
 <template>
   <q-toggle
     v-model="playerJoinToggle"
     :label="$t('player.join')"
-    style="font-size: 1rem;"
+    style="font-size: 1rem"
   />
 </template>

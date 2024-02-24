@@ -79,9 +79,9 @@ async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
     await git.remote(['add', DEFAULT_REMOTE_NAME, url]);
   }
 
-  let i = 0
+  let i = 0;
   while (i < 100) {
-    i ++
+    i++;
     try {
       await git.addConfig(
         'user.name',

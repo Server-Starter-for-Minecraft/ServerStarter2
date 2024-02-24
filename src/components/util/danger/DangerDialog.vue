@@ -3,9 +3,10 @@ import { useDialogPluginComponent } from 'quasar';
 import { dangerDialogProp } from './iDangerDialog';
 import BaseDialogCard from '../baseDialog/baseDialogCard.vue';
 
-defineProps<dangerDialogProp>()
-defineEmits({ ...useDialogPluginComponent.emitsObject })
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineProps<dangerDialogProp>();
+defineEmits({ ...useDialogPluginComponent.emitsObject });
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
 </script>
 
 <template>
@@ -20,8 +21,8 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
     >
       <div
         v-html="dialogDesc"
-        class="q-my-none flex "
-        style="font-size: .8rem; opacity: .8;"
+        class="q-my-none flex"
+        style="font-size: 0.8rem; opacity: 0.8"
       />
     </BaseDialogCard>
   </q-dialog>

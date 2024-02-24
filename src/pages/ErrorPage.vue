@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useErrorStore } from 'src/stores/ErrorStore';
 
-const store = useErrorStore()
+const store = useErrorStore();
 
 function showTwitter() {
-  window.API.sendOpenBrowser('https://twitter.com/CivilT_T')
+  window.API.sendOpenBrowser('https://twitter.com/CivilT_T');
 }
 
 function closeWindow() {
-  window.close()
+  window.close();
 }
 </script>
 
@@ -23,7 +23,7 @@ function closeWindow() {
         <q-card-section>
           <div>
             <p>{{ $t('bugReport.title') }}</p>
-            <p style="text-decoration: underline;">{{ store.description }}</p>
+            <p style="text-decoration: underline">{{ store.description }}</p>
             <p v-html="$t('bugReport.desc')"></p>
           </div>
 

@@ -2,7 +2,7 @@
 
 import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 
-type ErrorDialogTitles = { errorDialog: {[key: string]: string} }
+type ErrorDialogTitles = { errorDialog: { [key: string]: string } };
 
 export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
   system: {
@@ -16,7 +16,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     },
     assertion: {
       title: '不明なエラーが発生しました',
-      desc: '{message}'
+      desc: '{message}',
     },
     subprocess: {
       title: 'subprocessの実行時にエラーが発生しました',
@@ -31,11 +31,11 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       },
       tooManyRequest: {
         title: 'リクエストが多すぎます',
-        desc : '少し時間を置いてから再度実行してください',
-      }
+        desc: '少し時間を置いてから再度実行してください',
+      },
     },
     zip: {
-      invalidZipFile:{
+      invalidZipFile: {
         title: '{path}は不適なZIPファイルです',
         desc: '{path}を確認してください',
       },
@@ -47,10 +47,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     path: {
       loadingFailed: {
         title: '{type}の読み込みに失敗しました',
-        desc: '{path}を読み込めませんでした'
+        desc: '{path}を読み込めませんでした',
       },
       alreadyExists: {
-        title:'{type}が既に存在しています',
+        title: '{type}が既に存在しています',
       },
       notFound: {
         title: '{type}が存在していません',
@@ -62,11 +62,12 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       },
       invalidContent: {
         missingJavaCommand: {
-          title: 'run.bat、またはrun.sh内にjavaを起動するコマンドが存在していません',
+          title:
+            'run.bat、またはrun.sh内にjavaを起動するコマンドが存在していません',
           desc: '{path}を確認してください',
         },
         mustBeDirectory: {
-          title:'ここではディレクトリを使用する必要があります',
+          title: 'ここではディレクトリを使用する必要があります',
           desc: '{path}がディレクトリかどうか確認してください',
         },
         mustBeFile: {
@@ -77,54 +78,54 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
           title: '不適なデータパックが選択されました',
           desc: '{path}を確認してください',
         },
-        invalidPlugin:{
+        invalidPlugin: {
           title: '不適なプラグインファイルが選択されました',
           desc: '{path}を確認してください',
         },
-        invalidMod:{
+        invalidMod: {
           title: '不適なModファイルが選択されました',
           desc: '{path}を確認してください',
         },
-        invalidCustomMap:{
+        invalidCustomMap: {
           title: '不適なカスタムマップが選択されました',
           desc: '{path}を確認してください',
         },
-        customMapZipWithMultipleLevelDat:{
+        customMapZipWithMultipleLevelDat: {
           title: '{path}のカスタムマップにはlevel.datが複数格納されています',
         },
-        invalidWorldSettingJson:{
+        invalidWorldSettingJson: {
           title: 'ワールドの設定ファイルが壊れています',
           desc: '{path} の中身が不適当です',
         },
-        invalidOpsJson:{
+        invalidOpsJson: {
           title: 'プレイヤーのopを管理するファイルが壊れています',
           desc: '{path} の中身が不適当です',
         },
-        invalidWhitelistJson:{
+        invalidWhitelistJson: {
           title: 'ホワイトリストを管理するファイルが壊れています',
           desc: '{path}の中身が不適当です',
+        },
       },
-      },
-      creationFiled:{
+      creationFiled: {
         title: '{type}の生成に失敗しました',
         desc: '{path}の生成ができませんでした',
       },
-      dialogCanceled:{
+      dialogCanceled: {
         title: 'ファイル選択ウィンドウがキャンセルされました',
       },
-      shellError:{
+      shellError: {
         title: 'ファイルを開く際に不明なエラーが発生しました',
-        desc: '{message}'
+        desc: '{message}',
       },
     },
     githubAPI: {
-      fetchFailed:{
+      fetchFailed: {
         title: 'GitHubからのデータの取得に失敗しました',
       },
-      unknownBlobEncoding:{
+      unknownBlobEncoding: {
         title: 'blobのエンコードが異なっています',
       },
-      invalidWorldData:{
+      invalidWorldData: {
         title: 'WorldDataが壊れています',
         desc: '{owner}/{repo}/{branch}のデータを確認してください',
       },
@@ -155,7 +156,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     worldName: {
       notMatchRegex: {
         title: '使えない文字が含まれています',
-        desc:'半角英数字のみ入力してください',
+        desc: '半角英数字のみ入力してください',
       },
       alreadyUsed: {
         title: 'この名前({value})は既に使われています',
@@ -165,31 +166,31 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     remoteWorldName: {
       notMatchRegex: {
         title: '使えない文字が含まれています',
-        desc:'半角英数字のみ入力してください',
+        desc: '半角英数字のみ入力してください',
       },
       alreadyUsed: {
         title: 'この名前({value})は既に使われています',
         desc: '他の名前を使用してください',
-      }
-    }
+      },
+    },
   },
   core: {
     world: {
       invalidWorldId: {
         title: '指定されたワールドが存在しません',
       },
-      missingLatestLog:{
+      missingLatestLog: {
         title: '直前のサーバログが存在しません',
       },
       serverPortIsUsed: {
         title: '指定された番号のポートは使用中です',
-        desc: 'プロパティ\'server-port\'よりポート番号を{port}から変更してください',
+        desc: "プロパティ'server-port'よりポート番号を{port}から変更してください",
       },
       cannotChangeRunningWorldName: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
         desc: 'ワールド {name} を停止してから再度試してください',
       },
-      cannotDuplicateRunningWorld:{
+      cannotDuplicateRunningWorld: {
         title: '実行中のワールドの名前、保存フォルダは変更できません',
         desc: 'ワールド {name} を停止してから再度試してください',
       },
@@ -203,7 +204,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     },
     container: {
       noContainerSubscribed: {
-        title:'WorldContainerが登録されていません',
+        title: 'WorldContainerが登録されていません',
         desc: 'もう一度ご確認ください',
       },
     },
@@ -213,13 +214,13 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       },
       failSpigotBuild: {
         javaNeeded: {
-          title:'{spigotVersion}のspigotのビルドに失敗しました',
+          title: '{spigotVersion}のspigotのビルドに失敗しました',
           desc: '{minVersion}～{maxVersion}の間のJavaがインストールされている必要があります',
         },
         missingJar: {
           title: 'サーバーのビルドに失敗しました',
           desc: 'ビルドに失敗したバージョン : {spigotVersion}',
-        }
+        },
       },
       vanillaVersionNotExists: {
         title: 'バージョン{version}のvanillaは存在しません',
@@ -232,7 +233,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       title: 'Minecraftのeulaに同意していません',
     },
     failCacheAddiltionalData: {
-      title:'{type}のキャッシュに失敗しました',
+      title: '{type}のキャッシュに失敗しました',
     },
     failGetGlobalIP: {
       title: 'グローバルIPの取得に失敗しました',
@@ -240,8 +241,8 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     update: {
       missingAppSource: {
         title: '最新のリリースにアップデート用ファイルが見つかりません',
-      }
-    }
+      },
+    },
   },
   errorDialog: {
     failToGetOwner: 'オーナープレイヤーの取得に失敗しました',

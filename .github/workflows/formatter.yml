@@ -1,0 +1,28 @@
+name: Formatter
+on: [pull_request]
+
+# secrets.GITHUB_TOKENにリポジトリへの書き込みを許可
+permissions:
+  contents: write
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: technote-space/get-diff-action@v6 #差分を取得する
+        with:
+          PATTERNS: |
+            **/*.{ts,tsx,js,jsx,json,vue}
+      - uses: actions/setup-node@v3 #nodeをインストール & キャッシュを取得
+        with:
+          node-version: 18
+          cache: 'yarn'
+      - name: Run Prettier # prettier自体を実行
+        run: |
+          yarn
+          yarn prettier --write ${{ env.GIT_DIFF_FILTERED }} --ignore-path .gitignore # 環境変数GIT_DIFF_FILTEREDに差分のあるファイルが列挙されている
+        if: env.GIT_DIFF
+      - uses: stefanzweifel/git-auto-commit-action@v4 # フォーマットしたファイルをコミット
+        with:
+          commit_message: 🚨 Apply Prettier Change

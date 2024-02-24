@@ -1,11 +1,11 @@
-import { WorldContainer } from "app/src-electron/schema/brands"
-import { WorldContainerSetting } from "app/src-electron/schema/system"
+import { WorldContainer } from 'app/src-electron/schema/brands';
+import { WorldContainerSetting } from 'app/src-electron/schema/system';
 
 export interface AddFolderDialogProps {
-  containerSettings?: WorldContainerSetting
+  containerSettings?: WorldContainerSetting;
 }
 
 export interface AddFolderDialogReturns {
-  name: string
-  container: WorldContainer
+  name: string;
+  container: WorldContainer;
 }

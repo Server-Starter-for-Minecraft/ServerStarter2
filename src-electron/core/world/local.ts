@@ -42,14 +42,14 @@ function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
 
   ops.forEach(
     ({ uuid, name, level, bypassesPlayerLimit }) =>
-    (map[uuid] = {
-      uuid,
-      name,
-      op: {
-        level,
-        bypassesPlayerLimit,
-      },
-    })
+      (map[uuid] = {
+        uuid,
+        name,
+        op: {
+          level,
+          bypassesPlayerLimit,
+        },
+      })
   );
 
   return Object.values(map);
@@ -222,10 +222,16 @@ export async function saveLocalFiles(
   const promisses: Promise<any>[] = [
     serverJsonFile.save(savePath, worldSettings),
     serverIconFile.save(savePath, world.avater_path),
-    serverAllAdditionalFiles
-      .save(savePath, world.additional)
-      .then((v) => errors.push(...v.errors)),
   ];
+
+  // custom_mapがある場合はAdditionalを保存しない
+  if (!world.custom_map) {
+    promisses.push(
+      serverAllAdditionalFiles
+        .save(savePath, world.additional)
+        .then((v) => errors.push(...v.errors))
+    );
+  }
 
   // world.playersが正常値の場合ファイル(ops.json,whitelist.json)に保存
   if (isValid(world.players)) {

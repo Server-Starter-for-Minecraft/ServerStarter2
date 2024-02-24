@@ -8,35 +8,43 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 import { useI18n } from 'vue-i18n';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
-const sysStore = useSystemStore()
-const playerStore = usePlayerStore()
+const sysStore = useSystemStore();
+const playerStore = usePlayerStore();
 
-const colorOps = keys(sysStore.staticResouces.minecraftColors).map(k => {
-  return { label: k, code: sysStore.staticResouces.minecraftColors[k] }
-})
+const colorOps = keys(sysStore.staticResouces.minecraftColors).map((k) => {
+  return { label: k, code: sysStore.staticResouces.minecraftColors[k] };
+});
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 /**
  * 入力グループ名のバリデーション
  */
 function validateGroupName(name: string) {
-  return name !== '' && !(name !== playerStore.selectedGroupName && keys(playerStore.searchGroups()).includes(name))
+  return (
+    name !== '' &&
+    !(
+      name !== playerStore.selectedGroupName &&
+      keys(playerStore.searchGroups()).includes(name)
+    )
+  );
 }
 function validateMessage(name: string) {
-  return name !== '' ? t('player.groupNameDuplicate', { group: name }) : t('player.insertGroupName')
+  return name !== ''
+    ? t('player.groupNameDuplicate', { group: name })
+    : t('player.insertGroupName');
 }
 
 /**
- * グループの新規作成時に使用する作成器 
+ * グループの新規作成時に使用する作成器
  */
 function generateGroup(group: PlayerGroup) {
-  const sysStore = useSystemStore()
+  const sysStore = useSystemStore();
   sysStore.systemSettings.player.groups[group.name] = {
     name: group.name,
     color: group.color,
-    players: toRaw(group.players)
-  }
+    players: toRaw(group.players),
+  };
 }
 
 /**
@@ -44,12 +52,12 @@ function generateGroup(group: PlayerGroup) {
  */
 function updateGroup() {
   // 一旦元のグループを削除する
-  removeGroup()
+  removeGroup();
 
   // 新しいグループを作成
-  const newGroup = playerStore.selectedGroup
-  newGroup.players = Array.from(playerStore.focusCards)
-  generateGroup(newGroup)
+  const newGroup = playerStore.selectedGroup;
+  newGroup.players = Array.from(playerStore.focusCards);
+  generateGroup(newGroup);
 }
 
 /**
@@ -57,21 +65,36 @@ function updateGroup() {
  */
 function removeGroup() {
   // 削除処理
-  delete sysStore.systemSettings.player.groups[playerStore.selectedGroupName]
+  delete sysStore.systemSettings.player.groups[playerStore.selectedGroupName];
 
   // グループ編集カードを閉じる
-  playerStore.openGroupEditor = false
+  playerStore.openGroupEditor = false;
 }
 </script>
 
 <template>
-  <q-card flat class="column card" :style="{ 'height': playerStore.selectedGroup.isNew ? '315px' : '385px' }">
+  <q-card
+    flat
+    class="column card"
+    :style="{ height: playerStore.selectedGroup.isNew ? '315px' : '385px' }"
+  >
     <p class="q-py-sm q-pl-md q-ma-none text-body2">
-      {{ $t(playerStore.selectedGroup.isNew ? 'player.makeNewGroup' : 'player.editGroup') }}
+      {{
+        $t(
+          playerStore.selectedGroup.isNew
+            ? 'player.makeNewGroup'
+            : 'player.editGroup'
+        )
+      }}
     </p>
 
     <div class="absolute-top-right">
-      <q-btn dense icon="close" class="q-pa-sm" @click="playerStore.openGroupEditor = false" />
+      <q-btn
+        dense
+        icon="close"
+        class="q-pa-sm"
+        @click="playerStore.openGroupEditor = false"
+      />
     </div>
 
     <q-scroll-area style="flex: 1 1 0">
@@ -80,7 +103,7 @@ function removeGroup() {
         <SsInput
           v-model="playerStore.selectedGroup.name"
           dense
-          :rules="[val => validateGroupName(val) || validateMessage(val)]"
+          :rules="[(val) => validateGroupName(val) || validateMessage(val)]"
         />
       </q-card-section>
 
@@ -91,9 +114,15 @@ function removeGroup() {
           icon="circle"
           menu-anchor="bottom left"
           menu-self="top left"
-          :style="{ 'color': playerStore.selectedGroup.color, 'width': 'min-content' }"
+          :style="{
+            color: playerStore.selectedGroup.color,
+            width: 'min-content',
+          }"
         >
-          <div class="q-gutter-sm row q-pa-xs" style="width: 136px; margin: 0 auto;">
+          <div
+            class="q-gutter-sm row q-pa-xs"
+            style="width: 136px; margin: 0 auto"
+          >
             <template v-for="colorOp in colorOps" :key="colorOp">
               <q-btn
                 v-close-popup
@@ -101,10 +130,14 @@ function removeGroup() {
                 flat
                 icon="circle"
                 class="q-ma-none"
-                :style="{ 'color': colorOp.code }"
+                :style="{ color: colorOp.code }"
                 @click="playerStore.selectedGroup.color = colorOp.code"
               >
-                <SsTooltip :name="$t(`player.color.${colorOp.label}`)" anchor="bottom middle" self="center middle"/>
+                <SsTooltip
+                  :name="$t(`player.color.${colorOp.label}`)"
+                  anchor="bottom middle"
+                  self="center middle"
+                />
               </q-btn>
             </template>
           </div>
@@ -114,25 +147,44 @@ function removeGroup() {
       <q-separator inset />
 
       <q-card-section class="q-pb-sm">
-        <q-btn 
+        <q-btn
           outline
-          :label="$t(playerStore.selectedGroup.isNew ? 'player.makeNewGroup' : 'player.updateGroup')"
-          :disable="(playerStore.focusCards.size === 0 || !validateGroupName(playerStore.selectedGroup.name))"
+          :label="
+            $t(
+              playerStore.selectedGroup.isNew
+                ? 'player.makeNewGroup'
+                : 'player.updateGroup'
+            )
+          "
+          :disable="
+            playerStore.focusCards.size === 0 ||
+            !validateGroupName(playerStore.selectedGroup.name)
+          "
           color="primary"
           @click="updateGroup"
           class="full-width"
         />
       </q-card-section>
 
-      <q-card-section v-show="playerStore.selectedGroup.name !== ''" class="q-pt-none q-pb-sm" style="font-size: .7rem;">
+      <q-card-section
+        v-show="playerStore.selectedGroup.name !== ''"
+        class="q-pt-none q-pb-sm"
+        style="font-size: 0.7rem"
+      >
         <span v-if="playerStore.focusCards.size === 0">
           {{ $t('player.selectPlayer') }}
         </span>
         <span v-else>
           {{
             playerStore.selectedGroup.isNew
-            ? $t('player.makeNewGroupDecide', { group: playerStore.selectedGroup.name, n: playerStore.focusCards.size })
-            : $t('player.updateGroupDecide', { group: playerStore.selectedGroup.name, n: playerStore.focusCards.size })
+              ? $t('player.makeNewGroupDecide', {
+                  group: playerStore.selectedGroup.name,
+                  n: playerStore.focusCards.size,
+                })
+              : $t('player.updateGroupDecide', {
+                  group: playerStore.selectedGroup.name,
+                  n: playerStore.focusCards.size,
+                })
           }}
         </span>
       </q-card-section>

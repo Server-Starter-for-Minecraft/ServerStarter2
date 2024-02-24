@@ -5,11 +5,16 @@ import { app } from 'electron';
 import { mainPath } from 'app/src-electron/core/const';
 import { updateMessage } from './message';
 import { getSystemSettings } from 'app/src-electron/core/stores/system';
+import { getBytesFile } from 'app/src-electron/util/github/rest';
 
 /** windowsの最新版をダウンロードしてインストールして再起動 */
-export const installWindows = async (msiurl: string): Promise<void> => {
+export const installWindows = async (
+  msiurl: string,
+  pat: string | undefined
+): Promise<void> => {
   const dest = mainPath.child('updater.msi');
-  const data = await BytesData.fromURL(msiurl);
+
+  const data = await getBytesFile(msiurl, pat);
 
   if (isError(data)) return;
   await data.write(dest.str(), true);

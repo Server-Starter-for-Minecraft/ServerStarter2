@@ -4,13 +4,13 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
 </script>
 
 <template>
   <span class="text-caption">{{ $t('home.setting.memSize') }}</span>
-  <div class="row" style="max-width: 350px;">
+  <div class="row" style="max-width: 350px">
     <SsInput
       v-model.number="mainStore.world.memory.size"
       type="number"

@@ -10,59 +10,66 @@ import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialo
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 interface Prop {
-  loading?: boolean
-  disable?: boolean
-  showOperationBtns?: boolean
-  active?: boolean
-  onClick?: () => void
-  onVisibleClick?: () => void
+  loading?: boolean;
+  disable?: boolean;
+  showOperationBtns?: boolean;
+  active?: boolean;
+  onClick?: () => void;
+  onVisibleClick?: () => void;
 }
-const prop = defineProps<Prop>()
-const folder = defineModel<WorldContainerSetting>({ required: true })
+const prop = defineProps<Prop>();
+const folder = defineModel<WorldContainerSetting>({ required: true });
 
-const $q = useQuasar()
-const sysStore = useSystemStore()
+const $q = useQuasar();
+const sysStore = useSystemStore();
 
 function switchVisible() {
-  folder.value.visible = !folder.value.visible
-  if (prop.onVisibleClick !== void 0) prop.onVisibleClick()
+  folder.value.visible = !folder.value.visible;
+  if (prop.onVisibleClick !== void 0) prop.onVisibleClick();
 }
 
 function getCardSytleClass(active?: boolean, disable?: boolean) {
-  const returnClasses = ['column']
-  if (active) returnClasses.push('text-primary')
-  if (disable) returnClasses.push('disable')
-  return returnClasses.join(' ')
+  const returnClasses = ['column'];
+  if (active) returnClasses.push('text-primary');
+  if (disable) returnClasses.push('disable');
+  return returnClasses.join(' ');
 }
 
 function editFolder() {
   $q.dialog({
     component: AddFolderDialog,
     componentProps: {
-      containerSettings: folder.value
-    } as AddFolderDialogProps
+      containerSettings: folder.value,
+    } as AddFolderDialogProps,
   }).onOk((payload: AddFolderDialogReturns) => {
-    folder.value.name = payload.name
-    folder.value.container = payload.container
-  })
+    folder.value.name = payload.name;
+    folder.value.container = payload.container;
+  });
 }
 
 function removeFolder() {
   $q.dialog({
     component: DangerDialog,
     componentProps: {
-      dialogTitle: t('systemsetting.folder.unregistTitle', { name: folder.value.name }),
-      dialogDesc: t('systemsetting.folder.unregistDialog', { name: folder.value.name }),
-      okBtnTxt: t('systemsetting.folder.unregist')
-    } as dangerDialogProp
+      dialogTitle: t('systemsetting.folder.unregistTitle', {
+        name: folder.value.name,
+      }),
+      dialogDesc: t('systemsetting.folder.unregistDialog', {
+        name: folder.value.name,
+      }),
+      okBtnTxt: t('systemsetting.folder.unregist'),
+    } as dangerDialogProp,
   }).onOk(() => {
     sysStore.systemSettings.container.splice(
-      sysStore.systemSettings.container.map(c => c.name).indexOf(folder.value.name), 1
-    )
-  })
+      sysStore.systemSettings.container
+        .map((c) => c.name)
+        .indexOf(folder.value.name),
+      1
+    );
+  });
 }
 </script>
 
@@ -78,13 +85,21 @@ function removeFolder() {
       @click="onClick"
       :class="getCardSytleClass(active, disable || loading)"
     >
-      <div class="text-omit" style="font-size: 1.1rem;">
+      <div class="text-omit" style="font-size: 1.1rem">
         {{ folder.name }}
-        <SsTooltip :name="folder.name" anchor="bottom start" self="center start" />
+        <SsTooltip
+          :name="folder.name"
+          anchor="bottom start"
+          self="center start"
+        />
       </div>
-      <div class="text-caption text-omit" style="opacity: .6;">
+      <div class="text-caption text-omit" style="opacity: 0.6">
         {{ folder.container }}
-        <SsTooltip :name="folder.container" anchor="bottom start" self="center start" />
+        <SsTooltip
+          :name="folder.container"
+          anchor="bottom start"
+          self="center start"
+        />
       </div>
     </q-item>
 
@@ -93,14 +108,19 @@ function removeFolder() {
         dense
         free-width
         :icon="folder.visible ? 'visibility' : 'visibility_off'"
-        :disable="sysStore.systemSettings.container.filter(c => c.visible).length === 1 && folder.visible || disable"
+        :disable="
+          (sysStore.systemSettings.container.filter((c) => c.visible).length ===
+            1 &&
+            folder.visible) ||
+          disable
+        "
         @click="switchVisible"
       >
-        <SsTooltip 
+        <SsTooltip
           :name="
-          folder.visible 
-            ? $t('systemsetting.folder.tooltipVisible') 
-            : $t('systemsetting.folder.tooltipInvisible')
+            folder.visible
+              ? $t('systemsetting.folder.tooltipVisible')
+              : $t('systemsetting.folder.tooltipInvisible')
           "
           anchor="center middle"
           self="top middle"
@@ -142,7 +162,7 @@ function removeFolder() {
 }
 
 .disable {
-  opacity: .6;
+  opacity: 0.6;
   outline: 0;
   cursor: not-allowed;
 }

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 interface Prop {
-  icon?: string
-  label?: string
-  dense?: boolean
-  color?: string
-  width?: string
-  freeWidth?: boolean
-  disable?: boolean
-  loading?: boolean
-  isCapital?: boolean
-  to?: string
-  onClick?: () => void
+  icon?: string;
+  label?: string;
+  dense?: boolean;
+  color?: string;
+  width?: string;
+  freeWidth?: boolean;
+  disable?: boolean;
+  loading?: boolean;
+  isCapital?: boolean;
+  to?: string;
+  onClick?: () => void;
 }
-defineProps<Prop>()
+defineProps<Prop>();
 </script>
 
 <template>
@@ -27,7 +27,7 @@ defineProps<Prop>()
     :no-caps="!isCapital"
     :to="to"
     @click="onClick"
-    :style="{ 'width': freeWidth ? '' : (width ?? '13rem') }"
+    :style="{ width: freeWidth ? '' : width ?? '13rem' }"
   >
     <slot />
   </q-btn>

@@ -5,7 +5,7 @@ import { isValid } from 'src/scripts/error';
 import { deepCopy } from 'src/scripts/deepCopy';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore'
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
@@ -17,22 +17,24 @@ import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import GroupEditorView from 'src/components/World/Player/GroupEditorView.vue';
 
-const mainStore = useMainStore()
-const playerStore = usePlayerStore()
+const mainStore = useMainStore();
+const playerStore = usePlayerStore();
 
 // ページを読み込んだ時に検索欄をリセット
-playerStore.searchName = ''
+playerStore.searchName = '';
 
-const orderTypes = ['name', 'op'] as const
-const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name')
-function playerSortFunc(orderType: (typeof orderTypes)[number]): (a: PlayerSetting, b: PlayerSetting) => number {
+const orderTypes = ['name', 'op'] as const;
+const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
+function playerSortFunc(
+  orderType: (typeof orderTypes)[number]
+): (a: PlayerSetting, b: PlayerSetting) => number {
   switch (orderType) {
     case 'name':
-      return (a: PlayerSetting, b: PlayerSetting) => strSort(a.name, b.name)
+      return (a: PlayerSetting, b: PlayerSetting) => strSort(a.name, b.name);
     case 'op':
       return (a: PlayerSetting, b: PlayerSetting) => {
-        return (b.op?.level ?? 0) - (a.op?.level ?? 0)
-      }
+        return (b.op?.level ?? 0) - (a.op?.level ?? 0);
+      };
   }
 }
 
@@ -43,33 +45,31 @@ function openGroupEditor(group?: PlayerGroup) {
       name: '',
       color: '#ffffff',
       players: Array.from(playerStore.focusCards),
-      isNew: true
-    }
-    playerStore.selectedGroupName = ''
-  }
-  else {
-    playerStore.focusCards = new Set(group.players)
-    playerStore.selectedGroup = deepCopy(Object.assign(group, { isNew: false }))
-    playerStore.selectedGroupName = group.name
+      isNew: true,
+    };
+    playerStore.selectedGroupName = '';
+  } else {
+    playerStore.focusCards = new Set(group.players);
+    playerStore.selectedGroup = deepCopy(
+      Object.assign(group, { isNew: false })
+    );
+    playerStore.selectedGroupName = group.name;
   }
 
   // Editorを開く
-  playerStore.openGroupEditor = true
+  playerStore.openGroupEditor = true;
 }
 </script>
 
 <template>
   <div v-if="isValid(mainStore.world.players)" class="column fit q-px-md">
     <div class="row full-height">
-      <q-scroll-area
-        class="full-height"
-        style="flex: 1 1 0;"
-      >
-        <p class="q-pt-md text-body2" style="opacity: .6;">
+      <q-scroll-area class="full-height" style="flex: 1 1 0">
+        <p class="q-pt-md text-body2" style="opacity: 0.6">
           {{ $t('player.description') }}
         </p>
 
-        <div class="row items-center q-gutter-x-md q-pb-md ">
+        <div class="row items-center q-gutter-x-md q-pb-md">
           <SsInput
             v-model="playerStore.searchName"
             dense
@@ -78,8 +78,20 @@ function openGroupEditor(group?: PlayerGroup) {
             class="col"
           />
           <q-btn-group push>
-            <q-btn outline no-caps :label="$t('player.order.name')" :color="playerOrder === 'name' ? 'primary' : ''" @click="playerOrder = 'name'" />
-            <q-btn outline no-caps :label="$t('player.order.op')" :color="playerOrder === 'op' ? 'primary' : ''" @click="playerOrder = 'op'" />
+            <q-btn
+              outline
+              no-caps
+              :label="$t('player.order.name')"
+              :color="playerOrder === 'name' ? 'primary' : ''"
+              @click="playerOrder = 'name'"
+            />
+            <q-btn
+              outline
+              no-caps
+              :label="$t('player.order.op')"
+              :color="playerOrder === 'op' ? 'primary' : ''"
+              @click="playerOrder = 'op'"
+            />
           </q-btn-group>
         </div>
 
@@ -87,22 +99,22 @@ function openGroupEditor(group?: PlayerGroup) {
           v-if="isValid(mainStore.world.properties)"
           v-model="mainStore.world.properties"
         />
-        
+
         <div class="q-py-md fit">
           <div v-show="playerStore.searchName !== ''" class="q-pb-md">
             <span class="text-caption">{{ $t('player.newPlayer') }}</span>
             <SearchResultView />
           </div>
 
-          <span class="text-caption">{{ $t("player.registeredPlayer") }}</span>
-          <div v-if="mainStore.world.players.length !== 0" class="row q-gutter-sm q-pa-sm">
+          <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>
+          <div
+            v-if="mainStore.world.players.length !== 0"
+            class="row q-gutter-sm q-pa-sm"
+          >
             <div
-              v-for="
-                player in deepCopy(
-                  playerStore.searchPlayers(mainStore.world.players)
-                ).sort(
-                  playerSortFunc(playerOrder)
-                )"
+              v-for="player in deepCopy(
+                playerStore.searchPlayers(mainStore.world.players)
+              ).sort(playerSortFunc(playerOrder))"
               :key="player.uuid"
               class="col-"
             >
@@ -112,13 +124,17 @@ function openGroupEditor(group?: PlayerGroup) {
               />
             </div>
           </div>
-          <div v-else class="full-width text-center text-h5 q-py-xl" style="opacity: .6;">
+          <div
+            v-else
+            class="full-width text-center text-h5 q-py-xl"
+            style="opacity: 0.6"
+          >
             {{ $t('player.notRegistered') }}
           </div>
 
           <q-separator class="q-my-md" />
 
-          <span class="text-caption">{{ $t("player.groupList") }}</span>
+          <span class="text-caption">{{ $t('player.groupList') }}</span>
           <div class="row q-pa-sm">
             <div class="row q-gutter-sm col-">
               <div>
@@ -128,7 +144,10 @@ function openGroupEditor(group?: PlayerGroup) {
                   @click="() => openGroupEditor()"
                 />
               </div>
-              <div v-for="group in sort(playerStore.searchGroups())" :key="group.name">
+              <div
+                v-for="group in sort(playerStore.searchGroups())"
+                :key="group.name"
+              >
                 <GroupCardView
                   :name="group.name"
                   :color="group.color"
@@ -149,7 +168,9 @@ function openGroupEditor(group?: PlayerGroup) {
           class="q-my-md"
         />
         <OpSetterView
-          v-if="!playerStore.openGroupEditor && isValid(mainStore.world.properties)"
+          v-if="
+            !playerStore.openGroupEditor && isValid(mainStore.world.properties)
+          "
           :valid-properties="mainStore.world.properties"
           class="q-my-md"
         />
@@ -158,7 +179,7 @@ function openGroupEditor(group?: PlayerGroup) {
     </div>
   </div>
 
-  <div v-else class="fit" style="position: relative;">
+  <div v-else class="fit" style="position: relative">
     <div class="absolute-center">
       <p>{{ $t('player.failed') }}</p>
       <SsBtn

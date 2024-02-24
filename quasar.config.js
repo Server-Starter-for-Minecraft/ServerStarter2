@@ -10,6 +10,25 @@
 
 const { configure } = require('quasar/wrappers');
 const path = require('path');
+const fs = require('fs');
+
+/** ビルド前にvcruntime140.dllをngrokフォルダにコピーするプラグイン */
+const beforePack = async () => {
+  const srcPath = path.resolve(__dirname, 'include/vcruntime140.dll');
+
+  const dirs = [
+    'dist/electron/UnPackaged/node_modules/@ngrok/ngrok-win32-x64-msvc', //windows
+  ];
+
+  for (const dir of dirs) {
+    const resolved = path.resolve(__dirname, dir);
+    console.log(resolved);
+    if (fs.existsSync(resolved)) {
+      const targetPath = path.resolve(resolved, 'vcruntime140.dll');
+      fs.copyFileSync(srcPath, targetPath);
+    }
+  }
+};
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -206,7 +225,12 @@ module.exports = configure(function (/* ctx */) {
       builder: {
         // https://www.electron.build/configuration/configuration
         appId: 'ServerStarter2',
-        asarUnpack: ['node_modules/sharp/**'],
+        asarUnpack: [
+          'node_modules/sharp/**',
+          'node_modules/@ngrok/**/*.node',
+          'node_modules/@ngrok/**/*.dll',
+        ],
+        beforePack,
         win: {
           target: 'msi',
         },

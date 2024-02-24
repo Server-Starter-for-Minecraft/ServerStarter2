@@ -10,7 +10,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       generating: 'Making eula.txt',
       loading: 'Loading eula.txt',
       saving: 'Writing eula.txt',
-      asking: 'Asking the agreement about eula.txt'
+      asking: 'Asking the agreement about eula.txt',
     },
     local: {
       loading: 'Loading world data from local folder',
@@ -20,7 +20,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       formatWorldDirectory: 'Changing world directory',
       reloading: 'Reloading world data',
       checkUsing: 'Checking usement of the world',
-      movingSaveData: 'Moving world data'
+      movingSaveData: 'Moving world data',
     },
     remote: {
       check: 'Checking existence of data on the remote',
@@ -30,7 +30,7 @@ export const enUSProgress: ProgressMessageTranslation = {
         getPlayerFromUUID: 'Gettinf player from UUID',
         git: 'Executing git.{method} {stage} stage',
       },
-      push: 'Uploading date on the remote'
+      push: 'Uploading date on the remote',
     },
     readyJava: {
       title: 'Preparing java runtime',
@@ -40,7 +40,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       title: 'Preparing {version_id}({version_type})',
       vanilla: {
         fetching: 'Downloading server data',
-        saving: 'Saving server data'
+        saving: 'Saving server data',
       },
       spigot: {
         loadBuildJavaVersion: 'Checking Java version for build',
@@ -48,7 +48,7 @@ export const enUSProgress: ProgressMessageTranslation = {
         readyBuildtool: 'Preparing build tools',
         loadBuildData: 'Getting build infomation',
         building: 'Building',
-        moving: 'Moving server data'
+        moving: 'Moving server data',
       },
       papermc: {
         loadBuildData: 'Getting build infomation',

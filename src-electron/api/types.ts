@@ -14,7 +14,7 @@ export interface IAPI {
 }
 
 type Func<A extends any[], R> = (..._: A) => R;
-type Merge<T extends Object> = { [K in keyof T]: T[K] };
+type Merge<T extends object> = { [K in keyof T]: T[K] };
 
 export type FrontSend<C extends string, F extends Func<any, void>> = F & {
   __channel__: C;

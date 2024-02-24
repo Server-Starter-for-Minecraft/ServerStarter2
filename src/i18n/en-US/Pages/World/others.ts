@@ -3,10 +3,11 @@ import { MessageSchema } from 'src/boot/i18n';
 export const enOthers: MessageSchema['others'] = {
   backup: {
     title: 'Manage a backup world',
-    backupDesc: '\
+    backupDesc:
+      '\
       Make backup of this world<br>\
       Backed-up world data can be accessed from "Recover from Backup"',
-    makeBackup : 'Make backup',
+    makeBackup: 'Make backup',
     recoverFromBackup: 'Recover from backup',
     madeBackup: 'Made backup of {world}',
     recovered: 'FInish world recovering',
@@ -26,5 +27,5 @@ export const enOthers: MessageSchema['others'] = {
     selectFolder: 'Select folder',
     selectFolderBtn: 'Select folder',
     cannotEdit: 'World folders cannot be edited while a world is running',
-  }
-}
+  },
+};

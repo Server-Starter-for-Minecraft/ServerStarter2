@@ -3,5 +3,5 @@ export const thumbStyle = {
   right: '4px',
   borderRadius: '5px',
   width: '5px',
-  opacity: '0.75'
-}
+  opacity: '0.75',
+};

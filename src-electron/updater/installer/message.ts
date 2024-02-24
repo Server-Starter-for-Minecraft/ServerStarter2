@@ -12,6 +12,7 @@ export const updateMessage: Record<Locale, UpdateTranslation> = {
   },
   ja: {
     main: 'ServerStarter2をアップデートしています...',
-    mac_pass: 'ServerStarter2をアップデートするために端末のパスワードを入力してください',
+    mac_pass:
+      'ServerStarter2をアップデートするために端末のパスワードを入力してください',
   },
 };

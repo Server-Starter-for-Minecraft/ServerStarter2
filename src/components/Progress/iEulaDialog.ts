@@ -1,3 +1,3 @@
 export interface EulaDialogProp {
-  eulaURL: string
+  eulaURL: string;
 }

@@ -1,35 +1,37 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ValidationRule } from 'quasar/dist/types/api/validation'
+import { ValidationRule } from 'quasar/dist/types/api/validation';
 
 interface Prop {
-  label?: string
-  placeholder?: string
-  hint?: string
-  dense?: boolean
-  disable?: boolean
-  autofocus?: boolean
-  secret?: boolean
-  debounce?: number
-  rules?: ValidationRule[]
-  onClear?: (value: string | number) => void
+  label?: string;
+  placeholder?: string;
+  hint?: string;
+  dense?: boolean;
+  disable?: boolean;
+  autofocus?: boolean;
+  secret?: boolean;
+  debounce?: number;
+  rules?: ValidationRule[];
+  onClear?: (value: string | number) => void;
 }
 
-const prop = defineProps<Prop>()
-const model = defineModel<string | number>()
-const input = ref()
-const isPwd = ref(prop.secret)
+const prop = defineProps<Prop>();
+const model = defineModel<string | number>();
+const input = ref();
+const isPwd = ref(prop.secret);
 
 // 読み込み時にバリデーションが実行されるようにする
-onMounted(() => { input.value.validate() })
+onMounted(() => {
+  input.value.validate();
+});
 
 function onClearClick() {
   // modelの値をリセット
-  model.value = ''
+  model.value = '';
 
   // 特殊な処理がある場合は実行
   if (prop.onClear !== void 0) {
-    prop.onClear(model.value)
+    prop.onClear(model.value);
   }
 }
 </script>
@@ -65,7 +67,7 @@ function onClearClick() {
 
 <style scoped lang="scss">
 .font {
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 :deep(::placeholder) {

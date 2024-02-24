@@ -3,6 +3,7 @@ name: Build
 # secrets.GITHUB_TOKENにリポジトリへの書き込みを許可
 permissions:
   contents: write
+  pull-requests: write
 
 # 同時起動とキャンセルを不可に
 concurrency:
@@ -28,27 +29,61 @@ jobs:
   create-commit:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # package.jsonのversionを更新
+    steps:
+      - uses: actions/checkout@v4
+
+      # package.jsonのversionを次のバージョンに更新
       - uses: Server-Starter-for-Minecraft/VersionUpdater@v1
         id: get_version
         with:
           update-type: ${{inputs.type}}
 
-      # gitにcommitしてpush
-      - run: |
+      # git commit
+      - name: git add & git commit
+        run: |
           git config --local user.name github-actions[bot]
           git config --local user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add .
           git commit -m "🔖 Release ${{ steps.get_version.outputs.next-version }}"
-          git push
-          git checkout -b release/v${{ steps.get_version.outputs.next-version }}
-          git push -u origin release/v${{ steps.get_version.outputs.next-version }}
+
+      # mainに対してpullRequestを作成
+      - name: Create Pull Request
+        id: pullrequest
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 🔖 Release ${{ steps.get_version.outputs.next-version }}
+          title: 🔖 Release ${{ steps.get_version.outputs.next-version }}
+          body: 🔖 Release ${{ steps.get_version.outputs.next-version }}
+          branch: 'release/v${{ steps.get_version.outputs.next-version }}'
+          base: main
+          labels: release
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      # pullRequestを承認
+      # 承認者がいない場合にpullRequestがマージできないため
+      - name: Approve Pull Request
+        if: steps.pullrequest.outputs.pull-request-operation == 'created'
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_ACCESS_TOKEN }}
+        run: gh pr review "${{ steps.pullrequest.outputs.pull-request-number }}" --approve
+
+      # pullRequestに自動マージを許可
+      - name: Enable Pull Request Automerge
+        if: steps.pullrequest.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.ACTION_ACCESS_TOKEN }}
+          pull-request-number: ${{ steps.pullrequest.outputs.pull-request-number }}
+          merge-method: merge
+
     outputs:
       current-version: ${{steps.get_version.outputs.current-version }}
       next-version: ${{steps.get_version.outputs.next-version }}
+      brench-name: release/v${{ steps.get_version.outputs.next-version }}
 
   # 各osでelectronをビルド
   build-electron:
@@ -66,13 +101,18 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
+      # releaseブランチをチェックアウト
+      - run: |
+          git fetch origin ${{ needs.create-commit.outputs.brench-name }}
+          git checkout ${{ needs.create-commit.outputs.brench-name }}
 
       # Nodejsを使用
       - name: Setup NodeJS Environment 18
         uses: actions/setup-node@v2
         with:
-          node-version: 18
+          node-version: 20
           cache: 'yarn'
 
       # create-commitで行った更新をpullし、ビルドを実行
@@ -120,8 +160,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: v${{ needs.create-commit.outputs.next-version }}
-          name: ${{ github.event.pull_request.title }}
           version: v${{ needs.create-commit.outputs.next-version }}
+          commitish: ${{ needs.create-commit.outputs.brench-name }}
           publish: false # draft状態で作成
           prerelease: false
 

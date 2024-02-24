@@ -6,23 +6,25 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useI18n } from 'vue-i18n';
 
-const mainStore = useMainStore()
-const consoleStore = useConsoleStore()
-const { t } = useI18n()
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
+const { t } = useI18n();
 
 /**
  * ワールド名のバリデーションを行う
  */
 async function validateWorldName(name: WorldName) {
-  const res = await window.API.invokeValidateNewWorldName(mainStore.world.container, name)
+  const res = await window.API.invokeValidateNewWorldName(
+    mainStore.world.container,
+    name
+  );
   if (isError(res) && mainStore.world.name !== name) {
-    mainStore.errorWorlds.add(mainStore.world.id)
-    return t(`error.${res.key}.desc`)
-  }
-  else {
-    mainStore.errorWorlds.delete(mainStore.world.id)
-    mainStore.world.name = name
-    return true
+    mainStore.errorWorlds.add(mainStore.world.id);
+    return t(`error.${res.key}.desc`);
+  } else {
+    mainStore.errorWorlds.delete(mainStore.world.id);
+    mainStore.world.name = name;
+    return true;
   }
 }
 
@@ -31,7 +33,7 @@ async function validateWorldName(name: WorldName) {
  */
 function clearNewName() {
   // 空文字列のワールドは起動できないため、エラー扱い
-  mainStore.errorWorlds.add(mainStore.world.id)
+  mainStore.errorWorlds.add(mainStore.world.id);
 }
 </script>
 
@@ -41,7 +43,7 @@ function clearNewName() {
     :label="$t('home.worldName.enterName')"
     :debounce="200"
     :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
-    :rules="[val => validateWorldName(val)]"
+    :rules="[(val) => validateWorldName(val)]"
     @clear="clearNewName"
   />
 </template>
