@@ -164,7 +164,10 @@ export interface API extends IAPI {
      * - mods: MODフォルダのパス
      *
      */
-    GetWorldPaths: (world: WorldID, type: 'base') => Promise<string>;
+    GetWorldPaths: (
+      world: WorldID,
+      type: 'base' |  'datapacks' | 'plugins' | 'mods'
+    ) => Promise<string>;
 
     /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
