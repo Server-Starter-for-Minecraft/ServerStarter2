@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { checkError } from 'src/components/Error/Error';
 import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
@@ -38,7 +39,7 @@ export const useMainStore = defineStore('mainStore', {
      */
     worldBack(state): WorldEdited | undefined {
       const worldStore = useWorldStore();
-      return worldStore.worldList[state.selectedWorldID];
+      return worldStore.worldListBack[state.selectedWorldID];
     },
     worldIP(state) {
       const worldStore = useWorldStore();
@@ -177,9 +178,9 @@ export const useMainStore = defineStore('mainStore', {
     syncBackWorld(worldID?: WorldID) {
       const worldStore = useWorldStore();
       if (worldID) {
-        worldStore.worldListBack[worldID] = worldStore.worldList[worldID];
+        worldStore.worldListBack[worldID] = deepcopy(worldStore.worldList[worldID]);
       } else {
-        worldStore.worldListBack = worldStore.worldList;
+        worldStore.worldListBack = deepcopy(worldStore.worldList);
       }
     },
     /**
