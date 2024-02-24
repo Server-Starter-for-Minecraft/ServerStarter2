@@ -5,7 +5,10 @@
     "editorconfig.editorconfig",
     "vue.volar",
     "wayou.vscode-todo-highlight",
-    "seatonjiang.gitmoji-vscode"
+    "seatonjiang.gitmoji-vscode",
+    "mhutchie.git-graph",
+    "sgryjp.japanese-word-handler",
+    "formulahendry.auto-rename-tag"
   ],
   "unwantedRecommendations": [
     "octref.vetur",
