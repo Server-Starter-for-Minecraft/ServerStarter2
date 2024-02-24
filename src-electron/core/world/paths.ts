@@ -4,7 +4,7 @@ import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/schema/error';
 import { LEVEL_NAME } from '../const';
 
-type WorldPathTypes = 'base' | 'datapacks' | 'plugins' | 'mods';
+type WorldPathTypes = 'world' | 'datapacks' | 'plugins' | 'mods';
 
 /** WorldIDと欲しいパスの種類を受け取って、パス文字列を返す */
 export async function getWorldPaths(
@@ -18,8 +18,8 @@ export async function getWorldPaths(
   const path = worldHandler.getSavePath();
 
   switch (type) {
-    case 'base':
-      return path.str();
+    case 'world':
+      return path.child(LEVEL_NAME).str();
     case 'datapacks':
       return path.child(LEVEL_NAME + '/datapacks').str();
     case 'mods':

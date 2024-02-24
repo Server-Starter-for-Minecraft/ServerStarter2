@@ -157,7 +157,7 @@ export interface API extends IAPI {
      * ワールドに関連するパスを取得する
      *
      * type
-     * - base: ワールドデータを保存している場所 ( worldフォルダの中 )
+     * - world: ワールドデータを保存している場所 ( worldフォルダの中 )
      * - serverJar: サーバーJarのパス
      * - datapacks: データパックフォルダのパス
      * - plugins: プラグインフォルダのパス
@@ -166,7 +166,7 @@ export interface API extends IAPI {
      */
     GetWorldPaths: (
       world: WorldID,
-      type: 'base' | 'datapacks' | 'plugins' | 'mods'
+      type: 'world' | 'datapacks' | 'plugins' | 'mods'
     ) => Promise<Failable<string>>;
 
     /**
