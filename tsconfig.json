@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "src-electron/**/*.ts", "src/**/*.vue"],
+  "include": ["src/**/*.ts", "src-electron/**/*.ts", "src/**/*.vue", "test/**/*.ts"],
   "ts-node": {
     "compilerOptions": {
       "strictNullChecks": true,
