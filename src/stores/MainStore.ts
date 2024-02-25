@@ -4,7 +4,7 @@ import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
-import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
+import { recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
 import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
@@ -12,6 +12,7 @@ import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { values } from 'src/scripts/obj';
+import { zen2han } from 'src/scripts/textUtils';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -44,12 +45,23 @@ export const useMainStore = defineStore('mainStore', {
      */
     searchWorld(text: string) {
       const worldStore = useWorldStore();
+      const editText = zen2han(text).trim();
 
-      if (text !== '') {
-        return recordKeyFillter(
-          worldStore.sortedWorldList,
-          (wId) => worldStore.worldList[wId].name.match(text) !== null
-        );
+      if (editText !== '') {
+        // スペース区切りのAND検索
+        let returnWorlds = worldStore.sortedWorldList;
+        editText.split(' ').forEach((t) => {
+          returnWorlds = recordValueFilter(returnWorlds, (w) => {
+            // ワールド名称に一致
+            const hitName = w.name.toLowerCase().match(t) !== null;
+            // サーバー種類に一致
+            const hitVerType = w.version.type.match(t) !== null;
+            // バージョン名に一致
+            const hitVer = w.version.id.match(t) !== null;
+            return hitName || hitVerType || hitVer;
+          });
+        });
+        return returnWorlds;
       }
       return worldStore.sortedWorldList;
     },
