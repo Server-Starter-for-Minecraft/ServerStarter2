@@ -1,11 +1,25 @@
 <script setup lang="ts">
+import { checkError } from 'src/components/Error/Error';
+import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore();
 
-function openFolder() {
-  window.API.invokeGetWorldPaths(mainStore.world.id, 'world');
+async function openFolder() {
+  const path = await window.API.invokeGetWorldPaths(
+    mainStore.world.id,
+    'world'
+  );
+
+  checkError(
+    path,
+    async (p) => {
+      const res = await window.API.sendOpenFolder(p, true);
+      checkError(res, undefined, (e) => tError(e));
+    },
+    (e) => tError(e)
+  );
 }
 </script>
 
