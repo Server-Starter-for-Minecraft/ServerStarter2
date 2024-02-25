@@ -1,4 +1,4 @@
-import { zip } from 'app/src-electron/util/zip';
+import { zip } from './zip';
 
 describe('example', async () => {
   test('example test 01', () => {
