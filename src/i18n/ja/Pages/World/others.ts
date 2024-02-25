@@ -1,4 +1,9 @@
 export const jaOthers = {
+  openFolder: {
+    title: '保存場所を開く',
+    desc: 'ワールドデータの保存場所となっているフォルダを開く',
+    btnText: 'フォルダを開く'
+  },
   backup: {
     title: 'バックアップの管理',
     backupDesc:

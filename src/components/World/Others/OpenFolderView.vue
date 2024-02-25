@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 import { useMainStore } from 'src/stores/MainStore';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore();
 
-function openFolder() {}
+function openFolder() {
+  window.API.invokeGetWorldPaths(mainStore.world.id, 'world');
+}
 </script>
 
 <template>
   <div class="q-pl-md">
     <div class="text-caption" style="opacity: 0.6">
-      ワールドデータの保存場所となっているフォルダを開く
+      {{ $t('others.openFolder.desc') }}
     </div>
-    <SsBtn label="フォルダを開く" @click="openFolder" class="q-mt-md" />
+    <SsBtn
+      :label="$t('others.openFolder.btnText')"
+      @click="openFolder"
+      class="q-mt-md"
+    />
   </div>
 </template>

@@ -8,7 +8,7 @@ import OpenFolderView from 'src/components/World/Others/OpenFolderView.vue';
 <template>
   <q-scroll-area ref="scrollAreaRef" class="full-height" style="flex: 1 1 0">
     <div class="mainField">
-      <h1 class="q-pt-lg">保存場所を開く</h1>
+      <h1 class="q-pt-lg">{{ $t('others.openFolder.title') }}</h1>
       <OpenFolderView />
 
       <!-- Others -->
