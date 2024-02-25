@@ -4,7 +4,7 @@ export const enOthers: MessageSchema['others'] = {
   openFolder: {
     title: 'Open Saving data folder',
     desc: 'Open the folder where the world data is saved.',
-    btnText: 'Open folder'
+    btnText: 'Open folder',
   },
   backup: {
     title: 'Manage a backup world',

@@ -22,7 +22,9 @@ export type ErrorFuncReturns = { title: string; desc?: string };
 export function checkError<S>(
   check: Failable<S>,
   successProcess: ((checked: S) => void) | undefined,
-  errorDescription: ((error: ErrorMessage) => ErrorFuncReturns | undefined) | undefined
+  errorDescription:
+    | ((error: ErrorMessage) => ErrorFuncReturns | undefined)
+    | undefined
 ) {
   if (isValid(check)) {
     if (successProcess !== void 0) successProcess(check);

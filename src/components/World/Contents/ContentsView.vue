@@ -103,7 +103,7 @@ function addContent2World(content: NewFileData<T>) {
 /**
  * 保存済みデータのフォルダを開く
  */
- async function openSavedFolder() {
+async function openSavedFolder() {
   const path = await window.API.invokeGetWorldPaths(
     mainStore.world.id,
     `${prop.contentType}s`
