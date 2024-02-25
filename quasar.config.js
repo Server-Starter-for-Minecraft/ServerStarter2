@@ -226,6 +226,7 @@ module.exports = configure(function (/* ctx */) {
         // https://www.electron.build/configuration/configuration
         appId: 'ServerStarter2',
         asarUnpack: [
+          'node_modules/sharp/**',
           'node_modules/@ngrok/**/*.node',
           'node_modules/@ngrok/**/*.dll',
         ],
@@ -235,6 +236,9 @@ module.exports = configure(function (/* ctx */) {
         },
         mac: {
           target: 'pkg',
+        },
+        linux: {
+          target: ['AppImage', 'deb', 'rpm'],
         },
       },
     },
