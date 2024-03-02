@@ -54,54 +54,56 @@ function showOwnerDialog() {
 </script>
 
 <template>
-  <div class="mainField">
-    <h1 class="q-mt-none">{{ $t('systemsetting.general.lang') }}</h1>
-    <SsSelect
-      dense
-      v-model="sysStore.systemSettings.user.language"
-      @update:model-value="(newVal) => changeLocale(newVal)"
-      :options="localeOptions"
-      option-label="label"
-      option-value="value"
-    />
-
-    <h1>{{ $t('systemsetting.general.colorMode') }}</h1>
-    <div class="row q-gutter-lg">
-      <template v-for="theme in colorThemes" :key="theme">
-        <ColorThemeBtn
-          :src="assets.svg[theme]()"
-          :active="sysStore.systemSettings.user.theme === theme"
-          :label="theme"
-          @click="() => changeTheme(theme)"
-        />
-      </template>
+  <div class="vertical-scroll">
+    <div class="mainField">
+      <h1 class="q-mt-none">{{ $t('systemsetting.general.lang') }}</h1>
+      <SsSelect
+        dense
+        v-model="sysStore.systemSettings.user.language"
+        @update:model-value="(newVal) => changeLocale(newVal)"
+        :options="localeOptions"
+        option-label="label"
+        option-value="value"
+      />
+  
+      <h1>{{ $t('systemsetting.general.colorMode') }}</h1>
+      <div class="row q-gutter-lg">
+        <template v-for="theme in colorThemes" :key="theme">
+          <ColorThemeBtn
+            :src="assets.svg[theme]()"
+            :active="sysStore.systemSettings.user.theme === theme"
+            :label="theme"
+            @click="() => changeTheme(theme)"
+          />
+        </template>
+      </div>
+      <q-toggle
+        v-model="sysStore.systemSettings.user.visionSupport"
+        @update:model-value="(val) => setColor($q.dark.isActive, val)"
+        :label="
+          sysStore.systemSettings.user.visionSupport
+            ? $t('systemsetting.general.useVisionSupport')
+            : $t('systemsetting.general.noVisionSupport')
+        "
+        class="q-pt-lg"
+        style="font-size: 1rem"
+      />
+  
+      <h1>{{ $t('owner.register') }}</h1>
+      <p class="q-my-sm text-body2" style="opacity: 0.5">
+        {{ $t('owner.generalDesc') }}
+      </p>
+      <PlayerCard v-model="sysStore.systemSettings.user.owner" />
+      <SsBtn
+        :label="`${
+          sysStore.systemSettings.user.owner
+            ? $t('owner.change')
+            : $t('owner.register')
+        }`"
+        :color="!sysStore.systemSettings.user.owner ? 'primary' : undefined"
+        @click="showOwnerDialog"
+        class="q-my-md"
+      />
     </div>
-    <q-toggle
-      v-model="sysStore.systemSettings.user.visionSupport"
-      @update:model-value="(val) => setColor($q.dark.isActive, val)"
-      :label="
-        sysStore.systemSettings.user.visionSupport
-          ? $t('systemsetting.general.useVisionSupport')
-          : $t('systemsetting.general.noVisionSupport')
-      "
-      class="q-pt-lg"
-      style="font-size: 1rem"
-    />
-
-    <h1>{{ $t('owner.register') }}</h1>
-    <p class="q-my-sm text-body2" style="opacity: 0.5">
-      {{ $t('owner.generalDesc') }}
-    </p>
-    <PlayerCard v-model="sysStore.systemSettings.user.owner" />
-    <SsBtn
-      :label="`${
-        sysStore.systemSettings.user.owner
-          ? $t('owner.change')
-          : $t('owner.register')
-      }`"
-      :color="!sysStore.systemSettings.user.owner ? 'primary' : undefined"
-      @click="showOwnerDialog"
-      class="q-my-md"
-    />
   </div>
 </template>
