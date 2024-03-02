@@ -34,7 +34,6 @@ function openMIT() {
 
 <template>
   <div class="vertical-scroll">
-
     <div class="q-px-md" style="margin: auto; width: fit-content">
       <h1 class="q-pt-md">{{ $t('systemsetting.info.systemVersion') }}</h1>
       <div class="q-pl-md">
@@ -54,7 +53,7 @@ function openMIT() {
             />
           </div>
         </div>
-  
+
         <!-- 最終更新日 -->
         <div
           v-if="lastUpdateDateTime"
@@ -68,7 +67,7 @@ function openMIT() {
           }}
         </div>
       </div>
-  
+
       <h1>{{ $t('systemsetting.info.systemLog') }}</h1>
       <div class="q-pl-md">
         <div class="text-caption" style="opacity: 0.6">
@@ -80,7 +79,7 @@ function openMIT() {
           class="q-mt-md"
         />
       </div>
-  
+
       <h1>{{ $t('systemsetting.info.externalLink') }}</h1>
       <div class="q-pl-md q-py-sm q-gutter-sm">
         <div class="row">
@@ -107,7 +106,7 @@ function openMIT() {
           </div>
         </div>
       </div>
-  
+
       <h1>{{ $t('systemsetting.info.license') }}</h1>
       <div class="q-pl-md">
         <div class="row items-start">
@@ -127,7 +126,7 @@ function openMIT() {
           v-html="$t('systemsetting.info.licenseDesc')"
         ></div>
       </div>
-  
+
       <h1>{{ $t('systemsetting.info.developer') }}</h1>
       <div class="q-pl-md">
         <CreaterItem
@@ -140,7 +139,10 @@ function openMIT() {
           :names="['txkodo']"
           url="https://twitter.com/txkodo"
         />
-        <CreaterItem :job="$t('systemsetting.info.support')" :names="['nozz']" />
+        <CreaterItem
+          :job="$t('systemsetting.info.support')"
+          :names="['nozz']"
+        />
       </div>
     </div>
   </div>

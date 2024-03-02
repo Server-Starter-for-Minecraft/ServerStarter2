@@ -65,7 +65,7 @@ function showOwnerDialog() {
         option-label="label"
         option-value="value"
       />
-  
+
       <h1>{{ $t('systemsetting.general.colorMode') }}</h1>
       <div class="row q-gutter-lg">
         <template v-for="theme in colorThemes" :key="theme">
@@ -88,7 +88,7 @@ function showOwnerDialog() {
         class="q-pt-lg"
         style="font-size: 1rem"
       />
-  
+
       <h1>{{ $t('owner.register') }}</h1>
       <p class="q-my-sm text-body2" style="opacity: 0.5">
         {{ $t('owner.generalDesc') }}
