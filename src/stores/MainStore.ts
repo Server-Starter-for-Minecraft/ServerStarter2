@@ -10,7 +10,7 @@ import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
-import { tError } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 import { values } from 'src/scripts/obj';
 import { zen2han } from 'src/scripts/textUtils';
 
@@ -45,7 +45,7 @@ export const useMainStore = defineStore('mainStore', {
      */
     searchWorld(text: string) {
       const worldStore = useWorldStore();
-      const editText = zen2han(text).trim();
+      const editText = zen2han(text).trim().toLowerCase();
 
       if (editText !== '') {
         // スペース区切りのAND検索
@@ -55,7 +55,9 @@ export const useMainStore = defineStore('mainStore', {
             // ワールド名称に一致
             const hitName = w.name.toLowerCase().match(t) !== null;
             // サーバー種類に一致
-            const hitVerType = w.version.type.match(t) !== null;
+            const hitVerType =
+              w.version.type.match(t) !== null ||
+              $T(`home.serverType.${w.version.type}`).match(t) !== null;
             // バージョン名に一致
             const hitVer = w.version.id.match(t) !== null;
             return hitName || hitVerType || hitVer;
