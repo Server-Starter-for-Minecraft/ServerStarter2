@@ -24,6 +24,12 @@ import { deepCopy } from './scripts/deepCopy';
 import { setColor } from './color';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
+import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
+import {
+  UpdateNotifyProp,
+  setUpdateHandler,
+  updateSelecter,
+} from './components/App/UpdateNotify/iUpdateNotifyDialog';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
@@ -66,6 +72,45 @@ window.API.onFinishServer((_event, worldID) => {
 window.API.onAddConsole((_event, worldID, chunk, isError) => {
   consoleStore.setConsole(worldID, chunk, isError);
 });
+
+// アップデートを実行するときに確認のダイアログを表示する
+// window.API.handleUpdateSystem(
+//   async (_: Electron.IpcRendererEvent, os, required) => {
+//     const promise = new Promise<boolean>((resolve) => {
+//       setUpdateHandler(resolve);
+//     });
+
+//     $q.dialog({
+//       component: UpdateNotifyDialog,
+//       componentProps: {
+//         os: os,
+//         required: required,
+//       } as UpdateNotifyProp,
+//     })
+//       .onOk(() => {
+//         updateSelecter(true);
+//       })
+//       .onCancel(() => {
+//         updateSelecter(false);
+//       });
+
+//       return await promise
+//   }
+// );
+// TODO: 上記が作動したら下記のダイアログは削除
+$q.dialog({
+  component: UpdateNotifyDialog,
+  componentProps: {
+    os: 'windows',
+    required: false,
+  } as UpdateNotifyProp,
+})
+  .onOk(() => {
+    console.log('TRUE');
+  })
+  .onCancel(() => {
+    console.log('FALSE');
+  });
 // Eulaの同意処理
 window.API.handleAgreeEula(
   async (_: Electron.IpcRendererEvent, worldID, url) => {
