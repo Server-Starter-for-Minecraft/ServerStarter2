@@ -36,7 +36,7 @@ const tmp = ref(true);
       </template>
       <div v-if="isAutoUpdate" style="font-size: 0.8rem; opacity: 0.6">
         ServerStarter2のアップデートを開始します<br />
-        最新版のServerStarter2を使ってより快適にマルチプレイを楽しみましょう！<br><br>
+        最新版のServerStarter2を使ってより快適にマルチプレイを楽しみましょう！<br /><br />
         ※アップデート後にこの画面が繰り返し表示される場合は，<ssA
           url="https://server-starter-for-minecraft.github.io"
           >公式HP</ssA
