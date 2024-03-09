@@ -36,14 +36,18 @@ export const useMainStore = defineStore('mainStore', {
     showingWorldList(state) {
       const worldStore = useWorldStore();
 
-      if (state.worldSearchText !== '') {
+      // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，Nullチェックも付加
+      // 原因はSearchWorldViewのupdateSelectedWorld()にてshowingWorldListを呼び出しているため
+      // TODO: 上記のリファクタリングにより，Nullチェックを廃止
+      if (state.worldSearchText !== null && state.worldSearchText !== '') {
         return recordKeyFillter(
           worldStore.sortedWorldList,
-          (wId) => worldStore.worldList[wId].name.match(state.worldSearchText) !== null
+          (wId) =>
+            worldStore.worldList[wId].name.match(state.worldSearchText) !== null
         );
       }
 
-      return worldStore.sortedWorldList
+      return worldStore.sortedWorldList;
     },
     worldIP(state) {
       const worldStore = useWorldStore();

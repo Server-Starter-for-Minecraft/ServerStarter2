@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { keys, values } from 'src/scripts/obj';
 import SsInput from '../util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Prop {
@@ -11,6 +12,16 @@ defineProps<Prop>();
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
+
+/**
+ * 選択中のワールドが検索によって消滅した場合に，表示中のワールドを割り当てる
+ */
+function updateSelectedWorld() {
+  const wList = mainStore.showingWorldList;
+  if (!keys(wList).includes(mainStore.world.id)) {
+    mainStore.setWorld(values(wList).reverse()[0]);
+  }
+}
 </script>
 
 <template>
@@ -24,6 +35,7 @@ const mainStore = useMainStore();
     <q-item-section>
       <SsInput
         v-model="mainStore.worldSearchText"
+        @update:model-value="updateSelectedWorld"
         :label="$t('mainLayout.searchWorld')"
         :debounce="100"
       />
