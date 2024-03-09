@@ -18,7 +18,8 @@ const mainStore = useMainStore();
  */
 function updateSelectedWorld() {
   const wList = mainStore.showingWorldList;
-  if (!keys(wList).includes(mainStore.world.id)) {
+  const wListKeys = keys(wList)
+  if (!wListKeys.includes(mainStore.world.id) && wListKeys.length > 0) {
     mainStore.setWorld(values(wList).reverse()[0]);
   }
 }
