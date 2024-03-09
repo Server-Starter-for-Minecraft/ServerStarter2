@@ -27,7 +27,6 @@ const isWorldContainerLoading = ref(false);
  * 表示ワールドを残ったワールド一覧から選択する
  */
 function changeVisible(container: WorldContainer) {
-  console.log(mainStore.world.container);
   if (mainStore.world.container === container) {
     const world = values(worldStore.sortedWorldList);
     mainStore.setWorld(world[world.length - 1]);
