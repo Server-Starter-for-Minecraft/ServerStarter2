@@ -18,6 +18,7 @@ export const useMainStore = defineStore('mainStore', {
     return {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
+      worldSearchText: '',
       errorWorlds: new Set<WorldID>(),
       selectedVersionType: 'vanilla' as Version['type'],
     };
@@ -32,28 +33,24 @@ export const useMainStore = defineStore('mainStore', {
 
       return returnWorld;
     },
+    showingWorldList(state) {
+      const worldStore = useWorldStore();
+
+      if (state.worldSearchText !== '') {
+        return recordKeyFillter(
+          worldStore.sortedWorldList,
+          (wId) => worldStore.worldList[wId].name.match(state.worldSearchText) !== null
+        );
+      }
+
+      return worldStore.sortedWorldList
+    },
     worldIP(state) {
       const worldStore = useWorldStore();
       return worldStore.worldIPs[state.selectedWorldID];
     },
   },
   actions: {
-    /**
-     * 指定したTextをワールド名に含むワールド一覧を取得する
-     * 
-     * Textを指定しない場合は、システム上のワールド一覧を返す
-     */
-    searchWorld(text?: string) {
-      const worldStore = useWorldStore();
-
-      if (text !== void 0 && text !== '') {
-        return recordKeyFillter(
-          worldStore.sortedWorldList,
-          (wId) => worldStore.worldList[wId].name.match(text) !== null
-        );
-      }
-      return worldStore.sortedWorldList;
-    },
     /**
      * ワールドを新規作成する
      */
