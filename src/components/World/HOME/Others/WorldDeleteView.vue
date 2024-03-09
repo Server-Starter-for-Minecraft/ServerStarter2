@@ -21,7 +21,7 @@ async function removeWorld() {
     const removeWorldID = mainStore.selectedWorldID;
 
     // ワールドが消失する場合は、新規ワールドを自動生成
-    if (values(worldStore.worldList).length === 1) {
+    if (values(mainStore.searchWorld()).length === 1) {
       // 削除する際にworldStore.worldListが更新されてSetWorldが呼ばれるため、
       // 表示しているワールドを確実にNewWorld側にしてから削除処理を実行
       // このためには、削除前にCreateNewWorldする必要あり

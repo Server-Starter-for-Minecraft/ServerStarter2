@@ -40,12 +40,13 @@ export const useMainStore = defineStore('mainStore', {
   actions: {
     /**
      * 指定したTextをワールド名に含むワールド一覧を取得する
+     * 
      * Textを指定しない場合は、システム上のワールド一覧を返す
      */
-    searchWorld(text: string) {
+    searchWorld(text?: string) {
       const worldStore = useWorldStore();
 
-      if (text !== '') {
+      if (text !== void 0 && text !== '') {
         return recordKeyFillter(
           worldStore.sortedWorldList,
           (wId) => worldStore.worldList[wId].name.match(text) !== null
