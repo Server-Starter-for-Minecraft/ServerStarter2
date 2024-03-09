@@ -112,6 +112,8 @@ function removeFolder() {
           (sysStore.systemSettings.container.filter((c) => c.visible).length ===
             1 &&
             folder.visible) ||
+          active ||
+          folder.container === './servers' ||
           disable
         "
         @click="switchVisible"
