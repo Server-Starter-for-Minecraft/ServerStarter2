@@ -1,7 +1,7 @@
 import { runtimePath } from '../../core/const';
 import { versionConfig } from '../../core/stores/config';
 import { BytesData } from '../bytesData';
-import { osPlatform } from '../os';
+import { OsPlatform, osPlatform } from '../os';
 import { Path } from '../path';
 import { Failable } from '../error/failable';
 import { installManifest, Manifest } from './manifest';
@@ -29,9 +29,18 @@ export async function readyJava(
 
   const json = await getAllJson();
 
+  const allJsonKeyOsPlatformMap: Record<OsPlatform, keyof AllJson> = {
+    debian: 'linux',
+    redhat: 'linux',
+    'mac-os': 'mac-os',
+    'mac-os-arm64': 'mac-os-arm64',
+    'windows-x64': 'windows-x64',
+  };
+
   if (isError(json)) return json;
 
-  const manifest = json[osPlatform][component][0].manifest;
+  const manifest =
+    json[allJsonKeyOsPlatformMap[osPlatform]][component][0].manifest;
 
   const path = runtimePath.child(`${component}/${osPlatform}`);
 
@@ -42,7 +51,8 @@ export async function readyJava(
   switch (osPlatform) {
     case 'windows-x64':
       return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
-    case 'linux':
+    case 'debian':
+    case 'redhat':
       return path.child('bin/java');
     case 'mac-os':
     case 'mac-os-arm64':

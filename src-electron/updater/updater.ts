@@ -1,9 +1,9 @@
 import { rootLoggerHierarchy } from '../core/logger';
 import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { isError } from '../util/error/error';
-import { getBytesFile } from '../util/github/rest';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
+import { notifyUpdate } from './notify';
 import { installMac } from './installer/mac';
 import { installWindows } from './installer/windows';
 import { getSystemVersion } from './version';
@@ -54,8 +54,23 @@ export async function update() {
   sys.system.lastUpdatedTime = undefined;
   await setSystemSettings(sys);
 
-  if (osPlatform === 'windows-x64') await installWindows(update.url, PAT);
-  if (osPlatform === 'mac-os' || osPlatform === 'mac-os-arm64')
-    await installMac(update.url, PAT);
+  const vLessVersion = update.version.slice(1);
+
+  switch (osPlatform) {
+    case 'windows-x64':
+      await installWindows(update.url, PAT);
+      break;
+    case 'mac-os':
+    case 'mac-os-arm64':
+      await installMac(update.url, PAT);
+      break;
+    case 'debian':
+      await notifyUpdate(osPlatform, vLessVersion);
+      break;
+    case 'redhat':
+      await notifyUpdate(osPlatform, vLessVersion);
+      break;
+  }
+
   logger.success();
 }

@@ -52,7 +52,9 @@ function getLauncherPath(): Path {
     case 'mac-os':
     case 'mac-os-arm64':
       return homePath.child('Library/Application Support/minecraft/');
-    case 'linux':
+    case 'debian':
+      return homePath.child('.minecraft/');
+    case 'redhat':
       return homePath.child('.minecraft/');
   }
 }
