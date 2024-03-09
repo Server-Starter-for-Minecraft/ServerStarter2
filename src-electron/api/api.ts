@@ -25,6 +25,7 @@ import {
   RemoteWorld,
 } from '../schema/remote';
 import { ServerStartNotification } from '../schema/server';
+import { OsPlatform } from '../util/os';
 
 /**
  * ## APIの利用方法
@@ -60,6 +61,9 @@ export interface API extends IAPI {
 
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;
+
+    /** アップデートがある際の通知(実行中のOS以外の通知はこない) */
+    NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
 
     /** サーバー実行(前|後)の進捗画面表示 */
     Progress: (world: WorldID, progress: GroupProgress) => void;

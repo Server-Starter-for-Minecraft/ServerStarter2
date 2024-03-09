@@ -86,6 +86,7 @@ function handle<C extends string>(
 
 const api: FrontAPI = {
   // ON
+  onNotifySystemUpdate: send('NotifySystemUpdate'),
   onStartServer: on('StartServer'),
   onFinishServer: on('FinishServer'),
   onProgress: on('Progress'),
