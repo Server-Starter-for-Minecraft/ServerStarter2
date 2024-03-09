@@ -17,10 +17,14 @@ const player = ref(playerStore.cachePlayers[prop.uuid]);
 // キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
 onMounted(async () => {
   if (player.value === void 0) {
-    checkError(await window.API.invokeGetPlayer(prop.uuid, 'uuid'), (p) => {
-      player.value = p;
-      playerStore.addPlayer(p);
-    });
+    checkError(
+      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
+      (p) => {
+        player.value = p;
+        playerStore.addPlayer(p);
+      },
+      undefined
+    );
   }
 });
 </script>
