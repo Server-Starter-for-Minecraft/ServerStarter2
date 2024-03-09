@@ -4,14 +4,15 @@ import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { checkError } from 'src/components/Error/Error';
-import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
+import { recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
 import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
-import { tError } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 import { values } from 'src/scripts/obj';
+import { zen2han } from 'src/scripts/textUtils';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -35,16 +36,28 @@ export const useMainStore = defineStore('mainStore', {
     },
     showingWorldList(state) {
       const worldStore = useWorldStore();
-
-      // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，Nullチェックも付加
+      // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，３項演算子によるNullチェックも付加
       // 原因はSearchWorldViewのupdateSelectedWorld()にてshowingWorldListを呼び出しているため
-      // TODO: 上記のリファクタリングにより，Nullチェックを廃止
-      if (state.worldSearchText !== null && state.worldSearchText !== '') {
-        return recordKeyFillter(
-          worldStore.sortedWorldList,
-          (wId) =>
-            worldStore.worldList[wId].name.match(state.worldSearchText) !== null
-        );
+      // TODO: 上記のリファクタリングにより，３項演算子を廃止
+      const editText = zen2han(state.worldSearchText ?? '').trim().toLowerCase();
+
+      if (editText !== '') {
+        // スペース区切りのAND検索
+        let returnWorlds = worldStore.sortedWorldList;
+        editText.split(' ').forEach((t) => {
+          returnWorlds = recordValueFilter(returnWorlds, (w) => {
+            // ワールド名称に一致
+            const hitName = w.name.toLowerCase().match(t) !== null;
+            // サーバー種類に一致
+            const hitVerType =
+              w.version.type.match(t) !== null ||
+              $T(`home.serverType.${w.version.type}`).match(t) !== null;
+            // バージョン名に一致
+            const hitVer = w.version.id.match(t) !== null;
+            return hitName || hitVerType || hitVer;
+          });
+        });
+        return returnWorlds;
       }
 
       return worldStore.sortedWorldList;
