@@ -25,7 +25,7 @@ const isNoContents = () =>
     </div>
   </div>
   <div v-if="isNoContents()" class="absolute-center text-h5">
-    表示可能なワールドがありません
+    {{ $t('mainLayout.noWorld') }}
   </div>
 </template>
 
