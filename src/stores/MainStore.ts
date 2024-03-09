@@ -39,7 +39,9 @@ export const useMainStore = defineStore('mainStore', {
       // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，３項演算子によるNullチェックも付加
       // 原因はSearchWorldViewのupdateSelectedWorld()にてshowingWorldListを呼び出しているため
       // TODO: 上記のリファクタリングにより，３項演算子を廃止
-      const editText = zen2han(state.worldSearchText ?? '').trim().toLowerCase();
+      const editText = zen2han(state.worldSearchText ?? '')
+        .trim()
+        .toLowerCase();
 
       if (editText !== '') {
         // スペース区切りのAND検索
