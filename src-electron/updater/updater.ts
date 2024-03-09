@@ -65,8 +65,6 @@ export async function update() {
       await installMac(update.url, PAT);
       break;
     case 'debian':
-      await notifyUpdate(osPlatform, vLessVersion);
-      break;
     case 'redhat':
       await notifyUpdate(osPlatform, vLessVersion);
       break;

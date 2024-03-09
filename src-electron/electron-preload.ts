@@ -86,7 +86,6 @@ function handle<C extends string>(
 
 const api: FrontAPI = {
   // ON
-  onNotifySystemUpdate: send('NotifySystemUpdate'),
   onStartServer: on('StartServer'),
   onFinishServer: on('FinishServer'),
   onProgress: on('Progress'),
@@ -94,6 +93,7 @@ const api: FrontAPI = {
   onError: on('Error'),
 
   // HANDLE
+  handleNotifySystemUpdate: send('NotifySystemUpdate'),
   handleAgreeEula: handle('AgreeEula'),
   handleCheckShutdown: handle('CheckShutdown'),
 

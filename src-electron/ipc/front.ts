@@ -56,7 +56,6 @@ export function getFrontAPIListener(
 ): FrontListener<API> {
   const result: ChanneledFrontListener<FrontListener<API>> = {
     on: {
-      NotifySystemUpdate: send('NotifySystemUpdate', window),
       StartServer: send('StartServer', window),
       FinishServer: send('FinishServer', window),
       Progress: send('Progress', window),
@@ -66,6 +65,7 @@ export function getFrontAPIListener(
     handle: {
       AgreeEula: invoke('AgreeEula', window),
       CheckShutdown: invoke('CheckShutdown', window),
+      NotifySystemUpdate: invoke('NotifySystemUpdate', window),
     },
   };
   return result;

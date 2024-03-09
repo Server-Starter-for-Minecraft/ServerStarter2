@@ -62,9 +62,6 @@ export interface API extends IAPI {
     /** サーバー終了時のメッセージ */
     FinishServer: (world: WorldID) => void;
 
-    /** アップデートがある際の通知(実行中のOS以外の通知はこない) */
-    NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
-
     /** サーバー実行(前|後)の進捗画面表示 */
     Progress: (world: WorldID, progress: GroupProgress) => void;
 
@@ -90,6 +87,12 @@ export interface API extends IAPI {
      * false : ServerStarterの起動を継続し、シャットダウンしない
      */
     CheckShutdown: () => Promise<boolean>;
+
+    /** アップデートがある際の通知 戻り値はアップデートを実行するかどうか(Linuxの場合はfalse確定) */
+    NotifySystemUpdate: (
+      type: OsPlatform,
+      systemVersion: string
+    ) => Promise<boolean>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る
