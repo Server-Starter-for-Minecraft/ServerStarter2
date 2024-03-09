@@ -31,8 +31,8 @@ const isNoContents = () =>
 
 <style scoped lang="scss">
 .noContents {
-  filter: blur(5px);
-  opacity: 0.6;
+  filter: blur(10px);
+  opacity: 0.4;
   pointer-events: none;
 }
 </style>
