@@ -61,11 +61,11 @@ export function getFrontAPIListener(
       Progress: send('Progress', window),
       AddConsole: send('AddConsole', window),
       Error: send('Error', window),
+      NotifySystemUpdate: send('NotifySystemUpdate', window),
     },
     handle: {
       AgreeEula: invoke('AgreeEula', window),
       CheckShutdown: invoke('CheckShutdown', window),
-      NotifySystemUpdate: invoke('NotifySystemUpdate', window),
     },
   };
   return result;

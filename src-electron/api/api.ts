@@ -73,6 +73,9 @@ export interface API extends IAPI {
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
+
+    /** アップデートがある際の通知 */
+    NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
@@ -87,12 +90,6 @@ export interface API extends IAPI {
      * false : ServerStarterの起動を継続し、シャットダウンしない
      */
     CheckShutdown: () => Promise<boolean>;
-
-    /** アップデートがある際の通知 戻り値はアップデートを実行するかどうか(Linuxの場合はfalse確定) */
-    NotifySystemUpdate: (
-      type: OsPlatform,
-      systemVersion: string
-    ) => Promise<boolean>;
   };
   sendWindowToMain: {
     /** 実行中のサーバーにコマンドを送る
