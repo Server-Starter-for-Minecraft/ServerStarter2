@@ -1,13 +1,10 @@
 import { api } from '../../api';
 import { Path } from '../../../util/path';
 import { Failable } from '../../../util/error/failable';
-import { execProcess, interactiveProcess } from '../../../util/subprocess';
 import { WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
 import { GroupProgressor } from '../../progress/progress';
 import { Version } from 'app/src-electron/schema/version';
-import { sleep } from 'app/src-electron/util/sleep';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -30,15 +27,8 @@ export async function checkEula(
     const sub = progress.subtitle({
       key: 'server.eula.generating',
     });
-    const result = await generateEula(
-      javaPath,
-      programArgunets,
-      serverCwdPath,
-      version
-    );
+    await generateEula(javaPath, programArgunets, serverCwdPath, version);
     sub.delete();
-    // 生成に失敗した場合エラー
-    if (isError(result)) return result;
   }
   // eulaの内容を読み取る
 
@@ -114,44 +104,13 @@ async function generateEula(
   programArgunets: string[],
   serverCwdPath: Path,
   version: Version
-): Promise<Failable<undefined>> {
+): Promise<void> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
-  // mohistmcはeula.txtを生成して終了しないためこちらで生成してしまう
-  if (version.type === 'mohistmc') {
-    await eulaPath.writeText('eula=false');
-    return;
-  }
+  const eulaContent = `#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).
+#${new Date().toString()}
+eula=false`;
 
-  // サーバーを仮起動
-  const process = interactiveProcess(
-    javaPath,
-    [...programArgunets, '--nogui'],
-    (value) => {
-      if (value.match('Failed to load eula.txt')) {
-        process.kill();
-      }
-    },
-    () => {},
-    serverCwdPath,
-    true
-  );
-
-  // 60秒経っても終了していない場合はプロセスキルし、eula.txtをこちらで生成する
-  (async () => {
-    await sleep(60 * 1000);
-    if (!process.finished()) process.kill();
-    await eulaPath.writeText('eula=false');
-  })();
-
-  const result = await process;
-
-  if (isError(result)) return result;
-
-  if (!eulaPath.exists()) {
-    return errorMessage.data.path.creationFiled({
-      type: 'file',
-      path: eulaPath.path,
-    });
-  }
+  // eula.txtを生成
+  await eulaPath.writeText(eulaContent);
 }
