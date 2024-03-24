@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   test: {
+    include: ['**/*.test.ts'],
+    includeSource: ['**/*.ts'],
     globals: true,
   },
   resolve: {
