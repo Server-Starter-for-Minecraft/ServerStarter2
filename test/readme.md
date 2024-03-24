@@ -18,6 +18,8 @@ https://vitest.dev
 
 `src-electron/util/zip.ts`に例があるので参考まで。
 
+`ts`内で`test`と打つとIn Source Testingのスニペットが出るので活用してください。
+
 ### その他とテスト
 
 個別でテストファイルを配置する場合はファイル名を `**/*.test.ts`とすること。

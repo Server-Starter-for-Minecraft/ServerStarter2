@@ -1,0 +1,14 @@
+{
+  "test": {
+    "prefix": "test",
+    "body": [
+      "if (import.meta.vitest) {",
+      "  const { test, expect } = import.meta.vitest;",
+      "    test($1,() => {",
+      "    $2",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
+  }
+}
