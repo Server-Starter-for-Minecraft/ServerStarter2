@@ -238,7 +238,7 @@ module.exports = configure(function (/* ctx */) {
           target: 'pkg',
         },
         linux: {
-          target: ['AppImage', 'deb', 'rpm'],
+          target: ['deb', 'rpm'],
           icon: path.join(__dirname, 'src-electron/icons'),
           category: 'Utility',
         },
