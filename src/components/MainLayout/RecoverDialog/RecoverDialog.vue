@@ -29,7 +29,10 @@ async function recoverWorld() {
   // 復旧データを画面に反映
   checkError(
     res.value,
-    (w) => mainStore.updateWorld(w),
+    (w) => {
+      mainStore.updateWorld(w);
+      mainStore.syncBackWorld(w.id);
+    },
     (e) =>
       tError(e, {
         titleKey: 'error.errorDialog.recoverFail',

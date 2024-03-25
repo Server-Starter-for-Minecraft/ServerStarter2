@@ -13,4 +13,9 @@ export const jaAdditionalContents = {
   installFromZip: 'Zipから追加',
   installFromFolder: 'フォルダーから追加',
   needReboot: '変更を反映するにはサーバーの再起動が必要です',
+  deleteDialog: {
+    title: '{type}の削除',
+    desc: '起動履歴のあるワールドから{type}を削除する操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上で削除しますか？',
+    okbtn: '危険性を理解して削除する',
+  },
 };
