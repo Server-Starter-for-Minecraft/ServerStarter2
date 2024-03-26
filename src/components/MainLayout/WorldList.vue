@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { keys } from 'src/scripts/obj';
 import { sortValue } from 'src/scripts/objSort';
 import WorldTab from './WorldTab.vue';
 import NewWorldBtn from './NewWorldBtn.vue';
@@ -21,23 +19,9 @@ defineProps<Prop>();
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const searchWorldName = ref('');
 
 const miniChangeWidth = 200;
 const drawer = ref(true);
-
-/**
- * 表示するワールド一覧を更新する際に、表示するワールドがなくなる場合は、
- * 現在選択しているワールドを補完する
- *
- * (World FolderのVisibilityを変更したときに、表示するものがなくなることがあるため対応)
- */
-function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
-  if (keys(worlds).length === 0) {
-    worlds[mainStore.world.id] = mainStore.world;
-  }
-  return worlds;
-}
 </script>
 
 <template>
@@ -70,7 +54,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
         />
       </q-item>
     </div>
-    <icon-button-view
+    <IconButtonView
       :icon-src="
         assets.svg.menuicon_open(getCssVar('primary')?.replace('#', '%23'))
       "
@@ -80,8 +64,7 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
       class="q-mini-drawer-hide"
     />
 
-    <search-world-view
-      v-model="searchWorldName"
+    <SearchWorldView
       :expand-width="maxWidth"
       :expand-drawer-btn-clickable="
         sysStore.systemSettings.user.drawerWidth < miniChangeWidth
@@ -92,21 +75,21 @@ function interpolateCurrentWorld(worlds: Record<WorldID, WorldEdited>) {
       <q-list>
         <template
           v-for="(world, idx) in sortValue(
-            interpolateCurrentWorld(mainStore.searchWorld(searchWorldName)),
+            mainStore.showingWorldList,
             (w1, w2) => {
               return (w2.last_date ?? 0) - (w1.last_date ?? 0);
             }
           )"
           :key="world"
         >
-          <world-tab :world="world" :idx="idx" />
+          <WorldTab :world="world" :idx="idx" />
         </template>
       </q-list>
     </q-scroll-area>
 
-    <new-world-btn :mini-change-width="miniChangeWidth" />
+    <NewWorldBtn :mini-change-width="miniChangeWidth" />
     <q-separator class="q-mx-xs" />
-    <icon-button-view
+    <IconButtonView
       icon-name="settings"
       :label="$t('mainLayout.systemSetting')"
       :tooltip="$t('mainLayout.systemSetting')"

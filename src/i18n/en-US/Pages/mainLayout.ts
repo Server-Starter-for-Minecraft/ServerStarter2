@@ -6,6 +6,7 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
   searchWorld: 'Search world',
   openList: 'Open the world list',
   minimizeList: 'Minimize world list',
+  noWorld: 'No Worlds Found',
   newWorldBtn: {
     addWorld: 'Add new world',
     content: {

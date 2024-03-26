@@ -4,6 +4,7 @@ export const jaMainLayout = {
   searchWorld: 'ワールドを検索',
   openList: 'ワールド一覧を開く',
   minimizeList: 'ワールド一覧を最小化',
+  noWorld: '表示可能なワールドがありません',
   newWorldBtn: {
     addWorld: 'ワールドを追加',
     content: {
