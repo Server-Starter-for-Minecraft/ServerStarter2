@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
+import { useQuasar } from 'quasar';
 import { AllPapermcVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { openWarningDialog } from './versionComparator';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
@@ -10,51 +12,65 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+
+function buildPaperVer(id: string, build: number) {
+  return {
+    id: id,
+    type: 'papermc' as const,
+    build: build,
+  };
+}
 
 const paperVers = () => {
   return prop.versionData.map((ver) => ver.id);
 };
-const paperVer = ref(paperVers()[0]);
+const paperVer = computed({
+  get: () => {
+    // 前のバージョンがPaperに存在しないバージョンの時は，最新バージョンを割り当てる
+    if (paperVers().indexOf(mainStore.world.version.id) === -1) {
+      return paperVers()[0];
+    }
+    return mainStore.world.version.id;
+  },
+  set: (val) => {
+    const newVer = buildPaperVer(val, paperBuilds(val)[0]);
+    openWarningDialog(
+      $q,
+      paperVers(),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
+  },
+});
 
-const paperBuilds = () => {
-  return prop.versionData.find((ver) => ver.id === paperVer.value)?.builds;
+const paperBuilds = (pVer: string) => {
+  return prop.versionData.find((ver) => ver.id === pVer)?.builds ?? [0];
 };
-const paperBuild = ref(prop.versionData[0].builds[0]);
+const paperBuild = computed({
+  get: () => {
+    // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
+    if (mainStore.world.version.type !== 'papermc') {
+      return paperBuilds(paperVer.value)[0];
+    }
+    return mainStore.world.version.build;
+  },
+  set: (val) => {
+    mainStore.world.version = buildPaperVer(paperVer.value, val);
+  },
+});
 
-// paperでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'papermc') {
-  onUpdatedSelection(false);
-} else {
-  paperVer.value = mainStore.world.version.id;
-  paperBuild.value = mainStore.world.version.build;
-}
-
-/**
- * バージョンやビルド番号が更新されたら、選択ワールドの情報を更新する
- *
- * バージョンの変更に伴うビルド番号の更新はupdateBuildをTrueにする
- */
-function onUpdatedSelection(updateBuild: boolean) {
-  // バージョンに応じてビルド番号を更新
-  if (updateBuild) {
-    paperBuild.value = paperBuilds()?.[0] ?? 0;
-  }
-
-  mainStore.world.version = {
-    id: paperVer.value,
-    type: 'papermc' as const,
-    build: paperBuild.value,
-  };
-}
+// 表示内容と内部データを整合させる
+mainStore.world.version = buildPaperVer(paperVer.value, paperBuild.value);
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="paperVer"
-      @update:model-value="onUpdatedSelection(true)"
       :options="
         paperVers().map((ver, idx) => {
           return {
@@ -73,9 +89,8 @@ function onUpdatedSelection(updateBuild: boolean) {
     />
     <SsSelect
       v-model="paperBuild"
-      @update:model-value="onUpdatedSelection(false)"
       :options="
-        paperBuilds()?.map((build, idx) => {
+        paperBuilds(paperVer).map((build, idx) => {
           return {
             data: build,
             label:

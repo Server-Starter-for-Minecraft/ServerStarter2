@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { AllVanillaVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { openWarningDialog } from './versionComparator';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
@@ -10,31 +12,55 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
 const isRelease = ref(true);
-const vanillaOps = () => {
-  return prop.versionData?.map((ver) => {
-    return { id: ver.id, type: 'vanilla' as const, release: ver.release };
-  });
-};
-const latestReleaseID = vanillaOps().find((ops) => ops.release)?.id;
+const latestReleaseID = prop.versionData.find((ops) => ops.release)?.id;
 
-// vanillaでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'vanilla') {
-  mainStore.world.version =
-    vanillaOps().find((ops) => ops.release) ?? vanillaOps()[0];
+function buildVanillaVer(ver: { id: string; release: boolean }) {
+  return {
+    id: ver.id,
+    type: 'vanilla' as const,
+    release: ver.release,
+  };
 }
+
+const vanillaVer = computed({
+  get: () => {
+    // 前のバージョンがVanillaに存在しないバージョンの時は，最新バージョンを割り当てる
+    const findVer = prop.versionData.find(
+      (ops) => ops.id === mainStore.world.version.id
+    );
+    if (!findVer) {
+      return prop.versionData.find((ops) => ops.release) ?? prop.versionData[0];
+    }
+    return findVer;
+  },
+  set: (val) => {
+    const newVer = buildVanillaVer(val);
+    openWarningDialog(
+      $q,
+      prop.versionData.map((ops) => ops.id),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
+  },
+});
+
+// 表示内容と内部データを整合させる
+mainStore.world.version = buildVanillaVer(vanillaVer.value);
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md items-center">
     <SsSelect
-      v-model="mainStore.world.version"
+      v-model="vanillaVer"
       :options="
-        vanillaOps()
-          ?.filter((ver, idx) => !isRelease || idx == 0 || ver['release'])
+        versionData
+          .filter((ver, idx) => !isRelease || idx == 0 || ver['release'])
           .map((ver, idx) => {
             return {
               data: ver,

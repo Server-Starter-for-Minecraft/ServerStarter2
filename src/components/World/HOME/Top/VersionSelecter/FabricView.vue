@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import {
-  AllFabricVersion,
-  FabricVersion,
-} from 'app/src-electron/schema/version';
+import { computed, ref } from 'vue';
+import { useQuasar } from 'quasar';
+import { AllFabricVersion } from 'app/src-electron/schema/version';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { openWarningDialog } from './versionComparator';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 
 interface Prop {
@@ -13,49 +12,72 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
 const isRelease = ref(true);
-const latestReleaseVer = () => {
-  return prop.versionData.games.find((ops) => ops.release);
-};
-const fabricVer = ref(latestReleaseVer() ?? prop.versionData.games[0]);
+const latestReleaseID = prop.versionData.games.find((ops) => ops.release)?.id;
+
+function buildFabricVer(
+  ver: { id: string; release: boolean },
+  installer: string,
+  loader: string
+) {
+  return {
+    id: ver.id,
+    type: 'fabric' as const,
+    release: ver.release,
+    installer: installer,
+    loader: loader,
+  };
+}
+
+const fabricVer = computed({
+  get: () => {
+    // 前のバージョンがFabricに存在しないバージョンの時は，最新バージョンを割り当てる
+    const findVer = prop.versionData.games.find(
+      (ops) => ops.id === mainStore.world.version.id
+    );
+    if (!findVer) {
+      return (
+        prop.versionData.games.find((ops) => ops.release) ??
+        prop.versionData.games[0]
+      );
+    }
+    return findVer;
+  },
+  set: (val) => {
+    const newVer = buildFabricVer(
+      val,
+      fabricInstaller.value,
+      fabricLoader.value
+    );
+    openWarningDialog(
+      $q,
+      prop.versionData.games.map((ops) => ops.id),
+      mainStore.worldBack?.version ?? newVer,
+      newVer,
+      'id'
+    );
+  },
+});
 
 const fabricInstaller = ref(prop.versionData.installers[0]);
 const fabricLoader = ref(prop.versionData.loaders[0]);
 
-// fabricでないときには最新のバージョンを割り当てる
-if (mainStore.world.version.type !== 'fabric') {
-  onUpdatedSelection();
-} else {
-  fabricVer.value = {
-    id: mainStore.world.version.id,
-    release: mainStore.world.version.release,
-  };
-  fabricInstaller.value = mainStore.world.version.installer;
-  fabricLoader.value = mainStore.world.version.loader;
-}
-
-/**
- * バージョンやビルド番号が更新されたら、選択ワールドの情報を更新する
- */
-function onUpdatedSelection() {
-  mainStore.world.version = {
-    id: fabricVer.value.id,
-    release: fabricVer.value.release,
-    type: 'fabric' as const,
-    loader: fabricLoader.value,
-    installer: fabricInstaller.value,
-  };
-}
+// 表示内容と内部データを整合させる
+mainStore.world.version = buildFabricVer(
+  fabricVer.value,
+  fabricInstaller.value,
+  fabricLoader.value
+);
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md q-pb-md items-center">
     <SsSelect
       v-model="fabricVer"
-      @update:model-value="onUpdatedSelection()"
       :options="
         versionData.games
           .filter((ver, idx) => !isRelease || idx == 0 || ver.release)
@@ -63,7 +85,7 @@ function onUpdatedSelection() {
             return {
               data: ver,
               label:
-                ver.id === latestReleaseVer()?.id
+                ver.id === latestReleaseID
                   ? `${ver.id}【${$t('home.version.latestRelease')}】`
                   : idx === 0
                   ? `${ver.id}【${$t('home.version.latestSnapshot')}】`
@@ -95,8 +117,7 @@ function onUpdatedSelection() {
     <SsSelect
       v-model="fabricInstaller"
       @update:modelValue="(newVal: string) => {
-        (mainStore.world.version as FabricVersion).installer = newVal
-        onUpdatedSelection()
+        mainStore.world.version = buildFabricVer(fabricVer, newVal, fabricLoader)
       }"
       :options="
         prop.versionData.installers.map((installer, i) => {
@@ -119,8 +140,7 @@ function onUpdatedSelection() {
     <SsSelect
       v-model="fabricLoader"
       @update:modelValue="(newVal: string) => {
-        (mainStore.world.version as FabricVersion).loader = newVal
-        onUpdatedSelection()
+        mainStore.world.version = buildFabricVer(fabricVer, fabricInstaller, newVal)
       }"
       :options="
         prop.versionData.loaders.map((loader, i) => {

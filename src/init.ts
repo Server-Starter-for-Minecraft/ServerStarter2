@@ -49,6 +49,7 @@ export async function initWindow() {
     });
 
     worldStore.worldList = fromEntries(localWorlds.map((w) => [w.id, w]));
+    mainStore.syncBackWorld();
     localWorlds.forEach((w) => consoleStore.initTab(w.id));
   }
 

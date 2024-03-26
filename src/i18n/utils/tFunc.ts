@@ -24,6 +24,9 @@ const translationArgs: Record<string, FullKeys<MessageSchema>> = {
   fabric: 'home.serverType.fabric',
   file: 'general.file',
   directory: 'general.directory',
+  datapack: 'additionalContents.datapack',
+  plugin: 'additionalContents.plugin',
+  mod: 'additionalContents.mod',
 };
 
 type tFunc = (key: string, args?: Record<string, unknown> | string) => string;

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { checkError } from 'src/components/Error/Error';
 import { recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
@@ -34,6 +35,21 @@ export const useMainStore = defineStore('mainStore', {
 
       return returnWorld;
     },
+    /**
+     * バージョンダウンの警告ダイアログのような，
+     * 以前のデータとの比較が必要な処理への利用を想定する
+     */
+    worldBack(state): WorldEdited | undefined {
+      const worldStore = useWorldStore();
+      return worldStore.worldListBack[state.selectedWorldID];
+    },
+    worldIP(state) {
+      const worldStore = useWorldStore();
+      return worldStore.worldIPs[state.selectedWorldID];
+    },
+    /**
+     * ワールド一覧に描画するワールドリスト，
+     */
     showingWorldList(state) {
       const worldStore = useWorldStore();
       // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，３項演算子によるNullチェックも付加
@@ -121,15 +137,19 @@ export const useMainStore = defineStore('mainStore', {
       const res = await (duplicateWorldID
         ? createrDuplicate(duplicateWorldID)
         : createrNew());
+      let returnWorldID: WorldID | undefined;
       checkError(
         res,
         (world) => {
+          returnWorldID = world.id;
           worldStore.worldList[world.id] = toRaw(world);
           this.setWorld(world);
           consoleStore.initTab(world.id);
         },
         (e) => tError(e)
       );
+
+      return returnWorldID;
     },
     /**
      * 選択されているワールドを削除する
@@ -174,6 +194,29 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       worldStore.removeWorldIP(worldID);
     },
+    /**
+     * 最新のワールドデータをworldBackに同期する
+     *
+     * 同期することで，「ワールド起動前のデータ」を更新する
+     */
+    syncBackWorld(worldID?: WorldID) {
+      const worldStore = useWorldStore();
+      if (worldID) {
+        worldStore.worldListBack[worldID] = deepcopy(
+          worldStore.worldList[worldID]
+        );
+      } else {
+        worldStore.worldListBack = deepcopy(worldStore.worldList);
+      }
+    },
+    /**
+     * ワールドが起動されたときに必要な処理を実行する
+     *
+     * - worldBackのデータを更新
+     */
+    startedWorld(worldID: WorldID) {
+      this.syncBackWorld(worldID);
+    },
   },
 });
 
@@ -183,6 +226,7 @@ export const useMainStore = defineStore('mainStore', {
 export const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
+      worldListBack: {} as Record<WorldID, WorldEdited>,
       worldList: {} as Record<WorldID, WorldEdited>,
       worldIPs: {} as Record<WorldID, string>,
     };

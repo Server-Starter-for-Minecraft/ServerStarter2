@@ -100,8 +100,11 @@ async function duplicateWorld() {
       icon: mainStore.world.avater_path,
       worldName: mainStore.world.name,
       versionName: mainStore.world.version.id,
-      importFunc: async () =>
-        await mainStore.createNewWorld(mainStore.world.id),
+      importFunc: async () => {
+        const newWorldID = await mainStore.createNewWorld(mainStore.world.id);
+        // ワールドの複製は新規ワールドとみなさない
+        if (newWorldID) mainStore.syncBackWorld(newWorldID);
+      },
     } as CustomMapImporterProp,
   }).onOk(() => {
     move2HomeTop();
