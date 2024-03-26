@@ -26,6 +26,8 @@ const mainStore = useMainStore();
 const isMini = () =>
   sysStore.systemSettings.user.drawerWidth < prop.miniChangeWidth;
 
+const isSearching = () => (mainStore.worldSearchText ?? '') !== '';
+
 type ContentData = {
   icon: string;
   i18nKey: string;
@@ -138,6 +140,7 @@ async function introduceBackup() {
     flat
     square
     fab-mini
+    :disable="isSearching()"
     menu-anchor="bottom right"
     menu-self="bottom left"
     dropdown-icon="keyboard_arrow_right"
