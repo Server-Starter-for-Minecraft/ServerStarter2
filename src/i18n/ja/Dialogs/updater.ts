@@ -3,5 +3,5 @@ export const jaUpdater = {
   btn: 'ダウンロードページを開く',
   desc: '\
     ServerStarter2の最新版({newVer})が新しくリリースされました！\n\
-    最新のインストーラーをダウンロードし，新しいServerStarter2を手に入れましょう！'
+    最新のインストーラーをダウンロードし，新しいServerStarter2を手に入れましょう！',
 };

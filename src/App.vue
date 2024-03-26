@@ -76,9 +76,10 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
       os: os,
       newVer: newVer,
     } as UpdateNotifyProp,
-  })
-  .onOk(() => {
-    window.API.sendOpenBrowser('https://server-starter-for-minecraft.github.io')
+  }).onOk(() => {
+    window.API.sendOpenBrowser(
+      'https://server-starter-for-minecraft.github.io'
+    );
   });
 });
 
