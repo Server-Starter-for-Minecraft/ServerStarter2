@@ -10,6 +10,7 @@ import { jaProgress } from './Pages/World/progress';
 import { jaMainLayout } from './Pages/mainLayout';
 import { jaIcon } from './Dialogs/icon';
 import { jaShareWorld } from './Pages/World/shareWorld';
+import { jaUpdater } from './Dialogs/updater';
 import { jaWelcome } from './Dialogs/welcome';
 import { jaAutoShutdown } from './Dialogs/autoshutdown';
 import { jaGeneral } from './Other/general';
@@ -33,6 +34,7 @@ export const ja = {
   mainLayout: jaMainLayout,
   icon: jaIcon,
   shareWorld: jaShareWorld,
+  updater: jaUpdater,
   welcome: jaWelcome,
   autoshutdown: jaAutoShutdown,
   eulaDialog: jaEulaDialog,

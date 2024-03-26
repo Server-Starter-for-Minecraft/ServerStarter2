@@ -3,6 +3,9 @@ import { createAppEvent } from './event';
 /** electronのwillQuitイベント(すべてのwindowが閉じた後の処理)で発火されるイベント */
 export const onQuit = createAppEvent();
 
+/** electronのwillQuitイベント(すべてのwindowが閉じた後の処理)で発火されるイベント */
+export const onReadyWindow = createAppEvent();
+
 /**
  * 非同期処理の途中でアプリケーションが閉じられても、処理の終了を保証する
  *

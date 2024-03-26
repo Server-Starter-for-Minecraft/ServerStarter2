@@ -1,4 +1,9 @@
-export type OsPlatform = 'linux' | 'mac-os' | 'mac-os-arm64' | 'windows-x64';
+export type OsPlatform =
+  | 'debian'
+  | 'redhat'
+  | 'mac-os'
+  | 'mac-os-arm64'
+  | 'windows-x64';
 
 function getOsPlatform(): OsPlatform {
   const platform = process.platform;
@@ -15,9 +20,35 @@ function getOsPlatform(): OsPlatform {
 
     //linux
     case 'linux':
-      return 'linux';
+      const linuxType = getLinuxType();
+      switch (linuxType) {
+        case 'debian':
+          return 'debian';
+        case 'redhat':
+          return 'redhat';
+        default:
+          throw new Error('unknown linux distribution');
+      }
     default:
       throw new Error(`${platform} is unavailable os platform`);
+  }
+}
+
+import { execSync } from 'child_process';
+
+function getLinuxType() {
+  // Execute the command to check the distribution
+  const command = 'cat /etc/os-release | grep "ID_LIKE"';
+
+  const outstr = execSync(command, { encoding: 'utf-8' });
+
+  // Parse the output to determine the Linux type
+  if (outstr.includes('debian')) {
+    return 'debian';
+  } else if (outstr.includes('rhel')) {
+    return 'redhat';
+  } else {
+    return undefined;
   }
 }
 

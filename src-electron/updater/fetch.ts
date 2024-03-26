@@ -32,7 +32,8 @@ export async function getLatestRelease(
 
 function parseAssets(assets: ReleaseAsset[], osPLatform: OsPlatform) {
   const suffix = {
-    linux: '.AppImage',
+    redhat: '.rpm',
+    debian: '.deb',
     'mac-os': '.pkg',
     'mac-os-arm64': '.pkg',
     'windows-x64': '.msi',

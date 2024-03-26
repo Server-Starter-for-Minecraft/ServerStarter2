@@ -25,6 +25,7 @@ import {
   RemoteWorld,
 } from '../schema/remote';
 import { ServerStartNotification } from '../schema/server';
+import { OsPlatform } from '../util/os';
 
 /**
  * ## APIの利用方法
@@ -72,6 +73,9 @@ export interface API extends IAPI {
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
+
+    /** アップデートがある際の通知 */
+    NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
