@@ -12,17 +12,6 @@ defineProps<Prop>();
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-
-/**
- * 選択中のワールドが検索によって消滅した場合に，表示中のワールドを割り当てる
- */
-function updateSelectedWorld() {
-  const wList = mainStore.showingWorldList;
-  const wListKeys = keys(wList);
-  if (!wListKeys.includes(mainStore.world.id) && wListKeys.length > 0) {
-    mainStore.setWorld(values(wList).reverse()[0]);
-  }
-}
 </script>
 
 <template>
@@ -36,7 +25,6 @@ function updateSelectedWorld() {
     <q-item-section>
       <SsInput
         v-model="mainStore.worldSearchText"
-        @update:model-value="updateSelectedWorld"
         :label="$t('mainLayout.searchWorld')"
         :debounce="100"
       />
