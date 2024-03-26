@@ -11,6 +11,7 @@ import { enUSProgress } from './Pages/World/progress';
 import { enUSMainLayout } from './Pages/mainLayout';
 import { enUSIcon } from './Dialogs/icon';
 import { enUSShareWorld } from './Pages/World/shareWorld';
+import { enUSUpdater } from './Dialogs/updater';
 import { enWelcome } from './Dialogs/welcome';
 import { enAutoShutdown } from './Dialogs/autoshutdown';
 import { enUSGeneral } from './Other/general';
@@ -34,6 +35,7 @@ export const enUS: MessageSchema = {
   mainLayout: enUSMainLayout,
   icon: enUSIcon,
   shareWorld: enUSShareWorld,
+  updater: enUSUpdater,
   welcome: enWelcome,
   autoshutdown: enAutoShutdown,
   eulaDialog: enUSEulaDialog,
