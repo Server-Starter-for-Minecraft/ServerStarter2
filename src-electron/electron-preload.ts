@@ -91,6 +91,7 @@ const api: FrontAPI = {
   onProgress: on('Progress'),
   onAddConsole: on('AddConsole'),
   onError: on('Error'),
+  onNotifySystemUpdate: on('NotifySystemUpdate'),
 
   // HANDLE
   handleNotifySystemUpdate: send('NotifySystemUpdate'),
