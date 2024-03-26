@@ -68,6 +68,10 @@ export type DataErrors = {
       path: string;
       message: string;
     }>;
+
+    parse: {
+      invalidJson: ErrorMessageContent<{ path: string }>;
+    };
   };
 
   // githubAPI周りのエラー

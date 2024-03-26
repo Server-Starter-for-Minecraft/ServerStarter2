@@ -5,11 +5,7 @@ import {
   WorldContainer,
   WorldName,
 } from 'app/src-electron/schema/brands';
-import {
-  WorldDirectoryTypes,
-  WorldSettings,
-  serverJsonFile,
-} from './files/json';
+import { serverJsonFile } from './files/json';
 import { serverIconFile } from './files/icon';
 import { serverPropertiesFile } from './files/properties';
 import { Ops, serverOpsFile } from './files/ops';
@@ -34,6 +30,9 @@ import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { importCustomMap } from './cusomMap';
 import { pullRemoteWorld } from '../remote/remote';
 import { GroupProgressor } from '../progress/progress';
+import { WorldSettings$1 } from '../file/schama/worldSetting';
+import { Remote$1 } from '../file/schama/remote';
+import { Remote } from 'app/src-electron/schema/remote';
 
 function toPlayers(ops: Ops, whitelist: Whitelist): PlayerSetting[] {
   const map: Record<PlayerUUID, PlayerSetting> = {};
@@ -254,7 +253,7 @@ export async function saveLocalFiles(
 }
 
 export function constructWorldSettings(world: World | WorldEdited) {
-  const worldSettings: WorldSettings = {
+  const worldSettings: WorldSettings$1 = {
     memory: world.memory,
     javaArguments: world.javaArguments,
     version: world.version,
