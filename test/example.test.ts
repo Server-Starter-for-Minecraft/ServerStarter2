@@ -1,7 +1,7 @@
 // ここ読めばぜんぶ書いてあるのでよもう
 // https://jestjs.io/ja/docs/expect
 
-describe('example', async () => {
+describe('example', () => {
   test.skip('example test 01', () => {
     // toBe 参照比較
     // toEqual 構造比較
