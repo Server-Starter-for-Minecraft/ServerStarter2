@@ -27,6 +27,7 @@ export class MockChildProcess extends EventEmitter implements ChildProcess {
   killed: boolean;
   pid?: number | undefined;
 
+  /** 用途不明 */
   get connected(): boolean {
     throw new Error('not implemented');
   }
@@ -34,10 +35,15 @@ export class MockChildProcess extends EventEmitter implements ChildProcess {
   exitCode: number | null;
   signalCode: NodeJS.Signals | null;
 
-  /** TODO: 要検証 */
-  spawnargs: string[];
-  /** TODO: 要検証 */
-  spawnfile: string;
+  /** 環境によって変わるので使用しないこと */
+  get spawnargs(): string[] {
+    throw new Error('not implemented');
+  }
+
+  /** 環境によって変わるので使用しないこと */
+  get spawnfile(): string {
+    throw new Error('not implemented');
+  }
 
   cmd: string;
   args: Array<string>;
@@ -233,7 +239,7 @@ if (import.meta.vitest) {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    const mockNode = () =>
+  const mockNode = () =>
     new MockChildProcess('node', ['-v'], {
       shell: true,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -243,20 +249,9 @@ if (import.meta.vitest) {
   test.each(cases)('exit', async (genProcess) => {
     const process = genProcess();
 
-    process.on('close', (code, signal) => {
-      console.log(
-        `child process terminated due to receipt of signal ${code} ${signal}`
-      );
-    });
-
     process.stdout.on('data', (a: Buffer) => {
       console.log('message', a.toString());
     });
-
-    // shell: true の場合 [ "cmd.exe", "/d", "/s", "/c", "\"node -v\""]
-    expect(process.spawnargs).toEqual(['node', '-v']);
-    // shell: true の場合 cmd.exe
-    expect(process.spawnfile).toBe('node');
 
     expect(process.exitCode).toBe(null);
     expect(process.signalCode).toBe(null);
