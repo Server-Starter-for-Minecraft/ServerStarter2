@@ -14,6 +14,12 @@ type ChildProcessOptions =
   | SpawnOptionsWithoutStdio
   | SpawnOptionsWithStdioTuple<Stdio, Stdio, Stdio>;
 
+type ChildProcessConfig = {
+  command: string;
+  args?: readonly string[];
+  options?: ChildProcessOptions;
+};
+
 export type CommandFilter =
   | undefined
   | string
@@ -30,6 +36,15 @@ export type OptionsFilter =
   | Partial<ChildProcessOptions>
   | ((options: ChildProcessOptions) => boolean);
 
+export type ConfigFilter =
+  | undefined
+  | {
+      command?: CommandFilter;
+      args?: ArgsFilter;
+      options?: OptionsFilter;
+    }
+  | ((config: ChildProcessConfig) => boolean);
+
 export function normalizeCommandFilter(
   config: CommandFilter
 ): (command: string) => boolean {
@@ -42,7 +57,7 @@ export function normalizeCommandFilter(
 
 export function normalizeArgsFilter(
   config: ArgsFilter
-): (command: string[] | undefined) => boolean {
+): (command: readonly string[] | undefined) => boolean {
   if (config === undefined) return (_) => true;
   if (typeof config === 'function') return config;
   if (Array.isArray(config)) {
@@ -69,6 +84,22 @@ export function normalizeOptionsFilter(
   if (typeof config === 'object') {
     return (opt) =>
       Object.entries(config).every(([k, v]) => isDeepStrictEqual(opt?.[k], v));
+  }
+  throw new Error(`unknowen arg config value: '${config}'`);
+}
+
+export function normalizeConfigFilter(
+  config: ConfigFilter
+): (options: ChildProcessConfig) => boolean {
+  if (config === undefined) return (_) => true;
+  if (typeof config === 'function') return config;
+  if (typeof config === 'object') {
+    const cmd = normalizeCommandFilter(config.command);
+    const args = normalizeArgsFilter(config.args);
+    const options = normalizeOptionsFilter(config.options);
+    return (conf) => {
+      return cmd(conf.command) && args(conf.args) && options(conf.options);
+    };
   }
   throw new Error(`unknowen arg config value: '${config}'`);
 }
@@ -188,6 +219,115 @@ if (import.meta.vitest) {
         filter({
           cwd: 'foo',
           stdio: ['pipe', 'pipe', 'ignore'],
+        })
+      ).toEqual(false);
+    });
+  });
+  describe('normalizeConfigFilter', () => {
+    const allConfig = {
+      command: 'foo',
+      args: ['bar', 'buz'],
+      options: {
+        cwd: 'quax',
+        stdio: ['pipe', 'pipe', 'pipe'] as [Stdio, Stdio, Stdio],
+      },
+    };
+    test('undefined', () => {
+      const filter = normalizeConfigFilter(undefined);
+      expect(filter(allConfig)).toEqual(true);
+    });
+    test('object', () => {
+      const filter = normalizeConfigFilter({
+        command: 'foo',
+        args: ['bar', 'buz'],
+        options: {
+          cwd: 'quax',
+          stdio: ['pipe', 'pipe', 'pipe'],
+        },
+      });
+      expect(filter(allConfig)).toEqual(true);
+      expect(
+        filter({
+          command: 'foo',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(true);
+      expect(
+        filter({
+          command: 'FOO',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(false);
+      expect(
+        filter({
+          command: 'foo',
+          args: ['BAR', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(false);
+      expect(
+        filter({
+          command: 'foo',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'QUAX',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(false);
+      expect(
+        filter({
+          command: 'foo',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['ignore', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(false);
+    });
+    test('function', () => {
+      const filter = normalizeConfigFilter((x) => x.command.startsWith('foo'));
+      expect(filter(allConfig)).toEqual(true);
+      expect(
+        filter({
+          command: 'foo',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(true);
+      expect(
+        filter({
+          command: 'foox',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
+        })
+      ).toEqual(true);
+      expect(
+        filter({
+          command: 'xfoo',
+          args: ['bar', 'buz'],
+          options: {
+            cwd: 'quax',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          },
         })
       ).toEqual(false);
     });

@@ -5,7 +5,7 @@ import type {
   StdioPipe,
   StdioNull,
 } from 'child_process';
-import { ArgsFilter, CommandFilter } from './filter';
+import { ArgsFilter, CommandFilter, OptionsFilter } from './filter';
 
 type Stdio = StdioPipe | StdioNull;
 
@@ -16,7 +16,7 @@ type ChildProcessOptions =
 type ChildProcessMockCaseConfig = {
   command?: CommandFilter;
   args?: ArgsFilter;
-  options?: ChildProcessOptions | ((options: ChildProcessOptions) => boolean);
+  options?: OptionsFilter;
 };
 
 type ChildProcessMockCaseParams = {
