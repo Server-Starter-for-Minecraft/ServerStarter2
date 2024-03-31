@@ -1,50 +1,40 @@
-import type {
-  spawn as _spawn,
-  SpawnOptionsWithStdioTuple,
-  SpawnOptionsWithoutStdio,
-  StdioPipe,
-  StdioNull,
-} from 'child_process';
-import { ArgsFilter, CommandFilter, OptionsFilter } from './filter';
+import type { spawn as _spawn } from 'child_process';
+import {
+  ChildProcessConfig,
+  ConfigFilter,
+  normalizeConfigFilter,
+} from './filter';
+import { Readable, Writable } from 'stream';
 
-type Stdio = StdioPipe | StdioNull;
-
-type ChildProcessOptions =
-  | SpawnOptionsWithoutStdio
-  | SpawnOptionsWithStdioTuple<Stdio, Stdio, Stdio>;
-
-type ChildProcessMockCaseConfig = {
-  command?: CommandFilter;
-  args?: ArgsFilter;
-  options?: OptionsFilter;
-};
-
-type ChildProcessMockCaseParams = {
-  command: string;
-  args?: readonly string[];
-  options?: ChildProcessOptions;
+type StdIO = {
+  stdin: Readable;
+  stdout: Writable;
+  stderr: Writable;
 };
 
 class ChildProcessMockCase {
-  config:
-    | ChildProcessMockCaseConfig
-    | ((params: ChildProcessMockCaseParams) => boolean);
+  configFilter: (config: ChildProcessConfig) => boolean;
+  process: (config: ChildProcessConfig, io: StdIO) => Promise<number>;
 
   constructor(
-    config:
-      | ChildProcessMockCaseConfig
-      | ((params: ChildProcessMockCaseParams) => boolean)
+    config: ConfigFilter,
+    process: (config: ChildProcessConfig, io: StdIO) => Promise<number>
   ) {
-    if (typeof config !== 'function') {
-      config;
-    }
-    this.config = config;
+    this.configFilter = normalizeConfigFilter(config);
+    this.process = process;
   }
 }
 
-new ChildProcessMockCase({
-  command: 'java',
-});
+new ChildProcessMockCase(
+  {
+    command: 'java',
+  },
+  async (_, io) => {
+    io.stderr.write('say hello');
+    io.stdout.write('say hello');
+    return 0;
+  }
+);
 
 export const spawn: typeof _spawn = (...params: Params) => {
   const { command, args, option } = parseParams(...params);

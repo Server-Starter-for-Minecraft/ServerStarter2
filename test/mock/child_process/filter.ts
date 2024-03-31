@@ -7,14 +7,14 @@ import type {
 } from 'child_process';
 import { isDeepStrictEqual } from 'util';
 
-type Stdio = StdioPipe | StdioNull;
+export type Stdio = StdioPipe | StdioNull;
 
-type ChildProcessOptions =
+export type ChildProcessOptions =
   | undefined
   | SpawnOptionsWithoutStdio
   | SpawnOptionsWithStdioTuple<Stdio, Stdio, Stdio>;
 
-type ChildProcessConfig = {
+export type ChildProcessConfig = {
   command: string;
   args?: readonly string[];
   options?: ChildProcessOptions;
