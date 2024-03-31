@@ -1,4 +1,4 @@
-import type { spawn as _spawn } from 'child_process';
+import { type spawn as _spawn } from 'child_process';
 import {
   ChildProcessConfig,
   ConfigFilter,
@@ -23,9 +23,13 @@ class ChildProcessMockCase {
     this.configFilter = normalizeConfigFilter(config);
     this.process = process;
   }
+
+  match(config: ChildProcessConfig) {
+    return this.configFilter(config);
+  }
 }
 
-new ChildProcessMockCase(
+const a = new ChildProcessMockCase(
   {
     command: 'java',
   },
@@ -36,20 +40,17 @@ new ChildProcessMockCase(
   }
 );
 
-export const spawn: typeof _spawn = (...params: Params) => {
-  const { command, args, option } = parseParams(...params);
-
-  switch (command) {
-    case 'a':
-      break;
-    default:
-      throw new Error(`unknown process '${command}'`);
-  }
+type ChildProcessMockOptions = {
+  /** 条件に当てはまる最初のケースが使用される */
+  mockCases: ChildProcessMockCase[];
 };
 
-if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  test('', () => {
-    expect(() => spawn('kusa')).toThrow();
-  });
-}
+const getChildProcessMock = (options: ChildProcessMockOptions) => {
+  const findCase = (config: ChildProcessConfig) => {
+    const mockCase = options.mockCases.find((c) => c.match(config));
+    if (mockCase === undefined) {
+      throw new Error('mock case not found');
+    }
+  };
+  return {};
+};
