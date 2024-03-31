@@ -22,7 +22,7 @@ https://vitest.dev
 
 `src-electron/util/zip.ts`に例があるので参考まで。
 
-`.ts`内で`test`/`describe`と打つと In Source Testing のスニペットが出るので活用してください。
+`.ts`内で`test`と打つと In Source Testing のスニペットが出るので活用してください。
 
 ### その他とテスト
 
