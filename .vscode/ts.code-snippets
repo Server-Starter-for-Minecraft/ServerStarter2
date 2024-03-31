@@ -2,10 +2,26 @@
   "test": {
     "prefix": "test",
     "body": [
+      "/** In Source Testing */",
       "if (import.meta.vitest) {",
       "  const { test, expect } = import.meta.vitest;",
-      "    test($1,() => {",
+      "  test('$1',() => {",
       "    $2",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
+  },
+  "describe": {
+    "prefix": "describe",
+    "body": [
+      "/** In Source Testing */",
+      "if (import.meta.vitest) {",
+      "  const { describe, test, expect } = import.meta.vitest;",
+      "  describe('$1',() => {",
+      "    test('$2',() => {",
+      "      $3",
+      "    })",
       "  })",
       "}"
     ],
