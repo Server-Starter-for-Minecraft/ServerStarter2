@@ -8,6 +8,10 @@ import type {
 import { isDeepStrictEqual } from 'util';
 
 export type Stdio = StdioPipe | StdioNull;
+export type OptionsFilter =
+  | undefined
+  | Partial<ChildProcessOptions>
+  | ((options: ChildProcessOptions) => boolean);
 
 export type ChildProcessOptions =
   | undefined
@@ -31,10 +35,6 @@ export type ArgsFilter =
   | readonly (string | RegExp)[]
   | ((args: readonly string[] | undefined) => boolean);
 
-export type OptionsFilter =
-  | undefined
-  | Partial<ChildProcessOptions>
-  | ((options: ChildProcessOptions) => boolean);
 
 export type ConfigFilter =
   | undefined
