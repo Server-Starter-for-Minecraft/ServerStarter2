@@ -47,7 +47,7 @@ function getLinuxType() {
     } else if (outstr.includes('rhel')) {
       return 'redhat';
     } else {
-      return undefined;
+      throw new Error('unknown linux distribution');
     }
   } catch {
     // ID_LIKEがとれなかったらIDをとってくる
@@ -68,6 +68,7 @@ function getLinuxType() {
         case 'ol': // Oracle Linux
         case 'amzn': // Amazon Linux
         case 'almalinux': // Almalinux
+        case 'fedora': // fedora
           return 'redhat';
         case 'ubuntu': // Ubuntu
           return 'debian';
