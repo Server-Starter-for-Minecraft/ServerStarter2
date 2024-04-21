@@ -76,8 +76,10 @@ async function createWindow() {
   // フロントエンドとバックエンドの呼び出し処理をリンク
   setupIPC(() => mainWindow);
 
-  // windowの準備が終わったのでイベント発火
-  await onReadyWindow.invoke();
+  // windowの準備が終わったらイベントを発火
+  mainWindow.on('ready-to-show', () => {
+    onReadyWindow.invoke();
+  });
 }
 
 app.whenReady().then(createWindow);
