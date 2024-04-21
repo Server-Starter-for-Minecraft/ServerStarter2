@@ -19,3 +19,7 @@ export async function assertComplete<T>(promise: Promise<T>) {
   dispatch();
   return result;
 }
+
+export function readyWindow() {
+  onReadyWindow.invoke();
+}

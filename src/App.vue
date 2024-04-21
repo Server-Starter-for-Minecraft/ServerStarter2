@@ -171,6 +171,9 @@ function setSubscribe() {
 
   setPlayerSearchSubscriber(playerStore);
 }
+
+// App.vueでの初期化処理がすべて終わったことを通知
+window.API.sendReadyWindow();
 </script>
 
 <template>
