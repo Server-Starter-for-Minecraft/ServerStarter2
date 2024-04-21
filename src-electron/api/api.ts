@@ -103,6 +103,9 @@ export interface API extends IAPI {
 
     /** pathをエクスプローラーで開く */
     OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
+
+    /** mainWindowが準備できた(App.vueのセットアップ処理が終わった)ときに発火 */
+    ReadyWindow: () => void;
   };
   invokeWindowToMain: {
     /** 実行中のサーバーを再起動 */

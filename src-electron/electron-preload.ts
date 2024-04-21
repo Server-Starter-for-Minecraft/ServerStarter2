@@ -102,6 +102,7 @@ const api: FrontAPI = {
   sendCommand: send('Command'),
   sendOpenBrowser: send('OpenBrowser'),
   sendOpenFolder: send('OpenFolder'),
+  sendReadyWindow: send('ReadyWindow'),
 
   // INVOKE
   invokeReboot: invoke('Reboot'),

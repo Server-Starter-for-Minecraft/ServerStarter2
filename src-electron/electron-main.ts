@@ -4,7 +4,7 @@ import { app, BrowserWindow, nativeTheme } from 'electron';
 import * as path from 'path';
 import * as os from 'os';
 import { setupIPC } from './ipc/setup';
-import { onQuit, onReadyWindow } from './lifecycle/lifecycle';
+import { onQuit } from './lifecycle/lifecycle';
 import { setServerStarterApp } from './lifecycle/exit';
 import { update } from './updater/updater';
 import { getSystemSettings, setSystemSettings } from './core/stores/system';
@@ -75,11 +75,6 @@ async function createWindow() {
 
   // フロントエンドとバックエンドの呼び出し処理をリンク
   setupIPC(() => mainWindow);
-
-  // windowの準備が終わったらイベントを発火
-  mainWindow.on('ready-to-show', () => {
-    onReadyWindow.invoke();
-  });
 }
 
 app.whenReady().then(createWindow);
