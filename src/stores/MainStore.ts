@@ -3,15 +3,17 @@ import { defineStore } from 'pinia';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { checkError } from 'src/components/Error/Error';
-import { recordKeyFillter, recordValueFilter } from 'src/scripts/objFillter';
+import { recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
 import { isError, isValid } from 'src/scripts/error';
 import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
-import { tError } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 import { values } from 'src/scripts/obj';
+import { zen2han } from 'src/scripts/textUtils';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -32,6 +34,14 @@ export const useMainStore = defineStore('mainStore', {
 
       return returnWorld;
     },
+    /**
+     * バージョンダウンの警告ダイアログのような，
+     * 以前のデータとの比較が必要な処理への利用を想定する
+     */
+    worldBack(state): WorldEdited | undefined {
+      const worldStore = useWorldStore();
+      return worldStore.worldListBack[state.selectedWorldID];
+    },
     worldIP(state) {
       const worldStore = useWorldStore();
       return worldStore.worldIPs[state.selectedWorldID];
@@ -44,12 +54,25 @@ export const useMainStore = defineStore('mainStore', {
      */
     searchWorld(text: string) {
       const worldStore = useWorldStore();
+      const editText = zen2han(text).trim().toLowerCase();
 
-      if (text !== '') {
-        return recordKeyFillter(
-          worldStore.sortedWorldList,
-          (wId) => worldStore.worldList[wId].name.match(text) !== null
-        );
+      if (editText !== '') {
+        // スペース区切りのAND検索
+        let returnWorlds = worldStore.sortedWorldList;
+        editText.split(' ').forEach((t) => {
+          returnWorlds = recordValueFilter(returnWorlds, (w) => {
+            // ワールド名称に一致
+            const hitName = w.name.toLowerCase().match(t) !== null;
+            // サーバー種類に一致
+            const hitVerType =
+              w.version.type.match(t) !== null ||
+              $T(`home.serverType.${w.version.type}`).match(t) !== null;
+            // バージョン名に一致
+            const hitVer = w.version.id.match(t) !== null;
+            return hitName || hitVerType || hitVer;
+          });
+        });
+        return returnWorlds;
       }
       return worldStore.sortedWorldList;
     },
@@ -104,15 +127,19 @@ export const useMainStore = defineStore('mainStore', {
       const res = await (duplicateWorldID
         ? createrDuplicate(duplicateWorldID)
         : createrNew());
+      let returnWorldID: WorldID | undefined;
       checkError(
         res,
         (world) => {
+          returnWorldID = world.id;
           worldStore.worldList[world.id] = toRaw(world);
           this.setWorld(world);
           consoleStore.initTab(world.id);
         },
         (e) => tError(e)
       );
+
+      return returnWorldID;
     },
     /**
      * 選択されているワールドを削除する
@@ -157,6 +184,29 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       worldStore.removeWorldIP(worldID);
     },
+    /**
+     * 最新のワールドデータをworldBackに同期する
+     *
+     * 同期することで，「ワールド起動前のデータ」を更新する
+     */
+    syncBackWorld(worldID?: WorldID) {
+      const worldStore = useWorldStore();
+      if (worldID) {
+        worldStore.worldListBack[worldID] = deepcopy(
+          worldStore.worldList[worldID]
+        );
+      } else {
+        worldStore.worldListBack = deepcopy(worldStore.worldList);
+      }
+    },
+    /**
+     * ワールドが起動されたときに必要な処理を実行する
+     *
+     * - worldBackのデータを更新
+     */
+    startedWorld(worldID: WorldID) {
+      this.syncBackWorld(worldID);
+    },
   },
 });
 
@@ -166,6 +216,7 @@ export const useMainStore = defineStore('mainStore', {
 export const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
+      worldListBack: {} as Record<WorldID, WorldEdited>,
       worldList: {} as Record<WorldID, WorldEdited>,
       worldIPs: {} as Record<WorldID, string>,
     };

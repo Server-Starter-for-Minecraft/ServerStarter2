@@ -101,6 +101,24 @@ function addContent2World(content: NewFileData<T>) {
 }
 
 /**
+ * 保存済みデータのフォルダを開く
+ */
+async function openSavedFolder() {
+  const path = await window.API.invokeGetWorldPaths(
+    mainStore.world.id,
+    `${prop.contentType}s`
+  );
+
+  checkError(
+    path,
+    async (p) => {
+      const res = await window.API.sendOpenFolder(p, true);
+      checkError(res, undefined, (e) => tError(e));
+    },
+    (e) => tError(e)
+  );
+}
+/**
  * キャッシュフォルダを開く
  */
 async function openCacheFolder() {
@@ -117,18 +135,34 @@ async function openCacheFolder() {
     <h1 class="q-py-xs">
       {{
         $t('additionalContents.management', {
-          type: $t(`additionalContents.${prop.contentType}`),
+          type: $t(`additionalContents.${contentType}`),
         })
       }}
     </h1>
 
-    <span class="text-caption">
-      {{
-        $t('additionalContents.installed', {
-          type: $t(`additionalContents.${prop.contentType}`),
-        })
-      }}
-    </span>
+    <div class="row justify-between">
+      <span class="text-caption">
+        {{
+          $t('additionalContents.installed', {
+            type: $t(`additionalContents.${contentType}`),
+          })
+        }}
+      </span>
+      <q-btn
+        dense
+        flat
+        :label="
+          $t('additionalContents.openSaveLocation', {
+            type: $t(`additionalContents.${contentType}`),
+          })
+        "
+        icon="folder"
+        color="grey"
+        size=".7rem"
+        @click="openSavedFolder"
+        class="folderBtn"
+      />
+    </div>
     <p
       v-if="
         consoleStore.status(mainStore.world.id) !== 'Stop' &&
@@ -152,7 +186,7 @@ async function openCacheFolder() {
         <p class="q-my-lg text-center text-h5" style="opacity: 0.6">
           {{
             $t('additionalContents.notInstalled', {
-              type: $t(`additionalContents.${prop.contentType}`),
+              type: $t(`additionalContents.${contentType}`),
             })
           }}
         </p>
@@ -165,7 +199,7 @@ async function openCacheFolder() {
       <span class="text-caption">
         {{
           $t('additionalContents.add', {
-            type: $t(`additionalContents.${prop.contentType}`),
+            type: $t(`additionalContents.${contentType}`),
           })
         }}
       </span>
@@ -173,8 +207,8 @@ async function openCacheFolder() {
         dense
         flat
         :label="
-          $t('additionalContents.openSaveLocation', {
-            type: $t(`additionalContents.${prop.contentType}`),
+          $t('additionalContents.openAllSaveLocation', {
+            type: $t(`additionalContents.${contentType}`),
           })
         "
         icon="folder"
@@ -215,7 +249,7 @@ async function openCacheFolder() {
       </div>
       <div
         v-for="item in getNewContents(
-          mainStore.world.additional[`${prop.contentType}s`]
+          mainStore.world.additional[`${contentType}s`]
         )"
         :key="item.name"
       >

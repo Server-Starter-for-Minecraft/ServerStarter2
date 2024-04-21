@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia';
+import {
+  AllFileData,
+  DatapackData,
+  ModData,
+  PluginData,
+} from 'app/src-electron/schema/filedata';
 import { useMainStore } from '../MainStore';
 import { isContentsExists } from 'src/components/World/Contents/contentsPage';
+
+type Contents = DatapackData | ModData | PluginData;
 
 export const useContentsStore = defineStore('contentsStore', {
   state: () => {
@@ -20,6 +28,15 @@ export const useContentsStore = defineStore('contentsStore', {
         ? this.selectedTab
         : 'datapack';
       return this.selectedTab;
+    },
+    /**
+     * 当該コンテンツがワールド起動前に登録されたものか否かをチェック
+     */
+    isNewContents(contents: AllFileData<Contents>) {
+      const mainStore = useMainStore();
+      return !mainStore.worldBack?.additional[`${this.selectedTab}s`].find(
+        (c) => c.name === contents.name
+      );
     },
   },
 });

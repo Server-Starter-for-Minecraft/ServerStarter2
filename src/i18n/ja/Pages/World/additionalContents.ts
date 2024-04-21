@@ -7,9 +7,15 @@ export const jaAdditionalContents = {
   newInstall: '新規追加',
   add: '{type}を追加',
   notInstalled: '導入された{type}はありません',
-  openSaveLocation: '{type}の保存場所を開く',
+  openSaveLocation: '追加済みの{type}の保存場所を開く',
+  openAllSaveLocation: '全ての{type}の保存場所を開く',
   install: '導入',
   installFromZip: 'Zipから追加',
   installFromFolder: 'フォルダーから追加',
   needReboot: '変更を反映するにはサーバーの再起動が必要です',
+  deleteDialog: {
+    title: '{type}の削除',
+    desc: '起動履歴のあるワールドから{type}を削除する操作は，ワールドデータが破損する恐れがあります．<br>危険性を理解した上で削除しますか？',
+    okbtn: '危険性を理解して削除する',
+  },
 };
