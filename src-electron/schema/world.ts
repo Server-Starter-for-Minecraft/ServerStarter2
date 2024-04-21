@@ -109,9 +109,6 @@ export type WorldAdditionalEdited = {
 };
 
 export interface WorldEdited extends WorldBase {
-  /** カスタムマップを導入する場合 */
-  custom_map?: CustomMapData;
-
   /** データの取得元のリモート(同期はしない)
    * リモート版カスタムマップ的な感じ
    * 新規ワールドで既存リモートを読み込むときくらいにしか使わないと思う
