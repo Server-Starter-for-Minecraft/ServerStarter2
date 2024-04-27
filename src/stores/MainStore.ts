@@ -80,10 +80,6 @@ export const useMainStore = defineStore('mainStore', {
 
       return worldStore.sortedWorldList;
     },
-    worldIP(state) {
-      const worldStore = useWorldStore();
-      return worldStore.worldIPs[state.selectedWorldID];
-    },
   },
   actions: {
     /**
