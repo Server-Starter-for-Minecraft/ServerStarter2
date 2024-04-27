@@ -80,7 +80,7 @@ export const useMainStore = defineStore('mainStore', {
 
         // 選択中のワールドがリスト圏外になった場合は選択を解除
         if (!keys(returnWorlds).includes(state.selectedWorldID)) {
-          state.selectedWorldID = '' as WorldID
+          state.selectedWorldID = '' as WorldID;
         }
 
         return returnWorlds;

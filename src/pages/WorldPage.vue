@@ -7,7 +7,7 @@ import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 
 const router = useRouter();
 const mainStore = useMainStore();
-const isSelectSuggestMode = () => 
+const isSelectSuggestMode = () =>
   router.currentRoute.value.path.slice(0, 7) !== '/system' &&
   mainStore.selectedWorldID === '';
 const isNoContents = () =>
