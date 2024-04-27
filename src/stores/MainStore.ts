@@ -12,7 +12,7 @@ import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { values } from 'src/scripts/obj';
+import { keys, values } from 'src/scripts/obj';
 import { zen2han } from 'src/scripts/textUtils';
 
 export const useMainStore = defineStore('mainStore', {
@@ -30,8 +30,10 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       const returnWorld = worldStore.worldList[state.selectedWorldID];
 
-      // バージョンの更新（ワールドを選択し直すタイミングでバージョンの変更を反映）
-      state.selectedVersionType = returnWorld.version.type;
+      if (returnWorld !== void 0) {
+        // バージョンの更新（ワールドを選択し直すタイミングでバージョンの変更を反映）
+        state.selectedVersionType = returnWorld.version.type;
+      }
 
       return returnWorld;
     },
@@ -75,6 +77,12 @@ export const useMainStore = defineStore('mainStore', {
             return hitName || hitVerType || hitVer;
           });
         });
+
+        // 選択中のワールドがリスト圏外になった場合は選択を解除
+        if (!keys(returnWorlds).includes(state.selectedWorldID)) {
+          state.selectedWorldID = '' as WorldID
+        }
+
         return returnWorlds;
       }
 

@@ -7,6 +7,9 @@ import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 
 const router = useRouter();
 const mainStore = useMainStore();
+const isSelectSuggestMode = () => 
+  router.currentRoute.value.path.slice(0, 7) !== '/system' &&
+  mainStore.selectedWorldID === '';
 const isNoContents = () =>
   router.currentRoute.value.path.slice(0, 7) !== '/system' &&
   keys(mainStore.showingWorldList).length === 0;
@@ -15,7 +18,7 @@ const isNoContents = () =>
 <template>
   <div
     class="column full-width window-height"
-    :class="isNoContents() ? 'noContents' : ''"
+    :class="isNoContents() || isSelectSuggestMode() ? 'noContents' : ''"
   >
     <HeaderView />
     <SettingTabsView />
@@ -26,6 +29,9 @@ const isNoContents = () =>
   </div>
   <div v-if="isNoContents()" class="absolute-center text-h5">
     {{ $t('mainLayout.noWorld') }}
+  </div>
+  <div v-else-if="isSelectSuggestMode()" class="absolute-center text-h5">
+    {{ $t('mainLayout.selectWorld') }}
   </div>
 </template>
 
