@@ -33,6 +33,7 @@ import {
   validateRemoteSetting,
 } from '../core/remote/remote';
 import { readyWindow } from '../lifecycle/lifecycle';
+import { getWorldPaths } from '../core/world/paths';
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({
@@ -64,6 +65,8 @@ export const getBackListener = (
     RunWorld: runWorld,
 
     FetchLatestWorldLog: fetchLatestWorldLog,
+
+    GetWorldPaths: getWorldPaths,
 
     GetPlayer: getPlayer,
 

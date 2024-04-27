@@ -161,6 +161,22 @@ export interface API extends IAPI {
     FetchLatestWorldLog: (world: WorldID) => Promise<Failable<string[]>>;
 
     /**
+     * ワールドに関連するパスを取得する
+     *
+     * type
+     * - world: ワールドデータを保存している場所 ( worldフォルダの中 )
+     * - serverJar: サーバーJarのパス
+     * - datapacks: データパックフォルダのパス
+     * - plugins: プラグインフォルダのパス
+     * - mods: MODフォルダのパス
+     *
+     */
+    GetWorldPaths: (
+      world: WorldID,
+      type: 'world' | 'datapacks' | 'plugins' | 'mods'
+    ) => Promise<Failable<string>>;
+
+    /**
      * プレイヤーを名前またはUUIDで取得/検索する(完全一致のみ)
      * 検索したことのあるデータの取得は高速
      * 注:プレイヤーのスキンを得る唯一の方法

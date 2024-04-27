@@ -127,6 +127,8 @@ const api: FrontAPI = {
 
   invokeFetchLatestWorldLog: invoke('FetchLatestWorldLog'),
 
+  invokeGetWorldPaths: invoke('GetWorldPaths'),
+
   invokeGetPlayer: invoke('GetPlayer'),
 
   invokeGetVersions: invoke('GetVersions'),
