@@ -32,6 +32,7 @@ import {
   validateNewRemoteWorldName,
   validateRemoteSetting,
 } from '../core/remote/remote';
+import { readyWindow } from '../lifecycle/lifecycle';
 import { getWorldPaths } from '../core/world/paths';
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -40,6 +41,7 @@ export const getBackListener = (
     Command: runCommand,
     OpenBrowser: openBrowser,
     OpenFolder: openFolder,
+    ReadyWindow: readyWindow,
   },
   handle: {
     Reboot: reboot,

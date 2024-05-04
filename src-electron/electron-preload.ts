@@ -91,8 +91,10 @@ const api: FrontAPI = {
   onProgress: on('Progress'),
   onAddConsole: on('AddConsole'),
   onError: on('Error'),
+  onNotifySystemUpdate: on('NotifySystemUpdate'),
 
   // HANDLE
+  handleNotifySystemUpdate: send('NotifySystemUpdate'),
   handleAgreeEula: handle('AgreeEula'),
   handleCheckShutdown: handle('CheckShutdown'),
 
@@ -100,6 +102,7 @@ const api: FrontAPI = {
   sendCommand: send('Command'),
   sendOpenBrowser: send('OpenBrowser'),
   sendOpenFolder: send('OpenFolder'),
+  sendReadyWindow: send('ReadyWindow'),
 
   // INVOKE
   invokeReboot: invoke('Reboot'),

@@ -19,11 +19,13 @@ import {
 } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
+import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import { deepCopy } from './scripts/deepCopy';
 import { setColor } from './color';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
+import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
@@ -66,6 +68,21 @@ window.API.onFinishServer((_event, worldID) => {
 window.API.onAddConsole((_event, worldID, chunk, isError) => {
   consoleStore.setConsole(worldID, chunk, isError);
 });
+// アップデートを実行するときに確認のダイアログを表示する
+window.API.onNotifySystemUpdate((_event, os, newVer) => {
+  $q.dialog({
+    component: UpdateNotifyDialog,
+    componentProps: {
+      os: os,
+      newVer: newVer,
+    } as UpdateNotifyProp,
+  }).onOk(() => {
+    window.API.sendOpenBrowser(
+      'https://server-starter-for-minecraft.github.io'
+    );
+  });
+});
+
 // Eulaの同意処理
 window.API.handleAgreeEula(
   async (_: Electron.IpcRendererEvent, worldID, url) => {
@@ -154,6 +171,9 @@ function setSubscribe() {
 
   setPlayerSearchSubscriber(playerStore);
 }
+
+// App.vueでの初期化処理がすべて終わったことを通知
+window.API.sendReadyWindow();
 </script>
 
 <template>

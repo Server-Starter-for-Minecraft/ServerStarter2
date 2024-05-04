@@ -25,6 +25,7 @@ import {
   RemoteWorld,
 } from '../schema/remote';
 import { ServerStartNotification } from '../schema/server';
+import { OsPlatform } from '../util/os';
 
 /**
  * ## APIの利用方法
@@ -72,6 +73,9 @@ export interface API extends IAPI {
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
+
+    /** アップデートがある際の通知 */
+    NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
@@ -99,6 +103,9 @@ export interface API extends IAPI {
 
     /** pathをエクスプローラーで開く */
     OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
+
+    /** mainWindowが準備できた(App.vueのセットアップ処理が終わった)ときに発火 */
+    ReadyWindow: () => void;
   };
   invokeWindowToMain: {
     /** 実行中のサーバーを再起動 */

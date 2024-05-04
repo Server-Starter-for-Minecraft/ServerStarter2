@@ -9,7 +9,8 @@ export function shutdown() {
     case 'mac-os':
     case 'mac-os-arm64':
       return shutdownMac();
-    case 'linux':
+    case 'debian':
+    case 'redhat':
       return shutdownLinux();
   }
 }
