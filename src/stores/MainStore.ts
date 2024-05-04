@@ -12,7 +12,7 @@ import { useSystemStore } from './SystemStore';
 import { useConsoleStore } from './ConsoleStore';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { values } from 'src/scripts/obj';
+import { keys, values } from 'src/scripts/obj';
 import { zen2han } from 'src/scripts/textUtils';
 
 export const useMainStore = defineStore('mainStore', {
@@ -20,6 +20,7 @@ export const useMainStore = defineStore('mainStore', {
     return {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
+      worldSearchText: '',
       errorWorlds: new Set<WorldID>(),
       selectedVersionType: 'vanilla' as Version['type'],
     };
@@ -29,8 +30,10 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       const returnWorld = worldStore.worldList[state.selectedWorldID];
 
-      // バージョンの更新（ワールドを選択し直すタイミングでバージョンの変更を反映）
-      state.selectedVersionType = returnWorld.version.type;
+      if (returnWorld !== void 0) {
+        // バージョンの更新（ワールドを選択し直すタイミングでバージョンの変更を反映）
+        state.selectedVersionType = returnWorld.version.type;
+      }
 
       return returnWorld;
     },
@@ -46,15 +49,17 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       return worldStore.worldIPs[state.selectedWorldID];
     },
-  },
-  actions: {
     /**
-     * 指定したTextをワールド名に含むワールド一覧を取得する
-     * Textを指定しない場合は、システム上のワールド一覧を返す
+     * ワールド一覧に描画するワールドリスト，
      */
-    searchWorld(text: string) {
+    showingWorldList(state) {
       const worldStore = useWorldStore();
-      const editText = zen2han(text).trim().toLowerCase();
+      // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，３項演算子によるNullチェックも付加
+      // 原因はSearchWorldViewのupdateSelectedWorld()にてshowingWorldListを呼び出しているため
+      // TODO: 上記のリファクタリングにより，３項演算子を廃止
+      const editText = zen2han(state.worldSearchText ?? '')
+        .trim()
+        .toLowerCase();
 
       if (editText !== '') {
         // スペース区切りのAND検索
@@ -72,10 +77,19 @@ export const useMainStore = defineStore('mainStore', {
             return hitName || hitVerType || hitVer;
           });
         });
+
+        // 選択中のワールドがリスト圏外になった場合は選択を解除
+        if (!keys(returnWorlds).includes(state.selectedWorldID)) {
+          state.selectedWorldID = '' as WorldID;
+        }
+
         return returnWorlds;
       }
+
       return worldStore.sortedWorldList;
     },
+  },
+  actions: {
     /**
      * ワールドを新規作成する
      */

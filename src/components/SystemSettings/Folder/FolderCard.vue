@@ -112,6 +112,10 @@ function removeFolder() {
           (sysStore.systemSettings.container.filter((c) => c.visible).length ===
             1 &&
             folder.visible) ||
+          active ||
+          sysStore.systemSettings.container
+            .map((c) => c.name)
+            .indexOf(folder.name) === 0 ||
           disable
         "
         @click="switchVisible"

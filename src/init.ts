@@ -53,7 +53,7 @@ export async function initWindow() {
     localWorlds.forEach((w) => consoleStore.initTab(w.id));
   }
 
-  if (Object.keys(worldStore.worldList).length === 0) {
+  if (Object.keys(mainStore.showingWorldList).length === 0) {
     await mainStore.createNewWorld();
   } else {
     const world = values(worldStore.sortedWorldList);

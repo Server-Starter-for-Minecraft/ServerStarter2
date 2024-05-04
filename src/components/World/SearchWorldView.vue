@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { keys, values } from 'src/scripts/obj';
 import SsInput from '../util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 interface Prop {
   expandWidth: number;
   expandDrawerBtnClickable: boolean;
 }
-const model = defineModel<string | number>();
 defineProps<Prop>();
 
 const sysStore = useSystemStore();
+const mainStore = useMainStore();
 </script>
 
 <template>
@@ -21,7 +23,11 @@ const sysStore = useSystemStore();
       <q-icon name="search" size="2rem" class="q-py-sm" />
     </q-item-section>
     <q-item-section>
-      <ss-input v-model="model" :label="$t('mainLayout.searchWorld')" />
+      <SsInput
+        v-model="mainStore.worldSearchText"
+        :label="$t('mainLayout.searchWorld')"
+        :debounce="100"
+      />
     </q-item-section>
     <SsTooltip
       v-if="expandDrawerBtnClickable"
