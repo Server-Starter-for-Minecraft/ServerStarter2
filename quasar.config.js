@@ -89,7 +89,13 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf(viteConf) {
+        viteConf.define = {
+          ...viteConf.define,
+          'import.meta.vitest': 'undefined',
+        };
+      },
+
       viteVuePluginOptions: {
         script: {
           defineModel: true,
