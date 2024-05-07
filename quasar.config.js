@@ -233,13 +233,32 @@ module.exports = configure(function (/* ctx */) {
         ],
         beforePack,
         win: {
-          target: 'msi',
+          target: [
+            {
+              target: 'msi',
+              arch: ['x64'],
+            },
+          ],
         },
         mac: {
-          target: 'pkg',
+          target: [
+            {
+              target: 'pkg',
+              arch: ['x64'],
+            },
+          ],
         },
         linux: {
-          target: ['deb', 'rpm'],
+          target: [
+            {
+              target: 'deb',
+              arch: ['x64'],
+            },
+            {
+              target: 'rpm',
+              arch: ['x64'],
+            },
+          ],
           icon: path.join(__dirname, 'src-electron/icons'),
           category: 'Utility',
         },
