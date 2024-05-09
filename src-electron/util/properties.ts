@@ -1,4 +1,4 @@
-const parse = (text: string) => {
+export const parse = (text: string) => {
   const result: Record<string, string> = {};
   const unescape = (str: string) => {
     str = str.replaceAll(/\\([=:#!])/g, '$1');
@@ -26,7 +26,7 @@ const parse = (text: string) => {
   return result;
 };
 
-const stringify = (record: Record<string, string>) => {
+export const stringify = (record: Record<string, string>) => {
   const lines: string[] = [];
   const entries = Object.entries(record);
   const escape = (str: string) => {
