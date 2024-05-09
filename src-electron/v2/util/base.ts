@@ -2,33 +2,36 @@ export class PanicError extends Error {}
 
 export type Awaitable<T> = T | PromiseLike<T>;
 
-export abstract class Result<T, E> {
-  abstract isOk(): boolean;
-  abstract isErr(): boolean;
-  abstract expect(message: string): T;
-  abstract unwrap(): T;
-  abstract unwrapOr(defaultValue: T): T;
-  abstract unwrapOrElse(op: (err: E) => T): T;
-  abstract unwrapOrElseAsync(op: (err: E) => Awaitable<T>): Promise<T>;
-  abstract expectErr(message: string): E;
-  abstract unwrapErr(): E;
-  abstract map<U>(op: (ok: T) => U): Result<U, E>;
-  abstract mapAsync<U>(op: (ok: T) => Awaitable<U>): Promise<Result<U, E>>;
-  abstract mapErr<F>(op: (err: E) => F): Result<T, F>;
-  abstract mapErrAsync<F>(op: (err: E) => Awaitable<F>): Promise<Result<T, F>>;
-  abstract mapOr<U>(defaultValue: U, op: (ok: T) => U): U;
-  abstract mapOrAsync<U>(
-    defaultValue: U,
-    op: (ok: T) => Awaitable<U>
-  ): Promise<U>;
-  abstract mapOrElse<U>(fErr: (err: E) => U, fOk: (ok: T) => U): U;
-  abstract mapOrElseAsync<U>(
+export interface Result<T, E> {
+  isOk<T, E>(this: Result<T, E>): this is Ok<T>;
+  isErr<T, E>(this: Result<T, E>): this is Ok<T>;
+  expect(message: string): T;
+  unwrap(): T;
+  unwrapOr(defaultValue: T): T;
+  unwrapOrElse(op: (err: E) => T): T;
+  unwrapOrElseAsync(op: (err: E) => Awaitable<T>): Promise<T>;
+  expectErr(message: string): E;
+  unwrapErr(): E;
+  map<U>(op: (ok: T) => U): Result<U, E>;
+  mapAsync<U>(op: (ok: T) => Awaitable<U>): Promise<Result<U, E>>;
+  mapErr<F>(op: (err: E) => F): Result<T, F>;
+  mapErrAsync<F>(op: (err: E) => Awaitable<F>): Promise<Result<T, F>>;
+  mapOr<U>(defaultValue: U, op: (ok: T) => U): U;
+  mapOrAsync<U>(defaultValue: U, op: (ok: T) => Awaitable<U>): Promise<U>;
+  mapOrElse<U>(fErr: (err: E) => U, fOk: (ok: T) => U): U;
+  mapOrElseAsync<U>(
     fErr: (err: E) => Awaitable<U>,
     fOk: (ok: T) => Awaitable<U>
   ): Promise<U>;
 }
 
-export class Ok<T> extends Result<T, any> {
+export class Ok<T> implements Result<T, any> {
+  isOk<T, E>(this: Result<T, E>): this is Ok<T> {
+    return true;
+  }
+  isErr<T, E>(this: Result<T, E>): this is Ok<T> {
+    return false;
+  }
   async unwrapOrElseAsync(op: (err: any) => Awaitable<T>): Promise<T> {
     return this.value;
   }
@@ -62,12 +65,6 @@ export class Ok<T> extends Result<T, any> {
   mapOrElse<U, E>(fErr: (err: E) => U, fOk: (ok: T) => U): U {
     return fOk(this.value);
   }
-  isOk(): boolean {
-    return true;
-  }
-  isErr(): boolean {
-    return false;
-  }
   expect(message: string): T {
     return this.value;
   }
@@ -88,12 +85,17 @@ export class Ok<T> extends Result<T, any> {
   }
   private value: T;
   constructor(value: T) {
-    super();
     this.value = value;
   }
 }
 
-export class Err<E> extends Result<any, E> {
+export class Err<E> implements Result<any, E> {
+  isOk<T, E>(this: Result<T, E>): this is Ok<T> {
+    return false;
+  }
+  isErr<T, E>(this: Result<T, E>): this is Ok<T> {
+    return true;
+  }
   unwrapOrElseAsync(op: (err: E) => any): Promise<any> {
     return op(this.value);
   }
@@ -127,12 +129,6 @@ export class Err<E> extends Result<any, E> {
   mapOrElse<U>(fErr: (err: E) => U, fOk: (ok: any) => U): U {
     return fErr(this.value);
   }
-  isOk(): boolean {
-    return false;
-  }
-  isErr(): boolean {
-    return true;
-  }
   expect<T>(message: string): T {
     throw new PanicError(message);
   }
@@ -153,66 +149,59 @@ export class Err<E> extends Result<any, E> {
   }
   private value: E;
   constructor(value: E) {
-    super();
     this.value = value;
   }
 }
 
-export abstract class Opt<T> {
-  abstract isSome(): boolean;
-  abstract isNone(): boolean;
-  abstract and<U>(optb: Opt<U>): Opt<U>;
-  abstract andThen<U>(f: (some: T) => Opt<U>): Opt<U>;
-  abstract andThenAsync<U>(f: (some: T) => Awaitable<Opt<U>>): Promise<Opt<U>>;
-  abstract or(optb: Opt<T>): Opt<T>;
-  abstract orElse(f: () => Opt<T>): Opt<T>;
-  abstract orElseAsync(f: () => Awaitable<Opt<T>>): Promise<Opt<T>>;
-  abstract xor(optb: Opt<T>): Opt<T>;
-  abstract zip<L extends any[]>(
-    ...other: { [K in keyof L]: Opt<L[K]> }
-  ): Opt<[T, ...L]>;
-  abstract unzip<L extends any[]>(
+export interface Opt<T> {
+  isSome<T>(this: Opt<T>): this is Some<T>;
+  isNone<T>(this: Opt<T>): this is None;
+  and<U>(optb: Opt<U>): Opt<U>;
+  andThen<U>(f: (some: T) => Opt<U>): Opt<U>;
+  andThenAsync<U>(f: (some: T) => Awaitable<Opt<U>>): Promise<Opt<U>>;
+  or(optb: Opt<T>): Opt<T>;
+  orElse(f: () => Opt<T>): Opt<T>;
+  orElseAsync(f: () => Awaitable<Opt<T>>): Promise<Opt<T>>;
+  xor(optb: Opt<T>): Opt<T>;
+  zip<L extends any[]>(...other: { [K in keyof L]: Opt<L[K]> }): Opt<[T, ...L]>;
+  unzip<L extends any[]>(
     this: Opt<[...L]>,
     length: L['length']
   ): { [K in keyof L]: Opt<L[K]> };
-  abstract expect(message: string): T;
-  abstract unwrap(): T;
-  abstract unwrapOr(defaultValue: T): T;
-  abstract unwrapOrElse(f: () => T): T;
-  abstract unwrapOrElseAsync(f: () => Awaitable<T>): Promise<T>;
-  abstract map<U>(op: (some: T) => U): Opt<U>;
-  abstract mapAsync<U>(op: (some: T) => Awaitable<U>): Promise<Opt<U>>;
-  abstract mapOr<U>(defaultValue: U, f: (some: T) => U): U;
-  abstract mapOrAsync<U>(
+  expect(message: string): T;
+  unwrap(): T;
+  unwrapOr(defaultValue: T): T;
+  unwrapOrElse(f: () => T): T;
+  unwrapOrElseAsync(f: () => Awaitable<T>): Promise<T>;
+  map<U>(op: (some: T) => U): Opt<U>;
+  mapAsync<U>(op: (some: T) => Awaitable<U>): Promise<Opt<U>>;
+  mapOr<U>(defaultValue: U, f: (some: T) => U): U;
+  mapOrAsync<U>(
     defaultValue: Awaitable<U>,
     f: (some: T) => Awaitable<U>
   ): Promise<U>;
-  abstract mapOrElse<U>(d: () => U, f: (some: T) => U): U;
-  abstract mapOrElseAsync<U>(
+  mapOrElse<U>(d: () => U, f: (some: T) => U): U;
+  mapOrElseAsync<U>(
     d: () => Awaitable<U>,
     f: (some: T) => Awaitable<U>
   ): Promise<U>;
-  abstract okOr<E>(err: E): Result<T, E>;
-  abstract okOrElse<E>(err: () => E): Result<T, E>;
-  abstract okOrElseAsync<E>(err: () => Awaitable<E>): Promise<Result<T, E>>;
-  abstract filter(predicate: (some: T) => boolean): Opt<T>;
-  abstract filterAsync(
-    predicate: (some: T) => Awaitable<boolean>
-  ): Promise<Opt<T>>;
+  okOr<E>(err: E): Result<T, E>;
+  okOrElse<E>(err: () => E): Result<T, E>;
+  okOrElseAsync<E>(err: () => Awaitable<E>): Promise<Result<T, E>>;
+  filter(predicate: (some: T) => boolean): Opt<T>;
+  filterAsync(predicate: (some: T) => Awaitable<boolean>): Promise<Opt<T>>;
 }
 
-export class Some<T> extends Opt<T> {
+export class Some<T> implements Opt<T> {
   private value: T;
 
   constructor(value: T) {
-    super();
     this.value = value;
   }
-
-  isSome(): boolean {
+  isSome<T>(this: Opt<T>): this is Some<T> {
     return true;
   }
-  isNone(): boolean {
+  isNone<T>(this: Opt<T>): this is None {
     return false;
   }
   and<U>(optb: Opt<U>): Opt<U> {
@@ -312,15 +301,17 @@ export class Some<T> extends Opt<T> {
   }
 }
 
-export class None extends Opt<any> {
-  constructor() {
-    super();
-  }
+export class None implements Opt<any> {
+  private static instance?: None;
 
-  isSome(): boolean {
+  constructor() {
+    // シングルトンのための処理
+    return None.instance ?? (None.instance = this);
+  }
+  isSome<T>(this: Opt<T>): this is Some<T> {
     return false;
   }
-  isNone(): boolean {
+  isNone<T>(this: Opt<T>): this is None {
     return true;
   }
   and<U>(optb: Opt<U>): Opt<U> {
