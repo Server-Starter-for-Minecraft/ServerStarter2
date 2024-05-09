@@ -2,9 +2,14 @@
   "extends": "@quasar/app-vite/tsconfig-preset",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "vitest/importMeta"]
   },
-  "include": ["src/**/*.ts", "src-electron/**/*.ts", "src/**/*.vue"],
+  "include": [
+    "src/**/*.ts",
+    "src-electron/**/*.ts",
+    "src/**/*.vue",
+    "test/**/*.ts"
+  ],
   "ts-node": {
     "compilerOptions": {
       "strictNullChecks": true,

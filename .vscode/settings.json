@@ -26,6 +26,9 @@
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "files.associations": {
+    "*.code-snippets": "json"
+  },
   "gitmoji.addCustomEmoji": [
     {
       "code": ":sparkles:",
