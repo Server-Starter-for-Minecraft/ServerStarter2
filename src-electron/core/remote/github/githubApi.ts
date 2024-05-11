@@ -3,7 +3,8 @@ import { BytesData } from 'src-electron/util/bytesData';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { FAIL, Fixer } from 'app/src-electron/util/detaFixer/fixer';
+import { Fixer, isFail } from '../../file/base/fixer/fixer';
+
 /** リポジトリのブランチ一覧を取得 */
 export async function getGithubBranches(
   owner: string,
@@ -101,7 +102,7 @@ export class GithubBlob {
     }
   }
 
-  async loadJson<T>(fixer?: Fixer<T | FAIL>): Promise<Failable<T>> {
+  async loadJson<T>(fixer?: Fixer<T, true>): Promise<Failable<T>> {
     const blobRes = await get<BlobRes>(this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
@@ -124,9 +125,9 @@ export class GithubBlob {
     if (isError(data)) return data;
     if (fixer === undefined) return data;
 
-    const fixed = fixer(data);
+    const fixed = fixer.fix(data);
 
-    if (fixed === FAIL) return errorMessage.data.failJsonFix();
+    if (isFail(fixed)) return errorMessage.data.failJsonFix();
 
     return fixed;
   }
