@@ -14,7 +14,6 @@ export const parse = (text: string) => {
 
     if (matcharray.length !== 1) return;
 
-
     const splitIndex = matcharray[0].index;
     let key = line.slice(0, splitIndex).trim();
     key = unescape(key);
@@ -36,10 +35,10 @@ export const stringify = (record: Record<string, string>) => {
     str = str.replaceAll('\t', '\\t');
     return str;
   };
-  entries.forEach(([key, value]) =>{
+  entries.forEach(([key, value]) => {
     const line = escape(key) + '=' + escape(value);
     lines.push(line);
-  })
+  });
 
   return lines.join('\n');
 };
@@ -69,9 +68,9 @@ if (import.meta.vitest) {
   test('stringifyTest', () => {
     expect(stringify({ a: 'b', c: 'd' })).toEqual('a=b\nc=d');
     expect(stringify({ 'a=': 'b', c: 'd' })).toEqual('a\\==b\nc=d');
-    expect(stringify({ '\\:\\=': 'b'  })).toEqual('\\\\\\:\\\\\\==b');
-    expect(stringify({ '#!': 'b'  })).toEqual('\\#\\!=b');
-    expect(stringify({ '#!': 'b'  })).toEqual('\\#\\!=b');
-    expect(stringify({ '\n': 'b'  })).toEqual('\\n=b');
+    expect(stringify({ '\\:\\=': 'b' })).toEqual('\\\\\\:\\\\\\==b');
+    expect(stringify({ '#!': 'b' })).toEqual('\\#\\!=b');
+    expect(stringify({ '#!': 'b' })).toEqual('\\#\\!=b');
+    expect(stringify({ '\n': 'b' })).toEqual('\\n=b');
   });
 }

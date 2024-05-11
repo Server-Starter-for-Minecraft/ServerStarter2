@@ -233,7 +233,7 @@ if (import.meta.vitest) {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    const mockNode = () =>
+  const mockNode = () =>
     new MockChildProcess('node', ['-v'], {
       shell: true,
       stdio: ['pipe', 'pipe', 'pipe'],
