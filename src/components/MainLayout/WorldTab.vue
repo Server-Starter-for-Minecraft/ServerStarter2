@@ -55,7 +55,7 @@ function selectWorldIdx() {
 }
 
 const tooltipText = computed(() => {
-  return `${prop.world.name}<br />
+  return `${prop.world.name}
           ${
             prop.world.version.type === 'vanilla'
               ? prop.world.version.id
