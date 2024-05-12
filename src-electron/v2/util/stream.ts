@@ -1,10 +1,17 @@
 import * as stream from 'stream';
-import { Err, Result, err, ok } from './base';
+import { Result, err, ok } from './base';
+
+// ストリームに関する基本的な型を用意しています
+// stream.Readable stream.Writable stream.Duplex
+// のラッパーです
 
 export type Collector<T, U> = (
   readable: Readable<T>
 ) => Promise<Result<U, Error>>;
 
+/**
+ * stream.Readable
+ */
 export class Readable<T> {
   readonly stream: stream.Readable;
   private constructor(stream: stream.Readable) {
@@ -126,13 +133,23 @@ export class Duplex<T> {
   }
 }
 
+export type MemoryReadStreamOptions<T> = T extends string
+  ? {
+      encoding: BufferEncoding;
+    }
+  : T extends Buffer
+  ? undefined
+  : {
+      objectMode: true;
+    };
+
 export class MemoryReadStream<T> extends stream.Readable {
   private _iter: AsyncIterator<T, any, undefined>;
   private constructor(
     iter: AsyncIterator<T>,
-    objectMode: T extends string | Buffer ? false : true
+    options: MemoryReadStreamOptions<T>
   ) {
-    super({ objectMode });
+    super(options);
     this._iter = iter;
   }
   async _read() {
@@ -143,7 +160,7 @@ export class MemoryReadStream<T> extends stream.Readable {
   /** 配列を順に返すReadStream */
   static fromIterable<T>(
     iterable: Iterable<T>,
-    objectMode: T extends string | Buffer ? false : true
+    options: MemoryReadStreamOptions<T>
   ): Readable<T> {
     const gen: AsyncGenerator<T, void, unknown> = (async function* () {
       for (const a of iterable) {
@@ -151,12 +168,12 @@ export class MemoryReadStream<T> extends stream.Readable {
       }
       return;
     })();
-    return Readable.fromNodeStream<T>(new MemoryReadStream(gen, objectMode));
+    return Readable.fromNodeStream<T>(new MemoryReadStream(gen, options));
   }
 
   static fromIterator<T>(
     iterator: Iterator<T>,
-    objectMode: T extends string | Buffer ? false : true
+    options: MemoryReadStreamOptions<T>
   ): Readable<T> {
     const gen: AsyncGenerator<T, void, unknown> = (async function* () {
       let result = iterator.next();
@@ -165,16 +182,14 @@ export class MemoryReadStream<T> extends stream.Readable {
         result = iterator.next();
       }
     })();
-    return Readable.fromNodeStream<T>(new MemoryReadStream(gen, objectMode));
+    return Readable.fromNodeStream<T>(new MemoryReadStream(gen, options));
   }
 
   static fromAsyncIterator<T>(
     iterator: AsyncIterator<T>,
-    objectMode: T extends string | Buffer ? false : true
+    options: MemoryReadStreamOptions<T>
   ): Readable<T> {
-    return Readable.fromNodeStream<T>(
-      new MemoryReadStream(iterator, objectMode)
-    );
+    return Readable.fromNodeStream<T>(new MemoryReadStream(iterator, options));
   }
 }
 
@@ -246,7 +261,9 @@ if (import.meta.vitest) {
           else yield char;
         }
       })(),
-      false
+      {
+        encoding: 'utf8',
+      }
     );
 
     emit.error = () => read.stream.emit('error', 'ERROR');
@@ -257,11 +274,19 @@ if (import.meta.vitest) {
    * 流れてくる文字列が1文字づつ流れていくstream
    * 文字が "?" の場合エラーを流す
    */
-  function createDuplex() {
-    const _stream = new stream.PassThrough({
-      transform(c: Buffer, _, fn) {
-        if (c.toString('utf8') === '?') fn('ERROR' as unknown as Error);
-        else fn(undefined, c);
+  function createDuplex(option?: {
+    objectMode?: boolean;
+    encoding?: BufferEncoding;
+  }) {
+    const _stream = new stream.Transform({
+      ...option,
+      transform(chunk, encoding, callback) {
+        if (
+          !(option?.objectMode ?? false) &&
+          chunk.toString(option?.encoding) === '?'
+        )
+          callback('ERROR' as unknown as Error);
+        else callback(null, chunk);
       },
     });
 
@@ -278,15 +303,21 @@ if (import.meta.vitest) {
 
   test('stream to test', async () => {
     const read1 = createReadable('1234');
-    const result1 = await read1.to(createDuplex()).join(toString);
+    const result1 = await read1
+      .to(createDuplex({ encoding: 'utf8' }))
+      .join(toString);
     expect(result1.value).toBe('1234');
 
     const read2 = createReadable('123!4');
-    const result2 = await read2.to(createDuplex()).join(toString);
+    const result2 = await read2
+      .to(createDuplex({ encoding: 'utf8' }))
+      .join(toString);
     expect(result2.error).toBe('ERROR');
 
     const read3 = createReadable('123?4');
-    const result3 = await read3.to(createDuplex()).join(toString);
+    const result3 = await read3
+      .to(createDuplex({ encoding: 'utf8' }))
+      .join(toString);
     expect(result3.error).toBe('ERROR');
 
     const read4 = createReadable('123?4');
@@ -295,5 +326,56 @@ if (import.meta.vitest) {
       .to(createDuplex())
       .join(toString);
     expect(result4.error).toBe('ERROR');
+  });
+
+  test('stream json', async () => {
+    const read1 = createReadable('{"a":"b"}');
+    expect((await read1.join(toJson)).value).toEqual({ a: 'b' });
+
+    const read2 = createReadable('{"a":"b}');
+    expect((await read2.join(toJson)).error);
+  });
+
+  test('stream array', async () => {
+    const read1 = createReadable('1234');
+    expect((await read1.join(toArray)).value).toEqual(['1', '2', '3', '4']);
+
+    const read2 = MemoryReadStream.fromIterable([1, 2, 3, 4, 5], {
+      objectMode: true,
+    });
+    expect((await read2.join(toArray)).value).toEqual([1, 2, 3, 4, 5]);
+
+    const read4 = MemoryReadStream.fromIterable([1, 2, 3, 4, 5], {
+      objectMode: true,
+    });
+
+    expect(
+      (
+        await read4
+          .to(
+            createDuplex({
+              objectMode: true,
+            })
+          )
+          .join(toArray)
+      ).value
+    ).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  test('stream buffer', async () => {
+    const read1 = MemoryReadStream.fromIterable(
+      [
+        Buffer.from([1]),
+        Buffer.from([2]),
+        Buffer.from([3]),
+        Buffer.from([4]),
+        Buffer.from([5]),
+      ],
+      undefined
+    );
+    read1.stream.on('data', console.log);
+    expect((await read1.join(toBuffer)).value).toEqual(
+      Buffer.from([1, 2, 3, 4, 5])
+    );
   });
 }
