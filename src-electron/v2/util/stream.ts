@@ -1,9 +1,45 @@
 import * as stream from 'stream';
 import { Result, err, ok } from './base';
 
-// ストリームに関する基本的な型を用意しています
-// stream.Readable stream.Writable stream.Duplex
-// のラッパーです
+/**
+ * ストリームに関する型
+ * stream.Readable stream.Writable stream.Duplex のラッパー
+ *
+ * 主な使い方
+ *
+ * 1. ストリームの内容をメモリ上に取得
+ * ```
+ * // 何らかの読み込みストリーム (e.g URLからデータ取得 / ファイル読み込み / サブプロセスのstdout)
+ * const redable: Readable<string>
+ *
+ * // ストリームの内容を文字列として取得
+ * const value = await redable.toPromise(toString)
+ * ```
+ *
+ * 2. ストリームの内容を別ストリームに書き出し
+ * ```
+ * // 何らかの読み込みストリーム (e.g URLからデータ取得 / ファイル読み込み / サブプロセスのstdout)
+ * const redable: Readable<string>
+ *
+ * // 何らかの書き込みストリーム (e.g ファイル書き込み / サブプロセスのstdin)
+ * const writable: Writable<string>
+ *
+ * // readableから流れてくるデータをwritableにすべて書き込むまで待機
+ * await readable.to(writable)
+ * ```
+ *
+ * 3. ストリームの内容を変換
+ * ```
+ * // 何らかの読み込みストリーム (e.g URLからデータ取得 / ファイル読み込み / サブプロセスのstdout)
+ * const redable: Readable<string>
+ *
+ * // 何らかの変換ストリーム
+ * const transform: Duplex<string,string>
+ *
+ * // 変換後のストリームの内容を文字列として取得
+ * const value = await transform.toPromise(toString)
+ * ```
+ */
 
 export type Collector<T, U> = (
   readable: Readable<T>
@@ -28,7 +64,7 @@ export class Readable<T> {
   /**
    * ストリームのデータを一つのオブジェクトに集める
    */
-  join<U>(collector: Collector<T, U>): Promise<Result<U, Error>> {
+  toPromise<U>(collector: Collector<T, U>): Promise<Result<U, Error>> {
     return collector(this);
   }
 
@@ -41,19 +77,19 @@ export class Readable<T> {
     destination: Writable<T>,
     options?: { end?: boolean | undefined } | undefined
   ): Writable<T>;
-  to(
-    destination: Duplex<T>,
+  to<U>(
+    destination: Duplex<T, U>,
     options?: { end?: boolean | undefined } | undefined
-  ): Duplex<T>;
-  to(
-    destination: Writable<T> | Duplex<T>,
+  ): Duplex<T, U>;
+  to<U>(
+    destination: Writable<T> | Duplex<T, U>,
     options?: { end?: boolean | undefined } | undefined
-  ): Writable<T> | Duplex<T> {
+  ): Writable<T> | Duplex<T, U> {
     const _stream = this.stream
       .on('error', (e) => destination.stream.destroy(e))
       .pipe(destination.stream, options);
     if (_stream instanceof stream.Duplex) {
-      return Duplex.fromNodeStream<T>(_stream);
+      return Duplex.fromNodeStream<T, U>(_stream);
     } else {
       return Writable.fromNodeStream<T>(_stream);
     }
@@ -85,7 +121,7 @@ export class Writable<T> {
   }
 }
 
-export class Duplex<T> {
+export class Duplex<T, U> {
   readonly stream: stream.Duplex;
   private constructor(stream: stream.Duplex) {
     this.stream = stream;
@@ -94,14 +130,14 @@ export class Duplex<T> {
   /**
    * 型を明示して指定すること
    */
-  static fromNodeStream<T>(stream: stream.Duplex) {
-    return new Duplex<T>(stream);
+  static fromNodeStream<T, U>(stream: stream.Duplex) {
+    return new Duplex<T, U>(stream);
   }
 
   /**
    * ストリームのデータを一つのオブジェクトに集める
    */
-  join<U>(collector: Collector<T, U>): Promise<Result<U, Error>> {
+  toPromise<U>(collector: Collector<T, U>): Promise<Result<U, Error>> {
     return collector(this);
   }
 
@@ -111,24 +147,24 @@ export class Duplex<T> {
    * エラー処理をよしなにやってくれる + 型補完が効く
    */
   to(
-    destination: Writable<T>,
+    destination: Writable<U>,
     options?: { end?: boolean | undefined } | undefined
   ): Writable<T>;
-  to(
-    destination: Duplex<T>,
+  to<V>(
+    destination: Duplex<U, V>,
     options?: { end?: boolean | undefined } | undefined
-  ): Duplex<T>;
-  to(
-    destination: Writable<T> | Duplex<T>,
+  ): Duplex<U, V>;
+  to<V>(
+    destination: Writable<U> | Duplex<U, V>,
     options?: { end?: boolean | undefined } | undefined
-  ): Writable<T> | Duplex<T> {
+  ): Writable<U> | Duplex<U, V> {
     const _stream = this.stream
       .on('error', (e) => destination.stream.destroy(e))
       .pipe(destination.stream, options);
     if (_stream instanceof stream.Duplex) {
-      return Duplex.fromNodeStream<T>(_stream);
+      return Duplex.fromNodeStream<U, V>(_stream);
     } else {
-      return Writable.fromNodeStream<T>(_stream);
+      return Writable.fromNodeStream<U>(_stream);
     }
   }
 }
@@ -290,60 +326,65 @@ if (import.meta.vitest) {
       },
     });
 
-    return Duplex.fromNodeStream<string>(_stream);
+    return Duplex.fromNodeStream<string, string>(_stream);
   }
 
   test('stream join test', async () => {
     const read1 = createReadable('1234');
-    expect((await read1.join(toString)).value).toBe('1234');
+    expect((await read1.toPromise(toString)).value).toBe('1234');
 
     const read2 = createReadable('123!4');
-    expect((await read2.join(toString)).error).toBe('ERROR');
+    expect((await read2.toPromise(toString)).error).toBe('ERROR');
   });
 
   test('stream to test', async () => {
     const read1 = createReadable('1234');
     const result1 = await read1
       .to(createDuplex({ encoding: 'utf8' }))
-      .join(toString);
+      .toPromise(toString);
     expect(result1.value).toBe('1234');
 
     const read2 = createReadable('123!4');
     const result2 = await read2
       .to(createDuplex({ encoding: 'utf8' }))
-      .join(toString);
+      .toPromise(toString);
     expect(result2.error).toBe('ERROR');
 
     const read3 = createReadable('123?4');
     const result3 = await read3
       .to(createDuplex({ encoding: 'utf8' }))
-      .join(toString);
+      .toPromise(toString);
     expect(result3.error).toBe('ERROR');
 
     const read4 = createReadable('123?4');
     const result4 = await read4
       .to(createDuplex())
       .to(createDuplex())
-      .join(toString);
+      .toPromise(toString);
     expect(result4.error).toBe('ERROR');
   });
 
   test('stream json', async () => {
     const read1 = createReadable('{"a":"b"}');
-    expect((await read1.join(toJson)).value).toEqual({ a: 'b' });
+    expect((await read1.toPromise(toJson)).value).toEqual({ a: 'b' });
 
     const read2 = createReadable('{"a":"b}');
-    expect((await read2.join(toJson)).error);
+    expect((await read2.toPromise(toJson)).error);
   });
 
   test('stream array', async () => {
     const read1 = createReadable('1234');
-    expect((await read1.join(toArray)).value).toEqual(['1', '2', '3', '4']);
+    expect((await read1.toPromise(toArray)).value).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ]);
 
     const read2 = MemoryReadStream.fromIterable([1, 2, 3, 4, 5], {
       objectMode: true,
     });
-    expect((await read2.join(toArray)).value).toEqual([1, 2, 3, 4, 5]);
+    expect((await read2.toPromise(toArray)).value).toEqual([1, 2, 3, 4, 5]);
 
     const read4 = MemoryReadStream.fromIterable([1, 2, 3, 4, 5], {
       objectMode: true,
@@ -357,7 +398,7 @@ if (import.meta.vitest) {
               objectMode: true,
             })
           )
-          .join(toArray)
+          .toPromise(toArray)
       ).value
     ).toEqual([1, 2, 3, 4, 5]);
   });
@@ -374,7 +415,7 @@ if (import.meta.vitest) {
       undefined
     );
     read1.stream.on('data', console.log);
-    expect((await read1.join(toBuffer)).value).toEqual(
+    expect((await read1.toPromise(toBuffer)).value).toEqual(
       Buffer.from([1, 2, 3, 4, 5])
     );
   });
