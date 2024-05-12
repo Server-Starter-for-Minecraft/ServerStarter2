@@ -4,14 +4,14 @@ import { Result } from '../base';
 export type ReadableStreamer = {
   createReadStream(): Readable;
   convert(duplex: stream.Duplex): Readable;
-  to<T>(target: WriteStreamer<T>): Promise<Result<T, Error>>;
+  to<T>(target: WritableStreamer<T>): Promise<Result<T, Error>>;
 };
 
-export type WriteStreamer<T> = {
+export type WritableStreamer<T> = {
   write(readable: stream.Readable): Promise<Result<T, Error>>;
 };
 
-export type DuplexStreamer<T> = ReadableStreamer & WriteStreamer<T>;
+export type DuplexStreamer<T> = ReadableStreamer & WritableStreamer<T>;
 
 export class Readable implements ReadableStreamer {
   readonly stream: stream.Readable;
@@ -27,7 +27,7 @@ export class Readable implements ReadableStreamer {
   convert(duplex: stream.Duplex): Readable {
     return new Readable(this.pipe(duplex));
   }
-  to<T>(target: WriteStreamer<T>): Promise<Result<T, Error>> {
+  to<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
     return target.write(this.stream);
   }
 }

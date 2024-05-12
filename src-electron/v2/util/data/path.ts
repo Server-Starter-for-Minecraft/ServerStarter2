@@ -4,7 +4,7 @@ import {
   DuplexStreamer,
   Readable,
   ReadableStreamer,
-  WriteStreamer,
+  WritableStreamer,
 } from './stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import * as stream from 'stream';
@@ -32,7 +32,7 @@ export class Path implements DuplexStreamer<void> {
     return this.createReadStream().convert(duplex);
   }
 
-  to<T>(target: WriteStreamer<T>): Promise<Result<T, Error>> {
+  to<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
     return this.createReadStream().to(target);
   }
 

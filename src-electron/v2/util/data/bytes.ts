@@ -1,6 +1,6 @@
 import * as stream from 'stream';
 import { Err, Result, err, ok } from '../base';
-import { Readable, ReadableStreamer, WriteStreamer } from './stream';
+import { Readable, ReadableStreamer, WritableStreamer } from './stream';
 
 export class Bytes implements ReadableStreamer {
   static write(readable: stream.Readable): Promise<Result<Bytes, Error>> {
@@ -43,7 +43,7 @@ export class Bytes implements ReadableStreamer {
     return this.createReadStream().convert(duplex);
   }
 
-  to<T>(target: WriteStreamer<T>): Promise<Result<T, Error>> {
+  to<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
     return this.createReadStream().to(target);
   }
 }
