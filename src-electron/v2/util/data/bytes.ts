@@ -26,6 +26,10 @@ export class Bytes implements ReadableStreamer {
   }
 
   createReadStream(): Readable {
+    return new Readable(this.createReadableStream());
+  }
+
+  createReadableStream(): stream.Readable {
     const readable = new stream.Readable();
     const len = this.data.byteLength;
     let i = 0;
@@ -36,7 +40,7 @@ export class Bytes implements ReadableStreamer {
       i += n;
     };
 
-    return new Readable(readable);
+    return readable;
   }
 
   convert(duplex: stream.Duplex): Readable {
