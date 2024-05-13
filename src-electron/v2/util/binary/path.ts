@@ -320,5 +320,19 @@ if (import.meta.vitest) {
 
     // 後片付け
     await testdir.remove();
+
+    // await bytes.into(tgt);
+
+    // await bytes.convert(fromSHIFTJIS).into(tgt);
+    // await bytes.convert(toSHIFTJIS).into(tgt);
+
+    // await bytes.convert(fromBase64).into(tgt);
+    // await bytes.convert(toBase64).into(tgt);
+
+    // await bytes.convert(fromGZ).into(tgt);
+    // await bytes.convert(toGZ).into(tgt);
+
+    // await bytes.into(SHA256);
+    // await bytes.into(SHA128);
   });
 }
