@@ -122,9 +122,10 @@ function openMIT() {
         </div>
         <div
           class="text-caption q-pt-sm"
-          style="opacity: 0.6"
-          v-html="$t('systemsetting.info.licenseDesc')"
-        ></div>
+          style="opacity: 0.6; white-space: pre-line;" 
+        >
+          {{ $t('systemsetting.info.licenseDesc') }}
+        </div>
       </div>
 
       <h1>{{ $t('systemsetting.info.developer') }}</h1>

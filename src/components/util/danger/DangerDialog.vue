@@ -23,10 +23,11 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
         <SsBtn :label="$t('general.cancel')" @click="onDialogCancel" />
       </template>
       <div
-        v-html="dialogDesc"
         class="q-my-none flex"
-        style="font-size: 0.8rem; opacity: 0.8"
-      />
+        style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line;"
+      >
+        {{ dialogDesc }}
+      </div>
     </BaseDialogCard>
   </q-dialog>
 </template>

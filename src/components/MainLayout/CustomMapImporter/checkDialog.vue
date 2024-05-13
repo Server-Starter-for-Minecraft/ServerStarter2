@@ -27,7 +27,9 @@ async function importProcess() {
     >
       <q-item dense class="q-pl-none">
         <q-item-section>
-          <p v-html="$t('mainLayout.customMapImporter.checkDialog.desc')" />
+          <p style="white-space: pre-line;">
+            {{ $t('mainLayout.customMapImporter.checkDialog.desc') }}
+          </p>
           <WorldItem
             :icon="icon"
             :world-name="worldName"

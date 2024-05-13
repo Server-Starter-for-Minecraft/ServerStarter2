@@ -39,9 +39,10 @@ function registOwner() {
       <template #default>
         <p
           class="q-my-sm text-body2"
-          style="opacity: 0.5"
-          v-html="$t('owner.dialogDesc')"
-        ></p>
+          style="opacity: 0.5; white-space: pre-line"
+        >
+          {{ $t('owner.dialogDesc') }}
+        </p>
 
         <InputFieldView class="q-my-md" />
         <SearchResultView v-model="ownerCandidate" />

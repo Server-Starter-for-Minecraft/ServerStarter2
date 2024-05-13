@@ -42,10 +42,9 @@ onMounted(shutdownCounter);
         <div style="font-size: 1.5rem">{{ $t('autoshutdown.title') }}</div>
       </q-card-section>
       <q-card-section>
-        <div
-          style="font-size: 1rem; opacity: 0.6"
-          v-html="$t('autoshutdown.desc', { time: autoShutdownInterval })"
-        ></div>
+        <div style="font-size: 1rem; opacity: 0.6; white-space: pre-line">
+          {{ $t('autoshutdown.desc', { time: autoShutdownInterval }) }}
+        </div>
       </q-card-section>
       <q-card-actions align="right">
         <SsBtn

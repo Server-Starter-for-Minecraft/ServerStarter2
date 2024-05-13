@@ -86,8 +86,13 @@ function isErrorContainer(c: WorldContainerSetting) {
           <span
             v-if="inputName !== ''"
             class="col row"
-            v-html="$t('others.worldFolder.addBtn', { name: inputName })"
-          />
+            style="white-space: pre-line"
+          >
+          <i18n-t keypath="others.worldFolder.addBtn">
+              &nbsp;
+              <span class="text-omit col">{{ inputName }}</span> &nbsp;
+            </i18n-t>
+          </span>
           <span v-else>{{ $t('others.worldFolder.add') }}</span>
         </ss-btn>
       </template>

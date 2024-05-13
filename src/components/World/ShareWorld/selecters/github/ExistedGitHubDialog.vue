@@ -51,9 +51,10 @@ async function setRemote() {
       @ok-click="setRemote"
     >
       <p
-        style="font-size: 0.8rem; opacity: 0.8"
-        v-html="$t('shareWorld.existedDialog', { rWorldName: rWorldName })"
-      ></p>
+        style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line;"
+      >
+        {{ $t('shareWorld.existedDialog', { rWorldName: rWorldName }) }}
+      </p>
 
       <WorldItem
         :icon="rIcon"

@@ -14,7 +14,13 @@ isSkipRegister.value = false;
 
 <template>
   <div>
-    <p class="text-caption" v-html="$t('home.ngrok.dialog.firstPage.desc')" />
+    <p class="text-caption" style="white-space: pre-line">
+      <i18n-t keypath="home.ngrok.dialog.firstPage.desc">
+        <u>
+          {{ $t('home.ngrok.dialog.firstPage.assumption') }}
+        </u>
+      </i18n-t>
+    </p>
 
     <div class="column q-gutter-lg q-mt-xs">
       <!-- 大きな登録ボタンを表示 -->

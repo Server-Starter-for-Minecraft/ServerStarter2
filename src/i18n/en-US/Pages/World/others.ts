@@ -10,7 +10,7 @@ export const enOthers: MessageSchema['others'] = {
     title: 'Manage a backup world',
     backupDesc:
       '\
-      Make backup of this world<br>\
+      Make backup of this world\n\
       Backed-up world data can be accessed from "Recover from Backup"',
     makeBackup: 'Make backup',
     recoverFromBackup: 'Recover from backup',
@@ -23,7 +23,7 @@ export const enOthers: MessageSchema['others'] = {
     addFolder: 'Add world folder',
     updateFolder: 'Update world folder',
     add: 'Add a new World folder',
-    addBtn: 'Add &nbsp; <span class="text-omit col">{name}</span>',
+    addBtn: 'Add {0}{1}',
     folderName: 'Name of world folder',
     select: 'Select folder',
     exist: '{name} already exists',
