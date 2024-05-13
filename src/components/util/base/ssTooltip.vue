@@ -36,6 +36,7 @@ type Self =
   | 'bottom end';
 
 interface Prop {
+  name: string;
   anchor?: Anchor;
   self?: Self;
   fontSize?: string;
@@ -57,9 +58,9 @@ defineProps<Prop>();
         border: `1.5px solid grey`,
         'font-size': fontSize ?? '.7rem',
       }"
-      style="word-break: break-word; border-radius: 5px"
+      style="word-break: break-word; border-radius: 5px; white-space: pre-line"
     >
-      <slot />
+      {{ name }}
     </div>
   </q-tooltip>
 </template>
