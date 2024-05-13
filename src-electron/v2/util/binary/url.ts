@@ -77,8 +77,6 @@ if (import.meta.vitest) {
       method: 'GET',
     });
 
-    // TODO:
+    // TODO: Url.child Url.with のテストを書く
   });
-
-  test('', () => {});
 }
