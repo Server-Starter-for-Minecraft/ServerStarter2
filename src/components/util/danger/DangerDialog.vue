@@ -24,7 +24,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
       </template>
       <div
         class="q-my-none flex"
-        style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line;"
+        style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line"
       >
         {{ dialogDesc }}
       </div>

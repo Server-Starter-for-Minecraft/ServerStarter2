@@ -49,7 +49,7 @@ function changeLocale(loc: Locale) {
       <q-card-section class="q-mt-md">
         <h1>{{ $t('welcome.term') }}</h1>
 
-        <p class="text-caption" style="opacity: 0.6; white-space: pre-line;">
+        <p class="text-caption" style="opacity: 0.6; white-space: pre-line">
           <i18n-t keypath="welcome.termDesc" tag="false">
             <SsA url="https://civiltt.github.io/ServerStarter/credit">
               {{ $t('welcome.link') }}

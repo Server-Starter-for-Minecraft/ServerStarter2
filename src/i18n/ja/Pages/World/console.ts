@@ -8,14 +8,12 @@ export const jaConsole = {
     btn: '停止',
     withName: '{1} を停止',
     progress: '停止処理中',
-    progressWithName:
-      '{1} を停止しています',
+    progressWithName: '{1} を停止しています',
   },
   reboot: {
     btn: '再起動',
     progress: '再起動中',
-    progressWithName:
-      '{1} を再起動しています',
+    progressWithName: '{1} を再起動しています',
   },
   status: {
     Stop: '停止中',

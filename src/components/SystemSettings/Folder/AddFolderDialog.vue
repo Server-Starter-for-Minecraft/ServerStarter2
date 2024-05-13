@@ -88,7 +88,7 @@ function isErrorContainer(c: WorldContainerSetting) {
             class="col row"
             style="white-space: pre-line"
           >
-          <i18n-t keypath="others.worldFolder.addBtn">
+            <i18n-t keypath="others.worldFolder.addBtn">
               &nbsp;
               <span class="text-omit col">{{ inputName }}</span> &nbsp;
             </i18n-t>
