@@ -2,7 +2,7 @@ import * as stream from 'stream';
 import { Err, Result, err, ok } from '../base';
 import { Readable, ReadableStreamer, WritableStreamer } from './stream';
 
-export class Bytes implements ReadableStreamer {
+export class Bytes extends ReadableStreamer {
   static write(readable: stream.Readable): Promise<Result<Bytes, Error>> {
     const buffers: Buffer[] = [];
     let e: undefined | Err<Error> = undefined;
@@ -22,7 +22,13 @@ export class Bytes implements ReadableStreamer {
   readonly data: Buffer;
 
   constructor(data: Buffer) {
+    super();
     this.data = data;
+  }
+
+  /** Bufferを文字列化 (デフォルト utf8) */
+  toString(encoding: BufferEncoding = 'utf8') {
+    return this.data.toString(encoding);
   }
 
   createReadStream(): Readable {
@@ -42,14 +48,6 @@ export class Bytes implements ReadableStreamer {
 
     return readable;
   }
-
-  convert(duplex: stream.Duplex): Readable {
-    return this.createReadStream().convert(duplex);
-  }
-
-  to<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
-    return this.createReadStream().to(target);
-  }
 }
 
 /** In Source Testing */
@@ -57,7 +55,7 @@ if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('bytes', async () => {
     const bytes = new Bytes(Buffer.from('hello world / こんにちは世界'));
-    const copy = await bytes.to(Bytes);
+    const copy = await bytes.into(Bytes);
     expect(copy.value.data.toString('utf8')).toBe(
       'hello world / こんにちは世界'
     );

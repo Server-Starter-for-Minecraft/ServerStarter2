@@ -1,11 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import {
-  DuplexStreamer,
-  Readable,
-  ReadableStreamer,
-  WritableStreamer,
-} from './stream';
+import { DuplexStreamer, Readable } from './stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import * as stream from 'stream';
 import { Err, Result, err, ok } from '../base';
@@ -14,9 +9,10 @@ function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
 }
 
-export class Path implements DuplexStreamer<void> {
+export class Path extends DuplexStreamer<void> {
   path: string;
   constructor(value?: string) {
+    super();
     if (value === undefined) {
       this.path = '';
     } else {
@@ -26,14 +22,6 @@ export class Path implements DuplexStreamer<void> {
 
   createReadStream(): Readable {
     return new Readable(fs.createReadStream(this.str()));
-  }
-
-  convert(duplex: stream.Duplex): Readable {
-    return this.createReadStream().convert(duplex);
-  }
-
-  to<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
-    return this.createReadStream().to(target);
   }
 
   write(readable: stream.Readable): Promise<Result<void, Error>> {
@@ -303,12 +291,13 @@ if (import.meta.vitest) {
 
     const src = testdir.child('src.txt');
     const tgt = testdir.child('tgt.txt');
+    const mis = testdir.child('mis.txt');
 
     // ファイルの中身をコピー
     await src.writeText('hello world');
     expect((await src.readText()).value).toBe('hello world');
 
-    await src.to(tgt);
+    await src.into(tgt);
 
     expect((await tgt.readText()).value).toBe('hello world');
     await tgt.remove();
@@ -316,16 +305,18 @@ if (import.meta.vitest) {
     const { Bytes } = await import('./bytes');
 
     // ファイルの中身をバイト列に変換
-    const bytes = (await src.to(Bytes)).value;
+    const bytes = (await src.into(Bytes)).value;
 
     expect(bytes.data.toString('utf8')).toBe('hello world');
 
     // バイト列をファイルに書き込み
-    await bytes.to(tgt);
+    await bytes.into(tgt);
 
     expect((await tgt.readText()).value).toBe('hello world');
 
     await tgt.remove();
+
+    expect((await mis.into(Bytes)).error.message).toContain('ENOENT');
 
     // 後片付け
     await testdir.remove();
