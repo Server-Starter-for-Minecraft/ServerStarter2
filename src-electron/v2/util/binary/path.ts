@@ -4,7 +4,7 @@ import { DuplexStreamer, Readable } from './stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import * as stream from 'stream';
 import { Err, Result, err, ok } from '../base';
-import { createErrorReadable } from './util';
+import { asyncPipe } from './util';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
@@ -30,19 +30,9 @@ export class Path extends DuplexStreamer<void> {
 
   async write(readable: stream.Readable): Promise<Result<void, Error>> {
     // ファイルが既に存在する場合、エラーにする
-    if (this.exists()) return err(new Error('entry already exists'));
-    let e: Err<Error> | undefined = undefined;
-    const stream = fs.createWriteStream(this.path);
-
-    readable.on('error', stream.destroy);
-    readable.pipe(stream).on('error', (error) => (e = err(error)));
-
-    return new Promise<Result<void, Error>>((resolve) => {
-      readable.on('close', () => {
-        if (e !== undefined) return resolve(e);
-        resolve(ok(undefined));
-      });
-    });
+    if (this.exists()) return err(new Error('EEXIST'));
+    const writable = fs.createWriteStream(this.path);
+    return asyncPipe(readable, writable);
   }
 
   child(child: string) {

@@ -1,25 +1,18 @@
 import { Err, Result, err, ok } from '../base';
 import { IWritableStreamer } from './stream';
 import { createHash } from 'crypto';
+import { asyncPipe } from './util';
 
 type HashAlgorithm = 'sha256' | 'sha1' | 'md5';
 function hashFunc(algorithm: HashAlgorithm): IWritableStreamer<string> {
   return {
     write(readable) {
-      let e: undefined | Err<Error> = undefined;
+      const e: undefined | Err<Error> = undefined;
 
       const hash = createHash(algorithm);
-      readable.on('error', hash.destroy);
-      const returnHash = readable
-        .pipe(hash)
-        .on('error', (error) => (e = err(error)));
-
-      return new Promise<Result<string, Error>>((resolve) => {
-        readable.on('close', () => {
-          if (e !== undefined) return resolve(e);
-          resolve(ok(returnHash.digest().toString('hex')));
-        });
-      });
+      return asyncPipe(readable, hash).then((result) =>
+        result.map(() => hash.digest().toString('hex'))
+      );
     },
   };
 }
@@ -27,7 +20,6 @@ function hashFunc(algorithm: HashAlgorithm): IWritableStreamer<string> {
 export const SHA256: IWritableStreamer<string> = hashFunc('sha256');
 export const SHA1: IWritableStreamer<string> = hashFunc('sha1');
 export const MD5: IWritableStreamer<string> = hashFunc('md5');
-
 
 /** In Source Testing */
 if (import.meta.vitest) {
