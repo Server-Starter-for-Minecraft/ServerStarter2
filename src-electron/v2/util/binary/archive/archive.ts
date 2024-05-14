@@ -1,25 +1,13 @@
 import { Path } from '../path';
-import { DuplexStreamer } from '../stream';
-
-export class Archive {
-  readonly path: Path;
-  constructor(path: Path) {
-    this.path = path;
-  }
-  as(archiver: Archiver): DuplexStreamer<void> {
-    return archiver.archive(this.path);
-  }
-}
+import { ReadableStreamer, WritableStreamer } from '../stream';
 
 export interface Archiver {
-  archive(path: Path): DuplexStreamer<void>;
+  pack(path: Path): ReadableStreamer;
+  extrect(path: Path): WritableStreamer<void>;
 }
 
-// const zip():Archiver{
-// }
+// declare const archiver: Archiver;
 
-// new Archive(new Path('./test/dir'))
-//   .as(tar())
-//   .into(new Path('./test/tar.tgz'));
+// archiver.pack(new Path('./test/dir')).into(new Path('./test/tar.tgz'));
 
-// new Path('./test/tar.tgz').into(new Archive(new Path('./test/dir')).as(tar()));
+// new Path('./test/tar.tgz').into(archiver.extrect(new Path('./test/dir')));
