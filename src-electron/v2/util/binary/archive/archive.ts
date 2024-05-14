@@ -1,9 +1,12 @@
 import { Path } from '../path';
 import { ReadableStreamer, WritableStreamer } from '../stream';
 
-export interface Archiver {
-  pack(path: Path): ReadableStreamer;
-  extrect(path: Path): WritableStreamer<void>;
+export interface Archiver<
+  PackOPT extends Record<string, any>,
+  ExtractOPT extends Record<string, any>
+> {
+  pack(path: Path, opt?: PackOPT): ReadableStreamer;
+  extrect(path: Path, opt?: ExtractOPT): WritableStreamer<void>;
 }
 
 // declare const archiver: Archiver;
