@@ -5,3 +5,6 @@
 // \n -> \n
 // \r\n -> \n
 // \r -> \n
+
+// https://www.npmjs.com/package/line-transform-stream
+// これのほうが扱いやすそう
