@@ -4,29 +4,35 @@ import { DuplexStreamer, Readable } from './stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import * as stream from 'stream';
 import { Err, Result, err, ok } from '../base';
+import { createErrorReadable } from './util';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
 }
 
 export class Path extends DuplexStreamer<void> {
-  path: string;
+  private _path: string;
   constructor(value?: string) {
     super();
     if (value === undefined) {
-      this.path = '';
+      this._path = '';
     } else {
-      this.path = path.normalize(replaceSep(value));
+      this._path = path.normalize(replaceSep(value));
     }
+  }
+  toString(): string {
+    return this.path;
   }
 
   createReadStream(): Readable {
-    return new Readable(fs.createReadStream(this.str()));
+    return new Readable(fs.createReadStream(this.path));
   }
 
-  write(readable: stream.Readable): Promise<Result<void, Error>> {
+  async write(readable: stream.Readable): Promise<Result<void, Error>> {
+    // ファイルが既に存在する場合、エラーにする
+    if (this.exists()) return err(new Error('entry already exists'));
     let e: Err<Error> | undefined = undefined;
-    const stream = fs.createWriteStream(this.str());
+    const stream = fs.createWriteStream(this.path);
 
     readable.on('error', stream.destroy);
     readable.pipe(stream).on('error', (error) => (e = err(error)));
@@ -40,81 +46,82 @@ export class Path extends DuplexStreamer<void> {
   }
 
   child(child: string) {
-    if (this.path !== '') {
-      return new Path(path.join(this.path, child));
+    if (this._path !== '') {
+      return new Path(path.join(this._path, child));
     }
     return new Path(child);
   }
 
   parent(times = 1) {
-    if (this.path) {
-      return new Path(path.join(this.path, ...new Array(times).fill('..')));
+    if (this._path) {
+      return new Path(path.join(this._path, ...new Array(times).fill('..')));
     }
     return new Path(path.join(...Array(times).fill('..')));
   }
 
   absolute() {
-    return new Path(path.resolve(this.path));
+    return new Path(path.resolve(this._path));
   }
 
   /** このpathを起点にしたtargetの相対パスを返す */
   relativeto(target: Path) {
-    return new Path(path.relative(this.path, target.path));
+    return new Path(path.relative(this._path, target._path));
   }
 
-  str() {
-    return this.path;
+  /** パスを文字列化する */
+  get path() {
+    return this._path;
   }
 
   /** "で囲まれたパス文字列を返す */
-  strQuoted() {
-    return '"' + this.path.replace('\\', '\\\\').replace('"', '\\"') + '"';
+  get quotedPath() {
+    return '"' + this._path.replace('\\', '\\\\').replace('"', '\\"') + '"';
   }
 
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
   basename() {
-    return path.basename(this.path);
+    return path.basename(this._path);
   }
 
   /** ディレクトリ階層を除いたファイル名(拡張子なし)を返す ".../../file.txt" -> "file" */
   stemname() {
-    return path.basename(this.path, this.extname());
+    return path.basename(this._path, this.extname());
   }
 
   /** 拡張子を返す ".../../file.txt" -> ".txt" */
   extname() {
-    return path.extname(this.path);
+    return path.extname(this._path);
   }
 
   exists() {
-    return fs.existsSync(this.path);
+    return fs.existsSync(this._path);
   }
 
   async isDirectory() {
-    return (await fs.stat(this.absolute().str())).isDirectory();
+    return (await fs.stat(this.absolute().path)).isDirectory();
   }
 
   /** ファイルの最終更新時刻を取得 */
   async lastUpdateTime(): Promise<Date> {
-    return (await fs.stat(this.str())).mtime;
+    return (await fs.stat(this.path)).mtime;
   }
 
   async rename(newpath: Path) {
     await newpath.parent().mkdir();
-    await fs.rename(this.path, newpath.absolute().str());
+    await fs.rename(this._path, newpath.absolute().path);
   }
 
   async mkdir() {
-    if (!this.exists()) await fs.mkdir(this.path, { recursive: true });
+    if (!this.exists()) await fs.mkdir(this._path, { recursive: true });
   }
 
   /** 同期ディレクトリ生成(非推奨) */
   mkdirSync() {
-    if (!this.exists()) fs.mkdirSync(this.path, { recursive: true });
+    if (!this.exists()) fs.mkdirSync(this._path, { recursive: true });
   }
 
   async mklink(target: Path) {
-    await new Promise((resolve) => fs.link(target.path, this.path, resolve));
+    await new Promise((resolve) => fs.link(target._path, this._path, resolve));
   }
 
   /**
@@ -124,7 +131,7 @@ export class Path extends DuplexStreamer<void> {
    */
   async writeText(content: string, encoding: BufferEncoding = 'utf8') {
     await this.parent().mkdir();
-    await fs.writeFile(this.path, content, { encoding });
+    await fs.writeFile(this._path, content, { encoding });
   }
 
   /**
@@ -135,7 +142,7 @@ export class Path extends DuplexStreamer<void> {
     encoding: BufferEncoding = 'utf8'
   ): Promise<Result<string, Error>> {
     try {
-      return ok(await fs.readFile(this.path, { encoding }));
+      return ok(await fs.readFile(this._path, { encoding }));
     } catch (e) {
       return err(e as Error);
     }
@@ -147,12 +154,12 @@ export class Path extends DuplexStreamer<void> {
    */
   async appendText(content: string, encoding: BufferEncoding = 'utf8') {
     await this.parent().mkdir();
-    await fs.appendFile(this.path, content, { encoding });
+    await fs.appendFile(this._path, content, { encoding });
   }
 
   async iter() {
     if (this.exists() && (await this.isDirectory()))
-      return (await fs.readdir(this.path)).map((p) => this.child(p));
+      return (await fs.readdir(this._path)).map((p) => this.child(p));
     return [];
   }
 
@@ -162,9 +169,9 @@ export class Path extends DuplexStreamer<void> {
   async remove(): Promise<void> {
     if (!this.exists()) return;
     if (await this.isDirectory()) {
-      await fs.rm(this.path, { recursive: true });
+      await fs.rm(this._path, { recursive: true });
     } else {
-      await fs.unlink(this.path);
+      await fs.unlink(this._path);
     }
   }
 
@@ -172,7 +179,7 @@ export class Path extends DuplexStreamer<void> {
     if (!this.exists()) return;
     await target.parent().mkdir();
     await target.remove();
-    await fs.copy(this.str(), target.str());
+    await fs.copy(this.path, target.path);
   }
 
   async moveTo(target: Path) {
@@ -188,7 +195,7 @@ export class Path extends DuplexStreamer<void> {
           await recursiveMove(child, target.child(child.basename()));
         });
       } else {
-        await fs.move(path.str(), target.str());
+        await fs.move(path.path, target.path);
       }
       await path.remove();
     }
@@ -196,7 +203,7 @@ export class Path extends DuplexStreamer<void> {
   }
 
   async changePermission(premission: number) {
-    await changePermissionsRecursively(this.path, premission);
+    await changePermissionsRecursively(this._path, premission);
   }
 }
 
@@ -219,30 +226,28 @@ if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('path', () => {
     // パス操作のテスト
-    expect(new Path('.').str()).toBe('.');
-    expect(new Path('./').str()).toBe('.');
-    expect(new Path('').str()).toBe('.');
+    expect(new Path('.').path).toBe('.');
+    expect(new Path('./').path).toBe('.');
+    expect(new Path('').path).toBe('.');
 
-    expect(new Path('..').str()).toBe('..');
-    expect(new Path('../').str()).toBe('..');
+    expect(new Path('..').path).toBe('..');
+    expect(new Path('../').path).toBe('..');
 
-    expect(new Path('./').child('foo').str()).toBe('foo');
-    expect(new Path('./').child('foo/').str()).toBe('foo');
-    expect(new Path('./').child('/foo/').str()).toBe('foo');
+    expect(new Path('./').child('foo').path).toBe('foo');
+    expect(new Path('./').child('foo/').path).toBe('foo');
+    expect(new Path('./').child('/foo/').path).toBe('foo');
 
-    expect(new Path('./').child('foo').str()).toBe('foo');
-    expect(new Path('./').child('/foo/').str()).toBe('foo');
+    expect(new Path('./').child('foo').path).toBe('foo');
+    expect(new Path('./').child('/foo/').path).toBe('foo');
 
-    expect(new Path('foo').str()).toBe('foo');
-    expect(new Path('foo/').str()).toBe('foo');
+    expect(new Path('foo').path).toBe('foo');
+    expect(new Path('foo/').path).toBe('foo');
 
-    expect(new Path('foo').child('bar').str()).toBe(new Path('foo/bar').str());
-    expect(new Path('foo/').child('/bar/').str()).toBe(
-      new Path('foo/bar').str()
-    );
+    expect(new Path('foo').child('bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('foo/').child('/bar/').path).toBe(new Path('foo/bar').path);
 
-    expect(new Path('foo/bar').parent().str()).toBe(new Path('foo').str());
-    expect(new Path('foo/bar').parent(2).str()).toBe(new Path('').str());
+    expect(new Path('foo/bar').parent().path).toBe(new Path('foo').path);
+    expect(new Path('foo/bar').parent(2).path).toBe(new Path('').path);
   });
   test('file', async () => {
     // ファイル操作のテスト
@@ -297,7 +302,12 @@ if (import.meta.vitest) {
     await src.writeText('hello world');
     expect((await src.readText()).value).toBe('hello world');
 
+    expect(tgt.exists()).toBe(false);
+    console.log('###');
+
+    console.log(tgt.exists());
     await src.into(tgt);
+    console.log('###');
 
     expect((await tgt.readText()).value).toBe('hello world');
     await tgt.remove();
@@ -309,6 +319,8 @@ if (import.meta.vitest) {
 
     expect(bytes.data.toString('utf8')).toBe('hello world');
 
+    expect(tgt.exists()).toBe(false);
+
     // バイト列をファイルに書き込み
     await bytes.into(tgt);
 
@@ -317,6 +329,10 @@ if (import.meta.vitest) {
     await tgt.remove();
 
     expect((await mis.into(Bytes)).error.message).toContain('ENOENT');
+
+    // TODO: 失敗するストリームの調査
+    // TODO: すでにあるファイルにストリームを書き込めないことを検証
+    // TODO: ストリームの書き込みに失敗した場合にファイルが削除されることを確認
 
     // 後片付け
     await testdir.remove();
