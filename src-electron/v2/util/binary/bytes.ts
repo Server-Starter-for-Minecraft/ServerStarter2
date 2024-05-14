@@ -28,7 +28,7 @@ export class Bytes extends ReadableStreamer {
 
   /** 文字列からBytesを生成 (デフォルト utf8) */
   static fromString(data: string, encoding: BufferEncoding = 'utf8') {
-    return new Bytes(Buffer.from(data));
+    return new Bytes(Buffer.from(data, encoding));
   }
   /** Bytesを文字列化 (デフォルト utf8) */
   toString(encoding: BufferEncoding = 'utf8') {
