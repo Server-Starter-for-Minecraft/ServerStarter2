@@ -1,9 +1,7 @@
-// https://www.npmjs.com/package/base64-stream
-
 import { Base64Decode, Base64Encode } from 'base64-stream';
 
 export const fromBase64 = new Base64Decode();
-export const toBase64 = new Base64Encode({ outputEncoding: "utf8" });
+export const toBase64 = new Base64Encode({ outputEncoding: 'utf8' });
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -12,10 +10,12 @@ if (import.meta.vitest) {
 
   const testCases = [
     {
+      converter: toBase64,
       srcText: 'test',
       convText: 'dGVzdA==',
     },
     {
+      converter: fromBase64,
       srcText: 'c2FtcGxl',
       convText: 'sample',
     },
@@ -23,7 +23,8 @@ if (import.meta.vitest) {
 
   test.each(testCases)('base64', async (tCase) => {
     const src = Bytes.fromString(tCase.srcText);
-    expect((await src.convert(fromBase64).into(Bytes)).value).toBe(tCase.convText);
+    expect((await src.convert(tCase.converter).into(Bytes)).value).toBe(
+      tCase.convText
+    );
   });
 }
-
