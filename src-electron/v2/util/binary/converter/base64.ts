@@ -1,7 +1,7 @@
 import { Base64Decode, Base64Encode } from 'base64-stream';
 
-export const fromBase64 = new Base64Decode();
-export const toBase64 = new Base64Encode({ outputEncoding: 'utf8' });
+export const fromBase64 = () => new Base64Decode();
+export const toBase64 = () => new Base64Encode({ outputEncoding: null });
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -21,10 +21,10 @@ if (import.meta.vitest) {
     },
   ];
 
-  test.each(testCases)('base64', async (tCase) => {
+  test.each(testCases)('base64 ($srcText -> $convText)', async (tCase) => {
     const src = Bytes.fromString(tCase.srcText);
-    expect((await src.convert(tCase.converter).into(Bytes)).value).toBe(
-      tCase.convText
-    );
+    expect(
+      (await src.convert(tCase.converter()).into(Bytes)).value.toString()
+    ).toBe(tCase.convText);
   });
 }
