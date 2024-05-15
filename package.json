@@ -39,6 +39,7 @@
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^3.3.1",
     "@quasar/app-vite": "^1.4.3",
+    "@types/base64-stream": "^1.0.5",
     "@types/jszip": "^3.4.1",
     "@types/node": "^20.3.3",
     "@types/tar": "^6.1.5",
@@ -46,6 +47,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "autoprefixer": "^10.4.14",
+    "base64-stream": "^1.0.0",
     "cross-env": "^7.0.3",
     "electron": "^25.8.4",
     "electron-builder": "^24.4.0",
