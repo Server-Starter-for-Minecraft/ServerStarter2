@@ -2,7 +2,6 @@ import * as stream from 'stream';
 import { Err, Opt, Result, err, none, ok, value } from '../base';
 import { Readable, WritableStreamer } from './stream';
 import { ChildProcess, SpawnOptions, spawn } from 'child_process';
-import { asyncPipe } from './util';
 
 export interface SubprocessOptions {}
 
@@ -73,6 +72,25 @@ export class Subprocess extends WritableStreamer<void> {
         })
         .on('error', (error) => (e = err(error)));
     });
+  }
+
+  /**
+   * プロセスの終了を待機
+   *
+   *  Result.value
+   *  - number の場合はExitCode
+   *  - string の場合はSignal
+   */
+  promise(): Promise<Result<number | string, Error>> {
+    return new Promise<Result<number | string, Error>>((resolve) =>
+      this.subprocess
+        .on('error', (e) => resolve(err(e)))
+        .on('exit', (code, signal) => {
+          const result = code ?? signal;
+          if (result === null) throw new Error('ASSERTION');
+          resolve(ok(result));
+        })
+    );
   }
 }
 
