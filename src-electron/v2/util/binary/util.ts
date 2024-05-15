@@ -13,7 +13,10 @@ export async function asyncPipe(
 ) {
   readable.on('error', (error) => writable.destroy(error));
   let e: Err<Error> | undefined = undefined;
-  readable.pipe(writable).on('error', (error) => (e = err(error)));
+  readable.pipe(writable).on('error', (error) => {
+    readable.destroy();
+    e = err(error);
+  });
 
   return new Promise<Result<undefined, Error>>((resolve) => {
     readable.on('close', () => {
@@ -34,7 +37,6 @@ if (import.meta.vitest) {
     // readable と writable で エラー
   });
 }
-
 
 // /**
 //  * 受け取った文字列をErrorでラップして流すだけの一瞬で終了するストリームを作成
