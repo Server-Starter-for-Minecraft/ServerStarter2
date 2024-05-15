@@ -69,6 +69,11 @@
       "description": "軽微な修正 / Simple fix for a non-critical issue."
     },
     {
+      "code": ":goal_net:",
+      "emoji": "🥅",
+      "description": "エラーをキャッチ / Catch errors."
+    },
+    {
       "code": ":pencil2:",
       "emoji": "✏️",
       "description": "誤字を修正 / Fix typos."

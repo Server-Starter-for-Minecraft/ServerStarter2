@@ -13,8 +13,12 @@ export class Bytes extends ReadableStreamer {
 
     return new Promise<Result<Bytes, Error>>((resolve) => {
       readable.on('close', () => {
-        if (e !== undefined) return resolve(e);
-        resolve(ok(new Bytes(Buffer.concat(buffers))));
+        try {
+          if (e !== undefined) return resolve(e);
+          resolve(ok(new Bytes(Buffer.concat(buffers))));
+        } catch (error) {
+          resolve(err(error as Error))
+        }
       });
     });
   }
