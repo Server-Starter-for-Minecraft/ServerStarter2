@@ -293,11 +293,8 @@ if (import.meta.vitest) {
     expect((await src.readText()).value).toBe('hello world');
 
     expect(tgt.exists()).toBe(false);
-    console.log('###');
 
-    console.log(tgt.exists());
     await src.into(tgt);
-    console.log('###');
 
     expect((await tgt.readText()).value).toBe('hello world');
     await tgt.remove();

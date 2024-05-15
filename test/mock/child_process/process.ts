@@ -249,9 +249,7 @@ if (import.meta.vitest) {
   test.each(cases)('exit', async (genProcess) => {
     const process = genProcess();
 
-    process.stdout.on('data', (a: Buffer) => {
-      console.log('message', a.toString());
-    });
+    process.stdout.on('data', (a: Buffer) => {});
 
     expect(process.exitCode).toBe(null);
     expect(process.signalCode).toBe(null);
