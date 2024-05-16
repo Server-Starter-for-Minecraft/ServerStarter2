@@ -18,6 +18,12 @@ function stopServer() {
   consoleStore.clickedStopBtn(mainStore.selectedWorldID);
   window.API.sendCommand(mainStore.selectedWorldID, 'stop');
 }
+
+function stopButtonState() {
+  return consoleStore.isClickedBtn(mainStore.selectedWorldID)
+    ? 'console.stop.progressWithName'
+    : 'console.stop.withName';
+}
 </script>
 
 <template>
@@ -52,8 +58,12 @@ function stopServer() {
     <span
       class="col row"
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
-      v-html="$t('console.boot', { name: mainStore.world.name })"
+      style="white-space: pre-line"
     >
+      <i18n-t keypath="console.boot">
+        &nbsp;
+        <span class="text-omit col">{{ mainStore.world.name }}</span> &nbsp;
+      </i18n-t>
     </span>
   </ss-btn>
 
@@ -74,10 +84,15 @@ function stopServer() {
     <span
       class="col row"
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
-      v-html="
-        $t('console.reboot.progressWithName', { name: mainStore.world.name })
-      "
+      style="white-space: pre-line"
     >
+      <i18n-t keypath="console.reboot.progressWithName">
+        &nbsp;
+        <span class="text-omit col">
+          {{ mainStore.world.name }}
+        </span>
+        &nbsp;
+      </i18n-t>
     </span>
   </ss-btn>
 
@@ -100,15 +115,15 @@ function stopServer() {
     <span
       class="col row"
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
-      v-html="
-        $t(
-          consoleStore.isClickedBtn(mainStore.selectedWorldID)
-            ? 'console.stop.progressWithName'
-            : 'console.stop.withName',
-          { name: mainStore.world.name }
-        )
-      "
+      style="white-space: pre-line"
     >
+      <i18n-t :keypath="stopButtonState()">
+        &nbsp;
+        <span class="text-omit col">
+          {{ mainStore.world.name }}
+        </span>
+        &nbsp;
+      </i18n-t>
     </span>
   </ss-btn>
 </template>

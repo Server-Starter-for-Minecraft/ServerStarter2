@@ -99,8 +99,8 @@ export const jaHome = {
       thirdPage: {
         title: 'トークンを登録',
         desc: '\
-        NgrokアカウントとServerStarter2を紐づけます{0}\
-        {1}を開き，表示されたトークンを下に入力してください\
+        NgrokアカウントとServerStarter2を紐づけます\n\
+        {0}を開き，表示されたトークンを下に入力してください\
         ',
         link: '認証トークンを取得するウェブページ',
         inputToken: 'トークンを入力',

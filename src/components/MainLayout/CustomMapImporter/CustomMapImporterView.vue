@@ -124,15 +124,19 @@ onMounted(async () => {
               size="2rem"
               class="q-my-sm q-mr-lg"
             />
-            <p v-html="$t('mainLayout.customMapImporter.loadSingleWorld')"></p>
+            <p style="white-space: pre-line">
+              {{ $t('mainLayout.customMapImporter.loadSingleWorld') }}
+            </p>
           </div>
           <div
             v-else
             class="absolute-center messageText"
-            v-html="$t('mainLayout.customMapImporter.noSingleWorld')"
-          ></div>
+            style="white-space: pre-line"
+          >
+            {{ $t('mainLayout.customMapImporter.noSingleWorld') }}
+          </div>
         </div>
-        <div class="row q-gutter-sm justify-center">
+        <div v-else class="row q-gutter-sm justify-center">
           <template
             v-for="localWorld in localWorlds.sort(
               (w1, w2) => w2.lastPlayed - w1.lastPlayed

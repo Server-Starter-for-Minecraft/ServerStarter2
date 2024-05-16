@@ -101,10 +101,10 @@ export const enUSHome: MessageSchema['home'] = {
       thirdPage: {
         title: 'Register token',
         desc: '\
-        Connect your Ngrok account to ServerStarter2.{0}\
-        Open {1} and input the displayed token below.\
+        Connect your Ngrok account to ServerStarter2.\n\
+        Open {0} and input the displayed token below.\
         ',
-        link: 'page to get an authentication token',
+        link: 'the page to get an authentication token',
         inputToken: 'Input Token',
         checkbox: 'Using this feature for all world',
       },

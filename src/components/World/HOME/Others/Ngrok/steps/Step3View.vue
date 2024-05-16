@@ -8,13 +8,12 @@ const model = defineModel<NgrokDialogReturns>({ required: true });
 
 <template>
   <div>
-    <p class="text-caption">
+    <p class="text-caption" style="white-space: pre-line;">
       <i18n-t
         keypath="home.ngrok.dialog.thirdPage.desc"
         tag="label"
         for="home.ngrok.dialog.thirdPage.link"
       >
-        <br />
         <SsA url="https://dashboard.ngrok.com/get-started/your-authtoken">
           {{ $t('home.ngrok.dialog.thirdPage.link') }}
         </SsA>
