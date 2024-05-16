@@ -19,7 +19,10 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
       @okClick="onDialogOK"
     >
       <template #default>
-        <p class="q-my-none" style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line;">
+        <p
+          class="q-my-none"
+          style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line"
+        >
           <i18n-t keypath="eulaDialog.desc" tag="label">
             <SsA :url="eulaURL">{{ $t('eulaDialog.eula') }}</SsA>
           </i18n-t>

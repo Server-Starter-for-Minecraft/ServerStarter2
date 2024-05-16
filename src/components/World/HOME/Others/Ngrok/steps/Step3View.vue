@@ -8,7 +8,7 @@ const model = defineModel<NgrokDialogReturns>({ required: true });
 
 <template>
   <div>
-    <p class="text-caption" style="white-space: pre-line;">
+    <p class="text-caption" style="white-space: pre-line">
       <i18n-t
         keypath="home.ngrok.dialog.thirdPage.desc"
         tag="label"
