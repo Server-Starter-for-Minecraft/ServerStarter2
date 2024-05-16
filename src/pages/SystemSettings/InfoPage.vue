@@ -122,7 +122,7 @@ function openMIT() {
         </div>
         <div
           class="text-caption q-pt-sm"
-          style="opacity: 0.6; white-space: pre-line;" 
+          style="opacity: 0.6; white-space: pre-line"
         >
           {{ $t('systemsetting.info.licenseDesc') }}
         </div>

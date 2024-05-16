@@ -33,7 +33,7 @@ function openDialog() {
 <template>
   <div class="q-pt-lg">
     <h1 class="q-pt-sm text-negative">{{ viewTitle }}</h1>
-    <p class="text-caption q-pb-sm" style="white-space: pre-line;">
+    <p class="text-caption q-pb-sm" style="white-space: pre-line">
       {{ viewDesc }}
     </p>
     <SsBtn

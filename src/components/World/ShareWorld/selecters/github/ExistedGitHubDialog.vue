@@ -50,9 +50,7 @@ async function setRemote() {
       :onClose="loading ? undefined : onDialogCancel"
       @ok-click="setRemote"
     >
-      <p
-        style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line;"
-      >
+      <p style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line">
         {{ $t('shareWorld.existedDialog', { rWorldName: rWorldName }) }}
       </p>
 

@@ -10,14 +10,12 @@ export const enUSConsole: MessageSchema['console'] = {
     btn: 'close',
     withName: 'CLOSE {0}{1}',
     progress: 'closing',
-    progressWithName:
-      'Working on closing {0}{1}',
+    progressWithName: 'Working on closing {0}{1}',
   },
   reboot: {
     btn: 'reboot',
     progress: 'rebooting',
-    progressWithName:
-      'Working on rebooting {0}{1}',
+    progressWithName: 'Working on rebooting {0}{1}',
   },
   status: {
     Stop: 'Stop',

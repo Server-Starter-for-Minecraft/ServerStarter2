@@ -69,9 +69,13 @@ const slide = ref(1);
         >
           <p style="white-space: pre-line">
             <i18n-t keypath="home.ngrok.dialog.secondPage.howToConnect.desc">
-              <b><u>
-                {{ $t('home.ngrok.dialog.secondPage.howToConnect.changeNum') }}
-              </u></b>
+              <b
+                ><u>
+                  {{
+                    $t('home.ngrok.dialog.secondPage.howToConnect.changeNum')
+                  }}
+                </u></b
+              >
             </i18n-t>
           </p>
           <p>{{ $t('home.ngrok.dialog.secondPage.howToConnect.connect') }}</p>

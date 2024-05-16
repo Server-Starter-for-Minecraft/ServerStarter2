@@ -31,7 +31,7 @@ function onClick() {
 
 <template>
   <p class="text-caption">
-    <span style="white-space: pre-line; opacity: 0.6;">
+    <span style="white-space: pre-line; opacity: 0.6">
       {{ $t('home.ngrok.desc') }}
     </span>
     <br v-if="!consoleStore.isAllWorldStop()" />
