@@ -36,7 +36,7 @@ export async function parseBackUpPath(
   path: Path
 ): Promise<Failable<BackupData>> {
   const ext = path.extname();
-  if (ext !== '.' + BACKUP_EXT)
+  if (ext !== `.${BACKUP_EXT}`)
     return errorMessage.data.path.invalidExt({
       expectedExt: BACKUP_EXT,
       path: path.str(),

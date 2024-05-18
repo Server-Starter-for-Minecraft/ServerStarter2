@@ -121,7 +121,7 @@ export async function getJavaComponent(id: string) {
 export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
-  const jsonpath = vanillaVersionsPath.child('vanilla-' + id + '.json');
+  const jsonpath = vanillaVersionsPath.child(`vanilla-${id}.json`);
   const manifest = await getVersionMainfest();
 
   // version manifestが取得できなかった場合

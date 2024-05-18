@@ -82,7 +82,7 @@ export async function checkEula(
 }
 
 function stringifyEula(agree: boolean, comments: string[]): string {
-  return comments.join('\n') + `\neula=${agree}`;
+  return `${comments.join('\n')}\neula=${agree}`;
 }
 
 function parseEula(txt: string): {

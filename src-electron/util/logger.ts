@@ -203,7 +203,7 @@ const handler: ProxyHandler<LoggerHierarchy> = {
   get(target, subCategory: string) {
     const category = target[loggerSymbol];
     const newCategory =
-      category === undefined ? subCategory : category + '.' + subCategory;
+      category === undefined ? subCategory : `${category}.${subCategory}`;
     return getLoggerHierarchy(newCategory);
   },
 };

@@ -59,9 +59,7 @@ export const setSystemSettings = async (settings: SystemSettings) => {
 export const getDefaultSettings = async (): Promise<SystemWorldSettings> => {
   await sleep(sleepTime);
   console.log(
-    '\u001b[' +
-      31 +
-      'm' +
+    `\u001b[${31}m` +
       'this API is Deprecated use getSystemSettings().world instead' +
       '\u001b[0m'
   );
@@ -81,9 +79,7 @@ export const getVersions = async (
 export const getWorldContainers = async (): Promise<WorldContainers> => {
   await sleep(sleepTime);
   console.log(
-    '\u001b[' +
-      31 +
-      'm' +
+    `\u001b[${31}m` +
       'this API is Deprecated use getSystemSettings().container instead' +
       '\u001b[0m'
   );
@@ -94,9 +90,7 @@ export const getWorldContainers = async (): Promise<WorldContainers> => {
 export const setWorldContainers = async (worldContainers: WorldContainers) => {
   await sleep(sleepTime);
   console.log(
-    '\u001b[' +
-      31 +
-      'm' +
+    `\u001b[${31}m` +
       'this API is Deprecated use setSystemSettings() instead' +
       '\u001b[0m'
   );

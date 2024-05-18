@@ -53,7 +53,7 @@ export class Path {
 
   /** "で囲まれたパス文字列を返す */
   strQuoted() {
-    return '"' + this.path.replace('\\', '\\\\').replace('"', '\\"') + '"';
+    return `"${this.path.replace('\\', '\\\\').replace('"', '\\"')}"`;
   }
 
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */

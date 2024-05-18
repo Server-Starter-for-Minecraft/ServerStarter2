@@ -71,7 +71,7 @@ export class ZipFile {
     if (file === undefined)
       return errorMessage.data.path.notFound({
         type: 'file',
-        path: this.path.path + '(' + path + ')',
+        path: `${this.path.path}(${path})`,
       });
     return await file();
   }

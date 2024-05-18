@@ -77,7 +77,7 @@ function handle<C extends string>(
       ...args: any[]
     ) => {
       handler(event, ...args).then((result) =>
-        ipcRenderer.send('handle:' + channel, result, id)
+        ipcRenderer.send(`handle:${channel}`, result, id)
       );
     };
     ipcRenderer.on(channel, listener);

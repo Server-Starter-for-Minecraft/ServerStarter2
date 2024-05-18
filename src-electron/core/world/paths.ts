@@ -21,7 +21,7 @@ export async function getWorldPaths(
     case 'world':
       return path.child(LEVEL_NAME).str();
     case 'datapacks':
-      return path.child(LEVEL_NAME + '/datapacks').str();
+      return path.child(`${LEVEL_NAME}/datapacks`).str();
     case 'mods':
       return path.child('mods').str();
     case 'plugins':

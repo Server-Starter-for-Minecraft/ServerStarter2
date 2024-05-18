@@ -202,7 +202,7 @@ export async function deleteWorld(
   await git.init();
 
   // リモートのブランチを削除
-  const push = await safeExecAsync(() => git.push(url, ':' + remote.name));
+  const push = await safeExecAsync(() => git.push(url, `:${remote.name}`));
 
   // 一時フォルダを削除
   await gitTempPath.remove();

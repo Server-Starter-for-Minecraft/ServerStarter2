@@ -20,7 +20,7 @@ async function checkUpdate(pat: string | undefined) {
   // アップデートの取得に失敗
   if (isError(latestRelease)) return latestRelease;
   // アップデートなし
-  if ('v' + currentVersion === latestRelease.version) return false;
+  if (`v${currentVersion}` === latestRelease.version) return false;
   return latestRelease;
 }
 

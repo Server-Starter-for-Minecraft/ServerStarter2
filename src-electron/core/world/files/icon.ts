@@ -5,7 +5,7 @@ import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 
-const ICON_PATH = LEVEL_NAME + '/icon.png';
+const ICON_PATH = `${LEVEL_NAME}/icon.png`;
 
 export const serverIconFile: ServerSettingFile<ImageURI | undefined> = {
   async load(cwdPath) {

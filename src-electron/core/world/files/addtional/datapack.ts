@@ -62,7 +62,7 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 export const datapackFiles = new ServerAdditionalFiles<DatapackData>(
   'datapack',
   DATAPACK_CACHE_PATH,
-  LEVEL_NAME + '/datapacks',
+  `${LEVEL_NAME}/datapacks`,
   loader,
   installer
 );

@@ -69,6 +69,7 @@ module.exports = {
   // add your custom rules here
   rules: {
     'prefer-promise-reject-errors': 'off',
+    'prefer-template': 'error',
 
     quotes: ['warn', 'single', { avoidEscape: true }],
 

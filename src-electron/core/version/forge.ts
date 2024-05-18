@@ -80,7 +80,7 @@ async function installForgeVersion(version: ForgeVersion, cwdPath: Path) {
   // 元のforge関連のファイルを削除
   await uninstallForgeVersion(cwdPath);
 
-  const installerPath = cwdPath.child('forge-' + version.id + '-installer.jar');
+  const installerPath = cwdPath.child(`forge-${version.id}-installer.jar`);
 
   // インストーラーのダウンロードURLを取得
   const serverURL = version.download_url;
@@ -154,7 +154,7 @@ async function getProgramArguments(serverCwdPath: Path, version: ForgeVersion) {
 
   return errorMessage.data.path.notFound({
     type: 'file',
-    path: runPath.path + '|' + jarpath.path,
+    path: `${runPath.path}|${jarpath.path}`,
   });
 }
 

@@ -25,7 +25,7 @@ export async function createTar(
       {
         gzip,
         portable: true,
-        cwd: path + '/',
+        cwd: `${path}/`,
         // preservePaths: true,
       },
       inner.map((x) => x.basename())

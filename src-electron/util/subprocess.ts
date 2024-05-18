@@ -23,7 +23,7 @@ function promissifyProcess(
   beforeKillTimeout = 1000
 ) {
   const logger = loggers.promissifyProcess({
-    command: processPath.strQuoted() + ' ' + args.join(' '),
+    command: `${processPath.strQuoted()} ${args.join(' ')}`,
   });
   logger.start();
 
@@ -82,7 +82,7 @@ function promissifyProcess(
 
   const write = (msg: string) =>
     new Promise<void>((resolve) => {
-      if (process.stdin) process.stdin.write(msg + '\n', () => resolve());
+      if (process.stdin) process.stdin.write(`${msg}\n`, () => resolve());
       else resolve();
     });
   promise.kill = kill;

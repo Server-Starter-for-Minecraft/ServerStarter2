@@ -116,7 +116,7 @@ async function readyVersion(
 
   const { name, sha256 } = json.downloads.application;
 
-  const jarURL = buildURL + `/downloads/${name}`;
+  const jarURL = `${buildURL}/downloads/${name}`;
 
   const s = progress?.subtitle({
     key: 'server.readyVersion.papermc.readyServerData',

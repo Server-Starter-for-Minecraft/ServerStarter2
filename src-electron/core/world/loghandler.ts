@@ -18,7 +18,7 @@ export class WorldLogHandler {
     this.logsPath = worldPath.child('logs');
     this.tempPath = new AwaitOnce(async () => {
       const dir = await dirGetter.get();
-      return dir.child(genUUID() + '.log');
+      return dir.child(`${genUUID()}.log`);
     });
   }
 

@@ -268,11 +268,11 @@ export function constructWorldSettings(world: World | WorldEdited) {
   return worldSettings;
 }
 
-const VANILLA_NETHER_DIM = LEVEL_NAME + '/DIM-1';
-const VANILLA_THE_END_DIM = LEVEL_NAME + '/DIM1';
+const VANILLA_NETHER_DIM = `${LEVEL_NAME}/DIM-1`;
+const VANILLA_THE_END_DIM = `${LEVEL_NAME}/DIM1`;
 
-const PLUGIN_NETHER_DIM = LEVEL_NAME + '_nether/DIM-1';
-const PLUGIN_THE_END_DIM = LEVEL_NAME + '_the_end/DIM1';
+const PLUGIN_NETHER_DIM = `${LEVEL_NAME}_nether/DIM-1`;
+const PLUGIN_THE_END_DIM = `${LEVEL_NAME}_the_end/DIM1`;
 
 /** ワールドのディレクトリが vanilla | plugin のどちらかを推定する
  * world_nether/DIM-1, world_the_end/DIM-1 のどちらかが存在する場合は plugin
