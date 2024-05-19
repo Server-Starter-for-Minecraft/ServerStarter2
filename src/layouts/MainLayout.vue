@@ -9,7 +9,7 @@ const maxLeftWidth = 400;
 </script>
 
 <template>
-  <q-layout view="hHh Lpr rff">
+  <q-layout view="lHr Lpr lfr">
     <q-splitter
       v-model="sysStore.systemSettings.user.drawerWidth"
       :limits="[minLeftWidth, maxLeftWidth]"
