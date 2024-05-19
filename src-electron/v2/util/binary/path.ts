@@ -12,12 +12,14 @@ function replaceSep(pathstr: string) {
 
 export class Path extends DuplexStreamer<void> {
   private _path: string;
-  constructor(value?: string) {
+  constructor(value?: string | Path) {
     super();
     if (value === undefined) {
       this._path = '';
-    } else {
+    } else if (typeof value === 'string') {
       this._path = path.normalize(replaceSep(value));
+    } else {
+      this._path = value._path;
     }
   }
   toString(): string {
