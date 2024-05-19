@@ -46,7 +46,9 @@ function closeClicked() {
       </q-card-section>
       <q-card-section>
         <div style="font-size: 1rem; opacity: 0.6; white-space: pre-line">
-          {{ $t('autoshutdown.desc', { time: Math.round(autoShutdownCounter) }) }}
+          {{
+            $t('autoshutdown.desc', { time: Math.round(autoShutdownCounter) })
+          }}
         </div>
       </q-card-section>
       <q-card-actions align="right">
