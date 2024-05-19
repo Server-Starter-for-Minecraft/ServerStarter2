@@ -86,7 +86,7 @@ export function err<E>(value: E) {
   return new Err(value);
 }
 
-export type Result<T, E> = (Ok<T> | Err<E>) & {
+export type Result<T, E = Error> = (Ok<T> | Err<E>) & {
   map<U>(op: (ok: T) => U): Result<U, E>;
 };
 
