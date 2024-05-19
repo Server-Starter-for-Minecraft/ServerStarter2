@@ -7,6 +7,7 @@ import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
+import SsI18nT from '../util/base/SsI18nT.vue';
 import SsSelect from '../util/base/ssSelect.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
@@ -50,11 +51,11 @@ function changeLocale(loc: Locale) {
         <h1>{{ $t('welcome.term') }}</h1>
 
         <p class="text-caption" style="opacity: 0.6; white-space: pre-line">
-          <i18n-t keypath="welcome.termDesc" tag="false">
+          <SsI18nT keypath="welcome.termDesc" tag="false">
             <SsA url="https://civiltt.github.io/ServerStarter/credit">
               {{ $t('welcome.link') }}
             </SsA>
-          </i18n-t>
+          </SsI18nT>
         </p>
         <q-checkbox v-model="isAgree" :label="$t('welcome.agreeTerm')" />
       </q-card-section>

@@ -7,6 +7,7 @@ import { omitPath, tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsI18nT from 'src/components/util/base/SsI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
@@ -88,10 +89,10 @@ function isErrorContainer(c: WorldContainerSetting) {
             class="col row"
             style="white-space: pre-line"
           >
-            <i18n-t keypath="others.worldFolder.addBtn">
+            <SsI18nT keypath="others.worldFolder.addBtn">
               &nbsp;
               <span class="text-omit col">{{ inputName }}</span> &nbsp;
-            </i18n-t>
+            </SsI18nT>
           </span>
           <span v-else>{{ $t('others.worldFolder.add') }}</span>
         </ss-btn>

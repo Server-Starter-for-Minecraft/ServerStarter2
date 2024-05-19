@@ -2,6 +2,7 @@
 import { useDialogPluginComponent } from 'quasar';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
+import SsI18nT from '../util/base/SsI18nT.vue';
 import BaseDialogCard from '../util/baseDialog/baseDialogCard.vue';
 import { EulaDialogProp } from './iEulaDialog';
 
@@ -23,9 +24,9 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
           class="q-my-none"
           style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line"
         >
-          <i18n-t keypath="eulaDialog.desc" tag="label">
+          <SsI18nT keypath="eulaDialog.desc" tag="label">
             <SsA :url="eulaURL">{{ $t('eulaDialog.eula') }}</SsA>
-          </i18n-t>
+          </SsI18nT>
         </p>
       </template>
       <template #additionalBtns>

@@ -4,6 +4,7 @@ import { assets } from 'src/assets/assets';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsI18nT from 'src/components/util/base/SsI18nT.vue';
 
 interface Prop {
   textFontSize: number;
@@ -60,10 +61,10 @@ function stopButtonState() {
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
       style="white-space: pre-line"
     >
-      <i18n-t keypath="console.boot">
+      <SsI18nT keypath="console.boot">
         &nbsp;
         <span class="text-omit col">{{ mainStore.world.name }}</span> &nbsp;
-      </i18n-t>
+      </SsI18nT>
     </span>
   </ss-btn>
 
@@ -86,13 +87,13 @@ function stopButtonState() {
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
       style="white-space: pre-line"
     >
-      <i18n-t keypath="console.reboot.progressWithName">
+      <SsI18nT keypath="console.reboot.progressWithName">
         &nbsp;
         <span class="text-omit col">
           {{ mainStore.world.name }}
         </span>
         &nbsp;
-      </i18n-t>
+      </SsI18nT>
     </span>
   </ss-btn>
 
@@ -117,13 +118,13 @@ function stopButtonState() {
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
       style="white-space: pre-line"
     >
-      <i18n-t :keypath="stopButtonState()">
+      <SsI18nT :keypath="stopButtonState()">
         &nbsp;
         <span class="text-omit col">
           {{ mainStore.world.name }}
         </span>
         &nbsp;
-      </i18n-t>
+      </SsI18nT>
     </span>
   </ss-btn>
 </template>

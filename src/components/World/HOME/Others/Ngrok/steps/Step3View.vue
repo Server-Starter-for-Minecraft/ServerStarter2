@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SsA from 'src/components/util/base/ssA.vue';
+import SsI18nT from 'src/components/util/base/SsI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import { NgrokDialogReturns } from './iNgrok';
 
@@ -9,7 +10,7 @@ const model = defineModel<NgrokDialogReturns>({ required: true });
 <template>
   <div>
     <p class="text-caption" style="white-space: pre-line">
-      <i18n-t
+      <SsI18nT
         keypath="home.ngrok.dialog.thirdPage.desc"
         tag="label"
         for="home.ngrok.dialog.thirdPage.link"
@@ -17,7 +18,7 @@ const model = defineModel<NgrokDialogReturns>({ required: true });
         <SsA url="https://dashboard.ngrok.com/get-started/your-authtoken">
           {{ $t('home.ngrok.dialog.thirdPage.link') }}
         </SsA>
-      </i18n-t>
+      </SsI18nT>
     </p>
     <SsInput
       v-model="model.token"
