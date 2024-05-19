@@ -2,10 +2,10 @@
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from 'src/stores/MainStore';
-import { RecoverDialogProp } from './iRecoverDialog';
+import { checkError } from 'src/components/Error/Error';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { RecoverDialogProp } from './iRecoverDialog';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =

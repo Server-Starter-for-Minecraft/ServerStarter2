@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import SsInput from 'src/components/util/base/ssInput.vue';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import SsInput from 'src/components/util/base/ssInput.vue';
 
 const playerStore = usePlayerStore();
 

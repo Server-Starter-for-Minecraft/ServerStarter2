@@ -1,5 +1,5 @@
-import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'src-electron/util/path';
+import { Failable } from 'app/src-electron/util/error/failable';
 
 export type ServerSettingFile<T> = {
   load(cwdPath: Path): Promise<Failable<T>>;

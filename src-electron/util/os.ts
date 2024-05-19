@@ -1,3 +1,5 @@
+import { execSync } from 'child_process';
+
 export type OsPlatform =
   | 'debian'
   | 'redhat'
@@ -33,8 +35,6 @@ function getOsPlatform(): OsPlatform {
       throw new Error(`${platform} is unavailable os platform`);
   }
 }
-
-import { execSync } from 'child_process';
 
 function getLinuxType() {
   // ID_LIKEをとってくる

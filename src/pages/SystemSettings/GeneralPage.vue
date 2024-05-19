@@ -2,18 +2,18 @@
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import {
-  colorThemes,
   ColorTheme,
+  colorThemes,
   Locale,
 } from 'app/src-electron/schema/system';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { assets } from 'src/assets/assets';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { setColor } from 'src/color';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ColorThemeBtn from 'src/components/SystemSettings/General/ColorThemeBtn.vue';
-import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
+import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
 
 const sysStore = useSystemStore();
 const t = useI18n();

@@ -1,6 +1,6 @@
 import { setCssVar } from 'quasar';
 import { keys } from 'src/scripts/obj';
-import { ColorThemes, colors } from './colors';
+import { colors, ColorThemes } from './colors';
 
 export function setColor(isDark: boolean, isDiversity: boolean) {
   const pattern = Number(isDark) + Number(isDiversity) * 2;

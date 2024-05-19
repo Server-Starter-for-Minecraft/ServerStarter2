@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { UpdateNotifyProp } from './iUpdateNotifyDialog';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { UpdateNotifyProp } from './iUpdateNotifyDialog';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

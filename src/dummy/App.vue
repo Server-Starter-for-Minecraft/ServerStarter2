@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { callbacks, useConsoleStore } from './stores/console';
 import ConsoleList from './components/ConsoleList.vue';
 import ConsoleWindow from './components/ConsoleWindow.vue';
-import { useConsoleStore, callbacks } from './stores/console';
 
 const store = useConsoleStore();
 

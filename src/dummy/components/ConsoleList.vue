@@ -1,5 +1,6 @@
 <script setup>
 import { useConsoleStore } from 'src/dummy/stores/console';
+
 const consoleStore = useConsoleStore();
 </script>
 <template>

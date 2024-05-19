@@ -1,6 +1,5 @@
 // This is just an example,
 // so you can safely delete all default props below
-
 import { ErrorTranslationTypes } from 'app/src-electron/util/error/schema';
 
 type iTranslate = {

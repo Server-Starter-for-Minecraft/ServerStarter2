@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref } from 'vue';
+import { onMounted, Ref, ref } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
-import { CustomMapImporterProp, importCustomMap } from './iCustomMapImporter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import WorldItem from 'src/components/util/WorldItem.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import WorldItem from 'src/components/util/WorldItem.vue';
 import CheckDialog from './checkDialog.vue';
+import { CustomMapImporterProp, importCustomMap } from './iCustomMapImporter';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =

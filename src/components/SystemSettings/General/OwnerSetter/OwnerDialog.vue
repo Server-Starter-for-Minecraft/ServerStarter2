@@ -3,12 +3,12 @@ import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { OwnerDialogProp } from './iOwnerDialog';
-import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SearchResultView from './SearchResultView.vue';
-import InputFieldView from './InputFieldView.vue';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import PlayerCard from '../PlayerCard.vue';
+import InputFieldView from './InputFieldView.vue';
+import { OwnerDialogProp } from './iOwnerDialog';
+import SearchResultView from './SearchResultView.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

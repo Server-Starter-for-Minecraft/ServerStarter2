@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { keys } from 'src/scripts/obj';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import {
   pGroupKey,
   propertyClasses,
 } from 'src/components/World/Property/classifications';
-import { keys } from 'src/scripts/obj';
 import { thumbStyle } from '../scrollBar';
 
 interface Prop {

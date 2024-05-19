@@ -2,10 +2,10 @@
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { AllFabricVersion } from 'app/src-electron/schema/version';
-import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import { openWarningDialog } from './versionComparator';
+import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
+import { openWarningDialog } from './versionComparator';
 
 interface Prop {
   versionData: AllFabricVersion;

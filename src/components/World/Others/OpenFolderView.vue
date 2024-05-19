@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { checkError } from 'src/components/Error/Error';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
+import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore();

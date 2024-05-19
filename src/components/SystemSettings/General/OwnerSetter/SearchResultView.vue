@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import SearchResultItem from 'src/components/World/Player/utils/SearchResultItem.vue';
+import { strSort } from 'src/scripts/objSort';
 import { $T } from 'src/i18n/utils/tFunc';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { strSort } from 'src/scripts/objSort';
+import SearchResultItem from 'src/components/World/Player/utils/SearchResultItem.vue';
 
 const ownerCandidate = defineModel<PlayerUUID>();
 const playerStore = usePlayerStore();

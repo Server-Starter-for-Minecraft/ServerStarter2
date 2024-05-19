@@ -1,5 +1,5 @@
+import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
 
 export type ConsoleValue = string;
 

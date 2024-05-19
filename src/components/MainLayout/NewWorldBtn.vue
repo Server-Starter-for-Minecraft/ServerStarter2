@@ -2,16 +2,16 @@
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { tError } from 'src/i18n/utils/tFunc';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { checkError } from '../Error/Error';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
+import CheckDialog from './CustomMapImporter/checkDialog.vue';
+import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
 import { CustomMapImporterProp } from './CustomMapImporter/iCustomMapImporter';
 import { RecoverDialogProp } from './RecoverDialog/iRecoverDialog';
-import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
-import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import RecoverDialog from './RecoverDialog/RecoverDialog.vue';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   miniChangeWidth: number;

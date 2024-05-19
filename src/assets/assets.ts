@@ -1,6 +1,5 @@
 // このファイルは'encodeAssets.py'による自動生成
 // Assetsが増えた場合には上記のPythonを実行することでAssetsを更新する
-
 import { ImageURI } from 'app/src-electron/schema/brands';
 
 type svgFiles =

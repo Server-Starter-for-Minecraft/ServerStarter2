@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Remote } from 'app/src-electron/schema/remote';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import DangerView from 'src/components/util/danger/dangerView.vue';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsA from 'src/components/util/base/ssA.vue';
+import DangerView from 'src/components/util/danger/dangerView.vue';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 
 interface Prop {

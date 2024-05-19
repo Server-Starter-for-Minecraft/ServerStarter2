@@ -1,20 +1,20 @@
-import { SimpleGitProgressEvent, simpleGit } from 'simple-git';
-import { Path } from 'src-electron/util/path';
-import { getGitPat } from './pat';
+import { simpleGit, SimpleGitProgressEvent } from 'simple-git';
 import { GithubRemoteFolder, Remote } from 'src-electron/schema/remote';
+import { Path } from 'src-electron/util/path';
+import { Failable } from 'app/src-electron/schema/error';
 import {
   fromRuntimeError,
   isError,
   isValid,
 } from 'app/src-electron/util/error/error';
-import { Failable } from 'app/src-electron/schema/error';
-import { getSystemSettings } from '../../stores/system';
-import { getPlayerFromUUID } from '../../player/main';
-import { gitTempPath } from '../../const';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
-import { GroupProgressor } from '../../progress/progress';
-import { getSystemOwnerName } from '../../player/owner';
 import { sleep } from 'app/src-electron/util/sleep';
+import { gitTempPath } from '../../const';
+import { getPlayerFromUUID } from '../../player/main';
+import { getSystemOwnerName } from '../../player/owner';
+import { GroupProgressor } from '../../progress/progress';
+import { getSystemSettings } from '../../stores/system';
+import { getGitPat } from './pat';
 
 function logger(): [
   (func: (arg: SimpleGitProgressEvent) => void) => void,

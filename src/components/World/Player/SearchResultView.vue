@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { useMainStore } from 'src/stores/MainStore';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { isValid } from 'src/scripts/error';
 import { strSort } from 'src/scripts/objSort';
+import { useMainStore } from 'src/stores/MainStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SearchResultItem from './utils/SearchResultItem.vue';
 
 const mainStore = useMainStore();

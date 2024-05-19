@@ -1,12 +1,12 @@
-import { Path } from './path';
-import { errorMessage } from './error/construct';
-import { BytesData } from './bytesData';
-import { Failable, safeExecAsync } from './error/failable';
-import { isError } from 'src/scripts/error';
+import { decode } from 'iconv-lite';
 import * as JSZip from 'jszip';
+import { isError } from 'src/scripts/error';
+import { BytesData } from './bytesData';
+import { errorMessage } from './error/construct';
+import { Failable, safeExecAsync } from './error/failable';
 import { fromEntries, toEntries } from './obj';
 import { asyncMap, objMap } from './objmap';
-import { decode } from 'iconv-lite';
+import { Path } from './path';
 
 class ZipHandler {
   files: Promise<

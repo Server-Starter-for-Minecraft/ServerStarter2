@@ -8,6 +8,8 @@
     "^(vue-router/(.*)$)|^(vue-router$)",
     "^(vue-i18n/(.*)$)|^(vue-i18n$)",
     "^(quasar/(.*)$)|^(quasar$)",
+    "<THIRD_PARTY_MODULES>",
+    "core/world/paths$",
     "^app/src-electron/(.*)$",
     "^([./]|src)/scripts/(.*)$",
     "^([./]|src)/assets/(.*)$",
@@ -21,5 +23,6 @@
     "^[./]"
   ],
   "importOrderSeparation": false,
-  "importOrderSortSpecifiers": true
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": true
 }

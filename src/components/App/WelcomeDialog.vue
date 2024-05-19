@@ -5,9 +5,9 @@ import { getCssVar, useDialogPluginComponent } from 'quasar';
 import { Locale } from 'app/src-electron/schema/system';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
-import SsSelect from '../util/base/ssSelect.vue';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
+import SsSelect from '../util/base/ssSelect.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =

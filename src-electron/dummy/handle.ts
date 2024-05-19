@@ -1,7 +1,17 @@
 import { BrowserWindow } from 'electron';
-import { sleep } from '../util/sleep';
-import { SystemWorldSettings, World, WorldID } from '../schema/world';
+import {
+  ImageURI,
+  PlayerUUID,
+  WorldContainer,
+  WorldName,
+} from '../schema/brands';
+import { Player } from '../schema/player';
 import { SystemSettings, WorldContainers } from '../schema/system';
+import { Version, VersionType } from '../schema/version';
+import { SystemWorldSettings, World, WorldID } from '../schema/world';
+import { errorMessage } from '../util/error/construct';
+import { Failable } from '../util/error/failable';
+import { sleep } from '../util/sleep';
 import {
   dummySystemSettings,
   dummySystemWorldSettings,
@@ -10,18 +20,8 @@ import {
   playerAvatarOverlay,
   serverWorldContainer,
 } from './const/systemSettings';
-import { Version, VersionType } from '../schema/version';
-import { Failable } from '../util/error/failable';
 import { dummyVersionMap } from './const/versions';
-import {
-  ImageURI,
-  PlayerUUID,
-  WorldContainer,
-  WorldName,
-} from '../schema/brands';
 import { dummyWorldAbbrs, getNewWorld, worldMap } from './const/world';
-import { Player } from '../schema/player';
-import { errorMessage } from '../util/error/construct';
 
 const sleepTime = 500;
 

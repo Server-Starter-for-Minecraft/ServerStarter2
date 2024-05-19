@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import BootSettingsView from 'src/components/World/Others/BootSettingsView.vue';
 import BackupWorldView from 'src/components/World/Others/BackupWorldView.vue';
-import WorldFolderView from 'src/components/World/Others/WorldFolderView.vue';
+import BootSettingsView from 'src/components/World/Others/BootSettingsView.vue';
 import OpenFolderView from 'src/components/World/Others/OpenFolderView.vue';
+import WorldFolderView from 'src/components/World/Others/WorldFolderView.vue';
 </script>
 
 <template>

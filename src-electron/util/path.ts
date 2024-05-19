@@ -1,9 +1,9 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import type { BytesData } from './bytesData';
+import { isError } from './error/error';
 import { Failable } from './error/failable';
 import { asyncForEach } from './objmap';
-import { isError } from './error/error';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');

@@ -3,29 +3,29 @@ import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { deepCopy } from './scripts/deepCopy';
 import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
   initSystemSettings,
-  useSystemStore,
   setSysSettingsSubscriber,
+  useSystemStore,
 } from './stores/SystemStore';
-import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
+import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import {
   setPlayerSearchSubscriber,
   usePlayerStore,
 } from 'src/stores/WorldTabs/PlayerStore';
-import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
-import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
-import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
-import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
-import { deepCopy } from './scripts/deepCopy';
 import { setColor } from './color';
+import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
+import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
+import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
+import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
+import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 import EulaDialog from 'src/components/Progress/EulaDialog.vue';
-import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();

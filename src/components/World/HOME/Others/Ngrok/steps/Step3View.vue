@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { NgrokDialogReturns } from './iNgrok';
 import SsA from 'src/components/util/base/ssA.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import { NgrokDialogReturns } from './iNgrok';
 
 const model = defineModel<NgrokDialogReturns>({ required: true });
 </script>

@@ -29,10 +29,9 @@
  *   }
  * }
  */
-
 import { contextBridge, ipcRenderer } from 'electron';
-import { FrontHandle, FrontInvoke, FrontOn, FrontSend } from './api/types';
 import { FrontAPI } from './api/api';
+import { FrontHandle, FrontInvoke, FrontOn, FrontSend } from './api/types';
 
 type Func<A extends any[], R> = (..._: A) => R;
 

@@ -1,22 +1,22 @@
-import { AllForgeVersion, ForgeVersion } from 'src-electron/schema/version';
-import {
-  VersionComponent,
-  VersionLoader,
-  genGetAllVersions,
-  needEulaAgreementVanilla,
-} from './base';
-import { Failable } from '../../util/error/failable';
-import { Path } from '../../util/path';
-import { getJavaComponent } from './vanilla';
-import { BytesData } from '../../util/bytesData';
 import * as cheerio from 'cheerio';
-import { versionsCachePath } from '../const';
-import { interactiveProcess } from '../../util/subprocess';
+import { AllForgeVersion, ForgeVersion } from 'src-electron/schema/version';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { BytesData } from '../../util/bytesData';
+import { Failable } from '../../util/error/failable';
 import { readyJava } from '../../util/java/java';
 import { osPlatform } from '../../util/os';
-import { isError, isValid } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
+import { Path } from '../../util/path';
+import { interactiveProcess } from '../../util/subprocess';
+import { versionsCachePath } from '../const';
 import { GroupProgressor } from '../progress/progress';
+import {
+  genGetAllVersions,
+  needEulaAgreementVanilla,
+  VersionComponent,
+  VersionLoader,
+} from './base';
+import { getJavaComponent } from './vanilla';
 
 const forgeVersionsPath = versionsCachePath.child('forge');
 

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { assets } from 'src/assets/assets';
-import { keys } from 'src/scripts/obj';
-import { strSort } from 'src/scripts/objSort';
-import { checkError } from 'src/components/Error/Error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
+import { keys } from 'src/scripts/obj';
+import { strSort } from 'src/scripts/objSort';
+import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { checkError } from 'src/components/Error/Error';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
-import BaseActionsCard from '../utils/BaseActionsCard.vue';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   uuid: PlayerUUID;

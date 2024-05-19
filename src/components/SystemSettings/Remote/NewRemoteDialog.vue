@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
-import { tError } from 'src/i18n/utils/tFunc';
-import SsSelect from 'src/components/util/base/ssSelect.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import SsSelect from 'src/components/util/base/ssSelect.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });

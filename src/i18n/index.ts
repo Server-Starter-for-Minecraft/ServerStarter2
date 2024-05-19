@@ -1,6 +1,6 @@
 import { Locale } from 'app/src-electron/schema/system';
-import { ja } from './ja';
 import { enUS } from './en-US';
+import { ja } from './ja';
 
 // 現状jaのデータ型をスキーマとしている
 type MessageSchema = typeof ja;

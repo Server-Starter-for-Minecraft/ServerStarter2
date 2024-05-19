@@ -1,7 +1,7 @@
 import { Failable } from '../schema/error';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
-import { ReleaseAsset, listReleases } from '../util/github/schema/release';
+import { listReleases, ReleaseAsset } from '../util/github/schema/release';
 import { OsPlatform } from '../util/os';
 
 /** githubからリリース番号を取得 */

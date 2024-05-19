@@ -1,9 +1,9 @@
-import { isError } from 'app/src-electron/util/error/error';
-import { ServerSettingFile } from './base';
 import {
   ServerProperties,
   ServerPropertiesAnnotation,
 } from 'app/src-electron/schema/serverproperty';
+import { isError } from 'app/src-electron/util/error/error';
+import { ServerSettingFile } from './base';
 
 // TODO:stringの値のescape/unescape
 

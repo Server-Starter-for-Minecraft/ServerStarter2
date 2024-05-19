@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
-import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { updatePatDialogReturns, updatePatProp } from './iGitHubDialog';
 
 const prop = defineProps<updatePatProp>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });

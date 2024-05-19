@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
 import { WorldID } from 'app/src-electron/schema/world';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { useProgressStore } from './ProgressStore';
-import { useMainStore } from './MainStore';
-import { checkError } from 'src/components/Error/Error';
-import { assets } from 'src/assets/assets';
 import { values } from 'src/scripts/obj';
+import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
+import { checkError } from 'src/components/Error/Error';
+import { useMainStore } from './MainStore';
+import { useProgressStore } from './ProgressStore';
 
 type consoleData = { chunk: string; isError: boolean };
 type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog';

@@ -3,9 +3,9 @@ import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
-import { notifyUpdate } from './notify';
 import { installMac } from './installer/mac';
 import { installWindows } from './installer/windows';
+import { notifyUpdate } from './notify';
 import { getSystemVersion } from './version';
 
 /**
