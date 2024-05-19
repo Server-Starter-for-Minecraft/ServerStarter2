@@ -63,8 +63,6 @@ async function importNewContent(isFile = false) {
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
       break;
-    default:
-      break;
   }
 }
 

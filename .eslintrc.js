@@ -10,6 +10,7 @@ module.exports = {
   parserOptions: {
     parser: require.resolve('@typescript-eslint/parser'),
     extraFileExtensions: ['.vue'],
+    project: ['./tsconfig.json'],
   },
 
   env: {
@@ -91,5 +92,8 @@ module.exports = {
 
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+    // Require switch-case statements to be exhaustive
+    '@typescript-eslint/switch-exhaustiveness-check': 'error',
   },
 };
