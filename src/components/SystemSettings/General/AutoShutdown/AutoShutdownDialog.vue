@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { sleep } from 'src/scripts/sleep';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import { shutdownSelecter } from './AutoShutdown';
 
@@ -8,31 +9,33 @@ defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // シャットダウンまでの秒数
-const autoShutdownInterval = ref(30);
+const autoShutdownCounter = ref(30);
+const endCount = 0;
+const tick = 200;
+let executeShutdown = true;
+
+const closeCounter = async () => {
+  while (autoShutdownCounter.value > endCount) {
+    await sleep(tick);
+    autoShutdownCounter.value -= tick / 1000;
+  }
+};
+
+// カウンターが終了したらダイアログを閉じる
+closeCounter().then(() => {
+  onDialogOK();
+  shutdownSelecter(executeShutdown);
+});
 
 /**
- * シャットダウンまでの秒数をカウントダウンし、
- * 所定の秒数が終了したのちに処理を実行
+ * ダイアログ付属の閉じるボタンが押された場合の処理
+ *
+ * counterを0にしてcloseCounterがダイアログを閉じる
  */
-function shutdownCounter() {
-  window.setTimeout(() => {
-    // 時間経過で値を減ずる
-    autoShutdownInterval.value -= 1;
-
-    // 経過時間に応じて処理を変更
-    if (autoShutdownInterval.value > 0) {
-      shutdownCounter();
-    } else {
-      shutdownSelecter(true);
-      onDialogOK();
-    }
-  }, 1000);
+function closeClicked() {
+  autoShutdownCounter.value = endCount;
+  executeShutdown = false;
 }
-
-// 30秒後に自動でCloseする
-// （手動でCloseした場合は実行後にshutdownSelecter内で呼ばれるsendResがUndefinedになるため、
-// 30秒後にshutdownSelecterが呼ばれても何も起きない）
-onMounted(shutdownCounter);
 </script>
 
 <template>
@@ -43,20 +46,11 @@ onMounted(shutdownCounter);
       </q-card-section>
       <q-card-section>
         <div style="font-size: 1rem; opacity: 0.6; white-space: pre-line">
-          {{ $t('autoshutdown.desc', { time: autoShutdownInterval }) }}
+          {{ $t('autoshutdown.desc', { time: Math.round(autoShutdownCounter) }) }}
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <SsBtn
-          :label="$t('general.cancel')"
-          @click="shutdownSelecter(false)"
-          v-close-popup
-        />
-        <SsBtn
-          :label="$t('autoshutdown.ok', { time: autoShutdownInterval })"
-          @click="onDialogOK"
-          class="text-primary"
-        />
+        <SsBtn :label="$t('general.cancel')" @click="closeClicked" />
       </q-card-actions>
     </q-card>
   </q-dialog>
