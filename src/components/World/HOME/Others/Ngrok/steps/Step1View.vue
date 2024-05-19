@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SsI18nT from 'src/components/util/base/SsI18nT.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 
 interface Prop {
   next?: (stepName: number) => void;

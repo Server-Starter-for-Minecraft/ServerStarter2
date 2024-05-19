@@ -4,7 +4,7 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsA from 'src/components/util/base/ssA.vue';
-import SsI18nT from 'src/components/util/base/SsI18nT.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 

@@ -7,7 +7,7 @@ import { omitPath, tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SsI18nT from 'src/components/util/base/SsI18nT.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';

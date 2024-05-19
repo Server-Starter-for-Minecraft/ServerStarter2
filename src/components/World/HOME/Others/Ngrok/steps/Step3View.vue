@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SsA from 'src/components/util/base/ssA.vue';
-import SsI18nT from 'src/components/util/base/SsI18nT.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import { NgrokDialogReturns } from './iNgrok';
 

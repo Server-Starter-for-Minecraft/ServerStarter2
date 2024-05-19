@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { assets } from 'src/assets/assets';
 import SsA from 'src/components/util/base/ssA.vue';
-import SsI18nT from 'src/components/util/base/SsI18nT.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import BaseCard from './slides/BaseCard.vue';
 
 const slide = ref(1);

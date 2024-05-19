@@ -2,7 +2,7 @@
 import { useDialogPluginComponent } from 'quasar';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
-import SsI18nT from '../util/base/SsI18nT.vue';
+import SsI18nT from '../util/base/ssI18nT.vue';
 import BaseDialogCard from '../util/baseDialog/baseDialogCard.vue';
 import { EulaDialogProp } from './iEulaDialog';
 
