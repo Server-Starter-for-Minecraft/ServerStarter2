@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { EulaDialogProp } from './iEulaDialog';
-import BaseDialogCard from '../util/baseDialog/baseDialogCard.vue';
 import SsA from '../util/base/ssA.vue';
 import SsBtn from '../util/base/ssBtn.vue';
+import BaseDialogCard from '../util/baseDialog/baseDialogCard.vue';
+import { EulaDialogProp } from './iEulaDialog';
 
 defineProps<EulaDialogProp>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });

@@ -3,9 +3,9 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { isValid } from 'src/scripts/error';
-import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
+import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =

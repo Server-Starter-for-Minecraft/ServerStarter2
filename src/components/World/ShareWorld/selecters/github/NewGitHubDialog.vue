@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent } from 'quasar';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'src/scripts/error';
-import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
-import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import { useI18n } from 'vue-i18n';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =

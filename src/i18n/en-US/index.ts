@@ -1,24 +1,24 @@
 import { MessageSchema } from 'src/boot/i18n';
 import { enUSHome } from 'src/i18n/en-US/Pages/World/home';
 import { enUSproperty } from 'src/i18n/en-US/Pages/World/property';
-import { enUSConsole } from './Pages/World/console';
-import { enUSPlayer } from './Pages/World/player';
-import { enUSSystemSetting } from './Pages/systemsetting';
-import { enUSBugReport } from './Pages/bugReport';
-import { enAdditionalContents } from './Pages/World/additionalContents';
-import { enUSError } from './Other/error';
-import { enUSProgress } from './Pages/World/progress';
-import { enUSMainLayout } from './Pages/mainLayout';
+import { enAutoShutdown } from './Dialogs/autoshutdown';
+import { enUSEulaDialog } from './Dialogs/eulaDialog';
 import { enUSIcon } from './Dialogs/icon';
-import { enUSShareWorld } from './Pages/World/shareWorld';
+import { enUSOwner } from './Dialogs/owner';
 import { enUSUpdater } from './Dialogs/updater';
 import { enWelcome } from './Dialogs/welcome';
-import { enAutoShutdown } from './Dialogs/autoshutdown';
+import { enUSError } from './Other/error';
 import { enUSGeneral } from './Other/general';
-import { enUSEulaDialog } from './Dialogs/eulaDialog';
-import { enUSOwner } from './Dialogs/owner';
-import { enOthers } from './Pages/World/others';
 import { enTabs } from './Other/tabs';
+import { enUSBugReport } from './Pages/bugReport';
+import { enUSMainLayout } from './Pages/mainLayout';
+import { enUSSystemSetting } from './Pages/systemsetting';
+import { enAdditionalContents } from './Pages/World/additionalContents';
+import { enUSConsole } from './Pages/World/console';
+import { enOthers } from './Pages/World/others';
+import { enUSPlayer } from './Pages/World/player';
+import { enUSProgress } from './Pages/World/progress';
+import { enUSShareWorld } from './Pages/World/shareWorld';
 
 export const enUS: MessageSchema = {
   tabs: enTabs,

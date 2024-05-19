@@ -2,13 +2,13 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
-import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { $T } from 'src/i18n/utils/tFunc';
+import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Props {
   world: WorldEdited;

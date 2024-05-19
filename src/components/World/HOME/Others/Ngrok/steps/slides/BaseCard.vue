@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { ImageURI } from 'app/src-electron/schema/brands';
-import ImgDialog from './ImgDialog.vue';
 import { ImgDialogProp } from '../iNgrok';
-import { ref } from 'vue';
+import ImgDialog from './ImgDialog.vue';
 
 interface Prop {
   title: string;

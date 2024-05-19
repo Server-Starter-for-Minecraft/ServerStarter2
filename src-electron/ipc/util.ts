@@ -57,7 +57,7 @@ export function ipcInvoke<C extends string, T>(
 
     invokeid++;
     const sendId = invokeid.toString();
-    const handleChannel = 'handle:' + channel;
+    const handleChannel = `handle:${channel}`;
     const listener = (
       _: Electron.IpcMainEvent,
       result: any,

@@ -1,9 +1,9 @@
+import { MessageSchema } from 'src/boot/i18n';
 import { ErrorMessage } from 'app/src-electron/schema/error';
 import { ProgressMessage } from 'app/src-electron/schema/progressMessage';
-import { MessageSchema } from 'src/boot/i18n';
-import { ErrorFuncReturns } from 'src/components/Error/Error';
 import { fromEntries, toEntries } from 'src/scripts/obj';
 import { flattenObj } from 'src/scripts/objFlatten';
+import { ErrorFuncReturns } from 'src/components/Error/Error';
 
 /** 指定した型のキーに対して string | number の型を付与して返す */
 type AssignKeyType<T> = Extract<keyof T, string | number>;

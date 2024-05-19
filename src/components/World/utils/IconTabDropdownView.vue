@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import DropBtnView from './dropBtnView.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import DropBtnView from './dropBtnView.vue';
 
 type DropBtn = {
   label: string;

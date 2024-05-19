@@ -2,10 +2,10 @@
 import { ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import PlayerHeadView from './utils/PlayerHeadView.vue';
-import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import BaseActionsCard from '../utils/BaseActionsCard.vue';
+import PlayerHeadView from './utils/PlayerHeadView.vue';
 
 interface Prop {
   name: string;

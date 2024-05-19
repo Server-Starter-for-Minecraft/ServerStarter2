@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, watch } from 'vue';
+import { onMounted, Ref, ref, watch } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { checkError } from 'src/components/Error/Error';
-import PlayerHeadView from 'src/components/World/Player/utils/PlayerHeadView.vue';
 import { tError } from 'src/i18n/utils/tFunc';
+import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import PlayerHeadView from 'src/components/World/Player/utils/PlayerHeadView.vue';
 
 const owner = defineModel<PlayerUUID>();
 

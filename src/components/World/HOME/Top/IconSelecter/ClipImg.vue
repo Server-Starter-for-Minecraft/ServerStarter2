@@ -2,8 +2,8 @@
 import { onMounted, ref } from 'vue';
 import { debounce } from 'quasar';
 import imageCompression from 'browser-image-compression';
-import 'cropperjs/dist/cropper.css';
 import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.css';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { IconImage } from './iIconSelect';
 

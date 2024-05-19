@@ -1,11 +1,11 @@
 import { toRaw } from 'vue';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
-import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { checkError } from 'src/components/Error/Error';
-import { useMainStore } from 'src/stores/MainStore';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
+import { useMainStore } from 'src/stores/MainStore';
+import { checkError } from 'src/components/Error/Error';
 
 export interface CustomMapImporterProp {
   icon?: ImageURI;

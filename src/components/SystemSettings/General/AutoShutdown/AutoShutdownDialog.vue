@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { shutdownSelecter } from './AutoShutdown';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import { shutdownSelecter } from './AutoShutdown';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

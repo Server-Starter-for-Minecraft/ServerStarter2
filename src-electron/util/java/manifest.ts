@@ -1,8 +1,8 @@
+import { GroupProgressor } from 'app/src-electron/core/progress/progress';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { BytesData } from '../bytesData';
-import { Path } from '../path';
 import { isError } from '../error/error';
-import { GroupProgressor } from 'app/src-electron/core/progress/progress';
+import { Path } from '../path';
 
 export type Manifest = {
   files: {

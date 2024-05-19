@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Player } from 'app/src-electron/schema/player';
-import PlayerHeadView from './PlayerHeadView.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import PlayerHeadView from './PlayerHeadView.vue';
 
 interface Prop {
   player: Player;

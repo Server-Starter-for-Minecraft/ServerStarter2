@@ -3,16 +3,16 @@ import {
   PlayerUUID,
   Timestamp,
 } from 'app/src-electron/schema/brands';
+import { Player } from 'app/src-electron/schema/player';
 import {
   objectFixer,
   recordFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { fixImageURI, fixPlayerUUID, fixTimestamp } from '../fixers/brands';
-import { cachePath } from '../const';
-import { Player } from 'app/src-electron/schema/player';
-import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { isValid } from 'app/src-electron/util/error/error';
+import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { cachePath } from '../const';
+import { fixImageURI, fixPlayerUUID, fixTimestamp } from '../fixers/brands';
 
 export type PlayerCacheRecord = {
   uuid: PlayerUUID;

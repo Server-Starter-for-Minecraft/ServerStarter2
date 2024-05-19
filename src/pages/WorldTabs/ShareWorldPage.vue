@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
+import SsA from 'src/components/util/base/ssA.vue';
 import ExistRemoteView from 'src/components/World/ShareWorld/ExistRemoteView.vue';
 import NewRemoteView from 'src/components/World/ShareWorld/NewRemoteView.vue';
-import SsA from 'src/components/util/base/ssA.vue';
 
 const mainStore = useMainStore();
 </script>

@@ -1,8 +1,8 @@
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import { World, WorldAbbr, WorldID } from 'app/src-electron/schema/world';
-import { player1UUID, player2UUID, player3UUID } from './systemSettings';
 import { dummyServerPropertiesMap } from './serverPropertiesMap';
+import { player1UUID, player2UUID, player3UUID } from './systemSettings';
 
 const world1Id = '11111111-1111-1111-1111-111111111111' as WorldID;
 const world2Id = '22222222-2222-2222-2222-222222222222' as WorldID;

@@ -3,17 +3,17 @@ import {
   WorldContainer,
   WorldName,
 } from 'app/src-electron/schema/brands';
+import { Failable } from 'app/src-electron/schema/error';
+import { BackupData } from 'app/src-electron/schema/filedata';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { Path } from 'app/src-electron/util/path';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
-import { worldContainerToPath } from './worldContainer';
 import {
   BACKUP_DIRECTORY_NAME,
   BACKUP_EXT,
   WORLDNAME_REGEX_STR,
 } from '../const';
-import { Path } from 'app/src-electron/util/path';
-import { BackupData } from 'app/src-electron/schema/filedata';
-import { errorMessage } from 'app/src-electron/util/error/construct';
-import { Failable } from 'app/src-electron/schema/error';
+import { worldContainerToPath } from './worldContainer';
 
 export function getBackUpPath(container: WorldContainer, name: WorldName) {
   const time = new Date(getCurrentTimestamp());
@@ -36,7 +36,7 @@ export async function parseBackUpPath(
   path: Path
 ): Promise<Failable<BackupData>> {
   const ext = path.extname();
-  if (ext !== '.' + BACKUP_EXT)
+  if (ext !== `.${BACKUP_EXT}`)
     return errorMessage.data.path.invalidExt({
       expectedExt: BACKUP_EXT,
       path: path.str(),

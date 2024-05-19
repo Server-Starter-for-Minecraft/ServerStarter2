@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { dangerDialogProp } from './iDangerDialog';
 import SsBtn from '../base/ssBtn.vue';
 import DangerDialog from './DangerDialog.vue';
+import { dangerDialogProp } from './iDangerDialog';
 
 interface Prop {
   disable?: boolean;

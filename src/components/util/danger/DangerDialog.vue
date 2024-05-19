@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { dangerDialogProp } from './iDangerDialog';
-import BaseDialogCard from '../baseDialog/baseDialogCard.vue';
 import SsBtn from '../base/ssBtn.vue';
+import BaseDialogCard from '../baseDialog/baseDialogCard.vue';
+import { dangerDialogProp } from './iDangerDialog';
 
 defineProps<dangerDialogProp>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });

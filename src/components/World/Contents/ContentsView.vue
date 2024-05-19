@@ -8,11 +8,11 @@ import {
   NewFileData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
-import { useConsoleStore } from 'src/stores/ConsoleStore';
-import { checkError } from 'src/components/Error/Error';
 import { tError } from 'src/i18n/utils/tFunc';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCardView from './itemCardView.vue';
 
@@ -62,8 +62,6 @@ async function importNewContent(isFile = false) {
         (c) => addContent2World(c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
-      break;
-    default:
       break;
   }
 }

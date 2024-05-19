@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useSystemStore } from 'src/stores/SystemStore';
+import SsA from 'src/components/util/base/ssA.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CreaterItem from 'src/components/SystemSettings/Info/CreaterItem.vue';
-import SsA from 'src/components/util/base/ssA.vue';
 
 const sysStore = useSystemStore();
 

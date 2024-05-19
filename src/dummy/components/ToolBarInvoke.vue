@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useConsoleStore } from 'src/dummy/stores/console';
 import { ref } from 'vue';
+import { useConsoleStore } from 'src/dummy/stores/console';
+
 const store = useConsoleStore();
 
 const sendOrInvoke = Object.keys(window.API).filter(

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { useMainStore } from 'src/stores/MainStore';
 import { keys } from 'src/scripts/obj';
+import { useMainStore } from 'src/stores/MainStore';
 import HeaderView from 'src/components/World/HeaderView.vue';
 import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 

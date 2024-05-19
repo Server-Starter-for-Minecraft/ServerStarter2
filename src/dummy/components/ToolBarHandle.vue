@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useConsoleStore, callbacks } from 'src/dummy/stores/console';
 import { ref } from 'vue';
+import { callbacks, useConsoleStore } from 'src/dummy/stores/console';
+
 const store = useConsoleStore();
 
 async function sendApi() {

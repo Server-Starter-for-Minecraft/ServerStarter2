@@ -1,3 +1,5 @@
+import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { RemoteSetting } from 'app/src-electron/schema/remote';
 import {
   Locale,
   SystemPlayerSetting,
@@ -6,6 +8,7 @@ import {
   SystemUserSetting,
   WorldContainerSetting,
 } from 'app/src-electron/schema/system';
+import { genUUID } from 'app/src-electron/tools/uuid';
 import {
   applyFixer,
   arrayFixer,
@@ -19,14 +22,11 @@ import {
   recordFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { fixPlayerGroup } from './player';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { fixPlayerUUID, fixUUID, fixWorldContainer } from './brands';
-import { fixRemoteSetting } from './remote';
 import { DEFAULT_WORLD_CONTAINER, getDefaultLocale } from '../const';
+import { fixPlayerUUID, fixUUID, fixWorldContainer } from './brands';
+import { fixPlayerGroup } from './player';
+import { fixRemoteSetting } from './remote';
 import { fixSystemWorldSettings } from './world';
-import { genUUID } from 'app/src-electron/tools/uuid';
-import { RemoteSetting } from 'app/src-electron/schema/remote';
 
 export const fixLocale = defaultGetterFixer(
   literalFixer<Locale>(['ja', 'en-US']),

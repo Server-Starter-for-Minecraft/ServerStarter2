@@ -1,13 +1,12 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
-
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import * as path from 'path';
 import * as os from 'os';
-import { setupIPC } from './ipc/setup';
-import { onQuit } from './lifecycle/lifecycle';
-import { setServerStarterApp } from './lifecycle/exit';
-import { update } from './updater/updater';
+import * as path from 'path';
 import { getSystemSettings, setSystemSettings } from './core/stores/system';
+import { setupIPC } from './ipc/setup';
+import { setServerStarterApp } from './lifecycle/exit';
+import { onQuit } from './lifecycle/lifecycle';
+import { update } from './updater/updater';
 import { getCurrentTimestamp } from './util/timestamp';
 
 // 多重起動していたらすでに起動済みの場合即時終了

@@ -2,5 +2,27 @@
   "singleQuote": true,
   "semi": true,
   "tabWidth": 2,
-  "useTabs": false
+  "useTabs": false,
+  "importOrder": [
+    "^(vue/(.*)$)|^(vue$)",
+    "^(vue-router/(.*)$)|^(vue-router$)",
+    "^(vue-i18n/(.*)$)|^(vue-i18n$)",
+    "^(quasar/(.*)$)|^(quasar$)",
+    "<THIRD_PARTY_MODULES>",
+    "core/world/paths$",
+    "^app/src-electron/(.*)$",
+    "^([./]|src)/scripts/(.*)$",
+    "^([./]|src)/assets/(.*)$",
+    "^([./]|src)/i18n/(.*)$",
+    "^([./]|src)/stores/(.*)$",
+    "^([./]|src)/color$",
+    "^([./]|src)/router/(.*)$",
+    "^([./]|src)/components/(?!.*vue$).*$",
+    "^([./]|src)/components/util/(.*)$",
+    "^([./]|src)/components/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": false,
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": true
 }

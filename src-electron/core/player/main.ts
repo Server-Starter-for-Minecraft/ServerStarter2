@@ -1,12 +1,12 @@
-import { Failable } from 'app/src-electron/util/error/failable';
-import { Player } from 'app/src-electron/schema/player';
-import { EXPIRATION_SPAN, getPlayerCache, pushPlayerCache } from './cache';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { searchPlayerFromName, searchPlayerFromUUID } from './search';
-import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { Player } from 'app/src-electron/schema/player';
 import { formatUUID } from 'app/src-electron/tools/uuid';
-import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
+import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { EXPIRATION_SPAN, getPlayerCache, pushPlayerCache } from './cache';
+import { searchPlayerFromName, searchPlayerFromUUID } from './search';
 
 /** 名前またはUUIDからプレイヤーを取得 (キャッシュに存在する場合高速) */
 export async function getPlayer(

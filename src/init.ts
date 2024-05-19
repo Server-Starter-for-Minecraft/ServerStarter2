@@ -1,12 +1,12 @@
 import { versionTypes } from 'app/src-electron/schema/version';
 import { World } from 'app/src-electron/schema/world';
-import { checkError } from './components/Error/Error';
-import { useMainStore, useWorldStore } from './stores/MainStore';
-import { useSystemStore } from './stores/SystemStore';
-import { useConsoleStore } from './stores/ConsoleStore';
-import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
 import { fromEntries, values } from './scripts/obj';
 import { tError } from './i18n/utils/tFunc';
+import { useConsoleStore } from './stores/ConsoleStore';
+import { useMainStore, useWorldStore } from './stores/MainStore';
+import { useSystemStore } from './stores/SystemStore';
+import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
+import { checkError } from './components/Error/Error';
 
 export async function initWindow() {
   // storeの初期化
