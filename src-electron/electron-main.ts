@@ -74,6 +74,8 @@ async function createWindow() {
 
   // フロントエンドとバックエンドの呼び出し処理をリンク
   setupIPC(() => mainWindow);
+  // SCPへの警告を無視（今回はソフトウェアのためXSS対策は実施しない）
+  process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 }
 
 app.whenReady().then(createWindow);
