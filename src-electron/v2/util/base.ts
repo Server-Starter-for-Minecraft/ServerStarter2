@@ -8,7 +8,13 @@ interface IResult<T, E> {
   map<U>(op: (ok: T) => U): Result<U, E>;
   valueOrDefault(defaultValue: T): T;
   errorOrDefault(defaultError: E): E;
+  /**
+   * Errの場合PanicErrorをなげるため使用には注意すること
+   */
   get value(): T;
+  /**
+   * Okの場合PanicErrorをなげるため使用には注意すること
+   */
   get error(): E;
   toOpt(): IOpt<T>;
 }
@@ -82,13 +88,49 @@ export class Err<E> implements IResult<any, E> {
   }
 }
 
-export function err<E>(value: E) {
+export function err<E = Error>(value: E) {
   return new Err(value);
 }
 
 export type Result<T, E = Error> = (Ok<T> | Err<E>) & {
   map<U>(op: (ok: T) => U): Result<U, E>;
 };
+
+/**
+ * 与えた関数内部で起こったエラーを Resultとしてラップして返す
+ * @param func throwする可能性のある関数
+ * @returns throwをErrでラップした関数
+ */
+export const catchToResult =
+  <A extends any[], T>(
+    func: (...args: A) => Result<T>
+  ): ((...args: A) => Result<T>) =>
+  (...args: A) => {
+    try {
+      return func(...args);
+    } catch (e) {
+      if (e instanceof PanicError) return err(e);
+      throw e;
+    }
+  };
+
+/**
+ * 与えた非同期関数内部で起こったエラーを Resultとしてラップして返す
+ * @param func throwする可能性のある非同期関数
+ * @returns throwをErrでラップした非同期関数
+ */
+export const catchToResultAsync =
+  <A extends any[], T>(
+    func: (...args: A) => Promise<Result<T>>
+  ): ((...args: A) => Promise<Result<T>>) =>
+  async (...args: A) => {
+    try {
+      return await func(...args);
+    } catch (e) {
+      if (e instanceof PanicError) return err(e);
+      throw e;
+    }
+  };
 
 interface IOpt<T> {
   isSome<T>(this: IOpt<T>): this is Value<T>;
