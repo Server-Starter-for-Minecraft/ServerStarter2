@@ -9,7 +9,7 @@ export const enWelcome: MessageSchema['welcome'] = {
     ServerStarter2's terms of Use can be viewed at {0}.\n\
     Please read before use.",
   link: 'homepage',
-  url: 'https://civiltt.github.io/ServerStarter/credit',
+  url: 'https://server-starter-for-minecraft.github.io/terms',
   agreeTerm: 'Agree to the term of use of ServerStarter2',
   start: 'Start!',
 };

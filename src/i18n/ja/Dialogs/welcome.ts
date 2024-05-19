@@ -7,7 +7,7 @@ export const jaWelcome = {
     ServerStarter2の利用規約は{0}より閲覧可能です\n\
     ご利用前にご一読ください',
   link: 'ホームページ',
-  url: 'https://civiltt.github.io/ServerStarter/credit',
+  url: 'https://server-starter-for-minecraft.github.io/terms',
   agreeTerm: 'ServerStarter2の利用規約に同意する',
   start: 'スタート！',
 };
