@@ -11,10 +11,10 @@ const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent();
 const hovered = ref(false);
 const animationSpeed = 100;
 const timeCounter = ref(1);
-const endCounter = 0;
+const endCount = 0;
 
 const closeCounter = async () => {
-  while (timeCounter.value > endCounter) {
+  while (timeCounter.value > endCount) {
     await sleep(50);
     // ホバー中はカウントを進めない
     if (!hovered.value) {
@@ -31,7 +31,7 @@ closeCounter().then(onDialogCancel);
  * counterを0にしてcloseCounterがダイアログを閉じる
  */
 function closeClicked() {
-  timeCounter.value = endCounter;
+  timeCounter.value = endCount;
 }
 </script>
 
