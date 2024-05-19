@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { deepcopy } from 'app/src-electron/util/deepcopy';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { isError, isValid } from 'src/scripts/error';
 import { keys, values } from 'src/scripts/obj';
 import { recordValueFilter } from 'src/scripts/objFillter';

@@ -52,7 +52,14 @@ module.exports = {
     // https://github.com/typescript-eslint/typescript-eslint/issues/389#issuecomment-509292674
     // Prettier has not been included as plugin to avoid performance impact
     // add it as an extension for your IDE
+    'import',
   ],
+
+  settings: {
+    'import/resolver': {
+      typescript: {},
+    },
+  },
 
   globals: {
     ga: 'readonly', // Google Analytics
@@ -95,5 +102,21 @@ module.exports = {
 
     // Require switch-case statements to be exhaustive
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
+
+    'import/no-restricted-paths': [
+      'error',
+      {
+        zones: [
+          {
+            from: `./src/**/*`,
+            target: `./src-electron/**/*`,
+          },
+          {
+            from: `./src-electron/!(schema|api)/**/*`,
+            target: `./src/**/*`,
+          },
+        ],
+      },
+    ],
   },
 };

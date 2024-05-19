@@ -2,7 +2,7 @@
 import { ref, toRaw } from 'vue';
 import { useQuasar } from 'quasar';
 import { WorldContainer } from 'app/src-electron/schema/brands';
-import { deepcopy } from 'app/src-electron/util/deepcopy';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { values } from 'src/scripts/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';

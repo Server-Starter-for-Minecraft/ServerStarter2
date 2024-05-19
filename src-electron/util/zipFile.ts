@@ -1,8 +1,8 @@
 import { decode } from 'iconv-lite';
 import * as JSZip from 'jszip';
-import { isError } from 'src/scripts/error';
 import { BytesData } from './bytesData';
 import { errorMessage } from './error/construct';
+import { isError } from './error/error';
 import { Failable, safeExecAsync } from './error/failable';
 import { fromEntries, toEntries } from './obj';
 import { asyncMap, objMap } from './objmap';

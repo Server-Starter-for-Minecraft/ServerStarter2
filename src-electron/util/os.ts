@@ -1,11 +1,5 @@
 import { execSync } from 'child_process';
-
-export type OsPlatform =
-  | 'debian'
-  | 'redhat'
-  | 'mac-os'
-  | 'mac-os-arm64'
-  | 'windows-x64';
+import { OsPlatform } from '../schema/os';
 
 function getOsPlatform(): OsPlatform {
   const platform = process.platform;

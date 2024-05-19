@@ -1,7 +1,7 @@
 import { toRaw } from 'vue';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { Remote, RemoteFolder } from 'app/src-electron/schema/remote';
-import { deepcopy } from 'app/src-electron/util/deepcopy';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';

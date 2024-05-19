@@ -3,7 +3,7 @@ import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
-import { deepCopy } from './scripts/deepCopy';
+import { deepcopy } from './scripts/deepcopy';
 import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
@@ -144,7 +144,7 @@ async function setUserSettings() {
  */
 async function firstProcess() {
   // systemSettingsの読み込み
-  initSystemSettings(deepCopy(await window.API.invokeGetSystemSettings()));
+  initSystemSettings(deepcopy(await window.API.invokeGetSystemSettings()));
 
   // UserSettingsの読み込み
   await setUserSettings();

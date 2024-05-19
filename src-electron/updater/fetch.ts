@@ -1,8 +1,8 @@
 import { Failable } from '../schema/error';
+import { OsPlatform } from '../schema/os';
 import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
 import { listReleases, ReleaseAsset } from '../util/github/schema/release';
-import { OsPlatform } from '../util/os';
 
 /** githubからリリース番号を取得 */
 export async function getLatestRelease(

@@ -11,6 +11,7 @@ import {
   NewFileData,
   PluginData,
 } from '../schema/filedata';
+import { OsPlatform } from '../schema/os';
 import { Player } from '../schema/player';
 import { GroupProgress } from '../schema/progress';
 import {
@@ -24,7 +25,6 @@ import { StaticResouce } from '../schema/static';
 import { SystemSettings } from '../schema/system';
 import { AllVersion, VersionType } from '../schema/version';
 import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
-import { OsPlatform } from '../util/os';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**

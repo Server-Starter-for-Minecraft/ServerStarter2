@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
-import { deepCopy } from 'src/scripts/deepCopy';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { isValid } from 'src/scripts/error';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
@@ -50,7 +50,7 @@ function openGroupEditor(group?: PlayerGroup) {
     playerStore.selectedGroupName = '';
   } else {
     playerStore.focusCards = new Set(group.players);
-    playerStore.selectedGroup = deepCopy(
+    playerStore.selectedGroup = deepcopy(
       Object.assign(group, { isNew: false })
     );
     playerStore.selectedGroupName = group.name;
@@ -112,7 +112,7 @@ function openGroupEditor(group?: PlayerGroup) {
             class="row q-gutter-sm q-pa-sm"
           >
             <div
-              v-for="player in deepCopy(
+              v-for="player in deepcopy(
                 playerStore.searchPlayers(mainStore.world.players)
               ).sort(playerSortFunc(playerOrder))"
               :key="player.uuid"

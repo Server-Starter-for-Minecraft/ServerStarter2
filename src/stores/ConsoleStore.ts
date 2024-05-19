@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { WorldID } from 'app/src-electron/schema/world';
-import { deepcopy } from 'app/src-electron/util/deepcopy';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { values } from 'src/scripts/obj';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
