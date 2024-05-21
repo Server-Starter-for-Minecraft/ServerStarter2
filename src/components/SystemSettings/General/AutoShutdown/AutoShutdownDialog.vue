@@ -11,11 +11,11 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 // シャットダウンまでの秒数
 const autoShutdownCounter = ref(30);
 const endCount = 0;
-const tick = 200;
-let executeShutdown = true;
+const tick = 50;
+const executeShutdown = ref(true);
 
 const closeCounter = async () => {
-  while (autoShutdownCounter.value > endCount) {
+  while (autoShutdownCounter.value > endCount && executeShutdown.value) {
     await sleep(tick);
     autoShutdownCounter.value -= tick / 1000;
   }
@@ -24,17 +24,14 @@ const closeCounter = async () => {
 // カウンターが終了したらダイアログを閉じる
 closeCounter().then(() => {
   onDialogOK();
-  shutdownSelecter(executeShutdown);
+  shutdownSelecter(executeShutdown.value);
 });
 
 /**
- * ダイアログ付属の閉じるボタンが押された場合の処理
- *
- * counterを0にしてcloseCounterがダイアログを閉じる
+ * ダイアログ付属の閉じるボタンが押された場合はシャットダウンフラグを折る
  */
 function closeClicked() {
-  autoShutdownCounter.value = endCount;
-  executeShutdown = false;
+  executeShutdown.value = false;
 }
 </script>
 
