@@ -115,7 +115,10 @@ export const catchToResult =
   };
 
 /**
- * 与えた非同期関数内部で起こったエラーを Resultとしてラップして返す
+ * 与えた非同期関数内部で起こったPAnicErrorを Resultとしてラップして返す
+ *
+ * haskellのdoみたいな使い方を想定
+ *
  * @param func throwする可能性のある非同期関数
  * @returns throwをErrでラップした非同期関数
  */

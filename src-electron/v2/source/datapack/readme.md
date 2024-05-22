@@ -1,0 +1,6 @@
+# v2/source/datapack
+PCにインストールされたdatapackを管理するためのハンドラ
+
+適切にdatapackの導入や取得ができるようにすること
+
+それぞれのdatapackデータに対してメタデータを持つので、その辺も注意
