@@ -39,8 +39,8 @@ const progressStore = useProgressStore();
 const router = useRouter();
 // 言語設定を定義
 const $t = useI18n();
-const { t } = useI18n();
-setI18nFunc(t);
+const { t, te } = useI18n();
+setI18nFunc(t, te);
 
 // 仮のテーマを適用する
 const $q = useQuasar();

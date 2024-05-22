@@ -30,9 +30,12 @@ const translationArgs: Record<string, FullKeys<MessageSchema>> = {
 };
 
 type tFunc = (key: string, args?: Record<string, unknown> | string) => string;
+type teFunc = (key: string) => boolean;
 let _t: tFunc;
-export function setI18nFunc(t: tFunc) {
+let _te: teFunc;
+export function setI18nFunc(t: tFunc, te: teFunc) {
   _t = t;
+  _te = te;
 }
 
 export function $T(key: string): string;
@@ -154,7 +157,7 @@ export function tError(
   }
 
   // 説明文は空文字列が来たら表示をオフにする
-  if (useDescKey !== '') {
+  if (useDescKey !== '' && _te(useDescKey)) {
     const translatedDesc = $T(useDescKey, 'undefined');
     if (translatedDesc !== 'undefined') {
       returnObj.desc = $T(
