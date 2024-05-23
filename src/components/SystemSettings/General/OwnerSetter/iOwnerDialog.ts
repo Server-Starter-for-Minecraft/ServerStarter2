@@ -1,10 +1,10 @@
-import { Player } from "app/src-electron/schema/player";
+import { Player } from 'app/src-electron/schema/player';
 
 export interface OwnerDialogProp {
-  ownerPlayer?: Player
+  ownerPlayer?: Player;
   persistent?: boolean;
 }
 
 export interface ReturnOwnerDialog {
-  ownerPlayer?: Player
+  ownerPlayer?: Player;
 }
