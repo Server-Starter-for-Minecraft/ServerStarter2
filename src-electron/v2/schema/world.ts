@@ -4,7 +4,7 @@ import { ModDomain } from './mod';
 import { OpLevel, PlayerUUID } from './player';
 import { PluginDomain } from './plugin';
 import { RuntimeSettings } from './runtime';
-import { McTimestamp } from './timespamp';
+import { McTimestamp } from './timestamp';
 import { VersionDomain } from './version';
 
 export type BannedPlayer = {
