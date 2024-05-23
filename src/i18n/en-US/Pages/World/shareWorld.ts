@@ -23,8 +23,8 @@ export const enUSShareWorld: MessageSchema['shareWorld'] = {
   sync: 'sync with {path}',
   existedDialog:
     '\
-    Sync world data with {rWorldName}.<br>\
-    Data in this world will be overwritten by data in the selected ShareWorld.<br>\
+    Sync world data with {rWorldName}.\n\
+    Data in this world will be overwritten by data in the selected ShareWorld.\n\
     Do you want to sync world？',
   selectRemote: {
     title: 'Register new ShareWorld',

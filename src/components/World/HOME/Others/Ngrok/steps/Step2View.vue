@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { assets } from 'src/assets/assets';
 import SsA from 'src/components/util/base/ssA.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import BaseCard from './slides/BaseCard.vue';
 
 const slide = ref(1);
@@ -31,7 +32,7 @@ const slide = ref(1);
           :img-width="9"
         >
           <p>
-            <i18n-t
+            <SsI18nT
               keypath="home.ngrok.dialog.secondPage.signup.desc"
               tag="label"
               for="home.ngrok.dialog.secondPage.signup.link"
@@ -67,7 +68,17 @@ const slide = ref(1);
           :img="assets.png.mcInput"
           :img-width="10"
         >
-          <p v-html="$t('home.ngrok.dialog.secondPage.howToConnect.desc')" />
+          <p style="white-space: pre-line">
+            <SsI18nT keypath="home.ngrok.dialog.secondPage.howToConnect.desc">
+              <b
+                ><u>
+                  {{
+                    $t('home.ngrok.dialog.secondPage.howToConnect.changeNum')
+                  }}
+                </u></b
+              >
+            </SsI18nT>
+          </p>
           <p>{{ $t('home.ngrok.dialog.secondPage.howToConnect.connect') }}</p>
         </BaseCard>
       </q-carousel-slide>

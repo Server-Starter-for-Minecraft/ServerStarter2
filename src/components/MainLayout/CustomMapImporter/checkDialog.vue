@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { CustomMapImporterProp } from './iCustomMapImporter';
+import LoadingLogo from 'src/assets/animation/LoadingLogo.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
-import LoadingLogo from 'src/assets/animation/LoadingLogo.vue';
+import { CustomMapImporterProp } from './iCustomMapImporter';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
@@ -27,7 +27,9 @@ async function importProcess() {
     >
       <q-item dense class="q-pl-none">
         <q-item-section>
-          <p v-html="$t('mainLayout.customMapImporter.checkDialog.desc')" />
+          <p style="white-space: pre-line">
+            {{ $t('mainLayout.customMapImporter.checkDialog.desc') }}
+          </p>
           <WorldItem
             :icon="icon"
             :world-name="worldName"

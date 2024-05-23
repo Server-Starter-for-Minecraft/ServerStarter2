@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+
 interface Props {
   icon: string;
   text: string;

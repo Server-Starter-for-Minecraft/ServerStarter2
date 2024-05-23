@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
-import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { RemoteFolder } from 'app/src-electron/schema/remote';
-import { GitHubSelecterProp } from './selecters/iRemoteSelecter';
-import GitHubSelecterDialog from './selecters/github/GitHubSelecterDialog.vue';
-import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
+import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 import NewRemoteDialog from 'src/components/SystemSettings/Remote/NewRemoteDialog.vue';
+import GitHubSelecterDialog from './selecters/github/GitHubSelecterDialog.vue';
+import { GitHubSelecterProp } from './selecters/iRemoteSelecter';
 
 const $q = useQuasar();
 const sysStore = useSystemStore();

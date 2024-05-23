@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useConsoleStore } from 'src/dummy/stores/console';
-import ToolBarInvoke from './ToolBarInvoke.vue';
-import ToolBarHandle from './ToolBarHandle.vue';
-import { QVirtualScroll } from 'quasar';
 import { Ref, ref } from 'vue';
+import { QVirtualScroll } from 'quasar';
+import { useConsoleStore } from 'src/dummy/stores/console';
+import ToolBarHandle from './ToolBarHandle.vue';
+import ToolBarInvoke from './ToolBarInvoke.vue';
+
 const store = useConsoleStore();
 
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null);

@@ -1,8 +1,8 @@
 import { testWorldSettingsFixer } from 'src-electron/core/settings/worldJson';
 import {
-  FAIL,
   arrayFixer,
   booleanFixer,
+  FAIL,
   literalFixer,
   nullFixer,
   numberFixer,

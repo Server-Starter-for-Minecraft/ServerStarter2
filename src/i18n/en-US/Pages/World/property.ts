@@ -106,7 +106,7 @@ export const enUSproperty: MessageSchema['property'] = {
   },
   resetProperty:
     '\
-    Reset setting to default setting "{defaultProperty}"<br>\
+    Reset setting to default setting "{defaultProperty}" \n\
     You can change basic settings from "System Settings" > "Properties".',
   empty: '(Empty)',
   failed: 'Failed to load properties',

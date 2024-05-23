@@ -1,8 +1,8 @@
-import { isError } from 'app/src-electron/util/error/error';
-import { Failable } from 'app/src-electron/util/error/failable';
 import { ImageURI, UUID } from 'src-electron/schema/brands';
 import { Player } from 'src-electron/schema/player';
 import { GetProfile, UsernameToUUID } from 'src-electron/tools/minecraftApi';
+import { isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
 
 export async function searchPlayerFromName(
   name: string

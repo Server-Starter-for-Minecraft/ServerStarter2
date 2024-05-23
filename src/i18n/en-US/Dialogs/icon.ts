@@ -1,5 +1,4 @@
 // /src/components/World/HOME/IconSelectView.vue の翻訳
-
 import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSIcon: MessageSchema['icon'] = {

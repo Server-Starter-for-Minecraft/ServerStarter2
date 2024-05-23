@@ -1,7 +1,7 @@
-import { getSystemSettings, setSystemSettings } from '../../stores/system';
 import { GithubRemoteSetting } from 'src-electron/schema/remote';
-import { errorMessage } from 'app/src-electron/util/error/construct';
 import { Failable } from 'app/src-electron/schema/error';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { getSystemSettings, setSystemSettings } from '../../stores/system';
 
 /** リポジトリを操作できる登録済みのPATを取得する。 */
 export async function getGitPat(

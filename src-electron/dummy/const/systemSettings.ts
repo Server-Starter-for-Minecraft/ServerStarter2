@@ -1,8 +1,8 @@
 import { Player } from 'app/src-electron/schema/player';
+import { SystemWorldSettings } from 'app/src-electron/schema/world';
 import { ImageURI, PlayerUUID, WorldContainer } from '../../schema/brands';
 import { SystemSettings, WorldContainers } from '../../schema/system';
 import { defaultServerProperties } from './serverProperties';
-import { SystemWorldSettings } from 'app/src-electron/schema/world';
 
 export const player1UUID = '8c4d8e1b-26b0-4e73-a8b2-f10d55e1c20c' as PlayerUUID;
 export const player2UUID = '5050fa2d-6a88-45da-b25e-7bcda267dfe2' as PlayerUUID;

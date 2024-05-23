@@ -1,12 +1,12 @@
-import { DatapackData } from 'app/src-electron/schema/filedata';
-import { ServerAdditionalFiles } from './base';
 import { DATAPACK_CACHE_PATH, LEVEL_NAME } from 'app/src-electron/core/const';
+import { DatapackData } from 'app/src-electron/schema/filedata';
+import { BytesData } from 'app/src-electron/util/bytesData';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { Path } from 'app/src-electron/util/path';
-import { isError } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
-import { BytesData } from 'app/src-electron/util/bytesData';
 import { ZipFile } from 'app/src-electron/util/zipFile';
+import { ServerAdditionalFiles } from './base';
 
 type Mcmeta = {
   pack: {
@@ -62,7 +62,7 @@ async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
 export const datapackFiles = new ServerAdditionalFiles<DatapackData>(
   'datapack',
   DATAPACK_CACHE_PATH,
-  LEVEL_NAME + '/datapacks',
+  `${LEVEL_NAME}/datapacks`,
   loader,
   installer
 );

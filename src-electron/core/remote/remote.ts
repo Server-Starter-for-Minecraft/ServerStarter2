@@ -1,15 +1,15 @@
-import { RemoteOperator } from './base';
-import { githubRemoteOperator } from './github/git';
-import { Path } from 'src-electron/util/path';
 import {
   Remote,
   RemoteFolder,
   RemoteSetting,
   RemoteWorld,
 } from 'src-electron/schema/remote';
-import { Failable, WithError } from 'app/src-electron/schema/error';
+import { Path } from 'src-electron/util/path';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
+import { Failable, WithError } from 'app/src-electron/schema/error';
 import { GroupProgressor } from '../progress/progress';
+import { RemoteOperator } from './base';
+import { githubRemoteOperator } from './github/git';
 
 export const remoteOperators: {
   [K in RemoteFolder as K['type']]: RemoteOperator<K>;

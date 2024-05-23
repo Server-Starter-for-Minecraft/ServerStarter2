@@ -20,7 +20,7 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     unregistTitle: 'Unregister {name}',
     unregistDialog:
       '\
-      Unregister {name} from the ServerStarter2 world save list. <br>\
+      Unregister {name} from the ServerStarter2 world save list. \n\
       Unregistered folders and their internal data will not be deleted.',
     tooltipVisible: 'Display worlds saved in this folder in the world list',
     tooltipInvisible:
@@ -43,7 +43,7 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     MIT: 'MIT License',
     licenseDesc:
       '\
-      Modification and redistribution of the system without permission from the creator is prohibited.<br>\
+      Modification and redistribution of the system without permission from the creator is prohibited.\n\
       Please refer to the ServerStarter2 Terms of Use and License Agreement for more information.',
     developer: 'Developer',
     productionManager: 'Production Manager',

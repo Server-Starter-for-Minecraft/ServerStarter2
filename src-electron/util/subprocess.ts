@@ -1,11 +1,11 @@
-import { Failable } from 'app/src-electron/util/error/failable';
 import * as child_process from 'child_process';
-import { utilLoggers } from './utilLogger';
-import { sleep } from './sleep';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { onQuit } from '../lifecycle/lifecycle';
-import { fromRuntimeError } from './error/error';
 import { errorMessage } from './error/construct';
+import { fromRuntimeError } from './error/error';
 import { Path } from './path';
+import { sleep } from './sleep';
+import { utilLoggers } from './utilLogger';
 
 const loggers = utilLoggers.subprocess;
 
@@ -23,7 +23,7 @@ function promissifyProcess(
   beforeKillTimeout = 1000
 ) {
   const logger = loggers.promissifyProcess({
-    command: processPath.strQuoted() + ' ' + args.join(' '),
+    command: `${processPath.strQuoted()} ${args.join(' ')}`,
   });
   logger.start();
 
@@ -82,7 +82,7 @@ function promissifyProcess(
 
   const write = (msg: string) =>
     new Promise<void>((resolve) => {
-      if (process.stdin) process.stdin.write(msg + '\n', () => resolve());
+      if (process.stdin) process.stdin.write(`${msg}\n`, () => resolve());
       else resolve();
     });
   promise.kill = kill;

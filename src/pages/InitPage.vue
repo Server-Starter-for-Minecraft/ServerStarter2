@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import { initWindow, afterWindow } from 'app/src/init';
+import { useQuasar } from 'quasar';
+import { afterWindow, initWindow } from 'app/src/init';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { OwnerDialogProp } from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
 import WelcomeDialog from 'src/components/App/WelcomeDialog.vue';
 import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
-import { OwnerDialogProp } from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
 
 const $q = useQuasar();
 const router = useRouter();

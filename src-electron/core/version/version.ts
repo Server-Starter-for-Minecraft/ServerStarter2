@@ -1,14 +1,14 @@
-import { vanillaVersionLoader } from './vanilla';
+import { AllVersion, Version, VersionType } from 'src-electron/schema/version';
+import { Failable } from 'app/src-electron/schema/error';
+import { Path } from '../../util/path';
+import { GroupProgressor } from '../progress/progress';
 import { VersionLoader } from './base';
-import { spigotVersionLoader } from './spigot';
-import { papermcVersionLoader } from './papermc';
+import { fabricVersionLoader } from './fabric';
 import { forgeVersionLoader } from './forge';
 import { mohistmcVersionLoader } from './mohistmc';
-import { Path } from '../../util/path';
-import { fabricVersionLoader } from './fabric';
-import { AllVersion, Version, VersionType } from 'src-electron/schema/version';
-import { GroupProgressor } from '../progress/progress';
-import { Failable } from 'app/src-electron/schema/error';
+import { papermcVersionLoader } from './papermc';
+import { spigotVersionLoader } from './spigot';
+import { vanillaVersionLoader } from './vanilla';
 
 export const versionLoaders: {
   [V in Version as V['type']]: VersionLoader<V>;

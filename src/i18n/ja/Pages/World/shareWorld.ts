@@ -39,8 +39,8 @@ export const jaShareWorld = {
   sync: '{path}と同期',
   existedDialog:
     '\
-    {rWorldName}とワールドデータを同期します。<br>\
-    このワールドのデータは選択したShareWorldのデータによって上書きされます。<br>\
+    {rWorldName}とワールドデータを同期します。\n\
+    このワールドのデータは選択したShareWorldのデータによって上書きされます。\n\
     ワールドを同期しますか？',
   selectRemote: {
     title: 'ShareWorldを新規登録',

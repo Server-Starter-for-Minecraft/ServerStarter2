@@ -1,10 +1,10 @@
+import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { Failable } from 'app/src-electron/schema/error';
 import { GithubRemoteFolder } from 'app/src-electron/schema/remote';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
 import { getGithubBranches } from './githubApi';
 import { getGitPat } from './pat';
-import { isError } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
-import { RemoteWorldName } from 'app/src-electron/schema/brands';
 
 export async function validateWorldName(
   remoteFolder: GithubRemoteFolder,

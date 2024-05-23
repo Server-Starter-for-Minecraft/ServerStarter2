@@ -4,6 +4,7 @@ import { assets } from 'src/assets/assets';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 
 interface Prop {
   textFontSize: number;
@@ -17,6 +18,12 @@ const consoleStore = useConsoleStore();
 function stopServer() {
   consoleStore.clickedStopBtn(mainStore.selectedWorldID);
   window.API.sendCommand(mainStore.selectedWorldID, 'stop');
+}
+
+function stopButtonState() {
+  return consoleStore.isClickedBtn(mainStore.selectedWorldID)
+    ? 'console.stop.progressWithName'
+    : 'console.stop.withName';
 }
 </script>
 
@@ -52,8 +59,12 @@ function stopServer() {
     <span
       class="col row"
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
-      v-html="$t('console.boot', { name: mainStore.world.name })"
+      style="white-space: pre-line"
     >
+      <SsI18nT keypath="console.boot">
+        &nbsp;
+        <span class="text-omit col">{{ mainStore.world.name }}</span> &nbsp;
+      </SsI18nT>
     </span>
   </ss-btn>
 
@@ -74,10 +85,15 @@ function stopServer() {
     <span
       class="col row"
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
-      v-html="
-        $t('console.reboot.progressWithName', { name: mainStore.world.name })
-      "
+      style="white-space: pre-line"
     >
+      <SsI18nT keypath="console.reboot.progressWithName">
+        &nbsp;
+        <span class="text-omit col">
+          {{ mainStore.world.name }}
+        </span>
+        &nbsp;
+      </SsI18nT>
     </span>
   </ss-btn>
 
@@ -100,15 +116,15 @@ function stopServer() {
     <span
       class="col row"
       :style="{ 'font-size': `${textFontSize}rem`, right: 0, left: 0 }"
-      v-html="
-        $t(
-          consoleStore.isClickedBtn(mainStore.selectedWorldID)
-            ? 'console.stop.progressWithName'
-            : 'console.stop.withName',
-          { name: mainStore.world.name }
-        )
-      "
+      style="white-space: pre-line"
     >
+      <SsI18nT :keypath="stopButtonState()">
+        &nbsp;
+        <span class="text-omit col">
+          {{ mainStore.world.name }}
+        </span>
+        &nbsp;
+      </SsI18nT>
     </span>
   </ss-btn>
 </template>

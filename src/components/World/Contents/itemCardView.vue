@@ -11,9 +11,9 @@ import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
-import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import BaseActionsCard from '../utils/BaseActionsCard.vue';
 
 type T = DatapackData | ModData | PluginData;
 

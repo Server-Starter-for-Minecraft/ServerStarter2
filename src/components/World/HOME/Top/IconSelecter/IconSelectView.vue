@@ -2,12 +2,12 @@
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { assets } from 'src/assets/assets';
-import { checkError } from 'src/components/Error/Error';
-import { useMainStore } from 'src/stores/MainStore';
 import { tError } from 'src/i18n/utils/tFunc';
-import { IconImage, IconSelectProp, IconSelectReturn } from './iIconSelect';
-import IconBtn from './IconBtn.vue';
+import { useMainStore } from 'src/stores/MainStore';
+import { checkError } from 'src/components/Error/Error';
 import ClipImg from './ClipImg.vue';
+import IconBtn from './IconBtn.vue';
+import { IconImage, IconSelectProp, IconSelectReturn } from './iIconSelect';
 import SelectorBtn from './SelectorBtn.vue';
 
 const prop = defineProps<IconSelectProp>();
