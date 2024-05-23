@@ -10,9 +10,9 @@ import {
   versionTypes,
 } from 'app/src-electron/schema/version';
 import {
+  booleanFixer,
   FAIL,
   Fixer,
-  booleanFixer,
   literalFixer,
   numberFixer,
   objectFixer,

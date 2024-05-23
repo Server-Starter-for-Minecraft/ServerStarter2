@@ -36,7 +36,7 @@ function getErrorMessageConstructor<T extends object>(
 
   const handler: ProxyHandler<any> = {
     get: (_: object, k: string) => {
-      return getErrorMessageConstructor(key ? key + '.' + k : k);
+      return getErrorMessageConstructor(key ? `${key}.${k}` : k);
     },
   };
   return new Proxy(obj, handler);

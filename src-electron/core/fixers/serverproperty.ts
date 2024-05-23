@@ -7,10 +7,10 @@ import {
   StringServerPropertyAnnotation,
 } from 'app/src-electron/schema/serverproperty';
 import {
-  FAIL,
-  Fixer,
   arrayFixer,
   booleanFixer,
+  FAIL,
+  Fixer,
   literalFixer,
   numberFixer,
   objectFixer,

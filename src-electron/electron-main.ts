@@ -1,13 +1,12 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
-
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import * as path from 'path';
 import * as os from 'os';
-import { setupIPC } from './ipc/setup';
-import { onQuit } from './lifecycle/lifecycle';
-import { setServerStarterApp } from './lifecycle/exit';
-import { update } from './updater/updater';
+import * as path from 'path';
 import { getSystemSettings, setSystemSettings } from './core/stores/system';
+import { setupIPC } from './ipc/setup';
+import { setServerStarterApp } from './lifecycle/exit';
+import { onQuit } from './lifecycle/lifecycle';
+import { update } from './updater/updater';
 import { getCurrentTimestamp } from './util/timestamp';
 
 // 多重起動していたらすでに起動済みの場合即時終了
@@ -75,6 +74,8 @@ async function createWindow() {
 
   // フロントエンドとバックエンドの呼び出し処理をリンク
   setupIPC(() => mainWindow);
+  // SCPへの警告を無視（今回はソフトウェアのためXSS対策は実施しない）
+  process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 }
 
 app.whenReady().then(createWindow);

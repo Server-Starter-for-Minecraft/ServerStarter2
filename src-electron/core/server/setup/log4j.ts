@@ -1,8 +1,8 @@
-import { Path } from '../../../util/path';
-import { BytesData } from '../../../util/bytesData';
-import { Failable } from '../../../util/error/failable';
 import { Version } from 'src-electron/schema/version';
 import { isError } from 'app/src-electron/util/error/error';
+import { BytesData } from '../../../util/bytesData';
+import { Failable } from '../../../util/error/failable';
+import { Path } from '../../../util/path';
 import { GroupProgressor } from '../../progress/progress';
 
 const ver_17_18 = [

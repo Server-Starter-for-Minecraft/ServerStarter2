@@ -1,4 +1,7 @@
+import { UUID } from 'app/src-electron/schema/brands';
 import { ProgressMessage } from 'app/src-electron/schema/progressMessage';
+import { WorldID } from 'app/src-electron/schema/world';
+import { genUUID } from 'app/src-electron/tools/uuid';
 import {
   ConsoleProgress,
   GroupProgress,
@@ -9,9 +12,6 @@ import {
   TitleProgress,
 } from '../../schema/progress';
 import { api } from '../api';
-import { WorldID } from 'app/src-electron/schema/world';
-import { UUID } from 'app/src-electron/schema/brands';
-import { genUUID } from 'app/src-electron/tools/uuid';
 
 export abstract class Progressor<T extends Progress> {
   parent?: GroupProgressor;

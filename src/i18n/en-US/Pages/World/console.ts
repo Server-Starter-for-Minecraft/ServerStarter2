@@ -2,22 +2,20 @@ import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSConsole: MessageSchema['console'] = {
   init: 'Booting ServerStarter2...',
-  boot: 'BOOT &nbsp; <span class="text-omit col">{name}</span>',
+  boot: 'BOOT {0}{1}',
   booting: 'Booting {id} ({type})/{name}',
   abnormalEnd: 'Terminated abnormally',
   showLog: 'Show the previous server log',
   stop: {
     btn: 'close',
-    withName: 'CLOSE &nbsp; <span class="text-omit col">{name}</span>',
+    withName: 'CLOSE {0}{1}',
     progress: 'closing',
-    progressWithName:
-      'Working on closing &nbsp; <span class="text-omit col">{name}</span>',
+    progressWithName: 'Working on closing {0}{1}',
   },
   reboot: {
     btn: 'reboot',
     progress: 'rebooting',
-    progressWithName:
-      'Working on rebooting &nbsp; <span class="text-omit col">{name}</span>',
+    progressWithName: 'Working on rebooting {0}{1}',
   },
   status: {
     Stop: 'Stop',

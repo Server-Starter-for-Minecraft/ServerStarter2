@@ -1,9 +1,5 @@
-export type OsPlatform =
-  | 'debian'
-  | 'redhat'
-  | 'mac-os'
-  | 'mac-os-arm64'
-  | 'windows-x64';
+import { execSync } from 'child_process';
+import { OsPlatform } from '../schema/os';
 
 function getOsPlatform(): OsPlatform {
   const platform = process.platform;
@@ -33,8 +29,6 @@ function getOsPlatform(): OsPlatform {
       throw new Error(`${platform} is unavailable os platform`);
   }
 }
-
-import { execSync } from 'child_process';
 
 function getLinuxType() {
   // ID_LIKEをとってくる

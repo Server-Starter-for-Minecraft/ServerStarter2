@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
 import { keys, values } from 'src/scripts/obj';
-import SsInput from '../util/base/ssInput.vue';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import SsInput from '../util/base/ssInput.vue';
+
 interface Prop {
   expandWidth: number;
   expandDrawerBtnClickable: boolean;

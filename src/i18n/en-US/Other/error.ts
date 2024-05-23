@@ -1,5 +1,4 @@
 /* バックエンド周りのエラーの翻訳 */
-
 import { MessageSchema } from 'src/boot/i18n';
 
 export const enUSError: MessageSchema['error'] = {

@@ -1,10 +1,10 @@
-import { c, x } from 'tar';
 import { Writable } from 'stream';
-import { BytesData } from './bytesData';
-import { Path } from './path';
+import { c, x } from 'tar';
 import { Failable } from '../schema/error';
+import { BytesData } from './bytesData';
 import { fromRuntimeError } from './error/error';
 import { safeExecAsync } from './error/failable';
+import { Path } from './path';
 
 export async function createTar(
   directoryPath: Path,
@@ -25,7 +25,7 @@ export async function createTar(
       {
         gzip,
         portable: true,
-        cwd: path + '/',
+        cwd: `${path}/`,
         // preservePaths: true,
       },
       inner.map((x) => x.basename())

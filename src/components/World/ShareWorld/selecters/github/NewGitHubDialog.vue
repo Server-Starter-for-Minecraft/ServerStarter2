@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent } from 'quasar';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'src/scripts/error';
-import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
-import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import { useI18n } from 'vue-i18n';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { GithubCheckDialogProp, setRemoteWorld } from '../iRemoteSelecter';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
@@ -69,13 +70,13 @@ async function setRemote() {
       @ok-click="setRemote"
     >
       <p style="font-size: 0.8rem; opacity: 0.8">
-        <i18n-t keypath="shareWorld.newRemote.desc" tag="false">
+        <SsI18nT keypath="shareWorld.newRemote.desc" tag="false">
           <br />
           <br />
           <span class="text-negative text-bold">{{
             $t('shareWorld.newRemote.caution')
           }}</span>
-        </i18n-t>
+        </SsI18nT>
       </p>
 
       <SsInput

@@ -84,6 +84,7 @@ const linearMessage = computed(() =>
     <p class="text-caption text-omit" style="opacity: 0.6">
       {{ linearMessage }}
       <SsTooltip
+        v-if="linearMessage"
         :name="linearMessage"
         anchor="bottom start"
         self="center start"

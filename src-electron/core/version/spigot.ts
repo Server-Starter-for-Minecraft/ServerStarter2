@@ -1,24 +1,24 @@
-import { AllSpigotVersion, SpigotVersion } from 'src-electron/schema/version';
-import { Path } from '../../util/path';
-import { Failable } from '../../util/error/failable';
-import { BytesData } from '../../util/bytesData';
-import { JavaComponent, getJavaComponent } from './vanilla';
-import { versionConfig } from '../stores/config';
-import { versionsCachePath } from '../const';
 import * as cheerio from 'cheerio';
-import { interactiveProcess } from '../../util/subprocess';
+import { AllSpigotVersion, SpigotVersion } from 'src-electron/schema/version';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
+import { BytesData } from '../../util/bytesData';
+import { Failable } from '../../util/error/failable';
 import { readyJava } from '../../util/java/java';
+import { Path } from '../../util/path';
+import { interactiveProcess } from '../../util/subprocess';
+import { versionsCachePath } from '../const';
+import { allocateTempDir } from '../misc/tempPath';
+import { GroupProgressor } from '../progress/progress';
+import { versionConfig } from '../stores/config';
 import {
-  VersionComponent,
-  VersionLoader,
   genGetAllVersions,
   needEulaAgreementVanilla,
+  VersionComponent,
+  VersionLoader,
 } from './base';
 import { getVersionMainfest } from './mainfest';
-import { isError } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
-import { GroupProgressor } from '../progress/progress';
-import { allocateTempDir } from '../misc/tempPath';
+import { getJavaComponent, JavaComponent } from './vanilla';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 

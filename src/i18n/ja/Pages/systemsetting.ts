@@ -19,7 +19,7 @@ export const jaSystemSetting = {
     unregistTitle: '{name}の登録を解除します',
     unregistDialog:
       '\
-      ServerStarterのワールド保存先一覧より{name}の登録を解除します。<br>\
+      ServerStarterのワールド保存先一覧より{name}の登録を解除します。\n\
       解除したフォルダとその内部データが削除されることはありません。',
     tooltipVisible: 'ワールド一覧にこのフォルダに保存されたワールドを表示する',
     tooltipInvisible:
@@ -43,7 +43,7 @@ export const jaSystemSetting = {
     MIT: 'MIT License',
     licenseDesc:
       '\
-      製作者への許可なくシステムを改変して再配布することを禁じています。<br>\
+      製作者への許可なくシステムを改変して再配布することを禁じています。\n\
       詳細はServerStarter2の利用規約、並びにライセンス条項をご確認ください。',
     developer: '製作者',
     productionManager: '製作責任者',

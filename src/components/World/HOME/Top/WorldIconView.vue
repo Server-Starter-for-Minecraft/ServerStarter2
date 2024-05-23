@@ -3,9 +3,9 @@ import { useQuasar } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { IconSelectProp, IconSelectReturn } from './IconSelecter/iIconSelect';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import IconSelectView from './IconSelecter/IconSelectView.vue';
+import { IconSelectProp, IconSelectReturn } from './IconSelecter/iIconSelect';
 
 const $q = useQuasar();
 const mainStore = useMainStore();

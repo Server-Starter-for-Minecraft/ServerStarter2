@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { values } from 'src/scripts/obj';
+import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
-import { moveScrollTop_Home } from '../scroll';
 import { checkError } from 'src/components/Error/Error';
-import { tError } from 'src/i18n/utils/tFunc';
 import DangerView from 'src/components/util/danger/dangerView.vue';
+import { moveScrollTop_Home } from '../scroll';
 
 const mainStore = useMainStore();
 const worldStore = useWorldStore();
@@ -42,6 +42,11 @@ async function removeWorld() {
   const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID);
   checkError(res.value, updateView, (e) => tError(e));
 }
+
+function splitName(name: string) {
+  const maxLength = 20;
+  return name.length > maxLength ? `${name.slice(0, maxLength)}...` : name;
+}
 </script>
 
 <template>
@@ -51,7 +56,9 @@ async function removeWorld() {
     :open-dialog-btn-text="$t('home.deleteWorld.button')"
     :dialog-title="$t('home.deleteWorld.dialogTitle')"
     :dialog-desc="
-      $t('home.deleteWorld.dialogDesc', { deleteName: mainStore.world.name })
+      $t('home.deleteWorld.dialogDesc', {
+        deleteName: splitName(mainStore.world.name),
+      })
     "
     :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
     @action="removeWorld"

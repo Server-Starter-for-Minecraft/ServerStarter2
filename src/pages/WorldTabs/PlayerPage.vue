@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
+import { deepcopy } from 'src/scripts/deepcopy';
 import { isValid } from 'src/scripts/error';
-import { deepCopy } from 'src/scripts/deepCopy';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
 import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
-import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
-import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
-import OpSetterView from 'src/components/World/Player/OpSetterView.vue';
-import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
-import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import GroupEditorView from 'src/components/World/Player/GroupEditorView.vue';
+import OpSetterView from 'src/components/World/Player/OpSetterView.vue';
+import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
+import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
+import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
+import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
 
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
@@ -50,7 +50,7 @@ function openGroupEditor(group?: PlayerGroup) {
     playerStore.selectedGroupName = '';
   } else {
     playerStore.focusCards = new Set(group.players);
-    playerStore.selectedGroup = deepCopy(
+    playerStore.selectedGroup = deepcopy(
       Object.assign(group, { isNew: false })
     );
     playerStore.selectedGroupName = group.name;
@@ -103,7 +103,11 @@ function openGroupEditor(group?: PlayerGroup) {
         <div class="q-py-md fit">
           <div v-show="playerStore.searchName !== ''" class="q-pb-md">
             <span class="text-caption">{{ $t('player.newPlayer') }}</span>
-            <SearchResultView />
+            <SearchResultView
+              is-check-player-in-world
+              :register-btn-text="$t('player.addPlayer')"
+              :register-process="playerStore.addPlayer"
+            />
           </div>
 
           <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>
@@ -112,7 +116,7 @@ function openGroupEditor(group?: PlayerGroup) {
             class="row q-gutter-sm q-pa-sm"
           >
             <div
-              v-for="player in deepCopy(
+              v-for="player in deepcopy(
                 playerStore.searchPlayers(mainStore.world.players)
               ).sort(playerSortFunc(playerOrder))"
               :key="player.uuid"

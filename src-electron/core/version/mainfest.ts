@@ -1,9 +1,9 @@
-import { versionConfig } from '../stores/config';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import { BytesData } from '../../util/bytesData';
 import { Failable } from '../../util/error/failable';
 import { versionManifestPath } from '../const';
-import { isError, isValid } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
+import { versionConfig } from '../stores/config';
 
 export type ManifestRecord = {
   id: string;

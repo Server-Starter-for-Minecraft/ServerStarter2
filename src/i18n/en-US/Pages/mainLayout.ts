@@ -36,8 +36,8 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     selectFolder: 'Select folder',
     lastPlayed: '({datetime})',
     addSingleWorld: 'Add single world',
-    loadSingleWorld: 'Loading<br>single play world',
-    noSingleWorld: 'Single play world<br>was not found',
+    loadSingleWorld: 'Loading\nsingle play world',
+    noSingleWorld: 'Single play world\nwas not found',
     checkDialog: {
       title: 'Introducing new world',
       desc: 'I am introducing the following world data',

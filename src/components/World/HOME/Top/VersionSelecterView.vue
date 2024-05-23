@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
 import {
   AllFabricVersion,
   AllForgeVersion,
@@ -12,19 +12,19 @@ import {
   Version,
   versionTypes,
 } from 'app/src-electron/schema/version';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
-import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { assets } from 'src/assets/assets';
-import { openVerTypeWarningDialog } from './VersionSelecter/versionComparator';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
-import ServerTypeItem from './VersionSelecter/ServerTypeItem.vue';
-import Vanilla from './VersionSelecter/VanillaView.vue';
-import Spigot from './VersionSelecter/SpigotView.vue';
-import PaperMC from './VersionSelecter/PaperMCView.vue';
+import Fabric from './VersionSelecter/FabricView.vue';
 import Forge from './VersionSelecter/ForgeView.vue';
 import MohistMC from './VersionSelecter/MohistMCView.vue';
-import Fabric from './VersionSelecter/FabricView.vue';
+import PaperMC from './VersionSelecter/PaperMCView.vue';
+import ServerTypeItem from './VersionSelecter/ServerTypeItem.vue';
+import Spigot from './VersionSelecter/SpigotView.vue';
+import Vanilla from './VersionSelecter/VanillaView.vue';
+import { openVerTypeWarningDialog } from './VersionSelecter/versionComparator';
 
 const $q = useQuasar();
 const sysStore = useSystemStore();

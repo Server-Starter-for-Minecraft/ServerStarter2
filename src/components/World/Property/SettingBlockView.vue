@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
-import InputFieldView from './InputFieldView.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import InputFieldView from './InputFieldView.vue';
 
 interface Prop {
   settingName: string;

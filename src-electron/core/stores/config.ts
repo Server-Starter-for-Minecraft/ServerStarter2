@@ -1,6 +1,6 @@
 import Store from 'electron-store';
-import { versionsCachePath } from '../const';
 import { VersionType } from 'src-electron/schema/version';
+import { versionsCachePath } from '../const';
 
 export type Config = {
   version_manifest_v2_sha1?: string;

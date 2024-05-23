@@ -1,4 +1,10 @@
 import {
+  OpSetting,
+  Player,
+  PlayerGroup,
+  PlayerSetting,
+} from 'app/src-electron/schema/player';
+import {
   arrayFixer,
   booleanFixer,
   defaultFixer,
@@ -8,12 +14,6 @@ import {
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
 import { fixImageURI, fixPlayerUUID } from './brands';
-import {
-  OpSetting,
-  Player,
-  PlayerGroup,
-  PlayerSetting,
-} from 'app/src-electron/schema/player';
 
 /** システムのプレイヤー設定 */
 export const fixPlayer = objectFixer<Player>(

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
+import { useSystemStore } from 'src/stores/SystemStore';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
+import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 import NewRemoteDialog from 'src/components/SystemSettings/Remote/NewRemoteDialog.vue';
 
 const $q = useQuasar();

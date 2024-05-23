@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, toRaw } from 'vue';
+import { onMounted, Ref, ref, toRaw } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { RemoteWorld } from 'app/src-electron/schema/remote';
+import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
-import { GitHubSelecterProp, GithubCheckDialogProp } from '../iRemoteSelecter';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
+import { GithubCheckDialogProp, GitHubSelecterProp } from '../iRemoteSelecter';
 import ExistedGitHubDialog from './ExistedGitHubDialog.vue';
 import NewGitHubDialog from './NewGitHubDialog.vue';
-import { tError } from 'src/i18n/utils/tFunc';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
