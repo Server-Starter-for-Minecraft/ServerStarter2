@@ -1,9 +1,9 @@
-import { API } from 'src-electron/api/api';
-import { FrontListener, FrontCaller } from 'src-electron/ipc/link';
-import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from 'src-electron/ipc/util';
 import { BrowserWindow } from 'electron';
-import { Failable } from '../util/error/failable';
+import { API } from 'src-electron/api/api';
+import { FrontCaller, FrontListener } from 'src-electron/ipc/link';
+import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from 'src-electron/ipc/util';
 import { errorMessage } from '../util/error/construct';
+import { Failable } from '../util/error/failable';
 
 type ChanneledFunc<C, T extends (...args: any) => any> = { __channel__: C } & T;
 

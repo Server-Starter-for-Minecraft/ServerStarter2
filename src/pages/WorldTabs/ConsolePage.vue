@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import StopView from 'src/components/World/Console/StopView.vue';
+import { useMainStore } from 'src/stores/MainStore';
+import OperationView from 'src/components/World/Console/OperationView.vue';
 import ReadyView from 'src/components/World/Console/ReadyView.vue';
 import RunningView from 'src/components/World/Console/RunningView.vue';
-import OperationView from 'src/components/World/Console/OperationView.vue';
+import StopView from 'src/components/World/Console/StopView.vue';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Remote } from 'app/src-electron/schema/remote';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import DangerView from 'src/components/util/danger/dangerView.vue';
+import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsA from 'src/components/util/base/ssA.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
+import DangerView from 'src/components/util/danger/dangerView.vue';
 import GithubCard from 'src/components/SystemSettings/Remote/github/GithubCard.vue';
 
 interface Prop {
@@ -32,13 +33,13 @@ function deleteRemoteSetting() {
 <template>
   <h1 class="q-pt-md">{{ $t('shareWorld.existRemote.syncWorldTitle') }}</h1>
   <p class="text-body2" style="opacity: 0.6">
-    <i18n-t keypath="shareWorld.existRemote.syncWorldDesc" tag="false">
+    <SsI18nT keypath="shareWorld.existRemote.syncWorldDesc" tag="false">
       {{ `${remote.folder.owner}/${remote.folder.repo}/${remote.name}` }}
       <br />
       <SsA :url="remoteURL" class="text-body2 text-primary">
         {{ $t('shareWorld.github') }}
       </SsA>
-    </i18n-t>
+    </SsI18nT>
   </p>
 
   <GithubCard

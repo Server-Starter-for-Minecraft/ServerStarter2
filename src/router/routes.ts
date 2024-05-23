@@ -1,59 +1,72 @@
 import { RouteRecordRaw } from 'vue-router';
 import ConsolePage from 'src/pages/WorldTabs/ConsolePage.vue';
 
+// preLoadをすることでHOMEの表示中にコンポーネントの読み込みを並列する
+const preLoad = (module: any) => () => module;
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('src/pages/WorldTabs/HomePage.vue') },
+      {
+        path: '',
+        component: preLoad(import('src/pages/WorldTabs/HomePage.vue')),
+      },
       // consoleページはタブが開かれる前にWorldTabから呼び出されることがあるため、先に読み込んでおく
       { path: 'console', component: ConsolePage },
       {
         path: 'property',
-        component: () => import('src/pages/WorldTabs/PropertyPage.vue'),
+        component: preLoad(import('src/pages/WorldTabs/PropertyPage.vue')),
       },
       {
         path: 'player',
-        component: () => import('src/pages/WorldTabs/PlayerPage.vue'),
+        component: preLoad(import('src/pages/WorldTabs/PlayerPage.vue')),
       },
       {
         path: 'contents',
-        component: () => import('src/pages/WorldTabs/ContentsPage.vue'),
+        component: preLoad(import('src/pages/WorldTabs/ContentsPage.vue')),
       },
       {
         path: 'share-world',
-        component: () => import('src/pages/WorldTabs/ShareWorldPage.vue'),
+        component: preLoad(import('src/pages/WorldTabs/ShareWorldPage.vue')),
       },
       {
         path: 'others',
-        component: () => import('src/pages/WorldTabs/OthersPage.vue'),
+        component: preLoad(import('src/pages/WorldTabs/OthersPage.vue')),
       },
 
       {
         path: 'system/',
-        component: () => import('pages/SystemPage.vue'),
+        component: preLoad(import('pages/SystemPage.vue')),
         children: [
           {
             path: '',
-            component: () => import('src/pages/SystemSettings/GeneralPage.vue'),
+            component: preLoad(
+              import('src/pages/SystemSettings/GeneralPage.vue')
+            ),
           },
           {
             path: 'property',
-            component: () =>
-              import('src/pages/SystemSettings/PropertyPage.vue'),
+            component: preLoad(
+              import('src/pages/SystemSettings/PropertyPage.vue')
+            ),
           },
           {
             path: 'remote',
-            component: () => import('src/pages/SystemSettings/RemotePage.vue'),
+            component: preLoad(
+              import('src/pages/SystemSettings/RemotePage.vue')
+            ),
           },
           {
             path: 'folder',
-            component: () => import('src/pages/SystemSettings/FolderPage.vue'),
+            component: preLoad(
+              import('src/pages/SystemSettings/FolderPage.vue')
+            ),
           },
           {
             path: 'info',
-            component: () => import('src/pages/SystemSettings/InfoPage.vue'),
+            component: preLoad(import('src/pages/SystemSettings/InfoPage.vue')),
           },
         ],
       },

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { thumbStyle } from 'src/components/World/scrollBar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
-import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
+import { thumbStyle } from 'src/components/World/scrollBar';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
+import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 
 const sysStore = useSystemStore();
 const propertyStore = usePropertyStore();

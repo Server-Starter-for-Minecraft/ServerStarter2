@@ -1,7 +1,7 @@
 import { NgrokSetting } from 'app/src-electron/schema/ngrok';
 import {
-  Fixer,
   booleanFixer,
+  Fixer,
   objectFixer,
   optionalFixer,
   stringFixer,

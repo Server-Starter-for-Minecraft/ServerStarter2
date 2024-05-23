@@ -24,7 +24,9 @@ function closeWindow() {
           <div>
             <p>{{ $t('bugReport.title') }}</p>
             <p style="text-decoration: underline">{{ store.description }}</p>
-            <p v-html="$t('bugReport.desc')"></p>
+            <p style="white-space: pre-line">
+              {{ $t('bugReport.desc') }}
+            </p>
           </div>
 
           <div>

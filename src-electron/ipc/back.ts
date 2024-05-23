@@ -1,39 +1,40 @@
+import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
-import { BrowserWindow } from 'electron';
-import { getVersions } from '../core/version/version';
-import {
-  newWorld,
-  getWorld,
-  getWorldAbbrs,
-  setWorld,
-  createWorld,
-  deleteWorld,
-  runWorld,
-  runCommand,
-  reboot,
-  duplicateWorld,
-  backupWorld,
-  restoreWorld,
-  fetchLatestWorldLog,
-} from '../core/world/world';
-import { openBrowser, openFolder } from '../tools/shell';
-import { getSystemSettings, setSystemSettings } from '../core/stores/system';
-import { validateNewWorldName } from '../core/world/name';
-import { getStaticResoure } from '../core/resource';
+import { getWorldPaths } from '../core/world/paths';
 import { getPlayer } from '../core/player/main';
-import { getAllLocalSaveData } from '../core/user/launcher/localSave';
-import { getCacheContents } from '../core/stores/cache';
-import { pickDialog } from '../core/world/dialog';
-import { getGlobalIP } from '../util/ip';
 import {
   deleteRemoteWorld,
   getRemoteWorlds,
   validateNewRemoteWorldName,
   validateRemoteSetting,
 } from '../core/remote/remote';
+import { getStaticResoure } from '../core/resource';
+import { getCacheContents } from '../core/stores/cache';
+import { getSystemSettings, setSystemSettings } from '../core/stores/system';
+import { getAllLocalSaveData } from '../core/user/launcher/localSave';
+import { getVersions } from '../core/version/version';
+import { pickDialog } from '../core/world/dialog';
+import { validateNewWorldName } from '../core/world/name';
+import {
+  backupWorld,
+  createWorld,
+  deleteWorld,
+  duplicateWorld,
+  fetchLatestWorldLog,
+  getWorld,
+  getWorldAbbrs,
+  newWorld,
+  reboot,
+  restoreWorld,
+  runCommand,
+  runWorld,
+  setWorld,
+} from '../core/world/world';
 import { readyWindow } from '../lifecycle/lifecycle';
-import { getWorldPaths } from '../core/world/paths';
+import { openBrowser, openFolder } from '../tools/shell';
+import { getGlobalIP } from '../util/ip';
+
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({

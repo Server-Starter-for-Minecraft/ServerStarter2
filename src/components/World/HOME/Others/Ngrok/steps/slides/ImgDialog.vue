@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { ImgDialogProp } from '../iNgrok';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { ImgDialogProp } from '../iNgrok';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

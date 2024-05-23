@@ -5,7 +5,7 @@ export const enUSOwner: MessageSchema['owner'] = {
   registBtn: 'Register owner',
   dialogDesc:
     '\
-    Register as an owner player, a user of ServerStarter2.<br>\
+    Register as an owner player, a user of ServerStarter2.\n\
     By registering as an owner, you will be able to use features such as automatic OP privileges for new servers.',
   ownerPlayer: 'Owner player',
   register: 'Registration of owner player',

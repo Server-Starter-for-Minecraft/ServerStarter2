@@ -3,7 +3,7 @@ export const jaOwner = {
   registBtn: 'オーナーを登録',
   dialogDesc:
     '\
-    ServerStarter2の利用者であるオーナープレイヤーの登録を行います。<br>\
+    ServerStarter2の利用者であるオーナープレイヤーの登録を行います。\n\
     オーナーの登録を行うことで、新規サーバーに自動でOP権限を付与する機能などを利用できるようになります。',
   ownerPlayer: 'オーナープレイヤー',
   register: 'オーナープレイヤーの登録',

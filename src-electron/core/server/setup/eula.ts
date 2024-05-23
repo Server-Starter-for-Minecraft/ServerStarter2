@@ -1,13 +1,13 @@
-import { api } from '../../api';
-import { Path } from '../../../util/path';
-import { Failable } from '../../../util/error/failable';
-import { execProcess, interactiveProcess } from '../../../util/subprocess';
-import { WorldID } from 'app/src-electron/schema/world';
-import { isError } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
-import { GroupProgressor } from '../../progress/progress';
 import { Version } from 'app/src-electron/schema/version';
+import { WorldID } from 'app/src-electron/schema/world';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
 import { sleep } from 'app/src-electron/util/sleep';
+import { Failable } from '../../../util/error/failable';
+import { Path } from '../../../util/path';
+import { execProcess, interactiveProcess } from '../../../util/subprocess';
+import { api } from '../../api';
+import { GroupProgressor } from '../../progress/progress';
 
 /**
  * Eulaに同意したかどうかを返す
@@ -82,7 +82,7 @@ export async function checkEula(
 }
 
 function stringifyEula(agree: boolean, comments: string[]): string {
-  return comments.join('\n') + `\neula=${agree}`;
+  return `${comments.join('\n')}\neula=${agree}`;
 }
 
 function parseEula(txt: string): {

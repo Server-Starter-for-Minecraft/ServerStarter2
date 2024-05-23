@@ -1,6 +1,6 @@
 import { api } from 'app/src-electron/core/api';
-import { OsPlatform } from 'app/src-electron/util/os';
 import { onReadyWindow } from '../lifecycle/lifecycle';
+import { OsPlatform } from '../schema/os';
 
 /** linuxの最新版があることをwindowが生成されてから通知 */
 export const notifyUpdate = async (

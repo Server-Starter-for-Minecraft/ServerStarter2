@@ -58,8 +58,9 @@ defineProps<Prop>();
         border: `1.5px solid grey`,
         'font-size': fontSize ?? '.7rem',
       }"
-      style="word-break: break-word; border-radius: 5px"
-      v-html="name"
-    />
+      style="word-break: break-word; border-radius: 5px; white-space: pre-line"
+    >
+      {{ name }}
+    </div>
   </q-tooltip>
 </template>

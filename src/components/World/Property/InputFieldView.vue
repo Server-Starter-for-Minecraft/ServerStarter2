@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useSystemStore } from 'src/stores/SystemStore';
 import {
   NumberServerPropertyAnnotation,
   ServerProperties,
   StringServerPropertyAnnotation,
 } from 'app/src-electron/schema/serverproperty';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 

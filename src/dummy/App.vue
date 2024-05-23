@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { callbacks, useConsoleStore } from './stores/console';
 import ConsoleList from './components/ConsoleList.vue';
 import ConsoleWindow from './components/ConsoleWindow.vue';
-import { useConsoleStore, callbacks } from './stores/console';
 
 const store = useConsoleStore();
 
@@ -9,8 +9,7 @@ for (const key of Object.keys(window.API)) {
   if (!key.startsWith('on')) continue;
   // on...形式のAPIにリスナーを登録
   window.API[key](async (_: any, ...args: any[]) => {
-    const result =
-      key + '(' + args.map((x) => JSON.stringify(x)).join(',') + ')';
+    const result = `${key}(${args.map((x) => JSON.stringify(x)).join(',')})`;
     store.pushConsoleTo('on', result);
   });
 }
@@ -19,8 +18,7 @@ for (const key of Object.keys(window.API)) {
   if (!key.startsWith('handle')) continue;
   // on...形式のAPIにリスナーを登録
   window.API[key](async (_: any, ...args: any[]) => {
-    const result =
-      key + '(' + args.map((x) => JSON.stringify(x)).join(',') + ')';
+    const result = `${key}(${args.map((x) => JSON.stringify(x)).join(',')})`;
     const value = await new Promise((resolve) => {
       const channel = store.addConsole({
         type: 'handle',

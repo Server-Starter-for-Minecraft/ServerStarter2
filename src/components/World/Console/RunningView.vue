@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { QVirtualScroll } from 'quasar';
-import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();

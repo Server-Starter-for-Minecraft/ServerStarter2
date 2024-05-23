@@ -1,7 +1,7 @@
-import { Failable } from 'app/src-electron/util/error/failable';
-import { getSystemSettings } from '../../stores/system';
 import { parseCommandLine } from 'app/src-electron/util/commandLineParser';
 import { isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
+import { getSystemSettings } from '../../stores/system';
 
 /** ユーザー設定のJavaの実行時引数を反映する */
 export async function getAdditionalJavaArgument(

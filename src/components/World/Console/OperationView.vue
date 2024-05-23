@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 

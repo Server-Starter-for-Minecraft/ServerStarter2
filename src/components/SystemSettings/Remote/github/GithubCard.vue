@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
 import {
   GithubRemoteSetting,
   RemoteFolder,
 } from 'app/src-electron/schema/remote';
-import { useSystemStore } from 'src/stores/SystemStore';
-import { updatePatProp, updatePatDialogReturns } from './iGitHubDialog';
-import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { deleteFromValue } from 'src/scripts/obj';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import UpdatePatDialog from './UpdatePatDialog.vue';
-import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import { updatePatDialogReturns, updatePatProp } from './iGitHubDialog';
+import UpdatePatDialog from './UpdatePatDialog.vue';
 
 interface Prop {
   disable?: boolean;

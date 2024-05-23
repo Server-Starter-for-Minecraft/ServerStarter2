@@ -1,19 +1,28 @@
 <script setup lang="ts">
+import { Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { Player } from 'app/src-electron/schema/player';
 import {
-  colorThemes,
   ColorTheme,
+  colorThemes,
   Locale,
 } from 'app/src-electron/schema/system';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { assets } from 'src/assets/assets';
+import { tError } from 'src/i18n/utils/tFunc';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { setColor } from 'src/color';
+import { checkError } from 'src/components/Error/Error';
+import {
+  OwnerDialogProp,
+  ReturnOwnerDialog,
+} from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import ColorThemeBtn from 'src/components/SystemSettings/General/ColorThemeBtn.vue';
-import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
+import PlayerCard from 'src/components/SystemSettings/General/PlayerCard.vue';
 
 const sysStore = useSystemStore();
 const t = useI18n();
@@ -27,6 +36,19 @@ const localeOptions: { value: Locale; label: string }[] = [
 function changeLocale(loc: Locale) {
   t.locale.value = loc;
 }
+
+const ownerPlayer: Ref<Player | undefined> = ref();
+const setOwnerPlayer = async (uuid?: PlayerUUID) => {
+  if (uuid) {
+    const res = await window.API.invokeGetPlayer(uuid, 'uuid');
+    checkError(
+      res,
+      (p) => (ownerPlayer.value = p),
+      (e) => tError(e)
+    );
+  }
+};
+setOwnerPlayer(sysStore.systemSettings.user.owner);
 
 function changeTheme(colorTheme: ColorTheme) {
   // システム設定に登録
@@ -49,6 +71,12 @@ function changeTheme(colorTheme: ColorTheme) {
 function showOwnerDialog() {
   $q.dialog({
     component: OwnerDialog,
+    componentProps: {
+      ownerPlayer: ownerPlayer.value,
+    } as OwnerDialogProp,
+  }).onOk((p: ReturnOwnerDialog) => {
+    ownerPlayer.value = p.ownerPlayer;
+    sysStore.systemSettings.user.owner = p.ownerPlayer?.uuid;
   });
 }
 </script>
@@ -93,7 +121,7 @@ function showOwnerDialog() {
       <p class="q-my-sm text-body2" style="opacity: 0.5">
         {{ $t('owner.generalDesc') }}
       </p>
-      <PlayerCard v-model="sysStore.systemSettings.user.owner" />
+      <PlayerCard v-model="ownerPlayer" />
       <SsBtn
         :label="`${
           sysStore.systemSettings.user.owner

@@ -3,8 +3,8 @@ import { useI18n } from 'vue-i18n';
 import { useMainStore } from 'src/stores/MainStore';
 import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
 import { isContentsExists } from './Contents/contentsPage';
-import IconTabView from './utils/IconTabView.vue';
 import IconTabDropdownView from './utils/IconTabDropdownView.vue';
+import IconTabView from './utils/IconTabView.vue';
 
 const { t } = useI18n();
 const mainStore = useMainStore();

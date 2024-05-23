@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { sleep } from 'src/scripts/sleep';
 import { iErrorDialogProps } from './Error';
 
 defineProps<iErrorDialogProps>();
@@ -8,25 +9,29 @@ defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent();
 
 const hovered = ref(false);
-const animationSpeed = 200;
-const timeCounter = ref(0);
-closeCounter();
+const animationSpeed = 100;
+const timeCounter = ref(1);
+const endCount = 0;
+
+const closeCounter = async () => {
+  while (timeCounter.value > endCount) {
+    await sleep(50);
+    // ホバー中はカウントを進めない
+    if (!hovered.value) {
+      timeCounter.value -= animationSpeed / 10000;
+    }
+  }
+};
+// カウンターが終了したらダイアログを閉じる
+closeCounter().then(onDialogCancel);
 
 /**
- * Dialogを自動で閉じるためのカウンター
+ * ダイアログ付属の閉じるボタンが押された場合の処理
+ *
+ * counterを0にしてcloseCounterがダイアログを閉じる
  */
-function closeCounter() {
-  // ホバー中はカウントを進めない
-  if (!hovered.value) {
-    timeCounter.value += 0.02;
-  }
-
-  // カウンターの進行 or Dialogを閉じる
-  if (timeCounter.value < 1 + animationSpeed / 10000) {
-    setTimeout(closeCounter, 100);
-  } else {
-    onDialogCancel();
-  }
+function closeClicked() {
+  timeCounter.value = endCount;
 }
 </script>
 
@@ -62,7 +67,7 @@ function closeCounter() {
             flat
             icon="close"
             size=".8rem"
-            @click="onDialogCancel"
+            @click="closeClicked"
           />
         </q-card-actions>
       </q-card-section>

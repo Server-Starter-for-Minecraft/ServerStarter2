@@ -1,13 +1,13 @@
-import { Failable } from 'app/src-electron/util/error/failable';
-import { Path } from '../../util/path';
 import {
   Remote,
   RemoteFolder,
   RemoteSetting,
   RemoteWorld,
 } from 'src-electron/schema/remote';
-import { WithError } from 'app/src-electron/schema/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
+import { WithError } from 'app/src-electron/schema/error';
+import { Failable } from 'app/src-electron/util/error/failable';
+import { Path } from '../../util/path';
 import { GroupProgressor } from '../progress/progress';
 
 export type RemoteOperator<T extends RemoteFolder> = {

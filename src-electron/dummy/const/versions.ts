@@ -1,10 +1,10 @@
+import { Version } from '../../schema/version';
 import fabric from './fabric-all.json';
 import forge from './forge-all.json';
 import mohistmc from './mohistmc-all.json';
 import papermc from './papermc-all.json';
 import spigot from './spigot-all.json';
 import vanilla from './vanilla-all.json';
-import { Version } from '../../schema/version';
 
 export const dummyVersionMap = {
   fabric: fabric as Version[],

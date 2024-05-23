@@ -1,14 +1,15 @@
 import { createHash } from 'crypto';
+import fetch from 'electron-fetch';
 import { promises } from 'fs';
-import { utilLoggers } from './utilLogger';
-import { Path } from './path';
-import { Failable } from './error/failable';
-import { Png } from './png';
 import sharp from 'sharp';
 import { ImageURI } from '../schema/brands';
-import { fromRuntimeError, isError, isValid } from './error/error';
 import { errorMessage } from './error/construct';
-import fetch from 'electron-fetch';
+import { fromRuntimeError, isError, isValid } from './error/error';
+import { Failable } from './error/failable';
+import { Path } from './path';
+import { Png } from './png';
+import { utilLoggers } from './utilLogger';
+
 const prismarineNbt = require('prismarine-nbt');
 const loggers = utilLoggers.BytesData;
 

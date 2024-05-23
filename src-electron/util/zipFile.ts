@@ -1,12 +1,12 @@
-import { Path } from './path';
-import { errorMessage } from './error/construct';
-import { BytesData } from './bytesData';
-import { Failable, safeExecAsync } from './error/failable';
-import { isError } from 'src/scripts/error';
+import { decode } from 'iconv-lite';
 import * as JSZip from 'jszip';
+import { BytesData } from './bytesData';
+import { errorMessage } from './error/construct';
+import { isError } from './error/error';
+import { Failable, safeExecAsync } from './error/failable';
 import { fromEntries, toEntries } from './obj';
 import { asyncMap, objMap } from './objmap';
-import { decode } from 'iconv-lite';
+import { Path } from './path';
 
 class ZipHandler {
   files: Promise<
@@ -71,7 +71,7 @@ export class ZipFile {
     if (file === undefined)
       return errorMessage.data.path.notFound({
         type: 'file',
-        path: this.path.path + '(' + path + ')',
+        path: `${this.path.path}(${path})`,
       });
     return await file();
   }

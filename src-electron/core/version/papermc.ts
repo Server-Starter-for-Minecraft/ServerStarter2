@@ -1,16 +1,16 @@
 import { AllPapermcVersion, PapermcVersion } from 'src-electron/schema/version';
-import { Failable } from '../../util/error/failable';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import { BytesData } from '../../util/bytesData';
-import { getJavaComponent } from './vanilla';
+import { Failable } from '../../util/error/failable';
+import { Path } from '../../util/path';
 import { versionsCachePath } from '../const';
+import { GroupProgressor } from '../progress/progress';
 import {
-  VersionLoader,
   genGetAllVersions,
   needEulaAgreementVanilla,
+  VersionLoader,
 } from './base';
-import { Path } from '../../util/path';
-import { isError, isValid } from 'app/src-electron/util/error/error';
-import { GroupProgressor } from '../progress/progress';
+import { getJavaComponent } from './vanilla';
 
 const papermcVersionsPath = versionsCachePath.child('papermc');
 
@@ -116,7 +116,7 @@ async function readyVersion(
 
   const { name, sha256 } = json.downloads.application;
 
-  const jarURL = buildURL + `/downloads/${name}`;
+  const jarURL = `${buildURL}/downloads/${name}`;
 
   const s = progress?.subtitle({
     key: 'server.readyVersion.papermc.readyServerData',

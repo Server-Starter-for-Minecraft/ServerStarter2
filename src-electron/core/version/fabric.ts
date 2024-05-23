@@ -1,16 +1,16 @@
 import { AllFabricVersion, FabricVersion } from 'src-electron/schema/version';
+import { Failable } from 'app/src-electron/schema/error';
+import { isError } from 'app/src-electron/util/error/error';
 import { BytesData } from '../../util/bytesData';
-import { getJavaComponent, vanillaVersionLoader } from './vanilla';
+import { Path } from '../../util/path';
 import { versionsCachePath } from '../const';
+import { GroupProgressor } from '../progress/progress';
 import {
-  VersionLoader,
   genGetAllVersions,
   needEulaAgreementVanilla,
+  VersionLoader,
 } from './base';
-import { Path } from '../../util/path';
-import { isError } from 'app/src-electron/util/error/error';
-import { GroupProgressor } from '../progress/progress';
-import { Failable } from 'app/src-electron/schema/error';
+import { getJavaComponent, vanillaVersionLoader } from './vanilla';
 
 const fabricVersionsPath = versionsCachePath.child('fabric');
 
