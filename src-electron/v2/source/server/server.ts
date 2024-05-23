@@ -42,8 +42,19 @@ export class Server {
   }
 
   /** サーバーを起動 */
-  start(): Promise<void> {}
+  start(): Result<void> {}
 
-  /** サーバーを終了 */
-  stop() {}
+  /**
+   * サーバーを終了
+   * papermc / mohistmc (どっちだっけ?) では stopを打つだけだとサーバーが終了しないバージョンがあるので注意
+   */
+  stop(): Result<void> {}
+
+  /**
+   * サーバーを撤収
+   * @param teardown 撤収前にディレクトリに対して行う操作 ワールドデータの変更を反映させるのが主
+   */
+  remove(
+    teardown: (dirPath: Path) => Promise<Result<void>>
+  ): Promise<Result<void>> {}
 }

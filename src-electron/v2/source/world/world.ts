@@ -4,31 +4,6 @@ import { VersionDomain } from '../../schema/version';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
-export type WorldMeta = {
-  // ワールドの情報
-  // バージョン
-  // mod
-  // 保存日時
-  // ロック状態 etc...
-
-  /** 起動中フラグ */
-  using: boolean;
-
-  /** 最終サーバー主 */
-  laseUser?: string;
-
-  /** eula同意フラグ */
-  eula: boolean;
-
-  /** バージョン情報 */
-  version: VersionDomain;
-
-  /** データパック */
-  datapack: DatapackDomain[];
-
-  /** メモリ等ランタイムの設定 */
-  runtime: RuntimeSettings;
-};
 
 /**
  * ワールドを格納するフォルダ

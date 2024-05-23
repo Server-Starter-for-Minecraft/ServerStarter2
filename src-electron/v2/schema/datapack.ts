@@ -1,12 +1,17 @@
+import { NewType } from './newtype';
+
+export type DatapackHash = NewType<string, 'DatapackHash'>;
+export type DatapackName = NewType<string, 'DatapackName'>;
+
 export type ZipDatapack = {
   isZip: true;
-  name: string;
-  hash: string;
+  name: DatapackName;
+  hash: DatapackHash;
 };
 
 export type DirectoryDomain = {
   isZip: false;
-  name: string;
+  name: DatapackName;
 };
 
 export type DatapackDomain = ZipDatapack | DirectoryDomain;

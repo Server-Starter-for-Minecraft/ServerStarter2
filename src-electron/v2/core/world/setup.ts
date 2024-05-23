@@ -23,6 +23,9 @@ async function extractDatapacks(
   return ok(undefined);
 }
 
+/**
+ * ワールドをパスに展開し、各種データを導入
+ */
 export async function setupWorld(
   path: Path,
   world: World,
@@ -54,12 +57,27 @@ export async function setupWorld(
   const runtimeResult = await RuntimeContainer.install(runtime);
   if (runtimeResult.isErr()) return cleanupAndReturn(runtimeResult);
 
+  // コマンドライン引数を解析
+  const jvmArgs = getJvmArgs(meta.runtime);
+  if (jvmArgs.isErr()) return cleanupAndReturn(jvmArgs);
+
   // 実行時コマンドを取得
   const command = getCommand({
     runtimePath: runtimeResult.value,
-    jvmArgs: getJvmArgs(meta.runtime),
+    jvmArgs: jvmArgs.value,
   });
 
   // ワールドの展開に成功
   return ok({ command });
+}
+
+/**
+ * ワールドをパスから撤収
+ */
+export async function teardownWorld(
+  path: Path,
+  world: World
+): Promise<Result<void>> {
+  // ワールドを撤収
+  return await world.packFrom(path);
 }
