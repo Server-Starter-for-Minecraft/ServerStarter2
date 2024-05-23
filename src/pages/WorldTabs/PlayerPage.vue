@@ -103,7 +103,11 @@ function openGroupEditor(group?: PlayerGroup) {
         <div class="q-py-md fit">
           <div v-show="playerStore.searchName !== ''" class="q-pb-md">
             <span class="text-caption">{{ $t('player.newPlayer') }}</span>
-            <SearchResultView />
+            <SearchResultView
+              is-check-player-in-world
+              :register-btn-text="$t('player.addPlayer')"
+              :register-process="playerStore.addPlayer"
+            />
           </div>
 
           <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>

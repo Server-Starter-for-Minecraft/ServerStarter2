@@ -1,29 +1,33 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { useSystemStore } from 'src/stores/SystemStore';
+import { Player } from 'app/src-electron/schema/player';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
 import PlayerCard from '../PlayerCard.vue';
 import InputFieldView from './InputFieldView.vue';
-import { OwnerDialogProp } from './iOwnerDialog';
-import SearchResultView from './SearchResultView.vue';
+import { OwnerDialogProp, ReturnOwnerDialog } from './iOwnerDialog';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
-const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-defineProps<OwnerDialogProp>();
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
+  useDialogPluginComponent();
+const prop = defineProps<OwnerDialogProp>();
 
-const sysStore = useSystemStore();
-const ownerCandidate: Ref<PlayerUUID | undefined> = ref(
-  sysStore.systemSettings.user.owner
-);
+const playerStore = usePlayerStore();
+const ownerCandidate: Ref<Player | undefined> = ref(prop.ownerPlayer);
+
+function ownerRegister(player: Player) {
+  ownerCandidate.value = player;
+  // 検索欄をリセット
+  playerStore.searchName = '';
+}
 
 function registOwner() {
-  if (ownerCandidate.value) {
-    sysStore.systemSettings.user.owner = ownerCandidate.value;
-  }
-  onDialogOK();
+  onDialogOK({
+    ownerPlayer: ownerCandidate.value,
+  } as ReturnOwnerDialog);
 }
 </script>
 
@@ -33,7 +37,7 @@ function registOwner() {
       :title="$t('owner.set')"
       :okBtnTxt="$t('owner.registBtn')"
       :disable="ownerCandidate === void 0"
-      :onClose="persistent ? undefined : onDialogOK"
+      :onClose="persistent ? undefined : onDialogCancel"
       @okClick="registOwner"
     >
       <template #default>
@@ -45,7 +49,14 @@ function registOwner() {
         </p>
 
         <InputFieldView class="q-my-md" />
-        <SearchResultView v-model="ownerCandidate" />
+
+        <div v-show="playerStore.searchName !== ''" class="q-pb-md">
+          <span class="text-caption">{{ $t('owner.searchResult') }}</span>
+          <SearchResultView
+            :register-btn-text="$t('owner.registerPlayer')"
+            :register-process="ownerRegister"
+          />
+        </div>
 
         <div v-if="ownerCandidate" class="q-my-sm">
           <span class="text-caption">{{ $t('owner.ownerPlayer') }}</span>
@@ -54,7 +65,7 @@ function registOwner() {
       </template>
 
       <template v-if="persistent" #additionalBtns>
-        <SsBtn :label="$t('general.skip')" @click="onDialogOK" />
+        <SsBtn :label="$t('general.skip')" @click="onDialogCancel" />
       </template>
     </BaseDialogCard>
   </q-dialog>
