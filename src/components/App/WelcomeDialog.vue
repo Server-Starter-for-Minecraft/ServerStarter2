@@ -52,7 +52,7 @@ function changeLocale(loc: Locale) {
 
         <p class="text-caption" style="opacity: 0.6; white-space: pre-line">
           <SsI18nT keypath="welcome.termDesc" tag="false">
-            <SsA url="https://server-starter-for-minecraft.github.io/terms">
+            <SsA url="https://server-starter-for-minecraft.github.io/terms/use">
               {{ $t('welcome.link') }}
             </SsA>
           </SsI18nT>
