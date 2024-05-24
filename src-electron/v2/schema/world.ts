@@ -10,6 +10,12 @@ import { Version } from './version';
 
 export type WorldName = NewType<string, 'WorldName'>;
 
+export type LocalWorldContainer = {
+  containerType: 'local';
+};
+
+export type WorldContainer = LocalWorldContainer;
+
 export type BannedPlayer = {
   uuid: PlayerUUID;
   created: McTimestamp;
@@ -33,7 +39,10 @@ export type World = {
   // 保存日時
   // ロック状態 etc...
 
-  /** ワールド名 (主キー) */
+  /** ワールドの保存コンテナ */
+  container: WorldContainer;
+
+  /** ワールド名 */
   name: WorldName;
 
   /** 起動中フラグ */

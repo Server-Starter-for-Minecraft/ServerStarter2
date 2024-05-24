@@ -1,4 +1,4 @@
-import { World, WorldName } from '../../schema/world';
+import { World, WorldContainer, WorldName } from '../../schema/world';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
@@ -7,11 +7,11 @@ import { Path } from '../../util/binary/path';
  *
  * 場所はどこにあってもよい
  */
-export abstract class WorldContainer {
+export abstract class WorldSource {
   /**
    * コンテナ内のワールド名一覧を表示
    */
-  abstract listWorldNames(): Promise<WorldName[]>;
+  abstract listWorldNames(container: WorldContainer): Promise<WorldName[]>;
 
   /**
    * コンテナ内でメタデータを上書き
@@ -21,7 +21,10 @@ export abstract class WorldContainer {
   /**
    * メタデータを取得
    */
-  abstract getMeta(name: WorldName): Promise<Result<World>>;
+  abstract getMeta(
+    container: WorldContainer,
+    name: WorldName
+  ): Promise<Result<World>>;
 
   /**
    * ワールドデータを削除

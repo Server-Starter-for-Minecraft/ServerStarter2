@@ -2,10 +2,9 @@ import mitt, { Emitter } from 'mitt';
 import { Datapack } from '../../schema/datapack';
 import { Mod } from '../../schema/mod';
 import { Plugin } from '../../schema/plugin';
-import { World } from '../../schema/world';
+import { World, WorldName } from '../../schema/world';
 import { DatapackContainer } from '../../source/datapack/datapack';
 import { ServerContainer } from '../../source/server/server';
-import { World } from '../../source/world/world';
 import { err, ok, Result } from '../../util/base';
 import { runServer } from './server';
 import { setupWorld, teardownWorld } from './setup';
@@ -49,15 +48,14 @@ export class WorldHandler {
    * WorldHandlerを作成
    * @param world
    */
-  static async create(world: World): Promise<Result<WorldHandler>> {
+  static async create(world: WorldName): Promise<Result<WorldHandler>> {
     const meta = await world.getMeta();
     if (meta.isErr()) return meta;
     return ok(new WorldHandler(world, meta.value));
   }
 
   /** データパックを導入 */
-  async installDatapack(datapack: Datapack): Promise<Result<void>> {
-  }
+  async installDatapack(datapack: Datapack): Promise<Result<void>> {}
 
   /** プラグインを導入 */
   async installPlugin(plugin: Plugin): Promise<Result<void>> {}
