@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { QStepper, useDialogPluginComponent } from 'quasar';
-import { NgrokDialogProp, NgrokDialogReturns } from './steps/iNgrok';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { NgrokDialogProp, NgrokDialogReturns } from './steps/iNgrok';
 import Step1View from './steps/Step1View.vue';
 import Step2View from './steps/Step2View.vue';
 import Step3View from './steps/Step3View.vue';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =

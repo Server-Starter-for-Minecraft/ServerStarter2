@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useMainStore } from 'src/stores/MainStore';
-import { useConsoleStore } from 'src/stores/ConsoleStore';
 import ProgressPage from 'src/pages/ProgressPage.vue';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();

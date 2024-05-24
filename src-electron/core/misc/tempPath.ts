@@ -1,6 +1,6 @@
+import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 import { genUUID } from 'app/src-electron/tools/uuid';
 import { tempPath } from '../const';
-import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 
 /** 一時的なディレクトリを確保 */
 export async function allocateTempDir() {

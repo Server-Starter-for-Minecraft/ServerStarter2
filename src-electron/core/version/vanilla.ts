@@ -1,17 +1,17 @@
 import { AllVanillaVersion, VanillaVersion } from 'src-electron/schema/version';
-import { getVersionMainfest } from './mainfest';
-import { Failable } from '../../util/error/failable';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
 import { BytesData } from '../../util/bytesData';
+import { Failable } from '../../util/error/failable';
+import { Path } from '../../util/path';
 import { versionsCachePath } from '../const';
+import { GroupProgressor } from '../progress/progress';
 import {
-  VersionLoader,
   genGetAllVersions,
   needEulaAgreementVanilla,
+  VersionLoader,
 } from './base';
-import { Path } from '../../util/path';
-import { isError } from 'app/src-electron/util/error/error';
-import { errorMessage } from 'app/src-electron/util/error/construct';
-import { GroupProgressor } from '../progress/progress';
+import { getVersionMainfest } from './mainfest';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
@@ -121,7 +121,7 @@ export async function getJavaComponent(id: string) {
 export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
-  const jsonpath = vanillaVersionsPath.child('vanilla-' + id + '.json');
+  const jsonpath = vanillaVersionsPath.child(`vanilla-${id}.json`);
   const manifest = await getVersionMainfest();
 
   // version manifestが取得できなかった場合

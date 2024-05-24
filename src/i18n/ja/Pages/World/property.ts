@@ -100,7 +100,7 @@ export const jaProperty = {
   },
   resetProperty:
     '\
-    基本設定の{defaultProperty}に設定を戻します<br>\
+    基本設定の{defaultProperty}に設定を戻します \n\
     「システム設定」>「プロパティ」 より基本設定を変更できます',
   empty: '(空欄)',
   failed: 'プロパティが読み込めませんでした',

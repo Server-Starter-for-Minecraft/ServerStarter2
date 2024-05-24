@@ -10,6 +10,7 @@ module.exports = {
   parserOptions: {
     parser: require.resolve('@typescript-eslint/parser'),
     extraFileExtensions: ['.vue'],
+    project: ['./tsconfig.json'],
   },
 
   env: {
@@ -51,7 +52,14 @@ module.exports = {
     // https://github.com/typescript-eslint/typescript-eslint/issues/389#issuecomment-509292674
     // Prettier has not been included as plugin to avoid performance impact
     // add it as an extension for your IDE
+    'import',
   ],
+
+  settings: {
+    'import/resolver': {
+      typescript: {},
+    },
+  },
 
   globals: {
     ga: 'readonly', // Google Analytics
@@ -69,6 +77,7 @@ module.exports = {
   // add your custom rules here
   rules: {
     'prefer-promise-reject-errors': 'off',
+    'prefer-template': 'error',
 
     quotes: ['warn', 'single', { avoidEscape: true }],
 
@@ -90,5 +99,24 @@ module.exports = {
 
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+    // Require switch-case statements to be exhaustive
+    '@typescript-eslint/switch-exhaustiveness-check': 'error',
+
+    'import/no-restricted-paths': [
+      'error',
+      {
+        zones: [
+          {
+            from: `./src/**/*`,
+            target: `./src-electron/**/*`,
+          },
+          {
+            from: `./src-electron/!(schema|api)/**/*`,
+            target: `./src/**/*`,
+          },
+        ],
+      },
+    ],
   },
 };

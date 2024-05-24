@@ -8,8 +8,8 @@ import {
   PlayerSetting,
 } from 'app/src-electron/schema/player';
 import { isValid } from 'src/scripts/error';
-import { useSystemStore } from '../SystemStore';
 import { useMainStore } from '../MainStore';
+import { useSystemStore } from '../SystemStore';
 
 type GroupSettings = PlayerGroup & { isNew: boolean };
 

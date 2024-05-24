@@ -34,8 +34,8 @@ export const jaMainLayout = {
     selectFolder: 'フォルダを選択',
     lastPlayed: '({datetime})',
     addSingleWorld: 'シングルワールドを導入',
-    loadSingleWorld: 'シングルプレイワールドを<br>読み込み中',
-    noSingleWorld: 'シングルプレイワールドは<br>見つかりませんでした',
+    loadSingleWorld: 'シングルプレイワールドを\n読み込み中',
+    noSingleWorld: 'シングルプレイワールドは\n見つかりませんでした',
     checkDialog: {
       title: 'ワールドを導入中',
       desc: '下記に表示中のワールドを新規作成しています',

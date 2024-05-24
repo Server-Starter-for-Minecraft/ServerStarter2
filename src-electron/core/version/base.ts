@@ -1,14 +1,14 @@
 import { AllVersion, Version, VersionType } from 'src-electron/schema/version';
-import { Path } from '../../util/path';
-import { JavaComponent } from './vanilla';
-import { Failable } from '../../util/error/failable';
-import { versionsCachePath } from '../const';
-import { versionConfig } from '../stores/config';
-import { BytesData } from '../../util/bytesData';
-import { rootLoggerHierarchy } from '../logger';
-import { eulaUnnecessaryVersionIds } from './const';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { BytesData } from '../../util/bytesData';
+import { Failable } from '../../util/error/failable';
+import { Path } from '../../util/path';
+import { versionsCachePath } from '../const';
+import { rootLoggerHierarchy } from '../logger';
 import { GroupProgressor } from '../progress/progress';
+import { versionConfig } from '../stores/config';
+import { eulaUnnecessaryVersionIds } from './const';
+import { JavaComponent } from './vanilla';
 
 export const versionLoggers = rootLoggerHierarchy.server.version;
 

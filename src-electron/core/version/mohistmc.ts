@@ -2,19 +2,19 @@ import {
   AllMohistmcVersion,
   MohistmcVersion,
 } from 'src-electron/schema/version';
-import { Failable } from '../../util/error/failable';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import { BytesData } from '../../util/bytesData';
+import { Failable } from '../../util/error/failable';
+import { Path } from '../../util/path';
+import { versionsCachePath } from '../const';
+import { GroupProgressor } from '../progress/progress';
 import {
-  VersionComponent,
-  VersionLoader,
   genGetAllVersions,
   needEulaAgreementVanilla,
+  VersionComponent,
+  VersionLoader,
 } from './base';
-import { versionsCachePath } from '../const';
 import { getJavaComponent } from './vanilla';
-import { Path } from '../../util/path';
-import { isError, isValid } from 'app/src-electron/util/error/error';
-import { GroupProgressor } from '../progress/progress';
 
 const papermcVersionsPath = versionsCachePath.child('mohistmc');
 

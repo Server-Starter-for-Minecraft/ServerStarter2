@@ -1,17 +1,17 @@
 import { OpLevel } from 'src-electron/schema/player';
-import { ServerSettingFile } from './base';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { fixPlayerUUID } from '../../fixers/brands';
 import {
-  FAIL,
   arrayFixer,
   booleanFixer,
+  FAIL,
   objectFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { fixOpLevel } from '../../fixers/player';
-import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
+import { fixPlayerUUID } from '../../fixers/brands';
+import { fixOpLevel } from '../../fixers/player';
+import { ServerSettingFile } from './base';
 
 export type OpRecord = {
   uuid: PlayerUUID;

@@ -1,11 +1,11 @@
-import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
-import { allocateTempDir } from '../misc/tempPath';
-import { Path } from 'app/src-electron/util/path';
-import { gzip } from 'app/src-electron/util/gz';
-import { isError } from 'app/src-electron/util/error/error';
-import { DateFormatter } from 'app/src-electron/util/dateFormatter';
-import { genUUID } from 'app/src-electron/tools/uuid';
 import { Failable } from 'app/src-electron/schema/error';
+import { genUUID } from 'app/src-electron/tools/uuid';
+import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
+import { DateFormatter } from 'app/src-electron/util/dateFormatter';
+import { isError } from 'app/src-electron/util/error/error';
+import { gzip } from 'app/src-electron/util/gz';
+import { Path } from 'app/src-electron/util/path';
+import { allocateTempDir } from '../misc/tempPath';
 
 // 起動中のログに関する処理
 const dirGetter = new AwaitOnce(allocateTempDir);
@@ -18,7 +18,7 @@ export class WorldLogHandler {
     this.logsPath = worldPath.child('logs');
     this.tempPath = new AwaitOnce(async () => {
       const dir = await dirGetter.get();
-      return dir.child(genUUID() + '.log');
+      return dir.child(`${genUUID()}.log`);
     });
   }
 

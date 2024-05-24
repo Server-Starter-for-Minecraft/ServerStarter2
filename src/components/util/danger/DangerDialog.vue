@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { dangerDialogProp } from './iDangerDialog';
-import BaseDialogCard from '../baseDialog/baseDialogCard.vue';
 import SsBtn from '../base/ssBtn.vue';
+import BaseDialogCard from '../baseDialog/baseDialogCard.vue';
+import { dangerDialogProp } from './iDangerDialog';
 
 defineProps<dangerDialogProp>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });
@@ -23,10 +23,11 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
         <SsBtn :label="$t('general.cancel')" @click="onDialogCancel" />
       </template>
       <div
-        v-html="dialogDesc"
         class="q-my-none flex"
-        style="font-size: 0.8rem; opacity: 0.8"
-      />
+        style="font-size: 0.8rem; opacity: 0.8; white-space: pre-line"
+      >
+        {{ dialogDesc }}
+      </div>
     </BaseDialogCard>
   </q-dialog>
 </template>

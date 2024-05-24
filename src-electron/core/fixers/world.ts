@@ -6,30 +6,30 @@ import {
   WorldID,
 } from 'app/src-electron/schema/world';
 import {
-  Fixer,
   arrayFixer,
   booleanFixer,
   defaultFixer,
   defaultObjFixer,
   extendFixer,
+  Fixer,
   numberFixer,
   objectFixer,
   optionalFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
+import { DEFAULT_MEMORY, DEFAULT_SERVER_PROPERTIES } from '../const';
 import {
   fixPlayerUUID,
   fixUUID,
   fixWorldContainer,
   fixWorldName,
 } from './brands';
-import { fixVersion } from './version';
-import { fixRemote } from './remote';
-import { fixPlayerSetting } from './player';
 import { fixMemorySettings } from './memory';
-import { DEFAULT_MEMORY, DEFAULT_SERVER_PROPERTIES } from '../const';
-import { fixServerProperties } from './serverproperty';
 import { ngrok_settingFixer } from './ngrok';
+import { fixPlayerSetting } from './player';
+import { fixRemote } from './remote';
+import { fixServerProperties } from './serverproperty';
+import { fixVersion } from './version';
 
 export const fixWorldID = fixUUID as Fixer<WorldID>;
 

@@ -22,12 +22,12 @@ export const enUSHome: MessageSchema['home'] = {
   },
   versionChange: {
     title: 'Checking change the server type',
-    desc: 'This world was last played in defferent server and loading it in this server could cause corruption!<br>Do you really want to set this server?',
+    desc: 'This world was last played in different type of server, and loading it in this server could cause corruption!\nDo you really want to set this server?',
     okbtn: 'Yes, set this server',
   },
   versionDown: {
     title: 'Checking downgrade the server',
-    desc: 'This world was last played in newer version and loading it in this version could cause corruption!<br>Do you really want to set this version?',
+    desc: 'This world was last played in newer version, and loading it in this version could cause corruption!\nDo you really want to set this version?',
     okbtn: 'Yes, set this version',
   },
   serverType: {
@@ -52,7 +52,7 @@ export const enUSHome: MessageSchema['home'] = {
   ngrok: {
     title: 'No need to PORT MAPPING',
     desc: '\
-      This feature allows you to invite your friends to join your server without having to configure the "PORT MAPPING".<br/>\
+      This feature allows you to invite your friends to join your server without having to configure the "PORT MAPPING".\n\
       Get ready for all the multi-play settings with ServerStarter2!',
     descWarningNoRegist:
       'This setting can only be set when all servers are stopped.',
@@ -66,9 +66,10 @@ export const enUSHome: MessageSchema['home'] = {
       firstPage: {
         title: 'Firstly',
         desc: '\
-          This software uses a tool called Ngrok to eliminate the need to open ports.<br>\
-          If you do not have an account, please create a new account.<br>\
-          (*<u>This software is designed to be used with a free account</u>, although paid accounts are also available.',
+          This software uses a tool called Ngrok to eliminate the need to open ports.\n\
+          If you do not have an account, please create a new account.\n\
+          (*{0}, although paid accounts are also available.)',
+        assumption: 'This software is designed to be used with a free account',
         register: 'Create a new account',
         alreadyRegistered: 'Already have an account?',
       },
@@ -91,7 +92,8 @@ export const enUSHome: MessageSchema['home'] = {
         },
         howToConnect: {
           title: 'How to connect',
-          desc: 'When you start the server, you will see an IP address in the upper right corner <b><u>that changes value each time the server is started</u></b>.',
+          desc: 'When you start the server, you will see an IP address in the upper right corner {0}.',
+          changeNum: 'that changes value each time the server is started',
           connect:
             'You can connect to the server by entering this address into the Server Address of the Minecraft!',
         },
@@ -99,10 +101,10 @@ export const enUSHome: MessageSchema['home'] = {
       thirdPage: {
         title: 'Register token',
         desc: '\
-        Connect your Ngrok account to ServerStarter2.{0}\
-        Open {1} and input the displayed token below.\
+        Connect your Ngrok account to ServerStarter2.\n\
+        Open {0} and input the displayed token below.\
         ',
-        link: 'page to get an authentication token',
+        link: 'the page to get an authentication token',
         inputToken: 'Input Token',
         checkbox: 'Using this feature for all world',
       },
@@ -121,19 +123,19 @@ export const enUSHome: MessageSchema['home'] = {
     button: 'Delete your world data',
     titleDesc:
       '\
-      If you delete this world, you can not recover your world data in any way.<br>\
+      If you delete this world, you can not recover your world data in any way.\n\
       Please be careful to execute.',
     dialogTitle: 'Delete your world data',
     dialogDesc:
       '\
-      Your  &nbsp;  <span class="text-omit col-" style="max-width: 10rem;">{deleteName}</span> &nbsp; data will be deleted permanently.<br>\
-      <span>Are you sure to delete the world data?</span>',
+      Your {deleteName} data will be deleted permanently.\n\
+      Are you sure to delete the world data?',
   },
   error: {
     title: 'Warning!',
     failedGetVersion:
       '\
-        Failed to get the version {serverVersion}.<br>\
+        Failed to get the version {serverVersion}.\n\
         You can not choose this server.',
     failedDelete: 'Failed to delete {serverName} which does not exist',
   },

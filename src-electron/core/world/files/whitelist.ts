@@ -1,14 +1,14 @@
-import { ServerSettingFile } from './base';
-import { fixPlayerUUID } from '../../fixers/brands';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import {
-  FAIL,
   arrayFixer,
+  FAIL,
   objectFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
+import { fixPlayerUUID } from '../../fixers/brands';
+import { ServerSettingFile } from './base';
 
 export type WhitelistRecord = {
   uuid: PlayerUUID;

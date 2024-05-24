@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { useMainStore } from 'src/stores/MainStore';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { isValid } from 'src/scripts/error';
 import { strSort } from 'src/scripts/objSort';
+import { useMainStore } from 'src/stores/MainStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SearchResultItem from './utils/SearchResultItem.vue';
+
+interface Prop {
+  registerBtnText: string;
+  registerProcess: (player: Player) => void;
+  // 表示中のワールドに対するプレイヤーの存在確認をするか
+  isCheckPlayerInWorld?: boolean;
+}
+const prop = defineProps<Prop>();
 
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
@@ -19,9 +27,12 @@ const playerStore = usePlayerStore();
  * を除外したリストを返す
  */
 function filterRegisteredPlayer(players: Player[]) {
-  return players.filter(
-    (p) => !(hasPlayerInWorld(p.uuid) || p.name === playerStore.searchName)
-  );
+  if (prop.isCheckPlayerInWorld) {
+    return players.filter(
+      (p) => !(hasPlayerInWorld(p.uuid) || p.name === playerStore.searchName)
+    );
+  }
+  return players;
 }
 
 /**
@@ -43,7 +54,10 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         playerStore.searchPlayers(
           filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
         ).length +
-          (!hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid) ? 1 : 0) >
+          (!isCheckPlayerInWorld ||
+          !hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid)
+            ? 1
+            : 0) >
         0
       "
       class="q-pa-sm"
@@ -52,10 +66,13 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         <!-- プレイヤー名からプレイヤーの検索を行う -->
         <SearchResultItem
           v-if="playerStore.newPlayerCandidate !== void 0"
-          v-show="!hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid)"
+          v-show="
+            !isCheckPlayerInWorld ||
+            !hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid)
+          "
           :player="playerStore.newPlayerCandidate"
-          :register-btn-text="$t('player.addPlayer')"
-          :register-process="playerStore.addPlayer"
+          :register-btn-text="registerBtnText"
+          :register-process="registerProcess"
         />
         <!-- 過去に登録実績のあるプレイヤー一覧 -->
         <template
@@ -69,8 +86,8 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         >
           <SearchResultItem
             :player="p"
-            :register-btn-text="$t('player.addPlayer')"
-            :register-process="playerStore.addPlayer"
+            :register-btn-text="registerBtnText"
+            :register-process="registerProcess"
           />
         </template>
       </q-list>

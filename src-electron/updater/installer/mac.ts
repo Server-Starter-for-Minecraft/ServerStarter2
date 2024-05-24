@@ -1,11 +1,11 @@
 import { spawn } from 'child_process';
-import { BytesData } from 'app/src-electron/util/bytesData';
-import { isError } from 'app/src-electron/util/error/error';
 import { app } from 'electron';
 import { mainPath } from 'app/src-electron/core/const';
-import { updateMessage } from './message';
 import { getSystemSettings } from 'app/src-electron/core/stores/system';
+import { BytesData } from 'app/src-electron/util/bytesData';
+import { isError } from 'app/src-electron/util/error/error';
 import { getBytesFile } from 'app/src-electron/util/github/rest';
+import { updateMessage } from './message';
 
 /** macの最新版をダウンロードしてインストールして再起動 */
 export const installMac = async (

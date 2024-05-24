@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 
 interface Prop {
   next?: (stepName: number) => void;
@@ -14,7 +15,13 @@ isSkipRegister.value = false;
 
 <template>
   <div>
-    <p class="text-caption" v-html="$t('home.ngrok.dialog.firstPage.desc')" />
+    <p class="text-caption" style="white-space: pre-line">
+      <SsI18nT keypath="home.ngrok.dialog.firstPage.desc">
+        <u>
+          {{ $t('home.ngrok.dialog.firstPage.assumption') }}
+        </u>
+      </SsI18nT>
+    </p>
 
     <div class="column q-gutter-lg q-mt-xs">
       <!-- 大きな登録ボタンを表示 -->

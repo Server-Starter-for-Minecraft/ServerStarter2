@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref } from 'vue';
+import { onMounted, Ref, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -64,11 +64,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <p
-    class="text-caption q-mt-md"
-    style="opacity: 0.6"
-    v-html="$T('others.backup.backupDesc')"
-  ></p>
+  <p class="text-caption q-mt-md" style="opacity: 0.6; white-space: pre-line">
+    {{ $T('others.backup.backupDesc') }}
+  </p>
   <div class="row items-center q-gutter-md">
     <SsBtn
       :label="$T('others.backup.makeBackup')"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { dangerDialogProp } from './iDangerDialog';
 import SsBtn from '../base/ssBtn.vue';
 import DangerDialog from './DangerDialog.vue';
+import { dangerDialogProp } from './iDangerDialog';
 
 interface Prop {
   disable?: boolean;
@@ -33,7 +33,9 @@ function openDialog() {
 <template>
   <div class="q-pt-lg">
     <h1 class="q-pt-sm text-negative">{{ viewTitle }}</h1>
-    <p v-html="viewDesc" class="text-caption q-pb-sm" />
+    <p class="text-caption q-pb-sm" style="white-space: pre-line">
+      {{ viewDesc }}
+    </p>
     <SsBtn
       :label="openDialogBtnText"
       :disable="disable"

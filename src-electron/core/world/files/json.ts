@@ -1,27 +1,27 @@
 import { PlayerUUID, Timestamp, UUID } from 'app/src-electron/schema/brands';
 import { MemorySettings } from 'app/src-electron/schema/memory';
+import { NgrokSetting } from 'app/src-electron/schema/ngrok';
 import { Remote } from 'app/src-electron/schema/remote';
 import { Version } from 'app/src-electron/schema/version';
 import {
-  FAIL,
   booleanFixer,
   defaultFixer,
+  FAIL,
   literalFixer,
   numberFixer,
   objectFixer,
   optionalFixer,
   stringFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-import { fixMemorySettings } from '../../fixers/memory';
-import { fixVersion } from '../../fixers/version';
-import { fixRemote } from '../../fixers/remote';
-import { fixPlayerUUID, fixUUID } from '../../fixers/brands';
-import { ServerSettingFile } from './base';
-import { getSystemSettings } from '../../stores/system';
-import { isError } from 'app/src-electron/util/error/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
+import { fixPlayerUUID, fixUUID } from '../../fixers/brands';
+import { fixMemorySettings } from '../../fixers/memory';
 import { ngrok_settingFixer } from '../../fixers/ngrok';
-import { NgrokSetting } from 'app/src-electron/schema/ngrok';
+import { fixRemote } from '../../fixers/remote';
+import { fixVersion } from '../../fixers/version';
+import { getSystemSettings } from '../../stores/system';
+import { ServerSettingFile } from './base';
 
 /**
  * ワールドのディレクトリ構成

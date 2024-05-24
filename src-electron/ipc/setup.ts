@@ -1,14 +1,11 @@
-import { API } from 'src-electron/api/api';
-import { linkIPC } from './link';
 import { BrowserWindow } from 'electron';
-
-// フロントエンド
-import { getFrontAPIListener, setFrontAPI } from './front';
-
+import { API } from 'src-electron/api/api';
 // バックエンド
-
 import { setBackAPI } from '../core/api';
 import { getBackListener } from './back';
+// フロントエンド
+import { getFrontAPIListener, setFrontAPI } from './front';
+import { linkIPC } from './link';
 
 // import { setBackAPI } from '../dummy/api';
 // import { getBackListener } from './dummy_back';

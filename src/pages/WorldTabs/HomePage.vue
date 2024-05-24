@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { setScrollTop } from 'src/components/World/HOME/scroll';
 import { useSystemStore } from 'src/stores/SystemStore';
-import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
-import WorldDeleteView from 'src/components/World/HOME/Others/WorldDeleteView.vue';
-import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
-import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
-import RunningBtn from 'src/components/World/HOME/RunningBtn.vue';
+import { setScrollTop } from 'src/components/World/HOME/scroll';
 import NgrokView from 'src/components/World/HOME/Others/NgrokView.vue';
+import WorldDeleteView from 'src/components/World/HOME/Others/WorldDeleteView.vue';
+import RunningBtn from 'src/components/World/HOME/RunningBtn.vue';
+import VersionSelecterView from 'src/components/World/HOME/Top/VersionSelecterView.vue';
+import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
+import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 
 const sysStore = useSystemStore();
 const scrollAreaRef = ref();

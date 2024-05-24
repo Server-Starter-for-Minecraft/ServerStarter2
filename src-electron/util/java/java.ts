@@ -1,12 +1,12 @@
+import { GroupProgressor } from 'app/src-electron/core/progress/progress';
 import { runtimePath } from '../../core/const';
 import { versionConfig } from '../../core/stores/config';
 import { BytesData } from '../bytesData';
+import { fromRuntimeError, isError } from '../error/error';
+import { Failable } from '../error/failable';
 import { OsPlatform, osPlatform } from '../os';
 import { Path } from '../path';
-import { Failable } from '../error/failable';
 import { installManifest, Manifest } from './manifest';
-import { fromRuntimeError, isError } from '../error/error';
-import { GroupProgressor } from 'app/src-electron/core/progress/progress';
 
 export type component =
   | 'java-runtime-alpha'

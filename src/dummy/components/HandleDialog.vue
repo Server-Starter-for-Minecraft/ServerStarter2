@@ -8,8 +8,7 @@ for (const key of Object.keys(window.API)) {
   if (!key.startsWith('handle')) continue;
   // handle...形式のAPIにリスナーを登録
   window.API[key](async (...args: any[]) => {
-    content.value =
-      key + '(' + args.map((x) => JSON.stringify(x)).join(',') + ')';
+    content.value = `${key}(${args.map((x) => JSON.stringify(x)).join(',')})`;
     dialog.value = true;
   });
 }

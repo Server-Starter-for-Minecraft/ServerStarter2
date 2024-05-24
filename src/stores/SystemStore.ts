@@ -1,15 +1,15 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { version } from '../../package.json';
-import { AllVersion, VersionType } from 'app/src-electron/schema/version';
-import { SystemSettings } from 'app/src-electron/schema/system';
-import { StaticResouce } from 'app/src-electron/schema/static';
 import {
   CacheFileData,
   DatapackData,
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
+import { StaticResouce } from 'app/src-electron/schema/static';
+import { SystemSettings } from 'app/src-electron/schema/system';
+import { AllVersion, VersionType } from 'app/src-electron/schema/version';
+import { version } from '../../package.json';
 
 export const useSystemStore = defineStore('systemStore', {
   state: () => {

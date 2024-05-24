@@ -1,3 +1,4 @@
+import { WithError } from 'app/src-electron/schema/error';
 import {
   CacheFileData,
   DatapackData,
@@ -5,9 +6,8 @@ import {
   PluginData,
 } from 'app/src-electron/schema/filedata';
 import { datapackFiles } from '../world/files/addtional/datapack';
-import { pluginFiles } from '../world/files/addtional/plugin';
 import { modFiles } from '../world/files/addtional/mod';
-import { WithError } from 'app/src-electron/schema/error';
+import { pluginFiles } from '../world/files/addtional/plugin';
 
 const filesMap = {
   datapack: datapackFiles,

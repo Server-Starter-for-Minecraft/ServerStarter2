@@ -8,7 +8,7 @@ export const jaOthers = {
     title: 'バックアップの管理',
     backupDesc:
       '\
-      このワールドのバックアップを作成します<br>\
+      このワールドのバックアップを作成します\n\
       バックアップしたワールドデータは「バックアップから復旧」より利用することができます',
     makeBackup: 'バックアップを作成',
     recoverFromBackup: 'バックアップから復旧',
@@ -21,7 +21,7 @@ export const jaOthers = {
     addFolder: 'ワールドフォルダを追加',
     updateFolder: 'ワールドフォルダを更新',
     add: '新規ワールドフォルダを追加',
-    addBtn: '<span class="text-omit col">{name}</span> &nbsp; を追加',
+    addBtn: '{1}を追加',
     folderName: 'ワールドフォルダ名',
     select: 'フォルダを選択',
     exist: '{name}は既に存在します',

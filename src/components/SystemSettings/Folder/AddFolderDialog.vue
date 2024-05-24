@@ -3,14 +3,15 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
-import { tError, omitPath } from 'src/i18n/utils/tFunc';
-import { checkError } from 'src/components/Error/Error';
+import { omitPath, tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
-import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
-import SsInput from 'src/components/util/base/ssInput.vue';
+import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsI18nT from 'src/components/util/base/ssI18nT.vue';
+import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
+import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 
 const prop = defineProps<AddFolderDialogProps>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });
@@ -86,8 +87,13 @@ function isErrorContainer(c: WorldContainerSetting) {
           <span
             v-if="inputName !== ''"
             class="col row"
-            v-html="$t('others.worldFolder.addBtn', { name: inputName })"
-          />
+            style="white-space: pre-line"
+          >
+            <SsI18nT keypath="others.worldFolder.addBtn">
+              &nbsp;
+              <span class="text-omit col">{{ inputName }}</span> &nbsp;
+            </SsI18nT>
+          </span>
           <span v-else>{{ $t('others.worldFolder.add') }}</span>
         </ss-btn>
       </template>

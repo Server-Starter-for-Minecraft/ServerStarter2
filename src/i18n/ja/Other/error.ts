@@ -1,5 +1,4 @@
 /* バックエンド周りのエラーの翻訳 */
-
 import { ErrorTranslationTypes } from 'app/src-electron/schema/error';
 
 type ErrorDialogTitles = { errorDialog: { [key: string]: string } };

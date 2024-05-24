@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { WorldName } from 'app/src-electron/schema/brands';
-import SsInput from 'src/components/util/base/ssInput.vue';
 import { isError } from 'src/scripts/error';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { useI18n } from 'vue-i18n';
+import SsInput from 'src/components/util/base/ssInput.vue';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();

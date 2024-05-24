@@ -1,9 +1,9 @@
 import { StaticResouce } from '../schema/static';
 import {
   DATAPACK_CACHE_PATH,
+  logPath,
   MOD_CACHE_PATH,
   PLUGIN_CACHE_PATH,
-  logPath,
 } from './const';
 import { minecraftColors } from './static/color';
 import * as server_properties from './world/files/properties';
