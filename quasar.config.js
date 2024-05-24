@@ -93,7 +93,7 @@ module.exports = configure(function (/* ctx */) {
         viteConf.define = {
           ...viteConf.define,
           'import.meta.vitest': 'undefined',
-          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false,
+          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
         };
       },
 

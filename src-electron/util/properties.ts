@@ -36,7 +36,7 @@ export const stringify = (record: Record<string, string>) => {
     return str;
   };
   entries.forEach(([key, value]) => {
-    const line = escape(key) + '=' + escape(value);
+    const line = `${escape(key)}=${escape(value)}`;
     lines.push(line);
   });
 

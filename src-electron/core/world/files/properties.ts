@@ -1,12 +1,12 @@
-import { isError } from 'app/src-electron/util/error/error';
-import { ServerSettingFile } from './base';
+import { string } from 'prismarine-nbt';
 import {
   ServerProperties,
   ServerPropertiesAnnotation,
 } from 'app/src-electron/schema/serverproperty';
-import * as properties from 'app/src-electron/util/properties';
-import { string } from 'prismarine-nbt';
+import { isError } from 'app/src-electron/util/error/error';
 import { objValueMap } from 'app/src-electron/util/objmap';
+import * as properties from 'app/src-electron/util/properties';
+import { ServerSettingFile } from './base';
 
 // TODO:stringの値のescape/unescape
 
@@ -203,6 +203,8 @@ const stringify = (record: ServerProperties) => {
         return value ? 'true' : 'false';
       case 'number':
         return value.toString(10);
+      default:
+        return '';
     }
   });
   const result = properties.stringify(converted);
