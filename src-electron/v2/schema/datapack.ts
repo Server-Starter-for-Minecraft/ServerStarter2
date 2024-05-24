@@ -9,9 +9,9 @@ export type ZipDatapack = {
   hash: DatapackHash;
 };
 
-export type DirectoryDomain = {
+export type Directory = {
   isZip: false;
   name: DatapackName;
 };
 
-export type DatapackDomain = ZipDatapack | DirectoryDomain;
+export type Datapack = ZipDatapack | Directory;

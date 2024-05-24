@@ -1,4 +1,3 @@
-export type VersionDomain = {
+export type Version = {
   type: 'vanilla';
 };
-  

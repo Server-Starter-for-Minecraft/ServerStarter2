@@ -1,9 +1,8 @@
-import { DatapackDomain } from '../../schema/datapack';
+import { Datapack } from '../../schema/datapack';
 import { RuntimeSettings } from '../../schema/runtime';
-import { VersionDomain } from '../../schema/version';
+import { Version } from '../../schema/version';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-
 
 /**
  * ワールドを格納するフォルダ

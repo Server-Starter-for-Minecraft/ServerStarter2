@@ -1,11 +1,11 @@
-import { DatapackDomain } from './datapack';
+import { Datapack } from './datapack';
 import { IpAdress } from './ipadress';
-import { ModDomain } from './mod';
+import { Mod } from './mod';
 import { OpLevel, PlayerUUID } from './player';
-import { PluginDomain } from './plugin';
+import { Plugin } from './plugin';
 import { RuntimeSettings } from './runtime';
 import { McTimestamp } from './timestamp';
-import { VersionDomain } from './version';
+import { Version } from './version';
 
 export type BannedPlayer = {
   uuid: PlayerUUID;
@@ -23,7 +23,7 @@ export type BannedIp = {
   reason: string;
 };
 
-export type WorldDomain = {
+export type World = {
   // ワールドの情報
   // バージョン
   // mod
@@ -40,16 +40,16 @@ export type WorldDomain = {
   eula: boolean;
 
   /** バージョン情報 */
-  version: VersionDomain;
+  version: Version;
 
   /** データパック */
-  datapack: DatapackDomain[];
+  datapack: Datapack[];
 
   /** データパック */
-  plugin: PluginDomain[];
+  plugin: Plugin[];
 
   /** Mod */
-  mod: ModDomain[];
+  mod: Mod[];
 
   /** メモリ等ランタイムの設定 */
   runtime: RuntimeSettings;

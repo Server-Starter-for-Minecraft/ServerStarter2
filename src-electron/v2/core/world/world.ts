@@ -1,13 +1,14 @@
-import { DatapackDomain } from '../../schema/datapack';
-import { ModDomain } from '../../schema/mod';
-import { PluginDomain } from '../../schema/plugin';
-import { WorldDomain } from '../../schema/world';
+import mitt, { Emitter } from 'mitt';
+import { Datapack } from '../../schema/datapack';
+import { Mod } from '../../schema/mod';
+import { Plugin } from '../../schema/plugin';
+import { World } from '../../schema/world';
+import { DatapackContainer } from '../../source/datapack/datapack';
 import { ServerContainer } from '../../source/server/server';
 import { World } from '../../source/world/world';
-import { Result, err, ok } from '../../util/base';
+import { err, ok, Result } from '../../util/base';
 import { runServer } from './server';
 import { setupWorld, teardownWorld } from './setup';
-import mitt, { Emitter } from 'mitt';
 
 /**
  * ワールドを扱うクラスだよ!
@@ -17,7 +18,7 @@ import mitt, { Emitter } from 'mitt';
  */
 export class WorldHandler {
   private world: World;
-  private meta: WorldDomain;
+  private meta: World;
   private robooting: boolean;
 
   events: Emitter<{
@@ -30,13 +31,15 @@ export class WorldHandler {
     stop: undefined;
   }>;
 
-  private constructor(world: World, meta: WorldDomain) {
+  private constructor(world: World, meta: World) {
     this.meta = meta;
     this.world = world;
     this.events = mitt();
     this.robooting = false;
 
+    // 再起動イベントのハンドル
     this.events.on('reboot', () => {
+      if (this.robooting) return;
       this.robooting = true;
       this.events.emit('stop');
     });
@@ -53,19 +56,21 @@ export class WorldHandler {
   }
 
   /** データパックを導入 */
-  async installDatapack(datapack: DatapackDomain): Promise<Result<void>> {}
+  async installDatapack(datapack: Datapack): Promise<Result<void>> {
+    DatapackContainer;
+  }
 
   /** プラグインを導入 */
-  async installPlugin(plugin: PluginDomain): Promise<Result<void>> {}
+  async installPlugin(plugin: Plugin): Promise<Result<void>> {}
 
   /** Modを導入 */
-  async installMod(mod: ModDomain): Promise<Result<void>> {}
+  async installMod(mod: Mod): Promise<Result<void>> {}
 
   /**
    * メタデータを更新
    * @param world
    */
-  private updateMeta(mata: Partial<WorldDomain>): Promise<Result<void>> {
+  private updateMeta(mata: Partial<World>): Promise<Result<void>> {
     this.meta = { ...this.meta, ...mata };
     return this.world.setMeta(this.meta);
   }
@@ -77,7 +82,7 @@ export class WorldHandler {
    * - WORLD_IS_USING : ワールドがすでに起動中
    * - REQUIRE_EULA_AGREEMENT : Eulaに同意してね
    */
-  async run() {
+  async run(): Promise<Result<void>> {
     if (this.meta.using) return err(new Error('WORLD_IS_USING'));
     if (!this.meta.eula) return err(new Error('REQUIRE_EULA_AGREEMENT'));
 
@@ -117,6 +122,6 @@ export class WorldHandler {
     } while (this.robooting);
 
     // 撤収作業
-    await server.remove((dirPath) => teardownWorld(dirPath, this.world));
+    return await server.remove((dirPath) => teardownWorld(dirPath, this.world));
   }
 }

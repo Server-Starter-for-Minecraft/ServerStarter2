@@ -1,4 +1,4 @@
-import { DatapackDomain } from '../../schema/datapack';
+import { Datapack } from '../../schema/datapack';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
@@ -11,20 +11,20 @@ export class DatapackContainer {
   /**
    * コンテナ内のデータパック一覧を表示
    */
-  static list(): Promise<DatapackDomain[]>;
+  static list(): Promise<Datapack[]>;
 
   /**
    * データパックを作成
    */
   static create(
     srcPath: Path,
-    meta: DatapackDomain
-  ): Promise<Result<DatapackDomain, Error>>;
+    meta: Datapack
+  ): Promise<Result<Datapack, Error>>;
 
   /**
    * メタデータを更新
    */
-  static updateMeta(meta: DatapackDomain): Promise<Result<void, Error>>;
+  static updateMeta(meta: Datapack): Promise<Result<void, Error>>;
 
   /**
    * データパックを削除
@@ -35,7 +35,7 @@ export class DatapackContainer {
    * データパックをpathに導入
    * @param path
    */
-  static extractTo(mata: DatapackDomain, path: Path): Promise<Result<void>>;
+  static extractTo(mata: Datapack, path: Path): Promise<Result<void>>;
 }
 
 // ('api/v1/container/:container_id/world/:world_id');
