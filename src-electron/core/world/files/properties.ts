@@ -1,8 +1,11 @@
+import { string } from 'prismarine-nbt';
 import {
   ServerProperties,
   ServerPropertiesAnnotation,
 } from 'app/src-electron/schema/serverproperty';
 import { isError } from 'app/src-electron/util/error/error';
+import { objValueMap } from 'app/src-electron/util/objmap';
+import * as properties from 'app/src-electron/util/properties';
 import { ServerSettingFile } from './base';
 
 // TODO:stringの値のescape/unescape
@@ -163,12 +166,8 @@ export const annotations: ServerPropertiesAnnotation = {
 /** server.propertiesの中身(string)をパースする */
 const parse = (text: string) => {
   const propertiy: ServerProperties = {};
-  text.split('\n').forEach((v) => {
-    const match = v.match(/^\s*([a-z\.-]+)\s*=\s*(\w*)\s*$/);
-    if (!match) return;
-
-    const [, key, value] = match;
-
+  const record = properties.parse(text);
+  Object.entries(record).forEach(([key, value]) => {
     const defult = annotations[key];
 
     let prop: string | number | boolean;
@@ -195,10 +194,21 @@ const parse = (text: string) => {
   return propertiy;
 };
 
-const stringify = (properties: ServerProperties) => {
-  return Object.entries(properties)
-    .map(([k, v]) => `${k}=${v}`)
-    .join('\n');
+const stringify = (record: ServerProperties) => {
+  const converted = objValueMap(record, (value) => {
+    switch (typeof value) {
+      case 'string':
+        return value;
+      case 'boolean':
+        return value ? 'true' : 'false';
+      case 'number':
+        return value.toString(10);
+      default:
+        return '';
+    }
+  });
+  const result = properties.stringify(converted);
+  return result;
 };
 
 export const SERVER_PROPERTIES_PATH = 'server.properties';

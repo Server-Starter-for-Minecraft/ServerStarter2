@@ -1,0 +1,58 @@
+{
+  "In Source Testing": {
+    "prefix": "test",
+    "body": [
+      "/** In Source Testing */",
+      "if (import.meta.vitest) {",
+      "  const { test, expect } = import.meta.vitest;",
+      "  test('$1',() => {",
+      "    $2",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
+  },
+  "In Source Testing (Async)": {
+    "prefix": "test (async)",
+    "body": [
+      "/** In Source Testing */",
+      "if (import.meta.vitest) {",
+      "  const { test, expect } = import.meta.vitest;",
+      "  test('$1',async () => {",
+      "    $2",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
+  },
+  "In Source Testing (Describe)": {
+    "prefix": "test (describe)",
+    "body": [
+      "/** In Source Testing */",
+      "if (import.meta.vitest) {",
+      "  const { describe, test, expect } = import.meta.vitest;",
+      "  describe('$1',() => {",
+      "    test('$2',() => {",
+      "      $3",
+      "    })",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
+  },
+  "In Source Testing (Describe + Async)": {
+    "prefix": "test (describe + async)",
+    "body": [
+      "/** In Source Testing */",
+      "if (import.meta.vitest) {",
+      "  const { describe, test, expect } = import.meta.vitest;",
+      "  describe('$1',() => {",
+      "    test('$2',async () => {",
+      "      $3",
+      "    })",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
+  }
+}
