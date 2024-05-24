@@ -1,11 +1,14 @@
+import { NewType } from '../util/type/newtype';
 import { Datapack } from './datapack';
 import { IpAdress } from './ipadress';
 import { Mod } from './mod';
-import { OpLevel, PlayerUUID } from './player';
+import { OpLevel, PlayerName, PlayerUUID } from './player';
 import { Plugin } from './plugin';
 import { RuntimeSettings } from './runtime';
 import { McTimestamp } from './timestamp';
 import { Version } from './version';
+
+export type WorldName = NewType<string, 'WorldName'>;
 
 export type BannedPlayer = {
   uuid: PlayerUUID;
@@ -30,17 +33,20 @@ export type World = {
   // 保存日時
   // ロック状態 etc...
 
+  /** ワールド名 (主キー) */
+  name: WorldName;
+
   /** 起動中フラグ */
-  using: boolean;
+  using?: boolean;
 
   /** 最終サーバー主 */
-  laseUser?: string;
+  laseUser?: PlayerName;
 
   /** eula同意フラグ */
-  eula: boolean;
+  eula?: boolean;
 
   /** バージョン情報 */
-  version: Version;
+  version?: Version;
 
   /** データパック */
   datapack: Datapack[];
@@ -52,7 +58,7 @@ export type World = {
   mod: Mod[];
 
   /** メモリ等ランタイムの設定 */
-  runtime: RuntimeSettings;
+  runtime?: RuntimeSettings;
 
   /** whitelist / op に登録せれているプレイヤー */
   players: { uuid: PlayerUUID; op: OpLevel }[];

@@ -1,4 +1,4 @@
-import { NewType } from './newtype';
+import { NewType } from '../util/type/newtype';
 
 /**
  * banned-players banned-ips で使われる時刻の文字列形式

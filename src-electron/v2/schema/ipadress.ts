@@ -1,3 +1,3 @@
-import { NewType } from './newtype';
+import { NewType } from '../util/type/newtype';
 
 export type IpAdress = NewType<string, 'IpAdress'>;

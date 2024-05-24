@@ -57,7 +57,6 @@ export class WorldHandler {
 
   /** データパックを導入 */
   async installDatapack(datapack: Datapack): Promise<Result<void>> {
-    DatapackContainer;
   }
 
   /** プラグインを導入 */

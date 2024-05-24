@@ -1,4 +1,4 @@
-import { NewType } from './newtype';
+import { NewType } from '../util/type/newtype';
 
 export type DatapackHash = NewType<string, 'DatapackHash'>;
 export type DatapackName = NewType<string, 'DatapackName'>;

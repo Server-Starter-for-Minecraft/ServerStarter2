@@ -1,6 +1,4 @@
-import { Datapack } from '../../schema/datapack';
-import { RuntimeSettings } from '../../schema/runtime';
-import { Version } from '../../schema/version';
+import { World, WorldName } from '../../schema/world';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
@@ -11,29 +9,24 @@ import { Path } from '../../util/binary/path';
  */
 export abstract class WorldContainer {
   /**
-   * コンテナ内のフォルダのメタデータ一覧を表示
+   * コンテナ内のワールド名一覧を表示
    */
-  abstract listMeta(): Promise<WorldMeta[]>;
+  abstract listWorldNames(): Promise<WorldName[]>;
 
   /**
    * コンテナ内でメタデータを上書き
    */
-  abstract setMeta(meta: WorldMeta): Promise<Result<void, Error>>;
-}
-
-/**
- * どこかにあるワールドデータの情報
- */
-export abstract class World {
-  /**
-   * メタデータを表示
-   */
-  abstract getMeta(): Promise<Result<WorldMeta>>;
+  abstract setMeta(meta: World): Promise<Result<void, Error>>;
 
   /**
-   * メタデータを表示
+   * メタデータを取得
    */
-  abstract setMeta(meta: WorldMeta): Promise<Result<void>>;
+  abstract getMeta(name: WorldName): Promise<Result<World>>;
+
+  /**
+   * ワールドデータを削除
+   */
+  abstract delete(name: WorldName): Promise<Result<World>>;
 
   /**
    * ワールドを特定の形のディレクトリ構造に展開
@@ -46,11 +39,16 @@ export abstract class World {
    *
    * TODO: 展開先のワールドのひな形の用意
    */
-  abstract extractTo(path: Path): Promise<Result<void>>;
+  abstract getTo(path: Path): Promise<Result<void>>;
 
   /**
-   * ディレクトリに展開されたデータを
+   * ディレクトリに展開されたデータをWorldContainerに格納
+   *
+   * WorldContainerに該当データがある場合上書き
+   *
+   * WorldContainerに該当データがない場合新規作成
+   *
    * TODO: 展開先のワールドのひな形の用意
    */
-  abstract packFrom(path: Path): Promise<Result<void>>;
+  abstract putFrom(path: Path): Promise<Result<void>>;
 }

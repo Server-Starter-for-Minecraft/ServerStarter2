@@ -1,4 +1,4 @@
-import { NewType } from './newtype';
+import { NewType } from '../util/type/newtype';
 
 export type PlayerUUID = NewType<string, 'PlayerUUID'>;
 export type PlayerName = NewType<string, 'PlayerName'>;
