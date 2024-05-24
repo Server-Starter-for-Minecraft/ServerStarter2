@@ -1,19 +1,20 @@
+import { World } from '../../schema/world';
 import { DatapackContainer } from '../../source/datapack/datapack';
 import { RuntimeContainer } from '../../source/runtime/runtime';
 import { ServerMeta } from '../../source/server/server';
 import { VersionContainer } from '../../source/version/version';
-import { World, WorldMeta } from '../../source/world/world';
-import { Result, err, ok } from '../../util/base';
+import { WorldSource } from '../../source/world/world';
+import { err, ok, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { getJvmArgs } from './runtime';
 
 async function extractDatapacks(
   path: Path,
-  meta: WorldMeta
+  world: World
 ): Promise<Result<void>> {
   const dir = path.child('world/datapacks');
   const promisses = await Promise.all(
-    meta.datapack.map((x) => DatapackContainer.extractTo(x, dir.child(x.name)))
+    world.datapack.map((x) => DatapackContainer.extractTo(x, dir.child(x.name)))
   );
   if (promisses.some((x) => x.isErr())) {
     // 失敗したのでディレクトリを削除
@@ -28,8 +29,7 @@ async function extractDatapacks(
  */
 export async function setupWorld(
   path: Path,
-  world: World,
-  meta: WorldMeta
+  world: World
 ): Promise<Result<ServerMeta>> {
   /** ディレクトリを削除して引数をそのまま返す */
   const cleanupAndReturn = async <T>(arg: T) => {
@@ -38,11 +38,11 @@ export async function setupWorld(
   };
 
   // ワールドを展開
-  const worldResult = await world.extractTo(path);
+  const worldResult = await WorldSource.extractWorldDataTo(path, world);
   if (worldResult.isErr()) return cleanupAndReturn(worldResult);
 
   // データパックを展開
-  const datapackResult = await extractDatapacks(path, meta);
+  const datapackResult = await extractDatapacks(path, world);
   if (datapackResult.isErr()) return cleanupAndReturn(datapackResult);
 
   // TODO: プラグインを展開
@@ -58,7 +58,7 @@ export async function setupWorld(
   if (runtimeResult.isErr()) return cleanupAndReturn(runtimeResult);
 
   // コマンドライン引数を解析
-  const jvmArgs = getJvmArgs(meta.runtime);
+  const jvmArgs = getJvmArgs(world.runtime);
   if (jvmArgs.isErr()) return cleanupAndReturn(jvmArgs);
 
   // 実行時コマンドを取得
@@ -79,5 +79,5 @@ export async function teardownWorld(
   world: World
 ): Promise<Result<void>> {
   // ワールドを撤収
-  return await world.packFrom(path);
+  return await WorldSource.packWorldDataFrom(path, world);
 }

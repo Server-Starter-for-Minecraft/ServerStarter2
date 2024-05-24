@@ -3,25 +3,25 @@ import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
 /**
- * ワールドを格納するフォルダ
+ * ワールドを管理するクラス
  *
  * 場所はどこにあってもよい
  */
-export abstract class WorldSource {
+export class WorldSource {
   /**
    * コンテナ内のワールド名一覧を表示
    */
-  abstract listWorldNames(container: WorldContainer): Promise<WorldName[]>;
+  static listWorldNames(container: WorldContainer): Promise<WorldName[]>;
 
   /**
    * コンテナ内でメタデータを上書き
    */
-  abstract setMeta(meta: World): Promise<Result<void, Error>>;
+  static setWorldMeta(meta: World): Promise<Result<void, Error>>;
 
   /**
    * メタデータを取得
    */
-  abstract getMeta(
+  static getWorldMeta(
     container: WorldContainer,
     name: WorldName
   ): Promise<Result<World>>;
@@ -29,7 +29,7 @@ export abstract class WorldSource {
   /**
    * ワールドデータを削除
    */
-  abstract delete(name: WorldName): Promise<Result<World>>;
+  static deleteWorldData(name: WorldName): Promise<Result<World>>;
 
   /**
    * ワールドを特定の形のディレクトリ構造に展開
@@ -42,7 +42,7 @@ export abstract class WorldSource {
    *
    * TODO: 展開先のワールドのひな形の用意
    */
-  abstract getTo(path: Path): Promise<Result<void>>;
+  static extractWorldDataTo(path: Path, world: World): Promise<Result<void>>;
 
   /**
    * ディレクトリに展開されたデータをWorldContainerに格納
@@ -53,5 +53,5 @@ export abstract class WorldSource {
    *
    * TODO: 展開先のワールドのひな形の用意
    */
-  abstract putFrom(path: Path): Promise<Result<void>>;
+  static packWorldDataFrom(path: Path, world: World): Promise<Result<void>>;
 }

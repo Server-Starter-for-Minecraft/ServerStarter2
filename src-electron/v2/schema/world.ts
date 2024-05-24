@@ -48,9 +48,6 @@ export type World = {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** 最終サーバー主 */
-  laseUser?: PlayerName;
-
   /** eula同意フラグ */
   eula?: boolean;
 
@@ -77,4 +74,13 @@ export type World = {
 
   /** banされたip */
   bannedIps: BannedIp[];
+
+  /** 最終起動時のデータ */
+  last?: {
+    /** 最後に起動したサーバー主 */
+    user?: PlayerName;
+
+    /** 最後に起動したバージョン */
+    version?: PlayerName;
+  };
 };

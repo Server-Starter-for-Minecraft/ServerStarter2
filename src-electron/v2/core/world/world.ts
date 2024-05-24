@@ -2,9 +2,10 @@ import mitt, { Emitter } from 'mitt';
 import { Datapack } from '../../schema/datapack';
 import { Mod } from '../../schema/mod';
 import { Plugin } from '../../schema/plugin';
-import { World, WorldName } from '../../schema/world';
+import { World, WorldContainer, WorldName } from '../../schema/world';
 import { DatapackContainer } from '../../source/datapack/datapack';
 import { ServerContainer } from '../../source/server/server';
+import { WorldSource } from '../../source/world/world';
 import { err, ok, Result } from '../../util/base';
 import { runServer } from './server';
 import { setupWorld, teardownWorld } from './setup';
@@ -17,7 +18,6 @@ import { setupWorld, teardownWorld } from './setup';
  */
 export class WorldHandler {
   private world: World;
-  private meta: World;
   private robooting: boolean;
 
   events: Emitter<{
@@ -30,9 +30,8 @@ export class WorldHandler {
     stop: undefined;
   }>;
 
-  private constructor(world: World, meta: World) {
-    this.meta = meta;
-    this.world = world;
+  private constructor(meta: World) {
+    this.world = meta;
     this.events = mitt();
     this.robooting = false;
 
@@ -48,10 +47,12 @@ export class WorldHandler {
    * WorldHandlerを作成
    * @param world
    */
-  static async create(world: WorldName): Promise<Result<WorldHandler>> {
-    const meta = await world.getMeta();
-    if (meta.isErr()) return meta;
-    return ok(new WorldHandler(world, meta.value));
+  static async create(
+    container: WorldContainer,
+    worldName: WorldName
+  ): Promise<Result<WorldHandler>> {
+    const worldMeta = await WorldSource.getWorldMeta(container, worldName);
+    return worldMeta.map((x) => new WorldHandler(x));
   }
 
   /** データパックを導入 */
@@ -67,9 +68,9 @@ export class WorldHandler {
    * メタデータを更新
    * @param world
    */
-  private updateMeta(mata: Partial<World>): Promise<Result<void>> {
-    this.meta = { ...this.meta, ...mata };
-    return this.world.setMeta(this.meta);
+  private updateMeta(world: Partial<World>): Promise<Result<void>> {
+    this.world = { ...this.world, ...world };
+    return WorldSource.setWorldMeta(this.world);
   }
 
   /**
@@ -80,8 +81,8 @@ export class WorldHandler {
    * - REQUIRE_EULA_AGREEMENT : Eulaに同意してね
    */
   async run(): Promise<Result<void>> {
-    if (this.meta.using) return err(new Error('WORLD_IS_USING'));
-    if (!this.meta.eula) return err(new Error('REQUIRE_EULA_AGREEMENT'));
+    if (this.world.using) return err(new Error('WORLD_IS_USING'));
+    if (!this.world.eula) return err(new Error('REQUIRE_EULA_AGREEMENT'));
 
     // ワールド設定を変更中
     // using = true に設定
@@ -91,7 +92,7 @@ export class WorldHandler {
     // サーバーデータを作成中
     // サーバーを作成
     const serverResult = await ServerContainer.create((dirPath) =>
-      setupWorld(dirPath, this.world, this.meta)
+      setupWorld(dirPath, this.world)
     );
     if (serverResult.isErr()) return serverResult;
     const server = serverResult.value;
