@@ -1,9 +1,9 @@
 import type {
   spawn as _spawn,
-  SpawnOptionsWithStdioTuple,
   SpawnOptionsWithoutStdio,
-  StdioPipe,
+  SpawnOptionsWithStdioTuple,
   StdioNull,
+  StdioPipe,
 } from 'child_process';
 import { isDeepStrictEqual } from 'util';
 

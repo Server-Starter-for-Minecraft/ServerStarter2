@@ -1,10 +1,10 @@
 import { type spawn as _spawn } from 'child_process';
+import { Readable, Writable } from 'stream';
 import {
   ChildProcessConfig,
   ConfigFilter,
   normalizeConfigFilter,
 } from './filter';
-import { Readable, Writable } from 'stream';
 
 type StdIO = {
   stdin: Readable;
