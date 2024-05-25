@@ -33,10 +33,9 @@ function cancelSettings() {
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption" style="opacity: 0.5">
         {{
-          $t(
-            `property.description['${settingName}']`,
-            $t('property.description.notFound')
-          )
+          $te(`property.description['${settingName}']`)
+            ? $t(`property.description['${settingName}']`)
+            : $t('property.description.notFound')
         }}
       </div>
       <InputFieldView v-model="propertiesModel" :property-name="settingName" />
@@ -48,7 +47,8 @@ function cancelSettings() {
     >
       <q-btn
         v-show="
-          propertiesModel[settingName]?.toString() !== defaultProperty.toString()
+          propertiesModel[settingName]?.toString() !==
+          defaultProperty.toString()
         "
         flat
         dense
