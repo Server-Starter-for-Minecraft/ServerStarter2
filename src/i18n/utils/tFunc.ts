@@ -38,6 +38,10 @@ export function setI18nFunc(t: tFunc, te: teFunc) {
   _te = te;
 }
 
+export function $TE(key: string) {
+  return _te(key)
+}
+
 export function $T(key: string): string;
 export function $T(key: FullKeys<MessageSchema>): string;
 export function $T(
