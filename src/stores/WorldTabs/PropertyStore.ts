@@ -29,15 +29,15 @@ export const usePropertyStore = defineStore('propertyStore', {
         // 検索欄に文字が入った場合は該当するプロパティ全てを返す
         if (searchName !== '') {
           // タイトルの検索
-          const searchTitles = keys(targetProps).filter((prop) =>
-            prop.match(searchName) && !disableProperties.includes(prop)
+          const searchTitles = keys(targetProps).filter(
+            (prop) =>
+              prop.match(searchName) && !disableProperties.includes(prop)
           );
           // 説明文の検索
           const searchDescs = keys(targetProps).filter((prop) => {
-            const key = `property.description['${prop}']`
-            return $TE(key) && $T(key).match(searchName)
-          }
-          );
+            const key = `property.description['${prop}']`;
+            return $TE(key) && $T(key).match(searchName);
+          });
           return searchTitles.concat(searchDescs);
         }
         // グループごとのプロパティを返す

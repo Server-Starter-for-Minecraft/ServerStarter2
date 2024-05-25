@@ -39,7 +39,7 @@ export function setI18nFunc(t: tFunc, te: teFunc) {
 }
 
 export function $TE(key: string) {
-  return _te(key)
+  return _te(key);
 }
 
 export function $T(key: string): string;
