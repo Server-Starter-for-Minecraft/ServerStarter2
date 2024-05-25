@@ -103,6 +103,10 @@ export const enUSproperty: MessageSchema['property'] = {
       'When set to false, will prevent player IPs from being included in the log when players join the game',
     'text-filtering-config': 'Filtering configuration of inappropriate chat',
     'announce-player-achievements': 'Announce the achievement unlock in chat.',
+    'resource-pack-id':
+      'UUID specified by the resource pack for the client to identify it',
+    'region-file-compression': 'Algorithm used to compress chunks in regions',
+    'accepts-transfers': 'Allow servers to access them via transfer packets',
   },
   resetProperty:
     '\

@@ -13,6 +13,8 @@ import { ServerSettingFile } from './base';
 const PORT_MAX = 2 ** 16 - 2;
 
 export const annotations: ServerPropertiesAnnotation = {
+  'accepts-transfers': { type: 'boolean', default: false },
+
   'allow-flight': { type: 'boolean', default: false },
 
   'allow-nether': { type: 'boolean', default: true },
@@ -128,7 +130,15 @@ export const annotations: ServerPropertiesAnnotation = {
 
   'rcon.port': { type: 'number', default: 25575, min: 1, max: PORT_MAX },
 
+  'region-file-compression': {
+    type: 'string',
+    default: 'deflate',
+    enum: ['deflate', 'lz4', 'none'],
+  },
+
   'resource-pack': { type: 'string', default: '' },
+
+  'resource-pack-id': { type: 'string', default: '' },
 
   'resource-pack-prompt': { type: 'string', default: '' },
 

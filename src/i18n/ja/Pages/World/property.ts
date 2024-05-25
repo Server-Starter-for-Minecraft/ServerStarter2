@@ -97,6 +97,12 @@ export const jaProperty = {
       'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする',
     'text-filtering-config': '不適切なチャットのフィルタリング設定',
     'announce-player-achievements': 'プレイヤーの実績解除をチャットで告知する',
+    'resource-pack-id':
+      'クライアントがリソースパックを識別するために指定するUUID',
+    'region-file-compression':
+      'チャンクデータを圧縮する際に使用するアルゴリズム',
+    'accepts-transfers':
+      'プレイヤーが転送されたパケットを用いてサーバーにアクセスすることを許可する',
   },
   resetProperty:
     '\
