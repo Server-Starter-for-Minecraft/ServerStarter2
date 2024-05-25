@@ -48,7 +48,7 @@ function cancelSettings() {
     >
       <q-btn
         v-show="
-          propertiesModel[settingName].toString() !== defaultProperty.toString()
+          propertiesModel[settingName]?.toString() !== defaultProperty.toString()
         "
         flat
         dense
