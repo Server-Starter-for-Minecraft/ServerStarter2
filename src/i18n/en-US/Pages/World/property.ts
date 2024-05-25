@@ -3,7 +3,15 @@ import { MessageSchema } from 'src/boot/i18n';
 export const enUSproperty: MessageSchema['property'] = {
   main: {
     search: 'search properties',
-    resetAll: 'reset all',
+  },
+  resetAll: {
+    btn: 'reset all',
+    title: 'Reset all server properties',
+    desc: '\
+      All properties in this world will be set default settings\n\
+      Are you sure about this operation?\n\
+      cf. You can change default settings at "System Settings" > "Default Property"',
+    okBtn: 'Reset all properties',
   },
   //WorldTabsStore.tsのgroupNamesにあったもの
   group: {
@@ -111,7 +119,7 @@ export const enUSproperty: MessageSchema['property'] = {
   resetProperty:
     '\
     Reset setting to default setting "{defaultProperty}" \n\
-    You can change basic settings from "System Settings" > "Properties".',
+    You can change basic settings from "System Settings" > "Default Property".',
   empty: '(Empty)',
   failed: 'Failed to load properties',
   reset: 'Reset property settings',

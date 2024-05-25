@@ -1,7 +1,15 @@
 export const jaProperty = {
   main: {
     search: 'プロパティを検索',
-    resetAll: '全て戻す',
+  },
+  resetAll: {
+    btn: '全て戻す',
+    title: '全てのプロパティのリセット',
+    desc: '\
+      このワールドに設定されているすべてのプロパティを規定値に戻します\n\
+      プロパティをリセットしますか\n\
+      ※ 規定値は「システム設定」>「規定プロパティ」に設定された値です',
+    okBtn: 'プロパティをリセット',
   },
   //WorldTabsStore.tsのgroupNamesにあったもの
   group: {
@@ -107,7 +115,7 @@ export const jaProperty = {
   resetProperty:
     '\
     基本設定の{defaultProperty}に設定を戻します \n\
-    「システム設定」>「プロパティ」 より基本設定を変更できます',
+    「システム設定」>「規定プロパティ」 より基本設定を変更できます',
   empty: '(空欄)',
   failed: 'プロパティが読み込めませんでした',
   reset: 'プロパティ設定をリセット',
