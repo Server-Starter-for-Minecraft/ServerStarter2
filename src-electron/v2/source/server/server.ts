@@ -4,8 +4,7 @@ import { Path } from '../../util/binary/path';
 import { Subprocess } from '../../util/binary/subprocess';
 import { NewType } from '../../util/type/newtype';
 import { randomString } from '../../util/random/ramdomString';
-import { Server, fixServer } from '../../schema/server';
-
+import { Server, serverValidator } from '../../schema/server';
 
 export type ServerId = NewType<string, 'ServerId'>;
 
