@@ -1,20 +1,24 @@
 import { Server } from '../../schema/server';
 import { World } from '../../schema/world';
-import { DatapackContainer } from '../../source/datapack/datapack';
 import { RuntimeContainer } from '../../source/runtime/runtime';
 import { VersionContainer } from '../../source/version/version';
 import { WorldSource } from '../../source/world/world';
 import { err, ok, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { defaultRuntimeSettings } from '../const';
+import { datapackContainer } from '../setup';
 import { getJvmArgs } from './runtime';
 
+/**
+ * ワールドにデータパックを展開
+ */
 async function extractDatapacks(
   path: Path,
   world: World
 ): Promise<Result<void>> {
   const dir = path.child('world/datapacks');
   const promisses = await Promise.all(
-    world.datapack.map((x) => DatapackContainer.extractTo(x, dir.child(x.name)))
+    world.datapack.map((x) => datapackContainer.extractTo(x, dir.child(x.name)))
   );
   if (promisses.some((x) => x.isErr())) {
     // 失敗したのでディレクトリを削除
@@ -58,7 +62,7 @@ export async function setupWorld(
   if (runtimeResult.isErr()) return cleanupAndReturn(runtimeResult);
 
   // コマンドライン引数を解析
-  const jvmArgs = getJvmArgs(world.runtime);
+  const jvmArgs = getJvmArgs(world.runtime ?? defaultRuntimeSettings);
   if (jvmArgs.isErr()) return cleanupAndReturn(jvmArgs);
 
   // 実行時コマンドを取得
