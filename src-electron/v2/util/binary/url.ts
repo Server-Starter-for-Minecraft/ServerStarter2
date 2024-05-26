@@ -40,9 +40,15 @@ export class Url extends DuplexStreamer<Response> {
     return new Url(this.url, { ...this.option, ...option });
   }
 
-  /** リクエストそのまま新しい子URLを返す */
+  /** リクエストそのまま新しい子URLを返す
+   *
+   *  URLパラメータは取り除いて返す
+   */
   child(path: string) {
-    return new Url(new URL(path, this.url));
+    const basePath = this.url.pathname.replace(/\/+$/, '');
+    const newPath = `${basePath}/${path}`.replace(/\/+$/, '');
+    const newUrl = new URL(newPath, this.url.origin);
+    return new Url(newUrl, this.option);
   }
 
   createReadStream(): Readable {
@@ -89,17 +95,76 @@ if (import.meta.vitest) {
     // TODO: Url.child のテストを書く
     // url:https://example.com の child(foo) が url:https://example.com/foo になってればOK
     // その際、optionの値に変化があってはいけない
+    const testUrl = new Url('https://example.com', {
+      method: 'GET',
+      headers: { foo: 'bar' },
+      body: 'bodyTest',
+    });
+
+    expect(testUrl.child('foo')).toEqual(
+      new Url('https://example.com/foo', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.child('foo/bar')).toEqual(
+      new Url('https://example.com/foo/bar', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.child('foo').child('bar')).toEqual(
+      new Url('https://example.com/foo/bar', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.child('')).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+
+    const testUrl1 = new Url('https://example.com/hoge', {
+      method: 'GET',
+      headers: { foo: 'bar' },
+      body: 'bodyTest',
+    });
+    expect(testUrl1.child('fuga')).toEqual(
+      new Url('https://example.com/hoge/fuga', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+
+    const testUrl2 = new Url('https://example.com/hoge/', {
+      method: 'GET',
+      headers: { foo: 'bar' },
+      body: 'bodyTest',
+    });
+    expect(testUrl2.child('fuga')).toEqual(
+      new Url('https://example.com/hoge/fuga', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
 
     // TODO: Url.with のテストを書く
     // option:{method:'GET',headers:{foo:bar}} の with({method:'POST'}) が option:{method:'POST',headers:{foo:bar}} になってればOK
     // その際、urlの値に変化があってはいけない
-  });
-}
-
-/** In Source Testing */
-if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-  describe('', () => {
-    test('', () => {});
+    expect(testUrl.with({ method: 'POST' })).toEqual(
+      new Url('https://example.com', {
+        method: 'POST',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
   });
 }
