@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as stream from 'stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
-import { Err, err, ok, Result } from '../base';
+import { err, ok, Result } from '../base';
 import { DuplexStreamer, Readable } from './stream';
 import { asyncPipe } from './util';
 
