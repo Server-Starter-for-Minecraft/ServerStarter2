@@ -12,7 +12,7 @@ export type UrlOption = {
   /** URL にアクセスするときのメソッド */
   method?: UrlMethod;
   /** URL にアクセス際のヘッダの内容 */
-  headers?: HeadersInit;
+  headers?: Record<string, string>;
   /** URL にアクセス際のリクエストボディ */
   body?: BodyInit;
 };
@@ -35,9 +35,14 @@ export class Url extends DuplexStreamer<Response> {
     this.option = option ?? {};
   }
 
-  /** URLそのままリクエストを変えた新しいUrlを返す */
+  /** URLそのままリクエストを変えた新しいUrlを返す
+   *
+   *  headerはマージしたものを返す
+  */
   with(option: UrlOption) {
-    return new Url(this.url, { ...this.option, ...option });
+    const newOption = { ...this.option, ...option };
+    newOption.headers = { ...(this.option.headers ?? {}), ...(option.headers ?? {}) };
+    return new Url(this.url, newOption);
   }
 
   /** リクエストそのまま新しい子URLを返す
@@ -166,5 +171,77 @@ if (import.meta.vitest) {
         body: 'bodyTest',
       })
     );
+    expect(testUrl.with({ headers: { hoge: 'fuga' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar', hoge: 'fuga' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { foo: 'fuga' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'fuga' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ method: 'PUT' }).with({ body: 'hoge' })).toEqual(
+      new Url('https://example.com', {
+        method: 'PUT',
+        headers: { foo: 'bar' },
+        body: 'hoge',
+      })
+    );
+    expect(
+      testUrl.with({
+        method: 'POST',
+        headers: { bar: 'fuga', fizz: 'buzz' },
+        body: 'hogehoge',
+      })
+    ).toEqual(
+      new Url('https://example.com', {
+        method: 'POST',
+        headers: { foo: 'bar', bar: 'fuga', fizz: 'buzz' },
+        body: 'hogehoge',
+      })
+    );
+    expect(testUrl.with({})).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { foo: '' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: '' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { 'f-oo': '' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar', 'f-oo': '' },
+        body: 'bodyTest',
+      })
+    );
+
+    expect(testUrl2.with({ body: 'testTest' })).toEqual(
+      new Url('https://example.com/hoge/', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'testTest',
+      })
+    );
+
+    const testUrl3 = new Url('https://example.com/hoge/');
+    expect(testUrl3.with({method: 'GET', headers: { foo: 'bar', 'ho-ge': 'fuga'}, body: 'bodybody'})).toEqual(
+      new Url('https://example.com/hoge/', {
+        method: 'GET',
+        headers: { foo: 'bar', 'ho-ge': 'fuga' },
+        body: 'bodybody',
+      })
+    )
   });
 }
