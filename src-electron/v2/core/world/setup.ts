@@ -1,7 +1,7 @@
+import { Server } from '../../schema/server';
 import { World } from '../../schema/world';
 import { DatapackContainer } from '../../source/datapack/datapack';
 import { RuntimeContainer } from '../../source/runtime/runtime';
-import { ServerMeta } from '../../source/server/server';
 import { VersionContainer } from '../../source/version/version';
 import { WorldSource } from '../../source/world/world';
 import { err, ok, Result } from '../../util/base';
@@ -30,7 +30,7 @@ async function extractDatapacks(
 export async function setupWorld(
   path: Path,
   world: World
-): Promise<Result<ServerMeta>> {
+): Promise<Result<Server>> {
   /** ディレクトリを削除して引数をそのまま返す */
   const cleanupAndReturn = async <T>(arg: T) => {
     await path.remove();
