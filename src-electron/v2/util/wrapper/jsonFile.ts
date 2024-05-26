@@ -1,45 +1,72 @@
+import type { z } from 'zod';
+import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
-import { DuplexStreamer } from '../binary/stream';
+import { IReadableStreamer, IWritableStreamer } from '../binary/stream';
 
-class JsonFile<T> {
-  target: DuplexStreamer<T>;
-  encoding: BufferEncoding;
+/**
+ * JSONファイルを扱うクラス
+ *
+ * データのバリデーションも行う
+ */
+export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
+  private target: T;
+  private encoding: BufferEncoding;
+  private validator: z.ZodType<U>;
+  private lock: undefined | Promise<any>;
 
-  constructor(target: DuplexStreamer<T>, encoding: BufferEncoding = 'utf8') {
-    this.target = target;
-    this.encoding = encoding;
-  }
-
-  /**
-   * ファイルからJSONを読み込む
-   * @param encoding エンコード形式 デフォルト:utf-8
-   */
-  async read(): Promise<Result<string>> {
-    const buf = await this.target.into(Bytes);
-    if (buf.isErr()) return buf;
-    const str = buf.value.toStr(this.encoding);
-    if (str.isErr()) return buf;
-    try {
-      return ok(JSON.parse(buf.value));
-    } catch (e) {
-      return err(e as Error);
-    }
-  }
-
-  /**
-   * ファイルからJSONを読み込む
-   * @param encoding エンコード形式 デフォルト:utf-8
-   */
-  async write(
-    content: string,
+  constructor(
+    target: T,
+    validator: z.ZodSchema<U>,
     encoding: BufferEncoding = 'utf8'
-  ): Promise<Result<string>> {
-    const txt = await this.readText(encoding);
-    if (txt.isErr()) return txt;
+  ) {
+    this.target = target;
+    this.validator = validator;
+    this.encoding = encoding;
+    this.lock = undefined;
+  }
+
+  /**
+   * ファイルからJSONを読み込む
+   */
+  async read(this: JsonFile<IReadableStreamer, U>): Promise<Result<U>> {
+    // 読み書き処理中の場合待機
+    await this.lock;
+
+    // ロックして読み取り
+    const promise = this.target.into(Bytes);
+    this.lock = promise;
+    const str = (await promise).flatMap((x) => x.toStr());
+    this.lock = undefined;
+
+    if (str.isErr()) return str;
     try {
-      return ok(JSON.parse(txt.value));
+      const value = JSON.parse(str.value);
+      const parsed = await this.validator.safeParseAsync(value);
+      if (parsed.success) return ok(parsed.data);
+      return err(new Error('ZOD_PARSE_ERROR'));
     } catch (e) {
       return err(e as Error);
     }
+  }
+
+  /**
+   * ファイにJSONを書き込む
+   */
+  async write<T>(
+    this: JsonFile<IWritableStreamer<T>, U>,
+    content: U
+  ): Promise<Result<T>> {
+    const str = JSON.stringify(content);
+
+    // 読み書き処理中の場合待機
+    await this.lock;
+
+    // ロックして読み取り
+    const promise = Bytes.fromString(str, this.encoding).into(this.target);
+    this.lock = promise;
+    const result = await promise;
+    this.lock = undefined;
+
+    return result;
   }
 }
