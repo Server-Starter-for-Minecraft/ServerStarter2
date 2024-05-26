@@ -1,6 +1,6 @@
-import { Err, Result, err, ok } from '../base';
-import { IWritableStreamer } from './stream';
 import { createHash } from 'crypto';
+import { Err, err, ok, Result } from '../base';
+import { IWritableStreamer } from './stream';
 import { asyncPipe } from './util';
 
 type HashAlgorithm = 'sha256' | 'sha1' | 'md5';
@@ -11,7 +11,7 @@ function hashFunc(algorithm: HashAlgorithm): IWritableStreamer<string> {
 
       const hash = createHash(algorithm);
       return asyncPipe(readable, hash).then((result) =>
-        result.map(() => hash.digest().toString('hex'))
+        result.map(() => hash.digest().toStr('hex'))
       );
     },
   };

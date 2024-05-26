@@ -1,7 +1,7 @@
+import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import * as stream from 'stream';
-import { Err, Opt, Result, err, none, ok, value } from '../base';
+import { Err, err, none, ok, Opt, Result, value } from '../base';
 import { Readable, WritableStreamer } from './stream';
-import { ChildProcess, SpawnOptions, spawn } from 'child_process';
 
 export interface SubprocessOptions {}
 
@@ -108,7 +108,7 @@ if (import.meta.vitest) {
     const sub = new Subprocess(proc);
     const result = await sub.stdout.value.into(Bytes);
     // OSによって改行コードが違うのでとりあえずtrimEndで対処
-    expect(result.value.toString().trimEnd()).toEqual('hello world');
+    expect(result.value.toStr().trimEnd()).toEqual('hello world');
 
     //TODO: readable.into(subprocess) したときに、(readable|subprocess)が先に(終了|エラー)するときの挙動を確認する
   });

@@ -4,7 +4,7 @@ import { Path } from '../../util/binary/path';
 import { Subprocess } from '../../util/binary/subprocess';
 import { NewType } from '../../util/type/newtype';
 import { randomString } from '../../util/random/ramdomString';
-import { Server } from '../../schema/server';
+import { Server, fixServer } from '../../schema/server';
 
 
 export type ServerId = NewType<string, 'ServerId'>;
@@ -40,7 +40,8 @@ export abstract class ServerContainer {
 
   /** サーバーのメタデータ (実行時引数等) を取得 */
   async getMeta(serverId:ServerId): Promise<Result<Server>>{
-    this.mataPath(serverId).writeText(JSON.stringify(meta))
+    const data = await this.mataPath(serverId).readText()
+    writeText(JSON.stringify(meta))
   }
 
   /** サーバーのメタデータ (実行時引数等) を取得 */

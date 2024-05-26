@@ -1,9 +1,9 @@
+import fetch, { BodyInit, HeadersInit, Response } from 'electron-fetch';
 import * as stream from 'stream';
-import fetch, { HeadersInit, BodyInit, Response } from 'electron-fetch';
-import { Result, err, ok } from '../base';
-import { DuplexStreamer, Readable } from './stream';
-import { Bytes } from './bytes';
 import { URL } from 'url';
+import { err, ok, Result } from '../base';
+import { Bytes } from './bytes';
+import { DuplexStreamer, Readable } from './stream';
 
 export type UrlOption = {
   method?: string;
@@ -62,7 +62,7 @@ if (import.meta.vitest) {
   test('stream check', async () => {
     const bytes = await new Url('https://dummyjson.com/test').into(Bytes);
 
-    expect(JSON.parse(bytes.value.toString())).toEqual({
+    expect(JSON.parse(bytes.value.toStr())).toEqual({
       status: 'ok',
       method: 'GET',
     });

@@ -6,6 +6,7 @@ interface IResult<T, E> {
   isOk<T, E>(this: IResult<T, E>): this is Ok<T>;
   isErr<T, E>(this: IResult<T, E>): this is Err<E>;
   map<U>(op: (ok: T) => U): Result<U, E>;
+  flatMap<U>(op: (ok: T) => Result<U, E>): Result<U, E>;
   valueOrDefault(defaultValue: T): T;
   errorOrDefault(defaultError: E): E;
   /**
@@ -28,6 +29,9 @@ export class Ok<T> implements IResult<T, any> {
   }
   map<U>(op: (ok: T) => U): Ok<U> {
     return new Ok(op(this._value));
+  }
+  flatMap<U, E>(op: (ok: T) => Result<U, E>): Result<U, E> {
+    return op(this._value);
   }
   valueOrDefault(defaultValue: T): T {
     return this._value;
@@ -67,6 +71,10 @@ export class Err<E> implements IResult<any, E> {
     return this;
   }
 
+  flatMap(): Err<E> {
+    return this;
+  }
+
   valueOrDefault<T>(defaultValue: T): T {
     return defaultValue;
   }
@@ -94,6 +102,7 @@ export function err<E = Error>(value: E) {
 
 export type Result<T, E = Error> = (Ok<T> | Err<E>) & {
   map<U>(op: (ok: T) => U): Result<U, E>;
+  flatMap<U>(op: (ok: T) => Result<U, E>): Result<U, E>;
 };
 
 /**
