@@ -27,6 +27,13 @@ export type SystemSystemSetting = {
   lastUpdatedTime?: number;
 };
 
+export type ViewStyleSetting = {
+  // プレイヤータブ
+  player: 'list' | 'card';
+  // 追加コンテンツタブ
+  contents: 'list' | 'card';
+}
+
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況
   eula: boolean;
@@ -49,6 +56,9 @@ export type SystemUserSetting = {
 
   // NgrokのToken
   ngrokToken?: string;
+
+  // 画面の表示形式を list or card で選択
+  viewStyle: ViewStyleSetting;
 };
 
 export type WorldContainerSetting = {

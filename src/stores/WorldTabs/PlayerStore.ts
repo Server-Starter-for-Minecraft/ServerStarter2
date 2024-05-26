@@ -19,7 +19,6 @@ export const usePlayerStore = defineStore('playerStore', {
       searchName: '',
       cachePlayers: {} as Record<PlayerUUID, Player>,
       focusCards: new Set<PlayerUUID>(),
-      selectedOP: undefined as OpLevel | 0 | undefined,
       newPlayerCandidate: undefined as Player | undefined,
       selectedGroup: {} as GroupSettings,
       selectedGroupName: '',
@@ -71,9 +70,15 @@ export const usePlayerStore = defineStore('playerStore', {
     /**
      * プレイヤーに対するフォーカスを追加
      */
-    addFocus(uuid: PlayerUUID) {
-      this.focusCards.add(uuid);
-      this.selectedOP = undefined;
+    addFocus(uuid?: PlayerUUID) {
+      if (uuid !== void 0) {
+        this.focusCards.add(uuid);
+      } else {
+        const mainStore = useMainStore();
+        if (isValid(mainStore.world.players)) {
+          mainStore.world.players.forEach((p) => this.focusCards.add(p.uuid));
+        }
+      }
     },
     /**
      * グループを選択した際の処理

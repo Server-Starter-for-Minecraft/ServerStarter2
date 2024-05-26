@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { isValid } from 'src/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import SsSelect from 'src/components/util/base/ssSelect.vue';
 import SearchResultCard from 'src/components/util/SearchResultCard.vue';
 import PlayerJoinToggle from './core/PlayerJoinToggle.vue';
 
+const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
@@ -29,9 +32,14 @@ playerStore.searchName = '';
         class="col"
       />
 
-      <slot name="btnLine" />
+      <SsSelect
+        dense
+        v-model="sysStore.systemSettings.user.viewStyle.player"
+        :options="['list', 'card']"
+        @click.stop="() => {}"
+      />
 
-      <q-btn outline label="ビューの変更" />
+      <slot name="btnLine" />
     </div>
 
     <div class="row">
@@ -42,6 +50,7 @@ playerStore.searchName = '';
       />
       <SsBtn
         free-width
+        :disable="playerStore.focusCards.size === 0"
         label="全ての選択を解除"
         @click="() => playerStore.unFocus()"
       />
