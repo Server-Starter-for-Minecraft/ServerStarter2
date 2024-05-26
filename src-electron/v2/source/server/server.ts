@@ -1,10 +1,13 @@
-import { ok } from 'assert';
-import { Opt, Result, err } from '../../util/base';
+import { spawn } from 'child_process';
+import { Server, serverValidator } from '../../schema/server';
+import { err, ok, Result } from '../../util/base';
+import { Bytes } from '../../util/binary/bytes';
 import { Path } from '../../util/binary/path';
 import { Subprocess } from '../../util/binary/subprocess';
-import { NewType } from '../../util/type/newtype';
+import { sleep } from '../../util/promise/sleep';
 import { randomString } from '../../util/random/ramdomString';
-import { Server, serverValidator } from '../../schema/server';
+import { NewType } from '../../util/type/newtype';
+import { JsonFile } from '../../util/wrapper/jsonFile';
 
 export type ServerId = NewType<string, 'ServerId'>;
 
@@ -13,7 +16,7 @@ export type ServerId = NewType<string, 'ServerId'>;
  */
 export abstract class ServerContainer {
   private tempDir: Path;
-  processMap: Record<ServerId,Subprocess|undefined>;
+  processMap: Record<ServerId, Subprocess | undefined>;
 
   constructor(path: Path) {
     this.tempDir = path;
@@ -27,25 +30,29 @@ export abstract class ServerContainer {
    *
    * ソフトが起動するときに実行すると、前回起動時に正常に終了しなかったサーバー一覧が得られる
    */
-  list(): Promise<Result<ServerId[]>> {}
-
-  private cwdPath(serverId:ServerId){
-    return this.tempDir.child(serverId)
+  async list(): Promise<Result<ServerId[]>> {
+    return ok((await this.tempDir.iter()).map((x) => x.basename() as ServerId));
   }
 
-  private mataPath(serverId:ServerId){
-    return this.cwdPath(serverId).child('server.ssmeta')
+  private cwdPath(serverId: ServerId) {
+    return this.tempDir.child(serverId);
+  }
+
+  private mataJson(serverId: ServerId) {
+    return new JsonFile(
+      this.cwdPath(serverId).child('server.ssmeta'),
+      serverValidator
+    );
   }
 
   /** サーバーのメタデータ (実行時引数等) を取得 */
-  async getMeta(serverId:ServerId): Promise<Result<Server>>{
-    const data = await this.mataPath(serverId).readText()
-    writeText(JSON.stringify(meta))
+  async getMeta(serverId: ServerId): Promise<Result<Server>> {
+    return await this.mataJson(serverId).read();
   }
 
-  /** サーバーのメタデータ (実行時引数等) を取得 */
-  async setMeta(serverId:ServerId,meta:Server): Promise<Result<void>>{
-    this.mataPath(serverId).writeText(JSON.stringify(meta))
+  /** サーバーのメタデータ (実行時引数等) を上書き */
+  async setMeta(serverId: ServerId, meta: Server): Promise<Result<void>> {
+    return await this.mataJson(serverId).write(meta);
   }
 
   /**
@@ -61,33 +68,95 @@ export abstract class ServerContainer {
     // TODO: 衝突時の対応がいる NewWorld_1 等の実装とも共通化したい
     const serverId = randomString() as ServerId;
 
-    const dirPath = this.cwdPath(serverId)
+    const dirPath = this.cwdPath(serverId);
+    const server = await setup(dirPath);
 
-    return (await setup(dirPath)).map(() => serverId);
+    if (server.isErr()) return server;
+
+    // メタデータを保存
+    this.setMeta(serverId, server.value);
+
+    return ok(serverId);
   }
 
   /** サーバーを起動 */
-  async start(serverId: ServerId): Result<void> {
-    if (this.processMap[serverId] === undefined) return err(new Error('SERVER_IS_RUNNING'))
-    const dirPath = this.cwdPath(serverId)
-    dirPath
+  async start(serverId: ServerId): Promise<Result<void>> {
+    // 実行中の場合エラー
+    if (this.processMap[serverId] !== undefined)
+      return err(new Error('SERVER_IS_RUNNING'));
+    const dirPath = this.cwdPath(serverId);
+    const meta = await this.getMeta(serverId);
+    if (meta.isErr()) return meta;
+
+    const process = Subprocess.spawn(
+      meta.value.command.process,
+      meta.value.command.args,
+      {
+        cwd: dirPath.toStr(),
+        stdio: 'pipe',
+      }
+    );
+
+    this.processMap[serverId] = process;
+
+    return ok(undefined);
   }
 
   /**
    * サーバーを終了
    * papermc / mohistmc (どっちだっけ?) では stopを打つだけだとサーバーが終了しないバージョンがあるので注意
    */
-  async stop(serverId: ServerId): Result<void> {
+  async stop(serverId: ServerId): Promise<Result<void>> {
+    // 実行中でない場合エラー
+    const process = this.processMap[serverId];
+    if (process === undefined) return err(new Error('SERVER_NOT_RUNNING'));
 
+    // stopコマンドを送信
+    await Bytes.fromString('stop').into(process);
+
+    // stopコマンドを送信して10分経ってもプロセスが生きていた場合 kill する
+    const WAIT_PROCESS_MS = 10 * 60 * 1000;
+
+    const result = await Promise.any([
+      process.promise(),
+      sleep(WAIT_PROCESS_MS),
+    ]);
+
+    // Resultが返ってきた場合 プロセスが終了したので問題なし
+    if (result) return ok(undefined);
+
+    // プロセスキル
+    const success = process.subprocess.kill();
+    if (success) {
+      await process.promise();
+
+      // processMap からプロセスを削除
+      this.processMap[serverId] = undefined;
+
+      return ok(undefined);
+    } else {
+      return err(new Error('PROCESS_KILL_FAILED'));
+    }
   }
 
   /**
-   * サーバーを撤収
+   * サーバーを撤収してディレクトリを削除
+   *
+   * 撤収に失敗した場合はそのまま残り続ける
+   *
    * @param teardown 撤収前にディレクトリに対して行う操作 ワールドデータの変更を反映させるのが主
    */
-  remove(
+  async remove(
+    serverId: ServerId,
     teardown: (dirPath: Path) => Promise<Result<void>>
   ): Promise<Result<void>> {
-    await teardown()
+    // 実行中の場合エラー
+    if (this.processMap[serverId] !== undefined)
+      return err(new Error('SERVER_IS_RUNNING'));
+
+    const dirPath = this.cwdPath(serverId);
+    const tearResult = await teardown(dirPath);
+    if (tearResult.isErr()) return tearResult;
+    return ok(await dirPath.remove());
   }
 }
