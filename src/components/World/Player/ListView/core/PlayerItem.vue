@@ -1,0 +1,97 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import { getCssVar } from 'quasar';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { OpLevel, PlayerGroup } from 'app/src-electron/schema/player';
+import { keys } from 'src/scripts/obj';
+import { strSort } from 'src/scripts/objSort';
+import { assets } from 'src/assets/assets';
+import { useSystemStore } from 'src/stores/SystemStore';
+import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { checkError } from 'src/components/Error/Error';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
+import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
+import OpPanel from './OpPanel.vue';
+import GroupBadgeView from './parts/GroupBadgeView.vue';
+
+interface Prop {
+  uuid: PlayerUUID;
+  opLevel?: OpLevel;
+}
+const prop = defineProps<Prop>();
+
+const playerStore = usePlayerStore();
+const player = ref(playerStore.cachePlayers[prop.uuid]);
+
+// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
+onMounted(async () => {
+  if (player.value === void 0) {
+    checkError(
+      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
+      (p) => {
+        player.value = p;
+        playerStore.addPlayer(p);
+      },
+      undefined
+    );
+  }
+});
+
+function onItemClicked() {
+  if (playerStore.focusCards.has(prop.uuid)) {
+    playerStore.unFocus(prop.uuid);
+  } else {
+    playerStore.addFocus(prop.uuid);
+  }
+}
+
+function onRemoveClicked() {
+  playerStore.addFocus(prop.uuid);
+  playerStore.removePlayer();
+}
+</script>
+
+<template>
+  <q-item
+    clickable
+    @click.stop="onItemClicked"
+    :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
+    class="items-center q-py-xs"
+  >
+    <q-item-section avatar>
+      <PlayerHeadAvatar :player="player" size="1.5rem" />
+    </q-item-section>
+
+    <q-item-section>
+      <q-item-label class="name">
+        {{ player.name }}
+      </q-item-label>
+    </q-item-section>
+
+    <q-item-section side>
+      <div class="row q-gutter-x-md">
+        <OpPanel :uuid="uuid" :player-op-level="opLevel" />
+        <q-separator vertical />
+        <q-btn
+          flat
+          dense
+          size="1rem"
+          icon="close"
+          color="negative"
+          @click="onRemoveClicked"
+        />
+      </div>
+    </q-item-section>
+  </q-item>
+</template>
+
+<style scoped lang="scss">
+.name {
+  font-size: 1.2rem;
+}
+
+.selected {
+  background-color: rgba($color: $primary, $alpha: 0.3);
+}
+</style>

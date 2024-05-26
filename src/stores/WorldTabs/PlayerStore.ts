@@ -126,6 +126,49 @@ export const usePlayerStore = defineStore('playerStore', {
       // 検索欄をリセット
       this.searchName = '';
     },
+    /**
+     * フォーカスされているプレイヤーを選択中のワールドから削除する
+     */
+    removePlayer() {
+      const mainStore = useMainStore();
+
+      // フォーカスされているプレイヤーを削除
+      this.focusCards.forEach((selectedPlayerUUID) => {
+        if (isValid(mainStore.world.players)) {
+          mainStore.world.players.splice(
+            mainStore.world.players
+              .map((p) => p.uuid)
+              .indexOf(selectedPlayerUUID),
+            1
+          );
+        }
+      });
+
+      // フォーカスのリセット
+      this.unFocus();
+    },
+    /**
+     * フォーカスされているプレイヤーに対してOPの設定を行う
+     */
+    setOP(setVal: 0 | OpLevel) {
+      const mainStore = useMainStore();
+
+      if (isValid(mainStore.world.players)) {
+        const val =
+          setVal !== 0
+            ? { level: setVal, bypassesPlayerLimit: false }
+            : undefined;
+
+        mainStore.world.players
+          .filter((p) => this.focusCards.has(p.uuid))
+          .forEach((p) => {
+            p.op = val;
+          });
+      }
+
+      // フォーカスのリセット
+      this.unFocus();
+    },
   },
 });
 
