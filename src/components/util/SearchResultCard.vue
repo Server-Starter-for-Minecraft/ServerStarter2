@@ -5,7 +5,7 @@ import { isValid } from 'src/scripts/error';
 import { strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import SearchResultItem from './utils/SearchResultItem.vue';
+import SearchResultItem from './core/SearchResultItem.vue';
 
 interface Prop {
   registerBtnText: string;

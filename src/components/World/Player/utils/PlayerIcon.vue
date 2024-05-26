@@ -4,7 +4,7 @@ import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import PlayerHeadView from './PlayerHeadView.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {
   uuid: PlayerUUID;
@@ -33,7 +33,7 @@ onMounted(async () => {
   <q-item class="q-px-none" style="width: 3rem">
     <q-item-section>
       <q-avatar square size="2rem" class="full-width">
-        <PlayerHeadView :player="player" size="1.9rem" />
+        <PlayerHeadAvatar :player="player" size="1.9rem" />
         <q-btn
           flat
           rounded

@@ -2,7 +2,7 @@
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { strSort } from 'src/scripts/objSort';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import PlayerIconInList from './utils/PlayerIconInList.vue';
+import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 const playerStore = usePlayerStore();
 
@@ -16,7 +16,7 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
 </script>
 
 <template>
-  <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0">
+  <q-card flat class="column" style="width: 13rem; flex: 1 1 0">
     <p class="q-pt-sm q-pl-sm q-pa-none q-ma-none text-body2">
       {{ $t('player.select', playerStore.focusCards.size) }}
     </p>
@@ -43,7 +43,7 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
           v-for="uuid in getOrderedFocusCards(playerStore.focusCards)"
           :key="uuid"
         >
-          <PlayerIconInList :uuid="uuid" />
+          <PlayerIcon :uuid="uuid" />
         </template>
       </div>
     </q-scroll-area>

@@ -10,9 +10,9 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import BaseActionsCard from '../utils/BaseActionsCard.vue';
-import GroupBadgeView from './utils/GroupBadgeView.vue';
-import PlayerHeadView from './utils/PlayerHeadView.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
+import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
+import GroupBadgeView from './parts/GroupBadgeView.vue';
 
 interface Prop {
   uuid: PlayerUUID;
@@ -72,7 +72,7 @@ function getGroups(groups: Record<string, PlayerGroup>) {
     <template #default>
       <q-item style="height: 5rem; padding: 14px" class="full-width">
         <q-item-section avatar top>
-          <PlayerHeadView :player="player" size="2.5rem" />
+          <PlayerHeadAvatar :player="player" size="2.5rem" />
 
           <q-item-section top style="max-width: 8rem" class="q-pl-md">
             <q-item-label class="name text-omit">
@@ -111,7 +111,7 @@ function getGroups(groups: Record<string, PlayerGroup>) {
             v-for="g in getGroups(sysStore.systemSettings.player.groups)"
             :key="g"
           >
-            <group-badge-view :group-name="g.name" :color="g.color" />
+            <GroupBadgeView :group-name="g.name" :color="g.color" />
           </template>
         </div>
       </q-card-section>
@@ -127,7 +127,7 @@ function getGroups(groups: Record<string, PlayerGroup>) {
             v-for="g in getGroups(sysStore.systemSettings.player.groups)"
             :key="g"
           >
-            <group-badge-view :group-name="g.name" :color="g.color" />
+            <GroupBadgeView :group-name="g.name" :color="g.color" />
           </template>
         </div>
       </q-card-section>

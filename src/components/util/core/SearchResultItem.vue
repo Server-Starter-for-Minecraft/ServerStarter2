@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Player } from 'app/src-electron/schema/player';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import PlayerHeadView from './PlayerHeadView.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {
   player: Player;
@@ -14,7 +14,7 @@ defineProps<Prop>();
 <template>
   <q-item>
     <q-item-section avatar>
-      <PlayerHeadView :player="player" />
+      <PlayerHeadAvatar :player="player" />
     </q-item-section>
     <q-item-section top>
       <q-item-label class="name text-omit">
