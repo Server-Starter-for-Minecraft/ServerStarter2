@@ -1,6 +1,8 @@
+import { ok } from 'assert';
 import { Opt, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { Subprocess } from '../../util/binary/subprocess';
+import { TempDir } from '../../util/tampDir';
 
 export type ServerMeta = {
   command: {
@@ -10,29 +12,39 @@ export type ServerMeta = {
 };
 
 /**
- * サーバーを格納するフォルダのような何か
- * シングルトン
+ * すべてのサーバーを格納するフォルダのような何か
  */
 export abstract class ServerContainer {
+  dir: TempDir;
+
+  constructor(path: Path) {
+    this.dir = new TempDir(path);
+  }
+
   /**
-   * コンテナ内のサーバー一覧を表示
+   * サーバー一覧を表示
    *
    * ソフトが起動しているときに実行すると実行中のサーバー一覧が得られる
    *
    * ソフトが起動するときに実行すると、前回起動時に正常に終了しなかったサーバー一覧が得られる
    */
-  static list(): Promise<Result<Server[]>>;
+  list(): Promise<Result<Server[]>>;
 
   /**
-   * サーバーを作成し実行開始、Serverインスタンスを返す
+   * サーバーを実行するために一時的なフォルダを作成しServerMetaを返す
    *
    * 実行に失敗したらディレクトリの中身を全削除して終了
    *
    * @param setup 展開先のパスを受け取ってワールドを展開後、実行に必要な情報を返す関数 展開に失敗した場合は元の状態を維持
    */
-  static create(
+  async create(
     setup: (dirPath: Path) => Promise<Result<ServerMeta>>
-  ): Promise<Result<Server>>;
+  ): Promise<Result<Server>> {
+    const dirPath = this.dir.tmpChild();
+    const serverMeta = await setup(dirPath);
+    if (serverMeta.isErr)
+    return;
+  }
 }
 
 export class Server {

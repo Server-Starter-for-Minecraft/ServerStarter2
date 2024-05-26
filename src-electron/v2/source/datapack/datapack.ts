@@ -5,37 +5,40 @@ import { Path } from '../../util/binary/path';
 /**
  * データパックを格納するフォルダのような何か
  *
- * シングルトン
+ * 現状シングルトンの予定
  */
 export class DatapackContainer {
+  path: Path;
+
+  constructor(path: Path) {
+    this.path = path;
+  }
+
   /**
    * コンテナ内のデータパック一覧を表示
    */
-  static list(): Promise<Datapack[]>;
+  list(): Promise<Datapack[]>;
 
   /**
    * データパックを作成
    */
-  static create(
-    srcPath: Path,
-    meta: Datapack
-  ): Promise<Result<Datapack, Error>>;
+  create(srcPath: Path, meta: Datapack): Promise<Result<Datapack, Error>>;
 
   /**
    * メタデータを更新
    */
-  static updateMeta(meta: Datapack): Promise<Result<void, Error>>;
+  updateMeta(meta: Datapack): Promise<Result<void, Error>>;
 
   /**
    * データパックを削除
    */
-  static delete(): Promise<Result<void, Error>>;
+  delete(): Promise<Result<void, Error>>;
 
   /**
    * データパックをpathに導入
    * @param path
    */
-  static extractTo(mata: Datapack, path: Path): Promise<Result<void>>;
+  extractTo(mata: Datapack, path: Path): Promise<Result<void>>;
 }
 
 // ('api/v1/container/:container_id/world/:world_id');
