@@ -62,7 +62,7 @@ function getGroups(groups: Record<string, PlayerGroup>) {
 <template>
   <BaseActionsCard
     v-if="player !== void 0"
-    @click.stop="onCardClicked"
+    @click="onCardClicked"
     :style="
       playerStore.focusCards.has(prop.uuid)
         ? { 'border-color': getCssVar('primary') }

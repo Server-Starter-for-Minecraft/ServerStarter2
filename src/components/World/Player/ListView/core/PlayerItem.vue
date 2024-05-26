@@ -55,7 +55,7 @@ function onRemoveClicked() {
 <template>
   <q-item
     clickable
-    @click.stop="onItemClicked"
+    @click="onItemClicked"
     :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
     class="items-center q-py-xs"
   >

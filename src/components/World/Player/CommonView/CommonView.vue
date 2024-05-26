@@ -36,7 +36,6 @@ playerStore.searchName = '';
         dense
         v-model="sysStore.systemSettings.user.viewStyle.player"
         :options="['list', 'card']"
-        @click.stop="() => {}"
       />
 
       <slot name="btnLine" />

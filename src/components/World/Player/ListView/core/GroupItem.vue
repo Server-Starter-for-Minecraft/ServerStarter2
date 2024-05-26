@@ -80,7 +80,7 @@ function removeGroup() {
 </script>
 
 <template>
-  <q-expansion-item v-model="expanded" @click.stop="selectGroupMembers()">
+  <q-expansion-item v-model="expanded" @click="selectGroupMembers()">
     <template #header>
       <div class="row full-width q-pr-md">
         <div class="row q-gutter-md items-center col">
