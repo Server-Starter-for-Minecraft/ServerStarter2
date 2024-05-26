@@ -30,7 +30,7 @@ async function onCardClicked() {
   <BaseActionsCard
     @mouseover="showMenuBtn = true"
     @mouseout="showMenuBtn = false"
-    @click="onCardClicked"
+    @click.stop="onCardClicked"
   >
     <template #default>
       <q-card-section

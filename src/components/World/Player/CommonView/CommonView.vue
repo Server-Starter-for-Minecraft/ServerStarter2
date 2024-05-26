@@ -49,6 +49,7 @@ playerStore.searchName = '';
         class="col"
       />
       <SsBtn
+        v-show="sysStore.systemSettings.user.viewStyle.player === 'list'"
         free-width
         :disable="playerStore.focusCards.size === 0"
         label="全ての選択を解除"

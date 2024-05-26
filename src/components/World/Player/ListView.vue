@@ -3,6 +3,7 @@ import { PlayerSetting } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import CommonView from 'src/components/World/Player/CommonView/CommonView.vue';
 import PlayerItemsView from './ListView/PlayerItemsView.vue';
+import GroupItemsView from './ListView/GroupItemsView.vue';
 
 const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 const playerStore = usePlayerStore();
@@ -24,6 +25,7 @@ const playerStore = usePlayerStore();
     <div class="q-py-md fit">
       <PlayerItemsView v-model="validPlayers" />
       <q-separator class="q-my-md" />
+      <GroupItemsView />
     </div>
   </q-scroll-area>
 </template>

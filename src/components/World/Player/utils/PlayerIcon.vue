@@ -8,6 +8,7 @@ import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {
   uuid: PlayerUUID;
+  negativeBtnClicked: (uuid: PlayerUUID) => void
 }
 const prop = defineProps<Prop>();
 
@@ -40,7 +41,7 @@ onMounted(async () => {
           dense
           icon="cancel"
           size="10px"
-          @click="playerStore.unFocus(uuid)"
+          @click="negativeBtnClicked(uuid)"
           class="cancelBtn"
         />
       </q-avatar>

@@ -43,7 +43,10 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
           v-for="uuid in getOrderedFocusCards(playerStore.focusCards)"
           :key="uuid"
         >
-          <PlayerIcon :uuid="uuid" />
+          <PlayerIcon
+            :uuid="uuid"
+            :negative-btn-clicked="playerStore.unFocus"
+          />
         </template>
       </div>
     </q-scroll-area>

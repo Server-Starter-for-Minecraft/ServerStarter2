@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import Mousetrap from 'mousetrap';
 import { isValid } from 'src/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
