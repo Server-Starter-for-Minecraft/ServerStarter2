@@ -44,6 +44,7 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
           :key="uuid"
         >
           <PlayerIcon
+            show-name
             :uuid="uuid"
             :negative-btn-clicked="playerStore.unFocus"
           />

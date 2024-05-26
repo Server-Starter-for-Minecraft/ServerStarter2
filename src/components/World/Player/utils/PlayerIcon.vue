@@ -8,10 +8,14 @@ import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {
   uuid: PlayerUUID;
-  negativeBtnClicked: (uuid: PlayerUUID) => void
+  negativeBtnClicked: (uuid: PlayerUUID) => void;
+  showName?: boolean;
+  // ホバー時のみボタンが表示されるようになる
+  hoverBtn?: boolean;
 }
 const prop = defineProps<Prop>();
 
+const hovered = ref(false);
 const playerStore = usePlayerStore();
 const player = ref(playerStore.cachePlayers[prop.uuid]);
 
@@ -31,21 +35,27 @@ onMounted(async () => {
 </script>
 
 <template>
-  <q-item class="q-px-none" style="width: 3rem">
+  <q-item
+    @mouseover="hovered = true"
+    @mouseleave="hovered = false"
+    class="q-px-none"
+    style="width: 3rem"
+  >
     <q-item-section>
-      <q-avatar square size="2rem" class="full-width">
-        <PlayerHeadAvatar :player="player" size="1.9rem" />
+      <q-avatar square size="1.5rem" class="full-width">
+        <PlayerHeadAvatar :player="player" size="1.5rem" />
         <q-btn
+          v-show="!hoverBtn || hovered"
           flat
           rounded
           dense
           icon="cancel"
           size="10px"
-          @click="negativeBtnClicked(uuid)"
+          @click.stop="negativeBtnClicked(uuid)"
           class="cancelBtn"
         />
       </q-avatar>
-      <q-item-label class="text-center q-pt-xs text-omit">
+      <q-item-label v-if="showName" class="text-center q-pt-xs text-omit">
         {{ player.name }}
       </q-item-label>
     </q-item-section>

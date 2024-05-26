@@ -8,9 +8,9 @@ const playerStore = usePlayerStore();
 
 <template>
   <span class="text-caption">{{ $t('player.groupList') }}</span>
-  <q-list>
-    <div v-for="group in sort(playerStore.searchGroups())" :key="group.name">
+  <q-list separator class="q-px-sm">
+    <template v-for="group in sort(playerStore.searchGroups())" :key="group.name">
       <GroupItem :group="group" />
-    </div>
+    </template>
   </q-list>
 </template>
