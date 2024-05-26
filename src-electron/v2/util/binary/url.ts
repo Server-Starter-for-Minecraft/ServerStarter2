@@ -5,9 +5,15 @@ import { err, ok, Result } from '../base';
 import { Bytes } from './bytes';
 import { DuplexStreamer, Readable } from './stream';
 
+// TODO: @txkodo NewTypeを使うべき
+type UrlMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
 export type UrlOption = {
-  method?: string;
+  /** URL にアクセスするときのメソッド */
+  method?: UrlMethod;
+  /** URL にアクセス際のヘッダの内容 */
   headers?: HeadersInit;
+  /** URL にアクセス際のリクエストボディ */
   body?: BodyInit;
 };
 
