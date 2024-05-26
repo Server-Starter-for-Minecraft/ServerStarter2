@@ -17,7 +17,10 @@ export type UrlOption = {
  * HeadersInit, BodyInit, Response は node のものではなく electron-fetch のものである点に注意
  */
 export class Url extends DuplexStreamer<Response> {
+  // URLデータ
   readonly url: URL;
+
+  // リクエストパラメータ等の設定
   readonly option: UrlOption;
 
   constructor(url: string | URL, option?: UrlOption) {
@@ -77,7 +80,13 @@ if (import.meta.vitest) {
       method: 'GET',
     });
 
-    // TODO: Url.child Url.with のテストを書く
+    // TODO: Url.child のテストを書く
+    // url:https://example.com の child(foo) が url:https://example.com/foo になってればOK
+    // その際、optionの値に変化があってはいけない
+
+    // TODO: Url.with のテストを書く
+    // option:{method:'GET',headers:{foo:bar}} の with({method:'POST'}) が option:{method:'POST',headers:{foo:bar}} になってればOK
+    // その際、urlの値に変化があってはいけない
   });
 }
 
