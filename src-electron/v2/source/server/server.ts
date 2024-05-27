@@ -14,9 +14,9 @@ export type ServerId = NewType<string, 'ServerId'>;
 /**
  * すべてのサーバーを格納するフォルダのような何か
  */
-export abstract class ServerContainer {
+export class ServerContainer {
   private tempDir: Path;
-  processMap: Record<ServerId, Subprocess | undefined>;
+  private processMap: Record<ServerId, Subprocess | undefined>;
 
   constructor(path: Path) {
     this.tempDir = path;
@@ -80,7 +80,7 @@ export abstract class ServerContainer {
   }
 
   /** サーバーを起動 */
-  async start(serverId: ServerId): Promise<Result<void>> {
+  async start(serverId: ServerId): Promise<Result<Subprocess>> {
     // 実行中の場合エラー
     if (this.processMap[serverId] !== undefined)
       return err(new Error('SERVER_IS_RUNNING'));
@@ -99,7 +99,7 @@ export abstract class ServerContainer {
 
     this.processMap[serverId] = process;
 
-    return ok(undefined);
+    return ok(process);
   }
 
   /**

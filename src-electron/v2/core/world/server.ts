@@ -1,4 +1,5 @@
-import { Server } from '../../source/server/server';
+import { ServerId } from '../../source/server/server';
+import { serverContainer } from '../setup';
 
 /**
  * サーバーを起動してイベントの登録と解除を行う
@@ -6,7 +7,7 @@ import { Server } from '../../source/server/server';
  * @param param1
  */
 export async function runServer(
-  server: Server,
+  serverId: ServerId,
   {
     emitStdout,
     emitStderr,
@@ -16,9 +17,9 @@ export async function runServer(
   }
 ) {
   // サーバーを起動
-  await server.start();
-
-  const process = server.process.value;
+  const server = await serverContainer.start(serverId);
+  if (server.isErr()) return server;
+  const process = server.value;
 
   // stdout イベント登録
   process.stdout.value.stream.on('data', emitStdout);

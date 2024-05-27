@@ -1,6 +1,5 @@
 import { app } from 'electron';
 import { RuntimeSettings } from '../schema/runtime';
-import { DatapackContainer } from '../source/datapack/datapack';
 import { Path } from '../util/binary/path';
 
 /**
@@ -20,3 +19,5 @@ const mainPath = (
 const sourcePath = mainPath.child('serverstarter/source');
 
 export const datapackSourcePath = sourcePath.child('datapack');
+
+export const serverSourcePath = sourcePath.child('server');

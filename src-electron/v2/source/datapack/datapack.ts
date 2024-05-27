@@ -16,29 +16,36 @@ export class DatapackContainer {
 
   /**
    * コンテナ内のデータパック一覧を表示
+   *
+   * @param quick true の時は cache.json から内容を読み取る / false の時はdataディレクトリを走査して cache.jsonの内容を更新する
    */
-  list(): Promise<Datapack[]>;
+  list(quick: boolean): Promise<Datapack[]> {}
 
   /**
    * データパックを作成
+   *
+   * メタデータのみの作成も許可
    */
-  create(srcPath: Path, meta: Datapack): Promise<Result<Datapack, Error>>;
+  create(
+    meta: Datapack,
+    srcPath: Path | undefined
+  ): Promise<Result<Datapack, Error>> {}
 
   /**
    * メタデータを更新
    */
-  updateMeta(meta: Datapack): Promise<Result<void, Error>>;
+  updateMeta(meta: Datapack): Promise<Result<void, Error>> {}
 
   /**
-   * データパックを削除
+   * データパックとメタデータを削除
    */
-  delete(): Promise<Result<void, Error>>;
+  delete(): Promise<Result<void, Error>> {}
 
   /**
    * データパックをpathに導入
    * @param path
    */
-  extractTo(mata: Datapack, path: Path): Promise<Result<void>>;
+  extractTo(mata: Datapack, path: Path): Promise<Result<void>> {}
 }
 
 // ('api/v1/container/:container_id/world/:world_id');
@@ -59,3 +66,27 @@ export class DatapackContainer {
 // ('api/v1/version/fabric/1.20.1/0.15.11/0.11.2');
 
 // api.v1.version.fabric['1.20.1']['0.15.11']['0.11.2'].get();
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  // テスト用DatapackContainer
+  const container = new DatapackContainer(
+    new Path('src-electron/v2sourcedatapack/test/cache')
+  );
+
+  ('src-electron\v2sourcedatapack\test\target');
+
+  const { test, expect } = import.meta.vitest;
+  test('list', () => {
+    // quick の true / false 試す
+    // quick = true の時mataのデータが修復されたことを確認する
+  });
+
+  test('create', () => {
+    // create を path ありなしで試す
+    // 正しく導入されたことを確認する
+  });
+
+  test('updateMeta', () => {
+  });
+}
