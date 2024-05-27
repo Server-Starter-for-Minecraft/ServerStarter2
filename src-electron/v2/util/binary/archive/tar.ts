@@ -36,7 +36,7 @@ export const tarArchiver: Archiver<PackOptions, ExtractOptions> = {
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('tar',() => {
-    // TODO: Tarファイルの展開と圧縮が正しく行われることを確認
+    // TODO: @MojaMonchi @nozz-mat Tarファイルの展開と圧縮が正しく行われることを確認
     // TODO: TarファイルにおけるOS間でHASH値が同じになるか調査
   })
 }
