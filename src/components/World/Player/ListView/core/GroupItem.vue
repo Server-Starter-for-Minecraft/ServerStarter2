@@ -57,7 +57,7 @@ function addMember(uuid: PlayerUUID) {
 }
 
 function selectGroupMembers() {
-  playerStore.selectGroup(prop.group.name)
+  playerStore.selectGroup(prop.group.name);
 }
 
 function changeColor(colorCode: string) {
@@ -94,13 +94,16 @@ function removeGroup() {
                 class="avaterImg"
               />
             </q-avatar>
-  
+
             <q-menu>
               <div
                 class="q-gutter-sm row q-pa-xs"
                 style="width: 12rem; margin: 0 auto"
               >
-                <template v-for="colorLabel in keys(label2code)" :key="colorLabel">
+                <template
+                  v-for="colorLabel in keys(label2code)"
+                  :key="colorLabel"
+                >
                   <q-btn
                     v-close-popup
                     dense
@@ -111,7 +114,9 @@ function removeGroup() {
                     <q-avatar square size="2rem">
                       <q-img
                         :src="
-                          assets.png[`${getColorLabel(label2code[colorLabel])}_dye`]
+                          assets.png[
+                            `${getColorLabel(label2code[colorLabel])}_dye`
+                          ]
                         "
                         class="avaterImg"
                       />
@@ -148,14 +153,14 @@ function removeGroup() {
       </div>
     </div>
 
-    <div class="q-pl-md q-py-md row">
-      <template v-for="pId in group.players" :key="pId">
+    <div class="q-pl-md q-py-sm row q-gutter-sm">
+      <div v-for="pId in group.players" :key="pId">
         <PlayerIcon
           hover-btn
           :uuid="pId"
           :negative-btn-clicked="removeMember"
         />
-      </template>
+      </div>
     </div>
   </q-item>
 </template>

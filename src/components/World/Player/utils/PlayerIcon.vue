@@ -39,22 +39,24 @@ onMounted(async () => {
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     class="q-px-none"
-    style="width: 3rem"
+    style="width: 2rem; margin: 0 auto;"
   >
     <q-item-section>
-      <q-avatar square size="1.5rem" class="full-width">
+      <q-btn
+        flat
+        dense
+        @click.stop="negativeBtnClicked(uuid)"
+      >
         <PlayerHeadAvatar :player="player" size="1.5rem" />
-        <q-btn
+        <q-icon
           v-show="!hoverBtn || hovered"
-          flat
-          rounded
-          dense
-          icon="cancel"
-          size="10px"
-          @click.stop="negativeBtnClicked(uuid)"
-          class="cancelBtn"
+          name="cancel"
+          class="absolute-center"
+          size="2rem"
+          color="negative"
         />
-      </q-avatar>
+      </q-btn>
+      
       <q-item-label v-if="showName" class="text-center q-pt-xs text-omit">
         {{ player.name }}
       </q-item-label>
@@ -62,11 +64,3 @@ onMounted(async () => {
     <SsTooltip :name="player.name" anchor="center middle" self="top middle" />
   </q-item>
 </template>
-
-<style scoped lang="scss">
-.cancelBtn {
-  position: absolute;
-  top: -9px;
-  right: -5px;
-}
-</style>
