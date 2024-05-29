@@ -1,4 +1,4 @@
-const __phantom__ = Symbol();
+const NEWTYPE = Symbol();
 
 /**
  * 既存の型<T>の中で役割を限定した型をつくる
@@ -22,6 +22,12 @@ const __phantom__ = Symbol();
  * greet(getName('taro')) // Valid
  * ```
  */
-export type NewType<T, D extends string> = T & {
-  [__phantom__]: D;
-};
+export type NewType<T, D extends string> = T extends {
+  [NEWTYPE]: [infer R, infer N];
+}
+  ? R & {
+      [NEWTYPE]: [R, D | N];
+    }
+  : T & {
+      [NEWTYPE]: [T, D];
+    };
