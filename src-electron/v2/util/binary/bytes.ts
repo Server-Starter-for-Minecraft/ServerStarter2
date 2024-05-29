@@ -1,9 +1,9 @@
 import * as stream from 'stream';
 import { Err, err, ok, Result } from '../base';
-import { Readable, ReadableStreamer, WritableStreamer } from './stream';
+import { Readable, ReadableStreamer } from './stream';
 
 export class Bytes extends ReadableStreamer {
-  static write(readable: stream.Readable): Promise<Result<Bytes, Error>> {
+  static write(readable: stream.Readable): Promise<Result<Bytes>> {
     const buffers: Buffer[] = [];
     let e: undefined | Err<Error> = undefined;
 
@@ -69,6 +69,8 @@ if (import.meta.vitest) {
   test('bytes', async () => {
     const bytes = new Bytes(Buffer.from('hello world / こんにちは世界'));
     const copy = await bytes.into(Bytes);
-    expect(copy.value.data.toStr('utf8')).toBe('hello world / こんにちは世界');
+    expect(copy.value().data.toStr('utf8')).toBe(
+      'hello world / こんにちは世界'
+    );
   });
 }

@@ -87,6 +87,5 @@ if (import.meta.vitest) {
     // 正しく導入されたことを確認する
   });
 
-  test('updateMeta', () => {
-  });
+  test('updateMeta', () => {});
 }

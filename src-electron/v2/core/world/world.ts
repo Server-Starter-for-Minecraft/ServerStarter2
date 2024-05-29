@@ -51,7 +51,7 @@ export class WorldHandler {
     worldName: WorldName
   ): Promise<Result<WorldHandler>> {
     const worldMeta = await WorldSource.getWorldMeta(container, worldName);
-    return worldMeta.map((x) => new WorldHandler(x));
+    return worldMeta.onOk((x) => ok(new WorldHandler(x)));
   }
 
   /** データパックを導入 */
@@ -92,15 +92,15 @@ export class WorldHandler {
     // ワールド設定を変更中
     // using = true に設定
     const updateUsing = await this.updateMeta({ using: true });
-    if (updateUsing.isErr()) return updateUsing;
+    if (updateUsing.isErr) return updateUsing;
 
     // サーバーデータを作成中
     // サーバーを作成
     const serverResult = await serverContainer.create((dirPath) =>
       setupWorld(dirPath, this.world)
     );
-    if (serverResult.isErr()) return serverResult;
-    const server = serverResult.value;
+    if (serverResult.isErr) return serverResult;
+    const server = serverResult.value();
 
     // startイベントを発行
     this.events.emit('start');

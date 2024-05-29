@@ -24,7 +24,7 @@ if (import.meta.vitest) {
   test.each(testCases)('base64 ($srcText -> $convText)', async (tCase) => {
     const src = Bytes.fromString(tCase.srcText);
     expect(
-      (await src.convert(tCase.converter()).into(Bytes)).value.toStr()
+      (await src.convert(tCase.converter()).into(Bytes)).value().toStr()
     ).toBe(tCase.convText);
   });
 }

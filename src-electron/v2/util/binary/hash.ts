@@ -11,7 +11,7 @@ function hashFunc(algorithm: HashAlgorithm): IWritableStreamer<string> {
 
       const hash = createHash(algorithm);
       return asyncPipe(readable, hash).then((result) =>
-        result.map(() => hash.digest().toStr('hex'))
+        result.onOk(() => ok(hash.digest().toStr('hex')))
       );
     },
   };
@@ -45,7 +45,7 @@ if (import.meta.vitest) {
     ];
 
     test.each(testCases)('hash', async (tCase) => {
-      expect((await src.into(tCase.algorithm)).value).toBe(tCase.value);
+      expect((await src.into(tCase.algorithm)).value()).toBe(tCase.value);
     });
   });
 }

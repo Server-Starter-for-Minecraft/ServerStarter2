@@ -62,7 +62,7 @@ if (import.meta.vitest) {
   test('stream check', async () => {
     const bytes = await new Url('https://dummyjson.com/test').into(Bytes);
 
-    expect(JSON.parse(bytes.value.toStr())).toEqual({
+    expect(JSON.parse(bytes.value().toStr().value())).toEqual({
       status: 'ok',
       method: 'GET',
     });
@@ -72,7 +72,7 @@ if (import.meta.vitest) {
     const tgt = new Path('./userData/example.json');
     await new Url('https://dummyjson.com/test').into(tgt);
 
-    expect(JSON.parse((await tgt.readText()).value)).toEqual({
+    expect(JSON.parse((await tgt.readText()).value())).toEqual({
       status: 'ok',
       method: 'GET',
     });

@@ -35,8 +35,8 @@ export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
     // ロックして読み取り
     const promise = this.target.into(Bytes);
     this.lock = promise;
-    const str = (await promise).flatMap((x) => x.toStr());
-    this.lock = undefined;
+    const str = //  ((x) => x.toStr());
+      ((await promise).this.lock = undefined);
 
     if (str.isErr()) return str;
     try {

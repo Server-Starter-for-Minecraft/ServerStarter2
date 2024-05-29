@@ -116,9 +116,9 @@ if (import.meta.vitest) {
       env: { ...process.env, LANG: 'en_US.UTF-8' },
     });
     const sub = new Subprocess(proc);
-    const result = await sub.stdout.value.into(Bytes);
+    const result = await sub.stdout.value().into(Bytes);
     // OSによって改行コードが違うのでとりあえずtrimEndで対処
-    expect(result.value.toStr().value.trimEnd()).toEqual('hello world');
+    expect(result.value().toStr().value().trimEnd()).toEqual('hello world');
 
     //TODO: readable.into(subprocess) したときに、(readable|subprocess)が先に(終了|エラー)するときの挙動を確認する
   });

@@ -20,7 +20,7 @@ async function extractDatapacks(
   const promisses = await Promise.all(
     world.datapack.map((x) => datapackContainer.extractTo(x, dir.child(x.name)))
   );
-  if (promisses.some((x) => x.isErr())) {
+  if (promisses.some((x) => x.isErr)) {
     // 失敗したのでディレクトリを削除
     await path.remove();
     return err(new Error('DATAPACK_INSTALL_FAILED'));
@@ -43,32 +43,32 @@ export async function setupWorld(
 
   // ワールドを展開
   const worldResult = await WorldSource.extractWorldDataTo(path, world);
-  if (worldResult.isErr()) return cleanupAndReturn(worldResult);
+  if (worldResult.isErr) return cleanupAndReturn(worldResult);
 
   // データパックを展開
   const datapackResult = await extractDatapacks(path, world);
-  if (datapackResult.isErr()) return cleanupAndReturn(datapackResult);
+  if (datapackResult.isErr) return cleanupAndReturn(datapackResult);
 
   // TODO: プラグインを展開
   // TODO: modを展開
 
   // バーションを導入
   const versionResult = await VersionContainer.extractTo(path);
-  if (versionResult.isErr()) return cleanupAndReturn(versionResult);
-  const { runtime, getCommand } = versionResult.value;
+  if (versionResult.isErr) return cleanupAndReturn(versionResult);
+  const { runtime, getCommand } = versionResult.value();
 
   // ランタイムを導入
   const runtimeResult = await RuntimeContainer.install(runtime);
-  if (runtimeResult.isErr()) return cleanupAndReturn(runtimeResult);
+  if (runtimeResult.isErr) return cleanupAndReturn(runtimeResult);
 
   // コマンドライン引数を解析
   const jvmArgs = getJvmArgs(world.runtime ?? defaultRuntimeSettings);
-  if (jvmArgs.isErr()) return cleanupAndReturn(jvmArgs);
+  if (jvmArgs.isErr) return cleanupAndReturn(jvmArgs);
 
   // 実行時コマンドを取得
   const command = getCommand({
-    runtimePath: runtimeResult.value,
-    jvmArgs: jvmArgs.value,
+    runtimePath: runtimeResult.value(),
+    jvmArgs: jvmArgs.value(),
   });
 
   // ワールドの展開に成功
