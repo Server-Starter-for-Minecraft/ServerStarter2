@@ -306,7 +306,7 @@ if (import.meta.vitest) {
     // ファイルの中身をバイト列に変換
     const bytes = (await src.into(Bytes)).value();
 
-    expect(bytes.data.toStr('utf8')).toBe('hello world');
+    expect(bytes.data.toString('utf8')).toBe('hello world');
 
     expect(tgt.exists()).toBe(false);
 

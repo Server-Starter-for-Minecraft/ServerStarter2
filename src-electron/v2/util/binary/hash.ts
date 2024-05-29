@@ -11,7 +11,7 @@ function hashFunc(algorithm: HashAlgorithm): IWritableStreamer<string> {
 
       const hash = createHash(algorithm);
       return asyncPipe(readable, hash).then((result) =>
-        result.onOk(() => ok(hash.digest().toStr('hex')))
+        result.onOk(() => ok(hash.digest().toString('hex')))
       );
     },
   };

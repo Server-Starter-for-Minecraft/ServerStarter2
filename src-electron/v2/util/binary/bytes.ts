@@ -38,7 +38,7 @@ export class Bytes extends ReadableStreamer {
   /** Bytesを文字列化 (デフォルト utf8) */
   toStr(encoding: BufferEncoding = 'utf8'): Result<string> {
     try {
-      return ok(this.data.toStr(encoding));
+      return ok(this.data.toString(encoding));
     } catch (e) {
       return err(e as Error);
     }
@@ -69,7 +69,7 @@ if (import.meta.vitest) {
   test('bytes', async () => {
     const bytes = new Bytes(Buffer.from('hello world / こんにちは世界'));
     const copy = await bytes.into(Bytes);
-    expect(copy.value().data.toStr('utf8')).toBe(
+    expect(copy.value().data.toString('utf8')).toBe(
       'hello world / こんにちは世界'
     );
   });
