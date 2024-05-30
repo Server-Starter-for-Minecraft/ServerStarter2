@@ -45,7 +45,7 @@ if (import.meta.vitest) {
       getJvmArgs({
         jvmarg:
           '-Xms1024M -Xmx3072M -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256M -Duser.timezone="America/Los Angeles"',
-      }).value
+      }).value()
     ).toEqual([
       '-Xms1024M',
       '-Xmx3072M',
@@ -79,7 +79,9 @@ if (import.meta.vitest) {
     ' memory を渡されたときに、XmsとXmxに適切な値を設定して返す',
     (tCase) => {
       // TODO: "MB" | "GB" | "TB" に対応していることをテストで確認する
-      expect(getJvmArgs({ memory: tCase.memory }).value).toEqual(tCase.xmArray);
+      expect(getJvmArgs({ memory: tCase.memory }).value()).toEqual(
+        tCase.xmArray
+      );
     }
   );
 }
