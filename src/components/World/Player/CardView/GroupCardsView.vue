@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { sortRecord } from 'app/src-public/scripts/obj/objSort';
 import { PlayerGroup } from 'app/src-electron/schema/player';
-import { deepcopy } from 'src/scripts/deepcopy';
-import { sort } from 'src/scripts/objSort';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import GroupCard from './core/GroupCard.vue';
@@ -42,7 +42,10 @@ function openGroupEditor(group?: PlayerGroup) {
           @click="() => openGroupEditor()"
         />
       </div>
-      <div v-for="group in sort(playerStore.searchGroups())" :key="group.name">
+      <div
+        v-for="group in sortRecord(playerStore.searchGroups())"
+        :key="group.name"
+      >
         <GroupCard
           :name="group.name"
           :color="group.color"

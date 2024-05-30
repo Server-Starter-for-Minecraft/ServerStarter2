@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isValid } from 'src/scripts/error';
+import { isValid } from 'app/src-public/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';

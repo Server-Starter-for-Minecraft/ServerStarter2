@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { PlayerSetting } from 'app/src-electron/schema/player';
-import { values } from 'src/scripts/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import CommonView from 'src/components/World/Player/CommonView/CommonView.vue';
 import GroupItemsView from './ListView/GroupItemsView.vue';
 import PlayerItemsView from './ListView/PlayerItemsView.vue';
+import { values } from 'app/src-public/scripts/obj/obj';
 
 const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 

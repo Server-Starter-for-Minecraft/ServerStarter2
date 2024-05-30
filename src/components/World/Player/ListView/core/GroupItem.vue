@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
-import { keys, values } from 'src/scripts/obj';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';

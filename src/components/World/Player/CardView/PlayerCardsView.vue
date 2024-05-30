@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerSetting } from 'app/src-electron/schema/player';
-import { deepcopy } from 'src/scripts/deepcopy';
-import { strSort } from 'src/scripts/objSort';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerCard from './core/PlayerCard.vue';
 

@@ -1,19 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { getCssVar } from 'quasar';
+import { onMounted, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { OpLevel, PlayerGroup } from 'app/src-electron/schema/player';
-import { keys } from 'src/scripts/obj';
-import { strSort } from 'src/scripts/objSort';
-import { assets } from 'src/assets/assets';
-import { useSystemStore } from 'src/stores/SystemStore';
+import { OpLevel } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
-import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
 import OpPanel from './OpPanel.vue';
-import GroupBadgeView from './parts/GroupBadgeView.vue';
 
 interface Prop {
   uuid: PlayerUUID;
