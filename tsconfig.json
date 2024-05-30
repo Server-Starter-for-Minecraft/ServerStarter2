@@ -7,6 +7,7 @@
   "include": [
     "src/**/*.ts",
     "src-electron/**/*.ts",
+    "src-public/**/*.ts",
     "src/**/*.vue",
     "test/**/*.ts"
   ],
