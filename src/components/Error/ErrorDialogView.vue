@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { sleep } from 'src/scripts/sleep';
+import { sleep } from 'app/src-public/scripts/sleep';
 import { iErrorDialogProps } from './Error';
 
 defineProps<iErrorDialogProps>();
