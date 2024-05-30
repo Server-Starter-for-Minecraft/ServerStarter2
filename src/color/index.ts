@@ -1,6 +1,6 @@
 import { setCssVar } from 'quasar';
-import { colors, ColorThemes } from './colors';
 import { keys } from 'app/src-public/scripts/obj/obj';
+import { colors, ColorThemes } from './colors';
 
 export function setColor(isDark: boolean, isDiversity: boolean) {
   const lightMode = isDark ? 'dark' : 'light';

@@ -1,10 +1,10 @@
 import { QVueGlobals } from 'quasar';
+import { getHashData } from 'app/src-public/scripts/obj/obj';
 import { Version } from 'app/src-electron/schema/version';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
-import { getHashData } from 'app/src-public/scripts/obj/obj';
 
 /**
  * 新しい方のバージョンの引数番号を返す

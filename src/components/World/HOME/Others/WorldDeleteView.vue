@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { values } from 'app/src-public/scripts/obj/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import { moveScrollTop_Home } from '../scroll';
-import { values } from 'app/src-public/scripts/obj/obj';
 
 const mainStore = useMainStore();
 const worldStore = useWorldStore();

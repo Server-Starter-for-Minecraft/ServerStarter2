@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { deleteFromValue } from 'app/src-public/scripts/obj/obj';
 import {
   GithubRemoteSetting,
   RemoteFolder,
@@ -12,7 +13,6 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import { updatePatDialogReturns, updatePatProp } from './iGitHubDialog';
 import UpdatePatDialog from './UpdatePatDialog.vue';
-import { deleteFromValue } from 'app/src-public/scripts/obj/obj';
 
 interface Prop {
   disable?: boolean;

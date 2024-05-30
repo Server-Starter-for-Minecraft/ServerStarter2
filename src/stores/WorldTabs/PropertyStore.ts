@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia';
+import { keys, values } from 'app/src-public/scripts/obj/obj';
+import { uniqueArray } from 'app/src-public/scripts/obj/objFillter';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { WorldID } from 'app/src-electron/schema/world';
 import { $T, tError } from 'src/i18n/utils/tFunc';
@@ -8,8 +10,6 @@ import {
   propertyClasses,
 } from 'src/components/World/Property/classifications';
 import { useWorldStore } from '../MainStore';
-import { uniqueArray } from 'app/src-public/scripts/obj/objFillter';
-import { keys, values } from 'app/src-public/scripts/obj/obj';
 
 const disableProperties = ['level-name'];
 

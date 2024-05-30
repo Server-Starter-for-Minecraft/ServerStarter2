@@ -1,5 +1,6 @@
 import { watch } from 'vue';
 import { defineStore } from 'pinia';
+import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import {
   OpLevel,
@@ -9,7 +10,6 @@ import {
 } from 'app/src-electron/schema/player';
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
-import { isValid } from 'app/src-public/scripts/error';
 
 type GroupSettings = PlayerGroup & { isNew: boolean };
 
