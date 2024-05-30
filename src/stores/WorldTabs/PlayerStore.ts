@@ -7,9 +7,9 @@ import {
   PlayerGroup,
   PlayerSetting,
 } from 'app/src-electron/schema/player';
-import { isValid } from 'src/scripts/error';
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
+import { isValid } from 'app/src-public/scripts/error';
 
 type GroupSettings = PlayerGroup & { isNew: boolean };
 

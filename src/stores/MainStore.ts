@@ -3,8 +3,6 @@ import { defineStore } from 'pinia';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { deepcopy } from 'src/scripts/deepcopy';
-import { isError, isValid } from 'src/scripts/error';
 import { keys, values } from 'src/scripts/obj';
 import { recordValueFilter } from 'src/scripts/objFillter';
 import { sortValue } from 'src/scripts/objSort';
@@ -14,6 +12,8 @@ import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useConsoleStore } from './ConsoleStore';
 import { useSystemStore } from './SystemStore';
+import { isError, isValid } from 'app/src-public/scripts/error';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {

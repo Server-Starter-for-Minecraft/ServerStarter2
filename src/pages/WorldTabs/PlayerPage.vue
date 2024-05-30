@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { isValid } from 'app/src-public/scripts/error';
 import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
-import { isValid } from 'src/scripts/error';
 import { sort, strSort } from 'src/scripts/objSort';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';

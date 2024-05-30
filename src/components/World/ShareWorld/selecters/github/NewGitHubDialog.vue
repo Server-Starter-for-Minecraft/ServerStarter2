@@ -2,8 +2,8 @@
 import { ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent } from 'quasar';
+import { isError, isValid } from 'app/src-public/scripts/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
-import { isError, isValid } from 'src/scripts/error';
 import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';

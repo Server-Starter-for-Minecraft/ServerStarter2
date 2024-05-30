@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { OpLevel, OpSetting } from 'app/src-electron/schema/player';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { isValid } from 'src/scripts/error';
 import { assets } from 'src/assets/assets';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import OpLevelBtn from 'src/components/World/Player/utils/OpLevelBtn.vue';
+import { isValid } from 'app/src-public/scripts/error';
 
 interface Prop {
   validProperties: ServerProperties;
