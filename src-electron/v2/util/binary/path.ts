@@ -1,9 +1,9 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { DuplexStreamer, Readable } from './stream';
-import { asyncForEach } from 'app/src-electron/util/objmap';
 import * as stream from 'stream';
-import { Err, Result, err, ok } from '../base';
+import { asyncForEach } from 'app/src-electron/util/objmap';
+import { err, ok, Result } from '../base';
+import { DuplexStreamer, Readable } from './stream';
 import { asyncPipe } from './util';
 
 function replaceSep(pathstr: string) {
@@ -22,7 +22,7 @@ export class Path extends DuplexStreamer<void> {
       this._path = value._path;
     }
   }
-  toString(): string {
+  toStr(): string {
     return this.path;
   }
 
@@ -67,7 +67,7 @@ export class Path extends DuplexStreamer<void> {
 
   /** "で囲まれたパス文字列を返す */
   get quotedPath() {
-    return '"' + this._path.replace('\\', '\\\\').replace('"', '\\"') + '"';
+    return `"${this._path.replace('\\', '\\\\').replace('"', '\\"')}"`;
   }
 
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
@@ -265,7 +265,7 @@ if (import.meta.vitest) {
     await a.mkdir();
     const b = a.child('b');
     await b.writeText('hello');
-    expect((await b.readText()).value).toBe('hello');
+    expect((await b.readText()).value()).toBe('hello');
     await b.remove();
     expect(b.exists()).toBe(false);
     await a.remove();
@@ -292,19 +292,19 @@ if (import.meta.vitest) {
 
     // ファイルの中身をコピー
     await src.writeText('hello world');
-    expect((await src.readText()).value).toBe('hello world');
+    expect((await src.readText()).value()).toBe('hello world');
 
     expect(tgt.exists()).toBe(false);
 
     await src.into(tgt);
 
-    expect((await tgt.readText()).value).toBe('hello world');
+    expect((await tgt.readText()).value()).toBe('hello world');
     await tgt.remove();
 
     const { Bytes } = await import('./bytes');
 
     // ファイルの中身をバイト列に変換
-    const bytes = (await src.into(Bytes)).value;
+    const bytes = (await src.into(Bytes)).value();
 
     expect(bytes.data.toString('utf8')).toBe('hello world');
 
@@ -313,11 +313,11 @@ if (import.meta.vitest) {
     // バイト列をファイルに書き込み
     await bytes.into(tgt);
 
-    expect((await tgt.readText()).value).toBe('hello world');
+    expect((await tgt.readText()).value()).toBe('hello world');
 
     await tgt.remove();
 
-    expect((await mis.into(Bytes)).error.message).toContain('ENOENT');
+    expect((await mis.into(Bytes)).error().message).toContain('ENOENT');
 
     // TODO: 失敗するストリームの調査
     // TODO: すでにあるファイルにストリームを書き込めないことを検証

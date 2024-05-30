@@ -1,6 +1,6 @@
-import { Err, Result, err, ok } from '../base';
-import { IWritableStreamer } from './stream';
 import { createHash } from 'crypto';
+import { Err, err, ok, Result } from '../base';
+import { IWritableStreamer } from './stream';
 import { asyncPipe } from './util';
 
 type HashAlgorithm = 'sha256' | 'sha1' | 'md5';
@@ -11,7 +11,7 @@ function hashFunc(algorithm: HashAlgorithm): IWritableStreamer<string> {
 
       const hash = createHash(algorithm);
       return asyncPipe(readable, hash).then((result) =>
-        result.map(() => hash.digest().toString('hex'))
+        result.onOk(() => ok(hash.digest().toString('hex')))
       );
     },
   };
@@ -45,7 +45,7 @@ if (import.meta.vitest) {
     ];
 
     test.each(testCases)('hash', async (tCase) => {
-      expect((await src.into(tCase.algorithm)).value).toBe(tCase.value);
+      expect((await src.into(tCase.algorithm)).value()).toBe(tCase.value);
     });
   });
 }

@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "name": "pack01",
+      "isZip": true,
+      "hash": "123123123"
+    },
+    {
+      "name": "pack01",
+      "isZip": true,
+      "hash": "123123123"
+    },
+    {
+      "name": "pack03",
+      "isZip": false
+    }
+  ]
+}

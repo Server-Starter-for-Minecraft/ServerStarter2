@@ -6,7 +6,6 @@ import { Path } from '../../util/binary/path';
  * シングルトンでOK
  */
 export class VersionContainer {
-
   static listVanillaVersions() {}
 
   static listForgeVersions() {}

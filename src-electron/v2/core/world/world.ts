@@ -3,10 +3,9 @@ import { Datapack } from '../../schema/datapack';
 import { Mod } from '../../schema/mod';
 import { Plugin } from '../../schema/plugin';
 import { World, WorldContainer, WorldName } from '../../schema/world';
-import { DatapackContainer } from '../../source/datapack/datapack';
-import { ServerContainer } from '../../source/server/server';
 import { WorldSource } from '../../source/world/world';
 import { err, ok, Result } from '../../util/base';
+import { serverContainer } from '../setup';
 import { runServer } from './server';
 import { setupWorld, teardownWorld } from './setup';
 
@@ -52,17 +51,23 @@ export class WorldHandler {
     worldName: WorldName
   ): Promise<Result<WorldHandler>> {
     const worldMeta = await WorldSource.getWorldMeta(container, worldName);
-    return worldMeta.map((x) => new WorldHandler(x));
+    return worldMeta.onOk((x) => ok(new WorldHandler(x)));
   }
 
   /** データパックを導入 */
-  async installDatapack(datapack: Datapack): Promise<Result<void>> {}
+  async installDatapack(datapack: Datapack): Promise<Result<void>> {
+    // ワールドのメタデータを更新するだけ
+  }
 
   /** プラグインを導入 */
-  async installPlugin(plugin: Plugin): Promise<Result<void>> {}
+  async installPlugin(plugin: Plugin): Promise<Result<void>> {
+    // ワールドのメタデータを更新するだけ
+  }
 
   /** Modを導入 */
-  async installMod(mod: Mod): Promise<Result<void>> {}
+  async installMod(mod: Mod): Promise<Result<void>> {
+    // ワールドのメタデータを更新するだけ
+  }
 
   /**
    * メタデータを更新
@@ -87,15 +92,15 @@ export class WorldHandler {
     // ワールド設定を変更中
     // using = true に設定
     const updateUsing = await this.updateMeta({ using: true });
-    if (updateUsing.isErr()) return updateUsing;
+    if (updateUsing.isErr) return updateUsing;
 
     // サーバーデータを作成中
     // サーバーを作成
-    const serverResult = await ServerContainer.create((dirPath) =>
+    const serverResult = await serverContainer.create((dirPath) =>
       setupWorld(dirPath, this.world)
     );
-    if (serverResult.isErr()) return serverResult;
-    const server = serverResult.value;
+    if (serverResult.isErr) return serverResult;
+    const server = serverResult.value();
 
     // startイベントを発行
     this.events.emit('start');
@@ -109,7 +114,7 @@ export class WorldHandler {
     do {
       this.robooting = false;
 
-      const stop = () => server.stop();
+      const stop = () => serverContainer.stop(server);
       this.events.on('stop', stop);
 
       // サーバーを実行
@@ -120,6 +125,8 @@ export class WorldHandler {
     } while (this.robooting);
 
     // 撤収作業
-    return await server.remove((dirPath) => teardownWorld(dirPath, this.world));
+    return await serverContainer.remove(server, (dirPath) =>
+      teardownWorld(dirPath, this.world)
+    );
   }
 }

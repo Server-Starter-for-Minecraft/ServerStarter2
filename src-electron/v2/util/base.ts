@@ -2,260 +2,172 @@ export class PanicError extends Error {}
 
 export type Awaitable<T> = T | PromiseLike<T>;
 
-interface IResult<T, E> {
-  isOk<T, E>(this: IResult<T, E>): this is Ok<T>;
-  isErr<T, E>(this: IResult<T, E>): this is Err<E>;
-  map<U>(op: (ok: T) => U): Result<U, E>;
+export type Ok<T> = {
+  readonly isOk: true;
+  readonly isErr: false;
+  value(): T;
+  error(): never;
+  onOk<U extends Result<any, any>>(op: (value: T) => U): U;
+  onErr(op: (value: any) => Result<T, any>): Ok<T>;
   valueOrDefault(defaultValue: T): T;
-  errorOrDefault(defaultError: E): E;
-  /**
-   * Errの場合PanicErrorをなげるため使用には注意すること
-   */
-  get value(): T;
-  /**
-   * Okの場合PanicErrorをなげるため使用には注意すること
-   */
-  get error(): E;
-  toOpt(): IOpt<T>;
-}
-
-export class Ok<T> implements IResult<T, any> {
-  isOk<T, E>(this: IResult<T, E>): this is Ok<T> {
-    return true;
-  }
-  isErr<T, E>(this: IResult<T, E>): this is Err<E> {
-    return false;
-  }
-  map<U>(op: (ok: T) => U): Ok<U> {
-    return new Ok(op(this._value));
-  }
-  valueOrDefault(defaultValue: T): T {
-    return this._value;
-  }
-  errorOrDefault<E>(defaultError: E): E {
-    return defaultError;
-  }
-  get value(): T {
-    return this._value;
-  }
-  get error(): never {
-    throw new PanicError();
-  }
-  private _value: T;
-  constructor(value: T) {
-    this._value = value;
-  }
-  toOpt(): IOpt<T> {
-    return new Value(this._value);
-  }
-}
-
-export function ok<T>(value: T) {
-  return new Ok(value);
-}
-
-export class Err<E> implements IResult<any, E> {
-  isOk<T, E>(this: IResult<T, E>): this is Ok<T> {
-    return false;
-  }
-
-  isErr<T, E>(this: IResult<T, E>): this is Err<E> {
-    return true;
-  }
-
-  map<U>(): Err<E> {
-    return this;
-  }
-
-  valueOrDefault<T>(defaultValue: T): T {
-    return defaultValue;
-  }
-  errorOrDefault(defaultError: E): E {
-    return this._value;
-  }
-  get value(): never {
-    throw new PanicError();
-  }
-  get error(): E {
-    return this._value;
-  }
-  private _value: E;
-  constructor(value: E) {
-    this._value = value;
-  }
-  toOpt<T>(): IOpt<T> {
-    return new None();
-  }
-}
-
-export function err<E = Error>(value: E) {
-  return new Err(value);
-}
-
-export type Result<T, E = Error> = (Ok<T> | Err<E>) & {
-  map<U>(op: (ok: T) => U): Result<U, E>;
+  errorOrDefault<U>(defaultError: U): U;
 };
 
-/**
- * 与えた関数内部で起こったエラーを Resultとしてラップして返す
- * @param func throwする可能性のある関数
- * @returns throwをErrでラップした関数
- */
-export const catchToResult =
-  <A extends any[], T>(
-    func: (...args: A) => Result<T>
-  ): ((...args: A) => Result<T>) =>
-  (...args: A) => {
-    try {
-      return func(...args);
-    } catch (e) {
-      if (e instanceof PanicError) return err(e);
-      throw e;
-    }
-  };
+export type Err<E> = {
+  readonly isOk: false;
+  readonly isErr: true;
+  value(): never;
+  error(): E;
+  onOk(op: (error: any) => Result<any, E>): Err<E>;
+  onErr<U extends Result<any, E>>(op: (error: E) => U): U;
+  valueOrDefault<U>(defaultValue: U): U;
+  errorOrDefault(defaultError: E): E;
+};
 
-/**
- * 与えた非同期関数内部で起こったPAnicErrorを Resultとしてラップして返す
- *
- * haskellのdoみたいな使い方を想定
- *
- * @param func throwする可能性のある非同期関数
- * @returns throwをErrでラップした非同期関数
- */
-export const catchToResultAsync =
-  <A extends any[], T>(
-    func: (...args: A) => Promise<Result<T>>
-  ): ((...args: A) => Promise<Result<T>>) =>
-  async (...args: A) => {
-    try {
-      return await func(...args);
-    } catch (e) {
-      if (e instanceof PanicError) return err(e);
-      throw e;
-    }
-  };
+export type Result<T, E = Error> = Ok<T> | Err<E>;
 
-interface IOpt<T> {
-  isSome<T>(this: IOpt<T>): this is Value<T>;
-  isNone<T>(this: IOpt<T>): this is None;
-  map<U>(op: (some: T) => U): IOpt<U>;
+export type Value<T> = {
+  isSome: true;
+  isNone: false;
+  onValue<U extends Opt<any>>(op: (some: T) => U): U;
+  onNone(op: () => Opt<T>): Value<T>;
   valueOrDefault(defaultValue: T): T;
-  get value(): T;
-  toResult<E>(error: E): IResult<T, E>;
-}
+  value(): T;
+  toResult(error: any): Ok<T>;
+};
 
-export class Value<T> implements IOpt<T> {
-  private _value: T;
+export type None = {
+  isSome: false;
+  isNone: true;
+  onValue(op: (some: any) => Opt<any>): None;
+  onNone<U extends Opt<any>>(op: () => U): U;
+  valueOrDefault<T>(defaultValue: T): T;
+  value(): never;
+  toResult<E>(error: E): Err<E>;
+};
 
-  constructor(value: T) {
-    this._value = value;
-  }
-  isSome<T>(this: IOpt<T>): this is Value<T> {
-    return true;
-  }
-  isNone<T>(this: IOpt<T>): this is None {
-    return false;
-  }
-  map<U>(op: (some: T) => U): Value<U> {
-    return new Value(op(this.value));
-  }
-  valueOrDefault(defaultValue: T): T {
-    return this._value;
-  }
-  get value(): T {
-    return this._value;
-  }
-  toResult<E>(error: E): IResult<T, E> {
-    return new Ok(this._value);
-  }
-}
+export type Opt<T> = Value<T> | None;
 
-export function value<T>(value: T) {
-  return new Value(value);
-}
+const throwPanic = () => {
+  throw new PanicError();
+};
 
-export class None implements IOpt<any> {
-  private static instance?: None;
+const identity = <T>(v: T): T => v;
 
-  constructor() {
-    // シングルトンのための処理
-    return None.instance ?? (None.instance = this);
-  }
-  isSome<T>(this: IOpt<T>): this is Value<T> {
-    return false;
-  }
-  isNone<T>(this: IOpt<T>): this is None {
-    return true;
-  }
-  unwrap(): never {
-    throw new PanicError();
-  }
-  map<U>(op: (some: any) => U): None {
-    return this;
-  }
-  valueOrDefault<T>(defaultValue: T): T {
-    return defaultValue;
-  }
-  get value(): never {
-    throw new PanicError();
-  }
-  toResult<T, E>(error: E): IResult<T, E> {
-    return new Err(error);
-  }
-}
+export const ok = <T>(value: T): Ok<T> => {
+  const returnValue = () => value;
+  const result: Ok<T> = {
+    isOk: true,
+    isErr: false,
+    value: returnValue,
+    error: throwPanic,
+    onOk: (op) => op(value),
+    onErr: () => result,
+    valueOrDefault: returnValue,
+    errorOrDefault: identity,
+  };
+  return result;
+};
 
-export const none = new None();
+export const err = <T>(error: T): Err<T> => {
+  const returnError = () => error;
+  const result: Err<T> = {
+    isOk: false,
+    isErr: true,
+    value: throwPanic,
+    error: returnError,
+    onOk: () => result,
+    onErr: (op) => op(error),
+    valueOrDefault: identity,
+    errorOrDefault: returnError,
+  };
+  return result;
+};
 
-export type Opt<T> = (Value<T> | None) & {
-  map<U>(op: (ok: T) => U): Opt<U>;
+export const value = <T>(value: T): Value<T> => {
+  const returnValue = () => value;
+  const result: Value<T> = {
+    isSome: true,
+    isNone: false,
+    onValue: (op) => op(value),
+    onNone: () => result,
+    valueOrDefault: returnValue,
+    value: returnValue,
+    toResult: () => ok(value),
+  };
+  return result;
+};
+
+export const none: None = {
+  isSome: false,
+  isNone: true,
+  onValue: () => none,
+  onNone: (op) => op(),
+  valueOrDefault: identity,
+  value: throwPanic,
+  toResult: err,
 };
 
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('Result Test', async () => {
-    const ok: Result<number, number> = new Ok(2);
-    const err: Result<number, number> = new Err(3);
+    function typeCheck(
+      o: Ok<number>,
+      e: Err<number>,
+      r: Result<number, number>
+    ) {
+      expect(o.isOk).toBe(true);
+      expect(e.isOk).toBe(false);
+      expect(r.isOk).toEqual(expect.any(Boolean));
 
-    expect(ok.isOk()).toBe(true);
-    expect(err.isOk()).toBe(false);
+      expect(o.isErr).toBe(false);
+      expect(e.isErr).toBe(true);
+      expect(r.isErr).toEqual(expect.any(Boolean));
 
-    expect(ok.isErr()).toBe(false);
-    expect(err.isErr()).toBe(true);
+      expect(o.value()).toBe(2);
+      expect(e.value).toThrow(PanicError);
+      r.value;
 
-    expect(ok.value).toBe(2);
-    expect(() => err.value).toThrow(PanicError);
+      expect(o.error).toThrow(PanicError);
+      expect(e.error()).toBe(3);
+      r.error;
 
-    expect(() => ok.error).toThrow(PanicError);
-    expect(err.error).toBe(3);
+      expect(o.onOk((x) => ok(x * 2)).value()).toBe(4);
+      expect(e.onOk((x) => ok(x * 2)).error()).toBe(3);
+      r.onOk((x) => ok(x * 2));
 
-    expect(ok.map((x) => x * 2).value).toBe(4);
-    expect(err.map((x) => x * 2).error).toBe(3);
+      expect(o.valueOrDefault(5)).toBe(2);
+      expect(e.valueOrDefault(5)).toBe(5);
+      r.valueOrDefault(5);
 
-    expect(ok.valueOrDefault(5)).toBe(2);
-    expect(err.valueOrDefault(5)).toBe(5);
+      expect(o.errorOrDefault(5)).toBe(5);
+      expect(e.errorOrDefault(5)).toBe(3);
+      r.valueOrDefault(5);
+    }
+    const _ok: Result<number, number> = ok(2);
+    const _err: Result<number, number> = err(3);
 
-    expect(ok.errorOrDefault(5)).toBe(5);
-    expect(err.errorOrDefault(5)).toBe(3);
+    typeCheck(_ok, _err, _err);
   });
 
   test('Opt Test', async () => {
-    const value: Opt<number> = new Value(2);
-    const none: Opt<number> = new None();
+    const _value: Opt<number> = value(2);
+    const _none: Opt<number> = none;
 
-    expect(value.isSome()).toBe(true);
-    expect(none.isSome()).toBe(false);
+    expect(_value.isSome).toBe(true);
+    expect(_none.isSome).toBe(false);
 
-    expect(value.isNone()).toBe(false);
-    expect(none.isNone()).toBe(true);
+    expect(_value.isNone).toBe(false);
+    expect(_none.isNone).toBe(true);
 
-    expect(value.value).toBe(2);
-    expect(() => none.value).toThrow(PanicError);
+    expect(_value.value()).toBe(2);
+    expect(_none.value).toThrow(PanicError);
 
-    expect(value.map((x) => x * 2).value).toBe(4);
-    expect(none.map((x) => x * 2).isNone()).toBe(true);
+    expect(_value.onValue((x) => value(x * 2)).value()).toBe(4);
+    expect(_none.onValue((x) => value(x * 2)).isNone).toBe(true);
 
-    expect(value.valueOrDefault(5)).toBe(2);
-    expect(none.valueOrDefault(5)).toBe(5);
+    expect(_value.valueOrDefault(5)).toBe(2);
+    expect(_none.valueOrDefault(5)).toBe(5);
   });
 }
