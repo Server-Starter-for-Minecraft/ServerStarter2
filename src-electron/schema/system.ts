@@ -74,7 +74,7 @@ export type WorldContainerSetting = {
 export type WorldContainers = WorldContainerSetting[];
 
 export type SystemPlayerSetting = {
-  groups: { [name: string]: PlayerGroup };
+  groups: { [name in string]: PlayerGroup };
   players: PlayerUUID[];
 };
 
