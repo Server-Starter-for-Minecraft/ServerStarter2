@@ -14,7 +14,7 @@
  * // -> 'TestName'
  * ```
  */
-function createNewName(names: string[], targetName: string) {
+export function createNewName(names: string[], targetName: string) {
   let _targetName = targetName;
   let idx = 1;
 
