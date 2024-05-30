@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 import Mousetrap from 'mousetrap';
-import { isValid } from 'src/scripts/error';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { isValid } from 'app/src-public/scripts/error';
+import { strSort } from 'app/src-public/scripts/obj/objSort';
+import { sortRecord } from 'app/src-public/scripts/obj/objSort';
+import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';

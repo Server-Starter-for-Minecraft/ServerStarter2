@@ -1,5 +1,6 @@
 import { watch } from 'vue';
 import { defineStore } from 'pinia';
+import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import {
   OpLevel,
@@ -7,7 +8,6 @@ import {
   PlayerGroup,
   PlayerSetting,
 } from 'app/src-electron/schema/player';
-import { isValid } from 'src/scripts/error';
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
 

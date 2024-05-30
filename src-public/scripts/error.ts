@@ -1,4 +1,4 @@
-import { ErrorMessage } from 'src-electron/schema/error';
+import { ErrorMessage } from 'app/src-electron/schema/error';
 
 // バックエンドにも同じものがあるが、フロントエンド用にこちらでも定義
 

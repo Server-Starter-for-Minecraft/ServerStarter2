@@ -1,5 +1,5 @@
 import { setCssVar } from 'quasar';
-import { keys } from 'src/scripts/obj';
+import { keys } from 'app/src-public/scripts/obj/obj';
 import { colors, ColorThemes } from './colors';
 
 export function setColor(isDark: boolean, isDiversity: boolean) {

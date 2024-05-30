@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { sortValue } from 'src/scripts/objSort';
+import { sortValue } from 'app/src-public/scripts/obj/objSort';
 import { assets } from 'src/assets/assets';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { deleteFromValue } from 'app/src-public/scripts/obj/obj';
 import {
   GithubRemoteSetting,
   RemoteFolder,
 } from 'app/src-electron/schema/remote';
-import { deleteFromValue } from 'src/scripts/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
