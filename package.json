@@ -32,6 +32,7 @@
     "quasar": "^2.12.2",
     "sharp": "^0.32.6",
     "simple-git": "^3.19.1",
+    "string-argv": "^0.3.2",
     "unzipper": "^0.10.14",
     "vue": "^3.3.0",
     "vue-i18n": "^9.2.2",
@@ -40,8 +41,8 @@
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^3.3.1",
     "@quasar/app-vite": "^1.4.3",
-    "@types/base64-stream": "^1.0.5",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/base64-stream": "^1.0.5",
     "@types/jszip": "^3.4.1",
     "@types/node": "^20.3.3",
     "@types/tar": "^6.1.5",
