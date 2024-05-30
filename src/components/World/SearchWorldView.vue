@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { keys, values } from 'src/scripts/obj';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';

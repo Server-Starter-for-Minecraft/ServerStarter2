@@ -5,7 +5,6 @@ import {
   GithubRemoteSetting,
   RemoteFolder,
 } from 'app/src-electron/schema/remote';
-import { deleteFromValue } from 'src/scripts/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -13,6 +12,7 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import { updatePatDialogReturns, updatePatProp } from './iGitHubDialog';
 import UpdatePatDialog from './UpdatePatDialog.vue';
+import { deleteFromValue } from 'app/src-public/scripts/obj/obj';
 
 interface Prop {
   disable?: boolean;

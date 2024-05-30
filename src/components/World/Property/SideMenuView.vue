@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { keys } from 'src/scripts/obj';
+import { keys } from 'app/src-public/scripts/obj/obj';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import {
   pGroupKey,

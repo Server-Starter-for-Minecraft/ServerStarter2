@@ -3,7 +3,6 @@ import { ref, toRaw } from 'vue';
 import { useQuasar } from 'quasar';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { WorldContainer } from 'app/src-electron/schema/brands';
-import { values } from 'src/scripts/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';
@@ -13,6 +12,7 @@ import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAd
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
+import { values } from 'app/src-public/scripts/obj/obj';
 
 const $q = useQuasar();
 const sysStore = useSystemStore();

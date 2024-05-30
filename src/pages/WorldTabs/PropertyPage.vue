@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { fromEntries, toEntries } from 'src/scripts/obj';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
@@ -11,6 +10,7 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 import { isValid } from 'app/src-public/scripts/error';
+import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();

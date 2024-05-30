@@ -2,11 +2,11 @@
 import { toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PlayerGroup } from 'app/src-electron/schema/player';
-import { keys } from 'src/scripts/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { keys } from 'app/src-public/scripts/obj/obj';
 
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
