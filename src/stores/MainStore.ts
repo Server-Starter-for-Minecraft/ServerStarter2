@@ -4,7 +4,6 @@ import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { keys, values } from 'src/scripts/obj';
-import { recordValueFilter } from 'src/scripts/objFillter';
 import { zen2han } from 'src/scripts/textUtils';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
@@ -14,6 +13,7 @@ import { useSystemStore } from './SystemStore';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { sortValue } from 'app/src-public/scripts/obj/objSort';
+import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
