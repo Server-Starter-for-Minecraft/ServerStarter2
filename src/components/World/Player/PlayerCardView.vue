@@ -4,7 +4,6 @@ import { getCssVar } from 'quasar';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { keys } from 'src/scripts/obj';
-import { strSort } from 'src/scripts/objSort';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -13,6 +12,7 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import BaseActionsCard from '../utils/BaseActionsCard.vue';
 import GroupBadgeView from './utils/GroupBadgeView.vue';
 import PlayerHeadView from './utils/PlayerHeadView.vue';
+import { strSort } from 'app/src-public/scripts/obj/objSort';
 
 interface Prop {
   uuid: PlayerUUID;
