@@ -21,8 +21,13 @@ const menuOpened = ref(false);
 
 const cachePlayers = ref(playerStore.cachePlayers);
 
-async function onCardClicked() {
+function onCardClicked() {
   playerStore.selectGroup(prop.name);
+}
+
+function onEditClicked() {
+  prop.players.forEach((pId) => playerStore.addFocus(pId));
+  prop.onEdit()
 }
 </script>
 
@@ -71,7 +76,7 @@ async function onCardClicked() {
         :label="$t('general.edit')"
         width="3rem"
         class="q-mt-sm q-mr-sm absolute-top-right"
-        @click="onEdit"
+        @click="onEditClicked"
       />
     </template>
   </BaseActionsCard>

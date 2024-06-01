@@ -27,6 +27,13 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
     return false;
   }
 }
+
+/**
+ * View形式が変更された際に発火
+ */
+function onChangedView() {
+  playerStore.openGroupEditor = false;
+}
 </script>
 
 <template>
@@ -47,6 +54,7 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
       <SsSelect
         dense
         v-model="sysStore.systemSettings.user.viewStyle.player"
+        @update:model-value="onChangedView"
         :options="['list', 'card']"
       />
 

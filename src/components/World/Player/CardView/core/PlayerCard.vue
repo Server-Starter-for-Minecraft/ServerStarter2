@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { keys } from 'app/src-public/scripts/obj/obj';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { FrontPlayerGroup } from 'src/stores/SystemStore/converters/playerGroup';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -56,12 +56,9 @@ function onCardClicked() {
   }
 }
 
-function getGroups(groups: Record<string, PlayerGroup>) {
-  return keys(groups)
-    .filter((name) => groups[name].players.includes(prop.uuid))
-    .map((name) => {
-      return { name: name, color: groups[name].color };
-    })
+function getGroups(groups: FrontPlayerGroup) {
+  return values(groups)
+    .filter((g) => g.players.includes(prop.uuid))
     .sort((a, b) => strSort(a.name, b.name));
 }
 </script>
