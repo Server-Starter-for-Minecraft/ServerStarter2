@@ -47,6 +47,13 @@ function onCardClicked() {
   } else {
     playerStore.addFocus(prop.uuid);
   }
+
+  if (playerStore.openGroupEditor) {
+    playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
+      g.players = [...playerStore.focusCards];
+      return g;
+    });
+  }
 }
 
 function getGroups(groups: Record<string, PlayerGroup>) {

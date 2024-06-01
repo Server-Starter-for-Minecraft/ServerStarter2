@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { keys, values } from 'app/src-public/scripts/obj/obj';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -11,6 +11,7 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 interface Prop {
+  groupId: UUID;
   group: PlayerGroup;
 }
 const prop = defineProps<Prop>();
@@ -18,6 +19,12 @@ const prop = defineProps<Prop>();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 const hovered = ref(false);
+const groupName = computed({
+  get: () => prop.group.name,
+  set: (newVal) => {
+    sysStore.systemSettings.player.groups[prop.groupId].name = newVal;
+  },
+});
 
 const label2code = sysStore.staticResouces.minecraftColors;
 
@@ -49,7 +56,7 @@ const getColorLabel = (color: string) => {
 
 function addMember(uuid: PlayerUUID) {
   const members =
-    sysStore.systemSettings.player.groups[prop.group.name].players;
+    sysStore.systemSettings.player.groups[prop.groupId].players;
   if (members.indexOf(uuid) === -1) {
     members.push(uuid);
   }
@@ -61,17 +68,17 @@ function selectGroupMembers() {
 }
 
 function changeColor(colorCode: string) {
-  sysStore.systemSettings.player.groups[prop.group.name].color = colorCode;
+  sysStore.systemSettings.player.groups[prop.groupId].color = colorCode;
 }
 
 function removeMember(uuid: PlayerUUID) {
   const members =
-    sysStore.systemSettings.player.groups[prop.group.name].players;
+    sysStore.systemSettings.player.groups[prop.groupId].players;
   members.splice(members.indexOf(uuid), 1);
 }
 
 function removeGroup() {
-  delete sysStore.systemSettings.player.groups[prop.group.name];
+  delete sysStore.systemSettings.player.groups[prop.groupId];
 }
 </script>
 
@@ -134,6 +141,7 @@ function removeGroup() {
         </div>
 
         <span style="font-size: 1.2rem">{{ group.name }}</span>
+        <!-- <q-input v-model="groupName" flat dense style="font-size: 1.2rem" /> -->
       </div>
 
       <div v-if="hovered" class="row q-gutter-md">
