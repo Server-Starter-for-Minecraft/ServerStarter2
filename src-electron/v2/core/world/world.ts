@@ -1,5 +1,5 @@
 import mitt, { Emitter } from 'mitt';
-import { Datapack } from '../../schema/datapack';
+import { DatapackInfo, DatapackMeta } from '../../schema/datapack';
 import { Mod } from '../../schema/mod';
 import { Plugin } from '../../schema/plugin';
 import { World, WorldContainer, WorldName } from '../../schema/world';
@@ -55,7 +55,7 @@ export class WorldHandler {
   }
 
   /** データパックを導入 */
-  async installDatapack(datapack: Datapack): Promise<Result<void>> {
+  async installDatapack(datapack: DatapackMeta): Promise<Result<void>> {
     // ワールドのメタデータを更新するだけ
   }
 

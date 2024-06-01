@@ -1,5 +1,5 @@
 import { NewType } from '../util/type/newtype';
-import { Datapack } from './datapack';
+import { DatapackMeta } from './datapack';
 import { IpAdress } from './ipadress';
 import { Mod } from './mod';
 import { OpLevel, PlayerName, PlayerUUID } from './player';
@@ -55,12 +55,12 @@ export type World = {
   version?: Version;
 
   /** データパック */
-  datapack: Datapack[];
+  datapack: DatapackMeta[];
 
-  /** データパック */
+  /** TODO: プラグイン */
   plugin: Plugin[];
 
-  /** Mod */
+  /** TODO: Mod */
   mod: Mod[];
 
   /** メモリ等ランタイムの設定 */
