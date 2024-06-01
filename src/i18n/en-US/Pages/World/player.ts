@@ -19,6 +19,8 @@ export const enUSPlayer: MessageSchema['player'] = {
   join: 'Only registered player',
   changeOP: 'Change OP level',
   makeGroup: 'Make group',
+  grouping: 'Group',
+  groupingBtn: 'Add selected players to this group',
   deletePlayer: 'Delete player',
   selectPlayerFromLeft: ' Select player from left',
   selectPlayer: 'Select Players',
@@ -63,6 +65,7 @@ export const enUSPlayer: MessageSchema['player'] = {
   failed: 'Failed to load player settings',
   select: ' Not selected | {n} player selected | {n} players selected',
   deselect: 'Deselect {n} player | Deselect {n} players',
+  deselectAll: 'Deselect all players',
   editPlayer:
     'Editing OP level for {n} player|Editing OP level for {n} players',
   sort: 'sort',

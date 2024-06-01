@@ -22,7 +22,7 @@ const splitPos = ref(50);
       <template #btnLine>
         <q-btn
           outline
-          label="プレイヤーをグループ化"
+          :label="$t('player.grouping')"
           color="primary"
           :disable="playerStore.focusCards.size === 0"
           @click="playerStore.addGroup()"
@@ -33,7 +33,7 @@ const splitPos = ref(50);
           v-show="sysStore.systemSettings.user.viewStyle.player === 'list'"
           free-width
           :disable="playerStore.focusCards.size === 0"
-          label="全ての選択を解除"
+          :label="$t('player.deselectAll')"
           @click="() => playerStore.unFocus()"
         />
       </template>

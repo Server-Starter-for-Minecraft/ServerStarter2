@@ -131,7 +131,7 @@ function validateMessage(name: string) {
       >
         <SsTooltip
           v-if="playerStore.focusCards.size !== 0"
-          name="選択中のプレイヤーを\nグループに追加"
+          :name="$t('player.groupingBtn')"
           self="center middle"
           anchor="center start"
         />
@@ -146,7 +146,7 @@ function validateMessage(name: string) {
         @click.stop="playerStore.removeGroup(groupId)"
       >
         <SsTooltip
-          name="グループを削除"
+          :name="$t('player.deleteGroup')"
           self="center middle"
           anchor="center start"
         />
