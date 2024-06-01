@@ -61,6 +61,6 @@ onMounted(async () => {
         {{ player.name }}
       </q-item-label>
     </q-item-section>
-    <SsTooltip :name="player.name" anchor="center middle" self="top middle" />
+    <SsTooltip :name="player.name" anchor="bottom middle" self="center middle" />
   </q-item>
 </template>
