@@ -5,6 +5,10 @@ export const enUSPlayer: MessageSchema['player'] = {
     name: 'NAME order',
     op: 'OP order',
   },
+  view: {
+    card: 'Cards',
+    list: 'Lists',
+  },
   description:
     "You can set the server's OP and players who can enter and leave the server",
   search: 'Enter player name in the game',
