@@ -3,7 +3,6 @@ import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { uniqueArray } from 'app/src-public/scripts/obj/objFillter';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { WorldID } from 'app/src-electron/schema/world';
-import { uniqueArray } from 'src/scripts/objFillter';
 import { $T, $TE, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import {
