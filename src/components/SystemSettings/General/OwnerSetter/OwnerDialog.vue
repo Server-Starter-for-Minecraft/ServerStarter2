@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -29,6 +30,11 @@ function registOwner() {
     ownerPlayer: ownerCandidate.value,
   } as ReturnOwnerDialog);
 }
+
+/** Ownerと検索結果が等しい場合はFalseを返す */
+function filterOwner(pId?: PlayerUUID) {
+  return ownerCandidate.value?.uuid !== pId;
+}
 </script>
 
 <template>
@@ -55,6 +61,7 @@ function registOwner() {
           <SearchResultCard
             :register-btn-text="$t('owner.registerPlayer')"
             :register-process="ownerRegister"
+            :player-filter="filterOwner"
           />
         </div>
 

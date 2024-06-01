@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isValid } from 'app/src-public/scripts/error';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -15,6 +16,17 @@ const playerStore = usePlayerStore();
 
 // ページを読み込んだ時に検索欄をリセット
 playerStore.searchName = '';
+
+/**
+ * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す
+ */
+function hasPlayerInWorld(playerUUID?: PlayerUUID) {
+  if (isValid(mainStore.world.players)) {
+    return mainStore.world.players.some((wp) => wp.uuid === playerUUID);
+  } else {
+    return false;
+  }
+}
 </script>
 
 <template>
@@ -62,6 +74,7 @@ playerStore.searchName = '';
         is-check-player-in-world
         :register-btn-text="$t('player.addPlayer')"
         :register-process="playerStore.addPlayer"
+        :player-filter="(pId) => !hasPlayerInWorld(pId)"
       />
     </div>
   </div>
