@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
-import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
+import GroupColorPicker from './parts/GroupColorPicker.vue';
+
+const autoFocus = defineModel<boolean>({ required: true });
 
 interface Prop {
   groupId: UUID;
@@ -20,46 +20,20 @@ const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 const hovered = ref(false);
 const groupName = computed({
-  get: () => prop.group.name,
+  get: () => sysStore.systemSettings.player.groups[prop.groupId].name,
   set: (newVal) => {
     sysStore.systemSettings.player.groups[prop.groupId].name = newVal;
   },
 });
 
-const label2code = sysStore.staticResouces.minecraftColors;
-
-const getColorLabel = (color: string) => {
-  const oldKey = keys(label2code)[values(label2code).indexOf(color)];
-
-  // TODO: 変換コードをバックエンドに移築
-  const old2newKey = {
-    dark_red: 'red',
-    red: 'pink',
-    gold: 'orange',
-    yellow: 'yellow',
-    dark_green: 'green',
-    green: 'lime',
-    aqua: 'light_blue',
-    dark_aqua: 'cyan',
-    dark_blue: 'blue',
-    blue: 'brown',
-    light_purple: 'magenta',
-    dark_purple: 'purple',
-    white: 'white',
-    gray: 'light_gray',
-    dark_gray: 'gray',
-    black: 'black',
-  } as const;
-
-  return old2newKey[oldKey];
-};
 
 function addMember(uuid: PlayerUUID) {
-  const members =
-    sysStore.systemSettings.player.groups[prop.groupId].players;
-  if (members.indexOf(uuid) === -1) {
-    members.push(uuid);
-  }
+  playerStore.updateGroup(prop.groupId, (g) => {
+    if (g.players.indexOf(uuid) === -1) {
+      g.players.push(uuid);
+    }
+    return g;
+  });
   playerStore.unFocus();
 }
 
@@ -68,17 +42,17 @@ function selectGroupMembers() {
 }
 
 function changeColor(colorCode: string) {
-  sysStore.systemSettings.player.groups[prop.groupId].color = colorCode;
+  playerStore.updateGroup(prop.groupId, (g) => {
+    g.color = colorCode;
+    return g;
+  });
 }
 
 function removeMember(uuid: PlayerUUID) {
-  const members =
-    sysStore.systemSettings.player.groups[prop.groupId].players;
-  members.splice(members.indexOf(uuid), 1);
-}
-
-function removeGroup() {
-  delete sysStore.systemSettings.player.groups[prop.groupId];
+  playerStore.updateGroup(prop.groupId, (g) => {
+    g.players.splice(g.players.indexOf(uuid), 1);
+    return g;
+  });
 }
 </script>
 
@@ -94,54 +68,18 @@ function removeGroup() {
       <div class="row q-gutter-md items-center col">
         <!-- 背景要素である`q-item`にクリックイベントが伝播しないように@click.stopでラップ -->
         <div @click.stop class="q-ml-none">
-          <q-btn flat dense>
-            <q-avatar square size="2rem">
-              <q-img
-                :src="assets.png[`${getColorLabel(group.color)}_wool`]"
-                class="avaterImg"
-              />
-            </q-avatar>
-
-            <q-menu>
-              <div
-                class="q-gutter-sm row q-pa-xs"
-                style="width: 12rem; margin: 0 auto"
-              >
-                <template
-                  v-for="colorLabel in keys(label2code)"
-                  :key="colorLabel"
-                >
-                  <q-btn
-                    v-close-popup
-                    dense
-                    flat
-                    class="q-ma-none col-3"
-                    @click="changeColor(label2code[colorLabel])"
-                  >
-                    <q-avatar square size="2rem">
-                      <q-img
-                        :src="
-                          assets.png[
-                            `${getColorLabel(label2code[colorLabel])}_dye`
-                          ]
-                        "
-                        class="avaterImg"
-                      />
-                    </q-avatar>
-                    <SsTooltip
-                      :name="$t(`player.color.${colorLabel}`)"
-                      anchor="bottom middle"
-                      self="center middle"
-                    />
-                  </q-btn>
-                </template>
-              </div>
-            </q-menu>
-          </q-btn>
+          <GroupColorPicker :group-color="group.color" :change-color="changeColor" />
         </div>
 
-        <span style="font-size: 1.2rem">{{ group.name }}</span>
-        <!-- <q-input v-model="groupName" flat dense style="font-size: 1.2rem" /> -->
+        <div @click.stop>
+          <q-input
+            v-model="groupName"
+            :autofocus="autoFocus"
+            flat
+            dense
+            style="font-size: 1.2rem"
+          />
+        </div>
       </div>
 
       <div v-if="hovered" class="row q-gutter-md">
@@ -156,7 +94,7 @@ function removeGroup() {
           free-width
           label="グループを削除"
           color="negative"
-          @click.stop="removeGroup"
+          @click.stop="playerStore.removeGroup(groupId)"
         />
       </div>
     </div>

@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { sortValue, strSort } from 'app/src-public/scripts/obj/objSort';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import GroupItem from './core/GroupItem.vue';
 
 const playerStore = usePlayerStore();
+const autoFocus = ref(false);
+
+// プレイヤータグ表示直後はグループ名にAutoFocusさせない
+onMounted(() => autoFocus.value = true)
 </script>
 
 <template>
@@ -16,7 +21,7 @@ const playerStore = usePlayerStore();
       )"
       :key="gid"
     >
-      <GroupItem :group-id="gid" :group="group" />
+      <GroupItem v-model="autoFocus" :group-id="gid" :group="group" />
     </template>
   </q-list>
 </template>
