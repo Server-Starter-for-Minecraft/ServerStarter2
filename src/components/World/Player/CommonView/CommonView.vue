@@ -6,7 +6,6 @@ import { ViewStyleSetting } from 'app/src-electron/schema/system';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
 import SearchResultCard from 'src/components/util/SearchResultCard.vue';
@@ -62,7 +61,7 @@ function onChangedView() {
       {{ $t('player.description') }}
     </span>
 
-    <div class="row q-gutter-x-md">
+    <div class="row q-gutter-x-md items-center">
       <SsInput
         v-model="playerStore.searchName"
         dense
@@ -77,7 +76,6 @@ function onChangedView() {
         @update:model-value="onChangedView"
         :options="(['list', 'card'] as const).map(createViewMap)"
         options-selected-class="text-primary"
-        class="q-pb-md"
       >
         <template v-slot:option="scope">
           <q-item dense v-bind="scope.itemProps">
@@ -100,13 +98,7 @@ function onChangedView() {
         v-model="mainStore.world.properties"
         class="col"
       />
-      <SsBtn
-        v-show="sysStore.systemSettings.user.viewStyle.player === 'list'"
-        free-width
-        :disable="playerStore.focusCards.size === 0"
-        label="全ての選択を解除"
-        @click="() => playerStore.unFocus()"
-      />
+      <slot name="toggleLine" />
     </div>
 
     <div v-show="playerStore.searchName !== ''">

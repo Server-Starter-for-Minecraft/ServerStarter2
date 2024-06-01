@@ -5,6 +5,7 @@ import { PlayerGroup } from 'app/src-electron/schema/player';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
 import GroupColorPicker from './parts/GroupColorPicker.vue';
 
@@ -25,7 +26,6 @@ const groupName = computed({
     sysStore.systemSettings.player.groups[prop.groupId].name = newVal;
   },
 });
-
 
 function addMember(uuid: PlayerUUID) {
   playerStore.updateGroup(prop.groupId, (g) => {
@@ -59,16 +59,18 @@ function removeMember(uuid: PlayerUUID) {
 <template>
   <q-item
     clickable
-    class="column"
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     @click="selectGroupMembers"
   >
-    <div class="row full-width">
-      <div class="row q-gutter-md items-center col">
+    <q-item-section>
+      <div class="row q-gutter-md items-center">
         <!-- 背景要素である`q-item`にクリックイベントが伝播しないように@click.stopでラップ -->
         <div @click.stop class="q-ml-none">
-          <GroupColorPicker :group-color="group.color" :change-color="changeColor" />
+          <GroupColorPicker
+            :group-color="group.color"
+            :change-color="changeColor"
+          />
         </div>
 
         <div @click.stop>
@@ -82,32 +84,50 @@ function removeMember(uuid: PlayerUUID) {
         </div>
       </div>
 
-      <div v-if="hovered" class="row q-gutter-md">
-        <SsBtn
-          free-width
-          :disable="playerStore.focusCards.size === 0"
-          label="選択中のプレイヤーをグループに追加"
-          color="primary"
-          @click.stop="playerStore.focusCards.forEach(addMember)"
-        />
-        <SsBtn
-          free-width
-          label="グループを削除"
-          color="negative"
-          @click.stop="playerStore.removeGroup(groupId)"
-        />
+      <div class="q-pl-md q-py-sm row q-gutter-sm">
+        <div v-for="pId in group.players" :key="pId">
+          <PlayerIcon
+            hover-btn
+            :uuid="pId"
+            :negative-btn-clicked="removeMember"
+          />
+        </div>
       </div>
-    </div>
+    </q-item-section>
 
-    <div class="q-pl-md q-py-sm row q-gutter-sm">
-      <div v-for="pId in group.players" :key="pId">
-        <PlayerIcon
-          hover-btn
-          :uuid="pId"
-          :negative-btn-clicked="removeMember"
+    <q-item-section avatar class="q-gutter-y-sm">
+      <SsBtn
+        free-width
+        flat
+        dense
+        :disable="playerStore.focusCards.size === 0"
+        icon="person_add"
+        color="primary"
+        size="1rem"
+        @click.stop="playerStore.focusCards.forEach(addMember)"
+      >
+        <SsTooltip
+          name="選択中のプレイヤーを\nグループに追加"
+          self="center middle"
+          anchor="center start"
         />
-      </div>
-    </div>
+      </SsBtn>
+      <q-btn
+        free-width
+        flat
+        dense
+        icon="close"
+        color="negative"
+        size="1rem"
+        @click.stop="playerStore.removeGroup(groupId)"
+      >
+        <SsTooltip
+          name="グループを削除"
+          self="center middle"
+          anchor="center start"
+        />
+      </q-btn>
+    </q-item-section>
   </q-item>
 </template>
 

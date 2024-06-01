@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { PlayerSetting } from 'app/src-electron/schema/player';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CommonView from 'src/components/World/Player/CommonView/CommonView.vue';
 import GroupItemsView from './ListView/GroupItemsView.vue';
 import PlayerItemsView from './ListView/PlayerItemsView.vue';
 
 const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 
+const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 </script>
 
 <template>
-  <q-scroll-area class="full-height" style="flex: 1 1 0">
+  <q-scroll-area class="full-height q-px-md" style="flex: 1 1 0">
     <CommonView>
       <template #btnLine>
         <q-btn
@@ -20,6 +23,15 @@ const playerStore = usePlayerStore();
           color="primary"
           :disable="playerStore.focusCards.size === 0"
           @click="playerStore.addGroup()"
+        />
+      </template>
+      <template #toggleLine>
+        <SsBtn
+          v-show="sysStore.systemSettings.user.viewStyle.player === 'list'"
+          free-width
+          :disable="playerStore.focusCards.size === 0"
+          label="全ての選択を解除"
+          @click="() => playerStore.unFocus()"
         />
       </template>
     </CommonView>

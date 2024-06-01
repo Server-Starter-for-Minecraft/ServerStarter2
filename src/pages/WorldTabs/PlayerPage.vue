@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 import Mousetrap from 'mousetrap';
-import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isValid } from 'app/src-public/scripts/error';
-import { strSort } from 'app/src-public/scripts/obj/objSort';
-import { sortRecord } from 'app/src-public/scripts/obj/objSort';
-import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -33,7 +29,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isValid(mainStore.world.players)" class="column fit q-px-md">
+  <div v-if="isValid(mainStore.world.players)" class="column fit">
     <div class="row full-height q-gutter-x-md" >
       <CardView
         v-if="sysStore.systemSettings.user.viewStyle.player === 'card'"

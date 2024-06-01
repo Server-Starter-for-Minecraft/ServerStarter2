@@ -9,7 +9,7 @@ const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 </script>
 
 <template>
-  <q-scroll-area class="full-height" style="flex: 1 1 0">
+  <q-scroll-area class="full-height q-pl-md" style="flex: 1 1 0">
     <CommonView />
 
     <div class="q-py-md fit">
@@ -19,5 +19,5 @@ const validPlayers = defineModel<PlayerSetting[]>({ required: true });
     </div>
   </q-scroll-area>
 
-  <SideMenuView />
+  <SideMenuView class="q-pr-md" />
 </template>
