@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { toEntries } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -17,15 +19,11 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const { t } = useI18n();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 const hovered = ref(false);
-const groupName = computed({
-  get: () => sysStore.systemSettings.player.groups[prop.groupId].name,
-  set: (newVal) => {
-    sysStore.systemSettings.player.groups[prop.groupId].name = newVal;
-  },
-});
+const groupName = ref(sysStore.systemSettings.player.groups[prop.groupId].name);
 
 function addMember(uuid: PlayerUUID) {
   playerStore.updateGroup(prop.groupId, (g) => {
@@ -54,6 +52,30 @@ function removeMember(uuid: PlayerUUID) {
     return g;
   });
 }
+
+/**
+ * 入力グループ名のバリデーション
+ */
+function validateGroupName(groupName: string) {
+  // 自分以外のグループ名一覧を取得
+  const groupNames = toEntries(playerStore.searchGroups())
+    .filter(([gId, g]) => gId !== prop.groupId)
+    .map(([gId, g]) => g.name);
+  const isError =
+    groupName === '' || groupNames.some((name) => name === groupName);
+
+  // エラーでなければグループ名を更新
+  if (!isError) {
+    sysStore.systemSettings.player.groups[prop.groupId].name = groupName;
+  }
+
+  return !isError;
+}
+function validateMessage(name: string) {
+  return name !== ''
+    ? t('player.groupNameDuplicate', { group: name })
+    : t('player.insertGroupName');
+}
 </script>
 
 <template>
@@ -79,6 +101,7 @@ function removeMember(uuid: PlayerUUID) {
             :autofocus="autoFocus"
             flat
             dense
+            :rules="[(val) => validateGroupName(val) || validateMessage(val)]"
             style="font-size: 1.2rem"
           />
         </div>

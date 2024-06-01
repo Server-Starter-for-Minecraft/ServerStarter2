@@ -41,9 +41,10 @@ const splitPos = ref(50);
 
     <q-splitter
       v-model="splitPos"
-      :limits="[10, 90]"
+      :limits="[5, 95]"
       horizontal
       emit-immediately
+      separator-style="height: 3px; margin-bottom: 12px"
       class="q-py-md fit col"
     >
       <template #before>
