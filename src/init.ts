@@ -1,6 +1,6 @@
+import { fromEntries, values } from 'app/src-public/scripts/obj/obj';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { World } from 'app/src-electron/schema/world';
-import { fromEntries, values } from './scripts/obj';
 import { tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import { useMainStore, useWorldStore } from './stores/MainStore';

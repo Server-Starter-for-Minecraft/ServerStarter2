@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { strSort } from 'src/scripts/objSort';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerIconInList from './utils/PlayerIconInList.vue';
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { isError } from 'app/src-public/scripts/error';
 import { WorldName } from 'app/src-electron/schema/brands';
-import { isError } from 'src/scripts/error';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
