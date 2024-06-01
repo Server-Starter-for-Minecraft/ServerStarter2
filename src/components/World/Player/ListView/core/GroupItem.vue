@@ -86,7 +86,7 @@ function validateMessage(name: string) {
     @click="selectGroupMembers"
   >
     <q-item-section>
-      <div class="row q-gutter-md items-center">
+      <div class="row q-gutter-md items-start">
         <!-- 背景要素である`q-item`にクリックイベントが伝播しないように@click.stopでラップ -->
         <div @click.stop class="q-ml-none">
           <GroupColorPicker
@@ -107,7 +107,7 @@ function validateMessage(name: string) {
         </div>
       </div>
 
-      <div class="q-pl-md q-py-sm row q-gutter-sm">
+      <div class="q-pl-md row q-gutter-sm">
         <div v-for="pId in group.players" :key="pId">
           <PlayerIcon
             hover-btn
@@ -130,6 +130,7 @@ function validateMessage(name: string) {
         @click.stop="playerStore.focusCards.forEach(addMember)"
       >
         <SsTooltip
+          v-if="playerStore.focusCards.size !== 0"
           name="選択中のプレイヤーを\nグループに追加"
           self="center middle"
           anchor="center start"

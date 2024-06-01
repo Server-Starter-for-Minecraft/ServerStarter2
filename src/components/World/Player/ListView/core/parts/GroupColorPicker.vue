@@ -50,7 +50,7 @@ const getColorLabel = (color: string) => {
     </q-avatar>
 
     <q-menu>
-      <div class="q-gutter-sm row q-pa-xs" style="width: 12rem; margin: 0 auto">
+      <div class="grid-layout">
         <template v-for="colorLabel in keys(label2code)" :key="colorLabel">
           <q-btn
             v-close-popup
@@ -58,7 +58,8 @@ const getColorLabel = (color: string) => {
             :flat="groupColor !== label2code[colorLabel]"
             outline
             color="primary"
-            class="q-ma-none col-3"
+            class="q-ma-none"
+            style="width: 3rem"
             @click="changeColor(label2code[colorLabel])"
           >
             <q-avatar square size="2rem">
@@ -80,3 +81,16 @@ const getColorLabel = (color: string) => {
     </q-menu>
   </q-btn>
 </template>
+
+<style scoped lang="scss">
+.grid-layout {
+  width: 12rem;
+  display: grid;
+  grid-template-columns: 3rem 3rem 3rem 3rem;
+  grid-template-rows: 3rem 3rem 3rem 3rem;
+}
+
+.avaterImg {
+  image-rendering: pixelated;
+}
+</style>
