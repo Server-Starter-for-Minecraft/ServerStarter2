@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -11,10 +12,12 @@ const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
+
+const splitPos = ref(50);
 </script>
 
 <template>
-  <q-scroll-area class="full-height q-px-md" style="flex: 1 1 0">
+  <div class="column fit q-px-md">
     <CommonView>
       <template #btnLine>
         <q-btn
@@ -36,10 +39,19 @@ const playerStore = usePlayerStore();
       </template>
     </CommonView>
 
-    <div class="q-py-md fit">
-      <PlayerItemsView v-model="validPlayers" />
-      <q-separator class="q-my-md" />
-      <GroupItemsView />
-    </div>
-  </q-scroll-area>
+    <q-splitter
+      v-model="splitPos"
+      :limits="[10, 90]"
+      horizontal
+      emit-immediately
+      class="q-py-md fit col"
+    >
+      <template #before>
+        <PlayerItemsView v-model="validPlayers" />
+      </template>
+      <template #after>
+        <GroupItemsView />
+      </template>
+    </q-splitter>
+  </div>
 </template>
