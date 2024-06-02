@@ -24,13 +24,13 @@ function createViewMap(viewType: ViewStyleSetting['player']) {
     case 'card':
       return {
         value: 'card',
-        label: t(`player.view.card`),
+        label: t('player.view.card'),
         icon: 'grid_view',
       };
     case 'list':
       return {
         value: 'list',
-        label: t(`player.view.list`),
+        label: t('player.view.list'),
         icon: 'list',
       };
   }
