@@ -12,30 +12,29 @@ defineProps<Prop>();
 
 const sysStore = useSystemStore();
 
+// TODO: 変換コードをバックエンドに移築
+const old2newKey = {
+  dark_red: 'red',
+  red: 'pink',
+  gold: 'orange',
+  yellow: 'yellow',
+  dark_green: 'green',
+  green: 'lime',
+  aqua: 'light_blue',
+  dark_aqua: 'cyan',
+  dark_blue: 'blue',
+  blue: 'brown',
+  light_purple: 'magenta',
+  dark_purple: 'purple',
+  white: 'white',
+  gray: 'light_gray',
+  dark_gray: 'gray',
+  black: 'black',
+} as const;
+
 const label2code = sysStore.staticResouces.minecraftColors;
 const getColorLabel = (color: string) => {
   const oldKey = keys(label2code)[values(label2code).indexOf(color)];
-
-  // TODO: 変換コードをバックエンドに移築
-  const old2newKey = {
-    dark_red: 'red',
-    red: 'pink',
-    gold: 'orange',
-    yellow: 'yellow',
-    dark_green: 'green',
-    green: 'lime',
-    aqua: 'light_blue',
-    dark_aqua: 'cyan',
-    dark_blue: 'blue',
-    blue: 'brown',
-    light_purple: 'magenta',
-    dark_purple: 'purple',
-    white: 'white',
-    gray: 'light_gray',
-    dark_gray: 'gray',
-    black: 'black',
-  } as const;
-
   return old2newKey[oldKey];
 };
 </script>
@@ -71,7 +70,7 @@ const getColorLabel = (color: string) => {
               />
             </q-avatar>
             <SsTooltip
-              :name="$t(`player.color.${colorLabel}`)"
+              :name="old2newKey[colorLabel]"
               anchor="bottom middle"
               self="center middle"
             />
