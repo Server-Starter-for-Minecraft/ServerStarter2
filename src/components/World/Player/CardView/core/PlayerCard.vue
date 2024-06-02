@@ -104,29 +104,11 @@ function getGroups(groups: FrontPlayerGroup) {
         </q-avatar>
       </q-item>
 
-      <!-- actionsの領域確保のために描画するが，実態はactions側の実装 -->
       <q-card-section
         v-show="isBelongingGroups"
         class="q-py-none"
-        style="opacity: 0"
       >
         <div class="q-gutter-xs q-pb-sm" style="width: 12.5rem">
-          <template
-            v-for="g in getGroups(sysStore.systemSettings.player.groups)"
-            :key="g"
-          >
-            <GroupBadgeView :group-name="g.name" :color="g.color" />
-          </template>
-        </div>
-      </q-card-section>
-    </template>
-
-    <template #actions>
-      <q-card-section
-        v-show="isBelongingGroups"
-        class="q-py-none absolute-bottom"
-      >
-        <div class="q-gutter-xs q-pb-sm">
           <template
             v-for="g in getGroups(sysStore.systemSettings.player.groups)"
             :key="g"

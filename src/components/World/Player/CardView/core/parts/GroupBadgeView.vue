@@ -16,7 +16,7 @@ async function onCardClicked() {
 </script>
 
 <template>
-  <q-chip square dense outline clickable @click="onCardClicked">
+  <q-chip square dense outline clickable @click.stop="onCardClicked">
     <q-icon name="circle" :style="{ color: color }" />
     <span class="name text-omit">
       {{ groupName }}
