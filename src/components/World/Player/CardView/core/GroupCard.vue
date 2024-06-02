@@ -27,7 +27,7 @@ function onCardClicked() {
 
 function onEditClicked() {
   prop.players.forEach((pId) => playerStore.addFocus(pId));
-  prop.onEdit()
+  prop.onEdit();
 }
 </script>
 

@@ -39,14 +39,10 @@ onMounted(async () => {
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     class="q-px-none"
-    style="width: 2rem; margin: 0 auto;"
+    style="width: 2rem; margin: 0 auto"
   >
     <q-item-section>
-      <q-btn
-        flat
-        dense
-        @click.stop="negativeBtnClicked(uuid)"
-      >
+      <q-btn flat dense @click.stop="negativeBtnClicked(uuid)">
         <PlayerHeadAvatar :player="player" size="1.5rem" />
         <q-icon
           v-show="!hoverBtn || hovered"
@@ -56,11 +52,15 @@ onMounted(async () => {
           color="negative"
         />
       </q-btn>
-      
+
       <q-item-label v-if="showName" class="text-center q-pt-xs text-omit">
         {{ player.name }}
       </q-item-label>
     </q-item-section>
-    <SsTooltip :name="player.name" anchor="bottom middle" self="center middle" />
+    <SsTooltip
+      :name="player.name"
+      anchor="bottom middle"
+      self="center middle"
+    />
   </q-item>
 </template>

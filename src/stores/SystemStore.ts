@@ -31,7 +31,7 @@ export const useSystemStore = defineStore('systemStore', {
   getters: {
     systemSettings() {
       const sysSettingsStore = useSystemSettingsStore();
-      return sysSettingsStore.systemSettings
+      return sysSettingsStore.systemSettings;
     },
   },
 });
@@ -57,8 +57,8 @@ const useSystemSettingsStore = defineStore('systemSettingsStore', {
           players: state.backSystemSettings.player.players,
         },
         user: state.backSystemSettings.user,
-      }
-    }
+      };
+    },
   },
   actions: {
     setSystemSettings(sysSettings: SystemSettings) {
@@ -92,5 +92,5 @@ export function setSysSettingsSubscriber() {
  * SystemSettingsの変換時にデータを取得するStore
  */
 export function getConvertTargetStore() {
-  return useSystemSettingsStore()
+  return useSystemSettingsStore();
 }

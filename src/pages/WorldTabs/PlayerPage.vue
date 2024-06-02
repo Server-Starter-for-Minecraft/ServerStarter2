@@ -30,7 +30,7 @@ onUnmounted(() => {
 
 <template>
   <div v-if="isValid(mainStore.world.players)" class="column fit">
-    <div class="row full-height q-gutter-x-md" >
+    <div class="row full-height q-gutter-x-md">
       <CardView
         v-if="sysStore.systemSettings.user.viewStyle.player === 'card'"
         v-model="mainStore.world.players"

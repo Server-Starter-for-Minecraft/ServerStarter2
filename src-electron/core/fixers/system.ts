@@ -40,7 +40,7 @@ export const fixViewStyleSetting = objectFixer<ViewStyleSetting>(
     contents: literalFixer(['list', 'card'], 'list'),
   },
   true
-)
+);
 
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {
@@ -63,7 +63,7 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     // NgrokのToken情報
     ngrokToken: optionalFixer(stringFixer()),
     // 画面の表示形式を list or card で選択
-    viewStyle: fixViewStyleSetting
+    viewStyle: fixViewStyleSetting,
   },
   true
 );

@@ -18,7 +18,7 @@ const pFilter = (pId?: PlayerUUID) => {
   if (pId) {
     return prop.playerFilter?.(pId) ?? true;
   }
-  return false
+  return false;
 };
 
 /**

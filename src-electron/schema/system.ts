@@ -32,7 +32,7 @@ export type ViewStyleSetting = {
   player: 'list' | 'card';
   // 追加コンテンツタブ
   contents: 'list' | 'card';
-}
+};
 
 export type SystemUserSetting = {
   // ServerStarterの利用規約同意状況

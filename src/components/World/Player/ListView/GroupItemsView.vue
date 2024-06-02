@@ -8,7 +8,7 @@ const playerStore = usePlayerStore();
 const autoFocus = ref(false);
 
 // プレイヤータグ表示直後はグループ名にAutoFocusさせない
-onMounted(() => autoFocus.value = true)
+onMounted(() => (autoFocus.value = true));
 </script>
 
 <template>

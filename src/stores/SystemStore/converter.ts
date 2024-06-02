@@ -14,5 +14,5 @@ export function setBackSys(sys: SystemSettings) {
   converters.forEach((conv) => {
     sys = conv.setSysSettings(sys);
   });
-  return sys
+  return sys;
 }
