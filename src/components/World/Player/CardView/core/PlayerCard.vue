@@ -104,10 +104,7 @@ function getGroups(groups: FrontPlayerGroup) {
         </q-avatar>
       </q-item>
 
-      <q-card-section
-        v-show="isBelongingGroups"
-        class="q-py-none"
-      >
+      <q-card-section v-show="isBelongingGroups" class="q-py-none">
         <div class="q-gutter-xs q-pb-sm" style="width: 12.5rem">
           <template
             v-for="g in getGroups(sysStore.systemSettings.player.groups)"
