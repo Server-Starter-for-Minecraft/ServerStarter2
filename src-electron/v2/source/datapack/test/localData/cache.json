@@ -1,0 +1,54 @@
+{
+  "data": [
+    {
+      "id": "dir_pack01",
+      "exists": true,
+      "type": "dir",
+      "description": "TestDescritption01",
+      "canCopy": true,
+      "canShare": true,
+      "comment": "TestComment01",
+      "name": "pack01"
+    },
+    {
+      "id": "dir_pack02",
+      "exists": true,
+      "type": "dir",
+      "description": "TestDescritption02",
+      "canCopy": false,
+      "canShare": true,
+      "comment": "TestComment02",
+      "name": "pack02"
+    },
+    {
+      "id": "zip_b41e6e9731c997a6daef25397bc6b96b2320e3ff",
+      "type": "zip",
+      "exists": true,
+      "description": "TestDescritption03",
+      "canCopy": true,
+      "canShare": false,
+      "comment": "TestComment03",
+      "name": "pack03"
+    },
+    {
+      "id": "zip_c33a04555cd2f81b9245a0a660da6e9dd5c9de2d",
+      "type": "zip",
+      "exists": true,
+      "description": "TestDescritption04",
+      "canCopy": false,
+      "canShare": false,
+      "comment": "TestComment04",
+      "name": "pack04"
+    },
+    {
+      "id": "dir_pack05",
+      "type": "dir",
+      "exists": false,
+      "description": "TestDescritption05",
+      "canCopy": false,
+      "canShare": false,
+      "comment": "TestComment05",
+      "name": "pack05"
+    }
+  ]
+}

@@ -4,35 +4,35 @@ export type DatapackHash = NewType<string, 'DatapackHash'>;
 export type DatapackName = NewType<string, 'DatapackName'>;
 export type DatapackId = NewType<string, 'DatapackId'>;
 
-export type ZipDatapackIdentity = {
-  readonly type: 'zip';
-  readonly datapackId: DatapackId;
-};
-
-export type DirDatapackIdentity = {
-  readonly type: 'dir';
-  readonly datapackId: DatapackId;
-};
-
-/** データパックの同一性を示すデータ */
-type DatapackIdentity = DirDatapackIdentity | ZipDatapackIdentity;
-
 /** データパックの読み取り専用データ */
 export type DatapackInfo = {
-  readonly identity: DatapackIdentity;
+  /**
+   * データパックのID
+   *
+   * zipの場合は "zip_${sha1}"       になる
+   * dirの場合は "dir_${ファイル名}" になる
+   */
+  readonly datapackId: DatapackId;
 
-  /** データパック説明文 */
+  /** データパックの種類 */
+  readonly type: 'dir' | 'zip';
+
+  /** データパック説明文 (pack.mcmetaの内容) */
   readonly description: string;
 };
 
 /** ワールドごとに設定できるデータパックのメタデータ */
 export type DatapackAnnotation = {
   /** ファイル名 */
-  name: string;
-  /** データを共有していいか */
-  canShare: boolean;
-  /** データを他のワールドで使用していいか */
-  canCopy: boolean;
+  name: DatapackName;
+
+  /** データを共有していいか デフォルト値=undefined */
+  canShare?: boolean;
+
+  /** データを他のワールドで使用していいか デフォルト値=undefined */
+  canCopy?: boolean;
+
+  /** データパックに対する任意のコメント デフォルト値="" */
   comment: string;
 };
 

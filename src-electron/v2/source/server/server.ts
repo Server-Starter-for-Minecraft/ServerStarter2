@@ -71,10 +71,10 @@ export class ServerContainer {
     const dirPath = this.cwdPath(serverId);
     const server = await setup(dirPath);
 
-    if (server.isErr()) return server;
+    if (server.isErr) return server;
 
     // メタデータを保存
-    this.setMeta(serverId, server.value);
+    this.setMeta(serverId, server.value());
 
     return ok(serverId);
   }
@@ -86,11 +86,11 @@ export class ServerContainer {
       return err(new Error('SERVER_IS_RUNNING'));
     const dirPath = this.cwdPath(serverId);
     const meta = await this.getMeta(serverId);
-    if (meta.isErr()) return meta;
+    if (meta.isErr) return meta;
 
     const process = Subprocess.spawn(
-      meta.value.command.process,
-      meta.value.command.args,
+      meta.value().command.process,
+      meta.value().command.args,
       {
         cwd: dirPath.toStr(),
         stdio: 'pipe',
@@ -139,13 +139,13 @@ export class ServerContainer {
     }
   }
 
-  /**
-   * サーバーを撤収してディレクトリを削除
-   *
-   * 撤収に失敗した場合はそのまま残り続ける
-   *
-   * @param teardown 撤収前にディレクトリに対して行う操作 ワールドデータの変更を反映させるのが主
-   */
+/**
+ * サーバーを撤収してディレクトリを削除
+ *
+ * 撤収に失敗した場合はそのまま残り続ける
+ *
+ * @param teardown 撤収前にディレクトリに対して行う操作 ワールドデータの変更を反映させるのが主
+ */
   async remove(
     serverId: ServerId,
     teardown: (dirPath: Path) => Promise<Result<void>>
@@ -156,7 +156,7 @@ export class ServerContainer {
 
     const dirPath = this.cwdPath(serverId);
     const tearResult = await teardown(dirPath);
-    if (tearResult.isErr()) return tearResult;
+    if (tearResult.isErr) return tearResult;
     return ok(await dirPath.remove());
   }
 }
