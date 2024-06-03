@@ -11,30 +11,34 @@ import { err, ok, Result } from '../../util/base';
  * @param runtimeSettings
  */
 export function getJvmArgs(runtimeSettings: RuntimeSettings): Result<string[]> {
-  if ('jvmarg' in runtimeSettings) {
-    // 引数内にスペースが入ったりする可能性もあるので、
-    // 解析処理自体は string-argv に任せた
-    const jvmargArray = stringArgv(runtimeSettings.jvmarg);
-    return ok(jvmargArray);
-  }
-  if ('memory' in runtimeSettings) {
-    const memoryArray = runtimeSettings.memory;
-    let memorySize = '';
-    switch (memoryArray[1]) {
-      case 'MB':
-        memorySize = `${memoryArray[0]}M`;
-        break;
-      case 'GB':
-        memorySize = `${memoryArray[0]}G`;
-        break;
-      case 'TB':
-        memorySize = `${memoryArray[0]}T`;
-        break;
+  try {
+    if ('jvmarg' in runtimeSettings) {
+      // 引数内にスペースが入ったりする可能性もあるので、
+      // 解析処理自体は string-argv に任せた
+      const jvmargArray = stringArgv(runtimeSettings.jvmarg);
+      return ok(jvmargArray);
     }
-    return ok([`-Xms${memorySize}`, `-Xmx${memorySize}`]);
+    if ('memory' in runtimeSettings) {
+      const memoryArray = runtimeSettings.memory;
+      let memorySize = '';
+      switch (memoryArray[1]) {
+        case 'MB':
+          memorySize = `${memoryArray[0]}M`;
+          break;
+        case 'GB':
+          memorySize = `${memoryArray[0]}G`;
+          break;
+        case 'TB':
+          memorySize = `${memoryArray[0]}T`;
+          break;
+      }
+      return ok([`-Xms${memorySize}`, `-Xmx${memorySize}`]);
+    }
+    const _: never = runtimeSettings;
+    return err(new Error('Unreachable'));
+  } catch (error) {
+    return err(error as Error);
   }
-  const _: never = runtimeSettings;
-  return err(new Error('Unreachable'));
 }
 
 /** In Source Testing */
