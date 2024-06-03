@@ -139,13 +139,13 @@ export class ServerContainer {
     }
   }
 
-/**
- * サーバーを撤収してディレクトリを削除
- *
- * 撤収に失敗した場合はそのまま残り続ける
- *
- * @param teardown 撤収前にディレクトリに対して行う操作 ワールドデータの変更を反映させるのが主
- */
+  /**
+   * サーバーを撤収してディレクトリを削除
+   *
+   * 撤収に失敗した場合はそのまま残り続ける
+   *
+   * @param teardown 撤収前にディレクトリに対して行う操作 ワールドデータの変更を反映させるのが主
+   */
   async remove(
     serverId: ServerId,
     teardown: (dirPath: Path) => Promise<Result<void>>
