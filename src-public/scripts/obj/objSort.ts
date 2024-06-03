@@ -9,7 +9,7 @@ export function strSort(a: string, b: string) {
 /**
  * Dictのキーを基にソートする
  */
-export function sort<V>(obj: Record<string, V>) {
+export function sortRecord<V>(obj: Record<string, V>) {
   const sortedEntries = toEntries(obj).sort((a, b) => strSort(a[0], b[0]));
   return fromEntries(sortedEntries);
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { values } from 'src/scripts/obj';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore, useWorldStore } from 'src/stores/MainStore';

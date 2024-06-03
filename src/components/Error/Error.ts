@@ -1,5 +1,5 @@
+import { isValid } from 'app/src-public/scripts/error';
 import { ErrorMessage, Failable } from 'app/src-electron/schema/error';
-import { isValid } from 'src/scripts/error';
 
 let _openDialogFunc: (args: iErrorDialogProps) => void;
 export function setOpenDialogFunc(func: (args: iErrorDialogProps) => void) {

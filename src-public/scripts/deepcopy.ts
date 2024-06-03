@@ -1,4 +1,4 @@
-import { objValueMap } from './objmap';
+import { objValueMap } from './obj/objmap';
 
 type Copyable =
   | string

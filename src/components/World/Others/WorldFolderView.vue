@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useQuasar } from 'quasar';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { WorldContainer } from 'app/src-electron/schema/brands';
-import { deepcopy } from 'src/scripts/deepcopy';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';

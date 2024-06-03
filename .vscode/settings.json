@@ -27,7 +27,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "files.associations": {
-    "*.code-snippets": "json"
+    "*.code-snippets": "json",
+    ".prettierrc": "jsonc"
   },
   "gitmoji.addCustomEmoji": [
     {
