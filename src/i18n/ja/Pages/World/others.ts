@@ -19,6 +19,7 @@ export const jaOthers = {
     title: 'ワールドフォルダ',
     description: 'ワールドデータの保存フォルダを選択',
     addFolder: 'ワールドフォルダを追加',
+    openSettings: 'ワールドフォルダの設定を開く',
     updateFolder: 'ワールドフォルダを更新',
     add: '新規ワールドフォルダを追加',
     addBtn: '{1}を追加',

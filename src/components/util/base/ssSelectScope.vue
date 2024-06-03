@@ -6,6 +6,7 @@ interface Prop {
   dense?: boolean;
   optionLabel?: string;
   optionValue?: string;
+  loading?: boolean;
 }
 
 const prop = defineProps<Prop>();
@@ -19,6 +20,7 @@ const model = defineModel();
     :options="options"
     :label="label"
     :dense="dense"
+    :loading="loading"
     :popup-content-style="{ fontSize: '0.9rem' }"
     :disable="disable"
     emit-value
