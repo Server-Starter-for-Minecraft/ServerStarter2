@@ -23,7 +23,7 @@ export type DatapackInfo = {
 
 /** ワールドごとに設定できるデータパックのメタデータ */
 export type DatapackAnnotation = {
-  /** ファイル名 */
+  /** 名前(拡張子なし) */
   name: DatapackName;
 
   /** データを共有していいか デフォルト値=undefined */
@@ -33,7 +33,7 @@ export type DatapackAnnotation = {
   canCopy?: boolean;
 
   /** データパックに対する任意のコメント デフォルト値="" */
-  comment: string;
+  memo: string;
 };
 
 /** データパック+メタデータ */

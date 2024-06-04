@@ -80,7 +80,7 @@ if (import.meta.vitest) {
         annotation: {
           canCopy: false,
           canShare: true,
-          comment: 'MyTestComment',
+          memo: 'MyTestComment',
           name: 'Datapack001' as DatapackName,
         },
       };
@@ -94,7 +94,7 @@ if (import.meta.vitest) {
         annotation: {
           canCopy: false,
           canShare: true,
-          comment: 'test comment',
+          memo: 'test comment',
           name: 'Datapack002' as DatapackName,
         },
       };
@@ -110,7 +110,7 @@ if (import.meta.vitest) {
         annotation: {
           canCopy: false,
           canShare: true,
-          comment: 'test comment',
+          memo: 'test comment',
           name: 'Datapack003' as DatapackName,
         },
       };
@@ -126,7 +126,7 @@ if (import.meta.vitest) {
         annotation: {
           canCopy: false,
           canShare: true,
-          comment: 'test comment',
+          memo: 'test comment',
           name: 'Datapack004' as DatapackName,
         },
       };
