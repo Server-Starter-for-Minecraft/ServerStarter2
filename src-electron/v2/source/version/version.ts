@@ -1,29 +1,73 @@
 import { Runtime } from '../../schema/runtime';
-import { Result } from '../../util/base';
+import {
+  AllFabricVersion,
+  AllForgeVersion,
+  AllMohistmcVersion,
+  AllPapermcVersion,
+  AllSpigotVersion,
+  AllVanillaVersion,
+  VersionIdntity,
+} from '../../schema/version';
+import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
 /**
- * シングルトンでOK
+ * バージョンを管理するクラス
  */
 export class VersionContainer {
-  static listVanillaVersions() {}
+  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listVanillaVersions(
+    fromCache: boolean
+  ): Promise<Result<AllVanillaVersion>> {
+    return err(new Error('not_implemanted'));
+  }
 
-  static listForgeVersions() {}
+  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listForgeVersions(
+    fromCache: boolean
+  ): Promise<Result<AllForgeVersion>> {
+    return err(new Error('not_implemanted'));
+  }
 
-  static listSpigotVersions() {}
+  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listSpigotVersions(
+    fromCache: boolean
+  ): Promise<Result<AllSpigotVersion>> {
+    return err(new Error('not_implemanted'));
+  }
 
-  static listPaperMcVersions() {}
+  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listPaperMcVersions(
+    fromCache: boolean
+  ): Promise<Result<AllPapermcVersion>> {
+    return err(new Error('not_implemanted'));
+  }
 
-  static listMohistMcVersions() {}
+  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listMohistMcVersions(
+    fromCache: boolean
+  ): Promise<Result<AllMohistmcVersion>> {
+    return err(new Error('not_implemanted'));
+  }
 
-  static listFabricVersions() {}
+  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listFabricVersions(
+    fromCache: boolean
+  ): Promise<Result<AllFabricVersion>> {
+    return err(new Error('not_implemanted'));
+  }
 
   /**
-   * バージョンデータをPathに展開する
+   * サーバー実行ディレクトリ構成をPathに展開する
+   *
+   * jarだけでなくlibrariesとかも一緒に移動できるとサーバー起動を高速化できそう
    *
    * @returns 使用するランタイムの種類と,サブプロセスのコマンドを生成する関数 を返す
    */
-  static extractTo(path: Path): Promise<
+  async extractTo(
+    versionIdntity: VersionIdntity,
+    path: Path
+  ): Promise<
     Result<{
       runtime: Runtime;
       getCommand: (option: { runtimePath: Path; jvmArgs: string[] }) => {
@@ -31,20 +75,19 @@ export class VersionContainer {
         args: string[];
       };
     }>
-  >;
+  > {
+    return err(new Error('not_implemanted'));
+  }
 
   /**
-   * バージョンデータをPathから削除する
+   * バージョンデータをPathごと削除する
    *
-   * @returns 使用するランタイムの種類と,サブプロセスのコマンドを生成する関数 を返す
+   * libraries等が生成されていたらキャッシュに避難すると高速化できそう
    */
-  static removeFrom(path: Path): Promise<
-    Result<{
-      runtime: Runtime;
-      getCommand: (option: { runtimePath: Path; jvmArgs: string[] }) => {
-        process: string;
-        args: string[];
-      };
-    }>
-  >;
+  async removeFrom(
+    versionIdntity: VersionIdntity,
+    path: Path
+  ): Promise<Result<void>> {
+    return err(new Error('not_implemanted'));
+  }
 }
