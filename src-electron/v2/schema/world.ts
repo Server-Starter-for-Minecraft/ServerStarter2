@@ -11,7 +11,8 @@ import { Version } from './version';
 export type WorldName = NewType<string, 'WorldName'>;
 
 export type LocalWorldContainer = {
-  containerType: 'local';
+  readonly containerType: 'local';
+  readonly path: string;
 };
 
 export type WorldContainer = LocalWorldContainer;
@@ -33,17 +34,11 @@ export type BannedIp = {
 };
 
 export type World = {
-  // ワールドの情報
-  // バージョン
-  // mod
-  // 保存日時
-  // ロック状態 etc...
-
   /** ワールドの保存コンテナ */
-  container: WorldContainer;
+  readonly container: WorldContainer;
 
   /** ワールド名 */
-  name: WorldName;
+  readonly name: WorldName;
 
   /** 起動中フラグ */
   using?: boolean;
@@ -76,11 +71,11 @@ export type World = {
   bannedIps: BannedIp[];
 
   /** 最終起動時のデータ */
-  last?: {
+  readonly last?: {
     /** 最後に起動したサーバー主 */
-    user?: PlayerName;
+    readonly user?: PlayerName;
 
     /** 最後に起動したバージョン */
-    version?: PlayerName;
+    readonly version?: PlayerName;
   };
 };

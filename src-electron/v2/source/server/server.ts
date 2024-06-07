@@ -71,10 +71,10 @@ export class ServerContainer {
     const dirPath = this.cwdPath(serverId);
     const server = await setup(dirPath);
 
-    if (server.isErr()) return server;
+    if (server.isErr) return server;
 
     // メタデータを保存
-    this.setMeta(serverId, server.value);
+    this.setMeta(serverId, server.value());
 
     return ok(serverId);
   }
