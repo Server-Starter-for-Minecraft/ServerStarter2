@@ -74,12 +74,16 @@ export class Readable<K extends StreamKind> {
   convert<L extends StreamKind>(duplex: Conversion<K, L>): Readable<L> {
     return new Readable<K>(this.pipe(duplex.stream));
   }
-  into<T>(
-    target: WritableStreamer<StreamKind.BIN, T>
-  ): Promise<Result<T, Error>> {
+  into<T>(target: WritableStreamer<K, T>): Promise<Result<T, Error>> {
     return target.write(this);
   }
 }
+
+export type EntryData = {
+  header: Record<string, any>; // TODO: any???
+  stream: stream.Readable;
+  next: (error?: any) => void;
+};
 
 export class Writable<K extends StreamKind> {
   readonly stream: stream.Writable;
