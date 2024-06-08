@@ -1,18 +1,66 @@
 <script setup lang="ts">
-import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
+import { Ref, ref } from 'vue';
+import { AllFileData } from 'app/src-electron/schema/filedata';
+import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useMainStore } from 'src/stores/MainStore';
 import SsIconBtn from 'src/components/util/base/ssIconBtn.vue';
-import SsInput from 'src/components/util/base/ssInput.vue';
 import {
+  addContent,
+  ContentsData,
   ContentsType,
+  getAllContents,
   importNewContent,
   openSavedFolder,
+  OptContents,
 } from './contentsPage';
+import ListItem from './ListView/ListItem.vue';
 
 interface Prop {
   contentType: ContentsType;
 }
-defineProps<Prop>();
-const contentsStore = useContentsStore();
+const prop = defineProps<Prop>();
+const mainStore = useMainStore();
+const consoleStore = useConsoleStore();
+
+const selectedContent: Ref<OptContents | undefined> = ref();
+// TODO: 今後追加コンテンツにIDが振られた場合はIDが一致するか否かでフィルタ？
+// TODO: 実行負荷が高い場合はリファクタリング
+const initNewContents = () =>
+  getAllContents(prop.contentType).filter(
+    (c) =>
+      !mainStore.world.additional[`${prop.contentType}s`]
+        .map((_c) => _c.name)
+        .includes(c.file.name)
+  );
+const newContents = ref(initNewContents());
+
+function newContentsFilter(
+  val: string,
+  update: (callbackFn: () => void) => void,
+  abort: () => void
+) {
+  // 検索を始める文字数
+  const startSearchLetter = 1;
+
+  if (val.length < startSearchLetter) {
+    abort();
+    return;
+  }
+
+  update(() => {
+    const needle = val.toLowerCase();
+    newContents.value = initNewContents().filter(
+      (v) =>
+        v.file.name.toLowerCase().indexOf(needle) > -1 ||
+        (v.wName?.toLowerCase().indexOf(needle) ?? -1) > -1
+    );
+  });
+}
+
+function addContentClicked(content: AllFileData<ContentsData>) {
+  addContent(prop.contentType, content);
+  selectedContent.value = undefined;
+}
 </script>
 
 <template>
@@ -26,12 +74,36 @@ const contentsStore = useContentsStore();
     </h1>
 
     <div class="row items-center q-gutter-md">
-      <SsInput
-        v-model="contentsStore.searchText"
+      <q-select
         dense
-        placeholder="追加や絞り込みしたいコンテンツ名を入力"
+        filled
+        placeholder="追加したいコンテンツ名を入力"
+        v-model="selectedContent"
+        @update:model-value="(newVal: OptContents) => addContentClicked(newVal.file)"
+        use-input
+        hide-dropdown-icon
+        :options="newContents"
+        option-label="name"
+        @filter="newContentsFilter"
         class="col"
-      />
+      >
+        <template v-slot:no-option>
+          <q-item>
+            <q-item-section class="text-grey"> No results </q-item-section>
+          </q-item>
+        </template>
+
+        <template v-slot:option="scope">
+          <q-item v-bind="scope.itemProps">
+            <q-item-section>
+              <q-item-label style="font-size: .8rem;">{{ scope.opt.file.name }}</q-item-label>
+              <q-item-label caption>{{
+                scope.opt.wName ? `${scope.opt.wName}に存在します` : '導入履歴のあるコンテンツ'
+              }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
       <SsIconBtn
         flat
         size=".8rem"
@@ -46,6 +118,43 @@ const contentsStore = useContentsStore();
         tooltip="保存先フォルダを開く"
         @click="() => openSavedFolder(contentType)"
       />
+    </div>
+    <p
+      v-if="
+        consoleStore.status(mainStore.world.id) !== 'Stop' &&
+        contentType !== 'datapack'
+      "
+      class="text-caption text-negative q-ma-none"
+    >
+      {{ $t('additionalContents.needReboot') }}
+    </p>
+
+    <div class="q-my-sm">
+      <span class="text-caption">
+        {{
+          $t('additionalContents.installed', {
+            type: $t(`additionalContents.${contentType}`),
+          })
+        }}
+      </span>
+      <q-list
+        v-if="mainStore.world.additional[`${contentType}s`].length > 0"
+        separator
+      >
+        <ListItem
+          v-for="c in mainStore.world.additional[`${contentType}s`]"
+          :key="c.name"
+          :content-type="contentType"
+          :content="c"
+        />
+      </q-list>
+      <p v-else class="q-my-xl text-center text-h5" style="opacity: 0.6">
+        {{
+          $t('additionalContents.notInstalled', {
+            type: $t(`additionalContents.${contentType}`),
+          })
+        }}
+      </p>
     </div>
   </div>
 </template>

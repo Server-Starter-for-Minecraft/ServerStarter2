@@ -1,3 +1,4 @@
+import { useQuasar } from 'quasar';
 import {
   AllFileData,
   CacheFileData,
@@ -7,11 +8,14 @@ import {
   PluginData,
 } from 'app/src-electron/schema/filedata';
 import { Version } from 'app/src-electron/schema/version';
-import { tError } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
 import { checkError } from 'src/components/Error/Error';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
 export type ContentsData = DatapackData | ModData | PluginData;
 export type ContentsType = 'datapack' | 'plugin' | 'mod';
@@ -31,6 +35,45 @@ export const isContentsExists: contentExists = {
   mohistmc: { datapack: true, plugin: true, mod: true },
   fabric: { datapack: true, plugin: false, mod: true },
 };
+
+/**
+ * 既に存在するコンテンツ一覧を取得する
+ */
+export type OptContents = {
+  wName?: string;
+  file: AllFileData<ContentsData>;
+  name: string;
+};
+export function getAllContents(cType: ContentsType): OptContents[] {
+  function __converter(
+    content: AllFileData<ContentsData>,
+    worldName?: string
+  ): OptContents {
+    return { wName: worldName, file: content, name: content.name };
+  }
+
+  const sysStore = useSystemStore();
+  const mainStore = useMainStore();
+  const returnArray = sysStore.cacheContents[`${cType}s`].map((c) =>
+    __converter(c)
+  );
+  mainStore
+    .getFromAllWorld((w) =>
+      w.additional[`${cType}s`].map((c) => __converter(c, w.name))
+    )
+    .flat()
+    .forEach((c) => {
+        returnArray.push(c);
+      // if (!returnArray.some((_c) => _c.name === c.name)) {
+      // }
+    });
+  return returnArray;
+}
+
+export const showingContentName = (content: AllFileData<ContentsData>) =>
+  content.name.replace(/§./g, '').trim();
+export const showingContentDescription = (content: AllFileData<ContentsData>) =>
+  'description' in content ? content.description.replace(/§./g, '').trim() : '';
 
 /**
  * コンテンツを新規導入
@@ -91,10 +134,63 @@ function addContent2World(
       };
     }
   }
-  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(content);
+  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(
+    content
+  );
   (sysStore.cacheContents[`${cType}s`] as CacheFileData<ContentsData>[]).push(
     NewFile2CacheFile()
   );
+}
+
+/**
+ * 指定したコンテンツを追加する
+ */
+export function addContent(
+  cType: ContentsType,
+  content: AllFileData<ContentsData>
+) {
+  const mainStore = useMainStore();
+  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(
+    content
+  );
+}
+
+export function deleteContent(
+  cType: ContentsType,
+  content: AllFileData<ContentsData>
+) {
+  const mainStore = useMainStore();
+  const contentsStore = useContentsStore();
+
+  function __delete() {
+    mainStore.world.additional[`${cType}s`].splice(
+      mainStore.world.additional[`${cType}s`]
+        .map((c) => c.name)
+        .indexOf(content.name),
+      1
+    );
+  }
+
+  // 起動前に登録された追加コンテンツに対して警告を出さない
+  if (contentsStore.isNewContents(content)) {
+    __delete();
+  } else {
+    const $q = useQuasar();
+    $q.dialog({
+      component: DangerDialog,
+      componentProps: {
+        dialogTitle: $T('additionalContents.deleteDialog.title', {
+          type: cType,
+        }),
+        dialogDesc: $T('additionalContents.deleteDialog.desc', {
+          type: cType,
+        }),
+        okBtnTxt: $T('additionalContents.deleteDialog.okbtn'),
+      } as dangerDialogProp,
+    }).onOk(() => {
+      __delete();
+    });
+  }
 }
 
 /**

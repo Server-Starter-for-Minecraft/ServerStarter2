@@ -192,6 +192,13 @@ export const useMainStore = defineStore('mainStore', {
       });
     },
     /**
+     * すべてのワールドに対してprocessで指定した処理を行った結果を返す
+     */
+    getFromAllWorld<T>(process: (world: WorldEdited) => T) {
+      const worldStore = useWorldStore();
+      return values(worldStore.worldList).map(process);
+    },
+    /**
      * Ngrokより割り当てられたIPアドレスを削除する（サーバー終了時を想定）
      */
     removeWorldIP(worldID: WorldID) {

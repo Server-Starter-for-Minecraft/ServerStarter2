@@ -1,75 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useQuasar } from 'quasar';
 import { AllFileData } from 'app/src-electron/schema/filedata';
-import { $T } from 'src/i18n/utils/tFunc';
-import { useMainStore } from 'src/stores/MainStore';
-import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
-import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import BaseActionsCard from '../../utils/BaseActionsCard.vue';
-import { ContentsData } from '../contentsPage';
+import {
+  addContent,
+  ContentsData,
+  ContentsType,
+  deleteContent,
+  showingContentDescription,
+  showingContentName,
+} from '../contentsPage';
 
 interface Prop {
-  contentType: 'datapack' | 'plugin' | 'mod';
+  contentType: ContentsType;
   content: AllFileData<ContentsData>;
   isDelete?: boolean;
   color?: string;
 }
-const prop = defineProps<Prop>();
-
-const $q = useQuasar();
-const mainStore = useMainStore();
-const contentsStore = useContentsStore();
-
-function addContent() {
-  (
-    mainStore.world.additional[
-      `${prop.contentType}s`
-    ] as AllFileData<ContentsData>[]
-  ).push(prop.content);
-}
-
-function deleteContent() {
-  function __delete() {
-    mainStore.world.additional[`${prop.contentType}s`].splice(
-      mainStore.world.additional[`${prop.contentType}s`]
-        .map((c) => c.name)
-        .indexOf(prop.content.name),
-      1
-    );
-  }
-
-  // 起動前に登録された追加コンテンツに対して警告を出さない
-  if (contentsStore.isNewContents(prop.content)) {
-    __delete();
-  } else {
-    $q.dialog({
-      component: DangerDialog,
-      componentProps: {
-        dialogTitle: $T('additionalContents.deleteDialog.title', {
-          type: prop.contentType,
-        }),
-        dialogDesc: $T('additionalContents.deleteDialog.desc', {
-          type: prop.contentType,
-        }),
-        okBtnTxt: $T('additionalContents.deleteDialog.okbtn'),
-      } as dangerDialogProp,
-    }).onOk(() => {
-      __delete();
-    });
-  }
-}
-
-const transformedName = computed(() =>
-  prop.content.name.replace(/§./g, '').trim()
-);
-const transformedDescription = computed(() =>
-  'description' in prop.content
-    ? prop.content.description.replace(/§./g, '').trim()
-    : ''
-);
+defineProps<Prop>();
 </script>
 
 <template>
@@ -83,9 +31,9 @@ const transformedDescription = computed(() =>
       <q-item class="q-pr-sm">
         <q-item-section>
           <q-item-label class="contentsName text-omit">
-            {{ transformedName }}
+            {{ showingContentName(content) }}
             <SsTooltip
-              :name="transformedName"
+              :name="showingContentName(content)"
               anchor="bottom start"
               self="center start"
             />
@@ -95,9 +43,9 @@ const transformedDescription = computed(() =>
             class="text-omit"
             style="opacity: 0.7"
           >
-            {{ transformedDescription }}
+            {{ showingContentDescription(content) }}
             <SsTooltip
-              :name="transformedDescription"
+              :name="showingContentDescription(content)"
               anchor="bottom start"
               self="center start"
             />
@@ -112,7 +60,7 @@ const transformedDescription = computed(() =>
             color="negative"
             icon="close"
             size="1rem"
-            @click="deleteContent"
+            @click="deleteContent(contentType, content)"
           >
             <div
               class="text-negative text-center full-width"
@@ -130,7 +78,7 @@ const transformedDescription = computed(() =>
             color="primary"
             icon="add"
             size="1rem"
-            @click="addContent"
+            @click="addContent(contentType, content)"
           >
             <div
               class="text-primary text-center full-width"
