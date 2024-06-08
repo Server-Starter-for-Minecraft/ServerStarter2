@@ -1,32 +1,21 @@
 <script setup lang="ts">
+import { QBtnProps } from 'quasar';
+
 interface Prop {
-  icon?: string;
-  label?: string;
-  dense?: boolean;
-  color?: string;
-  width?: string;
   freeWidth?: boolean;
-  disable?: boolean;
-  loading?: boolean;
-  isCapital?: boolean;
-  to?: string;
-  onClick?: () => void;
+  width?: string;
+  isCapital?: boolean
+  onClick: () => void;
 }
-defineProps<Prop>();
+const prop = defineProps<Prop & QBtnProps>();
 </script>
 
 <template>
   <q-btn
+    v-bind="prop"
     outline
-    :dense="dense"
-    :icon="icon"
-    :label="label"
-    :color="color"
     :disable="loading || disable"
-    :loading="loading"
     :no-caps="!isCapital"
-    :to="to"
-    @click="onClick"
     :style="{ width: freeWidth ? '' : width ?? '13rem' }"
   >
     <slot />

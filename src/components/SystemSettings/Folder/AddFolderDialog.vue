@@ -76,7 +76,7 @@ function isErrorContainer(c: WorldContainerSetting) {
             inputName === '' ||
             pickPath === ''
           "
-          @click="
+          @click="() => 
             onDialogOK({
               name: inputName,
               container: pickPath,
