@@ -8,7 +8,7 @@ export type Ok<T> = {
   value(): T;
   error(): never;
   onOk<U extends Result<any, any>>(op: (value: T) => U): U;
-  onErr(op: (value: any) => Result<T, any>): Ok<T>;
+  onErr(op: (error: never) => Result<T, any>): Ok<T>;
   valueOrDefault(defaultValue: T): T;
   errorOrDefault<U>(defaultError: U): U;
 };
@@ -18,7 +18,7 @@ export type Err<E> = {
   readonly isErr: true;
   value(): never;
   error(): E;
-  onOk(op: (error: any) => Result<any, E>): Err<E>;
+  onOk(op: (value: never) => Result<any, E>): Err<E>;
   onErr<U extends Result<any, E>>(op: (error: E) => U): U;
   valueOrDefault<U>(defaultValue: U): U;
   errorOrDefault(defaultError: E): E;
