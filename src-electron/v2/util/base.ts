@@ -69,7 +69,13 @@ export const ok = <T>(value: T): Ok<T> => {
   return result;
 };
 
-export const err = <T>(error: T): Err<T> => {
+type ErrGen = {
+  <T>(error: T): Err<T>;
+  /** よく使うので糖衣構文 : err(new Error(MESSAGE)) === err.error(MESSAGE) */
+  error(message: string): Err<Error>;
+};
+
+export const err: ErrGen = <T>(error: T): Err<T> => {
   const returnError = () => error;
   const result: Err<T> = {
     isOk: false,
@@ -83,6 +89,7 @@ export const err = <T>(error: T): Err<T> => {
   };
   return result;
 };
+err.error = (message) => err(new Error(message));
 
 export const value = <T>(value: T): Value<T> => {
   const returnValue = () => value;
