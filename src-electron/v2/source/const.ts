@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { Path } from '../util/binary/path';
+import { Path } from '../util/stream/path';
 
 const userDataPath = (
   process.env.DEBUGGING || !app

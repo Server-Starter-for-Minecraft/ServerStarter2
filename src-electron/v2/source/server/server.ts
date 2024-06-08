@@ -1,11 +1,11 @@
 import { spawn } from 'child_process';
 import { Server, serverValidator } from '../../schema/server';
 import { err, ok, Result } from '../../util/base';
-import { Bytes } from '../../util/binary/bytes';
-import { Path } from '../../util/binary/path';
-import { Subprocess } from '../../util/binary/subprocess';
 import { sleep } from '../../util/promise/sleep';
 import { randomString } from '../../util/random/ramdomString';
+import { Bytes } from '../../util/stream/bytes';
+import { Path } from '../../util/stream/path';
+import { Subprocess } from '../../util/stream/subprocess';
 import { NewType } from '../../util/type/newtype';
 import { JsonFile } from '../../util/wrapper/jsonFile';
 

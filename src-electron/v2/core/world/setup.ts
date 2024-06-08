@@ -4,7 +4,7 @@ import { RuntimeContainer } from '../../source/runtime/runtime';
 import { VersionContainer } from '../../source/version/version';
 import { WorldSource } from '../../source/world/world';
 import { err, ok, Result } from '../../util/base';
-import { Path } from '../../util/binary/path';
+import { Path } from '../../util/stream/path';
 import { defaultRuntimeSettings } from '../const';
 import { datapackContainer } from '../setup';
 import { getJvmArgs } from './runtime';

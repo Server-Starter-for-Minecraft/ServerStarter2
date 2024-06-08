@@ -1,6 +1,6 @@
 import { Runtime } from '../../schema/runtime';
 import { Result } from '../../util/base';
-import { Path } from '../../util/binary/path';
+import { Path } from '../../util/stream/path';
 
 export class RuntimeContainer {
   static list(): Promise<>;

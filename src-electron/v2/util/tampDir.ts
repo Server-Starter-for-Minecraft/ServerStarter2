@@ -1,5 +1,5 @@
-import { Path } from './binary/path';
 import { randomString } from './random/ramdomString';
+import { Path } from './stream/path';
 
 /** 一次的なパスをつくるよ! */
 export class TempDir extends Path {

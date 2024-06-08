@@ -1,6 +1,6 @@
 import { World, WorldContainer, WorldName } from '../../schema/world';
 import { Result } from '../../util/base';
-import { Path } from '../../util/binary/path';
+import { Path } from '../../util/stream/path';
 
 /**
  * ワールドを管理するクラス

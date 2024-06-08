@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import { err, ok, Result } from '../base';
-import { Bytes } from '../binary/bytes';
-import { ReadableStreamer, WritableStreamer } from '../binary/stream';
+import { Bytes } from '../stream/bytes';
+import { ReadableStreamer, WritableStreamer } from '../stream/stream';
 
 /**
  * JSONファイルを扱うクラス

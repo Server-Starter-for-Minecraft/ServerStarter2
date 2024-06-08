@@ -1,7 +1,7 @@
 import { WithExists } from '../../schema/additional';
 import { DatapackInfo } from '../../schema/datapack';
 import { Result } from '../../util/base';
-import { Path } from '../../util/binary/path';
+import { Path } from '../../util/stream/path';
 
 /**
  * データパックを格納するフォルダのような何か

@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { RuntimeSettings } from '../schema/runtime';
-import { Path } from '../util/binary/path';
+import { Path } from '../util/stream/path';
 
 /**
  * システムで使用する定数

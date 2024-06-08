@@ -1,6 +1,6 @@
 import { World, WorldContainer, WorldName } from '../../schema/world';
 import { err, Result } from '../../util/base';
-import { Path } from '../../util/binary/path';
+import { Path } from '../../util/stream/path';
 import { WorldSource } from './world';
 
 /**
@@ -70,7 +70,5 @@ export class LocalWorldSource extends WorldSource {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('', () => {
-    
-  });
+  test('', () => {});
 }

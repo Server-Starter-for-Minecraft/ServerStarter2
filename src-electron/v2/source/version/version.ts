@@ -9,7 +9,7 @@ import {
   VersionIdntity,
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
-import { Path } from '../../util/binary/path';
+import { Path } from '../../util/stream/path';
 
 /**
  * バージョンを管理するクラス
