@@ -1,14 +1,14 @@
 import type { z } from 'zod';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
-import { IReadableStreamer, IWritableStreamer } from '../binary/stream';
+import { ReadableStreamer, WritableStreamer } from '../binary/stream';
 
 /**
  * JSONファイルを扱うクラス
  *
  * データのバリデーションも行う
  */
-export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
+export class JsonFile<T extends ReadableStreamer | WritableStreamer<any>, U> {
   private target: T;
   private encoding: BufferEncoding;
   private validator: z.ZodType<U>;
@@ -28,7 +28,7 @@ export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
   /**
    * ファイルからJSONを読み込む
    */
-  async read(this: JsonFile<IReadableStreamer, U>): Promise<Result<U>> {
+  async read(this: JsonFile<ReadableStreamer, U>): Promise<Result<U>> {
     // 読み書き処理中の場合待機
     await this.lock;
 
@@ -53,7 +53,7 @@ export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
    * ファイにJSONを書き込む
    */
   async write<T>(
-    this: JsonFile<IWritableStreamer<T>, U>,
+    this: JsonFile<WritableStreamer<T>, U>,
     content: U
   ): Promise<Result<T>> {
     const str = JSON.stringify(content);
