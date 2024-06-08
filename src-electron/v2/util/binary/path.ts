@@ -3,17 +3,16 @@ import * as path from 'path';
 import * as stream from 'stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import { err, ok, Result } from '../base';
-import { DuplexStreamer, Readable } from './stream';
+import { DuplexStreamer, Readable, StreamKind, Writable } from './stream';
 import { asyncPipe } from './util';
 
 function replaceSep(pathstr: string) {
   return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
 }
 
-export class Path extends DuplexStreamer<void> {
+export class Path {
   private _path: string;
   constructor(value?: string | Path) {
-    super();
     if (value === undefined) {
       this._path = '';
     } else if (typeof value === 'string') {
@@ -26,15 +25,12 @@ export class Path extends DuplexStreamer<void> {
     return this.path;
   }
 
-  createReadStream(): Readable {
-    return new Readable(fs.createReadStream(this.path));
+  get file(): DuplexStreamer<StreamKind.BIN, void> {
+    return new PathFileStreamer(this);
   }
 
-  async write(readable: stream.Readable): Promise<Result<void, Error>> {
-    // ファイルが既に存在する場合、エラーにする
-    if (this.exists()) return err(new Error('EEXIST'));
-    const writable = fs.createWriteStream(this.path);
-    return asyncPipe(readable, writable);
+  get dir(): DuplexStreamer<StreamKind.ENTRY, void> {
+    return new PathEntryStreamer(this);
   }
 
   child(child: string) {
@@ -199,6 +195,42 @@ export class Path extends DuplexStreamer<void> {
   }
 }
 
+export class PathFileStreamer extends DuplexStreamer<StreamKind.BIN, void> {
+  private path: Path;
+  constructor(path: Path) {
+    super();
+    this.path = path;
+  }
+  createReadStream(): Readable<StreamKind.BIN> {
+    return new Readable(fs.createReadStream(this.path.path));
+  }
+
+  async write(
+    readable: Readable<StreamKind.BIN>
+  ): Promise<Result<void, Error>> {
+    // ファイルが既に存在する場合、エラーにする
+    if (this.path.exists()) return err(new Error('EEXIST'));
+    const writable = fs.createWriteStream(this.path.path);
+    return asyncPipe(readable, new Writable(writable));
+  }
+}
+
+export class PathEntryStreamer extends DuplexStreamer<StreamKind.ENTRY, void> {
+  private path: Path;
+
+  constructor(path: Path) {
+    super();
+    this.path = path;
+  }
+
+  write(readable: Readable<StreamKind.ENTRY>): Promise<Result<void, Error>> {
+    throw new Error('Method not implemented.');
+  }
+  createReadStream(): Readable<StreamKind.ENTRY> {
+    throw new Error('Method not implemented.');
+  }
+}
+
 /** 再帰的にファイルの権限を書き換える */
 async function changePermissionsRecursively(basePath: string, mode: number) {
   if (fs.existsSync(basePath)) {
@@ -296,7 +328,7 @@ if (import.meta.vitest) {
 
     expect(tgt.exists()).toBe(false);
 
-    await src.into(tgt);
+    await src.file.into(tgt.file);
 
     expect((await tgt.readText()).value()).toBe('hello world');
     await tgt.remove();
@@ -304,20 +336,20 @@ if (import.meta.vitest) {
     const { Bytes } = await import('./bytes');
 
     // ファイルの中身をバイト列に変換
-    const bytes = (await src.into(Bytes)).value();
+    const bytes = (await src.file.into(Bytes)).value();
 
     expect(bytes.data.toString('utf8')).toBe('hello world');
 
     expect(tgt.exists()).toBe(false);
 
     // バイト列をファイルに書き込み
-    await bytes.into(tgt);
+    await bytes.into(tgt.file);
 
     expect((await tgt.readText()).value()).toBe('hello world');
 
     await tgt.remove();
 
-    expect((await mis.into(Bytes)).error().message).toContain('ENOENT');
+    expect((await mis.file.into(Bytes)).error().message).toContain('ENOENT');
 
     // TODO: 失敗するストリームの調査
     // TODO: すでにあるファイルにストリームを書き込めないことを検証

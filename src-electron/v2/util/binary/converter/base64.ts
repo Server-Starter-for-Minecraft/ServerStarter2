@@ -1,7 +1,13 @@
 import { Base64Decode, Base64Encode } from 'base64-stream';
+import { Conversion, StreamKind } from '../stream';
 
-export const fromBase64 = () => new Base64Decode();
-export const toBase64 = () => new Base64Encode({ outputEncoding: null });
+export const fromBase64 = () =>
+  new Conversion<StreamKind.BIN, StreamKind.BIN>(new Base64Decode());
+
+export const toBase64 = () =>
+  new Conversion<StreamKind.BIN, StreamKind.BIN>(
+    new Base64Encode({ outputEncoding: null })
+  );
 
 /** In Source Testing */
 if (import.meta.vitest) {

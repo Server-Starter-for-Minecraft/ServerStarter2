@@ -1,13 +1,22 @@
 import * as stream from 'stream';
 import { Result } from '../base';
 
-export abstract class ReadableStreamer {
+/** 何のストリームなのか */
+export enum StreamKind {
+  /** バイト列 */
+  BIN,
+  /** ファイルエントリ列 */
+  ENTRY,
+}
+
+export abstract class ReadableStreamer<K extends StreamKind> {
   /**
    * 読み込みストリームを生成する
    *
    * 基本的に into / convert から呼び出す目的
    */
-  abstract createReadStream(): Readable;
+  abstract createReadStream(): Readable<K>;
+
   /**
    * ストリームを変換する
    *
@@ -15,9 +24,10 @@ export abstract class ReadableStreamer {
    *
    * @param duplex ストリーム変換用オブジェクト 基本的にstream.Transform を想定
    */
-  convert(duplex: stream.Duplex): Readable {
+  convert<L extends StreamKind>(duplex: Conversion<K, L>): Readable<L> {
     return this.createReadStream().convert(duplex);
   }
+
   /**
    * ストリームを書き込む
    *
@@ -27,12 +37,12 @@ export abstract class ReadableStreamer {
    *
    * @param target 書き込み先
    */
-  into<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
+  into<T>(target: WritableStreamer<K, T>): Promise<Result<T, Error>> {
     return this.createReadStream().into(target);
   }
 }
 
-export abstract class WritableStreamer<T> {
+export abstract class WritableStreamer<K extends StreamKind, T> {
   /**
    * ストリームから書き込む
    *
@@ -40,31 +50,47 @@ export abstract class WritableStreamer<T> {
    *
    * @param target 書き込み先
    */
-  abstract write(readable: stream.Readable): Promise<Result<T, Error>>;
+  abstract write(readable: Readable<K>): Promise<Result<T, Error>>;
 }
 
-export abstract class DuplexStreamer<T>
-  extends ReadableStreamer
-  implements WritableStreamer<T>
+export abstract class DuplexStreamer<K extends StreamKind, T>
+  extends ReadableStreamer<K>
+  implements WritableStreamer<K, T>
 {
-  abstract write(readable: stream.Readable): Promise<Result<T, Error>>;
+  abstract write(readable: Readable<K>): Promise<Result<T, Error>>;
 }
 
-export class Readable implements ReadableStreamer {
+export class Readable<K extends StreamKind> {
   readonly stream: stream.Readable;
   constructor(stream: stream.Readable) {
     this.stream = stream;
   }
-  createReadStream(): Readable {
+  createReadStream(): Readable<K> {
     return this;
   }
   private pipe<T extends stream.Writable | stream.Duplex>(stream: T): T {
     return this.stream.on('error', stream.destroy).pipe(stream) as T;
   }
-  convert(duplex: stream.Duplex): Readable {
-    return new Readable(this.pipe(duplex));
+  convert<L extends StreamKind>(duplex: Conversion<K, L>): Readable<L> {
+    return new Readable<K>(this.pipe(duplex.stream));
   }
-  into<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
-    return target.write(this.stream);
+  into<T>(
+    target: WritableStreamer<StreamKind.BIN, T>
+  ): Promise<Result<T, Error>> {
+    return target.write(this);
+  }
+}
+
+export class Writable<K extends StreamKind> {
+  readonly stream: stream.Writable;
+  constructor(stream: stream.Writable) {
+    this.stream = stream;
+  }
+}
+
+export class Conversion<K extends StreamKind, L extends StreamKind> {
+  readonly stream: stream.Duplex;
+  constructor(stream: stream.Duplex) {
+    this.stream = stream;
   }
 }

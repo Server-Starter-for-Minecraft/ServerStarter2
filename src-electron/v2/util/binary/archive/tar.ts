@@ -1,12 +1,11 @@
-import * as stream from 'stream';
 import { extract, ExtractOptions, pack, PackOptions } from 'tar-fs';
 import { Result } from '../../base';
 import { Path } from '../path';
-import { Readable, WritableStreamer } from '../stream';
+import { Readable, StreamKind, Writable, WritableStreamer } from '../stream';
 import { asyncPipe } from '../util';
 import { Archiver } from './archive';
 
-class Tar extends WritableStreamer<void> {
+class Tar extends WritableStreamer<StreamKind.BIN, void> {
   readonly pathObj: Path;
   readonly optsObj?: ExtractOptions;
 
@@ -17,8 +16,11 @@ class Tar extends WritableStreamer<void> {
   }
 
   // 単一のTarをフォルダに展開
-  write(readable: stream.Readable): Promise<Result<void, Error>> {
-    return asyncPipe(readable, extract(this.pathObj.path, this.optsObj));
+  write(readable: Readable<StreamKind.BIN>): Promise<Result<void, Error>> {
+    return asyncPipe(
+      readable,
+      new Writable<StreamKind.BIN>(extract(this.pathObj.path, this.optsObj))
+    );
   }
 }
 

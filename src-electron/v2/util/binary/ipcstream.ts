@@ -1,6 +1,6 @@
-import { Readable, ReadableStreamer, WritableStreamer } from './stream';
+import { ReadableBin, ReadableStreamer, WritableStreamer } from './stream';
 
-declare const stdout: Readable;
+declare const stdout: ReadableBin;
 declare const stdin: WritableStreamer<void>;
 
 // Duplexにするより WritableStreamer と ReadableStreamer を別のクラスor関数にしたほうがよさそう。

@@ -1,25 +1,28 @@
 import { createHash } from 'crypto';
 import { Err, ok } from '../base';
-import { WritableStreamer } from './stream';
+import { StreamKind, Writable, WritableStreamer } from './stream';
 import { asyncPipe } from './util';
 
 type HashAlgorithm = 'sha256' | 'sha1' | 'md5';
-function hashFunc(algorithm: HashAlgorithm): WritableStreamer<string> {
+function hashFunc(
+  algorithm: HashAlgorithm
+): WritableStreamer<StreamKind.BIN, string> {
   return {
     write(readable) {
       const e: undefined | Err<Error> = undefined;
 
       const hash = createHash(algorithm);
-      return asyncPipe(readable, hash).then((result) =>
+      return asyncPipe(readable, new Writable(hash)).then((result) =>
         result.onOk(() => ok(hash.digest().toString('hex')))
       );
     },
   };
 }
 
-export const SHA256: WritableStreamer<string> = hashFunc('sha256');
-export const SHA1: WritableStreamer<string> = hashFunc('sha1');
-export const MD5: WritableStreamer<string> = hashFunc('md5');
+export const SHA256: WritableStreamer<StreamKind.BIN, string> =
+  hashFunc('sha256');
+export const SHA1: WritableStreamer<StreamKind.BIN, string> = hashFunc('sha1');
+export const MD5: WritableStreamer<StreamKind.BIN, string> = hashFunc('md5');
 
 /** In Source Testing */
 if (import.meta.vitest) {

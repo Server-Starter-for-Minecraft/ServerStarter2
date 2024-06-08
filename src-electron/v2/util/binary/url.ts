@@ -1,9 +1,9 @@
 import fetch, { BodyInit, HeadersInit, Response } from 'electron-fetch';
-import * as stream from 'stream';
+import { Stream } from 'stream';
 import { URL } from 'url';
 import { err, ok, Result } from '../base';
 import { Bytes } from './bytes';
-import { DuplexStreamer, Readable } from './stream';
+import { DuplexStreamer, Readable, StreamKind } from './stream';
 
 export type UrlOption = {
   method?: string;
@@ -16,7 +16,7 @@ export type UrlOption = {
  *
  * HeadersInit, BodyInit, Response は node のものではなく electron-fetch のものである点に注意
  */
-export class Url extends DuplexStreamer<Response> {
+export class Url extends DuplexStreamer<StreamKind.BIN, Response> {
   readonly url: URL;
   readonly option: UrlOption;
 
@@ -36,8 +36,8 @@ export class Url extends DuplexStreamer<Response> {
     return new Url(new URL(path, this.url));
   }
 
-  createReadStream(): Readable {
-    const read = new stream.PassThrough();
+  createReadStream(): Readable<StreamKind.BIN> {
+    const read = new Stream.PassThrough();
     fetch(this.url.toString(), this.option).then(({ body }) => {
       if (typeof body === 'string') {
         body = new Bytes(Buffer.from(body)).createReadableStream();
@@ -49,9 +49,9 @@ export class Url extends DuplexStreamer<Response> {
     return new Readable(read);
   }
 
-  write(readable: stream.Readable): Promise<Result<Response, Error>> {
-    return fetch(this.url.toString(), { ...this.option, body: readable })
-      .then(ok)
+  write(readable: Readable<StreamKind.BIN>): Promise<Result<Response, Error>> {
+    return fetch(this.url.toString(), { ...this.option, body: readable.stream })
+      .then((x) => ok(x))
       .catch(err);
   }
 }
@@ -70,7 +70,7 @@ if (import.meta.vitest) {
     const { Path } = await import('./path');
 
     const tgt = new Path('./userData/example.json');
-    await new Url('https://dummyjson.com/test').into(tgt);
+    await new Url('https://dummyjson.com/test').into(tgt.file);
 
     expect(JSON.parse((await tgt.readText()).value())).toEqual({
       status: 'ok',

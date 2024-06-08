@@ -1,7 +1,6 @@
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
-import * as stream from 'stream';
 import { Err, err, none, ok, Opt, Result, value } from '../base';
-import { Readable, WritableStreamer } from './stream';
+import { Readable, StreamKind, WritableStreamer } from './stream';
 
 export interface SubprocessOptions {}
 
@@ -21,7 +20,7 @@ export interface SubprocessOptions {}
  *
  * T : ステータスコード
  */
-export class Subprocess extends WritableStreamer<void> {
+export class Subprocess extends WritableStreamer<StreamKind.BIN, void> {
   subprocess: ChildProcess;
 
   constructor(subprocess: ChildProcess) {
@@ -39,13 +38,13 @@ export class Subprocess extends WritableStreamer<void> {
   }
 
   /** 標準出力 */
-  get stdout(): Opt<Readable> {
+  get stdout(): Opt<Readable<StreamKind.BIN>> {
     if (this.subprocess.stdout === null) return none;
     return value(new Readable(this.subprocess.stdout));
   }
 
   /** 標準エラー */
-  get stderr(): Opt<Readable> {
+  get stderr(): Opt<Readable<StreamKind.BIN>> {
     if (this.subprocess.stderr === null) return none;
     return value(new Readable(this.subprocess.stderr));
   }
@@ -54,14 +53,16 @@ export class Subprocess extends WritableStreamer<void> {
    * 書き込むやつ
    * @param readable サブプロセスかreadableが終了したら終了。サブプロセスが終了してもreadableは自動では終了しないので注意
    */
-  async write(readable: stream.Readable): Promise<Result<void, Error>> {
+  async write(
+    readable: Readable<StreamKind.BIN>
+  ): Promise<Result<void, Error>> {
     const writable = this.subprocess.stdin;
     if (writable === null) return err(new Error('STDIN_IS_NULL'));
 
     let e: Err<Error> | undefined = undefined;
     return new Promise<Result<undefined, Error>>((resolve) => {
       // エラーになった時は自動でunpipeされる
-      readable
+      readable.stream
         .on('close', () => {
           // 入力ストリームが終了したら終了
           if (e !== undefined) return resolve(e);

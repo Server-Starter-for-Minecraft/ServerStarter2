@@ -1,5 +1,5 @@
-import * as stream from 'stream';
 import { Err, err, ok, Result } from '../base';
+import { Readable, StreamKind, Writable } from './stream';
 
 /**
  * ReadableとWritableをエラーハンドル含めてpipeして待機
@@ -7,19 +7,20 @@ import { Err, err, ok, Result } from '../base';
  * @param writable
  * @returns
  */
-export async function asyncPipe(
-  readable: stream.Readable,
-  writable: stream.Writable
+export async function asyncPipe<K extends StreamKind>(
+  readable: Readable<K>,
+  writable: Writable<K>
 ) {
-  readable.on('error', (error) => writable.destroy(error));
+  const rs = readable.stream;
+  const ws = writable.stream;
+  rs.on('error', (error) => ws.destroy(error));
   let e: Err<Error> | undefined = undefined;
-  readable.pipe(writable).on('error', (error) => {
-    readable.destroy();
+  rs.pipe(ws).on('error', (error) => {
+    rs.destroy();
     e = err(error);
   });
-
   return new Promise<Result<undefined, Error>>((resolve) => {
-    readable.on('close', () => {
+    rs.on('close', () => {
       if (e !== undefined) return resolve(e);
       resolve(ok(undefined));
     });

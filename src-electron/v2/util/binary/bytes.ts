@@ -1,18 +1,19 @@
 import * as stream from 'stream';
 import { Err, err, ok, Result } from '../base';
-import { Readable, ReadableStreamer } from './stream';
+import { Readable, ReadableStreamer, StreamKind } from './stream';
 
-export class Bytes extends ReadableStreamer {
-  static write(readable: stream.Readable): Promise<Result<Bytes>> {
+export class Bytes extends ReadableStreamer<StreamKind.BIN> {
+  static write(readable: Readable<StreamKind.BIN>): Promise<Result<Bytes>> {
     const buffers: Buffer[] = [];
+    const rs = readable.stream;
     let e: undefined | Err<Error> = undefined;
 
-    readable.on('error', (error) => (e = err(error)));
+    rs.on('error', (error) => (e = err(error)));
 
-    readable.on('data', (chunk) => buffers.push(chunk));
+    rs.on('data', (chunk) => buffers.push(chunk));
 
     return new Promise<Result<Bytes, Error>>((resolve) => {
-      readable.on('close', () => {
+      rs.on('close', () => {
         try {
           if (e !== undefined) return resolve(e);
           resolve(ok(new Bytes(Buffer.concat(buffers))));
@@ -44,7 +45,7 @@ export class Bytes extends ReadableStreamer {
     }
   }
 
-  createReadStream(): Readable {
+  createReadStream(): Readable<StreamKind.BIN> {
     return new Readable(this.createReadableStream());
   }
 
