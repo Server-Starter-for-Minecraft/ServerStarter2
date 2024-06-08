@@ -53,8 +53,27 @@ const throwPanic = () => {
 };
 
 const identity = <T>(v: T): T => v;
+const emptyfunc = () => {};
 
-export const ok = <T>(value: T): Ok<T> => {
+type OkGen = {
+  <T>(error: T): Ok<T>;
+  (): Ok<void>;
+};
+
+/** Ok<void>は生成せずにこれを使いまわす */
+const okVoid: Ok<void> = {
+  isOk: true,
+  isErr: false,
+  value: emptyfunc,
+  error: throwPanic,
+  onOk: (op) => op(undefined),
+  onErr: () => okVoid,
+  valueOrDefault: emptyfunc,
+  errorOrDefault: identity,
+};
+
+export const ok: OkGen = (<T>(value: T = undefined as T): Ok<T> => {
+  if (value === undefined) return okVoid as Ok<T>;
   const returnValue = () => value;
   const result: Ok<T> = {
     isOk: true,
@@ -67,7 +86,7 @@ export const ok = <T>(value: T): Ok<T> => {
     errorOrDefault: identity,
   };
   return result;
-};
+}) as OkGen;
 
 type ErrGen = {
   <T>(error: T): Err<T>;
