@@ -35,15 +35,15 @@ export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
     // ロックして読み取り
     const promise = this.target.into(Bytes);
     this.lock = promise;
-    const str = //  ((x) => x.toStr());
-      ((await promise).this.lock = undefined);
+    const str = (await promise).onOk((x) => x.toStr());
+    this.lock = undefined;
+    if (str.isErr) return str;
 
-    if (str.isErr()) return str;
     try {
-      const value = JSON.parse(str.value);
+      const value = JSON.parse(str.value());
       const parsed = await this.validator.safeParseAsync(value);
       if (parsed.success) return ok(parsed.data);
-      return err(new Error('ZOD_PARSE_ERROR'));
+      return err(parsed.error);
     } catch (e) {
       return err(e as Error);
     }
