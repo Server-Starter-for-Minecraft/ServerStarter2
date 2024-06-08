@@ -40,7 +40,6 @@ interface Prop {
   anchor?: Anchor;
   self?: Self;
   fontSize?: string;
-  maxWidth?: string;
 }
 defineProps<Prop>();
 </script>
@@ -50,7 +49,6 @@ defineProps<Prop>();
     <div
       class="q-pa-xs"
       :style="{
-        width: maxWidth,
         color: $q.dark.isActive ? 'white' : 'black',
         'background-color': $q.dark.isActive
           ? getCssVar('dark')?.toString()
@@ -58,7 +56,12 @@ defineProps<Prop>();
         border: `1.5px solid grey`,
         'font-size': fontSize ?? '.7rem',
       }"
-      style="word-break: break-word; border-radius: 5px; white-space: pre-line"
+      style="
+        word-break: break-word;
+        border-radius: 5px;
+        white-space: pre-line;
+        width: max-content;
+      "
     >
       {{ name }}
     </div>

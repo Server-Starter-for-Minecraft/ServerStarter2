@@ -1,25 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllFileData,
-  DatapackData,
-  ModData,
-  PluginData,
-} from 'app/src-electron/schema/filedata';
+import { AllFileData } from 'app/src-electron/schema/filedata';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
-import BaseActionsCard from '../utils/BaseActionsCard.vue';
-
-type T = DatapackData | ModData | PluginData;
+import BaseActionsCard from '../../utils/BaseActionsCard.vue';
+import { ContentsData } from '../contentsPage';
 
 interface Prop {
   contentType: 'datapack' | 'plugin' | 'mod';
-  content: AllFileData<T>;
+  content: AllFileData<ContentsData>;
   isDelete?: boolean;
   color?: string;
 }
@@ -30,9 +24,11 @@ const mainStore = useMainStore();
 const contentsStore = useContentsStore();
 
 function addContent() {
-  (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(
-    prop.content
-  );
+  (
+    mainStore.world.additional[
+      `${prop.contentType}s`
+    ] as AllFileData<ContentsData>[]
+  ).push(prop.content);
 }
 
 function deleteContent() {

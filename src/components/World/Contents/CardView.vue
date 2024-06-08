@@ -14,12 +14,13 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
-import ItemCardView from './itemCardView.vue';
+import ItemCard from './CardView/itemCard.vue';
+import { ContentsType } from './contentsPage';
 
 type T = DatapackData | PluginData | ModData;
 
 interface Prop {
-  contentType: 'datapack' | 'plugin' | 'mod';
+  contentType: ContentsType;
 }
 const prop = defineProps<Prop>();
 
@@ -177,7 +178,7 @@ async function openCacheFolder() {
           :key="item.name"
           class="col-"
         >
-          <ItemCardView :content-type="contentType" is-delete :content="item" />
+          <ItemCard :content-type="contentType" is-delete :content="item" />
         </div>
       </template>
       <div v-else class="full-width">
@@ -251,7 +252,7 @@ async function openCacheFolder() {
         )"
         :key="item.name"
       >
-        <ItemCardView :content-type="contentType" :content="item" />
+        <ItemCard :content-type="contentType" :content="item" />
       </div>
     </div>
   </div>
