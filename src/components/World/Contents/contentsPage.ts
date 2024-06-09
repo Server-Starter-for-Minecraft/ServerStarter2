@@ -199,21 +199,11 @@ export function deleteContent(
  * Stopの時にはキャッシュ側のフォルダを開き，動作中はワールドデータ側のフォルダを開く
  */
 export async function openSavedFolder(cType: ContentsType) {
-  const getPath = async () => {
-    const mainStore = useMainStore();
-    const consoleStore = useConsoleStore();
-    switch (consoleStore.status(mainStore.world.id)) {
-      case 'Stop':
-        const sysStore = useSystemStore();
-        return sysStore.staticResouces.paths.cache[cType];
-      default:
-        return await window.API.invokeGetWorldPaths(
-          mainStore.world.id,
-          `${cType}s`
-        );
-    }
-  };
-  const path = await getPath();
+  const mainStore = useMainStore();
+  const path = await window.API.invokeGetWorldPaths(
+    mainStore.world.id,
+    `${cType}s`
+  );
 
   checkError(
     path,

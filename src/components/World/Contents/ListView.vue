@@ -112,6 +112,7 @@ function addContentClicked(content: AllFileData<ContentsData>) {
         @click="() => importNewContent(contentType, true)"
       />
       <SsIconBtn
+        v-if="contentType !== 'datapack'"
         flat
         size=".8rem"
         icon="folder_open"
