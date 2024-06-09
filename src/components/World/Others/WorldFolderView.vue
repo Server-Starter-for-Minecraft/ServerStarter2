@@ -53,6 +53,17 @@ async function setWorldContainer(container: WorldContainer) {
 }
 
 /**
+ * エクスプローラーでワールドフォルダを開く
+ */
+async function openWorldFolder() {
+  const res = await window.API.sendOpenFolder(
+    mainStore.noSubscribeWorld.container,
+    false
+  );
+  checkError(res, undefined, (e) => tError(e));
+}
+
+/**
  * ワールドコンテナの新規作成Dialog
  */
 function openFolderEditor() {
@@ -96,6 +107,19 @@ function openFolderEditor() {
         </q-item>
       </template>
     </SsSelectScope>
+
+    <q-btn
+      outline
+      icon="folder_open"
+      :disable="mainStore.noSubscribeWorld.container === 'servers'"
+      @click="openWorldFolder()"
+    >
+      <SsTooltip
+        :name="$t('others.worldFolder.openFolder')"
+        anchor="bottom middle"
+        self="center middle"
+      />
+    </q-btn>
 
     <q-btn outline icon="add" @click="openFolderEditor()">
       <SsTooltip
