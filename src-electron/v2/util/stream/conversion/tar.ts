@@ -13,7 +13,8 @@ class TarExtract extends stream.Transform {
     this.extract = tar.extract();
 
     this.extract.on('entry', (header, stream, next) => {
-      const dat: EntryData = { header, stream, next };
+      const dat: EntryData = { header, stream };
+      stream.on('close', next);
       this.push(dat);
     });
   }
@@ -60,7 +61,6 @@ class TarPack extends stream.Transform {
   ): void {
     chunk.stream.pipe(
       this.pack.entry(chunk.header, () => {
-        chunk.next();
         this.resume();
         callback();
       })

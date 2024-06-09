@@ -29,7 +29,6 @@ class MemDirRedable extends stream.Readable {
 
     const entryData: EntryData = {
       header: header,
-      next: () => {},
       stream: data.createReadableStream(),
     };
 
@@ -59,8 +58,6 @@ class MemDirWritable extends stream.Writable {
     );
 
     this.data.push({ header: chunk.header, data: data.value() });
-
-    chunk.next();
     callback();
   }
 }

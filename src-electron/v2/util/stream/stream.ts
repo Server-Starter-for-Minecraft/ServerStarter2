@@ -82,7 +82,6 @@ export class Readable<K extends StreamKind> {
 export type EntryData = {
   header: Record<string, any>; // TODO: any???
   stream: stream.Readable;
-  next: (error?: any) => void;
 };
 
 export class Writable<K extends StreamKind> {
