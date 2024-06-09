@@ -1,9 +1,6 @@
 import * as stream from 'stream';
 import * as tar from 'tar-stream';
-import { Bytes } from '../bytes';
-import { MemDir } from '../memdir';
-import { Path } from '../path';
-import { Conversion, EntryData, StreamKind } from '../stream';
+import { Conversion, EntryData, EntryHeader, StreamKind } from '../stream';
 
 class TarExtract extends stream.Transform {
   private extract: tar.Extract;
@@ -12,7 +9,21 @@ class TarExtract extends stream.Transform {
     super({ readableObjectMode: true });
     this.extract = tar.extract();
 
-    this.extract.on('entry', (header, stream, next) => {
+    this.extract.on('entry', (h, stream, next) => {
+      const header: EntryHeader = {
+        name: h.name,
+        type: h.type,
+        mode: h.mode,
+        uid: h.uid,
+        gid: h.gid,
+        size: h.size,
+        mtime: h.mtime,
+        other: {
+          tar: {
+            linkname: h.linkname,
+          },
+        },
+      };
       const dat: EntryData = { header, stream };
       stream.on('close', next);
       this.push(dat);
@@ -39,7 +50,6 @@ export const fromTar = () =>
 
 class TarPack extends stream.Transform {
   private pack: tar.Pack;
-  private finalcb = () => {};
 
   constructor() {
     super({ writableObjectMode: true });
@@ -47,10 +57,6 @@ class TarPack extends stream.Transform {
 
     this.pack.on('data', (chunk) => {
       this.push(chunk);
-    });
-
-    this.pack.on('end', () => {
-      this.finalcb();
     });
   }
 
@@ -70,7 +76,7 @@ class TarPack extends stream.Transform {
 
   _final(callback: (error?: Error | null | undefined) => void): void {
     this.pack.finalize();
-    this.finalcb = callback;
+    this.pack.once('end', callback);
   }
 }
 
@@ -80,6 +86,11 @@ export const toTar = () =>
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+
+  const { MemDir } = await import('../memdir');
+  const { Path } = await import('../path');
+  const { Bytes } = await import('../bytes');
+
   test('', async () => {
     const testdir = new Path('./userData/test');
 
@@ -99,6 +110,8 @@ if (import.meta.vitest) {
 
     // srcContent と tgtContent は等価にならない...
 
-    await tgt.remove();
+    // await tgt.remove();
+
+    // TODO: @nozz-mat @MojaMonchi @txkodo 日本語含むファイルと巨大なファイルで検証
   });
 }

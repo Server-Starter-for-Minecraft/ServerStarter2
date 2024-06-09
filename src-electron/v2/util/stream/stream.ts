@@ -79,8 +79,42 @@ export class Readable<K extends StreamKind> {
   }
 }
 
+export type EntryType =
+  | 'file'
+  | 'link'
+  | 'symlink'
+  | 'character-device'
+  | 'block-device'
+  | 'directory'
+  | 'fifo'
+  | 'contiguous-file'
+  | 'pax-header'
+  | 'pax-global-header'
+  | 'gnu-long-link-path'
+  | 'gnu-long-path'
+  | null
+  | undefined;
+
+export type EntryHeader = {
+  name: string;
+  type?: EntryType;
+  mode?: number;
+  uid?: number;
+  gid?: number;
+  size?: number;
+  mtime?: Date;
+  other?: {
+    tar?: {
+      linkname?: null | string;
+    };
+    zip?: {
+      compressionMethod: number;
+    };
+  };
+};
+
 export type EntryData = {
-  header: Record<string, any>; // TODO: any???
+  header: EntryHeader; // TODO: any???
   stream: stream.Readable;
 };
 

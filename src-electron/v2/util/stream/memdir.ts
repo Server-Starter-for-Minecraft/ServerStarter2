@@ -4,6 +4,7 @@ import { ok, Result } from '../base';
 import { Bytes } from './bytes';
 import {
   EntryData,
+  EntryHeader,
   Readable,
   ReadableStreamer,
   StreamKind,
@@ -12,8 +13,8 @@ import {
 import { asyncPipe } from './util';
 
 class MemDirRedable extends stream.Readable {
-  data: { header: Record<string, any>; data: Bytes }[];
-  constructor(data: { header: Record<string, any>; data: Bytes }[]) {
+  data: { header: EntryHeader; data: Bytes }[];
+  constructor(data: { header: EntryHeader; data: Bytes }[]) {
     super({ objectMode: true });
     this.data = data;
   }
@@ -63,9 +64,9 @@ class MemDirWritable extends stream.Writable {
 }
 
 export class MemDir extends ReadableStreamer<StreamKind.ENTRY> {
-  data: { header: Record<string, any>; data: Bytes }[];
+  data: { header: EntryHeader; data: Bytes }[];
 
-  constructor(data: { header: Record<string, any>; data: Bytes }[]) {
+  constructor(data: { header: EntryHeader; data: Bytes }[]) {
     super();
     this.data = data;
   }
@@ -73,7 +74,7 @@ export class MemDir extends ReadableStreamer<StreamKind.ENTRY> {
   static async write(
     readable: Readable<StreamKind.ENTRY>
   ): Promise<Result<MemDir, Error>> {
-    const data: { header: Record<string, any>; data: Bytes }[] = [];
+    const data: { header: EntryHeader; data: Bytes }[] = [];
     const ws = new Writable<StreamKind.ENTRY>(new MemDirWritable(data));
     await asyncPipe(readable, ws);
     return ok(new MemDir(data));

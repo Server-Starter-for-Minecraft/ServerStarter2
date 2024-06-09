@@ -1,10 +1,8 @@
+import archiver from 'archiver';
+import path from 'path';
 import * as stream from 'stream';
 import * as unzip from 'unzipper';
-import { sleep } from '../../promise/sleep';
-import { Bytes } from '../bytes';
-import { MemDir } from '../memdir';
-import { Path } from '../path';
-import { Conversion, EntryData, StreamKind } from '../stream';
+import { Conversion, EntryData, EntryHeader, StreamKind } from '../stream';
 
 class ZipExtract extends stream.Transform {
   private extract: stream.Duplex;
@@ -14,10 +12,22 @@ class ZipExtract extends stream.Transform {
     this.extract = unzip.Parse();
 
     this.extract.on('entry', (entry) => {
-      console.log(entry);
+      const header: EntryHeader = {
+        name: entry.path,
+        type: entry.type === 'File' ? 'file' : 'directory',
+        // mode: undefined,
+        // uid: undefined,
+        // gid: undefined,
+        size: entry.vars.uncompressedSize,
+        mtime: entry.vars.lastModifiedDateTime,
+        other: {
+          zip: {
+            compressionMethod: entry.vars.compressionMethod,
+          },
+        },
+      };
 
-      const dat: EntryData = { header: entry.vars, stream: entry };
-
+      const dat: EntryData = { header, stream: entry };
       this.push(dat);
     });
   }
@@ -35,57 +45,68 @@ class ZipExtract extends stream.Transform {
       callback();
     }
   }
+
+  _final(callback: (error?: Error | null | undefined) => void): void {
+    this.extract.once('close', () => callback());
+  }
 }
 
 export const fromZip = () =>
   new Conversion<StreamKind.BIN, StreamKind.ENTRY>(new ZipExtract());
 
-// class ZipPack extends stream.Transform {
-//   private pack: tar.Pack;
-//   private finalcb = () => {};
+class ZipPack extends stream.Transform {
+  private pack: archiver.Archiver;
 
-//   constructor() {
-//     super({ writableObjectMode: true });
-//     this.pack = tar.pack();
+  constructor(options?: archiver.ArchiverOptions) {
+    super({ writableObjectMode: true });
+    this.pack = archiver('zip', options);
 
-//     this.pack.on('data', (chunk) => {
-//       this.push(chunk);
-//     });
+    this.pack.on('data', (chunk) => {
+      if (!this.push(chunk)) {
+        this.pause();
+        this.pack.once('drain', () => this.resume());
+      }
+    });
+  }
 
-//     this.pack.on('end', () => {
-//       this.finalcb();
-//     });
-//   }
+  _transform(
+    chunk: EntryData,
+    encoding: string,
+    callback: (error?: Error | null) => void
+  ): void {
+    this.pack.append(chunk.stream, {
+      name: path.basename(chunk.header.name),
+      prefix: path.dirname(chunk.header.name),
+      date: chunk.header.mtime,
+      mode: chunk.header.mode,
+    });
+    chunk.stream.on('end', () => {
+      this.resume();
+      callback();
+    });
+    this.pause();
+  }
 
-//   _transform(
-//     chunk: EntryData,
-//     encoding: string,
-//     callback: (error?: Error | null) => void
-//   ): void {
-//     chunk.stream.pipe(
-//       this.pack.entry(chunk.header, () => {
-//         chunk.next();
-//         this.resume();
-//         callback();
-//       })
-//     );
-//     this.pause();
-//   }
+  _final(callback: (error?: Error | null | undefined) => void): void {
+    this.pack.finalize();
+    this.pack.once('end', callback);
+  }
+}
 
-//   _final(callback: (error?: Error | null | undefined) => void): void {
-//     this.pack.finalize();
-//     this.finalcb = callback;
-//   }
-// }
-
-// export const toTar = () =>
-//   new Conversion<StreamKind.ENTRY, StreamKind.BIN>(new TarPack());
+export const toZip = () =>
+  new Conversion<StreamKind.ENTRY, StreamKind.BIN>(new ZipPack());
 
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+
+  const { MemDir } = await import('../memdir');
+  const { Path } = await import('../path');
+  const { Bytes } = await import('../bytes');
+
   test('', async () => {
     const testdir = new Path('./userData/test');
+    await testdir.mkdir();
 
     const src = new Path('src-electron/v2/util/stream/conversion/test/src.zip');
     const tgt = testdir.child('tgt.zip');
@@ -95,14 +116,12 @@ if (import.meta.vitest) {
 
     const memdir = (await tarfile.convert(fromZip()).into(MemDir)).value();
 
-    await sleep(1000);
+    await memdir.convert(toZip()).into(tgt.file);
 
-    // await memdir.convert(toTar()).into(tgt.file);
-
-    // const tgtContent = (await tgt.file.into(Bytes)).value();
+    const tgtContent = (await tgt.file.into(Bytes)).value();
 
     // srcContent と tgtContent は等価にならない...
 
-    await tgt.remove();
+    // TODO: @nozz-mat @MojaMonchi @txkodo 日本語含むファイルと巨大なファイルで検証
   });
 }
