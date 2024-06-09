@@ -57,16 +57,18 @@ export function getAllContents(cType: ContentsType): OptContents[] {
   const returnArray = sysStore.cacheContents[`${cType}s`].map((c) =>
     __converter(c)
   );
-  mainStore
-    .getFromAllWorld((w) =>
-      w.additional[`${cType}s`].map((c) => __converter(c, w.name))
-    )
-    .flat()
-    .forEach((c) => {
-        returnArray.push(c);
-      // if (!returnArray.some((_c) => _c.name === c.name)) {
-      // }
-    });
+  // TODO: 各ワールドに入っている追加コンテンツはShareWorldのみ，returnArrayに統合する
+  // mainStore
+  //   .getFromAllWorld((w) =>
+  //     w.additional[`${cType}s`].map((c) => __converter(c, w.name))
+  //   )
+  //   .flat()
+  //   .forEach((c) => {
+  //     // 統合時の条件には，名前ではなく，Hashが同じコンテンツがすでに存在するか否かで検証する
+  //     if (!returnArray.some((_c) => _c.name === c.name)) {
+  //       returnArray.push(c);
+  //     }
+  //   });
   return returnArray;
 }
 
