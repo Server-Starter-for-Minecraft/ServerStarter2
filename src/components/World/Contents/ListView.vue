@@ -96,9 +96,13 @@ function addContentClicked(content: AllFileData<ContentsData>) {
         <template v-slot:option="scope">
           <q-item v-bind="scope.itemProps">
             <q-item-section>
-              <q-item-label style="font-size: .8rem;">{{ scope.opt.file.name }}</q-item-label>
+              <q-item-label style="font-size: 0.8rem">{{
+                scope.opt.file.name
+              }}</q-item-label>
               <q-item-label caption>{{
-                scope.opt.wName ? `${scope.opt.wName}に存在します` : '導入履歴のあるコンテンツ'
+                scope.opt.wName
+                  ? `${scope.opt.wName}に存在します`
+                  : '導入履歴のあるコンテンツ'
               }}</q-item-label>
             </q-item-section>
           </q-item>

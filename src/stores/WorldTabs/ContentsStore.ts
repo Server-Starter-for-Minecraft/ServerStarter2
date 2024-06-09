@@ -14,7 +14,7 @@ export const useContentsStore = defineStore('contentsStore', {
   state: () => {
     return {
       selectedTab: 'datapack' as 'datapack' | 'plugin' | 'mod',
-      searchText: ''
+      searchText: '',
     };
   },
   actions: {

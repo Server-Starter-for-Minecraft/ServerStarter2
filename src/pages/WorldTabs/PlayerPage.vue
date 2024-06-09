@@ -189,7 +189,7 @@ function openGroupEditor(group?: PlayerGroup) {
       <SsBtn
         :label="$t('player.resetPlayerSettings')"
         color="primary"
-        @click="() => mainStore.world.players = []"
+        @click="() => (mainStore.world.players = [])"
         class="full-width"
       />
     </div>

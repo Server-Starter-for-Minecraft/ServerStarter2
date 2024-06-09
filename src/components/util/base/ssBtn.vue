@@ -4,7 +4,7 @@ import { QBtnProps } from 'quasar';
 interface Prop {
   freeWidth?: boolean;
   width?: string;
-  isCapital?: boolean
+  isCapital?: boolean;
   onClick: () => void;
 }
 const prop = defineProps<Prop & QBtnProps>();

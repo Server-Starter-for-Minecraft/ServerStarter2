@@ -14,7 +14,11 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import ItemCard from './CardView/itemCard.vue';
-import { ContentsType, importNewContent, openSavedFolder } from './contentsPage';
+import {
+  ContentsType,
+  importNewContent,
+  openSavedFolder,
+} from './contentsPage';
 
 type T = DatapackData | PluginData | ModData;
 

@@ -92,7 +92,7 @@ function scrollTop() {
         <SsBtn
           :label="$t('property.reset')"
           color="primary"
-          @click="() => mainStore.world.properties = initProperty"
+          @click="() => (mainStore.world.properties = initProperty)"
           class="full-width"
         />
       </div>
