@@ -62,9 +62,21 @@ export abstract class DuplexStreamer<K extends StreamKind, T>
 
 export class Readable<K extends StreamKind> {
   readonly stream: stream.Readable;
+
   constructor(stream: stream.Readable) {
     this.stream = stream;
   }
+
+  /** ストリームが StreamKind.BIN 形式であることを保証できる場合に使うこと */
+  static fromBinStream(stream: stream.Readable) {
+    return new Readable<StreamKind.BIN>(stream);
+  }
+
+  /** ストリームが StreamKind.Entry 形式であることを保証できる場合に使うこと */
+  static fromEntryStream(stream: stream.Readable) {
+    return new Readable<StreamKind.ENTRY>(stream);
+  }
+
   createReadStream(): Readable<K> {
     return this;
   }
@@ -95,9 +107,7 @@ export type EntryType =
   | null
   | undefined;
 
-export type EntryHeader = {
-  name: string;
-  type?: EntryType;
+export type EntryStats = {
   mode?: number;
   uid?: number;
   gid?: number;
@@ -113,10 +123,20 @@ export type EntryHeader = {
   };
 };
 
-export type EntryData = {
-  header: EntryHeader; // TODO: any???
-  stream: stream.Readable;
+export type DirEntryData = {
+  type: 'DIR';
+  path: string;
+  stats?: EntryStats;
 };
+
+export type FileEntryData = {
+  type: 'FILE';
+  path: string;
+  readable: Readable<StreamKind.BIN>;
+  stats?: EntryStats;
+};
+
+export type EntryData = DirEntryData | FileEntryData;
 
 export class Writable<K extends StreamKind> {
   readonly stream: stream.Writable;

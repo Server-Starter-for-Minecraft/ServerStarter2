@@ -1,6 +1,8 @@
 import * as stream from 'stream';
 import * as tar from 'tar-stream';
-import { Conversion, EntryData, EntryHeader, StreamKind } from '../stream';
+import { Drain } from '../deain';
+import { Conversion, EntryData, Readable, StreamKind } from '../stream';
+import { WritableStream } from '../util';
 
 class TarExtract extends stream.Transform {
   private extract: tar.Extract;
@@ -10,23 +12,52 @@ class TarExtract extends stream.Transform {
     this.extract = tar.extract();
 
     this.extract.on('entry', (h, stream, next) => {
-      const header: EntryHeader = {
-        name: h.name,
-        type: h.type,
-        mode: h.mode,
-        uid: h.uid,
-        gid: h.gid,
-        size: h.size,
-        mtime: h.mtime,
-        other: {
-          tar: {
-            linkname: h.linkname,
-          },
-        },
-      };
-      const dat: EntryData = { header, stream };
+      switch (h.type) {
+        case 'file':
+          this.push({
+            type: 'FILE',
+            path: h.name,
+            readable: Readable.fromBinStream(stream),
+            stats: {
+              mode: h.mode,
+              uid: h.uid,
+              gid: h.gid,
+              size: h.size,
+              mtime: h.mtime,
+              other: {
+                tar: {
+                  linkname: h.linkname,
+                },
+              },
+            },
+          });
+          break;
+        case 'directory':
+          this.push({
+            type: 'DIR',
+            path: h.name,
+            stats: {
+              mode: h.mode,
+              uid: h.uid,
+              gid: h.gid,
+              size: h.size,
+              mtime: h.mtime,
+              other: {
+                tar: {
+                  linkname: h.linkname,
+                },
+              },
+            },
+          });
+          // ストリームを廃棄
+          Readable.fromBinStream(stream).into(new Drain(false));
+          break;
+        default:
+          // ストリームを廃棄
+          Readable.fromBinStream(stream).into(new Drain(false));
+          break;
+      }
       stream.on('close', next);
-      this.push(dat);
     });
   }
 
@@ -65,13 +96,28 @@ class TarPack extends stream.Transform {
     encoding: string,
     callback: (error?: Error | null) => void
   ): void {
-    chunk.stream.pipe(
-      this.pack.entry(chunk.header, () => {
-        this.resume();
-        callback();
-      })
-    );
-    this.pause();
+    if (chunk.type === 'FILE') {
+      this.pause();
+      const writable = this.pack.entry(
+        { name: chunk.path, type: 'file', ...chunk.stats },
+        () => {
+          this.resume();
+          callback();
+        }
+      );
+      writable;
+      chunk.readable.into(new WritableStream(writable));
+    } else {
+      const writable = this.pack.entry(
+        { name: chunk.path, type: 'directory', ...chunk.stats },
+        () => {
+          this.resume();
+          callback();
+        }
+      );
+      // ディレクトリなので何も書かずに終了
+      writable.end();
+    }
   }
 
   _final(callback: (error?: Error | null | undefined) => void): void {
@@ -106,7 +152,7 @@ if (import.meta.vitest) {
 
     await memdir.convert(toTar()).into(tgt.file);
 
-    const tgtContent = (await tgt.file.into(Bytes)).value();
+    // const tgtContent = (await tgt.file.into(Bytes)).value();
 
     // srcContent と tgtContent は等価にならない...
 

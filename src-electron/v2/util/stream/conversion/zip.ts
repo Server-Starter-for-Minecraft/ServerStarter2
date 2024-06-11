@@ -2,7 +2,14 @@ import archiver from 'archiver';
 import path from 'path';
 import * as stream from 'stream';
 import * as unzip from 'unzipper';
-import { Conversion, EntryData, EntryHeader, StreamKind } from '../stream';
+import { Drain } from '../deain';
+import {
+  Conversion,
+  EntryData,
+  EntryStats,
+  Readable,
+  StreamKind,
+} from '../stream';
 
 class ZipExtract extends stream.Transform {
   private extract: stream.Duplex;
@@ -11,10 +18,11 @@ class ZipExtract extends stream.Transform {
     super({ readableObjectMode: true });
     this.extract = unzip.Parse();
 
+    this.extract.on('error', (e) => this.destroy(e));
+
     this.extract.on('entry', (entry) => {
-      const header: EntryHeader = {
-        name: entry.path,
-        type: entry.type === 'File' ? 'file' : 'directory',
+      const readable: stream.Readable = entry;
+      const stats: EntryStats = {
         // mode: undefined,
         // uid: undefined,
         // gid: undefined,
@@ -27,7 +35,24 @@ class ZipExtract extends stream.Transform {
         },
       };
 
-      const dat: EntryData = { header, stream: entry };
+      const readableStream = Readable.fromBinStream(readable);
+
+      let dat: EntryData;
+      if (entry.type === 'File') {
+        dat = {
+          type: 'FILE',
+          path: entry.path,
+          readable: readableStream,
+          stats,
+        };
+      } else {
+        dat = {
+          type: 'DIR',
+          path: entry.path,
+          stats,
+        };
+        readableStream.into(new Drain(false));
+      }
       this.push(dat);
     });
   }
@@ -38,16 +63,14 @@ class ZipExtract extends stream.Transform {
     callback: (error?: Error | null) => void
   ): void {
     if (!this.extract.write(chunk)) {
-      this.extract.once('drain', () => {
-        callback();
-      });
+      this.extract.once('drain', callback);
     } else {
       callback();
     }
   }
 
   _final(callback: (error?: Error | null | undefined) => void): void {
-    this.extract.once('close', () => callback());
+    this.extract.once('close', callback);
   }
 }
 
@@ -70,21 +93,25 @@ class ZipPack extends stream.Transform {
   }
 
   _transform(
-    chunk: EntryData,
+    entry: EntryData,
     encoding: string,
     callback: (error?: Error | null) => void
   ): void {
-    this.pack.append(chunk.stream, {
-      name: path.basename(chunk.header.name),
-      prefix: path.dirname(chunk.header.name),
-      date: chunk.header.mtime,
-      mode: chunk.header.mode,
-    });
-    chunk.stream.on('end', () => {
-      this.resume();
+    if (entry.type === 'FILE') {
+      this.pack.append(entry.readable.stream, {
+        name: path.basename(entry.path),
+        prefix: path.dirname(entry.path),
+        date: entry.stats?.mtime,
+        mode: entry.stats?.mode,
+      });
+      this.pause();
+      entry.readable.stream.on('end', () => {
+        this.resume();
+        callback();
+      });
+    } else {
       callback();
-    });
-    this.pause();
+    }
   }
 
   _final(callback: (error?: Error | null | undefined) => void): void {

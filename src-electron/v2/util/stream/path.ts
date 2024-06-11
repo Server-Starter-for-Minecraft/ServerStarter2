@@ -1,6 +1,5 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as stream from 'stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import { err, ok, Result } from '../base';
 import { DuplexStreamer, Readable, StreamKind, Writable } from './stream';

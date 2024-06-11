@@ -1,5 +1,6 @@
+import * as stream from 'stream';
 import { Err, err, ok, Result } from '../base';
-import { Readable, StreamKind, Writable } from './stream';
+import { Readable, StreamKind, Writable, WritableStreamer } from './stream';
 
 /**
  * ReadableとWritableをエラーハンドル含めてpipeして待機
@@ -13,18 +14,32 @@ export async function asyncPipe<K extends StreamKind>(
 ) {
   const rs = readable.stream;
   const ws = writable.stream;
+
   rs.on('error', (error) => ws.destroy(error));
   let e: Err<Error> | undefined = undefined;
   rs.pipe(ws).on('error', (error) => {
     rs.destroy();
     e = err(error);
   });
+
   return new Promise<Result<undefined, Error>>((resolve) => {
-    rs.on('close', () => {
+    rs.once('close', () => {
       if (e !== undefined) return resolve(e);
       resolve(ok(undefined));
     });
   });
+}
+
+export class WritableStream extends WritableStreamer<StreamKind.BIN, void> {
+  stream: stream.Writable;
+  constructor(stream: stream.Writable) {
+    super();
+    this.stream = stream;
+  }
+
+  write(readable: Readable<StreamKind.BIN>): Promise<Result<void, Error>> {
+    return asyncPipe(readable, new Writable(this.stream));
+  }
 }
 
 /** In Source Testing */

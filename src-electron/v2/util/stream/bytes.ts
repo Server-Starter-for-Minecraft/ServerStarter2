@@ -9,11 +9,10 @@ export class Bytes extends ReadableStreamer<StreamKind.BIN> {
     let e: undefined | Err<Error> = undefined;
 
     rs.on('error', (error) => (e = err(error)));
-
     rs.on('data', (chunk) => buffers.push(chunk));
 
     return new Promise<Result<Bytes, Error>>((resolve) => {
-      rs.on('close', () => {
+      rs.once('close', () => {
         try {
           if (e !== undefined) return resolve(e);
           resolve(ok(new Bytes(Buffer.concat(buffers))));
@@ -21,6 +20,7 @@ export class Bytes extends ReadableStreamer<StreamKind.BIN> {
           resolve(err(error as Error));
         }
       });
+      rs.resume();
     });
   }
 
