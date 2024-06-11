@@ -69,9 +69,11 @@ export function getAllContents(cType: ContentsType): OptContents[] {
     .flat()
     .forEach((c) => {
       // TODO: 統合時の条件には，名前ではなく，Hashが同じコンテンツがすでに存在するか否かで検証する
-      const sameContentIdxInReturn = returnArray.findIndex((_c) => _c.name === c.name)
+      const sameContentIdxInReturn = returnArray.findIndex(
+        (_c) => _c.name === c.name
+      );
       if (sameContentIdxInReturn > -1) {
-        returnArray[sameContentIdxInReturn].wNames.push(c.wNames[0])
+        returnArray[sameContentIdxInReturn].wNames.push(c.wNames[0]);
       } else {
         returnArray.push(c);
       }
