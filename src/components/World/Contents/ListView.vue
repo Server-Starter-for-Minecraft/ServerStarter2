@@ -14,6 +14,7 @@ import {
   OptContents,
 } from './contentsPage';
 import ListItem from './ListView/ListItem.vue';
+import SearchResultItem from './ListView/SearchResultItem.vue';
 
 interface Prop {
   contentType: ContentsType;
@@ -52,7 +53,7 @@ function newContentsFilter(
     newContents.value = initNewContents().filter(
       (v) =>
         v.file.name.toLowerCase().indexOf(needle) > -1 ||
-        (v.wName?.toLowerCase().indexOf(needle) ?? -1) > -1
+        v.wNames.some((name) => name.toLowerCase().indexOf(needle) > -1)
     );
   });
 }
@@ -94,18 +95,7 @@ function addContentClicked(content: AllFileData<ContentsData>) {
         </template>
 
         <template v-slot:option="scope">
-          <q-item v-bind="scope.itemProps">
-            <q-item-section>
-              <q-item-label style="font-size: 0.8rem">{{
-                scope.opt.file.name
-              }}</q-item-label>
-              <q-item-label caption>{{
-                scope.opt.wName
-                  ? `${scope.opt.wName}に存在します`
-                  : '導入履歴のあるコンテンツ'
-              }}</q-item-label>
-            </q-item-section>
-          </q-item>
+          <SearchResultItem :item-props="scope.itemProps" :opt="scope.opt" />
         </template>
       </q-select>
       <SsIconBtn

@@ -9,7 +9,6 @@ import {
 } from 'app/src-electron/schema/filedata';
 import { Version } from 'app/src-electron/schema/version';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
@@ -40,7 +39,7 @@ export const isContentsExists: contentExists = {
  * 既に存在するコンテンツ一覧を取得する
  */
 export type OptContents = {
-  wName?: string;
+  wNames: string[];
   file: AllFileData<ContentsData>;
   name: string;
 };
@@ -49,26 +48,34 @@ export function getAllContents(cType: ContentsType): OptContents[] {
     content: AllFileData<ContentsData>,
     worldName?: string
   ): OptContents {
-    return { wName: worldName, file: content, name: content.name };
+    return {
+      wNames: worldName ? [worldName] : [],
+      file: content,
+      name: content.name,
+    };
   }
 
   const sysStore = useSystemStore();
   const mainStore = useMainStore();
+
+  // TODO: Hashが同じでもワールド（＝ShareWorld）ごとに名前が違うコンテンツはどのように表示？
   const returnArray = sysStore.cacheContents[`${cType}s`].map((c) =>
     __converter(c)
   );
-  // TODO: 各ワールドに入っている追加コンテンツはShareWorldのみ，returnArrayに統合する
-  // mainStore
-  //   .getFromAllWorld((w) =>
-  //     w.additional[`${cType}s`].map((c) => __converter(c, w.name))
-  //   )
-  //   .flat()
-  //   .forEach((c) => {
-  //     // 統合時の条件には，名前ではなく，Hashが同じコンテンツがすでに存在するか否かで検証する
-  //     if (!returnArray.some((_c) => _c.name === c.name)) {
-  //       returnArray.push(c);
-  //     }
-  //   });
+  mainStore
+    .getFromAllWorld((w) =>
+      w.additional[`${cType}s`].map((c) => __converter(c, w.name))
+    )
+    .flat()
+    .forEach((c) => {
+      // TODO: 統合時の条件には，名前ではなく，Hashが同じコンテンツがすでに存在するか否かで検証する
+      const sameContentIdxInReturn = returnArray.findIndex((_c) => _c.name === c.name)
+      if (sameContentIdxInReturn > -1) {
+        returnArray[sameContentIdxInReturn].wNames.push(c.wNames[0])
+      } else {
+        returnArray.push(c);
+      }
+    });
   return returnArray;
 }
 
