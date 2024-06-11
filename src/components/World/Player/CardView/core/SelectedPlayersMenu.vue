@@ -2,7 +2,7 @@
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import PlayerIconInList from './utils/PlayerIconInList.vue';
+import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 const playerStore = usePlayerStore();
 
@@ -16,7 +16,7 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
 </script>
 
 <template>
-  <q-card flat class="column q-mb-md" style="width: 13rem; flex: 1 1 0">
+  <q-card flat class="column" style="width: 13rem; flex: 1 1 0">
     <p class="q-pt-sm q-pl-sm q-pa-none q-ma-none text-body2">
       {{ $t('player.select', playerStore.focusCards.size) }}
     </p>
@@ -32,19 +32,24 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
     </q-card-actions>
 
     <q-scroll-area style="flex: 1 1 0">
-      <div class="row q-gutter-md q-pa-sm">
+      <div class="row">
         <div v-if="playerStore.focusCards.size === 0" class="fit">
           <p class="col text-caption text-grey text-center">
             {{ $t('player.selectPlayerFromLeft') }}
           </p>
         </div>
-        <template
+        <div
           v-else
           v-for="uuid in getOrderedFocusCards(playerStore.focusCards)"
           :key="uuid"
+          class="col-3"
         >
-          <PlayerIconInList :uuid="uuid" />
-        </template>
+          <PlayerIcon
+            hover-btn
+            :uuid="uuid"
+            :negative-btn-clicked="playerStore.unFocus"
+          />
+        </div>
       </div>
     </q-scroll-area>
   </q-card>

@@ -904,6 +904,11 @@
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-1.3.5.tgz#1ef302e01cf7d2b5a0fa526790c9123bf1d06690"
   integrity sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==
 
+"@types/mousetrap@^1.6.15":
+  version "1.6.15"
+  resolved "https://registry.yarnpkg.com/@types/mousetrap/-/mousetrap-1.6.15.tgz#f144a0c539a4cef553a631824651d48267e53c86"
+  integrity sha512-qL0hyIMNPow317QWW/63RvL1x5MVMV+Ru3NaY9f/CuEpCqrmb7WeuK2071ZY5hczOnm38qExWM2i2WtkXLSqFw==
+
 "@types/ms@*":
   version "0.7.34"
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.34.tgz#10964ba0dee6ac4cd462e2795b6bebd407303433"
@@ -4858,6 +4863,11 @@ mlly@^1.1.0, mlly@^1.2.0:
     pathe "^1.1.1"
     pkg-types "^1.0.3"
     ufo "^1.3.0"
+
+mousetrap@^1.6.5:
+  version "1.6.5"
+  resolved "https://registry.yarnpkg.com/mousetrap/-/mousetrap-1.6.5.tgz#8a766d8c272b08393d5f56074e0b5ec183485bf9"
+  integrity sha512-QNo4kEepaIBwiT8CDhP98umTetp+JNfQYBWvC1pc6/OAibuXtRcxZ58Qz8skvEHYvURne/7R8T5VoOI7rDsEUA==
 
 ms@2.0.0:
   version "2.0.0"

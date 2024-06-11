@@ -3,6 +3,10 @@ export const jaPlayer = {
     name: '名前順',
     op: 'OP順',
   },
+  view: {
+    card: 'カード表示',
+    list: 'リスト表示',
+  },
   description:
     'プレイヤー設定では、サーバーのOP権限や入退室可能なプレイヤーの設定を行います',
   search: 'ゲーム中のプレイヤー名を入力',
@@ -13,6 +17,8 @@ export const jaPlayer = {
   join: '登録済みのプレイヤーのみ参加可能',
   changeOP: 'OPレベルの変更',
   makeGroup: 'グループを作成',
+  grouping: 'プレイヤーをグループ化',
+  groupingBtn: '選択中のプレイヤーを\nグループに追加',
   deletePlayer: 'プレイヤーを削除',
   selectPlayerFromLeft: 'プレイヤーを選択してください',
   selectPlayer: 'プレイヤーを選択してください',
@@ -57,6 +63,7 @@ export const jaPlayer = {
   failed: 'プレイヤー設定の読み込みに失敗しました',
   select: '{n} 人を選択中|{n} 人を選択中|{n} 人を選択中',
   deselect: '{n} 人の選択を解除|{n} 人の選択を解除',
+  deselectAll: '全ての選択を解除',
   editPlayer: '{n} 人の設定を編集|{n} 人の設定を編集',
   sort: '並べ替え',
   resetPlayerSettings: 'プレイヤー設定をリセット',

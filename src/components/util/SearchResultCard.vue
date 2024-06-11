@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import { isValid } from 'app/src-public/scripts/error';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import SearchResultItem from './utils/SearchResultItem.vue';
+import SearchResultItem from './core/SearchResultItem.vue';
 
 interface Prop {
   registerBtnText: string;
   registerProcess: (player: Player) => void;
-  // 表示中のワールドに対するプレイヤーの存在確認をするか
-  isCheckPlayerInWorld?: boolean;
+  /** trueの時に当該プレイヤーを表示する */
+  playerFilter?: (pId?: PlayerUUID) => boolean;
 }
 const prop = defineProps<Prop>();
 
-const mainStore = useMainStore();
 const playerStore = usePlayerStore();
+const pFilter = (pId?: PlayerUUID) => {
+  if (pId) {
+    return prop.playerFilter?.(pId) ?? true;
+  }
+  return false;
+};
 
 /**
  * 与えられたPlayerリストに対して、
@@ -27,23 +30,9 @@ const playerStore = usePlayerStore();
  * を除外したリストを返す
  */
 function filterRegisteredPlayer(players: Player[]) {
-  if (prop.isCheckPlayerInWorld) {
-    return players.filter(
-      (p) => !(hasPlayerInWorld(p.uuid) || p.name === playerStore.searchName)
-    );
-  }
-  return players;
-}
-
-/**
- * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す
- */
-function hasPlayerInWorld(playerUUID?: PlayerUUID) {
-  if (playerUUID !== void 0 && isValid(mainStore.world.players)) {
-    return mainStore.world.players.some((wp) => wp.uuid === playerUUID);
-  } else {
-    return true;
-  }
+  return players.filter(
+    (p) => pFilter(p.uuid) && p.name !== playerStore.searchName
+  );
 }
 </script>
 
@@ -54,22 +43,16 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
         playerStore.searchPlayers(
           filterRegisteredPlayer(Object.values(playerStore.cachePlayers))
         ).length +
-          (!isCheckPlayerInWorld ||
-          !hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid)
-            ? 1
-            : 0) >
+          (pFilter(playerStore.newPlayerCandidate?.uuid) ? 1 : 0) >
         0
       "
       class="q-pa-sm"
     >
       <q-list separator>
-        <!-- プレイヤー名からプレイヤーの検索を行う -->
+        <!-- 検索ワードと完全一致のプレイヤーを表示 -->
         <SearchResultItem
           v-if="playerStore.newPlayerCandidate !== void 0"
-          v-show="
-            !isCheckPlayerInWorld ||
-            !hasPlayerInWorld(playerStore.newPlayerCandidate?.uuid)
-          "
+          v-show="pFilter(playerStore.newPlayerCandidate?.uuid)"
           :player="playerStore.newPlayerCandidate"
           :register-btn-text="registerBtnText"
           :register-process="registerProcess"

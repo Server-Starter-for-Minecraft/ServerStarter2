@@ -1,7 +1,10 @@
 import { watch } from 'vue';
 import { defineStore } from 'pinia';
+import { createNewName } from 'app/src-public/scripts/createNewName';
 import { isValid } from 'app/src-public/scripts/error';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { fromEntries, toEntries, values } from 'app/src-public/scripts/obj/obj';
+import { genUUID } from 'app/src-public/scripts/uuid';
+import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import {
   OpLevel,
   Player,
@@ -11,18 +14,14 @@ import {
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
 
-type GroupSettings = PlayerGroup & { isNew: boolean };
-
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
       searchName: '',
       cachePlayers: {} as Record<PlayerUUID, Player>,
       focusCards: new Set<PlayerUUID>(),
-      selectedOP: undefined as OpLevel | 0 | undefined,
       newPlayerCandidate: undefined as Player | undefined,
-      selectedGroup: {} as GroupSettings,
-      selectedGroupName: '',
+      selectedGroupId: '' as UUID,
       openGroupEditor: false,
     };
   },
@@ -49,14 +48,22 @@ export const usePlayerStore = defineStore('playerStore', {
       const groupsData = sysStore.systemSettings.player.groups;
 
       if (this.searchName !== '') {
-        return Object.fromEntries(
-          Object.entries(groupsData).filter(([k, v]) =>
-            k.match(this.searchName)
+        fromEntries(
+          toEntries(groupsData).filter(([k, v]) =>
+            v.name.match(this.searchName)
           )
         );
       }
 
       return groupsData;
+    },
+    /**
+     * グループを名前から探す
+     */
+    findGroupfromName(name: string) {
+      return toEntries(this.searchGroups())
+        .map(([id, g]) => g)
+        .find((g) => g.name === name);
     },
     /**
      * プレイヤーに対するフォーカスを解除
@@ -71,9 +78,15 @@ export const usePlayerStore = defineStore('playerStore', {
     /**
      * プレイヤーに対するフォーカスを追加
      */
-    addFocus(uuid: PlayerUUID) {
-      this.focusCards.add(uuid);
-      this.selectedOP = undefined;
+    addFocus(uuid?: PlayerUUID) {
+      if (uuid !== void 0) {
+        this.focusCards.add(uuid);
+      } else {
+        const mainStore = useMainStore();
+        if (isValid(mainStore.world.players)) {
+          mainStore.world.players.forEach((p) => this.focusCards.add(p.uuid));
+        }
+      }
     },
     /**
      * グループを選択した際の処理
@@ -81,7 +94,9 @@ export const usePlayerStore = defineStore('playerStore', {
      */
     selectGroup(groupName: string) {
       const mainStore = useMainStore();
-      const groupMembers = this.searchGroups()[groupName].players;
+      const groupObj = this.findGroupfromName(groupName);
+      if (groupObj === void 0) return;
+      const groupMembers = groupObj.players;
 
       if (isValid(mainStore.world.players)) {
         const worldPlayers = mainStore.world.players;
@@ -125,6 +140,83 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // 検索欄をリセット
       this.searchName = '';
+    },
+    /**
+     * フォーカスされているプレイヤーを選択中のワールドから削除する
+     */
+    removePlayer() {
+      const mainStore = useMainStore();
+
+      // フォーカスされているプレイヤーを削除
+      this.focusCards.forEach((selectedPlayerUUID) => {
+        if (isValid(mainStore.world.players)) {
+          mainStore.world.players.splice(
+            mainStore.world.players
+              .map((p) => p.uuid)
+              .indexOf(selectedPlayerUUID),
+            1
+          );
+        }
+      });
+
+      // フォーカスのリセット
+      this.unFocus();
+    },
+    addGroup() {
+      const sysStore = useSystemStore();
+      const gid = genUUID();
+      // 名前を決定
+      const groupName = createNewName(
+        values(sysStore.systemSettings.player.groups).map((g) => g.name),
+        'NewGroup'
+      );
+      // 色を決定
+      const colorCodes = values(sysStore.staticResouces.minecraftColors);
+      const colorCode =
+        colorCodes[Math.round(Math.random() * (colorCodes.length - 1))];
+      // グループを生成
+      sysStore.systemSettings.player.groups[gid] = {
+        name: groupName,
+        color: colorCode,
+        players: [...this.focusCards],
+      };
+      return gid;
+    },
+    updateGroup(
+      groupID: UUID,
+      groupUpdater: (group: PlayerGroup) => PlayerGroup
+    ) {
+      const sysStore = useSystemStore();
+      sysStore.systemSettings.player.groups[groupID] = groupUpdater(
+        sysStore.systemSettings.player.groups[groupID]
+      );
+    },
+    removeGroup(groupID: UUID) {
+      const sysStore = useSystemStore();
+      delete sysStore.systemSettings.player.groups[groupID];
+      this.unFocus();
+    },
+    /**
+     * フォーカスされているプレイヤーに対してOPの設定を行う
+     */
+    setOP(setVal: 0 | OpLevel) {
+      const mainStore = useMainStore();
+
+      if (isValid(mainStore.world.players)) {
+        const val =
+          setVal !== 0
+            ? { level: setVal, bypassesPlayerLimit: false }
+            : undefined;
+
+        mainStore.world.players
+          .filter((p) => this.focusCards.has(p.uuid))
+          .forEach((p) => {
+            p.op = val;
+          });
+      }
+
+      // フォーカスのリセット
+      this.unFocus();
     },
   },
 });

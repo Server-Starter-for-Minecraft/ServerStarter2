@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { keys } from 'app/src-public/scripts/obj/obj';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { FrontPlayerGroup } from 'src/stores/SystemStore/converters/playerGroup';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import BaseActionsCard from '../utils/BaseActionsCard.vue';
-import GroupBadgeView from './utils/GroupBadgeView.vue';
-import PlayerHeadView from './utils/PlayerHeadView.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
+import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
+import GroupBadgeView from './parts/GroupBadgeView.vue';
 
 interface Prop {
   uuid: PlayerUUID;
@@ -47,14 +47,18 @@ function onCardClicked() {
   } else {
     playerStore.addFocus(prop.uuid);
   }
+
+  if (playerStore.openGroupEditor) {
+    playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
+      g.players = [...playerStore.focusCards];
+      return g;
+    });
+  }
 }
 
-function getGroups(groups: Record<string, PlayerGroup>) {
-  return keys(groups)
-    .filter((name) => groups[name].players.includes(prop.uuid))
-    .map((name) => {
-      return { name: name, color: groups[name].color };
-    })
+function getGroups(groups: FrontPlayerGroup) {
+  return values(groups)
+    .filter((g) => g.players.includes(prop.uuid))
     .sort((a, b) => strSort(a.name, b.name));
 }
 </script>
@@ -72,7 +76,7 @@ function getGroups(groups: Record<string, PlayerGroup>) {
     <template #default>
       <q-item style="height: 5rem; padding: 14px" class="full-width">
         <q-item-section avatar top>
-          <PlayerHeadView :player="player" size="2.5rem" />
+          <PlayerHeadAvatar :player="player" size="2.5rem" />
 
           <q-item-section top style="max-width: 8rem" class="q-pl-md">
             <q-item-label class="name text-omit">
@@ -100,34 +104,13 @@ function getGroups(groups: Record<string, PlayerGroup>) {
         </q-avatar>
       </q-item>
 
-      <!-- actionsの領域確保のために描画するが，実態はactions側の実装 -->
-      <q-card-section
-        v-show="isBelongingGroups"
-        class="q-py-none"
-        style="opacity: 0"
-      >
+      <q-card-section v-show="isBelongingGroups" class="q-py-none">
         <div class="q-gutter-xs q-pb-sm" style="width: 12.5rem">
           <template
             v-for="g in getGroups(sysStore.systemSettings.player.groups)"
             :key="g"
           >
-            <group-badge-view :group-name="g.name" :color="g.color" />
-          </template>
-        </div>
-      </q-card-section>
-    </template>
-
-    <template #actions>
-      <q-card-section
-        v-show="isBelongingGroups"
-        class="q-py-none absolute-bottom"
-      >
-        <div class="q-gutter-xs q-pb-sm">
-          <template
-            v-for="g in getGroups(sysStore.systemSettings.player.groups)"
-            :key="g"
-          >
-            <group-badge-view :group-name="g.name" :color="g.color" />
+            <GroupBadgeView :group-name="g.name" :color="g.color" />
           </template>
         </div>
       </q-card-section>

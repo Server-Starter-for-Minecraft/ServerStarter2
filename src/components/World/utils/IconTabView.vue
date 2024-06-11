@@ -27,8 +27,8 @@ async function to() {
     <SsTooltip
       v-if="!($q.screen.gt.md || $route.path === `/${path}`) && label"
       :name="label"
-      anchor="center middle"
-      self="top middle"
+      anchor="bottom middle"
+      self="center middle"
     />
   </q-tab>
 </template>
