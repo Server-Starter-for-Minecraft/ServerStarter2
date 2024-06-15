@@ -19,7 +19,7 @@ export async function asyncPipe(
   });
 
   return new Promise<Result<undefined, Error>>((resolve) => {
-    readable.on('close', () => {
+    writable.on('close', () => {
       if (e !== undefined) return resolve(e);
       resolve(ok(undefined));
     });
