@@ -50,7 +50,11 @@ const isFailedLoading = () =>
   <div v-else-if="isSelectSuggestMode()" class="absolute-center text-h5">
     {{ $t('mainLayout.selectWorld') }}
   </div>
-  <div v-else-if="isFailedLoading()" class="absolute-center text-h5">
+  <div
+    v-else-if="isFailedLoading()"
+    class="absolute-center text-h5 full-width"
+    style="max-width: max-content; margin: 0 auto"
+  >
     <!-- TODO: エラーの原因を表示 -->
     <div class="row items-center">
       <q-avatar size="8rem">

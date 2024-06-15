@@ -8,6 +8,8 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
   minimizeList: 'Minimize world list',
   noWorld: 'No Worlds Found',
   selectWorld: 'Select a world',
+  loading: 'Loading {name}',
+  failedLoading: 'Failed to load {name}',
   newWorldBtn: {
     addWorld: 'Add new world',
     content: {

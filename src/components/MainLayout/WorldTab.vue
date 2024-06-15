@@ -123,8 +123,14 @@ const tooltipText = () => {
           color="primary"
         />
         <!-- 読込失敗 -->
-        <q-icon v-else name="warning" color="negative" size="3.5rem" />
-        
+        <q-icon
+          v-else
+          name="warning"
+          color="negative"
+          size="3rem"
+          style="border: 3px solid; padding: 10px"
+        />
+
         <!-- 正常に読み込めた && 停止中 && ホバー中 の時にのみ実行ボタンを表示 -->
         <q-btn
           v-show="
