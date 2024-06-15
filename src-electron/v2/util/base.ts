@@ -8,7 +8,7 @@ export type Ok<T> = {
   value(): T;
   error(): never;
   onOk<U extends Result<any, any>>(op: (value: T) => U): U;
-  onErr(op: (value: any) => Result<T, any>): Ok<T>;
+  onErr(op: (error: never) => Result<T, any>): Ok<T>;
   valueOrDefault(defaultValue: T): T;
   errorOrDefault<U>(defaultError: U): U;
 };
@@ -18,7 +18,7 @@ export type Err<E> = {
   readonly isErr: true;
   value(): never;
   error(): E;
-  onOk(op: (error: any) => Result<any, E>): Err<E>;
+  onOk(op: (value: never) => Result<any, E>): Err<E>;
   onErr<U extends Result<any, E>>(op: (error: E) => U): U;
   valueOrDefault<U>(defaultValue: U): U;
   errorOrDefault(defaultError: E): E;
@@ -53,8 +53,27 @@ const throwPanic = () => {
 };
 
 const identity = <T>(v: T): T => v;
+const emptyfunc = () => {};
 
-export const ok = <T>(value: T): Ok<T> => {
+type OkGen = {
+  <T>(error: T): Ok<T>;
+  (): Ok<void>;
+};
+
+/** Ok<void>は生成せずにこれを使いまわす */
+const okVoid: Ok<void> = {
+  isOk: true,
+  isErr: false,
+  value: emptyfunc,
+  error: throwPanic,
+  onOk: (op) => op(undefined),
+  onErr: () => okVoid,
+  valueOrDefault: emptyfunc,
+  errorOrDefault: identity,
+};
+
+export const ok: OkGen = (<T>(value: T = undefined as T): Ok<T> => {
+  if (value === undefined) return okVoid as Ok<T>;
   const returnValue = () => value;
   const result: Ok<T> = {
     isOk: true,
@@ -67,9 +86,15 @@ export const ok = <T>(value: T): Ok<T> => {
     errorOrDefault: identity,
   };
   return result;
+}) as OkGen;
+
+type ErrGen = {
+  <T>(error: T): Err<T>;
+  /** よく使うので糖衣構文 : err(new Error(MESSAGE)) === err.error(MESSAGE) */
+  error(message: string): Err<Error>;
 };
 
-export const err = <T>(error: T): Err<T> => {
+export const err: ErrGen = <T>(error: T): Err<T> => {
   const returnError = () => error;
   const result: Err<T> = {
     isOk: false,
@@ -83,6 +108,7 @@ export const err = <T>(error: T): Err<T> => {
   };
   return result;
 };
+err.error = (message) => err(new Error(message));
 
 export const value = <T>(value: T): Value<T> => {
   const returnValue = () => value;

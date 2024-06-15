@@ -1,35 +1,42 @@
 import { World, WorldContainer, WorldName } from '../../schema/world';
-import { Result } from '../../util/base';
+import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { WorldSource } from './world';
 
 /**
- * ワールドを管理するクラス
- *
- * 場所はどこにあってもよい
+ * ローカルのワールドを管理するクラス
  */
-export abstract class WorldSource {
+export class LocalWorldSource extends WorldSource {
   /**
    * コンテナ内のワールド名一覧を表示
    */
-  abstract listWorldNames(container: WorldContainer): Promise<WorldName[]>;
+  async listWorldNames(): Promise<WorldName[]> {
+    return [];
+  }
 
   /**
    * コンテナ内でメタデータを上書き
    */
-  abstract setWorldMeta(meta: World): Promise<Result<void, Error>>;
+  async setWorldMeta(meta: World): Promise<Result<void, Error>> {
+    return err(new Error('notImplemented'));
+  }
 
   /**
    * メタデータを取得
    */
-  abstract getWorldMeta(
+  async getWorldMeta(
     container: WorldContainer,
     name: WorldName
-  ): Promise<Result<World>>;
+  ): Promise<Result<World>> {
+    return err(new Error('notImplemented'));
+  }
 
   /**
    * ワールドデータを削除
    */
-  abstract deleteWorldData(name: WorldName): Promise<Result<World>>;
+  async deleteWorldData(name: WorldName): Promise<Result<World>> {
+    return err(new Error('notImplemented'));
+  }
 
   /**
    * ワールドを特定の形のディレクトリ構造に展開
@@ -42,7 +49,9 @@ export abstract class WorldSource {
    *
    * TODO: 展開先のワールドのひな形の用意
    */
-  abstract extractWorldDataTo(path: Path, world: World): Promise<Result<void>>;
+  async extractWorldDataTo(path: Path, world: World): Promise<Result<void>> {
+    return err(new Error('notImplemented'));
+  }
 
   /**
    * ディレクトリに展開されたデータをWorldContainerに格納
@@ -53,5 +62,15 @@ export abstract class WorldSource {
    *
    * TODO: 展開先のワールドのひな形の用意
    */
-  abstract packWorldDataFrom(path: Path, world: World): Promise<Result<void>>;
+  async packWorldDataFrom(path: Path, world: World): Promise<Result<void>> {
+    return err(new Error('notImplemented'));
+  }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('', () => {
+    
+  });
 }

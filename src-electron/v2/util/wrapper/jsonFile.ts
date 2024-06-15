@@ -1,14 +1,14 @@
 import type { z } from 'zod';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
-import { IReadableStreamer, IWritableStreamer } from '../binary/stream';
+import { ReadableStreamer, WritableStreamer } from '../binary/stream';
 
 /**
  * JSONファイルを扱うクラス
  *
  * データのバリデーションも行う
  */
-export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
+export class JsonFile<T extends ReadableStreamer | WritableStreamer<any>, U> {
   private target: T;
   private encoding: BufferEncoding;
   private validator: z.ZodType<U>;
@@ -28,22 +28,22 @@ export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
   /**
    * ファイルからJSONを読み込む
    */
-  async read(this: JsonFile<IReadableStreamer, U>): Promise<Result<U>> {
+  async read(this: JsonFile<ReadableStreamer, U>): Promise<Result<U>> {
     // 読み書き処理中の場合待機
     await this.lock;
 
     // ロックして読み取り
     const promise = this.target.into(Bytes);
     this.lock = promise;
-    const str = //  ((x) => x.toStr());
-      ((await promise).this.lock = undefined);
+    const str = (await promise).onOk((x) => x.toStr());
+    this.lock = undefined;
+    if (str.isErr) return str;
 
-    if (str.isErr()) return str;
     try {
-      const value = JSON.parse(str.value);
+      const value = JSON.parse(str.value());
       const parsed = await this.validator.safeParseAsync(value);
       if (parsed.success) return ok(parsed.data);
-      return err(new Error('ZOD_PARSE_ERROR'));
+      return err(parsed.error);
     } catch (e) {
       return err(e as Error);
     }
@@ -53,7 +53,7 @@ export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
    * ファイにJSONを書き込む
    */
   async write<T>(
-    this: JsonFile<IWritableStreamer<T>, U>,
+    this: JsonFile<WritableStreamer<T>, U>,
     content: U
   ): Promise<Result<T>> {
     const str = JSON.stringify(content);

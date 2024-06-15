@@ -1,3 +1,81 @@
-export type Version = {
+import { NewType } from '../util/type/newtype';
+
+export type VersionId = NewType<string, 'VanillaVersionId'>;
+
+export type VanillaVersionIdentity = {
   type: 'vanilla';
+  id: VersionId;
+  release: boolean;
 };
+
+export type SpigotVersionIdentity = {
+  type: 'spigot';
+  id: VersionId;
+};
+
+export type PapermcVersionIdentity = {
+  type: 'papermc';
+  id: VersionId;
+  build: number;
+};
+
+export type ForgeVersionIdentity = {
+  type: 'forge';
+  id: VersionId;
+  forge_version: string;
+  download_url: string;
+};
+
+export type MohistmcVersionIdentity = {
+  id: VersionId;
+  type: 'mohistmc';
+  forge_version?: string;
+  number: number;
+};
+
+export type FabricVersionIdentity = {
+  id: VersionId;
+  type: 'fabric';
+  release: boolean;
+  loader: string;
+  installer: string;
+};
+
+export type AllVanillaVersion = {
+  id: VersionId;
+  release: boolean;
+}[];
+
+export type AllSpigotVersion = {
+  id: VersionId;
+}[];
+
+export type AllPapermcVersion = {
+  id: VersionId;
+  builds: number[];
+}[];
+
+export type AllForgeVersion = {
+  id: VersionId;
+  forge_versions: { version: string; url: string }[];
+  recommended?: { version: string; url: string };
+}[];
+
+export type AllMohistmcVersion = {
+  id: VersionId;
+  builds: { number: number; forge_version?: string }[];
+}[];
+
+export type AllFabricVersion = {
+  games: { id: VersionId; release: boolean }[];
+  loaders: string[];
+  installers: string[];
+};
+
+export type VersionIdntity =
+  | VanillaVersionIdentity
+  | SpigotVersionIdentity
+  | PapermcVersionIdentity
+  | ForgeVersionIdentity
+  | MohistmcVersionIdentity
+  | FabricVersionIdentity;

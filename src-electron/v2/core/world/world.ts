@@ -1,5 +1,5 @@
 import mitt, { Emitter } from 'mitt';
-import { DatapackInfo, DatapackMeta } from '../../schema/datapack';
+import { DatapackMeta } from '../../schema/datapack';
 import { Mod } from '../../schema/mod';
 import { Plugin } from '../../schema/plugin';
 import { World, WorldContainer, WorldName } from '../../schema/world';
