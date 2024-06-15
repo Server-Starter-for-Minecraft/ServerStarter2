@@ -74,6 +74,7 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'resource-pack',
     'resource-pack-prompt',
     'resource-pack-sha1',
+    'resource-pack-id',
     'require-resource-pack',
   ],
   security: ['enforce-secure-profile', 'enforce-whitelist', 'white-list'],
