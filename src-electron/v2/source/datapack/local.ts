@@ -297,9 +297,7 @@ if (import.meta.vitest) {
       );
 
       const listFromCacheAgain = await datapackContainer.list(true);
-      expect(listFromCacheAgain).toEqual(
-        datapackContainer.list(false)
-      );
+      expect(listFromCacheAgain).toEqual(datapackContainer.list(false));
 
       // 後始末
       await rootPath.remove();
