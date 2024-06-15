@@ -114,7 +114,7 @@ export async function createNewWorld(duplicateWorldID?: WorldID) {
     res,
     (world) => {
       returnWorldID = world.id;
-      worldStore.worldList[world.id].world = toRaw(world);
+      worldStore.worldList[world.id] = { type: 'edited', world: toRaw(world) };
       mainStore.showWorld(world);
       consoleStore.initTab(world.id);
     },
@@ -137,7 +137,10 @@ export function removeWorld(worldID: WorldID) {
  */
 export function updateWorld(world: World | WorldEdited) {
   const worldStore = useWorldStore();
-  worldStore.worldList[world.id].world = world;
+  worldStore.worldList[world.id] = {
+    type: 'edited',
+    world: toRaw(world),
+  };
 }
 
 /**
