@@ -47,7 +47,7 @@ export const useWorldStore = defineStore('worldStore', {
         ),
         (a, b) => {
           if (a.type === 'edited' && b.type === 'edited') {
-            return (a.world.last_date ?? 0) - (b.world.last_date ?? 0);
+            return (b.world.last_date ?? 0) - (a.world.last_date ?? 0);
           } else {
             return 0;
           }

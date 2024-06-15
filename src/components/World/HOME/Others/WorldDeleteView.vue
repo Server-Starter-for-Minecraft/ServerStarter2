@@ -38,7 +38,7 @@ async function removeWorld_Clicked() {
 
     // ワールドリストの0番目を表示
     const world = values(mainStore.allWorlds.filteredWorlds);
-    mainStore.showWorld(world[world.length - 1].world);
+    mainStore.showWorld(world[0].world);
 
     // 画面を一番上に
     moveScrollTop_Home();

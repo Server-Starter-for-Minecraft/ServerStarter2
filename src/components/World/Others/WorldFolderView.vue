@@ -33,7 +33,7 @@ function changeVisible(container: WorldContainer) {
     container
   ) {
     const world = values(mainStore.allWorlds.filteredWorlds);
-    mainStore.showWorld(world[world.length - 1].world);
+    mainStore.showWorld(world[0].world);
   }
 }
 

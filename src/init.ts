@@ -52,7 +52,7 @@ export async function initWindow() {
   } else {
     const mainStore = useMainStore();
     const world = values(worldStore.sortedWorldList);
-    mainStore.showWorld(world[world.length - 1].world);
+    mainStore.showWorld(world[0].world);
   }
 }
 
