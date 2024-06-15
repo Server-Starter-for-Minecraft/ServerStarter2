@@ -30,8 +30,8 @@ async function recoverWorld() {
   checkError(
     res.value,
     (w) => {
-      mainStore.updateWorld(w);
-      mainStore.syncBackWorld(w.id);
+      updateWorld(w);
+      updateBackWorld(w.id);
     },
     (e) =>
       tError(e, {

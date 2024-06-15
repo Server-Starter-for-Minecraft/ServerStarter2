@@ -49,7 +49,7 @@ export async function initWindow() {
     });
 
     worldStore.worldList = fromEntries(localWorlds.map((w) => [w.id, w]));
-    mainStore.syncBackWorld();
+    updateBackWorld();
     localWorlds.forEach((w) => consoleStore.initTab(w.id));
   }
 
@@ -57,7 +57,7 @@ export async function initWindow() {
     await mainStore.createNewWorld();
   } else {
     const world = values(worldStore.sortedWorldList);
-    mainStore.setWorld(world[world.length - 1]);
+    mainStore.showWorld(world[world.length - 1]);
   }
 
   // TODO: getWorld()の処理が重いので、先にAbbrでUIを表示して、その後に読み込んだものからWorldを更新
@@ -78,6 +78,10 @@ export async function afterWindow() {
   // datapackなどのCacheコンテンツの取得
   getCacheContents();
 }
+
+/**
+ * ワールドの詳細情報を取得する
+ */
 
 /**
  * サーバーバージョン一覧を取得する

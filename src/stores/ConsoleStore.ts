@@ -161,7 +161,7 @@ export async function runServer() {
   );
 
   // サーバーを起動
-  mainStore.startedWorld(runWorld.id);
+  updateBackWorld(runWorld.id);
   const res = await window.API.invokeRunWorld(runWorld.id);
 
   // サーバー終了時のエラー確認

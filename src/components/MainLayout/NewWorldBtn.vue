@@ -103,7 +103,7 @@ async function duplicateWorld() {
       importFunc: async () => {
         const newWorldID = await mainStore.createNewWorld(mainStore.world.id);
         // ワールドの複製は新規ワールドとみなさない
-        if (newWorldID) mainStore.syncBackWorld(newWorldID);
+        if (newWorldID) updateBackWorld(newWorldID);
       },
     } as CustomMapImporterProp,
   }).onOk(() => {

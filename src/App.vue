@@ -11,8 +11,9 @@ import {
   setSysSettingsSubscriber,
   useSystemStore,
 } from './stores/SystemStore';
+import { useWorldStore } from './stores/WorldStore';
 import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
-import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import {
   setPlayerSearchSubscriber,
@@ -57,7 +58,7 @@ watch(
 // サーバー起動時に画面遷移
 window.API.onStartServer((_event, worldID, notification) => {
   consoleStore.setConsole(worldID, '', false);
-  worldStore.setWorldIP(worldID, notification.ngrokURL);
+  mainStore.setWorldIP(worldID, notification.ngrokURL);
   propertyStore.setServerPort(worldID, notification.port);
 });
 // サーバー終了時に画面遷移
@@ -162,9 +163,12 @@ function setSubscribe() {
   const currentSelectedId = mainStore.selectedWorldID;
 
   worldStore.$subscribe((mutation, state) => {
-    window.API.invokeSetWorld(toRaw(mainStore.world)).then((v) => {
-      checkError(v.value, undefined, (e) => tError(e));
-    });
+    const world = mainStore.world;
+    if (world) {
+      window.API.invokeSetWorld(toRaw(world)).then((v) => {
+        checkError(v.value, undefined, (e) => tError(e));
+      });
+    }
   });
 
   setSysSettingsSubscriber();

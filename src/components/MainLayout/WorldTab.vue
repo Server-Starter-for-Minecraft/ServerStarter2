@@ -50,7 +50,7 @@ const runBtnHovered = ref(false);
  * ワールドを選択した際に行うワールド関連の初期化
  */
 function selectWorldIdx() {
-  mainStore.setWorld(prop.world);
+  mainStore.showWorld(prop.world);
   consoleStore.initTab(prop.world.id);
 }
 

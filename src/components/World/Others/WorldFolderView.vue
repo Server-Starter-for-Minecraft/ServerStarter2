@@ -29,7 +29,7 @@ const isWorldContainerLoading = ref(false);
 function changeVisible(container: WorldContainer) {
   if (mainStore.world.container === container) {
     const world = values(worldStore.sortedWorldList);
-    mainStore.setWorld(world[world.length - 1]);
+    mainStore.showWorld(world[world.length - 1]);
   }
 }
 
