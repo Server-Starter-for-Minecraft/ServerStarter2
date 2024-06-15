@@ -12,23 +12,25 @@ const contentsStore = useContentsStore();
 
 function getAdditionalContentsBtns() {
   const btns = [];
-  if (isContentsExists[mainStore.world.version.type].datapack) {
-    btns.push({
-      label: t('tabs.worldSettingTabs.datapack'),
-      activeModelValue: 'datapack',
-    });
-  }
-  if (isContentsExists[mainStore.world.version.type].plugin) {
-    btns.push({
-      label: t('tabs.worldSettingTabs.plugin'),
-      activeModelValue: 'plugin',
-    });
-  }
-  if (isContentsExists[mainStore.world.version.type].mod) {
-    btns.push({
-      label: t('tabs.worldSettingTabs.mod'),
-      activeModelValue: 'mod',
-    });
+  if (mainStore.world) {
+    if (isContentsExists[mainStore.world.version.type].datapack) {
+      btns.push({
+        label: t('tabs.worldSettingTabs.datapack'),
+        activeModelValue: 'datapack',
+      });
+    }
+    if (isContentsExists[mainStore.world.version.type].plugin) {
+      btns.push({
+        label: t('tabs.worldSettingTabs.plugin'),
+        activeModelValue: 'plugin',
+      });
+    }
+    if (isContentsExists[mainStore.world.version.type].mod) {
+      btns.push({
+        label: t('tabs.worldSettingTabs.mod'),
+        activeModelValue: 'mod',
+      });
+    }
   }
   return btns;
 }

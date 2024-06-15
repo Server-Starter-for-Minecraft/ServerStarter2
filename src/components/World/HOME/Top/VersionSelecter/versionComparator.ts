@@ -67,7 +67,9 @@ export function openWarningDialog<T extends Version>(
     currentVer,
     newVer,
     () => {
-      mainStore.world.version = newVer;
+      if (mainStore.world?.version) {
+        mainStore.world.version = newVer;
+      }
     },
     'versionDown',
     prop

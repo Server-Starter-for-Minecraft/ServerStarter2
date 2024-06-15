@@ -22,6 +22,14 @@ function buildSpigotVer(id: string) {
     type: 'spigot' as const,
   };
 }
+/**
+ * ワールドオブジェクトのバージョン情報を書き換える
+ */
+function updateWorldVersion(id: string) {
+  if (mainStore.world?.version) {
+    mainStore.world.version = buildSpigotVer(id);
+  }
+}
 
 const spigotVers = () => {
   return prop.versionData.map((ver) => ver.id);
@@ -29,10 +37,10 @@ const spigotVers = () => {
 const spigotVer = computed({
   get: () => {
     // 前のバージョンがSpigotに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (spigotVers().indexOf(mainStore.world.version.id) === -1) {
+    if (spigotVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
       return spigotVers()[0];
     }
-    return mainStore.world.version.id;
+    return mainStore.world?.version.id ?? '';
   },
   set: (val) => {
     const newVer = buildSpigotVer(val);
@@ -47,7 +55,7 @@ const spigotVer = computed({
 });
 
 // 表示内容と内部データを整合させる
-mainStore.world.version = buildSpigotVer(spigotVer.value);
+updateWorldVersion(spigotVer.value);
 </script>
 
 <template>
@@ -65,7 +73,7 @@ mainStore.world.version = buildSpigotVer(spigotVer.value);
     :label="$t('home.version.versionType')"
     option-label="label"
     option-value="data"
-    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     class="col"
   />
 </template>

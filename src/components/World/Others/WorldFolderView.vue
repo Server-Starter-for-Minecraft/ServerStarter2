@@ -6,8 +6,9 @@ import { values } from 'app/src-public/scripts/obj/obj';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
-import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { updateWorld, useWorldStore } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
@@ -27,9 +28,12 @@ const isWorldContainerLoading = ref(false);
  * 表示ワールドを残ったワールド一覧から選択する
  */
 function changeVisible(container: WorldContainer) {
-  if (mainStore.world.container === container) {
-    const world = values(worldStore.sortedWorldList);
-    mainStore.showWorld(world[world.length - 1]);
+  if (
+    worldStore.worldList[mainStore.selectedWorldID].world.container ===
+    container
+  ) {
+    const world = values(mainStore.allWorlds.filteredWorlds);
+    mainStore.showWorld(world[world.length - 1].world);
   }
 }
 
@@ -37,8 +41,12 @@ function changeVisible(container: WorldContainer) {
  * ワールドコンテナをセットする際に、データの移動を待機する
  */
 async function setWorldContainer(container: WorldContainer) {
+  if (!mainStore.world) {
+    return;
+  }
+
   // エラーの起きているワールドということにしてワールドの起動を阻止する
-  mainStore.errorWorlds.add(mainStore.world.id);
+  mainStore.errorWorlds.add(mainStore.selectedWorldID);
   isWorldContainerLoading.value = true;
 
   const world = deepcopy(mainStore.world);
@@ -48,7 +56,7 @@ async function setWorldContainer(container: WorldContainer) {
   const res = await window.API.invokeSetWorld(toRaw(world));
   checkError(
     res.value,
-    (w) => mainStore.updateWorld(w),
+    (w) => updateWorld(w),
     (e) => tError(e)
   );
 
@@ -86,9 +94,9 @@ function openFolderEditor() {
       <FolderCard
         v-model="sysStore.systemSettings.container[n - 1]"
         :loading="isWorldContainerLoading"
-        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+        :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
         :active="
-          mainStore.world.container ===
+          worldStore.worldList[mainStore.selectedWorldID].world.container ===
           sysStore.systemSettings.container[n - 1].container
         "
         @click="

@@ -63,7 +63,10 @@ function openGroupEditor(group?: PlayerGroup) {
 </script>
 
 <template>
-  <div v-if="isValid(mainStore.world.players)" class="column fit q-px-md">
+  <div
+    v-if="mainStore.world && isValid(mainStore.world.players)"
+    class="column fit q-px-md"
+  >
     <div class="row full-height">
       <q-scroll-area class="full-height" style="flex: 1 1 0">
         <p class="q-pt-md text-body2" style="opacity: 0.6">
@@ -188,6 +191,7 @@ function openGroupEditor(group?: PlayerGroup) {
     <div class="absolute-center">
       <p>{{ $t('player.failed') }}</p>
       <SsBtn
+        v-if="mainStore.world"
         :label="$t('player.resetPlayerSettings')"
         color="primary"
         @click="mainStore.world.players = []"

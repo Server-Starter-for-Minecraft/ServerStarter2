@@ -7,6 +7,7 @@ import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
+import { updateBackWorld, updateWorld, useWorldStore } from './WorldStore';
 
 type consoleData = { chunk: string; isError: boolean };
 type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog';
@@ -139,39 +140,45 @@ export const useConsoleStore = defineStore('consoleStore', {
 
 export async function runServer() {
   const mainStore = useMainStore();
+  const worldStore = useWorldStore();
   const consoleStore = useConsoleStore();
 
   // 起動時のワールドの状態を保持することで、GUIが別のワールドを表示していても、
   // 当該ワールドに対して処理が行えるようにする
-  const runWorld = deepcopy(mainStore.world);
+  const runWorld = deepcopy(worldStore.worldList[mainStore.selectedWorldID]);
+
+  // Abbrは実行できない
+  if (runWorld.type === 'abbr') {
+    return;
+  }
 
   // 画像が入っていない場合は既定のアイコンを適用する
-  if (runWorld.avater_path === void 0) {
-    runWorld.avater_path = assets.png.unset;
+  if (runWorld.world.avater_path === void 0) {
+    runWorld.world.avater_path = assets.png.unset;
   }
 
   // プログレスのステータスをセット
   consoleStore.initProgress(
-    runWorld.id,
+    runWorld.world.id,
     $T('console.booting', {
-      id: `${runWorld.version.id}`,
-      type: `${$T(`home.serverType.${runWorld.version.type}`)}`,
-      name: `${runWorld.name}`,
+      id: `${runWorld.world.version.id}`,
+      type: `${$T(`home.serverType.${runWorld.world.version.type}`)}`,
+      name: `${runWorld.world.name}`,
     })
   );
 
   // サーバーを起動
-  updateBackWorld(runWorld.id);
-  const res = await window.API.invokeRunWorld(runWorld.id);
+  updateBackWorld(runWorld.world.id);
+  const res = await window.API.invokeRunWorld(runWorld.world.id);
 
   // サーバー終了時のエラー確認
   checkError(
     res.value,
-    (w) => mainStore.updateWorld(w),
+    (w) => updateWorld(w),
     (e) => tError(e)
   );
 
   // サーバータブをリセット
-  consoleStore.initTab(runWorld.id, true);
-  mainStore.removeWorldIP(runWorld.id);
+  consoleStore.initTab(runWorld.world.id, true);
+  mainStore.removeWorldIP(runWorld.world.id);
 }

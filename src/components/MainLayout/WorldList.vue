@@ -74,15 +74,10 @@ const drawer = ref(true);
     <q-scroll-area class="fit col">
       <q-list>
         <template
-          v-for="(world, idx) in sortValue(
-            mainStore.showingWorldList,
-            (w1, w2) => {
-              return (w2.last_date ?? 0) - (w1.last_date ?? 0);
-            }
-          )"
+          v-for="(world, idx) in mainStore.allWorlds.filteredWorlds"
           :key="world"
         >
-          <WorldTab :world="world" :idx="idx" />
+          <WorldTab :world_item="world" :idx="idx" />
         </template>
       </q-list>
     </q-scroll-area>

@@ -19,6 +19,9 @@ const consoleStore = useConsoleStore();
 
 function setOP(setVal: 0 | OpLevel) {
   function setter(setVal?: OpSetting) {
+    if (!mainStore.world) {
+      return;
+    }
     if (isValid(mainStore.world.players)) {
       mainStore.world.players
         .filter((p) => playerStore.focusCards.has(p.uuid))
@@ -41,6 +44,9 @@ function setOP(setVal: 0 | OpLevel) {
 function removePlayer() {
   // フォーカスされているプレイヤーを削除
   playerStore.focusCards.forEach((selectedPlayerUUID) => {
+    if (!mainStore.world) {
+      return;
+    }
     if (isValid(mainStore.world.players)) {
       mainStore.world.players.splice(
         mainStore.world.players.map((p) => p.uuid).indexOf(selectedPlayerUUID),
@@ -71,7 +77,7 @@ function removePlayer() {
             opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
           "
           :disable="
-            consoleStore.status(mainStore.world.id) !== 'Stop' &&
+            consoleStore.status(mainStore.selectedWorldID) !== 'Stop' &&
             ![validProperties['op-permission-level'], 0].includes(opLevel)
           "
           @click="() => setOP(opLevel)"

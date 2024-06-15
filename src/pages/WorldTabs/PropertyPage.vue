@@ -32,7 +32,7 @@ const scrollAreaRef = ref();
  */
 function resetAll() {
   Object.keys(sysStore.systemSettings.world.properties).map((key) => {
-    if (isValid(mainStore.world.properties)) {
+    if (mainStore.world && isValid(mainStore.world.properties)) {
       mainStore.world.properties[key] =
         sysStore.systemSettings.world.properties[key];
     }
@@ -49,7 +49,7 @@ function scrollTop() {
 
 <template>
   <div class="mainField">
-    <div v-if="isValid(mainStore.world.properties)" class="column fit">
+    <div v-if="mainStore.world && isValid(mainStore.world.properties)" class="column fit">
       <div class="row q-py-md">
         <SsInput
           dense
@@ -90,6 +90,7 @@ function scrollTop() {
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
         <SsBtn
+          v-if="mainStore.world"
           :label="$t('property.reset')"
           color="primary"
           @click="mainStore.world.properties = initProperty"

@@ -66,7 +66,7 @@ async function onUpload() {
 
   // 取得画像が不適な場合にデフォルト値を当てる（or 元の画像を反映）
   if (returnImg === void 0) {
-    iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset;
+    iconImg.value.data = mainStore.world?.avater_path ?? assets.png.unset;
   }
 
   // 画像の取得状態を解除
@@ -78,7 +78,7 @@ async function onUpload() {
  */
 function showImgClipper() {
   isImgClipper.value = true;
-  iconImg.value.data = mainStore.world.avater_path ?? assets.png.unset;
+  iconImg.value.data = mainStore.world?.avater_path ?? assets.png.unset;
   customImgReload.value = true;
 }
 

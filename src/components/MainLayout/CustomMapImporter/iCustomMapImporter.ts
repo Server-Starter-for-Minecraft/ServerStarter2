@@ -6,6 +6,7 @@ import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
+import { createNewWorld, updateWorld } from 'src/stores/WorldStore';
 
 export interface CustomMapImporterProp {
   icon?: ImageURI;
@@ -23,19 +24,22 @@ export async function importCustomMap(customMap: CustomMapData) {
   }
 
   // ready world object
-  await mainStore.createNewWorld();
+  await createNewWorld();
   const world = deepcopy(mainStore.world);
-  world.custom_map = toRaw(customMap);
-
-  // save data
-  const res = await window.API.invokeSetWorld(toRaw(world));
-  checkError(
-    res.value,
-    (w) => mainStore.updateWorld(w),
-    (e) =>
-      tError(e, {
-        titleKey: 'error.errorDialog.failToSaveExistedWorld',
-        descKey: `error.${e.key}.title`,
-      })
-  );
+  
+  if (world) {
+    world.custom_map = toRaw(customMap);
+  
+    // save data
+    const res = await window.API.invokeSetWorld(toRaw(world));
+    checkError(
+      res.value,
+      (w) => updateWorld(w),
+      (e) =>
+        tError(e, {
+          titleKey: 'error.errorDialog.failToSaveExistedWorld',
+          descKey: `error.${e.key}.title`,
+        })
+    );
+  }
 }

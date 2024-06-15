@@ -32,12 +32,24 @@ function buildFabricVer(
     loader: loader,
   };
 }
+/**
+ * ワールドオブジェクトのバージョン情報を書き換える
+ */
+function updateWorldVersion(
+  ver: { id: string; release: boolean },
+  installer: string,
+  loader: string
+) {
+  if (mainStore.world?.version) {
+    mainStore.world.version = buildFabricVer(ver, installer, loader);
+  }
+}
 
 const fabricVer = computed({
   get: () => {
     // 前のバージョンがFabricに存在しないバージョンの時は，最新バージョンを割り当てる
     const findVer = prop.versionData.games.find(
-      (ops) => ops.id === mainStore.world.version.id
+      (ops) => ops.id === mainStore.world?.version.id
     );
     if (!findVer) {
       return (
@@ -67,11 +79,7 @@ const fabricInstaller = ref(prop.versionData.installers[0]);
 const fabricLoader = ref(prop.versionData.loaders[0]);
 
 // 表示内容と内部データを整合させる
-mainStore.world.version = buildFabricVer(
-  fabricVer.value,
-  fabricInstaller.value,
-  fabricLoader.value
-);
+updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
 </script>
 
 <template>
@@ -96,7 +104,7 @@ mainStore.world.version = buildFabricVer(
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 8rem"
     />
@@ -108,7 +116,7 @@ mainStore.world.version = buildFabricVer(
           : $t('home.version.allVersions')
       "
       left-label
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       style="width: fit-content"
     />
   </div>
@@ -117,7 +125,7 @@ mainStore.world.version = buildFabricVer(
     <SsSelect
       v-model="fabricInstaller"
       @update:modelValue="(newVal: string) => {
-        mainStore.world.version = buildFabricVer(fabricVer, newVal, fabricLoader)
+        updateWorldVersion(fabricVer, newVal, fabricLoader)
       }"
       :options="
         prop.versionData.installers.map((installer, i) => {
@@ -133,14 +141,14 @@ mainStore.world.version = buildFabricVer(
       :label="$t('home.version.installer')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />
     <SsSelect
       v-model="fabricLoader"
       @update:modelValue="(newVal: string) => {
-        mainStore.world.version = buildFabricVer(fabricVer, fabricInstaller, newVal)
+        updateWorldVersion(fabricVer, fabricInstaller, newVal)
       }"
       :options="
         prop.versionData.loaders.map((loader, i) => {
@@ -154,7 +162,7 @@ mainStore.world.version = buildFabricVer(
       :label="$t('home.version.loader')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />

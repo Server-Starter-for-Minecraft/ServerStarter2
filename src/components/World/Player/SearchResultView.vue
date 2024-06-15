@@ -39,6 +39,9 @@ function filterRegisteredPlayer(players: Player[]) {
  * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す
  */
 function hasPlayerInWorld(playerUUID?: PlayerUUID) {
+  if (!mainStore.world) {
+    return;
+  }
   if (playerUUID !== void 0 && isValid(mainStore.world.players)) {
     return mainStore.world.players.some((wp) => wp.uuid === playerUUID);
   } else {

@@ -9,7 +9,7 @@ import {
   pGroupKey,
   propertyClasses,
 } from 'src/components/World/Property/classifications';
-import { useWorldStore } from '../MainStore';
+import { useWorldStore } from '../WorldStore';
 
 const disableProperties = ['level-name'];
 
@@ -65,11 +65,14 @@ export const usePropertyStore = defineStore('propertyStore', {
      */
     setServerPort(worldID: WorldID, port: number) {
       const worldStore = useWorldStore();
-      checkError(
-        worldStore.worldList[worldID].properties,
-        (p) => (p['server-port'] = port),
-        (e) => tError(e)
-      );
+      const worldObj = worldStore.worldList[worldID];
+      if (worldObj.type === 'edited') {
+        checkError(
+          worldObj.world.properties,
+          (p) => (p['server-port'] = port),
+          (e) => tError(e)
+        );
+      }
     },
   },
 });

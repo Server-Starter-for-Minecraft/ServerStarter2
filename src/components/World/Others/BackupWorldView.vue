@@ -22,16 +22,21 @@ async function backupWorld() {
   loading.value = true;
 
   // ワールドを複製
-  await window.API.invokeBackupWorld(mainStore.world.id);
+  await window.API.invokeBackupWorld(mainStore.selectedWorldID);
 
   // ボタンの状態をリセット
   loading.value = false;
   showingMessage.value = $T('others.backup.madeBackup', {
-    world: mainStore.world.name,
+    world: mainStore.world?.name,
   });
 }
 
 async function recoverWorld() {
+  if (!mainStore.world) {
+    // Undefinedの時にはワールド編集画面は描画されないため，握りつぶす
+    return;
+  }
+
   const res = await window.API.invokePickDialog({
     type: 'backup',
     container: mainStore.world.container,
@@ -71,12 +76,12 @@ onMounted(() => {
     <SsBtn
       :label="$T('others.backup.makeBackup')"
       :loading="loading"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       @click="backupWorld"
     />
     <SsBtn
       :label="$T('others.backup.recoverFromBackup')"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       @click="recoverWorld"
     />
     <div

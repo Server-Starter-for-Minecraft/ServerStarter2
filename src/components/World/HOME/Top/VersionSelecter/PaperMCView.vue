@@ -23,6 +23,14 @@ function buildPaperVer(id: string, build: number) {
     build: build,
   };
 }
+/**
+ * ワールドオブジェクトのバージョン情報を書き換える
+ */
+function updateWorldVersion(id: string, build: number) {
+  if (mainStore.world?.version) {
+    mainStore.world.version = buildPaperVer(id, build);
+  }
+}
 
 const paperVers = () => {
   return prop.versionData.map((ver) => ver.id);
@@ -30,10 +38,10 @@ const paperVers = () => {
 const paperVer = computed({
   get: () => {
     // 前のバージョンがPaperに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (paperVers().indexOf(mainStore.world.version.id) === -1) {
+    if (paperVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
       return paperVers()[0];
     }
-    return mainStore.world.version.id;
+    return mainStore.world?.version.id ?? '';
   },
   set: (val) => {
     const newVer = buildPaperVer(val, paperBuilds(val)[0]);
@@ -53,18 +61,18 @@ const paperBuilds = (pVer: string) => {
 const paperBuild = computed({
   get: () => {
     // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
-    if (mainStore.world.version.type !== 'papermc') {
+    if (mainStore.world?.version.type !== 'papermc') {
       return paperBuilds(paperVer.value)[0];
     }
     return mainStore.world.version.build;
   },
   set: (val) => {
-    mainStore.world.version = buildPaperVer(paperVer.value, val);
+    updateWorldVersion(paperVer.value, val);
   },
 });
 
 // 表示内容と内部データを整合させる
-mainStore.world.version = buildPaperVer(paperVer.value, paperBuild.value);
+updateWorldVersion(paperVer.value, paperBuild.value);
 </script>
 
 <template>
@@ -83,7 +91,7 @@ mainStore.world.version = buildPaperVer(paperVer.value, paperBuild.value);
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />
@@ -101,7 +109,7 @@ mainStore.world.version = buildPaperVer(paperVer.value, paperBuild.value);
       :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />

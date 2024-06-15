@@ -6,6 +6,8 @@ export const jaMainLayout = {
   minimizeList: 'ワールド一覧を最小化',
   noWorld: '表示可能なワールドがありません',
   selectWorld: '編集したいワールドを選択してください',
+  loading: '{name}を読み込み中',
+  failedLoading: '{name}の読み込みに失敗しました',
   newWorldBtn: {
     addWorld: 'ワールドを追加',
     content: {

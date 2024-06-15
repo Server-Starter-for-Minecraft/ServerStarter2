@@ -39,6 +39,14 @@ function buildForgeVer(id: string, fVer: forgeVersType) {
     download_url: fVer.url,
   };
 }
+/**
+ * ワールドオブジェクトのバージョン情報を書き換える
+ */
+function updateWorldVersion(id: string, fVer: forgeVersType) {
+  if (mainStore.world?.version) {
+    mainStore.world.version = buildForgeVer(id, fVer);
+  }
+}
 
 const forgeVers = () => {
   return prop.versionData.map((ver) => ver.id);
@@ -46,10 +54,10 @@ const forgeVers = () => {
 const forgeVer = computed({
   get: () => {
     // 前のバージョンがForgeに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (forgeVers().indexOf(mainStore.world.version.id) === -1) {
+    if (forgeVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
       return forgeVers()[0];
     }
-    return mainStore.world.version.id;
+    return mainStore.world?.version.id ?? '';
   },
   set: (val) => {
     const buildIdx = getRecommendBuildIdx(val);
@@ -77,7 +85,7 @@ const forgeBuilds = (fVer: string) => {
 const forgeBuild = computed({
   get: () => {
     // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
-    if (mainStore.world.version.type !== 'forge') {
+    if (mainStore.world?.version.type !== 'forge') {
       const buildIdx = getRecommendBuildIdx(forgeVer.value);
       return forgeBuilds(forgeVer.value)[buildIdx];
     }
@@ -87,12 +95,12 @@ const forgeBuild = computed({
     };
   },
   set: (val) => {
-    mainStore.world.version = buildForgeVer(forgeVer.value, val);
+    updateWorldVersion(forgeVer.value, val);
   },
 });
 
 // 表示内容と内部データを整合させる
-mainStore.world.version = buildForgeVer(forgeVer.value, forgeBuild.value);
+updateWorldVersion(forgeVer.value, forgeBuild.value);
 </script>
 
 <template>
@@ -111,7 +119,7 @@ mainStore.world.version = buildForgeVer(forgeVer.value, forgeBuild.value);
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />
@@ -131,7 +139,7 @@ mainStore.world.version = buildForgeVer(forgeVer.value, forgeBuild.value);
       :label="$t('home.version.buildNumber')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />

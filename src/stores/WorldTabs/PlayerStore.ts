@@ -83,7 +83,7 @@ export const usePlayerStore = defineStore('playerStore', {
       const mainStore = useMainStore();
       const groupMembers = this.searchGroups()[groupName].players;
 
-      if (isValid(mainStore.world.players)) {
+      if (mainStore.world && isValid(mainStore.world.players)) {
         const worldPlayers = mainStore.world.players;
         const notRegisteredMembers = groupMembers.filter(
           (mUUID) => !worldPlayers.some((p) => p.uuid === mUUID)
@@ -108,7 +108,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // プレイヤーをワールドに追加
       // TODO: 実装の最適化（PlayersをSet型にする？）
-      if (isValid(mainStore.world.players)) {
+      if (mainStore.world && isValid(mainStore.world.players)) {
         if (!mainStore.world.players.find((p) => p.uuid === player.uuid)) {
           mainStore.world.players.push(player);
         }

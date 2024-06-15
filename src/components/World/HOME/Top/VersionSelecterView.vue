@@ -82,7 +82,7 @@ const selectedVerType = computed({
     :options="validVersionTypes.map(createServerMap)"
     options-selected-class="text-primary"
     :label="$t('home.version.serverType')"
-    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     class="q-pb-md"
   >
     <template v-slot:option="scope">

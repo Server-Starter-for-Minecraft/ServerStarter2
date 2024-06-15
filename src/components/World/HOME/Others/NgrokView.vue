@@ -54,11 +54,11 @@ function onClick() {
     />
 
     <q-toggle
-      v-if="isUseNgrok()"
-      v-model="mainStore.world?.ngrok_setting.use_ngrok"
+      v-if="mainStore.world && isUseNgrok()"
+      v-model="mainStore.world.ngrok_setting.use_ngrok"
       :label="
         $t(
-          mainStore.world?.ngrok_setting.use_ngrok
+          mainStore.world.ngrok_setting.use_ngrok
             ? 'home.ngrok.toggleON'
             : 'home.ngrok.toggleOFF'
         )

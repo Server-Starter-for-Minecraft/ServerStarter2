@@ -18,7 +18,7 @@ import { useConsoleStore } from './ConsoleStore';
 import { useMainStore } from './MainStore';
 import { useSystemStore } from './SystemStore';
 
-type WorldItem =
+export type WorldItem =
   | { type: 'edited'; world: WorldEdited }
   | { type: 'abbr'; world: WorldAbbr };
 

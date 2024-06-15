@@ -4,10 +4,16 @@ import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
-import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import {
+  World,
+  WorldAbbr,
+  WorldEdited,
+  WorldID,
+} from 'app/src-electron/schema/world';
 import { zen2han } from 'src/scripts/textUtils';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
+import { useSystemStore } from './SystemStore';
 import { useWorldStore } from './WorldStore';
 
 export const useMainStore = defineStore('mainStore', {
@@ -65,20 +71,21 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       return worldStore.worldListBack[state.selectedWorldID];
     },
+    /**
+     * Ngrokを考慮したIPアドレスを返す
+     */
+    worldIP(state) {
+      const sysStore = useSystemStore();
+      return state.worldIPs[state.selectedWorldID] ?? sysStore.publicIP;
+    },
   },
   actions: {
     /**
      * ワールドIDで設定したワールドを表示する
      */
-    showWorld(world: World | WorldEdited) {
+    showWorld(world: World | WorldEdited | WorldAbbr) {
       this.selectedWorldID = world.id;
       this.inputWorldName = world.name;
-    },
-    /**
-     * 指定したワールドにおけるIPアドレスが設定されていた場合にアドレスを返す
-     */
-    getWorldIP() {
-      return this.worldIPs[this.selectedWorldID];
     },
     /**
      * NgrokからIPの割り当てがあった際にIPアドレスを更新する
