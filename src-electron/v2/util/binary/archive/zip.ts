@@ -1,10 +1,9 @@
 import archiver from 'archiver';
 import * as stream from 'stream';
-import { Extract } from 'unzipper';
+import { Extract, Parse } from 'unzipper';
 import { Result } from '../../base';
-import { sleep } from '../../promise/sleep';
 import { Path } from '../path';
-import { Readable, WritableStreamer } from '../stream';
+import { Readable, ReadableStreamer, WritableStreamer } from '../stream';
 import { asyncPipe } from '../util';
 import { Archiver } from './archive';
 
@@ -48,19 +47,54 @@ export const zipArchiver: Archiver<
   },
 };
 
+/**
+ * zip内のそれぞれのファイルに対して処理を実行
+ * @param readable
+ * @param mapFunc zipファイル内部でのパスとReadableを受ける関数 かならず引数のreadableに対してintoを実行すること
+ */
+export async function iterateZip(
+  readable: ReadableStreamer,
+  mapFunc: (path: string, readable: Readable) => Promise<void>
+) {
+  const parse = Parse({
+    forceStream: true,
+    verbose: false,
+  });
+  const pipe = asyncPipe(readable.createReadStream().stream, parse);
+  for await (const entry of parse) {
+    const stream = new Readable(entry);
+    console.log(entry.path);
+    await mapFunc(entry.path, stream);
+  }
+  await pipe;
+}
+
 /** In Source Testing */
 if (import.meta.vitest) {
+  const { Bytes } = await import('../bytes');
+
   const { test, expect } = import.meta.vitest;
   test('', async () => {
+    // TODO: @MojaMonchi @nozz-mat 解凍 + 圧縮 のテスト作成
     const srcPath = new Path(
-      'src-electron/v2/util/stream/archive/test/src.zip'
+      'src-electron/v2/util/binary/archive/test/src.zip'
     );
     const tgtPath = new Path('userData/test/zipDir');
-    console.log(tgtPath.exists());
     await tgtPath.remove();
-    console.log(tgtPath.exists());
     await srcPath.into(zipArchiver.extract(tgtPath, { concurrency: 10 }));
-    console.log('aa');
-    await sleep(100);
+  });
+  test('iterateZip', async () => {
+    const srcPath = new Path(
+      'src-electron/v2/util/binary/archive/test/src.zip'
+    );
+    console.log(srcPath.exists());
+    await iterateZip(srcPath, async (path, stream) => {
+      console.log(
+        (await stream.into(Bytes)).onOk((b) => b.toStr('utf-8')).value()
+      );
+    });
+    console.log(srcPath.exists());
   });
 }
+
+// srcPath.into(zipArchiver.iterate((header,stream) => { if(header) {const bytes = await stream.into(Bytes); const json = await bytes.into(json(z...)); json} }))
