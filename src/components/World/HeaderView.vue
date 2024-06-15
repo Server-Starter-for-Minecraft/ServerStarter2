@@ -32,9 +32,11 @@ function copyIP() {
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">
-        {{ worldStore.worldList[mainStore.selectedWorldID].world.name }}
+        {{ worldStore.worldList[mainStore.selectedWorldID]?.world.name }}
         <SsTooltip
-          :name="worldStore.worldList[mainStore.selectedWorldID].world.name"
+          :name="
+            worldStore.worldList[mainStore.selectedWorldID]?.world.name ?? ''
+          "
           anchor="bottom start"
           self="center start"
         />
@@ -46,7 +48,11 @@ function copyIP() {
         class="q-mr-md"
       >
         {{
-          $t(`console.status.${consoleStore.status(mainStore.selectedWorldID)}`)
+          $t(
+            `console.status.${
+              consoleStore.status(mainStore.selectedWorldID) ?? 'Stop'
+            }`
+          )
         }}
       </div>
     </template>

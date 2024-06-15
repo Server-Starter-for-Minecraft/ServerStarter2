@@ -32,7 +32,7 @@ export const useMainStore = defineStore('mainStore', {
       const worldStore = useWorldStore();
       const returnWorld = worldStore.worldList[state.selectedWorldID];
 
-      if (returnWorld.type === 'abbr') {
+      if (returnWorld?.type === 'abbr') {
         return undefined;
       }
 
@@ -41,7 +41,7 @@ export const useMainStore = defineStore('mainStore', {
         state.selectedVersionType = returnWorld.world.version.type;
       }
 
-      return returnWorld.world;
+      return returnWorld?.world;
     },
     allWorlds(state) {
       const worldStore = useWorldStore();

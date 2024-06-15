@@ -35,7 +35,7 @@ export const useConsoleStore = defineStore('consoleStore', {
      * @param force すでにデータが存在していてもコンソールとステータスを初期化する
      */
     initTab(worldID: WorldID, force = false) {
-      if (this._world[worldID] === void 0 || force) {
+      if ((this._world[worldID] === void 0 && worldID !== '') || force) {
         this._world[worldID] = {
           status: 'Stop',
           clickedStop: false,
@@ -89,7 +89,7 @@ export const useConsoleStore = defineStore('consoleStore', {
      * ワールドの実行状態を取得する
      */
     status(worldID: WorldID) {
-      return this._world[worldID].status;
+      return this._world[worldID]?.status;
     },
     /**
      * ワールドが停止処理に入っているか否かを取得する

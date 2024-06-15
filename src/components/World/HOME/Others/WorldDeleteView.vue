@@ -63,7 +63,7 @@ function splitName(name: string) {
     :dialog-desc="
       $t('home.deleteWorld.dialogDesc', {
         deleteName: splitName(
-          worldStore.worldList[mainStore.selectedWorldID].world.name
+          worldStore.worldList[mainStore.selectedWorldID]?.world.name ?? ''
         ),
       })
     "

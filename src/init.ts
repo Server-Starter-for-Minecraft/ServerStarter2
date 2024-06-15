@@ -49,10 +49,6 @@ export async function initWindow() {
   // 初回起動時は自動的に新規ワールドを追加
   if (paths.length === 0) {
     await createNewWorld();
-  } else {
-    const mainStore = useMainStore();
-    const world = values(worldStore.sortedWorldList);
-    mainStore.showWorld(world[0].world);
   }
 }
 

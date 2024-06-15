@@ -96,7 +96,7 @@ function openFolderEditor() {
         :loading="isWorldContainerLoading"
         :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
         :active="
-          worldStore.worldList[mainStore.selectedWorldID].world.container ===
+          worldStore.worldList[mainStore.selectedWorldID]?.world.container ===
           sysStore.systemSettings.container[n - 1].container
         "
         @click="
