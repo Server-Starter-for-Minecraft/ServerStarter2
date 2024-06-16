@@ -2,7 +2,6 @@
 import { ref, toRaw } from 'vue';
 import { useQuasar } from 'quasar';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
-import { values } from 'app/src-public/scripts/obj/obj';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -19,13 +18,14 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-const selecterOptions = sysStore.systemSettings.container.map((c) => {
-  return {
-    label: `${c.name} (${c.container})`,
-    name: c.name,
-    value: c.container,
-  };
-});
+const selecterOptions = () =>
+  sysStore.systemSettings.container.map((c) => {
+    return {
+      label: `${c.name} (${c.container})`,
+      name: c.name,
+      value: c.container,
+    };
+  });
 const isWorldContainerLoading = ref(false);
 
 /**
@@ -88,7 +88,7 @@ function openFolderEditor() {
     <SsSelectScope
       v-model="mainStore.noSubscribeWorld.container"
       @update:model-value="(newVal: WorldContainer) => setWorldContainer(newVal)"
-      :options="selecterOptions"
+      :options="selecterOptions()"
       option-label="label"
       option-value="value"
       :loading="isWorldContainerLoading"
