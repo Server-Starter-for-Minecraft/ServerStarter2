@@ -5,6 +5,8 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useWorldStore } from 'src/stores/WorldStore';
 import HeaderView from 'src/components/World/HeaderView.vue';
 import SettingTabsView from 'src/components/World/SettingTabsView.vue';
+import FailedLoadingView from 'src/components/World/FailedLoadingView.vue';
+import LoadingView from 'src/components/World/LoadingView.vue';
 
 const router = useRouter();
 const mainStore = useMainStore();
@@ -44,6 +46,7 @@ const isFailedLoading = () =>
       <router-view />
     </div>
   </div>
+
   <div v-if="isNoContents()" class="absolute-center text-h5">
     {{ $t('mainLayout.noWorld') }}
   </div>
@@ -52,34 +55,12 @@ const isFailedLoading = () =>
   </div>
   <div
     v-else-if="isFailedLoading()"
-    class="absolute-center text-h5 full-width"
-    style="max-width: max-content; margin: 0 auto"
+    class="absolute-center text-h5 centerContent"
   >
-    <!-- TODO: エラーの原因を表示 -->
-    <div class="row items-center">
-      <q-avatar size="8rem">
-        <q-icon name="warning" color="negative" />
-      </q-avatar>
-      <span class="col">
-        {{
-          $t('mainLayout.failedLoading', {
-            name: worldStore.worldList[mainStore.selectedWorldID].world.name,
-          })
-        }}
-      </span>
-    </div>
+    <FailedLoadingView />
   </div>
   <div v-else-if="isLoading()" class="absolute-center text-h5">
-    <div class="row items-center q-gutter-x-md">
-      <q-spinner color="primary" size="3em" />
-      <span class="col">
-        {{
-          $t('mainLayout.loading', {
-            name: worldStore.worldList[mainStore.selectedWorldID].world.name,
-          })
-        }}
-      </span>
-    </div>
+    <LoadingView />
   </div>
 </template>
 
@@ -88,5 +69,11 @@ const isFailedLoading = () =>
   filter: blur(10px);
   opacity: 0.4;
   pointer-events: none;
+}
+
+.centerContent {
+  width: 100%;
+  max-width: max-content;
+  margin: 0 auto;
 }
 </style>

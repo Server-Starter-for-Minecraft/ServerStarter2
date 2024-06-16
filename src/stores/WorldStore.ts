@@ -13,14 +13,14 @@ import {
 } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
-import { checkError } from 'src/components/Error/Error';
+import { checkError, ErrorFuncReturns } from 'src/components/Error/Error';
 import { useConsoleStore } from './ConsoleStore';
 import { useMainStore } from './MainStore';
 import { useSystemStore } from './SystemStore';
 
 export type WorldItem =
-  | { type: 'edited'; world: WorldEdited }
-  | { type: 'abbr'; world: WorldAbbr };
+  | { type: 'edited'; world: WorldEdited; error?: ErrorFuncReturns }
+  | { type: 'abbr'; world: WorldAbbr; error?: ErrorFuncReturns };
 
 /**
  * Worldの変更を検知するためのStore
