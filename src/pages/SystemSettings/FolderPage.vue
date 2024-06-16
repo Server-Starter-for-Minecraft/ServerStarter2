@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
+import { getWorlds, registAbbr } from 'src/init';
+import { WorldContainer } from 'app/src-electron/schema/brands';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
@@ -20,7 +22,15 @@ function openFolderEditor() {
       visible: true,
       container: payload.container,
     });
+    // 追加したワールドフォルダをワールド一覧に追加
+    loadFolderWorlds(payload.container);
   });
+}
+
+async function loadFolderWorlds(container: WorldContainer) {
+  const abbrs = await window.API.invokeGetWorldAbbrs(container);
+  registAbbr(abbrs.value);
+  getWorlds(abbrs.value.map((abbr) => abbr.id));
 }
 </script>
 

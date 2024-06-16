@@ -81,9 +81,11 @@ export function registAbbr(abbrs: WorldAbbr[]) {
   const consoleStore = useConsoleStore();
 
   // フロントエンドのWorld一覧に登録
-  worldStore.worldList = fromEntries(
+  const newWorlds = fromEntries(
     abbrs.map((abbr) => [abbr.id, { type: 'abbr', world: abbr }])
   );
+  Object.assign(worldStore.worldList, newWorlds);
+  
   // フロントエンドで持っているワールドの状態管理に登録
   abbrs.forEach((abbr) => consoleStore.initTab(abbr.id));
 }
