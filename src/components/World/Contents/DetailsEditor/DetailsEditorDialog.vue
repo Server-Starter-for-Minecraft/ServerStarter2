@@ -83,8 +83,11 @@ function onOkClicked() {
                   <!-- 一行を生成 -->
                   <div class="full-width row">
                     <template v-for="(urlTxt, _idx) in urlTxts" :key="_idx">
-                      <div v-if="urlTxt.type === 'txt' && urlTxt.value !== ''" style="white-space: pre-wrap;">
-                        {{ (urlTxt.value) }}
+                      <div
+                        v-if="urlTxt.type === 'txt' && urlTxt.value !== ''"
+                        style="white-space: pre-wrap"
+                      >
+                        {{ urlTxt.value }}
                       </div>
                       <!-- 改行だけの行が描画されるように半角スペースを入れて描画 -->
                       <div v-if="urlTxt.type === 'txt' && urlTxt.value === ''">
