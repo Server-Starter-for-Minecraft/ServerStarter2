@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { urlAnalyzer } from 'src/scripts/urlAnalyzer';
+import SsA from 'src/components/util/base/ssA.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTextarea from 'src/components/util/base/ssTextarea.vue';
@@ -69,11 +71,35 @@ function onOkClicked() {
               <div
                 class="q-pa-md"
                 :class="contentDesc === '' ? 'placeholder' : ''"
-                style="white-space: pre"
+                style="word-break: break-all"
               >
-                {{
-                  contentDesc === '' ? 'クリックしてメモを編集' : contentDesc
-                }}
+                <span v-if="contentDesc === ''">クリックしてメモを編集</span>
+                <!-- 生成した行を連ねる -->
+                <template
+                  v-else
+                  v-for="(urlTxts, idx) in urlAnalyzer(contentDesc)"
+                  :key="idx"
+                >
+                  <!-- 一行を生成 -->
+                  <div class="full-width row">
+                    <template v-for="(urlTxt, _idx) in urlTxts" :key="_idx">
+                      <div v-if="urlTxt.type === 'txt' && urlTxt.value !== ''" style="white-space: pre-wrap;">
+                        {{ (urlTxt.value) }}
+                      </div>
+                      <!-- 改行だけの行が描画されるように半角スペースを入れて描画 -->
+                      <div v-if="urlTxt.type === 'txt' && urlTxt.value === ''">
+                        &nbsp;
+                      </div>
+                      <SsA
+                        v-else-if="urlTxt.type === 'url'"
+                        :url="urlTxt.value"
+                        @click.stop="() => {}"
+                      >
+                        {{ urlTxt.value }}
+                      </SsA>
+                    </template>
+                  </div>
+                </template>
               </div>
             </q-scroll-area>
             <SsTextarea v-else v-model="contentDesc" autofocus height="10rem" />
