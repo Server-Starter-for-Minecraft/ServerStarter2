@@ -39,6 +39,15 @@ function onOkClicked() {
     >
       <template #default>
         <div class="column q-gutter-y-lg" @click="() => (descEditMode = false)">
+          <div class="text-caption" style="opacity: 0.6">
+            <span v-if="isShareWorld">
+              コンテンツの詳細設定は、このワールドにのみ適用されます
+            </span>
+            <span v-else>
+              コンテンツの詳細設定は、ServerStarter2に登録されてているすべてのワールド（ShareWorldを除く）に適用されます
+            </span>
+          </div>
+
           <div>
             <p class="q-my-sm">コンテンツ名</p>
             <SsInput v-model="contentTitle" dense />
