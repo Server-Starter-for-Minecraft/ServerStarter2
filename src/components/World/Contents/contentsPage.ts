@@ -35,6 +35,14 @@ export const isContentsExists: contentExists = {
   fabric: { datapack: true, plugin: false, mod: true },
 };
 
+export function isSameContent<T extends ContentsData>(
+  c1: AllFileData<T>,
+  c2: AllFileData<T>
+) {
+  // TODO: HASHによる検証に切り替える
+  return c1.name === c2.name;
+}
+
 /**
  * 既に存在するコンテンツ一覧を取得する
  */
@@ -68,9 +76,8 @@ export function getAllContents(cType: ContentsType): OptContents[] {
     )
     .flat()
     .forEach((c) => {
-      // TODO: 統合時の条件には，名前ではなく，Hashが同じコンテンツがすでに存在するか否かで検証する
-      const sameContentIdxInReturn = returnArray.findIndex(
-        (_c) => _c.name === c.name
+      const sameContentIdxInReturn = returnArray.findIndex((_c) =>
+        isSameContent(_c.file, c.file)
       );
       if (sameContentIdxInReturn > -1) {
         returnArray[sameContentIdxInReturn].wNames.push(c.wNames[0]);
@@ -95,21 +102,21 @@ export async function importNewContent(cType: ContentsType, isFile = false) {
     case 'datapack':
       checkError(
         await window.API.invokePickDialog({ type: 'datapack', isFile: isFile }),
-        (c) => addContent2World(cType, c),
+        (c) => addNewContent2World(cType, c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
       break;
     case 'plugin':
       checkError(
         await window.API.invokePickDialog({ type: 'plugin' }),
-        (c) => addContent2World(cType, c),
+        (c) => addNewContent2World(cType, c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
       break;
     case 'mod':
       checkError(
         await window.API.invokePickDialog({ type: 'mod' }),
-        (c) => addContent2World(cType, c),
+        (c) => addNewContent2World(cType, c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
       break;
@@ -117,15 +124,13 @@ export async function importNewContent(cType: ContentsType, isFile = false) {
 }
 
 /**
- * コンテンツを各種データベースに登録
+ * 追加された新規コンテンツを各種データベースに登録
  */
-function addContent2World(
+function addNewContent2World(
   cType: ContentsType,
   content: NewFileData<ContentsData>
 ) {
-  const sysStore = useSystemStore();
-  const mainStore = useMainStore();
-  function NewFile2CacheFile(): CacheFileData<ContentsData> {
+  function newContentFile2CacheFile(): CacheFileData<ContentsData> {
     if (content.kind === 'datapack') {
       return {
         kind: 'datapack',
@@ -145,11 +150,14 @@ function addContent2World(
       };
     }
   }
-  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(
-    content
-  );
+
+  // 当該ワールドに追加
+  addContent(cType, content);
+  
+  // システムに追加
+  const sysStore = useSystemStore();
   (sysStore.cacheContents[`${cType}s`] as CacheFileData<ContentsData>[]).push(
-    NewFile2CacheFile()
+    newContentFile2CacheFile()
   );
 }
 
@@ -175,9 +183,9 @@ export function deleteContent(
 
   function __delete() {
     mainStore.world.additional[`${cType}s`].splice(
-      mainStore.world.additional[`${cType}s`]
-        .map((c) => c.name)
-        .indexOf(content.name),
+      mainStore.world.additional[`${cType}s`].findIndex((c) =>
+        isSameContent(c, content)
+      ),
       1
     );
   }

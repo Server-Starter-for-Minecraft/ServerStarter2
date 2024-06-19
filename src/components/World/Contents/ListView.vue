@@ -10,6 +10,7 @@ import {
   ContentsType,
   getAllContents,
   importNewContent,
+  isSameContent,
   openSavedFolder,
   OptContents,
 } from './contentsPage';
@@ -24,14 +25,12 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
 const selectedContent: Ref<OptContents | undefined> = ref();
-// TODO: 今後追加コンテンツにIDが振られた場合はIDが一致するか否かでフィルタ？
-// TODO: 実行負荷が高い場合はリファクタリング
 const initNewContents = () =>
   getAllContents(prop.contentType).filter(
     (c) =>
-      !mainStore.world.additional[`${prop.contentType}s`]
-        .map((_c) => _c.name)
-        .includes(c.file.name)
+      !mainStore.world.additional[`${prop.contentType}s`].some((_c) =>
+        isSameContent(_c, c.file)
+      )
   );
 const newContents = ref(initNewContents());
 
@@ -61,6 +60,11 @@ function newContentsFilter(
 function addContentClicked(content: AllFileData<ContentsData>) {
   addContent(prop.contentType, content);
   selectedContent.value = undefined;
+}
+
+function importMultipleContents() {
+  // TODO: ワールド一覧 -> 導入コンテンツの選択 -> 導入 のダイアログを作成
+  throw 'This is not implimented';
 }
 </script>
 
@@ -102,7 +106,14 @@ function addContentClicked(content: AllFileData<ContentsData>) {
         flat
         size=".8rem"
         icon="library_add"
-        tooltip="追加コンテンツのファイルを新規追加"
+        tooltip="既存ワールドから一括で追加"
+        @click="() => importMultipleContents()"
+      />
+      <SsIconBtn
+        flat
+        size=".8rem"
+        icon="add_box"
+        tooltip="追加コンテンツを新規追加"
         @click="() => importNewContent(contentType, true)"
       />
       <SsIconBtn
@@ -132,17 +143,17 @@ function addContentClicked(content: AllFileData<ContentsData>) {
           })
         }}
       </span>
-      <q-list
-        v-if="mainStore.world.additional[`${contentType}s`].length > 0"
-        separator
-      >
-        <ListItem
-          v-for="c in mainStore.world.additional[`${contentType}s`]"
-          :key="c.name"
-          :content-type="contentType"
-          :content="c"
-        />
-      </q-list>
+      <div v-if="mainStore.world.additional[`${contentType}s`].length > 0">
+        <q-list separator>
+          <ListItem
+            v-for="c in mainStore.world.additional[`${contentType}s`]"
+            :key="c.name"
+            :content-type="contentType"
+            :content="c"
+          />
+        </q-list>
+        <q-separator />
+      </div>
       <p v-else class="q-my-xl text-center text-h5" style="opacity: 0.6">
         {{
           $t('additionalContents.notInstalled', {
