@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { urlAnalyzer } from 'src/scripts/urlAnalyzer';
-import SsA from 'src/components/util/base/ssA.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import SsTextarea from 'src/components/util/base/ssTextarea.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import { DetailsEditorProp, DetailsEditorReturns } from './iDetailsEditor';
+import MemoFieldView from './MemoField/MemoFieldView.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
@@ -17,8 +15,6 @@ const prop = defineProps<DetailsEditorProp>();
 const contentTitle = ref(prop.title);
 const contentShareable = ref(prop.shareable);
 const contentDesc = ref(prop.description);
-
-const descEditMode = ref(false);
 
 function onOkClicked() {
   onDialogOK({
@@ -38,7 +34,7 @@ function onOkClicked() {
       @close="onDialogCancel"
     >
       <template #default>
-        <div class="column q-gutter-y-lg" @click="() => (descEditMode = false)">
+        <div class="column q-gutter-y-lg">
           <div class="text-caption" style="opacity: 0.6">
             <span v-if="isShareWorld">
               コンテンツの詳細設定は、このワールドにのみ適用されます
@@ -72,49 +68,7 @@ function onOkClicked() {
 
           <div>
             <p class="q-my-sm col">メモ</p>
-            <q-scroll-area
-              v-if="!descEditMode"
-              @click.stop="() => (descEditMode = true)"
-              style="border: 1px solid; border-radius: 5px; height: 10rem"
-            >
-              <div
-                class="q-pa-md"
-                :class="contentDesc === '' ? 'placeholder' : ''"
-                style="word-break: break-all"
-              >
-                <span v-if="contentDesc === ''">クリックしてメモを編集</span>
-                <!-- 生成した行を連ねる -->
-                <template
-                  v-else
-                  v-for="(urlTxts, idx) in urlAnalyzer(contentDesc)"
-                  :key="idx"
-                >
-                  <!-- 一行を生成 -->
-                  <div class="full-width row">
-                    <template v-for="(urlTxt, _idx) in urlTxts" :key="_idx">
-                      <div
-                        v-if="urlTxt.type === 'txt' && urlTxt.value !== ''"
-                        style="white-space: pre-wrap"
-                      >
-                        {{ urlTxt.value }}
-                      </div>
-                      <!-- 改行だけの行が描画されるように半角スペースを入れて描画 -->
-                      <div v-if="urlTxt.type === 'txt' && urlTxt.value === ''">
-                        &nbsp;
-                      </div>
-                      <SsA
-                        v-else-if="urlTxt.type === 'url'"
-                        :url="urlTxt.value"
-                        @click.stop="() => {}"
-                      >
-                        {{ urlTxt.value }}
-                      </SsA>
-                    </template>
-                  </div>
-                </template>
-              </div>
-            </q-scroll-area>
-            <SsTextarea v-else v-model="contentDesc" autofocus height="10rem" />
+            <MemoFieldView v-model="contentDesc" />
           </div>
         </div>
       </template>
@@ -125,9 +79,3 @@ function onOkClicked() {
     </BaseDialogCard>
   </q-dialog>
 </template>
-
-<style scoped lang="scss">
-.placeholder {
-  opacity: 0.6;
-}
-</style>
