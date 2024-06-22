@@ -91,7 +91,7 @@ export class VersionContainer {
    *
    * /plugins /mods は消さないでOK
    *
-   * libraries等が生成されていたらキャッシュに避難すると高速化できそう
+   * libraries等が生成されていたら消す前にキャッシュに避難しておくと高速化できそう
    */
   async removeVersion(
     versionIdntity: Version,
