@@ -25,19 +25,21 @@ export class CacheableAccessor<T> {
   /**
    * @param options.useCache [default : true] キャッシュデータがある場合それを使用する (高速)
    */
-  async get(options: { useCache: boolean } = { useCache: false }) {
+  async get(
+    options: { useCache: boolean } = { useCache: false }
+  ): Promise<Result<T>> {
     await this.lock;
-    if (options.useCache && this.value.isOk) return this.value.value();
+    if (options.useCache && this.value.isOk) return this.value;
     this.lock = this.getter();
     this.value = await this.lock;
     return this.value;
   }
 
-  async set(value: T) {
+  async set(value: T): Promise<Result<void>> {
     await this.lock;
     this.lock = this.setter(value);
     await this.lock;
     this.value = ok(value);
-    return;
+    return ok();
   }
 }
