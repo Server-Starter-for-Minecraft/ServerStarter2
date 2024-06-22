@@ -1,0 +1,18 @@
+{
+  "players": [
+    {
+      "uuid": "00000000-0000-0000-0000-000000000000",
+      "name": "player0",
+      "avatar": "data:image/png;base64,XX==",
+      "avatar_overlay": "data:image/png;base64,XX==",
+      "expire": 1723044667166
+    },
+    {
+      "uuid": "11111111-1111-1111-1111-111111111111",
+      "name": "player1",
+      "avatar": "data:image/png;base64,XX==",
+      "avatar_overlay": "data:image/png;base64,XX==",
+      "expire": 1723044667166
+    }
+  ]
+}

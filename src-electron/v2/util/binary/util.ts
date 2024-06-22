@@ -1,5 +1,5 @@
 import * as stream from 'stream';
-import { Err, Result, err, ok } from '../base';
+import { Err, err, ok, Result } from '../base';
 
 /**
  * ReadableとWritableをエラーハンドル含めてpipeして待機
@@ -19,7 +19,7 @@ export async function asyncPipe(
   });
 
   return new Promise<Result<undefined, Error>>((resolve) => {
-    readable.on('close', () => {
+    writable.on('close', () => {
       if (e !== undefined) return resolve(e);
       resolve(ok(undefined));
     });

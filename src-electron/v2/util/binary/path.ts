@@ -1,9 +1,9 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { DuplexStreamer, Readable } from './stream';
-import { asyncForEach } from 'app/src-electron/util/objmap';
 import * as stream from 'stream';
-import { Err, Result, err, ok } from '../base';
+import { asyncForEach } from 'app/src-electron/util/objmap';
+import { err, ok, Result } from '../base';
+import { DuplexStreamer, Readable } from './stream';
 import { asyncPipe } from './util';
 
 function replaceSep(pathstr: string) {
@@ -12,15 +12,17 @@ function replaceSep(pathstr: string) {
 
 export class Path extends DuplexStreamer<void> {
   private _path: string;
-  constructor(value?: string) {
+  constructor(value?: string | Path) {
     super();
     if (value === undefined) {
       this._path = '';
-    } else {
+    } else if (typeof value === 'string') {
       this._path = path.normalize(replaceSep(value));
+    } else {
+      this._path = value._path;
     }
   }
-  toString(): string {
+  toStr(): string {
     return this.path;
   }
 
@@ -30,7 +32,7 @@ export class Path extends DuplexStreamer<void> {
 
   async write(readable: stream.Readable): Promise<Result<void, Error>> {
     // ファイルが既に存在する場合、エラーにする
-    if (this.exists()) return err(new Error('EEXIST'));
+    await this.remove();
     const writable = fs.createWriteStream(this.path);
     return asyncPipe(readable, writable);
   }
@@ -65,7 +67,7 @@ export class Path extends DuplexStreamer<void> {
 
   /** "で囲まれたパス文字列を返す */
   get quotedPath() {
-    return '"' + this._path.replace('\\', '\\\\').replace('"', '\\"') + '"';
+    return `"${this._path.replace('\\', '\\\\').replace('"', '\\"')}"`;
   }
 
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
@@ -119,18 +121,22 @@ export class Path extends DuplexStreamer<void> {
    * @param content 書き込む内容
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async writeText(content: string, encoding: BufferEncoding = 'utf8') {
+  async writeText(
+    content: string,
+    encoding: BufferEncoding = 'utf8'
+  ): Promise<Result<void>> {
     await this.parent().mkdir();
-    await fs.writeFile(this._path, content, { encoding });
+    return await Result.catchAsync(() =>
+      fs.writeFile(this._path, content, { encoding })
+    );
   }
 
   /**
    * ファイルからテキストを読み込む
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async readText(
-    encoding: BufferEncoding = 'utf8'
-  ): Promise<Result<string, Error>> {
+  async readText(encoding: BufferEncoding = 'utf8'): Promise<Result<string>> {
+    Result.catchAsync(() => fs.readFile(this._path, { encoding }));
     try {
       return ok(await fs.readFile(this._path, { encoding }));
     } catch (e) {
@@ -263,7 +269,7 @@ if (import.meta.vitest) {
     await a.mkdir();
     const b = a.child('b');
     await b.writeText('hello');
-    expect((await b.readText()).value).toBe('hello');
+    expect((await b.readText()).value()).toBe('hello');
     await b.remove();
     expect(b.exists()).toBe(false);
     await a.remove();
@@ -290,19 +296,19 @@ if (import.meta.vitest) {
 
     // ファイルの中身をコピー
     await src.writeText('hello world');
-    expect((await src.readText()).value).toBe('hello world');
+    expect((await src.readText()).value()).toBe('hello world');
 
     expect(tgt.exists()).toBe(false);
 
     await src.into(tgt);
 
-    expect((await tgt.readText()).value).toBe('hello world');
+    expect((await tgt.readText()).value()).toBe('hello world');
     await tgt.remove();
 
     const { Bytes } = await import('./bytes');
 
     // ファイルの中身をバイト列に変換
-    const bytes = (await src.into(Bytes)).value;
+    const bytes = (await src.into(Bytes)).value();
 
     expect(bytes.data.toString('utf8')).toBe('hello world');
 
@@ -311,11 +317,11 @@ if (import.meta.vitest) {
     // バイト列をファイルに書き込み
     await bytes.into(tgt);
 
-    expect((await tgt.readText()).value).toBe('hello world');
+    expect((await tgt.readText()).value()).toBe('hello world');
 
     await tgt.remove();
 
-    expect((await mis.into(Bytes)).error.message).toContain('ENOENT');
+    expect((await mis.into(Bytes)).error().message).toContain('ENOENT');
 
     // TODO: 失敗するストリームの調査
     // TODO: すでにあるファイルにストリームを書き込めないことを検証

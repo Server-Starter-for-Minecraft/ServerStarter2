@@ -1,9 +1,9 @@
 import * as stream from 'stream';
-import { Err, Result, err, ok } from '../base';
-import { Readable, ReadableStreamer, WritableStreamer } from './stream';
+import { Err, err, ok, Result } from '../base';
+import { Readable, ReadableStreamer } from './stream';
 
 export class Bytes extends ReadableStreamer {
-  static write(readable: stream.Readable): Promise<Result<Bytes, Error>> {
+  static write(readable: stream.Readable): Promise<Result<Bytes>> {
     const buffers: Buffer[] = [];
     let e: undefined | Err<Error> = undefined;
 
@@ -17,7 +17,7 @@ export class Bytes extends ReadableStreamer {
           if (e !== undefined) return resolve(e);
           resolve(ok(new Bytes(Buffer.concat(buffers))));
         } catch (error) {
-          resolve(err(error as Error))
+          resolve(err(error as Error));
         }
       });
     });
@@ -34,9 +34,14 @@ export class Bytes extends ReadableStreamer {
   static fromString(data: string, encoding: BufferEncoding = 'utf8') {
     return new Bytes(Buffer.from(data, encoding));
   }
+
   /** Bytesを文字列化 (デフォルト utf8) */
-  toString(encoding: BufferEncoding = 'utf8') {
-    return this.data.toString(encoding);
+  toStr(encoding: BufferEncoding = 'utf8'): Result<string> {
+    try {
+      return ok(this.data.toString(encoding));
+    } catch (e) {
+      return err(e as Error);
+    }
   }
 
   createReadStream(): Readable {
@@ -64,7 +69,7 @@ if (import.meta.vitest) {
   test('bytes', async () => {
     const bytes = new Bytes(Buffer.from('hello world / こんにちは世界'));
     const copy = await bytes.into(Bytes);
-    expect(copy.value.data.toString('utf8')).toBe(
+    expect(copy.value().data.toString('utf8')).toBe(
       'hello world / こんにちは世界'
     );
   });
