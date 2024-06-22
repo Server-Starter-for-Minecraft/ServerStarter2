@@ -1,4 +1,4 @@
-import { useQuasar } from 'quasar';
+import { QVueGlobals, useQuasar } from 'quasar';
 import {
   AllFileData,
   CacheFileData,
@@ -15,18 +15,23 @@ import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
 import { checkError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import AddContentsDialog from './AddContentsFromWorld/AddContentsDialog.vue';
+import {
+  AddContentProp,
+  AddContentsReturns,
+} from './AddContentsFromWorld/iAddContents';
 
 export type ContentsData = DatapackData | ModData | PluginData;
 export type ContentsType = 'datapack' | 'plugin' | 'mod';
 
-type contentExists = {
+type ContentExists = {
   [ver in Version['type']]: {
     datapack: boolean;
     plugin: boolean;
     mod: boolean;
   };
 };
-export const isContentsExists: contentExists = {
+export const isContentsExists: ContentExists = {
   vanilla: { datapack: true, plugin: false, mod: false },
   spigot: { datapack: true, plugin: true, mod: false },
   papermc: { datapack: true, plugin: true, mod: false },
@@ -35,9 +40,9 @@ export const isContentsExists: contentExists = {
   fabric: { datapack: true, plugin: false, mod: true },
 };
 
-export function isSameContent<T extends ContentsData>(
-  c1: AllFileData<T>,
-  c2: AllFileData<T>
+export function isSameContent(
+  c1: AllFileData<ContentsData>,
+  c2: AllFileData<ContentsData>
 ) {
   // TODO: HASHによる検証に切り替える
   return c1.name === c2.name;
@@ -124,13 +129,62 @@ export async function importNewContent(cType: ContentsType, isFile = false) {
 }
 
 /**
+ * 複数のコンテンツをまとめて追加するためのダイアログを表示
+ */
+export function importMultipleContents($q: QVueGlobals, cType: ContentsType) {
+  // TODO: ワールド一覧 -> 導入コンテンツの選択 -> 導入 のダイアログを作成
+  $q.dialog({
+    component: AddContentsDialog,
+    componentProps: {
+      contentType: cType,
+    } as AddContentProp,
+  }).onOk((p: AddContentsReturns) => {
+    p.importContents.forEach((content) => addNewContent2World(cType, content));
+  });
+}
+
+/**
  * 追加された新規コンテンツを各種データベースに登録
  */
-function addNewContent2World(
+function addNewContent2World<T extends ContentsData>(
   cType: ContentsType,
-  content: NewFileData<ContentsData>
+  content: NewFileData<T> | AllFileData<T>
 ) {
-  function newContentFile2CacheFile(): CacheFileData<ContentsData> {
+  // 当該ワールドに追加
+  addContent(cType, content);
+
+  // システムに追加
+  const sysStore = useSystemStore();
+  if (
+    (sysStore.cacheContents[`${cType}s`] as CacheFileData<T>[]).some((c) =>
+      isSameContent(c, content)
+    )
+  ) {
+    addCacheContent(cType, content);
+  }
+}
+
+/**
+ * 指定したコンテンツを追加する
+ */
+export function addContent(
+  cType: ContentsType,
+  content: AllFileData<ContentsData>
+) {
+  const mainStore = useMainStore();
+  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(
+    content
+  );
+}
+
+/**
+ * 指定したキャッシュコンテンツを追加する
+ */
+export function addCacheContent(
+  cType: ContentsType,
+  content: AllFileData<ContentsData>
+) {
+  const newContent = (): CacheFileData<ContentsData> => {
     if (content.kind === 'datapack') {
       return {
         kind: 'datapack',
@@ -149,32 +203,16 @@ function addNewContent2World(
         isFile: content.isFile,
       };
     }
-  }
+  };
 
-  // 当該ワールドに追加
-  addContent(cType, content);
-  
-  // システムに追加
   const sysStore = useSystemStore();
   (sysStore.cacheContents[`${cType}s`] as CacheFileData<ContentsData>[]).push(
-    newContentFile2CacheFile()
-  );
-}
-
-/**
- * 指定したコンテンツを追加する
- */
-export function addContent(
-  cType: ContentsType,
-  content: AllFileData<ContentsData>
-) {
-  const mainStore = useMainStore();
-  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(
-    content
+    newContent()
   );
 }
 
 export function deleteContent(
+  $q: QVueGlobals,
   cType: ContentsType,
   content: AllFileData<ContentsData>
 ) {
@@ -194,7 +232,6 @@ export function deleteContent(
   if (contentsStore.isNewContents(content)) {
     __delete();
   } else {
-    const $q = useQuasar();
     $q.dialog({
       component: DangerDialog,
       componentProps: {

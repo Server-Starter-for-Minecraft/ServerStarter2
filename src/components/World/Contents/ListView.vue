@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { AllFileData } from 'app/src-electron/schema/filedata';
+import { keys } from 'src/scripts/obj';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsIconBtn from 'src/components/util/base/ssIconBtn.vue';
@@ -9,6 +10,7 @@ import {
   ContentsData,
   ContentsType,
   getAllContents,
+  importMultipleContents,
   importNewContent,
   isSameContent,
   openSavedFolder,
@@ -16,6 +18,7 @@ import {
 } from './contentsPage';
 import ListItem from './ListView/ListItem.vue';
 import SearchResultItem from './ListView/SearchResultItem.vue';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 interface Prop {
   contentType: ContentsType;
@@ -61,11 +64,6 @@ function addContentClicked(content: AllFileData<ContentsData>) {
   addContent(prop.contentType, content);
   selectedContent.value = undefined;
 }
-
-function importMultipleContents() {
-  // TODO: ワールド一覧 -> 導入コンテンツの選択 -> 導入 のダイアログを作成
-  throw 'This is not implimented';
-}
 </script>
 
 <template>
@@ -102,12 +100,12 @@ function importMultipleContents() {
           <SearchResultItem :item-props="scope.itemProps" :opt="scope.opt" />
         </template>
       </q-select>
-      <SsIconBtn
-        flat
-        size=".8rem"
+      <SsBtn
+        free-width
         icon="library_add"
-        tooltip="既存ワールドから一括で追加"
-        @click="() => importMultipleContents()"
+        label="まとめて追加"
+        :disable="keys(mainStore.showingWorldList).length < 2"
+        @click="() => importMultipleContents($q, contentType)"
       />
       <SsIconBtn
         flat

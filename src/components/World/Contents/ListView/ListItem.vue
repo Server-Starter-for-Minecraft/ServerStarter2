@@ -5,6 +5,7 @@ import { AllFileData } from 'app/src-electron/schema/filedata';
 import SsIconBtn from 'src/components/util/base/ssIconBtn.vue';
 import {
   ContentsData,
+  ContentsType,
   deleteContent,
   showingContentDescription,
   showingContentName,
@@ -16,7 +17,7 @@ import {
 } from '../DetailsEditor/iDetailsEditor';
 
 interface Prop {
-  contentType: 'datapack' | 'plugin' | 'mod';
+  contentType: ContentsType;
   content: AllFileData<ContentsData>;
 }
 const prop = defineProps<Prop>();
@@ -68,7 +69,7 @@ function onDetailBtnClicked() {
           icon="close"
           tooltip="削除"
           color="negative"
-          @click="() => deleteContent(contentType, innerContent)"
+          @click="() => deleteContent($q, contentType, innerContent)"
         />
       </div>
     </q-item-section>

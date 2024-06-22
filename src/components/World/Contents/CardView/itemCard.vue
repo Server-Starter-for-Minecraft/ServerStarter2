@@ -60,7 +60,7 @@ defineProps<Prop>();
             color="negative"
             icon="close"
             size="1rem"
-            @click="deleteContent(contentType, content)"
+            @click="deleteContent($q, contentType, content)"
           >
             <div
               class="text-negative text-center full-width"
