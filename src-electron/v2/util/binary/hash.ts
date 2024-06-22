@@ -10,6 +10,7 @@ function hashFunc(algorithm: HashAlgorithm): WritableStreamer<string> {
       const e: undefined | Err<Error> = undefined;
 
       const hash = createHash(algorithm);
+      readable.on('close', () => hash.destroy());
       return asyncPipe(readable, hash).then((result) =>
         result.onOk(() => ok(hash.digest().toString('hex')))
       );
