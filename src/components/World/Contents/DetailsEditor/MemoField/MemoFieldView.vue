@@ -13,7 +13,7 @@ function getFocus() {
   descEditMode.value = true;
   textAreaRef.value.focus();
   // 初期の選択を文字列の末尾にする
-  textAreaRef.value.scrollTop = 99999
+  textAreaRef.value.scrollTop = 99999;
 }
 
 function lostFocus() {

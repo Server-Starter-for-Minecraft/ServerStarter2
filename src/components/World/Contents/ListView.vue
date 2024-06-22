@@ -4,6 +4,7 @@ import { AllFileData } from 'app/src-electron/schema/filedata';
 import { keys } from 'src/scripts/obj';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
+import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsIconBtn from 'src/components/util/base/ssIconBtn.vue';
 import {
   addContent,
@@ -18,7 +19,6 @@ import {
 } from './contentsPage';
 import ListItem from './ListView/ListItem.vue';
 import SearchResultItem from './ListView/SearchResultItem.vue';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 interface Prop {
   contentType: ContentsType;
