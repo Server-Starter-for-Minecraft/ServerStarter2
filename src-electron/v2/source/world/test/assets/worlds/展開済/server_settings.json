@@ -12,7 +12,7 @@
   },
 
   "properties": {
-    "allow-flight": "true"
+    "allow-flight": true
   },
 
   "players": [
