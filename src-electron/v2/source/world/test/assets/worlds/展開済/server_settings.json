@@ -1,0 +1,68 @@
+{
+  "using": false,
+
+  "ngrok_setting": { "use_ngrok": true },
+
+  "eula": false,
+
+  "version": { "id": "1.20.6", "type": "vanilla", "release": true },
+
+  "runtime": {
+    "memory": [2, "GB"]
+  },
+
+  "properties": {
+    "allow-flight": true
+  },
+
+  "players": [
+    {
+      "uuid": "0000-0000-000000000000-00000000-0000",
+      "name": "player0",
+      "level": 0,
+      "bypassesPlayerLimit": false
+    },
+    {
+      "uuid": "1111-1111-111111111111-11111111-1111",
+      "name": "player1",
+      "level": 1,
+      "bypassesPlayerLimit": false
+    },
+    {
+      "uuid": "2222-2222-2222-2222-2222",
+      "name": "player2",
+      "level": 2,
+      "bypassesPlayerLimit": false
+    }
+  ],
+
+  "bannedPlayers": [
+    {
+      "uuid": "1234-1234-123412341234-12341234-1234",
+      "created": "2024-01-01 23:47:21 +0900",
+      "source": "??",
+      "expires": "forever",
+      "reason": "nantonaku"
+    }
+  ],
+
+  "bannedIps": [
+    {
+      "ip": "IpAdress",
+      "created": "2024-01-01 23:47:21 +0900",
+      "source": "??",
+      "expires": "forever",
+      "reason": "nantonaku"
+    }
+  ],
+
+  "datapack": [],
+  "plugin": [],
+  "mod": [],
+
+  "last": {
+    "date": 1718456216406,
+    "user": "e19851cc-9493-4875-8d67-493b8474564f",
+    "version": { "id": "1.20.6", "type": "vanilla", "release": true }
+  }
+}

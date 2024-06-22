@@ -32,7 +32,7 @@ export class Path extends DuplexStreamer<void> {
 
   async write(readable: stream.Readable): Promise<Result<void, Error>> {
     // ファイルが既に存在する場合、エラーにする
-    if (this.exists()) return err(new Error('EEXIST'));
+    await this.remove();
     const writable = fs.createWriteStream(this.path);
     return asyncPipe(readable, writable);
   }
@@ -121,18 +121,22 @@ export class Path extends DuplexStreamer<void> {
    * @param content 書き込む内容
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async writeText(content: string, encoding: BufferEncoding = 'utf8') {
+  async writeText(
+    content: string,
+    encoding: BufferEncoding = 'utf8'
+  ): Promise<Result<void>> {
     await this.parent().mkdir();
-    await fs.writeFile(this._path, content, { encoding });
+    return await Result.catchAsync(() =>
+      fs.writeFile(this._path, content, { encoding })
+    );
   }
 
   /**
    * ファイルからテキストを読み込む
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async readText(
-    encoding: BufferEncoding = 'utf8'
-  ): Promise<Result<string, Error>> {
+  async readText(encoding: BufferEncoding = 'utf8'): Promise<Result<string>> {
+    Result.catchAsync(() => fs.readFile(this._path, { encoding }));
     try {
       return ok(await fs.readFile(this._path, { encoding }));
     } catch (e) {

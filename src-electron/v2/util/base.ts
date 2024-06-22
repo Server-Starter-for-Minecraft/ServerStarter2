@@ -26,6 +26,29 @@ export type Err<E> = {
 
 export type Result<T, E = Error> = Ok<T> | Err<E>;
 
+/** Resultに関するへルパ */
+export const Result = {
+  /** エラーを投げる可能性のある関数をResultを返す関数に変更 */
+  catchSync: <T>(func: () => T): Result<T> => {
+    try {
+      return ok(func());
+    } catch (e) {
+      if (e instanceof Error) return err(e);
+      throw new PanicError();
+    }
+  },
+
+  /** エラーを投げる可能性のある関数をResultを返す関数に変更 (非同期) */
+  catchAsync: async <T>(func: () => Promise<T>): Promise<Result<T, Error>> => {
+    try {
+      return ok(await func());
+    } catch (e) {
+      if (e instanceof Error) return err(e);
+      throw new PanicError();
+    }
+  },
+};
+
 export type Value<T> = {
   isSome: true;
   isNone: false;
@@ -56,7 +79,7 @@ const identity = <T>(v: T): T => v;
 const emptyfunc = () => {};
 
 type OkGen = {
-  <T>(error: T): Ok<T>;
+  <T>(value: T): Ok<T>;
   (): Ok<void>;
 };
 
