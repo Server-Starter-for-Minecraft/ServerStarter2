@@ -2,6 +2,7 @@
 import { Ref, ref } from 'vue';
 import { AllFileData } from 'app/src-electron/schema/filedata';
 import { keys } from 'src/scripts/obj';
+import { strSort } from 'src/scripts/objSort';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -144,7 +145,9 @@ function addContentClicked(content: AllFileData<ContentsData>) {
       <div v-if="mainStore.world.additional[`${contentType}s`].length > 0">
         <q-list separator>
           <ListItem
-            v-for="c in mainStore.world.additional[`${contentType}s`]"
+            v-for="c in mainStore.world.additional[`${contentType}s`].sort(
+              (c1, c2) => strSort(c1.name, c2.name)
+            )"
             :key="c.name"
             :content-type="contentType"
             :content="c"

@@ -1,4 +1,4 @@
-import { QVueGlobals, useQuasar } from 'quasar';
+import { QVueGlobals } from 'quasar';
 import {
   AllFileData,
   CacheFileData,
