@@ -2,6 +2,11 @@ import { NewType } from '../util/type/newtype';
 
 export type VersionId = NewType<string, 'VanillaVersionId'>;
 
+/** バージョン未選択や読み込み失敗時を表すバージョン */
+export type UnknownVersion = {
+  type: 'unknown';
+};
+
 export type VanillaVersion = {
   type: 'vanilla';
   id: VersionId;
@@ -73,6 +78,7 @@ export type AllFabricVersion = {
 };
 
 export type Version =
+  | UnknownVersion
   | VanillaVersion
   | SpigotVersion
   | PapermcVersion

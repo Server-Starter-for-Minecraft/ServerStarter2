@@ -15,57 +15,61 @@ import { Path } from '../../util/binary/path';
  * バージョンを管理するクラス
  */
 export class VersionContainer {
-  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  cachePath: Path;
+
+  constructor(cachePath: Path) {
+    this.cachePath = cachePath;
+  }
+
+  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listVanillaVersions(
-    fromCache: boolean
+    useCache: boolean
   ): Promise<Result<AllVanillaVersion>> {
     return err(new Error('not_implemanted'));
   }
 
-  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listForgeVersions(
-    fromCache: boolean
-  ): Promise<Result<AllForgeVersion>> {
+  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  async listForgeVersions(useCache: boolean): Promise<Result<AllForgeVersion>> {
     return err(new Error('not_implemanted'));
   }
 
-  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listSpigotVersions(
-    fromCache: boolean
+    useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
     return err(new Error('not_implemanted'));
   }
 
-  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listPaperMcVersions(
-    fromCache: boolean
+    useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
     return err(new Error('not_implemanted'));
   }
 
-  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listMohistMcVersions(
-    fromCache: boolean
+    useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
     return err(new Error('not_implemanted'));
   }
 
-  /** @param fromCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
+  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listFabricVersions(
-    fromCache: boolean
+    useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
     return err(new Error('not_implemanted'));
   }
 
   /**
-   * サーバー実行ディレクトリ構成をPathに展開する
+   * サーバーの起動に必要なファイル (version.jar, libraries 等) をパスに用意する
    *
-   * jarだけでなくlibrariesとかも一緒に移動できるとサーバー起動を高速化できそう
+   * jarだけでなくlibrariesとかも一緒にキャッシュしておくとサーバー起動を高速化できそう
    *
    * @returns 使用するランタイムの種類と,サブプロセスのコマンドを生成する関数 を返す
    */
-  async extractTo(
-    versionIdntity: Version,
+  async readyVersion(
+    version: Version,
     path: Path
   ): Promise<
     Result<{
@@ -80,11 +84,19 @@ export class VersionContainer {
   }
 
   /**
-   * バージョンデータをPathごと削除する
+   * 実行時パスからバージョンデータ削除する
+   *
+   * version.jar / libraries / crash-reports あたりを削除
+   * プラグインサーバーだと消すものが増えるかも
+   *
+   * /plugins /mods は消さないでOK
    *
    * libraries等が生成されていたらキャッシュに避難すると高速化できそう
    */
-  async removeFrom(versionIdntity: Version, path: Path): Promise<Result<void>> {
+  async removeVersion(
+    versionIdntity: Version,
+    path: Path
+  ): Promise<Result<void>> {
     return err(new Error('not_implemanted'));
   }
 }
