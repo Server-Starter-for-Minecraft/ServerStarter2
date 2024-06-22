@@ -165,5 +165,3 @@ function addContentClicked(content: AllFileData<ContentsData>) {
     </div>
   </div>
 </template>
-
-<style scoped lang="scss"></style>

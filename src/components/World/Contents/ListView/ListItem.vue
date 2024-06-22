@@ -45,7 +45,11 @@ function onDetailBtnClicked() {
 </script>
 
 <template>
-  <q-item @mouseenter="hover = true" @mouseleave="hover = false">
+  <q-item
+    @mouseenter="hover = true"
+    @mouseleave="hover = false"
+    :class="hover ? 'hoveredItem' : ''"
+  >
     <q-item-section>
       <q-item-label style="font-size: 1rem">
         {{ showingContentName(innerContent) }}
@@ -75,3 +79,9 @@ function onDetailBtnClicked() {
     </q-item-section>
   </q-item>
 </template>
+
+<style scoped lang="scss">
+.hoveredItem {
+  background-color: rgba($primary, 0.2);
+}
+</style>
