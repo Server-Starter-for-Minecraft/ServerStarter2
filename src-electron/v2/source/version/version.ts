@@ -66,20 +66,28 @@ export class VersionContainer {
    *
    * jarだけでなくlibrariesとかも一緒にキャッシュしておくとサーバー起動を高速化できそう
    *
-   * @returns 使用するランタイムの種類と,サブプロセスのコマンドを生成する関数 を返す
+   * getCommandはjvm引数を受け取ってjavaの実行時引数を返す
+   * ```
+   * getCommand({jvmArgs:["--XmX=2G"]})
+   * // -> ["--XmX=2G", "-Dlog4j2.formatMsgNoLookups=true", "--jar", "version.jar", "--nogui"]
+   * ```
+   *
+   * @param path サーバーのディレクトリパス jarファイルはここの直下に置く
+   * @param readyRuntime jarファイルを用意する際にランタイムが必要なことがあるので、指定したランタイムを用意する
+   *
+   * @returns 使用するランタイムの種類と, サブプロセスのコマンドを生成する関数 を返す
    */
   async readyVersion(
     version: Version,
-    path: Path
+    path: Path,
+    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
   ): Promise<
     Result<{
       runtime: Runtime;
-      getCommand: (option: { runtimePath: Path; jvmArgs: string[] }) => {
-        process: string;
-        args: string[];
-      };
+      getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
+    // TODO: @CivilTT spigotの導入時に今はひどい条件分岐でMinecraftRuntimeを使用しているので、UniversalRuntimeを返すとよい
     return err(new Error('not_implemanted'));
   }
 
