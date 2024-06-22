@@ -34,35 +34,27 @@ export class LocalWorldSource extends WorldSource {
   /**
    * ワールドデータを削除
    */
-  async deleteWorldData(name: WorldName): Promise<Result<World>> {
+  async deleteWorldData(name: WorldName): Promise<Result<void>> {
     return err(new Error('notImplemented'));
   }
 
   /**
-   * ワールドを特定の形のディレクトリ構造に展開
+   * ワールドを特定の形のディレクトリ構造に展開し、展開先のPathを返す
    *
    * 展開に失敗した場合は元の状態に戻す
    *
    * properties / eula / op / whitelist
    *
    * mod / plugin / datapack の展開は行わない
-   *
-   * TODO: 展開先のワールドのひな形の用意
    */
-  async extractWorldDataTo(path: Path, world: World): Promise<Result<void>> {
+  async extractWorldDataTo(world: World): Promise<Result<Path>> {
     return err(new Error('notImplemented'));
   }
 
   /**
-   * ディレクトリに展開されたデータをWorldContainerに格納
-   *
-   * WorldContainerに該当データがある場合上書き
-   *
-   * WorldContainerに該当データがない場合新規作成
-   *
-   * TODO: 展開先のワールドのひな形の用意
+   * extractWorldDataToで展開されたデータをWorldContainerに格納
    */
-  async packWorldDataFrom(path: Path, world: World): Promise<Result<void>> {
+  async packWorldDataFrom(world: World): Promise<Result<void>> {
     return err(new Error('notImplemented'));
   }
 }
@@ -70,7 +62,5 @@ export class LocalWorldSource extends WorldSource {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('', () => {
-    
-  });
+  test('', () => {});
 }

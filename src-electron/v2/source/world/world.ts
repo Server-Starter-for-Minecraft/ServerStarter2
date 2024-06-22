@@ -14,12 +14,19 @@ export abstract class WorldSource {
   abstract listWorldNames(container: WorldContainer): Promise<WorldName[]>;
 
   /**
-   * コンテナ内でメタデータを上書き
+   * メタデータを保存
+   *
+   * server_settings.jsonを上書きすればOK
    */
-  abstract setWorldMeta(meta: World): Promise<Result<void, Error>>;
+  abstract setWorldMeta(meta: World): Promise<Result<void>>;
 
   /**
    * メタデータを取得
+   *
+   * server_settings.jsonの内容を読み取って返す
+   * server_settings.jsonが読みとれない場合は復元して返す
+   *
+   * 何度も呼ばれる可能性があるので、キャッシュしておくとよい
    */
   abstract getWorldMeta(
     container: WorldContainer,
@@ -29,29 +36,31 @@ export abstract class WorldSource {
   /**
    * ワールドデータを削除
    */
-  abstract deleteWorldData(name: WorldName): Promise<Result<World>>;
+  abstract deleteWorldData(name: WorldName): Promise<Result<void>>;
 
   /**
-   * ワールドを特定の形のディレクトリ構造に展開
+   * ワールドを特定の形のディレクトリ構造に展開し、展開先のPathを返す
    *
    * 展開に失敗した場合は元の状態に戻す
    *
    * properties / eula / op / whitelist
    *
    * mod / plugin / datapack の展開は行わない
-   *
-   * TODO: 展開先のワールドのひな形の用意
    */
-  abstract extractWorldDataTo(path: Path, world: World): Promise<Result<void>>;
+  abstract extractWorldDataTo(world: World): Promise<Result<Path>>;
 
   /**
    * ディレクトリに展開されたデータをWorldContainerに格納
    *
-   * WorldContainerに該当データがある場合上書き
+   * その際に下記ファイルの内容を読み取ってserver_settings.jsonに反映する
    *
-   * WorldContainerに該当データがない場合新規作成
-   *
-   * TODO: 展開先のワールドのひな形の用意
+   * banned-ips.json
+   * banned-players.json
+   * eula.txt
+   * ops.json
+   * server_settings.json
+   * server.properties
+   * whitelist.json
    */
-  abstract packWorldDataFrom(path: Path, world: World): Promise<Result<void>>;
+  abstract packWorldDataFrom(world: World): Promise<Result<void>>;
 }

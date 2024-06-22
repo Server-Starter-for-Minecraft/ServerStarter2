@@ -2,38 +2,38 @@ import { NewType } from '../util/type/newtype';
 
 export type VersionId = NewType<string, 'VanillaVersionId'>;
 
-export type VanillaVersionIdentity = {
+export type VanillaVersion = {
   type: 'vanilla';
   id: VersionId;
   release: boolean;
 };
 
-export type SpigotVersionIdentity = {
+export type SpigotVersion = {
   type: 'spigot';
   id: VersionId;
 };
 
-export type PapermcVersionIdentity = {
+export type PapermcVersion = {
   type: 'papermc';
   id: VersionId;
   build: number;
 };
 
-export type ForgeVersionIdentity = {
+export type ForgeVersion = {
   type: 'forge';
   id: VersionId;
   forge_version: string;
   download_url: string;
 };
 
-export type MohistmcVersionIdentity = {
+export type MohistmcVersion = {
   id: VersionId;
   type: 'mohistmc';
   forge_version?: string;
   number: number;
 };
 
-export type FabricVersionIdentity = {
+export type FabricVersion = {
   id: VersionId;
   type: 'fabric';
   release: boolean;
@@ -72,10 +72,10 @@ export type AllFabricVersion = {
   installers: string[];
 };
 
-export type VersionIdntity =
-  | VanillaVersionIdentity
-  | SpigotVersionIdentity
-  | PapermcVersionIdentity
-  | ForgeVersionIdentity
-  | MohistmcVersionIdentity
-  | FabricVersionIdentity;
+export type Version =
+  | VanillaVersion
+  | SpigotVersion
+  | PapermcVersion
+  | ForgeVersion
+  | MohistmcVersion
+  | FabricVersion;

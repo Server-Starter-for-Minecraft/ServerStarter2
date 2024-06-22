@@ -6,7 +6,7 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
-  VersionIdntity,
+  Version,
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
@@ -65,7 +65,7 @@ export class VersionContainer {
    * @returns 使用するランタイムの種類と,サブプロセスのコマンドを生成する関数 を返す
    */
   async extractTo(
-    versionIdntity: VersionIdntity,
+    versionIdntity: Version,
     path: Path
   ): Promise<
     Result<{
@@ -84,10 +84,7 @@ export class VersionContainer {
    *
    * libraries等が生成されていたらキャッシュに避難すると高速化できそう
    */
-  async removeFrom(
-    versionIdntity: VersionIdntity,
-    path: Path
-  ): Promise<Result<void>> {
+  async removeFrom(versionIdntity: Version, path: Path): Promise<Result<void>> {
     return err(new Error('not_implemanted'));
   }
 }
