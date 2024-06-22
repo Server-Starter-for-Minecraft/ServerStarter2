@@ -11,7 +11,7 @@ const worldStore = useWorldStore();
 async function openFolder() {
   const path = await window.API.invokeGetWorldPaths(
     mainStore.selectedWorldID,
-    'world'
+    'server'
   );
 
   checkError(
