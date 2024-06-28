@@ -84,6 +84,10 @@ if (import.meta.vitest) {
     await jsonHandler.write({ a: 2, b: 'world' });
     expect((await jsonPath.readText()).value()).toBe('{"a":2,"b":"world"}');
 
-    expect(content.value()).toEqual({ a: 1, b: 'hello' });
+    expect((await jsonHandler.read({ useCache: true})).value()).toEqual({ a: 2, b: 'world' });
+
+    await jsonPath.writeText('{"a": 3}')
+    expect((await jsonHandler.read({ useCache: true})).value()).toEqual({ a: 2, b: 'world' });
+    expect((await jsonHandler.read({ useCache: false})).value()).toEqual({ a: 3, b: 'hello' });
   });
 }
