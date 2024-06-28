@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { WithExists } from '../../schema/additional';
 import {
   DatapackAnnotation,
@@ -8,15 +9,58 @@ import {
 } from '../../schema/datapack';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { JsonSourceHandler } from '../../util/wrapper/jsonFile';
 import { DatapackContainer } from './datapack';
+
+const datapackIdValidator = z.string().transform((x) => x as DatapackId);
+const datapackNameValidator = z.string().transform((x) => x as DatapackName);
+
+type DatapackCacheRecord = {
+  id: DatapackId;
+  exists: boolean;
+  type: 'dir' | 'zip';
+  description: string;
+  canCopy: boolean;
+  canShare: boolean;
+  comment: string;
+  name: DatapackName;
+};
+
+const datapackCacheRecordValidator: z.ZodSchema<
+  DatapackCacheRecord,
+  z.ZodTypeDef,
+  any
+> = z.object({
+  id: datapackIdValidator,
+  exists: z.boolean(),
+  type: z.enum(['dir', 'zip']),
+  description: z.string(),
+  canCopy: z.boolean(),
+  canShare: z.boolean(),
+  comment: z.string(),
+  name: datapackNameValidator,
+});
+
+type DatapackCacheJson = {
+  data: DatapackCacheRecord[];
+};
+
+const datapackJsonValidator: z.ZodSchema<DatapackCacheJson> = z.object({
+  data: z.array(datapackCacheRecordValidator),
+});
 
 /** Localのデータパックを格納するフォルダのような何か */
 export class LocalDatapackContainer extends DatapackContainer {
   private path: Path;
+  private jsonHandler: JsonSourceHandler<DatapackCacheJson>;
 
   constructor(path: Path) {
     super();
     this.path = path;
+    this.jsonHandler = JsonSourceHandler.fromPath<DatapackCacheJson>(
+      path.child('cache.json'),
+      datapackJsonValidator
+    );
   }
   /**
    * コンテナ内のデータパック一覧を表示
