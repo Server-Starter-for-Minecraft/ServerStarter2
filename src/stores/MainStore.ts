@@ -1,7 +1,9 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import { keys, values } from 'app/src-public/scripts/obj/obj';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
+import { sortValue } from 'app/src-public/scripts/obj/objSort';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import {
@@ -14,7 +16,7 @@ import { zen2han } from 'src/scripts/textUtils';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from './SystemStore';
-import { useWorldStore } from './WorldStore';
+import { __getWorldList, __getWorldListBack, WorldList } from './WorldStore';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -28,9 +30,14 @@ export const useMainStore = defineStore('mainStore', {
     };
   },
   getters: {
+    /**
+     * WorldEditedを返し，WorldAbbrの時にはundefinedを返す
+     *
+     * WorldAbbrも含めて共通の要素を取得したい場合は
+     * `allWorlds.readonlyWorlds[selectedWorldID]`で呼び出す
+     */
     world(state) {
-      const worldStore = useWorldStore();
-      const returnWorld = worldStore.worldList[state.selectedWorldID];
+      const returnWorld = __getWorldList()[state.selectedWorldID];
 
       if (returnWorld?.type === 'abbr') {
         return undefined;
@@ -43,11 +50,13 @@ export const useMainStore = defineStore('mainStore', {
 
       return returnWorld?.world;
     },
+    readonlyWorld(state) {
+      return deepcopy(__getWorldList()[state.selectedWorldID]);
+    },
     allWorlds(state) {
-      const worldStore = useWorldStore();
       return {
         update: (func: (world: WorldEdited) => void) => {
-          values(worldStore.worldList).forEach((w) => {
+          values(__getWorldList()).forEach((w) => {
             if (w.type === 'edited') {
               func(w.world);
 
@@ -59,8 +68,14 @@ export const useMainStore = defineStore('mainStore', {
             }
           });
         },
-        worlds: worldStore.worldList,
-        filteredWorlds: filterSearchingWorld(state.worldSearchText),
+        readonlyWorlds: deepcopy(__getWorldList()),
+        filteredWorlds: (searchText?: string) => {
+          const wList = filterSearchingText(
+            __getWorldList(),
+            searchText ?? state.worldSearchText
+          );
+          return sortWorldList(wList);
+        },
       };
     },
     /**
@@ -68,8 +83,7 @@ export const useMainStore = defineStore('mainStore', {
      * 以前のデータとの比較が必要な処理への利用を想定する
      */
     worldBack(state): WorldEdited | undefined {
-      const worldStore = useWorldStore();
-      return worldStore.worldListBack[state.selectedWorldID];
+      return __getWorldListBack()[state.selectedWorldID];
     },
     /**
      * Ngrokを考慮したIPアドレスを返す
@@ -86,6 +100,12 @@ export const useMainStore = defineStore('mainStore', {
     showWorld(world: World | WorldEdited | WorldAbbr) {
       this.selectedWorldID = world.id;
       this.inputWorldName = world.name;
+    },
+    /**
+     * 表示するワールドの選択を解除して，何も表示しない
+     */
+    unsetWorld() {
+      this.selectedWorldID = '' as WorldID;
     },
     /**
      * NgrokからIPの割り当てがあった際にIPアドレスを更新する
@@ -105,44 +125,55 @@ export const useMainStore = defineStore('mainStore', {
 });
 
 /**
- * ワールド一覧に描画するワールドリスト，
- * TODO: WorldEdited出ない場合を考慮して，IDの一覧を返す仕様に変更？
+ * 渡されたワールドリストを更新日時順にソート
  */
-function filterSearchingWorld(searchText: string | null) {
-  const worldStore = useWorldStore();
-  // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，３項演算子によるNullチェックも付加
-  // 原因はSearchWorldViewのupdateSelectedWorld()にてshowingWorldListを呼び出しているため
-  // TODO: 上記のリファクタリングにより，３項演算子を廃止
+function sortWorldList(wList: WorldList) {
+  return sortValue(wList, (a, b) => {
+    if (a.type === 'edited' && b.type === 'edited') {
+      return (b.world.last_date ?? 0) - (a.world.last_date ?? 0);
+    } else {
+      return 0;
+    }
+  });
+}
+
+/**
+ * 検索ワードを下記の項目についてチェックし，マッチするワールドを返す
+ *
+ * - ワールド名称に一致
+ * - サーバー種類の名称
+ * - サーバーバージョン
+ *
+ * なお，スペース区切りはAND検索とする
+ */
+function filterSearchingText(wList: WorldList, searchText: string) {
+  if (searchText == '') {
+    return wList;
+  }
+
+  // 検索ワードを正規化して検索を最適化する
   const editText = zen2han(searchText ?? '')
     .trim()
     .toLowerCase();
 
-  let returnWorlds = worldStore.sortedWorldList;
-  if (editText !== '') {
-    // スペース区切りのAND検索
-    editText.split(' ').forEach((t) => {
-      returnWorlds = recordValueFilter(returnWorlds, (w) => {
-        // ワールド名称に一致
-        const hitName = w.world.name.toLowerCase().match(t) !== null;
-        // サーバー種類に一致
-        const hitVerType =
-          w.type === 'edited'
-            ? w.world.version.type.match(t) !== null ||
-              $T(`home.serverType.${w.world.version.type}`).match(t) !== null
-            : true;
-        // バージョン名に一致
-        const hitVer =
-          w.type === 'edited' ? w.world.version.id.match(t) !== null : true;
-        return hitName || hitVerType || hitVer;
-      });
+  let returnWorlds = wList;
+  // スペース区切りのAND検索
+  editText.split(' ').forEach((t) => {
+    returnWorlds = recordValueFilter(returnWorlds, (w) => {
+      // ワールド名称に一致
+      const hitName = w.world.name.toLowerCase().match(t) !== null;
+      // サーバー種類に一致
+      const hitVerType =
+        w.type === 'edited'
+          ? w.world.version.type.match(t) !== null ||
+            $T(`home.serverType.${w.world.version.type}`).match(t) !== null
+          : false;
+      // バージョン名に一致
+      const hitVer =
+        w.type === 'edited' ? w.world.version.id.match(t) !== null : false;
+      return hitName || hitVerType || hitVer;
     });
-
-    // 選択中のワールドがリスト圏外になった場合は選択を解除
-    const mainStore = useMainStore();
-    if (!keys(returnWorlds).includes(mainStore.selectedWorldID)) {
-      mainStore.selectedWorldID = '' as WorldID;
-    }
-  }
+  });
 
   return returnWorlds;
 }

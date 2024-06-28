@@ -8,7 +8,7 @@ import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { updateWorld, useWorldStore } from 'src/stores/WorldStore';
+import { updateWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
@@ -18,7 +18,6 @@ import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
 const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 const consoleStore = useConsoleStore();
 
 const isWorldContainerLoading = ref(false);
@@ -29,10 +28,10 @@ const isWorldContainerLoading = ref(false);
  */
 function changeVisible(container: WorldContainer) {
   if (
-    worldStore.worldList[mainStore.selectedWorldID].world.container ===
-    container
+    mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID].world
+      .container === container
   ) {
-    const world = values(mainStore.allWorlds.filteredWorlds);
+    const world = values(mainStore.allWorlds.filteredWorlds());
     mainStore.showWorld(world[0].world);
   }
 }
@@ -96,8 +95,8 @@ function openFolderEditor() {
         :loading="isWorldContainerLoading"
         :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
         :active="
-          worldStore.worldList[mainStore.selectedWorldID]?.world.container ===
-          sysStore.systemSettings.container[n - 1].container
+          mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]?.world
+            .container === sysStore.systemSettings.container[n - 1].container
         "
         @click="
           setWorldContainer(sysStore.systemSettings.container[n - 1].container)

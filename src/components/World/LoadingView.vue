@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useMainStore } from 'src/stores/MainStore';
-import { useWorldStore } from 'src/stores/WorldStore';
 
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 </script>
 
 <template>
@@ -12,7 +10,8 @@ const worldStore = useWorldStore();
     <span class="col">
       {{
         $t('mainLayout.loading', {
-          name: worldStore.worldList[mainStore.selectedWorldID].world.name,
+          name: mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]
+            .world.name,
         })
       }}
     </span>

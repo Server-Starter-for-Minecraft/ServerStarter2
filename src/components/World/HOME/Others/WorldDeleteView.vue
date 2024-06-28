@@ -3,17 +3,12 @@ import { values } from 'app/src-public/scripts/obj/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import {
-  createNewWorld,
-  removeWorld,
-  useWorldStore,
-} from 'src/stores/WorldStore';
+import { createNewWorld, removeWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import { moveScrollTop_Home } from '../scroll';
 
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 const consoleStore = useConsoleStore();
 
 /**
@@ -26,7 +21,7 @@ async function removeWorld_Clicked() {
     const removeWorldID = mainStore.selectedWorldID;
 
     // ワールドが消失する場合は、新規ワールドを自動生成
-    if (values(mainStore.allWorlds.worlds).length === 1) {
+    if (values(mainStore.allWorlds.readonlyWorlds).length === 1) {
       // 削除する際にworldStore.worldListが更新されてSetWorldが呼ばれるため、
       // 表示しているワールドを確実にNewWorld側にしてから削除処理を実行
       // このためには、削除前にCreateNewWorldする必要あり
@@ -37,7 +32,7 @@ async function removeWorld_Clicked() {
     removeWorld(removeWorldID);
 
     // ワールドリストの0番目を表示
-    const world = values(mainStore.allWorlds.filteredWorlds);
+    const world = values(mainStore.allWorlds.filteredWorlds());
     mainStore.showWorld(world[0].world);
 
     // 画面を一番上に
@@ -63,7 +58,8 @@ function splitName(name: string) {
     :dialog-desc="
       $t('home.deleteWorld.dialogDesc', {
         deleteName: splitName(
-          worldStore.worldList[mainStore.selectedWorldID]?.world.name ?? ''
+          mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]?.world
+            .name ?? ''
         ),
       })
     "

@@ -1,14 +1,15 @@
-import { fromEntries, keys, values } from 'app/src-public/scripts/obj/obj';
+import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { versionTypes } from 'app/src-electron/schema/version';
-import { WorldAbbr, WorldID } from 'app/src-electron/schema/world';
+import { WorldID } from 'app/src-electron/schema/world';
 import { tError } from './i18n/utils/tFunc';
-import { useConsoleStore } from './stores/ConsoleStore';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import {
   createNewWorld,
+  registAbbrWorld,
+  registWorldError,
   updateBackWorld,
-  useWorldStore,
+  updateWorld,
 } from './stores/WorldStore';
 import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
 import { checkError } from './components/Error/Error';
@@ -37,7 +38,7 @@ export async function initWindow() {
     (abbrs) => {
       if (abbrs !== void 0) {
         const validAbbrs = abbrs.flatMap((errorAbbr) => errorAbbr.value);
-        registAbbr(validAbbrs);
+        validAbbrs.forEach((abbr) => registAbbrWorld(abbr));
       }
     },
     (e) => tError(e)
@@ -49,7 +50,7 @@ export async function initWindow() {
   }
   // ワールドが１つしかないときには当該ワールドをデフォルトの表示ワールドとする
   // TODO: バックエンドで「以前に起動したワールド」の情報を持つようになった際には，そのワールドをデフォルトの表示ワールドとする
-  const worlds = mainStore.allWorlds.filteredWorlds;
+  const worlds = mainStore.allWorlds.filteredWorlds();
   if (keys(worlds).length === 1) {
     mainStore.showWorld(values(worlds)[0].world);
   }
@@ -57,8 +58,8 @@ export async function initWindow() {
 
 export async function afterWindow() {
   // ワールドの詳細情報を取得
-  const worldStore = useWorldStore();
-  getWorlds(keys(worldStore.worldList));
+  const mainStore = useMainStore();
+  getWorlds(keys(mainStore.allWorlds.readonlyWorlds));
 
   // GlobalIPを取得
   getIP();
@@ -74,28 +75,10 @@ export async function afterWindow() {
 }
 
 /**
- * 取得したAbbrをフロントエンドに登録する
- */
-export function registAbbr(abbrs: WorldAbbr[]) {
-  const worldStore = useWorldStore();
-  const consoleStore = useConsoleStore();
-
-  // フロントエンドのWorld一覧に登録
-  const newWorlds = fromEntries(
-    abbrs.map((abbr) => [abbr.id, { type: 'abbr', world: abbr }])
-  );
-  Object.assign(worldStore.worldList, newWorlds);
-  
-  // フロントエンドで持っているワールドの状態管理に登録
-  abbrs.forEach((abbr) => consoleStore.initTab(abbr.id));
-}
-
-/**
  * ワールドの詳細情報を取得する
  */
 export async function getWorlds(wIds: WorldID[]) {
   const mainStore = useMainStore();
-  const worldStore = useWorldStore();
 
   // Worldの詳細情報
   const worlds = await Promise.all(
@@ -106,16 +89,14 @@ export async function getWorlds(wIds: WorldID[]) {
   worlds.forEach((wFailable, idx) => {
     checkError(
       wFailable.value,
-      (w) => {
-        worldStore.worldList[w.id] = { type: 'edited', world: w };
-      },
+      (w) => updateWorld(w),
       (e) => {
         const errObj = tError(e);
         const wId = wIds[idx];
         // 正常に取得できなかったワールドを登録
         mainStore.errorWorlds.add(wId);
         // エラー理由を登録
-        worldStore.worldList[wId].error = errObj;
+        registWorldError(wId, errObj);
         return errObj;
       }
     );

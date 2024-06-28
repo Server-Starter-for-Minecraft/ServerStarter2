@@ -7,7 +7,7 @@ import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
-import { updateBackWorld, updateWorld, useWorldStore } from './WorldStore';
+import { updateBackWorld, updateWorld } from './WorldStore';
 
 type consoleData = { chunk: string; isError: boolean };
 type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog';
@@ -140,12 +140,13 @@ export const useConsoleStore = defineStore('consoleStore', {
 
 export async function runServer() {
   const mainStore = useMainStore();
-  const worldStore = useWorldStore();
   const consoleStore = useConsoleStore();
 
   // 起動時のワールドの状態を保持することで、GUIが別のワールドを表示していても、
   // 当該ワールドに対して処理が行えるようにする
-  const runWorld = deepcopy(worldStore.worldList[mainStore.selectedWorldID]);
+  const runWorld = deepcopy(
+    mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]
+  );
 
   // Abbrは実行できない
   if (runWorld.type === 'abbr') {

@@ -11,7 +11,7 @@ import {
   setSysSettingsSubscriber,
   useSystemStore,
 } from './stores/SystemStore';
-import { useWorldStore } from './stores/WorldStore';
+import { setWorldSubscriber } from './stores/WorldStore';
 import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
@@ -30,7 +30,6 @@ import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 const propertyStore = usePropertyStore();
 const playerStore = usePlayerStore();
 const consoleStore = useConsoleStore();
@@ -158,18 +157,7 @@ async function firstProcess() {
  * 変数の変更に合わせて処理を入れるためのSubscriberを定義する
  */
 function setSubscribe() {
-  // TODO: SetWorldの戻り値を反映する場合にはcurrentSelectedIDを利用して当該ワールドのデータを更新する
-  // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
-  const currentSelectedId = mainStore.selectedWorldID;
-
-  worldStore.$subscribe((mutation, state) => {
-    const world = mainStore.world;
-    if (world) {
-      window.API.invokeSetWorld(toRaw(world)).then((v) => {
-        checkError(v.value, undefined, (e) => tError(e));
-      });
-    }
-  });
+  setWorldSubscriber();
 
   setSysSettingsSubscriber();
 

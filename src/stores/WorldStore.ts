@@ -3,8 +3,6 @@ import { defineStore } from 'pinia';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
-import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
-import { sortValue } from 'app/src-public/scripts/obj/objSort';
 import {
   World,
   WorldAbbr,
@@ -22,40 +20,58 @@ export type WorldItem =
   | { type: 'edited'; world: WorldEdited; error?: ErrorFuncReturns }
   | { type: 'abbr'; world: WorldAbbr; error?: ErrorFuncReturns };
 
+export type WorldList = Record<WorldID, WorldItem>;
+export type WorldBackList = Record<WorldID, WorldEdited>;
+
 /**
  * Worldの変更を検知するためのStore
  */
-export const useWorldStore = defineStore('worldStore', {
+const useWorldStore = defineStore('worldStore', {
   state: () => {
     return {
-      worldListBack: {} as Record<WorldID, WorldEdited>,
-      worldList: {} as Record<WorldID, WorldItem>,
+      worldListBack: {} as WorldBackList,
+      worldList: {} as WorldList,
     };
   },
-  getters: {
-    sortedWorldList(state) {
-      const sysStore = useSystemStore();
-      const visibleContainers = new Set(
-        sysStore.systemSettings.container
-          .filter((c) => c.visible)
-          .map((c) => c.container)
-      );
-      return sortValue(
-        // 表示設定にしていたコンテナのみを描画対象にする
-        recordValueFilter(state.worldList, (w) =>
-          visibleContainers.has(w.world.container)
-        ),
-        (a, b) => {
-          if (a.type === 'edited' && b.type === 'edited') {
-            return (b.world.last_date ?? 0) - (a.world.last_date ?? 0);
-          } else {
-            return 0;
-          }
-        }
-      );
-    },
-  },
 });
+
+/**
+ * mainStoreに渡す用のワールド取得関数
+ *
+ * 原則呼出しはNG
+ */
+export function __getWorldList() {
+  const worldStore = useWorldStore();
+  return worldStore.worldList;
+}
+/**
+ * mainStoreに渡す用のワールド取得関数
+ *
+ * 原則呼出しはNG
+ */
+export function __getWorldListBack() {
+  const worldStore = useWorldStore();
+  return worldStore.worldListBack;
+}
+
+/**
+ * worldStoreを監視して，更新があった際にバックエンドにWorldの更新を伝達する
+ */
+export function setWorldSubscriber() {
+  const worldStore = useWorldStore();
+  const mainStore = useMainStore();
+
+  worldStore.$subscribe((mutation, state) => {
+    const world = mainStore.world;
+    if (world) {
+      // SetWorldの戻り値でWorldStoreに更新をかけると、
+      // その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
+      window.API.invokeSetWorld(toRaw(world)).then((v) => {
+        checkError(v.value, undefined, (e) => tError(e));
+      });
+    }
+  });
+}
 
 /**
  * ワールドを新規作成する
@@ -130,6 +146,31 @@ export async function createNewWorld(duplicateWorldID?: WorldID) {
 export function removeWorld(worldID: WorldID) {
   const worldStore = useWorldStore();
   delete worldStore.worldList[worldID];
+}
+
+/**
+ * ワールドを新規で読み込んだ際にフロントエンド側にワールドを追加する
+ *
+ * 以下の処理を実行する
+ * - WorldAbbrを登録
+ * - コンソールで表示する各ワールドの実行状態の初期化
+ */
+export function registAbbrWorld(abbr: WorldAbbr) {
+  // フロントエンドのWorld一覧に登録
+  const worldStore = useWorldStore();
+  worldStore.worldList[abbr.id] = { type: 'abbr', world: abbr };
+
+  // フロントエンドで持っているワールドの状態管理に登録
+  const consoleStore = useConsoleStore();
+  consoleStore.initTab(abbr.id);
+}
+
+/**
+ * ワールドの読込時に発生したエラーを登録しておく
+ */
+export function registWorldError(worldID: WorldID, error?: ErrorFuncReturns) {
+  const worldStore = useWorldStore();
+  worldStore.worldList[worldID].error = error;
 }
 
 /**

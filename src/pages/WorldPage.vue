@@ -2,7 +2,6 @@
 import { useRouter } from 'vue-router';
 import { keys } from 'app/src-public/scripts/obj/obj';
 import { useMainStore } from 'src/stores/MainStore';
-import { useWorldStore } from 'src/stores/WorldStore';
 import HeaderView from 'src/components/World/HeaderView.vue';
 import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 import FailedLoadingView from 'src/components/World/FailedLoadingView.vue';
@@ -10,13 +9,12 @@ import LoadingView from 'src/components/World/LoadingView.vue';
 
 const router = useRouter();
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 const isSelectSuggestMode = () =>
   router.currentRoute.value.path.slice(0, 7) !== '/system' &&
   mainStore.selectedWorldID === '';
 const isNoContents = () =>
   router.currentRoute.value.path.slice(0, 7) !== '/system' &&
-  keys(mainStore.allWorlds.filteredWorlds).length === 0;
+  keys(mainStore.allWorlds.filteredWorlds()).length === 0;
 
 const isLoading = () =>
   router.currentRoute.value.path.slice(0, 7) !== '/system' &&

@@ -2,11 +2,9 @@
 import { ref } from 'vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { useWorldStore } from 'src/stores/WorldStore';
 import SsTooltip from '../util/base/ssTooltip.vue';
 
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 const consoleStore = useConsoleStore();
 
 const copied = ref(false);
@@ -32,10 +30,14 @@ function copyIP() {
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">
-        {{ worldStore.worldList[mainStore.selectedWorldID]?.world.name }}
+        {{
+          mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]?.world
+            .name
+        }}
         <SsTooltip
           :name="
-            worldStore.worldList[mainStore.selectedWorldID]?.world.name ?? ''
+            mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]?.world
+              .name ?? ''
           "
           anchor="bottom start"
           self="center start"

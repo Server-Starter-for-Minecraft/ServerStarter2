@@ -5,11 +5,7 @@ import { WorldEdited } from 'app/src-electron/schema/world';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
-import {
-  createNewWorld,
-  updateBackWorld,
-  useWorldStore,
-} from 'src/stores/WorldStore';
+import { createNewWorld, updateBackWorld } from 'src/stores/WorldStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { checkError } from '../Error/Error';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
@@ -28,7 +24,6 @@ const $q = useQuasar();
 const router = useRouter();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 
 const isMini = () =>
   sysStore.systemSettings.user.drawerWidth < prop.miniChangeWidth;
@@ -127,7 +122,9 @@ async function duplicateWorld(world?: WorldEdited) {
 async function introduceBackup() {
   const res = await window.API.invokePickDialog({
     type: 'backup',
-    container: worldStore.worldList[mainStore.selectedWorldID].world.container,
+    container:
+      mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID].world
+        .container,
   });
 
   checkError(

@@ -9,7 +9,7 @@ import {
   pGroupKey,
   propertyClasses,
 } from 'src/components/World/Property/classifications';
-import { useWorldStore } from '../WorldStore';
+import { useMainStore } from '../MainStore';
 
 const disableProperties = ['level-name'];
 
@@ -64,8 +64,8 @@ export const usePropertyStore = defineStore('propertyStore', {
      * サーバーポート番号を書き換えて登録する
      */
     setServerPort(worldID: WorldID, port: number) {
-      const worldStore = useWorldStore();
-      const worldObj = worldStore.worldList[worldID];
+      const mainStore = useMainStore();
+      const worldObj = mainStore.allWorlds.readonlyWorlds[worldID];
       if (worldObj.type === 'edited') {
         checkError(
           worldObj.world.properties,

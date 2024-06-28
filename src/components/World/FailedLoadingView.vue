@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
-import { useWorldStore } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 
 async function openFolder() {
   const path = await window.API.invokeGetWorldPaths(
@@ -32,7 +30,8 @@ async function openFolder() {
       <span class="col">
         {{
           $t('mainLayout.failedLoading', {
-            name: worldStore.worldList[mainStore.selectedWorldID].world.name,
+            name: mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]
+              .world.name,
           })
         }}
       </span>
@@ -40,10 +39,16 @@ async function openFolder() {
     <q-separator />
     <div class="q-pa-md">
       <p class="q-my-none">
-        {{ worldStore.worldList[mainStore.selectedWorldID].error?.title }}
+        {{
+          mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID].error
+            ?.title
+        }}
       </p>
       <span class="text-caption">
-        {{ worldStore.worldList[mainStore.selectedWorldID].error?.desc }}
+        {{
+          mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID].error
+            ?.desc
+        }}
       </span>
     </div>
     <div class="flex justify-end">
