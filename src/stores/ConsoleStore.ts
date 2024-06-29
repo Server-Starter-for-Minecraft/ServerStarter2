@@ -7,6 +7,7 @@ import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
+import { updateBackWorld, updateWorld } from './WorldStore';
 
 type consoleData = { chunk: string; isError: boolean };
 type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog';
@@ -34,7 +35,7 @@ export const useConsoleStore = defineStore('consoleStore', {
      * @param force すでにデータが存在していてもコンソールとステータスを初期化する
      */
     initTab(worldID: WorldID, force = false) {
-      if (this._world[worldID] === void 0 || force) {
+      if ((this._world[worldID] === void 0 && worldID !== '') || force) {
         this._world[worldID] = {
           status: 'Stop',
           clickedStop: false,
@@ -88,7 +89,7 @@ export const useConsoleStore = defineStore('consoleStore', {
      * ワールドの実行状態を取得する
      */
     status(worldID: WorldID) {
-      return this._world[worldID].status;
+      return this._world[worldID]?.status;
     },
     /**
      * ワールドが停止処理に入っているか否かを取得する
@@ -143,35 +144,42 @@ export async function runServer() {
 
   // 起動時のワールドの状態を保持することで、GUIが別のワールドを表示していても、
   // 当該ワールドに対して処理が行えるようにする
-  const runWorld = deepcopy(mainStore.world);
+  const runWorld = deepcopy(
+    mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]
+  );
+
+  // Abbrは実行できない
+  if (runWorld.type === 'abbr') {
+    return;
+  }
 
   // 画像が入っていない場合は既定のアイコンを適用する
-  if (runWorld.avater_path === void 0) {
-    runWorld.avater_path = assets.png.unset;
+  if (runWorld.world.avater_path === void 0) {
+    runWorld.world.avater_path = assets.png.unset;
   }
 
   // プログレスのステータスをセット
   consoleStore.initProgress(
-    runWorld.id,
+    runWorld.world.id,
     $T('console.booting', {
-      id: `${runWorld.version.id}`,
-      type: `${$T(`home.serverType.${runWorld.version.type}`)}`,
-      name: `${runWorld.name}`,
+      id: `${runWorld.world.version.id}`,
+      type: `${$T(`home.serverType.${runWorld.world.version.type}`)}`,
+      name: `${runWorld.world.name}`,
     })
   );
 
   // サーバーを起動
-  mainStore.startedWorld(runWorld.id);
-  const res = await window.API.invokeRunWorld(runWorld.id);
+  updateBackWorld(runWorld.world.id);
+  const res = await window.API.invokeRunWorld(runWorld.world.id);
 
   // サーバー終了時のエラー確認
   checkError(
     res.value,
-    (w) => mainStore.updateWorld(w),
+    (w) => updateWorld(w),
     (e) => tError(e)
   );
 
   // サーバータブをリセット
-  consoleStore.initTab(runWorld.id, true);
-  mainStore.removeWorldIP(runWorld.id);
+  consoleStore.initTab(runWorld.world.id, true);
+  mainStore.removeWorldIP(runWorld.world.id);
 }

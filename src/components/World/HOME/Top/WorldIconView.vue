@@ -18,10 +18,12 @@ function openIconSelecter() {
   $q.dialog({
     component: IconSelectView,
     componentProps: {
-      img: mainStore.world.avater_path,
+      img: mainStore.world?.avater_path,
     } as IconSelectProp,
   }).onOk((p: IconSelectReturn) => {
-    mainStore.world.avater_path = p.img;
+    if (mainStore.world?.avater_path) {
+      mainStore.world.avater_path = p.img;
+    }
   });
 }
 </script>
@@ -30,13 +32,13 @@ function openIconSelecter() {
   <div class="column q-pt-md">
     <q-avatar square size="10rem">
       <q-img
-        :src="mainStore.world.avater_path ?? assets.png.unset"
+        :src="mainStore.world?.avater_path ?? assets.png.unset"
         style="image-rendering: pixelated"
       />
       <q-btn
         dense
         flat
-        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+        :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
         @click="openIconSelecter"
         class="absolute-center fit"
       />
@@ -45,7 +47,7 @@ function openIconSelecter() {
     <SsBtn
       :label="$t('home.icon')"
       width="10rem"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       @click="openIconSelecter"
       class="q-mt-lg"
     />

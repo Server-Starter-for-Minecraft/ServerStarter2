@@ -19,7 +19,7 @@ const consoleStore = useConsoleStore();
 const remoteURL = `https://github.com/${prop.remote.folder.owner}/${prop.remote.folder.repo}/tree/${prop.remote.name}`;
 
 function deleteRemoteSetting() {
-  if (mainStore.world.remote !== void 0) {
+  if (mainStore.world?.remote !== void 0) {
     sysStore.systemSettings.remote.splice(
       sysStore.systemSettings.remote
         .map((r) => r.folder)
@@ -51,11 +51,12 @@ function deleteRemoteSetting() {
       )[0]
     "
     :world-name="remote.name"
-    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     style="width: max-content"
   />
 
   <DangerView
+    v-if="mainStore.world"
     :view-title="$t('shareWorld.existRemote.unregister.unregistSyncTitle')"
     :view-desc="
       $t('shareWorld.existRemote.unregister.unregistSyncDesc', {
@@ -68,7 +69,7 @@ function deleteRemoteSetting() {
     "
     :dialog-title="$t('shareWorld.existRemote.unregister.dialogTitle')"
     :dialog-desc="$t('shareWorld.existRemote.unregister.dialogDesc')"
-    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     @action="mainStore.world.remote = undefined"
   />
 

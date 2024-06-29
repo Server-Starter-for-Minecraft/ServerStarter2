@@ -40,7 +40,7 @@ function createViewMap(viewType: ViewStyleSetting['player']) {
  * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す
  */
 function hasPlayerInWorld(playerUUID?: PlayerUUID) {
-  if (isValid(mainStore.world.players)) {
+  if (mainStore.world && isValid(mainStore.world.players)) {
     return mainStore.world.players.some((wp) => wp.uuid === playerUUID);
   } else {
     return false;
@@ -94,7 +94,7 @@ function onChangedView() {
 
     <div class="row">
       <PlayerJoinToggle
-        v-if="isValid(mainStore.world.properties)"
+        v-if="mainStore.world && isValid(mainStore.world.properties)"
         v-model="mainStore.world.properties"
         class="col"
       />

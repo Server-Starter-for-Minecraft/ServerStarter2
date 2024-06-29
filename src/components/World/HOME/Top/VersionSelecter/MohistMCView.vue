@@ -37,6 +37,14 @@ function buildMohistVer(id: string, build: mohistBuildType) {
     number: build.number,
   };
 }
+/**
+ * ワールドオブジェクトのバージョン情報を書き換える
+ */
+function updateWorldVersion(id: string, build: mohistBuildType) {
+  if (mainStore.world?.version) {
+    mainStore.world.version = buildMohistVer(id, build);
+  }
+}
 
 const mohistVers = () => {
   return prop.versionData.map((ver) => ver.id);
@@ -44,10 +52,10 @@ const mohistVers = () => {
 const mohistVer = computed({
   get: () => {
     // 前のバージョンがMohistに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (mohistVers().indexOf(mainStore.world.version.id) === -1) {
+    if (mohistVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
       return mohistVers()[0];
     }
-    return mainStore.world.version.id;
+    return mainStore.world?.version.id ?? '';
   },
   set: (val) => {
     const newVer = buildMohistVer(val, mohistBuilds(val)[0]);
@@ -74,7 +82,7 @@ const mohistBuilds = (mVer: string) => {
 const mohistBuild = computed({
   get: () => {
     // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
-    if (mainStore.world.version.type !== 'mohistmc') {
+    if (mainStore.world?.version.type !== 'mohistmc') {
       return mohistBuilds(mohistVer.value)[0];
     }
     return {
@@ -83,12 +91,12 @@ const mohistBuild = computed({
     };
   },
   set: (val) => {
-    mainStore.world.version = buildMohistVer(mohistVer.value, val);
+    updateWorldVersion(mohistVer.value, val);
   },
 });
 
 // 表示内容と内部データを整合させる
-mainStore.world.version = buildMohistVer(mohistVer.value, mohistBuild.value);
+updateWorldVersion(mohistVer.value, mohistBuild.value);
 </script>
 
 <template>
@@ -107,7 +115,7 @@ mainStore.world.version = buildMohistVer(mohistVer.value, mohistBuild.value);
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />
@@ -127,7 +135,7 @@ mainStore.world.version = buildMohistVer(mohistVer.value, mohistBuild.value);
       :label="$t('home.version.buildNumber') + $t('home.version.notChange')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 10rem"
     />

@@ -57,6 +57,7 @@ const useSystemSettingsStore = defineStore('systemSettingsStore', {
           players: state.backSystemSettings.player.players,
         },
         user: state.backSystemSettings.user,
+        system: state.backSystemSettings.system,
       };
     },
   },

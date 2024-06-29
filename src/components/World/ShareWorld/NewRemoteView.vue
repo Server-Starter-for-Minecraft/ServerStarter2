@@ -50,7 +50,7 @@ async function registerRemoteAccount(remoteData: RemoteFolder) {
     >
       <GithubCard
         v-model="sysStore.systemSettings.remote[n - 1]"
-        :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+        :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
         @register-click="registerRemoteAccount"
       />
     </div>

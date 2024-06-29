@@ -7,6 +7,7 @@ import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { updateWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
@@ -32,8 +33,12 @@ const isWorldContainerLoading = ref(false);
  * ワールドコンテナをセットする際に、データの移動を待機する
  */
 async function setWorldContainer(container: WorldContainer) {
+  if (!mainStore.world) {
+    return;
+  }
+
   // エラーの起きているワールドということにしてワールドの起動を阻止する
-  mainStore.errorWorlds.add(mainStore.world.id);
+  mainStore.errorWorlds.add(mainStore.selectedWorldID);
   isWorldContainerLoading.value = true;
 
   const world = deepcopy(mainStore.world);
@@ -43,7 +48,7 @@ async function setWorldContainer(container: WorldContainer) {
   const res = await window.API.invokeSetWorld(toRaw(world));
   checkError(
     res.value,
-    (w) => mainStore.updateWorld(w),
+    (w) => updateWorld(w),
     (e) => tError(e)
   );
 
@@ -57,7 +62,7 @@ async function setWorldContainer(container: WorldContainer) {
  */
 async function openWorldFolder() {
   const res = await window.API.sendOpenFolder(
-    mainStore.noSubscribeWorld.container,
+    mainStore.readonlyWorld.world.container,
     false
   );
   checkError(res, undefined, (e) => tError(e));
@@ -86,7 +91,7 @@ function openFolderEditor() {
 
   <div class="row q-gutter-x-md">
     <SsSelectScope
-      v-model="mainStore.noSubscribeWorld.container"
+      v-model="mainStore.readonlyWorld.world.container"
       @update:model-value="(newVal: WorldContainer) => setWorldContainer(newVal)"
       :options="selecterOptions()"
       option-label="label"
@@ -94,7 +99,7 @@ function openFolderEditor() {
       :loading="isWorldContainerLoading"
       :disable="
         isWorldContainerLoading ||
-        consoleStore.status(mainStore.world.id) !== 'Stop'
+        consoleStore.status(mainStore.selectedWorldID) !== 'Stop'
       "
       class="col"
     >
@@ -111,7 +116,7 @@ function openFolderEditor() {
     <q-btn
       outline
       icon="folder_open"
-      :disable="mainStore.noSubscribeWorld.container === 'servers'"
+      :disable="mainStore.readonlyWorld.world.container === 'servers'"
       @click="openWorldFolder()"
     >
       <SsTooltip

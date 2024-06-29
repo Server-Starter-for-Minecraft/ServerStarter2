@@ -30,15 +30,15 @@ const mainStore = useMainStore();
 const contentsStore = useContentsStore();
 
 function addContent() {
-  (mainStore.world.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(
-    prop.content
-  );
+  (
+    mainStore.world?.additional[`${prop.contentType}s`] as AllFileData<T>[]
+  ).push(prop.content);
 }
 
 function deleteContent() {
   function __delete() {
-    mainStore.world.additional[`${prop.contentType}s`].splice(
-      mainStore.world.additional[`${prop.contentType}s`]
+    mainStore.world?.additional[`${prop.contentType}s`].splice(
+      mainStore.world?.additional[`${prop.contentType}s`]
         .map((c) => c.name)
         .indexOf(prop.content.name),
       1

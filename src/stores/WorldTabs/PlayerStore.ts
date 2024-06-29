@@ -83,7 +83,7 @@ export const usePlayerStore = defineStore('playerStore', {
         this.focusCards.add(uuid);
       } else {
         const mainStore = useMainStore();
-        if (isValid(mainStore.world.players)) {
+        if (mainStore.world && isValid(mainStore.world.players)) {
           mainStore.world.players.forEach((p) => this.focusCards.add(p.uuid));
         }
       }
@@ -98,7 +98,7 @@ export const usePlayerStore = defineStore('playerStore', {
       if (groupObj === void 0) return;
       const groupMembers = groupObj.players;
 
-      if (isValid(mainStore.world.players)) {
+      if (mainStore.world && isValid(mainStore.world.players)) {
         const worldPlayers = mainStore.world.players;
         const notRegisteredMembers = groupMembers.filter(
           (mUUID) => !worldPlayers.some((p) => p.uuid === mUUID)
@@ -123,7 +123,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // プレイヤーをワールドに追加
       // TODO: 実装の最適化（PlayersをSet型にする？）
-      if (isValid(mainStore.world.players)) {
+      if (mainStore.world && isValid(mainStore.world.players)) {
         if (!mainStore.world.players.find((p) => p.uuid === player.uuid)) {
           mainStore.world.players.push(player);
         }
@@ -149,7 +149,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // フォーカスされているプレイヤーを削除
       this.focusCards.forEach((selectedPlayerUUID) => {
-        if (isValid(mainStore.world.players)) {
+        if (mainStore.world && isValid(mainStore.world.players)) {
           mainStore.world.players.splice(
             mainStore.world.players
               .map((p) => p.uuid)
@@ -202,7 +202,7 @@ export const usePlayerStore = defineStore('playerStore', {
     setOP(setVal: 0 | OpLevel) {
       const mainStore = useMainStore();
 
-      if (isValid(mainStore.world.players)) {
+      if (mainStore.world && isValid(mainStore.world.players)) {
         const val =
           setVal !== 0
             ? { level: setVal, bypassesPlayerLimit: false }

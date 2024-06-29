@@ -9,7 +9,7 @@ import StopView from 'src/components/World/Console/StopView.vue';
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 // ワールドタブを選択せずにこの画面に到達した場合にStatusなどをセットする
-consoleStore.initTab(mainStore.world.id);
+consoleStore.initTab(mainStore.selectedWorldID);
 </script>
 
 <template>

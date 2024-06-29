@@ -29,7 +29,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isValid(mainStore.world.players)" class="column fit">
+  <div
+    v-if="mainStore.world && isValid(mainStore.world.players)"
+    class="column fit"
+  >
     <div class="row full-height q-gutter-x-md">
       <CardView
         v-if="sysStore.systemSettings.user.viewStyle.player === 'card'"
@@ -46,6 +49,7 @@ onUnmounted(() => {
     <div class="absolute-center">
       <p>{{ $t('player.failed') }}</p>
       <SsBtn
+        v-if="mainStore.world"
         :label="$t('player.resetPlayerSettings')"
         color="primary"
         @click="mainStore.world.players = []"

@@ -23,7 +23,7 @@ function onClick() {
   }).onOk((p: NgrokDialogReturns) => {
     sysStore.systemSettings.user.ngrokToken = p.token;
     if (p.isAllUesNgrok) {
-      mainStore.processAllWorld((w) => (w.ngrok_setting.use_ngrok = true));
+      mainStore.allWorlds.update((w) => (w.ngrok_setting.use_ngrok = true));
     }
   });
 }
@@ -54,7 +54,7 @@ function onClick() {
     />
 
     <q-toggle
-      v-if="isUseNgrok()"
+      v-if="mainStore.world && isUseNgrok()"
       v-model="mainStore.world.ngrok_setting.use_ngrok"
       :label="
         $t(

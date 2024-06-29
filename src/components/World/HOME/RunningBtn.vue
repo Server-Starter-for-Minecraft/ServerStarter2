@@ -29,12 +29,12 @@ function stopButtonState() {
 
 <template>
   <ss-btn
-    v-if="consoleStore.status(mainStore.world.id) !== 'Running'"
+    v-if="consoleStore.status(mainStore.selectedWorldID) !== 'Running'"
     free-width
     color="primary"
     :disable="
-      mainStore.errorWorlds.has(mainStore.world.id) ||
-      consoleStore.status(mainStore.world.id) !== 'Stop'
+      mainStore.errorWorlds.has(mainStore.selectedWorldID) ||
+      consoleStore.status(mainStore.selectedWorldID) !== 'Stop'
     "
     :to="to"
     @click="runServer"
@@ -63,7 +63,7 @@ function stopButtonState() {
     >
       <SsI18nT keypath="console.boot">
         &nbsp;
-        <span class="text-omit col">{{ mainStore.world.name }}</span> &nbsp;
+        <span class="text-omit col">{{ mainStore.world?.name }}</span> &nbsp;
       </SsI18nT>
     </span>
   </ss-btn>
@@ -90,7 +90,7 @@ function stopButtonState() {
       <SsI18nT keypath="console.reboot.progressWithName">
         &nbsp;
         <span class="text-omit col">
-          {{ mainStore.world.name }}
+          {{ mainStore.world?.name }}
         </span>
         &nbsp;
       </SsI18nT>
@@ -121,7 +121,7 @@ function stopButtonState() {
       <SsI18nT :keypath="stopButtonState()">
         &nbsp;
         <span class="text-omit col">
-          {{ mainStore.world.name }}
+          {{ mainStore.world?.name }}
         </span>
         &nbsp;
       </SsI18nT>

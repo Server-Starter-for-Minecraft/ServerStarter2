@@ -5,6 +5,7 @@ import {
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
+import { VersionType } from 'app/src-electron/schema/version';
 import { isContentsExists } from 'src/components/World/Contents/contentsPage';
 import { useMainStore } from '../MainStore';
 
@@ -20,11 +21,8 @@ export const useContentsStore = defineStore('contentsStore', {
     /**
      * 追加コンテンツページで表示するコンテンツの種類
      */
-    getShowingContentPage() {
-      const mainStore = useMainStore();
-      this.selectedTab = isContentsExists[mainStore.world.version.type][
-        this.selectedTab
-      ]
+    getShowingContentPage(vType: VersionType) {
+      this.selectedTab = isContentsExists[vType][this.selectedTab]
         ? this.selectedTab
         : 'datapack';
       return this.selectedTab;

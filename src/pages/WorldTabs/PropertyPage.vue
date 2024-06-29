@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { isValid } from 'app/src-public/scripts/error';
+import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { isValid } from 'src/scripts/error';
-import { fromEntries, toEntries } from 'src/scripts/obj';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -45,7 +45,7 @@ function resetAll() {
     } as dangerDialogProp,
   }).onOk(() => {
     Object.keys(sysStore.systemSettings.world.properties).map((key) => {
-      if (isValid(mainStore.world.properties)) {
+      if (mainStore.world && isValid(mainStore.world.properties)) {
         mainStore.world.properties[key] =
           sysStore.systemSettings.world.properties[key];
       }
@@ -63,7 +63,10 @@ function scrollTop() {
 
 <template>
   <div class="mainField">
-    <div v-if="isValid(mainStore.world.properties)" class="column fit">
+    <div
+      v-if="mainStore.world && isValid(mainStore.world.properties)"
+      class="column fit"
+    >
       <div class="row q-py-md">
         <SsInput
           dense
@@ -105,6 +108,7 @@ function scrollTop() {
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
         <SsBtn
+          v-if="mainStore.world"
           :label="$t('property.reset')"
           color="primary"
           @click="mainStore.world.properties = initProperty"
