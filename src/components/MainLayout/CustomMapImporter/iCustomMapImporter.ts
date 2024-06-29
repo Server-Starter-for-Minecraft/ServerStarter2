@@ -5,8 +5,8 @@ import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import { createNewWorld, updateWorld } from 'src/stores/WorldStore';
+import { checkError } from 'src/components/Error/Error';
 
 export interface CustomMapImporterProp {
   icon?: ImageURI;
@@ -26,10 +26,10 @@ export async function importCustomMap(customMap: CustomMapData) {
   // ready world object
   await createNewWorld();
   const world = deepcopy(mainStore.world);
-  
+
   if (world) {
     world.custom_map = toRaw(customMap);
-  
+
     // save data
     const res = await window.API.invokeSetWorld(toRaw(world));
     checkError(

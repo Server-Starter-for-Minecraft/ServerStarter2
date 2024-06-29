@@ -2,10 +2,10 @@
 import { useRouter } from 'vue-router';
 import { keys } from 'app/src-public/scripts/obj/obj';
 import { useMainStore } from 'src/stores/MainStore';
-import HeaderView from 'src/components/World/HeaderView.vue';
-import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 import FailedLoadingView from 'src/components/World/FailedLoadingView.vue';
+import HeaderView from 'src/components/World/HeaderView.vue';
 import LoadingView from 'src/components/World/LoadingView.vue';
+import SettingTabsView from 'src/components/World/SettingTabsView.vue';
 
 const router = useRouter();
 const mainStore = useMainStore();

@@ -15,9 +15,9 @@ const { t } = useI18n();
  */
 async function validateWorldName(name: WorldName) {
   if (!mainStore.world) {
-    return true
+    return true;
   }
-  
+
   const res = await window.API.invokeValidateNewWorldName(
     mainStore.world.container,
     name

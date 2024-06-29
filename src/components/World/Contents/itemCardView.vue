@@ -30,9 +30,9 @@ const mainStore = useMainStore();
 const contentsStore = useContentsStore();
 
 function addContent() {
-  (mainStore.world?.additional[`${prop.contentType}s`] as AllFileData<T>[]).push(
-    prop.content
-  );
+  (
+    mainStore.world?.additional[`${prop.contentType}s`] as AllFileData<T>[]
+  ).push(prop.content);
 }
 
 function deleteContent() {

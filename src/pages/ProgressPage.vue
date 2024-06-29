@@ -14,7 +14,9 @@ const progressStore = useProgressStore();
         {{ progressStore.getProgress(mainStore.selectedWorldID).title }}
       </h1>
       <ProgressView
-        :progress="progressStore.getProgress(mainStore.selectedWorldID)?.progress"
+        :progress="
+          progressStore.getProgress(mainStore.selectedWorldID)?.progress
+        "
       />
     </div>
   </div>
