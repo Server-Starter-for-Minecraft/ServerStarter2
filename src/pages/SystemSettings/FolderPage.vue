@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { getWorlds, registAbbr } from 'src/init';
+import { getWorlds } from 'src/init';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { registAbbrWorld } from 'src/stores/WorldStore';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
@@ -29,7 +30,7 @@ function openFolderEditor() {
 
 async function loadFolderWorlds(container: WorldContainer) {
   const abbrs = await window.API.invokeGetWorldAbbrs(container);
-  registAbbr(abbrs.value);
+  abbrs.value.forEach((abbr) => registAbbrWorld(abbr));
   getWorlds(abbrs.value.map((abbr) => abbr.id));
 }
 </script>
