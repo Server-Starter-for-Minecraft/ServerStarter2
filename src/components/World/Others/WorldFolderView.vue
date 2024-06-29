@@ -62,7 +62,7 @@ async function setWorldContainer(container: WorldContainer) {
  */
 async function openWorldFolder() {
   const res = await window.API.sendOpenFolder(
-    mainStore.noSubscribeWorld.container,
+    mainStore.readonlyWorld.world.container,
     false
   );
   checkError(res, undefined, (e) => tError(e));
@@ -91,7 +91,7 @@ function openFolderEditor() {
 
   <div class="row q-gutter-x-md">
     <SsSelectScope
-      v-model="mainStore.noSubscribeWorld.container"
+      v-model="mainStore.readonlyWorld.world.container"
       @update:model-value="(newVal: WorldContainer) => setWorldContainer(newVal)"
       :options="selecterOptions()"
       option-label="label"
@@ -99,7 +99,7 @@ function openFolderEditor() {
       :loading="isWorldContainerLoading"
       :disable="
         isWorldContainerLoading ||
-        consoleStore.status(mainStore.world.id) !== 'Stop'
+        consoleStore.status(mainStore.selectedWorldID) !== 'Stop'
       "
       class="col"
     >
@@ -116,7 +116,7 @@ function openFolderEditor() {
     <q-btn
       outline
       icon="folder_open"
-      :disable="mainStore.noSubscribeWorld.container === 'servers'"
+      :disable="mainStore.readonlyWorld.world.container === 'servers'"
       @click="openWorldFolder()"
     >
       <SsTooltip

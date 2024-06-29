@@ -83,7 +83,7 @@ export const usePlayerStore = defineStore('playerStore', {
         this.focusCards.add(uuid);
       } else {
         const mainStore = useMainStore();
-        if (isValid(mainStore.world.players)) {
+        if (mainStore.world && isValid(mainStore.world.players)) {
           mainStore.world.players.forEach((p) => this.focusCards.add(p.uuid));
         }
       }
@@ -149,7 +149,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // フォーカスされているプレイヤーを削除
       this.focusCards.forEach((selectedPlayerUUID) => {
-        if (isValid(mainStore.world.players)) {
+        if (mainStore.world && isValid(mainStore.world.players)) {
           mainStore.world.players.splice(
             mainStore.world.players
               .map((p) => p.uuid)
@@ -202,7 +202,7 @@ export const usePlayerStore = defineStore('playerStore', {
     setOP(setVal: 0 | OpLevel) {
       const mainStore = useMainStore();
 
-      if (isValid(mainStore.world.players)) {
+      if (mainStore.world && isValid(mainStore.world.players)) {
         const val =
           setVal !== 0
             ? { level: setVal, bypassesPlayerLimit: false }

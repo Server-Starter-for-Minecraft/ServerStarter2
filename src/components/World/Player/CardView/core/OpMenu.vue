@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { isValid } from 'app/src-public/scripts/error';
 import { OpLevel, OpSetting } from 'app/src-electron/schema/player';
-import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { assets } from 'src/assets/assets';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -14,12 +13,15 @@ const consoleStore = useConsoleStore();
 
 const isValidBtn = (opLevel: 0 | OpLevel) => {
   // 権限無し or サーバー起動前なら設定可能
-  if (opLevel === 0 || consoleStore.status(mainStore.world.id) === 'Stop') {
+  if (
+    opLevel === 0 ||
+    consoleStore.status(mainStore.selectedWorldID) === 'Stop'
+  ) {
     return true;
   }
 
   // サーバー起動中は`op-permission-level`のLevelのみ設定可能
-  if (isValid(mainStore.world.properties)) {
+  if (mainStore.world && isValid(mainStore.world.properties)) {
     return mainStore.world.properties['op-permission-level'] === opLevel;
   }
 
@@ -29,7 +31,7 @@ const isValidBtn = (opLevel: 0 | OpLevel) => {
 
 function setOP(setVal: 0 | OpLevel) {
   function setter(setVal?: OpSetting) {
-    if (isValid(mainStore.world.players)) {
+    if (mainStore.world && isValid(mainStore.world.players)) {
       mainStore.world.players
         .filter((p) => playerStore.focusCards.has(p.uuid))
         .forEach((p) => {
@@ -51,7 +53,7 @@ function setOP(setVal: 0 | OpLevel) {
 function removePlayer() {
   // フォーカスされているプレイヤーを削除
   playerStore.focusCards.forEach((selectedPlayerUUID) => {
-    if (isValid(mainStore.world.players)) {
+    if (mainStore.world && isValid(mainStore.world.players)) {
       mainStore.world.players.splice(
         mainStore.world.players.map((p) => p.uuid).indexOf(selectedPlayerUUID),
         1

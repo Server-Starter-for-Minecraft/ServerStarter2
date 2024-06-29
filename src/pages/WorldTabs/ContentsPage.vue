@@ -11,7 +11,9 @@ const contentsStore = useContentsStore();
   <q-scroll-area class="full-height" style="flex: 1 1 0">
     <ContentsView
       v-if="mainStore.world"
-      :content-type="contentsStore.getShowingContentPage(mainStore.world.version.type)"
+      :content-type="
+        contentsStore.getShowingContentPage(mainStore.world.version.type)
+      "
     />
   </q-scroll-area>
 </template>

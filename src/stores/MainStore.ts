@@ -79,14 +79,6 @@ export const useMainStore = defineStore('mainStore', {
       };
     },
     /**
-     * 通常のworldと異なり，内部データを変更してもSetWorldが呼び出されない
-     * 遅延評価でWorldデータを手動で更新する際に利用できる
-     */
-    noSubscribeWorld(state) {
-      const worldStore = useWorldStore();
-      return deepcopy(worldStore.worldList[state.selectedWorldID]);
-    },
-    /**
      * バージョンダウンの警告ダイアログのような，
      * 以前のデータとの比較が必要な処理への利用を想定する
      */
