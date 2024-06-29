@@ -71,7 +71,7 @@ export const useMainStore = defineStore('mainStore', {
         readonlyWorlds: deepcopy(__getWorldList()),
         filteredWorlds: (searchText?: string) => {
           const wList = filterSearchingText(
-            __getWorldList(),
+            filterWorldContainer(__getWorldList()),
             searchText ?? state.worldSearchText
           );
           return sortWorldList(wList);
@@ -135,6 +135,21 @@ function sortWorldList(wList: WorldList) {
       return 0;
     }
   });
+}
+
+/**
+ * コンテナの設定に基づいて表示するワールドをフィルタ
+ */
+function filterWorldContainer(wList: WorldList) {
+  const sysStore = useSystemStore();
+  const visibleContainers = new Set(
+    sysStore.systemSettings.container
+      .filter((c) => c.visible)
+      .map((c) => c.container)
+  );
+  return recordValueFilter(wList, (w) =>
+    visibleContainers.has(w.world.container)
+  );
 }
 
 /**
