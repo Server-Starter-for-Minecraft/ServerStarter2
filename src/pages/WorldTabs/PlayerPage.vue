@@ -1,189 +1,47 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
-import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { onMounted, onUnmounted } from 'vue';
+import Mousetrap from 'mousetrap';
 import { isValid } from 'app/src-public/scripts/error';
-import { strSort } from 'app/src-public/scripts/obj/objSort';
-import { sortRecord } from 'app/src-public/scripts/obj/objSort';
-import { PlayerGroup, PlayerSetting } from 'app/src-electron/schema/player';
 import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SsInput from 'src/components/util/base/ssInput.vue';
-import GroupCardView from 'src/components/World/Player/GroupCardView.vue';
-import GroupEditorView from 'src/components/World/Player/GroupEditorView.vue';
-import OpSetterView from 'src/components/World/Player/OpSetterView.vue';
-import PlayerCardView from 'src/components/World/Player/PlayerCardView.vue';
-import PlayerJoinToggleView from 'src/components/World/Player/PlayerJoinToggleView.vue';
-import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
-import SelectedPlayersView from 'src/components/World/Player/SelectedPlayersView.vue';
+import CardView from 'src/components/World/Player/CardView.vue';
+import ListView from 'src/components/World/Player/ListView.vue';
 
+const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
-// ページを読み込んだ時に検索欄をリセット
-playerStore.searchName = '';
+onMounted(() => {
+  Mousetrap.bind('backspace', () => playerStore.removePlayer());
+  Mousetrap.bind('ctrl+a', () => playerStore.addFocus());
+  Mousetrap.bind('del', () => playerStore.removePlayer());
+  Mousetrap.bind('esc', () => playerStore.unFocus());
+});
 
-const orderTypes = ['name', 'op'] as const;
-const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
-function playerSortFunc(
-  orderType: (typeof orderTypes)[number]
-): (a: PlayerSetting, b: PlayerSetting) => number {
-  switch (orderType) {
-    case 'name':
-      return (a: PlayerSetting, b: PlayerSetting) => strSort(a.name, b.name);
-    case 'op':
-      return (a: PlayerSetting, b: PlayerSetting) => {
-        return (b.op?.level ?? 0) - (a.op?.level ?? 0);
-      };
-  }
-}
-
-function openGroupEditor(group?: PlayerGroup) {
-  // 情報を登録
-  if (group === void 0) {
-    playerStore.selectedGroup = {
-      name: '',
-      color: '#ffffff',
-      players: Array.from(playerStore.focusCards),
-      isNew: true,
-    };
-    playerStore.selectedGroupName = '';
-  } else {
-    playerStore.focusCards = new Set(group.players);
-    playerStore.selectedGroup = deepcopy(
-      Object.assign(group, { isNew: false })
-    );
-    playerStore.selectedGroupName = group.name;
-  }
-
-  // Editorを開く
-  playerStore.openGroupEditor = true;
-}
+onUnmounted(() => {
+  Mousetrap.unbind('backspace');
+  Mousetrap.unbind('ctrl+a');
+  Mousetrap.unbind('del');
+  Mousetrap.unbind('esc');
+});
 </script>
 
 <template>
   <div
     v-if="mainStore.world && isValid(mainStore.world.players)"
-    class="column fit q-px-md"
+    class="column fit"
   >
-    <div class="row full-height">
-      <q-scroll-area class="full-height" style="flex: 1 1 0">
-        <p class="q-pt-md text-body2" style="opacity: 0.6">
-          {{ $t('player.description') }}
-        </p>
-
-        <div class="row items-center q-gutter-x-md q-pb-md">
-          <SsInput
-            v-model="playerStore.searchName"
-            dense
-            :placeholder="$t('player.search')"
-            :debounce="200"
-            class="col"
-          />
-          <q-btn-group push>
-            <q-btn
-              outline
-              no-caps
-              :label="$t('player.order.name')"
-              :color="playerOrder === 'name' ? 'primary' : ''"
-              @click="playerOrder = 'name'"
-            />
-            <q-btn
-              outline
-              no-caps
-              :label="$t('player.order.op')"
-              :color="playerOrder === 'op' ? 'primary' : ''"
-              @click="playerOrder = 'op'"
-            />
-          </q-btn-group>
-        </div>
-
-        <PlayerJoinToggleView
-          v-if="isValid(mainStore.world.properties)"
-          v-model="mainStore.world.properties"
-        />
-
-        <div class="q-py-md fit">
-          <div v-show="playerStore.searchName !== ''" class="q-pb-md">
-            <span class="text-caption">{{ $t('player.newPlayer') }}</span>
-            <SearchResultView
-              is-check-player-in-world
-              :register-btn-text="$t('player.addPlayer')"
-              :register-process="playerStore.addPlayer"
-            />
-          </div>
-
-          <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>
-          <div
-            v-if="mainStore.world.players.length !== 0"
-            class="row q-gutter-sm q-pa-sm"
-          >
-            <div
-              v-for="player in deepcopy(
-                playerStore.searchPlayers(mainStore.world.players)
-              ).sort(playerSortFunc(playerOrder))"
-              :key="player.uuid"
-              class="col-"
-            >
-              <PlayerCardView
-                :uuid="player.uuid"
-                :op-level="player.op?.level"
-              />
-            </div>
-          </div>
-          <div
-            v-else
-            class="full-width text-center text-h5 q-py-xl"
-            style="opacity: 0.6"
-          >
-            {{ $t('player.notRegistered') }}
-          </div>
-
-          <q-separator class="q-my-md" />
-
-          <span class="text-caption">{{ $t('player.groupList') }}</span>
-          <div class="row q-pa-sm">
-            <div class="row q-gutter-sm col-">
-              <div>
-                <AddContentsCard
-                  :label="$t('player.makeGroup')"
-                  min-height="100px"
-                  @click="() => openGroupEditor()"
-                />
-              </div>
-              <div
-                v-for="group in sortRecord(playerStore.searchGroups())"
-                :key="group.name"
-              >
-                <GroupCardView
-                  :name="group.name"
-                  :color="group.color"
-                  :players="group.players"
-                  @edit="() => openGroupEditor(group)"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </q-scroll-area>
-
-      <div class="column q-ml-md">
-        <!-- グループ設定は動的に読み込む -->
-        <GroupEditorView
-          v-if="playerStore.openGroupEditor"
-          :is="playerStore.openGroupEditor"
-          class="q-my-md"
-        />
-        <OpSetterView
-          v-if="
-            !playerStore.openGroupEditor && isValid(mainStore.world.properties)
-          "
-          :valid-properties="mainStore.world.properties"
-          class="q-my-md"
-        />
-        <SelectedPlayersView />
-      </div>
+    <div class="row full-height q-gutter-x-md">
+      <CardView
+        v-if="sysStore.systemSettings.user.viewStyle.player === 'card'"
+        v-model="mainStore.world.players"
+      />
+      <ListView
+        v-if="sysStore.systemSettings.user.viewStyle.player === 'list'"
+        v-model="mainStore.world.players"
+      />
     </div>
   </div>
 

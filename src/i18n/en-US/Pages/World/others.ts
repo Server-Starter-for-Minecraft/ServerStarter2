@@ -20,7 +20,9 @@ export const enOthers: MessageSchema['others'] = {
   worldFolder: {
     title: 'World folder',
     description: 'Select your folder to save world data',
-    addFolder: 'Add world folder',
+    addFolder: 'Add the world folder',
+    openFolder: 'Open the world folder',
+    openSettings: "Open world folder's settings",
     updateFolder: 'Update world folder',
     add: 'Add a new World folder',
     addBtn: 'Add {0}{1}',

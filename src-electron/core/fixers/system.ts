@@ -6,6 +6,7 @@ import {
   SystemSettings,
   SystemSystemSetting,
   SystemUserSetting,
+  ViewStyleSetting,
   WorldContainerSetting,
 } from 'app/src-electron/schema/system';
 import { genUUID } from 'app/src-electron/tools/uuid';
@@ -33,6 +34,14 @@ export const fixLocale = defaultGetterFixer(
   getDefaultLocale
 );
 
+export const fixViewStyleSetting = objectFixer<ViewStyleSetting>(
+  {
+    player: literalFixer(['list', 'card'], 'list'),
+    contents: literalFixer(['list', 'card'], 'list'),
+  },
+  true
+);
+
 export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
   {
     // ServerStarterの利用規約同意状況
@@ -53,6 +62,8 @@ export const fixSystemUserSetting = objectFixer<SystemUserSetting>(
     drawerWidth: numberFixer(300),
     // NgrokのToken情報
     ngrokToken: optionalFixer(stringFixer()),
+    // 画面の表示形式を list or card で選択
+    viewStyle: fixViewStyleSetting,
   },
   true
 );

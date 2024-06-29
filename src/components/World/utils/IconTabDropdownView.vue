@@ -72,8 +72,8 @@ function btnClicked(btn: DropBtn) {
     <SsTooltip
       v-if="!($q.screen.gt.md || $route.path.slice(0, 9) === '/contents')"
       :name="label"
-      anchor="center middle"
-      self="top middle"
+      anchor="bottom middle"
+      self="center middle"
     />
   </div>
 </template>

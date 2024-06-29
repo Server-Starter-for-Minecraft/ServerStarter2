@@ -7,7 +7,7 @@ export const parse = (text: string) => {
     str = str.replaceAll('\\\\', '\\');
     return str;
   };
-  text.split('\n').forEach((line) => {
+  text.split(/\n|\r/).forEach((line) => {
     if (line.startsWith('#') || line.startsWith('!')) return;
     const match = line.matchAll(/(?<!\\)[=:]/g);
     const matcharray: RegExpExecArray[] = Array.from(match);
@@ -49,6 +49,8 @@ if (import.meta.vitest) {
   test('parsetest', () => {
     expect(parse('a=b')).toEqual({ a: 'b' });
     expect(parse('a=b\nc=d')).toEqual({ a: 'b', c: 'd' });
+    expect(parse('a=b\r\nc=d')).toEqual({ a: 'b', c: 'd' });
+    expect(parse('a=b\rc=d')).toEqual({ a: 'b', c: 'd' });
     expect(parse('a=b=c')).toEqual({});
     expect(parse('a=b=c\nd=e')).toEqual({ d: 'e' });
     expect(parse('a=b\n#c=d')).toEqual({ a: 'b' });

@@ -6,3 +6,5 @@
 .eslintrc.js
 /src-ssr
 *.config.js
+/__mocks__
+/src/assets/assets.ts

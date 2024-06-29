@@ -8,20 +8,27 @@ import { useMainStore } from 'src/stores/MainStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import OpLevelBtn from 'src/components/World/Player/utils/OpLevelBtn.vue';
 
-interface Prop {
-  validProperties: ServerProperties;
-}
-defineProps<Prop>();
-
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 const consoleStore = useConsoleStore();
 
+const isValidBtn = (opLevel: 0 | OpLevel) => {
+  // 権限無し or サーバー起動前なら設定可能
+  if (opLevel === 0 || consoleStore.status(mainStore.world.id) === 'Stop') {
+    return true;
+  }
+
+  // サーバー起動中は`op-permission-level`のLevelのみ設定可能
+  if (isValid(mainStore.world.properties)) {
+    return mainStore.world.properties['op-permission-level'] === opLevel;
+  }
+
+  // その他は設定不可
+  return false;
+};
+
 function setOP(setVal: 0 | OpLevel) {
   function setter(setVal?: OpSetting) {
-    if (!mainStore.world) {
-      return;
-    }
     if (isValid(mainStore.world.players)) {
       mainStore.world.players
         .filter((p) => playerStore.focusCards.has(p.uuid))
@@ -44,9 +51,6 @@ function setOP(setVal: 0 | OpLevel) {
 function removePlayer() {
   // フォーカスされているプレイヤーを削除
   playerStore.focusCards.forEach((selectedPlayerUUID) => {
-    if (!mainStore.world) {
-      return;
-    }
     if (isValid(mainStore.world.players)) {
       mainStore.world.players.splice(
         mainStore.world.players.map((p) => p.uuid).indexOf(selectedPlayerUUID),
@@ -76,10 +80,7 @@ function removePlayer() {
           :label="
             opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
           "
-          :disable="
-            consoleStore.status(mainStore.selectedWorldID) !== 'Stop' &&
-            ![validProperties['op-permission-level'], 0].includes(opLevel)
-          "
+          :disable="!isValidBtn(opLevel)"
           @click="() => setOP(opLevel)"
         />
       </template>
