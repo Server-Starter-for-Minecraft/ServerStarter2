@@ -4,6 +4,7 @@ import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
 import { sortValue } from 'app/src-public/scripts/obj/objSort';
+import { zen2han } from 'app/src-public/scripts/textUtils';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
 import {
@@ -12,7 +13,6 @@ import {
   WorldEdited,
   WorldID,
 } from 'app/src-electron/schema/world';
-import { zen2han } from 'src/scripts/textUtils';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from './SystemStore';
