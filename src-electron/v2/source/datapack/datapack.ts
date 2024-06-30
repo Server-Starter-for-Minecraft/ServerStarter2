@@ -1,5 +1,9 @@
 import { WithExists } from '../../schema/additional';
-import { DatapackInfo } from '../../schema/datapack';
+import {
+  DatapackAnnotation,
+  DatapackId,
+  DatapackInfo,
+} from '../../schema/datapack';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
@@ -13,31 +17,35 @@ export abstract class DatapackContainer {
    * @param fromCache true の時は cache.json から内容を読み取る / false の時はdataディレクトリを走査して cache.jsonの内容を更新する
    */
   abstract list(fromCache: boolean): Promise<WithExists<DatapackInfo>[]>;
+
   /**
    * データパックを作成
    *
    * メタデータのみの作成も許可
    */
   abstract create(
-    meta: DatapackInfo,
+    meta: DatapackAnnotation,
     srcPath: Path | undefined
-  ): Promise<Result<void, Error>>;
+  ): Promise<Result<DatapackId, Error>>;
 
   /**
    * メタデータを更新
    */
-  abstract updateInfo(meta: DatapackInfo): Promise<Result<void, Error>>;
+  abstract updateAnnotation(
+    datapackId: DatapackId,
+    meta: DatapackAnnotation
+  ): Promise<Result<void, Error>>;
 
   /**
    * データパックとメタデータを削除
    */
-  abstract delete(): Promise<Result<void, Error>>;
+  abstract delete(datapackId: DatapackId): Promise<Result<void, Error>>;
 
   /**
    * データパックをpathに導入
    * @param path
    */
-  abstract extractTo(mata: DatapackInfo, path: Path): Promise<Result<void>>;
+  abstract extractTo(datapackId: DatapackId, path: Path): Promise<Result<void>>;
 }
 
 // ('api/v1/container/:container_id/world/:world_id');
@@ -61,23 +69,14 @@ export abstract class DatapackContainer {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  // テスト用DatapackContainer
-  const container = new DatapackContainer(
-    new Path('src-electron/v2sourcedatapack/test/cache')
-  );
-
-  ('src-electron\v2sourcedatapack\test\target');
-
+  const { SHA1 } = await import('../../util/binary/hash');
   const { test, expect } = import.meta.vitest;
-  test('list', () => {
-    // quick の true / false 試す
-    // quick = true の時mataのデータが修復されたことを確認する
-  });
+  test('aa', async () => {
+    const p = new Path(
+      'D:\\DLocalDcument\\projects\\ServerStarter\\repos\\ServerStarter2\\src-electron\\v2\\source\\datapack\\test\\localData\\zip\\pack04.zip'
+    );
 
-  test('create', () => {
-    // create を path ありなしで試す
-    // 正しく導入されたことを確認する
+    const sha = await p.into(SHA1);
+    console.log(sha.value());
   });
-
-  test('updateMeta', () => {});
 }
