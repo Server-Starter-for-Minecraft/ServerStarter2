@@ -73,6 +73,7 @@ function stopButtonState() {
     v-else-if="consoleStore.isClickedReboot(mainStore.selectedWorldID)"
     free-width
     disable
+    @click="() => {}"
     :style="{ height: `${3 ** (textFontSize + 0.1)}rem` }"
     class="row items-center"
   >

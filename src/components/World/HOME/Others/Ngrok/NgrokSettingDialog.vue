@@ -75,7 +75,7 @@ if (!isRegisteredNgrok) {
           v-show="step !== 1 && !isRegisteredNgrok"
           flat
           free-width
-          @click="stepper?.previous()"
+          @click="() => stepper?.previous()"
           :label="$t('general.back')"
           class="q-mr-sm"
         />
@@ -89,7 +89,11 @@ if (!isRegisteredNgrok) {
           "
           color="primary"
           :disable="step === 3 && step3Model.token === ''"
-          @click="step === 3 ? onDialogOK(step3Model) : stepper?.next()"
+          @click="
+            () => {
+              return step === 3 ? onDialogOK(step3Model) : stepper?.next();
+            }
+          "
         />
       </template>
     </BaseDialogCard>

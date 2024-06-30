@@ -80,7 +80,7 @@ function deleteRemoteSetting() {
     :open-dialog-btn-text="$t('shareWorld.existRemote.delete.btn')"
     :dialog-title="$t('shareWorld.existRemote.delete.dialogTitle')"
     :dialog-desc="$t('shareWorld.existRemote.delete.dialogDesc')"
-    :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+    :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     @action="deleteRemoteSetting()"
   /> -->
 </template>
