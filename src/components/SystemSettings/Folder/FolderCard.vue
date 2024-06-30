@@ -2,7 +2,9 @@
 import { useI18n } from 'vue-i18n';
 import { getCssVar, useQuasar } from 'quasar';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
+import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { checkError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -25,6 +27,14 @@ const folder = defineModel<WorldContainerSetting>({ required: true });
 
 const $q = useQuasar();
 const sysStore = useSystemStore();
+
+/**
+ * エクスプローラーでワールドフォルダを開く
+ */
+async function openWorldFolder() {
+  const res = await window.API.sendOpenFolder(folder.value.container, false);
+  checkError(res, undefined, (e) => tError(e));
+}
 
 function switchVisible() {
   folder.value.visible = !folder.value.visible;
@@ -104,6 +114,20 @@ function removeFolder() {
     </q-item>
 
     <div class="absolute-center-right block row q-gutter-x-sm q-pr-md">
+      <SsBtn
+        dense
+        free-width
+        icon="folder_open"
+        :disable="folder.name === 'default'"
+        @click="openWorldFolder()"
+      >
+        <SsTooltip
+          :name="$t('others.worldFolder.openFolder')"
+          anchor="bottom middle"
+          self="center middle"
+        />
+      </SsBtn>
+
       <ss-btn
         dense
         free-width
@@ -126,8 +150,8 @@ function removeFolder() {
               ? $t('systemsetting.folder.tooltipVisible')
               : $t('systemsetting.folder.tooltipInvisible')
           "
-          anchor="center middle"
-          self="top middle"
+          anchor="bottom middle"
+          self="center middle"
         />
       </ss-btn>
       <ss-btn

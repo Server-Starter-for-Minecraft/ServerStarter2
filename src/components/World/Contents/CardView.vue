@@ -34,10 +34,10 @@ const consoleStore = useConsoleStore();
 /**
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
  */
-function getNewContents(worldContents: AllFileData<T>[]) {
+function getNewContents(worldContents?: AllFileData<T>[]) {
   return (
     sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]
-  ).filter((c) => !worldContents.map((wc) => wc.name).includes(c.name));
+  ).filter((c) => !worldContents?.map((wc) => wc.name).includes(c.name));
 }
 
 /**
@@ -87,7 +87,7 @@ async function openCacheFolder() {
     </div>
     <p
       v-if="
-        consoleStore.status(mainStore.world.id) !== 'Stop' &&
+        consoleStore.status(mainStore.selectedWorldID) !== 'Stop' &&
         contentType !== 'datapack'
       "
       class="text-caption text-negative q-ma-none"
@@ -95,9 +95,11 @@ async function openCacheFolder() {
       {{ $t('additionalContents.needReboot') }}
     </p>
     <div class="row q-gutter-md q-pa-sm">
-      <template v-if="mainStore.world.additional[`${contentType}s`].length > 0">
+      <template
+        v-if="mainStore.world?.additional[`${contentType}s`].length ?? -1 > 0"
+      >
         <div
-          v-for="item in mainStore.world.additional[`${contentType}s`]"
+          v-for="item in mainStore.world?.additional[`${contentType}s`]"
           :key="item.name"
           class="col-"
         >
@@ -172,7 +174,7 @@ async function openCacheFolder() {
       </div> -->
       <div
         v-for="item in getNewContents(
-          mainStore.world.additional[`${contentType}s`]
+          mainStore.world?.additional[`${contentType}s`]
         )"
         :key="item.name"
       >

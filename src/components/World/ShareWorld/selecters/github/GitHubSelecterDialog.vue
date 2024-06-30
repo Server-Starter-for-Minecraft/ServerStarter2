@@ -36,7 +36,9 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
       rLastPlayed: selectedRemote.last_date,
     } as GithubCheckDialogProp,
   }).onOk(() => {
-    mainStore.world.version = selectedRemote.version;
+    if (mainStore.world) {
+      mainStore.world.version = selectedRemote.version;
+    }
     onDialogOK();
   });
 }
@@ -44,6 +46,9 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
  * 新規ShareWorldを登録する
  */
 function checkSetNewRemote() {
+  if (!mainStore.world) {
+    return;
+  }
   $q.dialog({
     component: NewGitHubDialog,
     componentProps: {

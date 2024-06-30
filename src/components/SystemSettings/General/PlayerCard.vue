@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Player } from 'app/src-electron/schema/player';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import PlayerHeadView from 'src/components/World/Player/utils/PlayerHeadView.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 const player = defineModel<Player | undefined>({ required: true });
 </script>
@@ -10,7 +10,7 @@ const player = defineModel<Player | undefined>({ required: true });
   <q-card flat style="max-width: 25rem" class="q-pa-sm">
     <q-item v-if="player !== void 0">
       <q-item-section avatar>
-        <PlayerHeadView :player="player" size="2.5rem" />
+        <PlayerHeadAvatar :player="player" size="2.5rem" />
       </q-item-section>
 
       <q-item-section>

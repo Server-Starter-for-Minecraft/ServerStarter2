@@ -9,7 +9,9 @@
     "^(vue-i18n/(.*)$)|^(vue-i18n$)",
     "^(quasar/(.*)$)|^(quasar$)",
     "<THIRD_PARTY_MODULES>",
+    // core/world/paths$を一番上に書かないと呼び出し順序でエラーになるため，一時的に記載
     "core/world/paths$",
+    "^app/src-public/(.*)$",
     "^app/src-electron/(.*)$",
     "^([./]|src)/scripts/(.*)$",
     "^([./]|src)/assets/(.*)$",

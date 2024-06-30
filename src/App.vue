@@ -3,7 +3,7 @@ import { toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
-import { deepcopy } from './scripts/deepcopy';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
@@ -11,8 +11,9 @@ import {
   setSysSettingsSubscriber,
   useSystemStore,
 } from './stores/SystemStore';
+import { setWorldSubscriber } from './stores/WorldStore';
 import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
-import { useMainStore, useWorldStore } from 'src/stores/MainStore';
+import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import {
   setPlayerSearchSubscriber,
@@ -29,7 +30,6 @@ import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const worldStore = useWorldStore();
 const propertyStore = usePropertyStore();
 const playerStore = usePlayerStore();
 const consoleStore = useConsoleStore();
@@ -57,7 +57,7 @@ watch(
 // サーバー起動時に画面遷移
 window.API.onStartServer((_event, worldID, notification) => {
   consoleStore.setConsole(worldID, '', false);
-  worldStore.setWorldIP(worldID, notification.ngrokURL);
+  mainStore.setWorldIP(worldID, notification.ngrokURL);
   propertyStore.setServerPort(worldID, notification.port);
 });
 // サーバー終了時に画面遷移
@@ -157,15 +157,7 @@ async function firstProcess() {
  * 変数の変更に合わせて処理を入れるためのSubscriberを定義する
  */
 function setSubscribe() {
-  // TODO: SetWorldの戻り値を反映する場合にはcurrentSelectedIDを利用して当該ワールドのデータを更新する
-  // ただし、単純に更新をかけると、その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
-  const currentSelectedId = mainStore.selectedWorldID;
-
-  worldStore.$subscribe((mutation, state) => {
-    window.API.invokeSetWorld(toRaw(mainStore.world)).then((v) => {
-      checkError(v.value, undefined, (e) => tError(e));
-    });
-  });
+  setWorldSubscriber();
 
   setSysSettingsSubscriber();
 

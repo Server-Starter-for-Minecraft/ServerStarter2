@@ -10,7 +10,7 @@ const mainStore = useMainStore();
 
 <template>
   <q-scroll-area class="full-height" style="flex: 1 1 0">
-    <div class="mainField">
+    <div v-if="mainStore.world" class="mainField">
       <h1 class="q-pt-lg q-pb-md q-ma-none">{{ $t('shareWorld.title') }}</h1>
 
       <div class="q-pb-lg text-body2" style="opacity: 0.6">

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
-import SearchResultView from 'src/components/World/Player/SearchResultView.vue';
+import SearchResultCard from 'src/components/util/SearchResultCard.vue';
 import PlayerCard from '../PlayerCard.vue';
 import InputFieldView from './InputFieldView.vue';
 import { OwnerDialogProp, ReturnOwnerDialog } from './iOwnerDialog';
@@ -28,6 +29,11 @@ function registOwner() {
   onDialogOK({
     ownerPlayer: ownerCandidate.value,
   } as ReturnOwnerDialog);
+}
+
+/** Ownerと検索結果が等しい場合はFalseを返す */
+function filterOwner(pId?: PlayerUUID) {
+  return ownerCandidate.value?.uuid !== pId;
 }
 </script>
 
@@ -52,9 +58,10 @@ function registOwner() {
 
         <div v-show="playerStore.searchName !== ''" class="q-pb-md">
           <span class="text-caption">{{ $t('owner.searchResult') }}</span>
-          <SearchResultView
+          <SearchResultCard
             :register-btn-text="$t('owner.registerPlayer')"
             :register-process="ownerRegister"
+            :player-filter="filterOwner"
           />
         </div>
 

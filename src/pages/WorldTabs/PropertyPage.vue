@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
+import { isValid } from 'app/src-public/scripts/error';
+import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { isValid } from 'src/scripts/error';
-import { fromEntries, toEntries } from 'src/scripts/obj';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import SettingsView from 'src/components/World/Property/SettingsView.vue';
 import SideMenuView from 'src/components/World/Property/SideMenuView.vue';
 
+const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const propertyStore = usePropertyStore();
@@ -31,11 +36,20 @@ const scrollAreaRef = ref();
  * 全てのServer Propertyを基本設定に戻す
  */
 function resetAll() {
-  Object.keys(sysStore.systemSettings.world.properties).map((key) => {
-    if (isValid(mainStore.world.properties)) {
-      mainStore.world.properties[key] =
-        sysStore.systemSettings.world.properties[key];
-    }
+  $q.dialog({
+    component: DangerDialog,
+    componentProps: {
+      dialogTitle: $T('property.resetAll.title'),
+      dialogDesc: $T('property.resetAll.desc'),
+      okBtnTxt: $T('property.resetAll.okBtn'),
+    } as dangerDialogProp,
+  }).onOk(() => {
+    Object.keys(sysStore.systemSettings.world.properties).map((key) => {
+      if (mainStore.world && isValid(mainStore.world.properties)) {
+        mainStore.world.properties[key] =
+          sysStore.systemSettings.world.properties[key];
+      }
+    });
   });
 }
 
@@ -49,7 +63,10 @@ function scrollTop() {
 
 <template>
   <div class="mainField">
-    <div v-if="isValid(mainStore.world.properties)" class="column fit">
+    <div
+      v-if="mainStore.world && isValid(mainStore.world.properties)"
+      class="column fit"
+    >
       <div class="row q-py-md">
         <SsInput
           dense
@@ -60,7 +77,8 @@ function scrollTop() {
 
         <SsBtn
           dense
-          :label="$t('property.main.resetAll')"
+          isCapital
+          :label="$t('property.resetAll.btn')"
           icon="do_not_disturb_on_total_silence"
           color="negative"
           width="6rem"
@@ -90,6 +108,7 @@ function scrollTop() {
       <div class="absolute-center">
         <p>{{ $t('property.failed') }}</p>
         <SsBtn
+          v-if="mainStore.world"
           :label="$t('property.reset')"
           color="primary"
           @click="() => (mainStore.world.properties = initProperty)"

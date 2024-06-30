@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { WorldEdited } from 'app/src-electron/schema/world';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { createNewWorld, updateBackWorld } from 'src/stores/WorldStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { checkError } from '../Error/Error';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
@@ -31,14 +33,14 @@ const isSearching = () => (mainStore.worldSearchText ?? '') !== '';
 type ContentData = {
   icon: string;
   i18nKey: string;
-  disable?: () => boolean;
-  action: () => void | Promise<void>;
+  disable?: (w?: WorldEdited) => boolean;
+  action: (w?: WorldEdited) => void | Promise<void>;
 };
 const contents: ContentData[] = [
   {
     icon: 'add_box',
     i18nKey: 'newWorld',
-    action: createNewWorld,
+    action: createWorld,
   },
   {
     icon: 'public',
@@ -48,7 +50,8 @@ const contents: ContentData[] = [
   {
     icon: 'content_paste',
     i18nKey: 'duplicate',
-    disable: () => router.currentRoute.value.path.slice(0, 7) === '/system',
+    disable: (w) =>
+      router.currentRoute.value.path.slice(0, 7) === '/system' || w === void 0,
     action: duplicateWorld,
   },
   {
@@ -73,9 +76,9 @@ function move2HomeTop() {
 /**
  * 新規ワールドを生成
  */
-async function createNewWorld() {
+async function createWorld() {
   // 新規ワールドの生成
-  await mainStore.createNewWorld();
+  await createNewWorld();
   move2HomeTop();
 }
 
@@ -93,22 +96,24 @@ function openCustomMapImporter() {
 /**
  * 表示中のワールドを複製する
  */
-async function duplicateWorld() {
-  $q.dialog({
-    component: CheckDialog,
-    componentProps: {
-      icon: mainStore.world.avater_path,
-      worldName: mainStore.world.name,
-      versionName: mainStore.world.version.id,
-      importFunc: async () => {
-        const newWorldID = await mainStore.createNewWorld(mainStore.world.id);
-        // ワールドの複製は新規ワールドとみなさない
-        if (newWorldID) mainStore.syncBackWorld(newWorldID);
-      },
-    } as CustomMapImporterProp,
-  }).onOk(() => {
-    move2HomeTop();
-  });
+async function duplicateWorld(world?: WorldEdited) {
+  if (world) {
+    $q.dialog({
+      component: CheckDialog,
+      componentProps: {
+        icon: world.avater_path,
+        worldName: world.name,
+        versionName: world.version.id,
+        importFunc: async () => {
+          const newWorldID = await createNewWorld(world.id);
+          // ワールドの複製は新規ワールドとみなさない
+          if (newWorldID) updateBackWorld(newWorldID);
+        },
+      } as CustomMapImporterProp,
+    }).onOk(() => {
+      move2HomeTop();
+    });
+  }
 }
 
 /**
@@ -117,7 +122,9 @@ async function duplicateWorld() {
 async function introduceBackup() {
   const res = await window.API.invokePickDialog({
     type: 'backup',
-    container: mainStore.world.container,
+    container:
+      mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID].world
+        .container,
   });
 
   checkError(
@@ -170,10 +177,10 @@ async function introduceBackup() {
     <q-list>
       <template v-for="content in contents" :key="content.name">
         <q-item
-          :disable="content.disable ? content.disable() : false"
+          :disable="content.disable ? content.disable(mainStore.world) : false"
           clickable
           v-close-popup
-          @click="content.action"
+          @click="() => content.action(mainStore.world)"
           style="height: 4rem"
         >
           <q-item-section avatar>

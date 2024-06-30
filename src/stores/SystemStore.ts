@@ -1,5 +1,6 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import {
   CacheFileData,
   DatapackData,
@@ -10,6 +11,8 @@ import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
 import { version } from '../../package.json';
+import { setBackSys, setFrontSys } from './SystemStore/converter';
+import { FrontPlayerGroup } from './SystemStore/converters/playerGroup';
 
 export const useSystemStore = defineStore('systemStore', {
   state: () => {
@@ -39,8 +42,30 @@ export const useSystemStore = defineStore('systemStore', {
 const useSystemSettingsStore = defineStore('systemSettingsStore', {
   state: () => {
     return {
-      systemSettings: {} as SystemSettings,
+      backSystemSettings: {} as SystemSettings,
+      playerGroups: {} as FrontPlayerGroup,
     };
+  },
+  getters: {
+    systemSettings(state) {
+      return {
+        container: state.backSystemSettings.container,
+        world: state.backSystemSettings.world,
+        remote: state.backSystemSettings.remote,
+        player: {
+          groups: state.playerGroups,
+          players: state.backSystemSettings.player.players,
+        },
+        user: state.backSystemSettings.user,
+        system: state.backSystemSettings.system,
+      };
+    },
+  },
+  actions: {
+    setSystemSettings(sysSettings: SystemSettings) {
+      this.backSystemSettings = toRaw(sysSettings);
+      setFrontSys(this.backSystemSettings);
+    },
   },
 });
 
@@ -49,7 +74,7 @@ const useSystemSettingsStore = defineStore('systemSettingsStore', {
  */
 export function initSystemSettings(sysSettings: SystemSettings) {
   const sysSettingsStore = useSystemSettingsStore();
-  sysSettingsStore.systemSettings = sysSettings;
+  sysSettingsStore.setSystemSettings(sysSettings);
 }
 
 /**
@@ -58,6 +83,15 @@ export function initSystemSettings(sysSettings: SystemSettings) {
 export function setSysSettingsSubscriber() {
   const sysSettingsStore = useSystemSettingsStore();
   sysSettingsStore.$subscribe((mutation, state) => {
-    window.API.invokeSetSystemSettings(toRaw(state.systemSettings));
+    window.API.invokeSetSystemSettings(
+      deepcopy(setBackSys(deepcopy(state.backSystemSettings)))
+    );
   });
+}
+
+/**
+ * SystemSettingsの変換時にデータを取得するStore
+ */
+export function getConvertTargetStore() {
+  return useSystemSettingsStore();
 }

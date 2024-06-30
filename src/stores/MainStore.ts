@@ -1,19 +1,22 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { values } from 'app/src-public/scripts/obj/obj';
+import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
+import { sortValue } from 'app/src-public/scripts/obj/objSort';
+import { zen2han } from 'app/src-public/scripts/textUtils';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
-import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { deepcopy } from 'src/scripts/deepcopy';
-import { isError, isValid } from 'src/scripts/error';
-import { keys, values } from 'src/scripts/obj';
-import { recordValueFilter } from 'src/scripts/objFillter';
-import { sortValue } from 'src/scripts/objSort';
-import { zen2han } from 'src/scripts/textUtils';
-import { assets } from 'src/assets/assets';
+import {
+  World,
+  WorldAbbr,
+  WorldEdited,
+  WorldID,
+} from 'app/src-electron/schema/world';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
-import { useConsoleStore } from './ConsoleStore';
 import { useSystemStore } from './SystemStore';
+import { __getWorldList, __getWorldListBack, WorldList } from './WorldStore';
 
 export const useMainStore = defineStore('mainStore', {
   state: () => {
@@ -23,173 +26,94 @@ export const useMainStore = defineStore('mainStore', {
       worldSearchText: '',
       errorWorlds: new Set<WorldID>(),
       selectedVersionType: 'vanilla' as Version['type'],
+      worldIPs: {} as Record<WorldID, string>,
     };
   },
   getters: {
+    /**
+     * WorldEditedを返し，WorldAbbrの時にはundefinedを返す
+     *
+     * WorldAbbrも含めて共通の要素を取得したい場合は
+     * `allWorlds.readonlyWorlds[selectedWorldID]`で呼び出す
+     */
     world(state) {
-      const worldStore = useWorldStore();
-      const returnWorld = worldStore.worldList[state.selectedWorldID];
+      const returnWorld = __getWorldList()[state.selectedWorldID];
+
+      if (returnWorld?.type === 'abbr') {
+        return undefined;
+      }
 
       if (returnWorld !== void 0) {
         // バージョンの更新（ワールドを選択し直すタイミングでバージョンの変更を反映）
-        state.selectedVersionType = returnWorld.version.type;
+        state.selectedVersionType = returnWorld.world.version.type;
       }
 
-      return returnWorld;
+      return returnWorld?.world;
+    },
+    readonlyWorld(state) {
+      return deepcopy(__getWorldList()[state.selectedWorldID]);
+    },
+    allWorlds(state) {
+      return {
+        update: (func: (world: WorldEdited) => void) => {
+          values(__getWorldList()).forEach((w) => {
+            if (w.type === 'edited') {
+              func(w.world);
+
+              // App.vueのSubscriberは表示中のワールドに対する更新を行うため，
+              // 非表示ワールドの更新は別途ここで作動させる
+              window.API.invokeSetWorld(toRaw(w.world)).then((v) => {
+                checkError(v.value, undefined, (e) => tError(e));
+              });
+            }
+          });
+        },
+        readonlyWorlds: deepcopy(__getWorldList()),
+        filteredWorlds: (searchText?: string) => {
+          const wList = filterSearchingText(
+            filterWorldContainer(__getWorldList()),
+            searchText ?? state.worldSearchText
+          );
+          return sortWorldList(wList);
+        },
+      };
     },
     /**
      * バージョンダウンの警告ダイアログのような，
      * 以前のデータとの比較が必要な処理への利用を想定する
      */
     worldBack(state): WorldEdited | undefined {
-      const worldStore = useWorldStore();
-      return worldStore.worldListBack[state.selectedWorldID];
-    },
-    worldIP(state) {
-      const worldStore = useWorldStore();
-      return worldStore.worldIPs[state.selectedWorldID];
+      return __getWorldListBack()[state.selectedWorldID];
     },
     /**
-     * ワールド一覧に描画するワールドリスト，
+     * Ngrokを考慮したIPアドレスを返す
      */
-    showingWorldList(state) {
-      const worldStore = useWorldStore();
-      // 検索BOXのClearボタンを押すとworldSearchTextにNullが入るため，３項演算子によるNullチェックも付加
-      // 原因はSearchWorldViewのupdateSelectedWorld()にてshowingWorldListを呼び出しているため
-      // TODO: 上記のリファクタリングにより，３項演算子を廃止
-      const editText = zen2han(state.worldSearchText ?? '')
-        .trim()
-        .toLowerCase();
-
-      if (editText !== '') {
-        // スペース区切りのAND検索
-        let returnWorlds = worldStore.sortedWorldList;
-        editText.split(' ').forEach((t) => {
-          returnWorlds = recordValueFilter(returnWorlds, (w) => {
-            // ワールド名称に一致
-            const hitName = w.name.toLowerCase().match(t) !== null;
-            // サーバー種類に一致
-            const hitVerType =
-              w.version.type.match(t) !== null ||
-              $T(`home.serverType.${w.version.type}`).match(t) !== null;
-            // バージョン名に一致
-            const hitVer = w.version.id.match(t) !== null;
-            return hitName || hitVerType || hitVer;
-          });
-        });
-
-        // 選択中のワールドがリスト圏外になった場合は選択を解除
-        if (!keys(returnWorlds).includes(state.selectedWorldID)) {
-          state.selectedWorldID = '' as WorldID;
-        }
-
-        return returnWorlds;
-      }
-
-      return worldStore.sortedWorldList;
+    worldIP(state) {
+      const sysStore = useSystemStore();
+      return state.worldIPs[state.selectedWorldID] ?? sysStore.publicIP;
     },
   },
   actions: {
     /**
-     * ワールドを新規作成する
-     */
-    async createNewWorld(duplicateWorldID?: WorldID) {
-      async function createrNew() {
-        // NewWorldを生成
-        const world = (await window.API.invokeNewWorld()).value;
-        if (isError(world)) {
-          return world;
-        }
-
-        // set default icon
-        world.avater_path = assets.png.unset;
-
-        // set owner player
-        const ownerPlayer = useSystemStore().systemSettings.user.owner;
-        if (ownerPlayer) {
-          const res = await window.API.invokeGetPlayer(ownerPlayer, 'uuid');
-          checkError(
-            res,
-            (p) => {
-              if (isValid(world.players)) {
-                world.players.push({
-                  name: p.name,
-                  uuid: p.uuid,
-                  op: { level: 4, bypassesPlayerLimit: false },
-                });
-              }
-            },
-            (e) =>
-              tError(e, {
-                titleKey: 'error.errorDialog.failOPForOwner',
-                descKey: `error.${e.key}.title`,
-              })
-          );
-        }
-
-        // NewWorldを実データに書き出す
-        return (await window.API.invokeCreateWorld(world)).value;
-      }
-
-      async function createrDuplicate(_duplicateWorldID: WorldID) {
-        return (await window.API.invokeDuplicateWorld(_duplicateWorldID)).value;
-      }
-
-      const worldStore = useWorldStore();
-      const consoleStore = useConsoleStore();
-      // NewWorldをFrontのリストに追加する
-      const res = await (duplicateWorldID
-        ? createrDuplicate(duplicateWorldID)
-        : createrNew());
-      let returnWorldID: WorldID | undefined;
-      checkError(
-        res,
-        (world) => {
-          returnWorldID = world.id;
-          worldStore.worldList[world.id] = toRaw(world);
-          this.setWorld(world);
-          consoleStore.initTab(world.id);
-        },
-        (e) => tError(e)
-      );
-
-      return returnWorldID;
-    },
-    /**
-     * 選択されているワールドを削除する
-     */
-    removeWorld(worldID: WorldID) {
-      const worldStore = useWorldStore();
-      delete worldStore.worldList[worldID];
-    },
-    /**
      * ワールドIDで設定したワールドを表示する
      */
-    setWorld(world: World | WorldEdited) {
+    showWorld(world: World | WorldEdited | WorldAbbr) {
       this.selectedWorldID = world.id;
       this.inputWorldName = world.name;
     },
     /**
-     * ワールドオブジェクトそのものを更新する
+     * 表示するワールドの選択を解除して，何も表示しない
      */
-    updateWorld(world: World | WorldEdited) {
-      const worldStore = useWorldStore();
-      worldStore.worldList[world.id] = world;
+    unsetWorld() {
+      this.selectedWorldID = '' as WorldID;
     },
     /**
-     * すべてのワールドに対してprocessで指定した処理を行う
+     * NgrokからIPの割り当てがあった際にIPアドレスを更新する
      */
-    processAllWorld(process: (world: WorldEdited) => void) {
-      const worldStore = useWorldStore();
-      values(worldStore.worldList).forEach((w) => {
-        process(w);
-
-        // App.vueのSubscriberは表示中のワールドに対する更新を行うため，
-        // 非表示ワールドの更新は別途ここで作動させる
-        window.API.invokeSetWorld(toRaw(w)).then((v) => {
-          checkError(v.value, undefined, (e) => tError(e));
-        });
-      });
+    setWorldIP(worldID: WorldID, ip?: string) {
+      if (ip && ip !== '') {
+        this.worldIPs[worldID] = ip;
+      }
     },
     /**
      * すべてのワールドに対してprocessで指定した処理を行った結果を返す
@@ -202,71 +126,76 @@ export const useMainStore = defineStore('mainStore', {
      * Ngrokより割り当てられたIPアドレスを削除する（サーバー終了時を想定）
      */
     removeWorldIP(worldID: WorldID) {
-      const worldStore = useWorldStore();
-      worldStore.removeWorldIP(worldID);
-    },
-    /**
-     * 最新のワールドデータをworldBackに同期する
-     *
-     * 同期することで，「ワールド起動前のデータ」を更新する
-     */
-    syncBackWorld(worldID?: WorldID) {
-      const worldStore = useWorldStore();
-      if (worldID) {
-        worldStore.worldListBack[worldID] = deepcopy(
-          worldStore.worldList[worldID]
-        );
-      } else {
-        worldStore.worldListBack = deepcopy(worldStore.worldList);
-      }
-    },
-    /**
-     * ワールドが起動されたときに必要な処理を実行する
-     *
-     * - worldBackのデータを更新
-     */
-    startedWorld(worldID: WorldID) {
-      this.syncBackWorld(worldID);
+      delete this.worldIPs[worldID];
     },
   },
 });
 
 /**
- * Worldの変更を検知するためのStore
+ * 渡されたワールドリストを更新日時順にソート
  */
-export const useWorldStore = defineStore('worldStore', {
-  state: () => {
-    return {
-      worldListBack: {} as Record<WorldID, WorldEdited>,
-      worldList: {} as Record<WorldID, WorldEdited>,
-      worldIPs: {} as Record<WorldID, string>,
-    };
-  },
-  getters: {
-    sortedWorldList(state) {
-      const sysStore = useSystemStore();
-      const visibleContainers = new Set(
-        sysStore.systemSettings.container
-          .filter((c) => c.visible)
-          .map((c) => c.container)
-      );
-      return sortValue(
-        // 表示設定にしていたコンテナのみを描画対象にする
-        recordValueFilter(state.worldList, (w) =>
-          visibleContainers.has(w.container)
-        ),
-        (a, b) => (a.last_date ?? 0) - (b.last_date ?? 0)
-      );
-    },
-  },
-  actions: {
-    setWorldIP(worldID: WorldID, ip?: string) {
-      if (ip && ip !== '') {
-        this.worldIPs[worldID] = ip;
-      }
-    },
-    removeWorldIP(worldID: WorldID) {
-      delete this.worldIPs[worldID];
-    },
-  },
-});
+function sortWorldList(wList: WorldList) {
+  return sortValue(wList, (a, b) => {
+    if (a.type === 'edited' && b.type === 'edited') {
+      return (b.world.last_date ?? 0) - (a.world.last_date ?? 0);
+    } else {
+      return 0;
+    }
+  });
+}
+
+/**
+ * コンテナの設定に基づいて表示するワールドをフィルタ
+ */
+function filterWorldContainer(wList: WorldList) {
+  const sysStore = useSystemStore();
+  const visibleContainers = new Set(
+    sysStore.systemSettings.container
+      .filter((c) => c.visible)
+      .map((c) => c.container)
+  );
+  return recordValueFilter(wList, (w) =>
+    visibleContainers.has(w.world.container)
+  );
+}
+
+/**
+ * 検索ワードを下記の項目についてチェックし，マッチするワールドを返す
+ *
+ * - ワールド名称に一致
+ * - サーバー種類の名称
+ * - サーバーバージョン
+ *
+ * なお，スペース区切りはAND検索とする
+ */
+function filterSearchingText(wList: WorldList, searchText: string) {
+  if (searchText == '') {
+    return wList;
+  }
+
+  // 検索ワードを正規化して検索を最適化する
+  const editText = zen2han(searchText ?? '')
+    .trim()
+    .toLowerCase();
+
+  let returnWorlds = wList;
+  // スペース区切りのAND検索
+  editText.split(' ').forEach((t) => {
+    returnWorlds = recordValueFilter(returnWorlds, (w) => {
+      // ワールド名称に一致
+      const hitName = w.world.name.toLowerCase().match(t) !== null;
+      // サーバー種類に一致
+      const hitVerType =
+        w.type === 'edited'
+          ? w.world.version.type.match(t) !== null ||
+            $T(`home.serverType.${w.world.version.type}`).match(t) !== null
+          : false;
+      // バージョン名に一致
+      const hitVer =
+        w.type === 'edited' ? w.world.version.id.match(t) !== null : false;
+      return hitName || hitVerType || hitVer;
+    });
+  });
+
+  return returnWorlds;
+}

@@ -1,8 +1,8 @@
 import { MessageSchema } from 'src/boot/i18n';
+import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
+import { flattenObj } from 'app/src-public/scripts/obj/objFlatten';
 import { ErrorMessage } from 'app/src-electron/schema/error';
 import { ProgressMessage } from 'app/src-electron/schema/progressMessage';
-import { fromEntries, toEntries } from 'src/scripts/obj';
-import { flattenObj } from 'src/scripts/objFlatten';
 import { ErrorFuncReturns } from 'src/components/Error/Error';
 
 /** 指定した型のキーに対して string | number の型を付与して返す */
@@ -36,6 +36,10 @@ let _te: teFunc;
 export function setI18nFunc(t: tFunc, te: teFunc) {
   _t = t;
   _te = te;
+}
+
+export function $TE(key: string) {
+  return _te(key);
 }
 
 export function $T(key: string): string;

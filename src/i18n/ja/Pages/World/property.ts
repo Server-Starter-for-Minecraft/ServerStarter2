@@ -1,7 +1,15 @@
 export const jaProperty = {
   main: {
     search: 'プロパティを検索',
-    resetAll: '全て戻す',
+  },
+  resetAll: {
+    btn: '全て戻す',
+    title: '全てのプロパティのリセット',
+    desc: '\
+      このワールドに設定されているすべてのプロパティを規定値に戻します\n\
+      プロパティをリセットしますか\n\
+      ※ 規定値は「システム設定」>「規定プロパティ」に設定された値です',
+    okBtn: 'プロパティをリセット',
   },
   //WorldTabsStore.tsのgroupNamesにあったもの
   group: {
@@ -97,11 +105,17 @@ export const jaProperty = {
       'Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする',
     'text-filtering-config': '不適切なチャットのフィルタリング設定',
     'announce-player-achievements': 'プレイヤーの実績解除をチャットで告知する',
+    'resource-pack-id':
+      'クライアントがリソースパックを識別するために指定するUUID',
+    'region-file-compression':
+      'チャンクデータを圧縮する際に使用するアルゴリズム',
+    'accepts-transfers':
+      'プレイヤーが転送されたパケットを用いてサーバーにアクセスすることを許可する',
   },
   resetProperty:
     '\
     基本設定の{defaultProperty}に設定を戻します \n\
-    「システム設定」>「プロパティ」 より基本設定を変更できます',
+    「システム設定」>「規定プロパティ」 より基本設定を変更できます',
   empty: '(空欄)',
   failed: 'プロパティが読み込めませんでした',
   reset: 'プロパティ設定をリセット',

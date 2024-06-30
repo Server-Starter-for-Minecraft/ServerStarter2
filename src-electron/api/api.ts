@@ -173,7 +173,7 @@ export interface API extends IAPI {
      */
     GetWorldPaths: (
       world: WorldID,
-      type: 'world' | 'datapacks' | 'plugins' | 'mods'
+      type: 'world' | 'datapacks' | 'plugins' | 'mods' | 'server'
     ) => Promise<Failable<string>>;
 
     /**

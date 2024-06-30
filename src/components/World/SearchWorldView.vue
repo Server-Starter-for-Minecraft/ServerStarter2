@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { keys, values } from 'src/scripts/obj';
+import { keys } from 'app/src-public/scripts/obj/obj';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -13,6 +13,17 @@ defineProps<Prop>();
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
+
+function onUpdateInput(newText: string) {
+  // 選択中のワールドがリスト圏外になった場合は選択を解除
+  if (
+    !keys(mainStore.allWorlds.filteredWorlds(newText)).includes(
+      mainStore.selectedWorldID
+    )
+  ) {
+    mainStore.unsetWorld();
+  }
+}
 </script>
 
 <template>
@@ -26,6 +37,10 @@ const mainStore = useMainStore();
     <q-item-section>
       <SsInput
         v-model="mainStore.worldSearchText"
+        @update:model-value="
+          (newVal) => onUpdateInput(newVal?.toString() ?? '')
+        "
+        @clear="() => (mainStore.worldSearchText = '')"
         :label="$t('mainLayout.searchWorld')"
         :debounce="100"
       />

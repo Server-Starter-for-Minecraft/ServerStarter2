@@ -2,10 +2,8 @@
 import { ref } from 'vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from '../util/base/ssTooltip.vue';
 
-const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
@@ -19,14 +17,12 @@ const statusColor = {
 };
 
 function copyIP() {
-  navigator.clipboard
-    .writeText(mainStore.worldIP ?? sysStore.publicIP)
-    .then(() => {
-      copied.value = true;
-      setTimeout(() => {
-        copied.value = false;
-      }, 10000);
-    });
+  navigator.clipboard.writeText(mainStore.worldIP).then(() => {
+    copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 10000);
+  });
 }
 </script>
 
@@ -34,27 +30,39 @@ function copyIP() {
   <div class="flex items-center full-width q-py-sm q-px-md">
     <template v-if="$router.currentRoute.value.path.slice(0, 7) !== '/system'">
       <div class="title text-omit q-pr-md">
-        {{ mainStore.world.name }}
+        {{
+          mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]?.world
+            .name
+        }}
         <SsTooltip
-          :name="mainStore.world.name"
+          :name="
+            mainStore.allWorlds.readonlyWorlds[mainStore.selectedWorldID]?.world
+              .name ?? ''
+          "
           anchor="bottom start"
           self="center start"
         />
       </div>
       <div
-        :class="`text-${statusColor[consoleStore.status(mainStore.world.id)]}`"
+        :class="`text-${
+          statusColor[consoleStore.status(mainStore.selectedWorldID)]
+        }`"
         class="q-mr-md"
       >
-        {{ $t(`console.status.${consoleStore.status(mainStore.world.id)}`) }}
+        {{
+          $t(
+            `console.status.${
+              consoleStore.status(mainStore.selectedWorldID) ?? 'Stop'
+            }`
+          )
+        }}
       </div>
     </template>
     <span v-else class="title q-pr-md">{{ $t('systemsetting.title') }}</span>
     <q-space />
     <div class="row q-gutter-sm items-center">
       <div class="force-oneline">
-        <span class="user-select"
-          >IP : {{ mainStore.worldIP ?? sysStore.publicIP }}</span
-        >
+        <span class="user-select">IP : {{ mainStore.worldIP }}</span>
       </div>
       <q-btn
         dense

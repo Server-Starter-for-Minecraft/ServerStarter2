@@ -3,6 +3,11 @@ import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
+import {
+  createNewWorld,
+  updateBackWorld,
+  updateWorld,
+} from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import { RecoverDialogProp } from './iRecoverDialog';
@@ -20,9 +25,9 @@ async function recoverWorld() {
   loading.value = true;
 
   // バックアップデータを反映
-  await mainStore.createNewWorld();
+  await createNewWorld();
   const res = await window.API.invokeRestoreWorld(
-    mainStore.world.id,
+    mainStore.selectedWorldID,
     prop.backupData
   );
 
@@ -30,8 +35,8 @@ async function recoverWorld() {
   checkError(
     res.value,
     (w) => {
-      mainStore.updateWorld(w);
-      mainStore.syncBackWorld(w.id);
+      updateWorld(w);
+      updateBackWorld(w.id);
     },
     (e) =>
       tError(e, {

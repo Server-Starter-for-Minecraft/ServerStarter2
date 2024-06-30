@@ -26,12 +26,20 @@ function buildVanillaVer(ver: { id: string; release: boolean }) {
     release: ver.release,
   };
 }
+/**
+ * ワールドオブジェクトのバージョン情報を書き換える
+ */
+function updateWorldVersion(ver: { id: string; release: boolean }) {
+  if (mainStore.world?.version) {
+    mainStore.world.version = buildVanillaVer(ver);
+  }
+}
 
 const vanillaVer = computed({
   get: () => {
     // 前のバージョンがVanillaに存在しないバージョンの時は，最新バージョンを割り当てる
     const findVer = prop.versionData.find(
-      (ops) => ops.id === mainStore.world.version.id
+      (ops) => ops.id === mainStore.world?.version.id
     );
     if (!findVer) {
       return prop.versionData.find((ops) => ops.release) ?? prop.versionData[0];
@@ -51,7 +59,7 @@ const vanillaVer = computed({
 });
 
 // 表示内容と内部データを整合させる
-mainStore.world.version = buildVanillaVer(vanillaVer.value);
+updateWorldVersion(vanillaVer.value);
 </script>
 
 <template>
@@ -76,7 +84,7 @@ mainStore.world.version = buildVanillaVer(vanillaVer.value);
       :label="$t('home.version.versionType')"
       option-label="label"
       option-value="data"
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       class="col"
       style="min-width: 8rem"
     />
@@ -88,7 +96,7 @@ mainStore.world.version = buildVanillaVer(vanillaVer.value);
           : $t('home.version.allVersions')
       "
       left-label
-      :disable="consoleStore.status(mainStore.world.id) !== 'Stop'"
+      :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
       style="width: fit-content"
     />
   </div>

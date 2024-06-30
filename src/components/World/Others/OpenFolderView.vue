@@ -8,7 +8,7 @@ const mainStore = useMainStore();
 
 async function openFolder() {
   const path = await window.API.invokeGetWorldPaths(
-    mainStore.world.id,
+    mainStore.selectedWorldID,
     'world'
   );
 

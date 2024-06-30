@@ -1,9 +1,10 @@
 import { toRaw } from 'vue';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { Remote, RemoteFolder } from 'app/src-electron/schema/remote';
-import { deepcopy } from 'src/scripts/deepcopy';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
+import { updateWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 
 export interface GitHubSelecterProp {
@@ -20,6 +21,9 @@ export interface GithubCheckDialogProp {
 
 export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
   const mainStore = useMainStore();
+  if (!mainStore.world) {
+    return;
+  }
 
   // ready world object
   const world = deepcopy(mainStore.world);
@@ -32,7 +36,7 @@ export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {
   const res = await window.API.invokeSetWorld(toRaw(world));
   checkError(
     res.value,
-    (w) => mainStore.updateWorld(w),
+    (w) => updateWorld(w),
     (e) =>
       tError(e, {
         titleKey: 'error.errorDialog.failSync',
