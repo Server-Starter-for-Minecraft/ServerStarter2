@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { deepcopy } from 'src/scripts/deepcopy';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
@@ -22,10 +22,13 @@ const selectedContentsIds: Ref<string[]> = ref([]);
 const selectedWorld: Ref<WorldEdited | undefined> = ref();
 
 const showingContents = () => {
+  if (!mainStore.world) {
+    return [];
+  }
+
+  const worldContents = mainStore.world.additional[`${prop.contentType}s`];
   return selectedWorld.value?.additional[`${prop.contentType}s`].filter((c) =>
-    mainStore.world.additional[`${prop.contentType}s`].every(
-      (wContent) => !isSameContent(wContent, c)
-    )
+    worldContents.every((wContent) => !isSameContent(wContent, c))
   );
 };
 
@@ -35,9 +38,15 @@ function onOkClicked() {
   const importContents = selectedContentsIds.value.map((ids) => {
     const worldID = (ids.split('#')[0] as WorldID) ?? '';
     const contentName = ids.split('#')[1] ?? '';
-    return mainStore.showingWorldList[worldID].additional[
-      `${prop.contentType}s`
-    ].find((content) => content.name === contentName);
+
+    const targetWorld = mainStore.allWorlds.readonlyWorlds[worldID];
+    if (targetWorld.type === 'abbr') {
+      return undefined;
+    }
+
+    return targetWorld.world.additional[`${prop.contentType}s`].find(
+      (content) => content.name === contentName
+    );
   });
 
   onDialogOK({
@@ -76,13 +85,16 @@ function removeContent(contentName: string) {
         <div>
           <q-list>
             <template
-              v-for="world in mainStore.showingWorldList"
-              :key="world.id"
+              v-for="worldItem in mainStore.allWorlds.readonlyWorlds"
+              :key="worldItem.world.id"
             >
               <WorldItemView
-                v-if="world.id !== mainStore.selectedWorldID"
-                :active="world.id === selectedWorld?.id"
-                :world="world"
+                v-if="
+                  worldItem.type === 'edited' &&
+                  worldItem.world.id !== mainStore.selectedWorldID
+                "
+                :active="worldItem.world.id === selectedWorld?.id"
+                :world="worldItem.world"
                 @clicked="onWorldClicked"
               />
             </template>

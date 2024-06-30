@@ -1,4 +1,5 @@
 import { QVueGlobals } from 'quasar';
+import { values } from 'app/src-public/scripts/obj/obj';
 import {
   AllFileData,
   CacheFileData,
@@ -75,21 +76,22 @@ export function getAllContents(cType: ContentsType): OptContents[] {
   const returnArray = sysStore.cacheContents[`${cType}s`].map((c) =>
     __converter(c)
   );
-  mainStore
-    .getFromAllWorld((w) =>
-      w.additional[`${cType}s`].map((c) => __converter(c, w.name))
-    )
-    .flat()
-    .forEach((c) => {
+  values(mainStore.allWorlds.readonlyWorlds).forEach((wItem) => {
+    if (wItem.type === 'abbr') {
+      return;
+    }
+
+    wItem.world.additional[`${cType}s`].forEach((c) => {
       const sameContentIdxInReturn = returnArray.findIndex((_c) =>
-        isSameContent(_c.file, c.file)
+        isSameContent(_c.file, c)
       );
       if (sameContentIdxInReturn > -1) {
-        returnArray[sameContentIdxInReturn].wNames.push(c.wNames[0]);
+        returnArray[sameContentIdxInReturn].wNames.push(wItem.world.name);
       } else {
-        returnArray.push(c);
+        returnArray.push(__converter(c, wItem.world.name));
       }
     });
+  });
   return returnArray;
 }
 
@@ -172,9 +174,11 @@ export function addContent(
   content: AllFileData<ContentsData>
 ) {
   const mainStore = useMainStore();
-  (mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]).push(
-    content
-  );
+  if (mainStore.world) {
+    (
+      mainStore.world.additional[`${cType}s`] as AllFileData<ContentsData>[]
+    ).push(content);
+  }
 }
 
 /**
@@ -220,6 +224,10 @@ export function deleteContent(
   const contentsStore = useContentsStore();
 
   function __delete() {
+    if (!mainStore.world) {
+      return;
+    }
+
     mainStore.world.additional[`${cType}s`].splice(
       mainStore.world.additional[`${cType}s`].findIndex((c) =>
         isSameContent(c, content)
@@ -257,7 +265,7 @@ export function deleteContent(
 export async function openSavedFolder(cType: ContentsType) {
   const mainStore = useMainStore();
   const path = await window.API.invokeGetWorldPaths(
-    mainStore.world.id,
+    mainStore.selectedWorldID,
     `${cType}s`
   );
 

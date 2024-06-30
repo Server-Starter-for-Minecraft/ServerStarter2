@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
+import { keys } from 'app/src-public/scripts/obj/obj';
+import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { AllFileData } from 'app/src-electron/schema/filedata';
-import { keys } from 'src/scripts/obj';
-import { strSort } from 'src/scripts/objSort';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -32,7 +32,7 @@ const selectedContent: Ref<OptContents | undefined> = ref();
 const initNewContents = () =>
   getAllContents(prop.contentType).filter(
     (c) =>
-      !mainStore.world.additional[`${prop.contentType}s`].some((_c) =>
+      !mainStore.world?.additional[`${prop.contentType}s`].some((_c) =>
         isSameContent(_c, c.file)
       )
   );
@@ -105,7 +105,7 @@ function addContentClicked(content: AllFileData<ContentsData>) {
         free-width
         icon="library_add"
         label="まとめて追加"
-        :disable="keys(mainStore.showingWorldList).length < 2"
+        :disable="keys(mainStore.allWorlds.filteredWorlds()).length < 2"
         @click="() => importMultipleContents($q, contentType)"
       />
       <SsIconBtn
@@ -126,7 +126,7 @@ function addContentClicked(content: AllFileData<ContentsData>) {
     </div>
     <p
       v-if="
-        consoleStore.status(mainStore.world.id) !== 'Stop' &&
+        consoleStore.status(mainStore.selectedWorldID) !== 'Stop' &&
         contentType !== 'datapack'
       "
       class="text-caption text-negative q-ma-none"
@@ -142,10 +142,12 @@ function addContentClicked(content: AllFileData<ContentsData>) {
           })
         }}
       </span>
-      <div v-if="mainStore.world.additional[`${contentType}s`].length > 0">
+      <div
+        v-if="mainStore.world?.additional[`${contentType}s`].length ?? 0 > 0"
+      >
         <q-list separator>
           <ListItem
-            v-for="c in mainStore.world.additional[`${contentType}s`].sort(
+            v-for="c in mainStore.world?.additional[`${contentType}s`].sort(
               (c1, c2) => strSort(c1.name, c2.name)
             )"
             :key="c.name"
