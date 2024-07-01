@@ -25,9 +25,7 @@ export function getVanillaVersionLoader(): VersionListLoader<AllVanillaVersion> 
   return {
     getFromCache: async () => {
       if (!getVersionCacheFilePath('vanilla').exists()) {
-        return err(
-          new Error('NOT_FOUND_VERSION_LIST_(VANILLA)')
-        );
+        return err(new Error('NOT_FOUND_VERSION_LIST_(VANILLA)'));
       }
       return allVanillasHandler.read();
     },

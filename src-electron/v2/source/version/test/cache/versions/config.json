@@ -1,12 +1,12 @@
 {
-	"version_manifest_v2_sha1": "eddfbc2746a4ab93b796f323a5c0686d2c2bea1f",
-	"versions_sha1": {
-		"vanilla": "fc3ada4b86f13589ba67292e9d2331bec48316b4",
-		"spigot": "3a1bd91159d562b830288a7ef6541dcd7f0ee83c",
-		"fabric": "2bcdefba2723e6a3ae5aad2663ea9fdca35cb5b2",
-		"forge": "74929fd14e6949f7d24d988c8bd1b2b1a5281a75",
-		"mohistmc": "c016756ec319c25d5a5cdea9a470d8471af1028b",
-		"papermc": "ed4e409bde447a61ef8367194a3f2e5f13ab188d"
-	},
-	"spigot_buildtool_sha1": "6f493b9fd966cd32098b70b2d14be21af020b799"
+  "version_manifest_v2_sha1": "eddfbc2746a4ab93b796f323a5c0686d2c2bea1f",
+  "versions_sha1": {
+    "vanilla": "fc3ada4b86f13589ba67292e9d2331bec48316b4",
+    "spigot": "3a1bd91159d562b830288a7ef6541dcd7f0ee83c",
+    "fabric": "2bcdefba2723e6a3ae5aad2663ea9fdca35cb5b2",
+    "forge": "74929fd14e6949f7d24d988c8bd1b2b1a5281a75",
+    "mohistmc": "c016756ec319c25d5a5cdea9a470d8471af1028b",
+    "papermc": "ed4e409bde447a61ef8367194a3f2e5f13ab188d"
+  },
+  "spigot_buildtool_sha1": "6f493b9fd966cd32098b70b2d14be21af020b799"
 }

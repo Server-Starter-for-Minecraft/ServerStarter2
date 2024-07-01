@@ -1,12 +1,8 @@
-import { ServerVersionFileProcess } from "../fileProcess/base";
+import { ServerVersionFileProcess } from '../fileProcess/base';
 
 export function getVanillaFp(): ServerVersionFileProcess {
   return {
-    setVersionFile: (path, readyRuntime) => {
-
-    },
-    removeVersionFile: (path) => {
-
-    }
-  }
+    setVersionFile: (path, readyRuntime) => {},
+    removeVersionFile: (path) => {},
+  };
 }
