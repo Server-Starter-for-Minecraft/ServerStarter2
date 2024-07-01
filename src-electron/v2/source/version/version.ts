@@ -42,40 +42,40 @@ export class VersionContainer {
   async listVanillaVersions(
     useCache: boolean
   ): Promise<Result<AllVanillaVersion>> {
-    return getVersionlist(useCache, versionListLoaders.vanilla);
+    return getVersionlist('vanilla', useCache, versionListLoaders.vanilla);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listForgeVersions(useCache: boolean): Promise<Result<AllForgeVersion>> {
-    return getVersionlist(useCache, versionListLoaders.forge);
+    return getVersionlist('forge', useCache, versionListLoaders.forge);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listSpigotVersions(
     useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
-    return getVersionlist(useCache, versionListLoaders.spigot);
+    return getVersionlist('spigot', useCache, versionListLoaders.spigot);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listPaperMcVersions(
     useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
-    return getVersionlist(useCache, versionListLoaders.papermc);
+    return getVersionlist('papermc', useCache, versionListLoaders.papermc);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listMohistMcVersions(
     useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
-    return getVersionlist(useCache, versionListLoaders.mohistmc);
+    return getVersionlist('mohistmc', useCache, versionListLoaders.mohistmc);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listFabricVersions(
     useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
-    return getVersionlist(useCache, versionListLoaders.fabric);
+    return getVersionlist('fabric', useCache, versionListLoaders.fabric);
   }
 
   /**
