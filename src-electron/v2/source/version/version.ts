@@ -124,7 +124,6 @@ export class VersionContainer {
   }
 }
 
-
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
@@ -138,7 +137,7 @@ if (import.meta.vitest) {
     expect(getList.isOk).toEqual(true);
     // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
     expect(getList.value()[getList.value().length - 1].id).toEqual('1.3');
-    
+
     const getCachedList = await getVersionlist(
       'vanilla',
       true,
@@ -147,6 +146,8 @@ if (import.meta.vitest) {
     // 取得に成功したか
     expect(getCachedList.isOk).toEqual(true);
     // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-    expect(getCachedList.value()[getCachedList.value().length - 1].id).toEqual('1.3');
+    expect(getCachedList.value()[getCachedList.value().length - 1].id).toEqual(
+      '1.3'
+    );
   });
 }

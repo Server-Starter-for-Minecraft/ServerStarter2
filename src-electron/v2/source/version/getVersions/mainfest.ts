@@ -90,7 +90,7 @@ async function getLocalVersionMainfest(): Promise<Result<ManifestJson>> {
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('manifest-handler-check', async () => {
-    const res = await getVersionMainfest()
-    expect(res.isOk).toBe(true)
+    const res = await getVersionMainfest();
+    expect(res.isOk).toBe(true);
   });
 }
