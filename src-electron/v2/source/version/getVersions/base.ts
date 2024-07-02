@@ -40,7 +40,7 @@ export type AllVerison =
 export interface VersionListLoader<T extends AllVerison> {
   getFromCache: () => Promise<Result<T>>;
   getFromURL: () => Promise<Result<T>>;
-  write4Cache: (obj: T) => void;
+  write4Cache: (obj: T) => Promise<Result<void>>;
 }
 
 /**

@@ -49,7 +49,7 @@ export function getVanillaVersionLoader(): VersionListLoader<AllVanillaVersion> 
       );
     },
     write4Cache: (obj) => {
-      allVanillasHandler.write(obj);
+      return allVanillasHandler.write(obj);
     },
   };
 }

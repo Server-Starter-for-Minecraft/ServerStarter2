@@ -49,7 +49,7 @@ export async function getVersionMainfest(): Promise<Result<ManifestJson>> {
       // 取得したJsonのHashデータを保存する
       writeVersManifestHash(response.value());
       // 取得したJsonを`version_manifest_v2.json`に保存する
-      manifestHandler.write(JSON.parse(strRes.value()));
+      await manifestHandler.write(JSON.parse(strRes.value()));
     }
   } else {
     // 失敗した場合ローカルから取得
@@ -84,4 +84,13 @@ async function getLocalVersionMainfest(): Promise<Result<ManifestJson>> {
     return err(new Error('NOT_MATCHED_MANIFEST_HASH'));
 
   return ok(manifestData.value());
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('manifest-handler-check', async () => {
+    const res = await getVersionMainfest()
+    expect(res.isOk).toBe(true)
+  });
 }
