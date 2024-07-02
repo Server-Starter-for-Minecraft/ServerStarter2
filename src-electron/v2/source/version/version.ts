@@ -10,6 +10,23 @@ import {
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { ServerVersionFileProcess } from './fileProcess/base';
+import { getVanillaFp } from './fileProcess/vanilla';
+import { getVersionlist } from './getVersions/base';
+import { getVanillaVersionLoader } from './getVersions/vanilla';
+
+const versionfps: Record<Version['type'], ServerVersionFileProcess> = {
+  vanilla: getVanillaFp(),
+};
+
+const versionListLoaders = {
+  vanilla: getVanillaVersionLoader(),
+  spigot: undefined,
+  papermc: undefined,
+  forge: undefined,
+  mohistmc: undefined,
+  fabric: undefined,
+};
 
 /**
  * バージョンを管理するクラス
@@ -25,40 +42,40 @@ export class VersionContainer {
   async listVanillaVersions(
     useCache: boolean
   ): Promise<Result<AllVanillaVersion>> {
-    return err(new Error('not_implemanted'));
+    return getVersionlist('vanilla', useCache, versionListLoaders.vanilla);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listForgeVersions(useCache: boolean): Promise<Result<AllForgeVersion>> {
-    return err(new Error('not_implemanted'));
+    return getVersionlist('forge', useCache, versionListLoaders.forge);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listSpigotVersions(
     useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
-    return err(new Error('not_implemanted'));
+    return getVersionlist('spigot', useCache, versionListLoaders.spigot);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listPaperMcVersions(
     useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
-    return err(new Error('not_implemanted'));
+    return getVersionlist('papermc', useCache, versionListLoaders.papermc);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listMohistMcVersions(
     useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
-    return err(new Error('not_implemanted'));
+    return getVersionlist('mohistmc', useCache, versionListLoaders.mohistmc);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listFabricVersions(
     useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
-    return err(new Error('not_implemanted'));
+    return getVersionlist('fabric', useCache, versionListLoaders.fabric);
   }
 
   /**
@@ -87,6 +104,7 @@ export class VersionContainer {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
+    return versionfps[version.type].setVersionFile(path, readyRuntime);
     // TODO: @CivilTT spigotの導入時に今はひどい条件分岐でMinecraftRuntimeを使用しているので、UniversalRuntimeを返すとよい
     return err(new Error('not_implemanted'));
   }
@@ -101,10 +119,35 @@ export class VersionContainer {
    *
    * libraries等が生成されていたら消す前にキャッシュに避難しておくと高速化できそう
    */
-  async removeVersion(
-    versionIdntity: Version,
-    path: Path
-  ): Promise<Result<void>> {
-    return err(new Error('not_implemanted'));
+  async removeVersion(version: Version, path: Path): Promise<Result<void>> {
+    return versionfps[version.type].removeVersionFile(path);
   }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('version-list', async () => {
+    const getList = await getVersionlist(
+      'vanilla',
+      false,
+      getVanillaVersionLoader()
+    );
+    // 取得に成功したか
+    expect(getList.isOk).toEqual(true);
+    // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
+    expect(getList.value()[getList.value().length - 1].id).toEqual('1.3');
+
+    const getCachedList = await getVersionlist(
+      'vanilla',
+      true,
+      getVanillaVersionLoader()
+    );
+    // 取得に成功したか
+    expect(getCachedList.isOk).toEqual(true);
+    // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
+    expect(getCachedList.value()[getCachedList.value().length - 1].id).toEqual(
+      '1.3'
+    );
+  });
 }
