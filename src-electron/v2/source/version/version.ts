@@ -104,7 +104,7 @@ export class VersionContainer {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
-    return versionfps[version.type].setVersionFile(path, readyRuntime);
+    return versionfps[version.type].setVersionFile(version, path, readyRuntime);
     // TODO: @CivilTT spigotの導入時に今はひどい条件分岐でMinecraftRuntimeを使用しているので、UniversalRuntimeを返すとよい
     return err(new Error('not_implemanted'));
   }

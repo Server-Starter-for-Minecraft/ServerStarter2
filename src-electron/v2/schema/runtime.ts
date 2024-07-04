@@ -1,12 +1,15 @@
+export const minecraftRuntimeVersions = [
+  'jre-legacy',
+  'java-runtime-alpha',
+  'java-runtime-beta',
+  'java-runtime-gamma',
+  'java-runtime-delta',
+] as const;
+
 // minecraftのデフォルトのランタイム
 export type MinecraftRuntime = {
   type: 'minecraft';
-  version:
-    | 'jre-legacy'
-    | 'java-runtime-alpha'
-    | 'java-runtime-beta'
-    | 'java-runtime-gamma'
-    | 'java-runtime-delta';
+  version: (typeof minecraftRuntimeVersions)[number];
 };
 
 // バージョンだけを指定するランタイム
