@@ -120,7 +120,7 @@ export class VersionContainer {
    * libraries等が生成されていたら消す前にキャッシュに避難しておくと高速化できそう
    */
   async removeVersion(version: Version, path: Path): Promise<Result<void>> {
-    return versionfps[version.type].removeVersionFile(path);
+    return versionfps[version.type].removeVersionFile(version, path);
   }
 }
 

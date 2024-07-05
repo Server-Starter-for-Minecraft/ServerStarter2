@@ -8,6 +8,7 @@ import {
 } from 'app/src-electron/v2/schema/version';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { SHA1 } from 'app/src-electron/v2/util/binary/hash';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
@@ -54,7 +55,12 @@ function vanillaMetaInfo2VersionJson(
 
   return metaInfoZod
     .transform((obj) =>
-      getVersionJsonObj(version, obj.downloads.server.url, obj.javaVersion)
+      getVersionJsonObj(
+        version,
+        obj.downloads.server.url,
+        obj.downloads.server.sha1,
+        obj.javaVersion
+      )
     )
     .parseAsync(metaObj);
 }
@@ -93,7 +99,31 @@ export function getVanillaFp(): ServerVersionFileProcess<VanillaVersion> {
         },
       });
     },
-    removeVersionFile: (path) => {},
+    removeVersionFile: async (version, path) => {
+      const cacheDir = getCacheVerFolderPath(version);
+      if (!cacheDir) {
+        return err(new Error('VERSION_IS_UNKNOWN'));
+      }
+
+      const cacheJarPath = getJarPath(cacheDir);
+      const cachelibPath = cacheDir.child('libraries');
+      const cacheEulaPath = cacheDir.child('eula.txt');
+      const removeJarPath = getJarPath(path);
+      const removelibPath = path.child('libraries');
+      const removeEulaPath = path.child('eula.txt');
+
+      // キャッシュにデータを戻す
+      await removeJarPath.copyTo(cacheJarPath);
+      await removelibPath.copyTo(cachelibPath);
+      await removeEulaPath.copyTo(cacheEulaPath);
+
+      // 実行時のバージョンデータを削除
+      await removeJarPath.remove();
+      await removelibPath.remove();
+      await removeEulaPath.remove();
+
+      return ok();
+    },
   };
 }
 
@@ -181,6 +211,20 @@ async function setJar(
       return downloadJar;
     }
 
+    // JarのHashを確認
+    const downloadJarHash = (await downloadJar.value().into(SHA1)).onOk(
+      (hash) => {
+        if (info.download.sha1 === hash) {
+          return ok(hash);
+        } else {
+          return err(new Error('DOWNLOAD_INVALID_SERVER_JAR'));
+        }
+      }
+    );
+    if (downloadJarHash.isErr) {
+      return downloadJarHash;
+    }
+
     // ダウンロードしたJarデータを書き出し
     const jarPath = getJarPath(targetPath);
     await jarPath.mkdir();
@@ -246,5 +290,12 @@ if (import.meta.vitest) {
     expect(getJarPath(outputPath).exists()).toBe(true);
     // Jarを実行しないと生成されないため，今回はTestの対象外
     // expect(outputPath.child('libraries').exists()).toBe(true);
+
+    // 実行後にファイル削除
+    await fp.removeVersionFile(ver21, outputPath);
+
+    // 削除後の状態を確認
+    expect(getJarPath(outputPath).exists()).toBe(false);
+    expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
   });
 }

@@ -6,6 +6,9 @@ import { Path } from '../../../util/binary/path';
 
 /**
  * サーバーの本体ファイルであるJarの設置と削除を担当する
+ * 
+ * setVersionFile()でデータを取得した際はremoveVersionFile()が走るときに取得したデータをキャッシュに格納する
+ * （`libraries`はJarの実行によって生成されたものをコピーする形式とし，事前ダウンロードはしない）
  */
 export interface ServerVersionFileProcess<V extends Version> {
   setVersionFile: (
@@ -18,7 +21,7 @@ export interface ServerVersionFileProcess<V extends Version> {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   >;
-  removeVersionFile: (path: Path) => Promise<Result<void>>;
+  removeVersionFile: (version: Version, path: Path) => Promise<Result<void>>;
 }
 
 /**
@@ -30,7 +33,7 @@ export function getJarPath(cwdPath: Path) {
 
 /**
  * 当該バージョンのキャッシュデータを保持するディレクトリを返す
- * 
+ *
  * unknown versionの時には`undefined`を返す
  */
 export function getCacheVerFolderPath(version: Version) {

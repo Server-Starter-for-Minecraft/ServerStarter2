@@ -24,6 +24,7 @@ const JarArgsZod = z.string().or(
 const VersionJsonZod = z.object({
   download: z.object({
     url: z.string(),
+    sha1: z.string(),
   }),
   javaVersion: z
     .object({
@@ -64,6 +65,7 @@ export function generateVersionJsonHandler(
 export async function getVersionJsonObj(
   version: Version,
   downloadURL: string,
+  jarSha1: string,
   javaVer?: VersionJson['javaVersion']
 ): Promise<Result<VersionJson>> {
   const baseCacheFolder = getCacheVerFolderPath(version);
@@ -92,6 +94,7 @@ export async function getVersionJsonObj(
   const returnObj: VersionJson = {
     download: {
       url: downloadURL,
+      sha1: jarSha1
     },
     arguments: args,
   };
@@ -135,6 +138,7 @@ if (import.meta.vitest) {
     const baseVerJsonDummy: VersionJson = {
       download: {
         url: 'https://piston-data.mojang.com/v1/objects/8dd1a28015f51b1803213892b50b7b4fc76e594d/server.jar',
+        sha1: ''
       },
       arguments: [
         { embed: 'JVM_ARGUMENT' },
