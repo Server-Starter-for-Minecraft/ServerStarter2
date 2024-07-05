@@ -94,7 +94,7 @@ export async function getVersionJsonObj(
   const returnObj: VersionJson = {
     download: {
       url: downloadURL,
-      sha1: jarSha1
+      sha1: jarSha1,
     },
     arguments: args,
   };
@@ -138,7 +138,7 @@ if (import.meta.vitest) {
     const baseVerJsonDummy: VersionJson = {
       download: {
         url: 'https://piston-data.mojang.com/v1/objects/8dd1a28015f51b1803213892b50b7b4fc76e594d/server.jar',
-        sha1: ''
+        sha1: '',
       },
       arguments: [
         { embed: 'JVM_ARGUMENT' },
