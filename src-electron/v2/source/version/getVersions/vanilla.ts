@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { err, ok } from 'app/src-electron/v2/util/base';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { AllVanillaVersion, VersionId } from '../../../schema/version';
-import { getVersionCacheFilePath, VersionListLoader } from './base';
+import { getFromCacheBase, getVersionCacheFilePath, VersionListLoader } from './base';
 import { getVersionMainfest } from './mainfest';
 
 const vanillaVerZod = z.object({
@@ -23,12 +23,7 @@ const allVanillasHandler = JsonSourceHandler.fromPath<AllVanillaVersion>(
  */
 export function getVanillaVersionLoader(): VersionListLoader<AllVanillaVersion> {
   return {
-    getFromCache: async () => {
-      if (!getVersionCacheFilePath('vanilla').exists()) {
-        return err(new Error('NOT_FOUND_VERSION_LIST_(VANILLA)'));
-      }
-      return allVanillasHandler.read();
-    },
+    getFromCache: () => getFromCacheBase('vanilla', allVanillasHandler),
     getFromURL: async () => {
       const manifest = await getVersionMainfest();
       if (manifest.isErr) return manifest;

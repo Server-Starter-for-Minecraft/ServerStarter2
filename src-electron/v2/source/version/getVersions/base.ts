@@ -1,4 +1,5 @@
 import { versionsCachePath } from 'app/src-electron/v2/core/const';
+import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import {
   AllFabricVersion,
   AllForgeVersion,
@@ -107,4 +108,19 @@ async function checkHashVer<T extends AllVerison>(
   } else {
     return err(new Error('NOT_MATCHED_VERSION_LIST_HASH'));
   }
+}
+
+/**
+ * `getFromCache()`における取得処理を共通化して宣言する
+ * 
+ * 当該サーバーの`all.json`がある場合は，このキャッシュデータを読み取る，
+ */
+export async function getFromCacheBase<T>(
+  verType: Version['type'],
+  handler: JsonSourceHandler<T>
+): Promise<Result<T>> {
+  if (!getVersionCacheFilePath(verType).exists()) {
+    return err(new Error(`NOT_FOUND_VERSION_LIST_(${verType.toUpperCase()})`));
+  }
+  return handler.read();
 }

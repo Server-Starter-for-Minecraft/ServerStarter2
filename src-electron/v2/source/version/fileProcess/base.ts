@@ -1,6 +1,6 @@
 import { versionsCachePath } from 'app/src-electron/v2/core/const';
 import { Runtime } from '../../../schema/runtime';
-import { Version } from '../../../schema/version';
+import { UnknownVersion, Version } from '../../../schema/version';
 import { Result } from '../../../util/base';
 import { Path } from '../../../util/binary/path';
 
@@ -21,7 +21,7 @@ export interface ServerVersionFileProcess<V extends Version> {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   >;
-  removeVersionFile: (version: Version, path: Path) => Promise<Result<void>>;
+  removeVersionFile: (version: V, path: Path) => Promise<Result<void>>;
 }
 
 /**
@@ -36,9 +36,12 @@ export function getJarPath(cwdPath: Path) {
  *
  * unknown versionの時には`undefined`を返す
  */
-export function getCacheVerFolderPath(version: Version) {
-  if (version.type === 'unknown') {
-    return undefined;
-  }
-  return versionsCachePath.child(`${version.type}/${version.id}`);
+export function getCacheVerFolderPath(version: UnknownVersion): undefined;
+export function getCacheVerFolderPath(
+  version: Exclude<Version, UnknownVersion>
+): Path;
+export function getCacheVerFolderPath<V extends Version>(version: V) {
+  return version.type === 'unknown'
+    ? undefined
+    : versionsCachePath.child(`${version.type}/${version.id}`);
 }

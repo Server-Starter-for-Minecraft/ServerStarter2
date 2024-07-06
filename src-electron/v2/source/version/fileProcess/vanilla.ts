@@ -69,9 +69,6 @@ export function getVanillaFp(): ServerVersionFileProcess<VanillaVersion> {
   return {
     setVersionFile: async (version, path, readyRuntime) => {
       const cacheDir = getCacheVerFolderPath(version);
-      if (!cacheDir) {
-        return err(new Error('VERSION_IS_UNKNOWN'));
-      }
 
       // バージョンに関する基本情報を取得
       const verJson = await getVersionJson(version);
@@ -82,7 +79,6 @@ export function getVanillaFp(): ServerVersionFileProcess<VanillaVersion> {
       // `server.jar`や`libraries`を取得し，要求されたパスに配置する
       const jarRes = await setJar(cacheDir, path, verJson.value());
       if (jarRes.isErr) {
-        console.log('test');
         return jarRes;
       }
 
@@ -101,9 +97,6 @@ export function getVanillaFp(): ServerVersionFileProcess<VanillaVersion> {
     },
     removeVersionFile: async (version, path) => {
       const cacheDir = getCacheVerFolderPath(version);
-      if (!cacheDir) {
-        return err(new Error('VERSION_IS_UNKNOWN'));
-      }
 
       const cacheJarPath = getJarPath(cacheDir);
       const cachelibPath = cacheDir.child('libraries');
