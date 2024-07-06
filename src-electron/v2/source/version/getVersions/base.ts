@@ -112,7 +112,7 @@ async function checkHashVer<T extends AllVerison>(
 
 /**
  * `getFromCache()`における取得処理を共通化して宣言する
- * 
+ *
  * 当該サーバーの`all.json`がある場合は，このキャッシュデータを読み取る，
  */
 export async function getFromCacheBase<T>(
