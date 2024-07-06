@@ -108,13 +108,49 @@ export class VersionContainer {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
-    if (version.type === 'unknown') {
-      return err(new Error('VERSION_IS_UNKNOWN'));
+    switch (version.type) {
+      case 'unknown':
+        return err(new Error('VERSION_IS_UNKNOWN'));
+      // TODO: log4jのxmlをキャッシュから移動させる処理を追加
+      // TODO: 引数の生成処理を共通化し，replaceEmbedArgs()も生成処理群に移動させる
+      // TODO: @txkodo 型エラー回避のためにそれぞれのバージョンを書き出している．より良い実装があれば変更希望
+      case 'vanilla':
+        return versionfps[version.type].setVersionFile(
+          version,
+          path,
+          readyRuntime
+        );
+      case 'spigot':
+        return versionfps[version.type].setVersionFile(
+          version,
+          path,
+          readyRuntime
+        );
+      case 'papermc':
+        return versionfps[version.type].setVersionFile(
+          version,
+          path,
+          readyRuntime
+        );
+      case 'forge':
+        return versionfps[version.type].setVersionFile(
+          version,
+          path,
+          readyRuntime
+        );
+      case 'mohistmc':
+        return versionfps[version.type].setVersionFile(
+          version,
+          path,
+          readyRuntime
+        );
+      case 'fabric':
+        return versionfps[version.type].setVersionFile(
+          version,
+          path,
+          readyRuntime
+        );
     }
-
-    return versionfps[version.type].setVersionFile(version, path, readyRuntime);
-    // TODO: @CivilTT spigotの導入時に今はひどい条件分岐でMinecraftRuntimeを使用しているので、UniversalRuntimeを返すとよい
-    return err(new Error('not_implemanted'));
   }
 
   /**
@@ -128,11 +164,23 @@ export class VersionContainer {
    * libraries等が生成されていたら消す前にキャッシュに避難しておくと高速化できそう
    */
   async removeVersion(version: Version, path: Path): Promise<Result<void>> {
-    if (version.type === 'unknown') {
-      return err(new Error('VERSION_IS_UNKNOWN'));
+    switch (version.type) {
+      case 'unknown':
+        return err(new Error('VERSION_IS_UNKNOWN'));
+      // TODO: @txkodo 型エラー回避のためにそれぞれのバージョンを書き出している．より良い実装があれば変更希望
+      case 'vanilla':
+        return versionfps[version.type].removeVersionFile(version, path);
+      case 'spigot':
+        return versionfps[version.type].removeVersionFile(version, path);
+      case 'papermc':
+        return versionfps[version.type].removeVersionFile(version, path);
+      case 'forge':
+        return versionfps[version.type].removeVersionFile(version, path);
+      case 'mohistmc':
+        return versionfps[version.type].removeVersionFile(version, path);
+      case 'fabric':
+        return versionfps[version.type].removeVersionFile(version, path);
     }
-
-    return versionfps[version.type].removeVersionFile(version, path);
   }
 }
 
