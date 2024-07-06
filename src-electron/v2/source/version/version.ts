@@ -10,15 +10,17 @@ import {
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { getForgeFp } from './fileProcess/forge';
 import { getVanillaFp } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
+import { getForgeVersionLoader } from './getVersions/forge';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
 
 const versionfps = {
   vanilla: getVanillaFp(),
   spigot: undefined,
   papermc: undefined,
-  forge: undefined,
+  forge: getForgeFp(),
   mohistmc: undefined,
   fabric: undefined,
 };
@@ -27,7 +29,7 @@ const versionListLoaders = {
   vanilla: getVanillaVersionLoader(),
   spigot: undefined,
   papermc: undefined,
-  forge: undefined,
+  forge: getForgeVersionLoader(),
   mohistmc: undefined,
   fabric: undefined,
 };

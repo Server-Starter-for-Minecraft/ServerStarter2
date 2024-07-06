@@ -6,6 +6,10 @@ export const minecraftRuntimeVersions = [
   'java-runtime-delta',
 ] as const;
 
+// Javaバージョンの指定がなかった時に使用する最も古いランタイム
+// minecraftRuntimeにおける`jre-legacy`に該当？
+export const oldestMajorVersion = 8;
+
 // minecraftのデフォルトのランタイム
 export type MinecraftRuntime = {
   type: 'minecraft';

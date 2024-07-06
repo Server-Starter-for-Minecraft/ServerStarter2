@@ -24,7 +24,7 @@ const JarArgsZod = z.string().or(
 const VersionJsonZod = z.object({
   download: z.object({
     url: z.string(),
-    sha1: z.string(),
+    sha1: z.string().optional(),
   }),
   javaVersion: z
     .object({
@@ -48,13 +48,19 @@ export function getVersionJsonPath(cwdPath: Path) {
 
 /**
  * `version.json`のHandlerを生成する
+ *
+ * @param childDirs VersionID以下にビルド番号のようなさらに細かいフォルダ分けが必要な時，仕分け順にフォルダ名のリストを渡す
  */
 export function generateVersionJsonHandler(
   verType: Version['type'],
-  verId: VersionId
+  verId: VersionId,
+  ...childDirs: string[]
 ) {
+  const childPath = [`${verType}`, verId];
+  childPath.push(...childDirs);
+
   return JsonSourceHandler.fromPath(
-    getVersionJsonPath(versionsCachePath.child(`${verType}/${verId}`)),
+    getVersionJsonPath(versionsCachePath.child(childPath.join('/'))),
     VersionJsonZod
   );
 }
@@ -65,7 +71,7 @@ export function generateVersionJsonHandler(
 export async function getVersionJsonObj(
   version: Version,
   downloadURL: string,
-  jarSha1: string,
+  jarSha1?: string,
   javaVer?: VersionJson['javaVersion']
 ): Promise<Result<VersionJson>> {
   const baseCacheFolder = getCacheVerFolderPath(version);

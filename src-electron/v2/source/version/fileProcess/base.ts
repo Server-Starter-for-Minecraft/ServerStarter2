@@ -40,6 +40,7 @@ export function getCacheVerFolderPath(version: UnknownVersion): undefined;
 export function getCacheVerFolderPath(
   version: Exclude<Version, UnknownVersion>
 ): Path;
+export function getCacheVerFolderPath(version: Version): Path | undefined;
 export function getCacheVerFolderPath<V extends Version>(version: V) {
   return version.type === 'unknown'
     ? undefined

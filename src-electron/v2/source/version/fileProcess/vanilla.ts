@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { serverSourcePath } from 'app/src-electron/v2/core/const';
-import { minecraftRuntimeVersions } from 'app/src-electron/v2/schema/runtime';
 import {
+  minecraftRuntimeVersions,
+  Runtime,
+} from 'app/src-electron/v2/schema/runtime';
+import {
+  UnknownVersion,
   VanillaVersion,
   Version,
   VersionId,
@@ -18,6 +22,7 @@ import {
   ServerVersionFileProcess,
 } from '../fileProcess/base';
 import { getVersionMainfest } from '../getVersions/mainfest';
+import { checkJarHash, removeJars, setJar } from './serverJar';
 import {
   generateVersionJsonHandler,
   getVersionJsonObj,
@@ -68,25 +73,33 @@ function vanillaMetaInfo2VersionJson(
 export function getVanillaFp(): ServerVersionFileProcess<VanillaVersion> {
   return {
     setVersionFile: async (version, path, readyRuntime) => {
+      // TODO: リファクタリング
+      // １．キャッシュ関連の処理（＝`version.json`の生成，各種ファイルの生成，チェック）
+      // ２．キャッシュデータを所定の位置に格納
+      // に分離し，それぞれの処理を確実に記述するための型定義を実施する
       const cacheDir = getCacheVerFolderPath(version);
 
       // バージョンに関する基本情報を取得
-      const verJson = await getVersionJson(version);
+      const verJson = await getVanillaVersionJson(version);
       if (verJson.isErr) {
         return verJson;
       }
 
       // `server.jar`や`libraries`を取得し，要求されたパスに配置する
-      const jarRes = await setJar(cacheDir, path, verJson.value());
-      if (jarRes.isErr) {
-        return jarRes;
-      }
+      const jarRes = await setJar(cacheDir, path, (targetJarPath) =>
+        downloadJar(
+          targetJarPath,
+          verJson.value().download.url,
+          verJson.value().download.sha1
+        )
+      );
+      if (jarRes.isErr) return jarRes;
 
       return ok({
         runtime: {
-          type: 'minecraft' as const,
+          type: 'minecraft',
           version: verJson.value().javaVersion?.component ?? 'jre-legacy',
-        },
+        } as Runtime,
         getCommand: (option: { jvmArgs: string[] }) => {
           return replaceEmbedArgs(verJson.value().arguments, {
             JAR_PATH: [getVersionJsonPath(path).toStr()],
@@ -95,45 +108,30 @@ export function getVanillaFp(): ServerVersionFileProcess<VanillaVersion> {
         },
       });
     },
-    removeVersionFile: async (version, path) => {
+    removeVersionFile: (version, path) => {
       const cacheDir = getCacheVerFolderPath(version);
-
-      const cacheJarPath = getJarPath(cacheDir);
-      const cachelibPath = cacheDir.child('libraries');
-      const cacheEulaPath = cacheDir.child('eula.txt');
-      const removeJarPath = getJarPath(path);
-      const removelibPath = path.child('libraries');
-      const removeEulaPath = path.child('eula.txt');
-
-      // キャッシュにデータを戻す
-      await removeJarPath.copyTo(cacheJarPath);
-      await removelibPath.copyTo(cachelibPath);
-      await removeEulaPath.copyTo(cacheEulaPath);
-
-      // 実行時のバージョンデータを削除
-      await removeJarPath.remove();
-      await removelibPath.remove();
-      await removeEulaPath.remove();
-
-      return ok();
+      return removeJars(path, cacheDir);
     },
   };
 }
 
 /**
- * `version.json`の内容を読み取って，必要な情報を取得する
+ * バニラの`version.json`の内容を読み取って，必要な情報を取得する
  *
  * `version.json`が存在しない場合は新しく生成する
  *
- * TODO: versionJson.tsに移築して一般化？
+ * バニラのバージョン情報をもとにほかのサーバーを起動するため，`export`している
  */
-async function getVersionJson(
-  version: VanillaVersion
+export async function getVanillaVersionJson(
+  version: Version
 ): Promise<Result<VersionJson>> {
+  if (version.type === 'unknown')
+    return err(new Error('NO_VERSION_JSON_IN_UNKNOWN_VERSION'));
+
   // Handlerを生成して登録する
   if (!Object.keys(verJsonHandlers).some((vId) => vId === version.id)) {
     verJsonHandlers[version.id] = generateVersionJsonHandler(
-      version.type,
+      'vanilla',
       version.id
     );
   }
@@ -180,51 +178,23 @@ async function getVersionJson(
 }
 
 /**
- * Jarファイルを所定の位置にセットする
- *
- * Jarのキャッシュがない場合はダウンロードデータをセットする
+ * 新しくJarをダウンロードする
  */
-async function setJar(
-  cachePath: Path,
-  targetPath: Path,
-  info: VersionJson
-): Promise<Result<void>> {
-  const cacheJarPath = getJarPath(cachePath);
-  const cachelibPath = cachePath.child('libraries');
-  const cacheEulaPath = cachePath.child('eula.txt');
-  // Jarをセット
-  if (cacheJarPath.exists()) {
-    await cacheJarPath.copyTo(getJarPath(targetPath));
-    // libs, eulaはあってもなくても良いため，チェックせずにコピーしようとさせる
-    await cachelibPath.copyTo(targetPath.child('libraries'));
-    await cacheEulaPath.copyTo(targetPath.child('eula.txt'));
-  } else {
-    const downloadJar = await new Url(info.download.url).into(Bytes);
-    if (downloadJar.isErr) {
-      return downloadJar;
-    }
+async function downloadJar(
+  targetJarPath: Path,
+  downloadURL: string,
+  correctHash?: string
+) {
+  const downloadJar = await new Url(downloadURL).into(Bytes);
+  if (downloadJar.isErr) return downloadJar;
 
-    // JarのHashを確認
-    const downloadJarHash = (await downloadJar.value().into(SHA1)).onOk(
-      (hash) => {
-        if (info.download.sha1 === hash) {
-          return ok(hash);
-        } else {
-          return err(new Error('DOWNLOAD_INVALID_SERVER_JAR'));
-        }
-      }
-    );
-    if (downloadJarHash.isErr) {
-      return downloadJarHash;
-    }
-
-    // ダウンロードしたJarデータを書き出し
-    const jarPath = getJarPath(targetPath);
-    await jarPath.mkdir();
-    return await downloadJar.value().into(jarPath);
+  // JarのHashを確認
+  if (correctHash) {
+    const downloadHash = await checkJarHash(downloadJar.value(), correctHash);
+    if (downloadHash?.isErr) return downloadHash;
   }
 
-  return ok();
+  return await downloadJar.value().into(targetJarPath);
 }
 
 /** In Source Testing */
