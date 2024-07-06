@@ -10,13 +10,17 @@ import {
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { ServerVersionFileProcess } from './fileProcess/base';
 import { getVanillaFp } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
 
-const versionfps: Record<Version['type'], ServerVersionFileProcess> = {
+const versionfps = {
   vanilla: getVanillaFp(),
+  spigot: undefined,
+  papermc: undefined,
+  forge: undefined,
+  mohistmc: undefined,
+  fabric: undefined,
 };
 
 const versionListLoaders = {
@@ -104,6 +108,10 @@ export class VersionContainer {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
+    if (version.type === 'unknown') {
+      return err(new Error('VERSION_IS_UNKNOWN'));
+    }
+
     return versionfps[version.type].setVersionFile(version, path, readyRuntime);
     // TODO: @CivilTT spigotの導入時に今はひどい条件分岐でMinecraftRuntimeを使用しているので、UniversalRuntimeを返すとよい
     return err(new Error('not_implemanted'));
@@ -120,6 +128,10 @@ export class VersionContainer {
    * libraries等が生成されていたら消す前にキャッシュに避難しておくと高速化できそう
    */
   async removeVersion(version: Version, path: Path): Promise<Result<void>> {
+    if (version.type === 'unknown') {
+      return err(new Error('VERSION_IS_UNKNOWN'));
+    }
+
     return versionfps[version.type].removeVersionFile(version, path);
   }
 }
