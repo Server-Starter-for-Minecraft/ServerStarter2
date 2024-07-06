@@ -64,7 +64,7 @@ export function getForgeVersionLoader(): VersionListLoader<AllForgeVersion> {
       const versions = (await Promise.all(ids.map(scrapeForgeVersions)))
         .filter((ver) => ver.isOk)
         .map((ver) => ver.value());
-      
+
       return ok(versions);
     },
     write4Cache: (obj) => {

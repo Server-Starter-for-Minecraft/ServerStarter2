@@ -108,8 +108,5 @@ async function updateCacheArgs(versionId: VersionId, args: string[]) {
   const updatedCache = deepcopy(cached.value());
   // TODO: `updatedCache`のargsを更新
 
-
-
-
   return handler.write(updatedCache);
 }
