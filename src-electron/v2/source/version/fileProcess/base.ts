@@ -55,10 +55,17 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
 
 /**
  * `server.jar`やその関連するサーバーファイルを設置する
+ * 
+ * このクラスは各サーバーごとに１つのみ生成する
  */
 export abstract class ReadyVersion<
   V extends Exclude<Version, UnknownVersion>
 > extends BaseVersionProcess<V> {
+  /**
+   * VersionJsonを扱うJsonHandlerを格納する
+   */
+  protected handler: JsonSourceHandler<VersionJson> | undefined;
+
   /**
    * バージョン関連のファイル操作を完全に完了する
    */
@@ -67,12 +74,15 @@ export abstract class ReadyVersion<
     readyRuntime: (runtime: Runtime) => Promise<Result<void>>
   ) {
     // STEP1: `version.json`の生成
-    const verJsonHandler = await this.generateVersionJson();
-    if (verJsonHandler.isErr) return verJsonHandler;
+    if (!this.handler) {
+      const verJsonHandler = await this.generateVersionJson();
+      if (verJsonHandler.isErr) return verJsonHandler;
+      this.handler = verJsonHandler.value()
+    }
 
     // STEP2: キャッシュデータを整備
     const copyFiles = await this.readyCache(
-      verJsonHandler.value(),
+      this.handler,
       readyRuntime
     );
     if (copyFiles.isErr) return copyFiles;
@@ -81,7 +91,7 @@ export abstract class ReadyVersion<
     await this.setFiles(copyFiles.value(), targetPath);
 
     // STEP4: 戻り値を生成
-    return this.generateReadyVersionReturns(verJsonHandler.value(), targetPath);
+    return this.generateReadyVersionReturns(this.handler, targetPath);
   }
 
   /**
@@ -130,7 +140,7 @@ export abstract class ReadyVersion<
   }
 
   /**
-   * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を読み取り or 生成する
+   * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を生成する
    */
   protected abstract generateVersionJson(): Promise<
     Result<JsonSourceHandler<VersionJson>>

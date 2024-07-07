@@ -6,13 +6,47 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
+  UnknownVersion,
   Version,
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { ReadyVersion } from './fileProcess/base';
+import { ReadyVanillaVersion } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
+
+/**
+ * ReadyVersion内で保持するversionJsonのHandlerを，
+ * 各バージョンごとに一つのみ生成とするために，ReadyVersionの生成は各バージョン１回までに制限する
+ */
+const readyVersionOperators: {
+  [K in Version['type']]: {
+    [ServerID in string]: ReadyVersion<Exclude<Version, UnknownVersion>>;
+  };
+} = {
+  vanilla: {},
+  spigot: {},
+  papermc: {},
+  forge: {},
+  mohistmc: {},
+  fabric: {},
+  unknown: {},
+};
+
+function callReadyVersionOperator(
+  verType: Version['type'],
+  newObj: ReadyVersion<Exclude<Version, UnknownVersion>>
+) {
+  const tmpObj = readyVersionOperators[verType][newObj.serverID];
+  if (tmpObj) {
+    return tmpObj;
+  } else {
+    readyVersionOperators[verType][newObj.serverID] = newObj;
+    return newObj;
+  }
+}
 
 /**
  * バージョンを管理するクラス
@@ -94,22 +128,40 @@ export class VersionContainer {
       case 'unknown':
         return err(new Error('VERSION_IS_UNKNOWN'));
       case 'vanilla':
-        const vanillaFp = new ReadyVanillaVersion(version);
+        const vanillaFp = callReadyVersionOperator(
+          version.type,
+          new ReadyVanillaVersion(version)
+        );
         return vanillaFp.completeReady4VersionFiles(path, readyRuntime);
       case 'spigot':
-        const spigotFp = new ReadySpigotVersion(version);
+        const spigotFp = callReadyVersionOperator(
+          version.type,
+          new ReadySpigotVersion(version)
+        );
         return spigotFp.completeReady4VersionFiles(path, readyRuntime);
       case 'papermc':
-        const papermcFp = new ReadyPaperMCVersion(version);
+        const papermcFp = callReadyVersionOperator(
+          version.type,
+          new ReadyPaperMCVersion(version)
+        );
         return papermcFp.completeReady4VersionFiles(path, readyRuntime);
       case 'forge':
-        const forgeFp = new ReadyForgeVersion(version);
+        const forgeFp = callReadyVersionOperator(
+          version.type,
+          new ReadyForgeVersion(version)
+        );
         return forgeFp.completeReady4VersionFiles(path, readyRuntime);
       case 'mohistmc':
-        const mohistmcFp = new ReadyMohistMCVersion(version);
+        const mohistmcFp = callReadyVersionOperator(
+          version.type,
+          new ReadyMohistMCVersion(version)
+        );
         return mohistmcFp.completeReady4VersionFiles(path, readyRuntime);
       case 'fabric':
-        const fabricFp = new ReadyFabricVersion(version);
+        const fabricFp = callReadyVersionOperator(
+          version.type,
+          new ReadyFabricVersion(version)
+        );
         return fabricFp.completeReady4VersionFiles(path, readyRuntime);
     }
   }
