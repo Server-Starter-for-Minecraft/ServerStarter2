@@ -4,15 +4,9 @@ import {
   minecraftRuntimeVersions,
   Runtime,
 } from 'app/src-electron/v2/schema/runtime';
-import {
-  UnknownVersion,
-  VanillaVersion,
-  Version,
-  VersionId,
-} from 'app/src-electron/v2/schema/version';
+import { VanillaVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
-import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { getJarPath, ReadyVersion, RemoveVersion } from '../fileProcess/base';
@@ -21,8 +15,6 @@ import { checkJarHash, getRuntimeObj } from './serverJar';
 import {
   generateVersionJsonHandler,
   getVersionJsonObj,
-  getVersionJsonPath,
-  replaceEmbedArgs,
   VersionJson,
 } from './versionJson';
 
@@ -31,7 +23,7 @@ import {
  */
 function vanillaMetaInfo2VersionJson(
   metaObj: Record<string, any>
-): Promise<Result<VersionJson>> {
+): VersionJson {
   // 取得したJSONのパース用型定義
   const metaInfoZod = z.object({
     downloads: z.object({
@@ -57,7 +49,7 @@ function vanillaMetaInfo2VersionJson(
         obj.javaVersion
       )
     )
-    .parseAsync(metaObj);
+    .parse(metaObj);
 }
 
 function getServerID(version: VanillaVersion) {
@@ -65,7 +57,7 @@ function getServerID(version: VanillaVersion) {
 }
 
 export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
-  protected async generateVersionJson(): Promise<
+  protected async generateVersionJsonHandler(): Promise<
     Result<JsonSourceHandler<VersionJson>>
   > {
     // `version.json`に書き込めるオブジェクトを生成
@@ -150,14 +142,9 @@ export async function getVanillaVersionJson(
   }
 
   // JSON情報を変換して`version.json`に書き込めるオブジェクトを生成
-  const verJson = await vanillaMetaInfo2VersionJson(
-    JSON.parse(jsonStr.value())
-  );
-  if (verJson.isErr) {
-    return verJson;
-  }
+  const verJson = vanillaMetaInfo2VersionJson(JSON.parse(jsonStr.value()));
 
-  return verJson;
+  return ok(verJson);
 }
 
 /** In Source Testing */
@@ -182,14 +169,9 @@ if (import.meta.vitest) {
     }
 
     // JSON情報を変換して`version.json`に書き込めるオブジェクトを生成
-    const verJson = await vanillaMetaInfo2VersionJson(
-      JSON.parse(jsonStr.value())
-    );
+    const verJson = vanillaMetaInfo2VersionJson(JSON.parse(jsonStr.value()));
 
-    expect(verJson.isOk).toBe(true);
-    expect(verJson.value().javaVersion?.component).toEqual(
-      'java-runtime-delta'
-    );
+    expect(verJson.javaVersion?.component).toEqual('java-runtime-delta');
   });
 
   test('setVersionJar', async () => {

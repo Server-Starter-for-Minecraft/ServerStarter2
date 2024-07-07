@@ -33,9 +33,13 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
    */
   protected _cachedSecondaryFiles: string[];
 
-  constructor(version: V, cachedSecondaryFiles = ['libraries', 'eula.txt']) {
+  constructor(version: V, cachedSecondaryFiles?: string[]) {
     this._version = version;
-    this._cachedSecondaryFiles = cachedSecondaryFiles;
+    this._cachedSecondaryFiles = [
+      'libraries',
+      'eula.txt',
+      ...(cachedSecondaryFiles ?? []),
+    ];
   }
 
   /**
@@ -75,7 +79,7 @@ export abstract class ReadyVersion<
   ) {
     // STEP1: `version.json`の生成
     if (!this.handler) {
-      const verJsonHandler = await this.generateVersionJson();
+      const verJsonHandler = await this.generateVersionJsonHandler();
       if (verJsonHandler.isErr) return verJsonHandler;
       this.handler = verJsonHandler.value();
     }
@@ -143,7 +147,7 @@ export abstract class ReadyVersion<
   /**
    * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を生成する
    */
-  protected abstract generateVersionJson(): Promise<
+  protected abstract generateVersionJsonHandler(): Promise<
     Result<JsonSourceHandler<VersionJson>>
   >;
 

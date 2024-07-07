@@ -8,7 +8,6 @@ import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { versionsCachePath } from 'app/src-electron/v2/core/const';
 import { minecraftRuntimeVersions } from 'app/src-electron/v2/schema/runtime';
 import { Version, VersionId } from 'app/src-electron/v2/schema/version';
-import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 
@@ -66,16 +65,18 @@ export function generateVersionJsonHandler(
 /**
  * `version.json`に書き込むオブジェクトを生成
  */
-export async function getVersionJsonObj(
+export function getVersionJsonObj(
   downloadURL: string,
   jarSha1?: string,
-  javaVer?: VersionJson['javaVersion']
-): Promise<Result<VersionJson>> {
+  javaVer?: VersionJson['javaVersion'],
+  customArgs?: string[]
+): VersionJson {
   // 引数群
   const args: VersionJson['arguments'] = [
     { embed: 'JVM_ARGUMENT' },
     javaEncodingToUtf8(),
     { embed: 'LOG4J_ARG' },
+    ...(customArgs ?? []),
     '--jar',
     { embed: 'JAR_PATH' },
     '--nogui',
@@ -93,7 +94,7 @@ export async function getVersionJsonObj(
     returnObj['javaVersion'] = javaVer;
   }
 
-  return ok(returnObj);
+  return returnObj;
 }
 
 /** stdin,stdout,stderrの文字コードをutf-8に */

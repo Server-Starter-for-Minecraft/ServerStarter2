@@ -1,112 +1,175 @@
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { Runtime } from 'app/src-electron/v2/schema/runtime';
-import { ForgeVersion, VersionId } from 'app/src-electron/v2/schema/version';
-import { err, ok, Result } from 'app/src-electron/v2/util/base';
+import { ForgeVersion } from 'app/src-electron/v2/schema/version';
+import { ok, Result } from 'app/src-electron/v2/util/base';
+import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Path } from 'app/src-electron/v2/util/binary/path';
+import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getCacheVerFolderPath, ServerVersionFileProcess } from './base';
-import { setJar } from './serverJar';
+import { getJarPath, ReadyVersion, RemoveVersion } from './base';
+import { constructExecPath, getNewForgeArgs } from './forgeArgAnalyzer';
+import { getRuntimeObj } from './serverJar';
 import { getVanillaVersionJson } from './vanilla';
-import {
-  generateVersionJsonHandler,
-  getVersionJsonPath,
-  replaceEmbedArgs,
-  VersionJson,
-} from './versionJson';
+import { generateVersionJsonHandler, VersionJson } from './versionJson';
 
-const verJsonHandlers: { [vId in VersionId]: JsonSourceHandler<VersionJson> } =
-  {};
-
-export function getForgeFp(): ServerVersionFileProcess<ForgeVersion> {
-  return {
-    async setVersionFile(version, path, readyRuntime) {
-      const cacheDir = getCacheVerFolderPath(version);
-
-      // バージョンに関する基本情報を取得
-      const verJson = await getForgeVersionJson(version);
-      if (verJson.isErr) return verJson;
-
-      // `server.jar`や`libraries`を取得し，要求されたパスに配置する
-      const jarRes = await setJar(cacheDir, path, (targetJarPath) =>
-        readyNewJar()
-      );
-      if (jarRes.isErr) {
-        return jarRes;
-      }
-
-      // JarのインストールによってVersion情報にアップデートが入ることがあるため，再取得する
-      const updatedVerJson = await getForgeVersionJson(version);
-      if (updatedVerJson.isErr) return updatedVerJson;
-
-      return ok({
-        runtime: {
-          type: 'minecraft',
-          version:
-            updatedVerJson.value().javaVersion?.component ?? 'jre-legacy',
-        } as Runtime,
-        getCommand: (option: { jvmArgs: string[] }) => {
-          return replaceEmbedArgs(updatedVerJson.value().arguments, {
-            JAR_PATH: [getVersionJsonPath(path).toStr()],
-            JVM_ARGUMENT: option.jvmArgs,
-          });
-        },
-      });
-    },
-    async removeVersionFile(version, path) {},
-  };
+function getServerID(version: ForgeVersion) {
+  return `${version.id}_${version.forge_version}`;
 }
 
-/**
- * Forge版の`version.json`を読み取る
- *
- * 存在しない場合はバニラ側のデータをもとに生成する
- */
-async function getForgeVersionJson(
-  version: ForgeVersion
-): Promise<Result<VersionJson>> {
-  // Handlerを生成して登録する
-  if (!Object.keys(verJsonHandlers).some((vId) => vId === version.id)) {
-    verJsonHandlers[version.id] = generateVersionJsonHandler(
-      version.type,
-      version.id,
-      version.forge_version
+export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
+  constructor(version: ForgeVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version, ['user_jvm_args.txt']);
+  }
+
+  protected async generateVersionJsonHandler(): Promise<
+    Result<JsonSourceHandler<VersionJson>>
+  > {
+    // バニラの情報をもとにForgeのversionJsonを生成
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id);
+    if (vanillaVerJson.isErr) return vanillaVerJson;
+
+    // ダウンロードURLを更新
+    const returnVerJson = deepcopy(vanillaVerJson.value());
+    returnVerJson.download = { url: this._version.download_url };
+
+    // handlerを生成して，verJsonを書き込み
+    const handler = generateVersionJsonHandler('forge', this._version.id);
+    const res = await handler.write(returnVerJson);
+    if (res.isErr) return res;
+
+    return ok(handler);
+  }
+  protected async generateCachedJar(
+    verJsonHandler: JsonSourceHandler<VersionJson>,
+    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+  ): Promise<Result<void>> {
+    const verJson = await verJsonHandler.read();
+    if (verJson.isErr) return verJson;
+
+    // `installer.jar`をダウンロード
+    const installerPath = this.cachePath.child('installer.jar');
+    const installerRes = await downloadInstaller(
+      verJson.value().download.url,
+      installerPath
+    );
+    if (installerRes.isErr) return installerRes;
+
+    // `installer.jar`を実行
+    const runtime = await this.getRuntime(verJsonHandler);
+    if (runtime.isErr) return runtime;
+    const installerRunRes = await getServerJarFromInstaller(
+      installerPath,
+      runtime.value(),
+      readyRuntime
+    );
+    if (installerRunRes.isErr) return installerRunRes;
+
+    // 生成したファイル群をリネーム
+    await renameFilesFromInstaller(this.cachePath, this._version);
+
+    // 生成されたファイルを解析して，引数を更新
+    const newVerJson = await getNewForgeArgs(
+      this.cachePath,
+      this._version,
+      verJson.value()
+    );
+    if (newVerJson.isErr) return newVerJson;
+
+    // 引数の更新を反映した`version.json`を書き出して終了
+    return await verJsonHandler.write(newVerJson.value());
+  }
+  protected async getRuntime(
+    verJsonHandler: JsonSourceHandler<VersionJson>
+  ): Promise<Result<Runtime>> {
+    const verJson = await verJsonHandler.read();
+    if (verJson.isErr) return verJson;
+
+    return ok(
+      getRuntimeObj('universal', verJson.value().javaVersion?.majorVersion)
     );
   }
-
-  // versionJsonを読み取って，問題なければこの情報を返す
-  const verJsonRes = await verJsonHandlers[version.id].read();
-  if (verJsonRes.isOk) {
-    return verJsonRes;
+  get serverID(): string {
+    return getServerID(this._version);
   }
+}
 
-  // 問題がある（存在しなかった）場合は，バニラの情報をもとにversionJsonを生成
-  const vanillaVerJson = await getVanillaVersionJson(version);
-  if (vanillaVerJson.isErr) return vanillaVerJson;
-
-  // ダウンロードURLを更新
-  const returnVerJson = deepcopy(vanillaVerJson.value());
-  returnVerJson.download = { url: version.download_url };
-
-  return ok(returnVerJson);
+export class RemoveForgeVersion extends RemoveVersion<ForgeVersion> {
+  get serverID(): string {
+    return getServerID(this._version);
+  }
 }
 
 /**
- * ForgeのJarを新しく準備する
- *
- * また，準備する過程で生成したコマンドの引数をversionJsonに格納する
+ * ForgeのJarを入手するために必要な`installer.jar`を入手
  */
-async function readyNewJar(targetJarPath: Path, version: ForgeVersion) {}
+async function downloadInstaller(
+  downloadURL: string,
+  installFilePath: Path
+): Promise<Result<void>> {
+  // Jar(Forgeの場合は`installer.jar`)をダウンロード
+  const downloadJar = await new Url(downloadURL).into(Bytes);
+  if (downloadJar.isErr) return downloadJar;
+
+  // generateVersionJsonHandler()において，installerのHashを書き込んでいないため，Hashのチェックは省略
+  // `installer.jar`を書き出し
+  const writeRes = await downloadJar.value().into(installFilePath);
+  if (writeRes.isErr) return writeRes;
+
+  return ok();
+}
 
 /**
- * Jarの新規インストールの過程で生成された引数群を保存する
+ * 入手した`installer.jar`を実行して`server.jar`を書き出す
  */
-async function updateCacheArgs(versionId: VersionId, args: string[]) {
-  const handler = verJsonHandlers[versionId];
-  const cached = await handler.read();
-  if (cached.isErr) return err(new Error('FAILED_READ_VERSION_JSON'));
+async function getServerJarFromInstaller(
+  installFilePath: Path,
+  runtime: Runtime,
+  readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+): Promise<Result<void>> {
+  const readyRuntimeRes = await readyRuntime(runtime);
+  if (readyRuntimeRes.isErr) return readyRuntimeRes;
 
-  const updatedCache = deepcopy(cached.value());
-  // TODO: `updatedCache`のargsを更新
+  // `installer.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
+  const args = [
+    '-jar',
+    installFilePath.absolute().quotedPath,
+    '--installServer',
+  ];
 
-  return handler.write(updatedCache);
+  // TODO: @txkodo Runtimeを準備した後にどのようにしてinstallerを起動するのか
+  // (インストーラーを実行して，Jarファイルを生成)
+
+  return ok();
+}
+
+/**
+ * `installer.jar`によって書き出したファイルを適切な名前にリネーム
+ */
+async function renameFilesFromInstaller(
+  cachePath: Path,
+  version: ForgeVersion
+) {
+  for (const file of await cachePath.iter()) {
+    const filename = file.basename();
+
+    // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
+    const match = filename.match(
+      /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal|-shim)?.jar/
+    );
+    if (match) {
+      await file.rename(getJarPath(cachePath));
+      return;
+    }
+
+    // 生成されたbatのファイル名を変更 (batを生成するバージョンだった場合)
+    if (filename === 'run.bat') {
+      await file.rename(constructExecPath(cachePath, version, '.bat'));
+    }
+
+    // 生成されたshのファイル名を変更 (shを生成するバージョンだった場合)
+    if (filename === 'run.sh') {
+      await file.rename(constructExecPath(cachePath, version, '.sh'));
+    }
+  }
 }

@@ -12,6 +12,7 @@ import {
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { ReadyVersion } from './fileProcess/base';
+import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
