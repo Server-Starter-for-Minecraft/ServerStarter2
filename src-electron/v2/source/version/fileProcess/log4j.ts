@@ -1,4 +1,4 @@
-import { Version } from 'app/src-electron/v2/schema/version';
+import { Version, VersionId } from 'app/src-electron/v2/schema/version';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Path } from 'app/src-electron/v2/util/binary/path';
@@ -514,10 +514,10 @@ async function download_xml_12_16(serverPath: Path) {
       ).into(Bytes)
     ).onOk((val) => val.toStr());
     if (data.isErr) return data;
-    return await xml.writeText(data.value());
+    return (await xml.writeText(data.value())).onOk(() => ok(xml));
   }
 
-  return ok();
+  return ok(xml);
 }
 
 const xml_7_11 = 'log4j2_17-111.xml';
@@ -530,61 +530,68 @@ async function download_xml_7_11(serverPath: Path) {
       ).into(Bytes)
     ).onOk((val) => val.toStr());
     if (data.isErr) return data;
-    return await xml.writeText(data.value());
+    return (await xml.writeText(data.value())).onOk(() => ok(xml));
   }
 
-  return ok();
+  return ok(xml);
 }
 
-/** log4jに対応するファイルを生成し、Javaの実行時引数を返す */
-export async function getLog4jArg(
-  serverPath: Path,
-  version: Version
-): Promise<Result<string | null>> {
-  // log4jの脆弱性に対応
-  // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
-
-  if (version.type === 'unknown') {
-    return err(new Error('VERSION_IS_UNKNOWN'));
-  }
-
+/**
+ * バージョン別で処理内容を変更する
+ */
+function processSwitcher<T, U>(
+  versionID: VersionId,
+  process_17_18: T,
+  process_12_16: T,
+  process_7_11: T,
+  other: U
+) {
   // 1.17-1.18
-  if (version.id in ver_17_18) {
-    return ok('-Dlog4j2.formatMsgNoLookups=true');
+  if (versionID in ver_17_18) {
+    return process_17_18;
   }
 
   // 1.12-1.16.5
-  if (version.id in ver_12_16) {
-    // const sub = progress.subtitle({
-    //   key: 'server.run.before.getLog4jSettingFile',
-    //   args: {
-    //     path: xml_12_16,
-    //   },
-    // });
-    const xml_12_16_res = await download_xml_12_16(serverPath);
-    if (xml_12_16_res.isErr) {
-      return xml_12_16_res;
-    }
-    // sub.delete();
-    return ok('-Dlog4j.configurationFile=log4j2_112-116.xml');
+  else if (versionID in ver_12_16) {
+    return process_12_16;
   }
 
   // 1.7-1.11.2
-  if (version.id in ver_7_11) {
-    // const sub = progress.subtitle({
-    //   key: 'server.run.before.getLog4jSettingFile',
-    //   args: {
-    //     path: xml_7_11,
-    //   },
-    // });
-    const xml_7_11_res = await download_xml_7_11(serverPath);
-    if (xml_7_11_res.isErr) {
-      return xml_7_11_res;
-    }
-    // sub.delete();
-    return ok('-Dlog4j.configurationFile=log4j2_17-111.xml');
+  else if (versionID in ver_7_11) {
+    return process_7_11;
   }
 
-  // それ以降orそれ以外
-  return ok(null);
+  return other;
+}
+
+/**
+ * Log4J対応で必要なJarに渡す引数を取得する
+ */
+export function getLog4jArg(versionID: VersionId): string | null {
+  return processSwitcher(
+    versionID,
+    '-Dlog4j2.formatMsgNoLookups=true',
+    '-Dlog4j.configurationFile=log4j2_112-116.xml',
+    '-Dlog4j.configurationFile=log4j2_17-111.xml',
+    null
+  );
+}
+
+type PatchReturnType = () => Promise<Result<Path | null>>;
+/**
+ * Log4J対応で必要なファイルを保存する
+ *
+ * @param savePath ファイルを保存するフォルダパス（キャッシュフォルダを想定）
+ */
+export function saveLog4JPatch(
+  versionID: VersionId,
+  savePath: Path
+): PatchReturnType {
+  return processSwitcher<PatchReturnType, PatchReturnType>(
+    versionID,
+    async () => ok(null),
+    () => download_xml_12_16(savePath),
+    () => download_xml_7_11(savePath),
+    async () => ok(null)
+  );
 }

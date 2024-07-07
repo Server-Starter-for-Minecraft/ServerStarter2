@@ -1,28 +1,15 @@
 import { versionsCachePath } from 'app/src-electron/v2/core/const';
+import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { Runtime } from '../../../schema/runtime';
 import { UnknownVersion, Version } from '../../../schema/version';
-import { Result } from '../../../util/base';
+import { ok, Result } from '../../../util/base';
 import { Path } from '../../../util/binary/path';
-
-/**
- * サーバーの本体ファイルであるJarの設置と削除を担当する
- *
- * setVersionFile()でデータを取得した際はremoveVersionFile()が走るときに取得したデータをキャッシュに格納する
- * （`libraries`はJarの実行によって生成されたものをコピーする形式とし，事前ダウンロードはしない）
- */
-export interface ServerVersionFileProcess<V extends Version> {
-  setVersionFile: (
-    version: V,
-    path: Path,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
-  ) => Promise<
-    Result<{
-      runtime: Runtime;
-      getCommand: (option: { jvmArgs: string[] }) => string[];
-    }>
-  >;
-  removeVersionFile: (version: V, path: Path) => Promise<Result<void>>;
-}
+import { getLog4jArg, saveLog4JPatch } from './log4j';
+import {
+  getVersionJsonPath,
+  replaceEmbedArgs,
+  VersionJson,
+} from './versionJson';
 
 /**
  * サーバーJarファイルのパスを返す
@@ -32,17 +19,209 @@ export function getJarPath(cwdPath: Path) {
 }
 
 /**
- * 当該バージョンのキャッシュデータを保持するディレクトリを返す
- *
- * unknown versionの時には`undefined`を返す
+ * 各サーバーバージョンに関連するファイルの操作をするための抽象クラス
  */
-export function getCacheVerFolderPath(version: UnknownVersion): undefined;
-export function getCacheVerFolderPath(
-  version: Exclude<Version, UnknownVersion>
-): Path;
-export function getCacheVerFolderPath(version: Version): Path | undefined;
-export function getCacheVerFolderPath<V extends Version>(version: V) {
-  return version.type === 'unknown'
-    ? undefined
-    : versionsCachePath.child(`${version.type}/${version.id}`);
+abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
+  /**
+   * 対象とするバージョンの情報
+   */
+  protected _version: V;
+  /**
+   * 「サーバーJar」や「log4Jのパッチファイル」といった主要なキャッシュファイル以外で対象とすべきキャッシュファイル群
+   *
+   * 各サーバーでこのほかに必要なファイルがある場合はコンストラクタの引数で指定する
+   */
+  protected _cachedSecondaryFiles: string[];
+
+  constructor(version: V, cachedSecondaryFiles = ['libraries', 'eula.txt']) {
+    this._version = version;
+    this._cachedSecondaryFiles = cachedSecondaryFiles;
+  }
+
+  /**
+   * 各サーバーを一意に特定するためのID
+   *
+   * バニラはVersionIDそのままでOKだが，Forge等ではVersionIDのほかにビルド番号を考慮する必要がある
+   */
+  abstract get serverID(): string;
+
+  /**
+   * 各サーバー別のキャッシュファイルの保存先
+   */
+  get cachePath() {
+    return versionsCachePath.child(`${this._version.type}/${this.serverID}`);
+  }
+}
+
+/**
+ * `server.jar`やその関連するサーバーファイルを設置する
+ */
+export abstract class ReadyVersion<
+  V extends Exclude<Version, UnknownVersion>
+> extends BaseVersionProcess<V> {
+  /**
+   * バージョン関連のファイル操作を完全に完了する
+   */
+  async completeReady4VersionFiles(
+    targetPath: Path,
+    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+  ) {
+    // STEP1: `version.json`の生成
+    const verJsonHandler = await this.generateVersionJson();
+    if (verJsonHandler.isErr) return verJsonHandler;
+
+    // STEP2: キャッシュデータを整備
+    const copyFiles = await this.readyCache(
+      verJsonHandler.value(),
+      readyRuntime
+    );
+    if (copyFiles.isErr) return copyFiles;
+
+    // STEP3: ファイルをキャッシュから移動
+    await this.setFiles(copyFiles.value(), targetPath);
+
+    // STEP4: 戻り値を生成
+    return this.generateReadyVersionReturns(verJsonHandler.value(), targetPath);
+  }
+
+  /**
+   * キャッシュを準備する
+   *
+   * サーバー実行に必要なパスの一覧を返す
+   */
+  protected async readyCache(
+    verJsonHandler: JsonSourceHandler<VersionJson>,
+    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+  ): Promise<Result<Path[]>> {
+    // Jarの生成
+    const generateJarRes = await this.generateCachedJar(
+      verJsonHandler,
+      readyRuntime
+    );
+    if (generateJarRes.isErr) return generateJarRes;
+    const paths = [getJarPath(this.cachePath)];
+
+    // Log4J対応
+    const log4JPatchPath = await saveLog4JPatch(
+      this._version.id,
+      this.cachePath
+    )();
+    if (log4JPatchPath.isErr) return log4JPatchPath;
+    const log4JPatchPathVal = log4JPatchPath.value();
+    if (log4JPatchPathVal !== null) paths.push(log4JPatchPathVal);
+
+    // その他のキャッシュファイル
+    paths.push(
+      ...this._cachedSecondaryFiles.map((fileName) =>
+        this.cachePath.child(fileName)
+      )
+    );
+
+    return ok(paths);
+  }
+
+  /**
+   * キャッシュをコピーする
+   */
+  protected async setFiles(paths: Path[], targetPath: Path): Promise<void> {
+    await Promise.all(
+      paths.map((p) => p.copyTo(targetPath.child(p.basename())))
+    );
+  }
+
+  /**
+   * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を読み取り or 生成する
+   */
+  protected abstract generateVersionJson(): Promise<
+    Result<JsonSourceHandler<VersionJson>>
+  >;
+
+  /**
+   * キャッシュされたJarを生成する
+   */
+  protected abstract generateCachedJar(
+    verJsonHandler: JsonSourceHandler<VersionJson>,
+    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+  ): Promise<Result<void>>;
+
+  /**
+   * 当該サーバーにおけるRuntimeオブジェクトを生成する
+   */
+  protected abstract getRuntime(
+    verJsonHandler: JsonSourceHandler<VersionJson>
+  ): Promise<Result<Runtime>>;
+
+  /**
+   * `readyVerison()`で要求される戻り値を生成する
+   */
+  protected async generateReadyVersionReturns(
+    verJsonHandler: JsonSourceHandler<VersionJson>,
+    targetPath: Path
+  ): Promise<
+    Result<{
+      runtime: Runtime;
+      getCommand: (option: { jvmArgs: string[] }) => string[];
+    }>
+  > {
+    const verJson = await verJsonHandler.read();
+    if (verJson.isErr) return verJson;
+
+    const runtime = await this.getRuntime(verJsonHandler);
+    if (runtime.isErr) return runtime;
+
+    return ok({
+      runtime: runtime.value(),
+      getCommand: (option: { jvmArgs: string[] }) => {
+        return replaceEmbedArgs(verJson.value().arguments, {
+          JAR_PATH: [getVersionJsonPath(targetPath).toStr()],
+          JVM_ARGUMENT: option.jvmArgs,
+          LOG4J_ARG: [getLog4jArg(this._version.id) ?? ''],
+        });
+      },
+    });
+  }
+}
+
+/**
+ * `server.jar`やその関連するサーバーファイルを削除する
+ */
+export abstract class RemoveVersion<
+  V extends Exclude<Version, UnknownVersion>
+> extends BaseVersionProcess<V> {
+  /**
+   * サーバーファイル群をキャッシュに撤退させる
+   */
+  async completeRemoveVersion(targetPath: Path) {
+    // server.jarを登録
+    const paths = [getJarPath(targetPath)];
+
+    // Log4J対応
+    const log4JPatchPath = await saveLog4JPatch(this._version.id, targetPath)();
+    log4JPatchPath.onOk((p) => {
+      if (p !== null) paths.push(p);
+      return ok();
+    });
+
+    // その他のキャッシュファイル
+    paths.push(
+      ...this._cachedSecondaryFiles.map((fileName) =>
+        targetPath.child(fileName)
+      )
+    );
+
+    // ファイル群を削除してキャッシュに撤退
+    this.removeFiles(paths);
+  }
+
+  /**
+   * サーバーファイル群をキャッシュに撤退させる
+   */
+  protected async removeFiles(paths: Path[]): Promise<void> {
+    // キャッシュに撤退
+    await Promise.all(
+      paths.map((p) => p.copyTo(this.cachePath.child(p.basename())))
+    );
+    // 元ファイルを削除
+    await Promise.all(paths.map((p) => p.remove()));
+  }
 }

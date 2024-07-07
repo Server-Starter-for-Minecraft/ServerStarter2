@@ -8,13 +8,11 @@ import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { versionsCachePath } from 'app/src-electron/v2/core/const';
 import { minecraftRuntimeVersions } from 'app/src-electron/v2/schema/runtime';
 import { Version, VersionId } from 'app/src-electron/v2/schema/version';
-import { err, ok, Result } from 'app/src-electron/v2/util/base';
+import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getCacheVerFolderPath } from './base';
-import { getLog4jArg } from './log4j';
 
-const embedTypes = ['JVM_ARGUMENT', 'JAR_PATH'] as const;
+const embedTypes = ['JVM_ARGUMENT', 'JAR_PATH', 'LOG4J_ARG'] as const;
 const JarArgsZod = z.string().or(
   z.object({
     embed: z.enum(embedTypes),
@@ -36,7 +34,7 @@ const VersionJsonZod = z.object({
 });
 
 type EmbedType = (typeof embedTypes)[number];
-type VerJsonArg = z.infer<typeof JarArgsZod>;
+export type VerJsonArg = z.infer<typeof JarArgsZod>;
 export type VersionJson = z.infer<typeof VersionJsonZod>;
 
 /**
@@ -69,33 +67,19 @@ export function generateVersionJsonHandler(
  * `version.json`に書き込むオブジェクトを生成
  */
 export async function getVersionJsonObj(
-  version: Version,
   downloadURL: string,
   jarSha1?: string,
   javaVer?: VersionJson['javaVersion']
 ): Promise<Result<VersionJson>> {
-  const baseCacheFolder = getCacheVerFolderPath(version);
-  if (!baseCacheFolder) {
-    return err(new Error('VERSION_IS_UNKNOWN'));
-  }
-
-  const log4jArg = await getLog4jArg(baseCacheFolder, version);
-  if (log4jArg.isErr) {
-    return log4jArg;
-  }
-
-  // 最初に記載する引数群
+  // 引数群
   const args: VersionJson['arguments'] = [
     { embed: 'JVM_ARGUMENT' },
     javaEncodingToUtf8(),
+    { embed: 'LOG4J_ARG' },
+    '--jar',
+    { embed: 'JAR_PATH' },
+    '--nogui',
   ];
-  // 条件によって入るか否かが変化するものをIfで分岐して挿入
-  const log4jArgVal = log4jArg.value();
-  if (log4jArgVal !== null) {
-    args.push(log4jArgVal);
-  }
-  // 最後に記載する引数群
-  args.push('--jar', { embed: 'JAR_PATH' }, '--nogui');
 
   const returnObj: VersionJson = {
     download: {
@@ -148,6 +132,7 @@ if (import.meta.vitest) {
       },
       arguments: [
         { embed: 'JVM_ARGUMENT' },
+        { embed: 'LOG4J_ARG' },
         '-Dlog4j2.formatMsgNoLookups=true',
         '--jar',
         { embed: 'JAR_PATH' },
@@ -158,6 +143,7 @@ if (import.meta.vitest) {
     const replacedArgs = replaceEmbedArgs(baseVerJsonDummy.arguments, {
       JAR_PATH: ['dummyPath'],
       JVM_ARGUMENT: ['replaceTest'],
+      LOG4J_ARG: ['log4J_ARG'],
     });
     // 戻り値はReplaceされている
     expect(replacedArgs[0]).toBe('replaceTest');

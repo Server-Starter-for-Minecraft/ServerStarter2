@@ -10,20 +10,9 @@ import {
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { getForgeFp } from './fileProcess/forge';
-import { getVanillaFp } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
-
-const versionfps = {
-  vanilla: getVanillaFp(),
-  spigot: undefined,
-  papermc: undefined,
-  forge: getForgeFp(),
-  mohistmc: undefined,
-  fabric: undefined,
-};
 
 const versionListLoaders = {
   vanilla: getVanillaVersionLoader(),
@@ -113,45 +102,24 @@ export class VersionContainer {
     switch (version.type) {
       case 'unknown':
         return err(new Error('VERSION_IS_UNKNOWN'));
-      // TODO: log4jのxmlをキャッシュから移動させる処理を追加
-      // TODO: 引数の生成処理を共通化し，replaceEmbedArgs()も生成処理群に移動させる
-      // TODO: @txkodo 型エラー回避のためにそれぞれのバージョンを書き出している．より良い実装があれば変更希望
       case 'vanilla':
-        return versionfps[version.type].setVersionFile(
-          version,
-          path,
-          readyRuntime
-        );
+        const vanillaFp = new ReadyVanillaVersion(version);
+        return vanillaFp.completeReady4VersionFiles(path, readyRuntime);
       case 'spigot':
-        return versionfps[version.type].setVersionFile(
-          version,
-          path,
-          readyRuntime
-        );
+        const spigotFp = new ReadySpigotVersion(version);
+        return spigotFp.completeReady4VersionFiles(path, readyRuntime);
       case 'papermc':
-        return versionfps[version.type].setVersionFile(
-          version,
-          path,
-          readyRuntime
-        );
+        const papermcFp = new ReadyPaperMCVersion(version);
+        return papermcFp.completeReady4VersionFiles(path, readyRuntime);
       case 'forge':
-        return versionfps[version.type].setVersionFile(
-          version,
-          path,
-          readyRuntime
-        );
+        const forgeFp = new ReadyForgeVersion(version);
+        return forgeFp.completeReady4VersionFiles(path, readyRuntime);
       case 'mohistmc':
-        return versionfps[version.type].setVersionFile(
-          version,
-          path,
-          readyRuntime
-        );
+        const mohistmcFp = new ReadyMohistMCVersion(version);
+        return mohistmcFp.completeReady4VersionFiles(path, readyRuntime);
       case 'fabric':
-        return versionfps[version.type].setVersionFile(
-          version,
-          path,
-          readyRuntime
-        );
+        const fabricFp = new ReadyFabricVersion(version);
+        return fabricFp.completeReady4VersionFiles(path, readyRuntime);
     }
   }
 
@@ -169,19 +137,24 @@ export class VersionContainer {
     switch (version.type) {
       case 'unknown':
         return err(new Error('VERSION_IS_UNKNOWN'));
-      // TODO: @txkodo 型エラー回避のためにそれぞれのバージョンを書き出している．より良い実装があれば変更希望
       case 'vanilla':
-        return versionfps[version.type].removeVersionFile(version, path);
+        const vanillaFp = new RemoveVanillaVersion(version);
+        return vanillaFp.completeRemoveVersion(path);
       case 'spigot':
-        return versionfps[version.type].removeVersionFile(version, path);
+        const spigotFp = new RemoveSpigotVersion(version);
+        return spigotFp.completeRemoveVersion(path);
       case 'papermc':
-        return versionfps[version.type].removeVersionFile(version, path);
+        const papermcFp = new RemovePaperMCVersion(version);
+        return papermcFp.completeRemoveVersion(path);
       case 'forge':
-        return versionfps[version.type].removeVersionFile(version, path);
+        const forgeFp = new RemoveForgeVersion(version);
+        return forgeFp.completeRemoveVersion(path);
       case 'mohistmc':
-        return versionfps[version.type].removeVersionFile(version, path);
+        const mohistmcFp = new RemoveMohistMCVersion(version);
+        return mohistmcFp.completeRemoveVersion(path);
       case 'fabric':
-        return versionfps[version.type].removeVersionFile(version, path);
+        const fabricFp = new RemoveFabricVersion(version);
+        return fabricFp.completeRemoveVersion(path);
     }
   }
 }
