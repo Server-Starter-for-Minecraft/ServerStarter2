@@ -1,42 +1,12 @@
-import { err, ok, Result } from 'app/src-electron/v2/util/base';
+import { AssertionError } from 'assert';
+import {
+  minecraftRuntimeVersions,
+  oldestMajorVersion,
+  Runtime,
+} from 'app/src-electron/v2/schema/runtime';
+import { err, ok } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { SHA1 } from 'app/src-electron/v2/util/binary/hash';
-import { Path } from 'app/src-electron/v2/util/binary/path';
-import { getJarPath } from './base';
-
-/**
- * Jarファイルを所定の位置にセットする
- *
- * Jarのキャッシュがない場合はダウンロードデータをセットする
- *
- * @param [targetData=['libraries']] JarとEulaのほかにキャッシュで管理しているバージョンデータ（規定値は`libraries`フォルダのみ）
- * @param downloadJar 所定のJarをダウンロードして`targetJarPath`に書き出す
- */
-export async function setJar(
-  cachePath: Path,
-  targetPath: Path,
-  downloadJar: (targetJarPath: Path) => Promise<Result<void>>,
-  targetData: string[] = ['libraries']
-) {
-  const cacheJarPath = getJarPath(cachePath);
-  const targetjarPath = getJarPath(targetPath);
-  // キャッシュがある場合はキャッシュからJarをセット
-  if (cacheJarPath.exists()) {
-    await cacheJarPath.copyTo(targetjarPath);
-    // targetData, eulaはあってもなくても良いため，チェックせずにコピーしようとさせる
-    await cachePath.child('eula.txt').copyTo(targetPath.child('eula.txt'));
-    await Promise.all(
-      targetData.map((d) => cachePath.child(d).copyTo(targetPath.child(d)))
-    );
-  } else {
-    // Jarのフォルダを作成しておく
-    await targetjarPath.mkdir();
-
-    // Jarのダウンロード
-    return await downloadJar(targetjarPath);
-  }
-  return ok();
-}
 
 /**
  * ダウンロードしたJarのデータをHash値で確認する
@@ -53,32 +23,40 @@ export async function checkJarHash(jarData: Bytes, correctHash: string) {
 }
 
 /**
- * セットしたJarをキャッシュへ撤退させる
+ * 指定されたRuntimeオブジェクトを返す
  */
-export async function removeJars(
-  jarDir: Path,
-  cacheDir: Path,
-  targetData: string[] = ['libraries']
-) {
-  const removeJarPath = getJarPath(jarDir);
-  const removeEulaPath = jarDir.child('eula.txt');
+export function getRuntimeObj(
+  runtimeType: 'minecraft',
+  javaVersion?: (typeof minecraftRuntimeVersions)[number]
+): Runtime;
+export function getRuntimeObj(
+  runtimeType: 'universal',
+  javaVersion?: number
+): Runtime;
+export function getRuntimeObj(
+  runtimeType: Runtime['type'],
+  javaVersion?: (typeof minecraftRuntimeVersions)[number] | number
+): Runtime {
+  // javaVersionのデフォルトがないときには，一番古いJavaバージョンを当てておく
+  if (!javaVersion) {
+    if (runtimeType === 'minecraft') {
+      javaVersion = 'jre-legacy';
+    } else {
+      javaVersion = oldestMajorVersion;
+    }
+  }
 
-  // キャッシュにデータを戻す
-  await removeJarPath.copyTo(getJarPath(cacheDir));
-  await removeEulaPath.copyTo(cacheDir.child('eula.txt'));
+  if (runtimeType === 'minecraft' && typeof javaVersion === 'string') {
+    return {
+      type: 'minecraft',
+      version: javaVersion,
+    };
+  } else if (runtimeType === 'universal' && typeof javaVersion === 'number') {
+    return {
+      type: 'universal',
+      majorVersion: javaVersion,
+    };
+  }
 
-  // 実行時のバージョンデータを削除
-  await removeJarPath.remove();
-  await removeEulaPath.remove();
-
-  // その他のバージョン関連データも同様に対応
-  await Promise.all(
-    targetData.map(async (d) => {
-      const removeDataInJarDir = jarDir.child(d);
-      await removeDataInJarDir.copyTo(cacheDir.child(d));
-      await removeDataInJarDir.remove();
-    })
-  );
-
-  return ok();
+  throw new AssertionError({ message: 'INVALID_ARG_PAIR' });
 }

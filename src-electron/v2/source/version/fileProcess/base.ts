@@ -101,12 +101,16 @@ export abstract class ReadyVersion<
     readyRuntime: (runtime: Runtime) => Promise<Result<void>>
   ): Promise<Result<Path[]>> {
     // Jarの生成
-    const generateJarRes = await this.generateCachedJar(
-      verJsonHandler,
-      readyRuntime
-    );
-    if (generateJarRes.isErr) return generateJarRes;
-    const paths = [getJarPath(this.cachePath)];
+    const cachedJarPath = getJarPath(this.cachePath);
+    if (!cachedJarPath.exists()) {
+      // Jarのダウンロードとファイルへの書き出し
+      const generateJarRes = await this.generateCachedJar(
+        verJsonHandler,
+        readyRuntime
+      );
+      if (generateJarRes.isErr) return generateJarRes;
+    }
+    const paths = [cachedJarPath];
 
     // Log4J対応
     const log4JPatchPath = await saveLog4JPatch(
@@ -217,7 +221,9 @@ export abstract class RemoveVersion<
     );
 
     // ファイル群を削除してキャッシュに撤退
-    this.removeFiles(paths);
+    await this.removeFiles(paths);
+
+    return ok();
   }
 
   /**

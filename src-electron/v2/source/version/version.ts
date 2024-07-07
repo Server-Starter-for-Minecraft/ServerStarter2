@@ -12,7 +12,7 @@ import {
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { ReadyVersion } from './fileProcess/base';
-import { ReadyVanillaVersion } from './fileProcess/vanilla';
+import { ReadyVanillaVersion, RemoveVanillaVersion } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
