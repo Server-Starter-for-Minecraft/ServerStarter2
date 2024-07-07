@@ -14,15 +14,6 @@ import { getVersionlist } from './getVersions/base';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
 
-const versionListLoaders = {
-  vanilla: getVanillaVersionLoader(),
-  spigot: undefined,
-  papermc: undefined,
-  forge: getForgeVersionLoader(),
-  mohistmc: undefined,
-  fabric: undefined,
-};
-
 /**
  * バージョンを管理するクラス
  */
@@ -37,40 +28,40 @@ export class VersionContainer {
   async listVanillaVersions(
     useCache: boolean
   ): Promise<Result<AllVanillaVersion>> {
-    return getVersionlist('vanilla', useCache, versionListLoaders.vanilla);
+    return getVersionlist('vanilla', useCache, getVanillaVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listForgeVersions(useCache: boolean): Promise<Result<AllForgeVersion>> {
-    return getVersionlist('forge', useCache, versionListLoaders.forge);
+    return getVersionlist('forge', useCache, getForgeVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listSpigotVersions(
     useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
-    return getVersionlist('spigot', useCache, versionListLoaders.spigot);
+    return getVersionlist('spigot', useCache, undefined);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listPaperMcVersions(
     useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
-    return getVersionlist('papermc', useCache, versionListLoaders.papermc);
+    return getVersionlist('papermc', useCache, undefined);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listMohistMcVersions(
     useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
-    return getVersionlist('mohistmc', useCache, versionListLoaders.mohistmc);
+    return getVersionlist('mohistmc', useCache, undefined);
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listFabricVersions(
     useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
-    return getVersionlist('fabric', useCache, versionListLoaders.fabric);
+    return getVersionlist('fabric', useCache, undefined);
   }
 
   /**
