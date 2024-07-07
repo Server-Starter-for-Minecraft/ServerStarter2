@@ -13,7 +13,7 @@ import { getVersionJsonObj, VersionJson } from './versionJson';
 export function constructExecPath(
   cwdPath: Path,
   version: ForgeVersion,
-  ext: string
+  ext: '.sh' | '.bat'
 ) {
   return cwdPath.child(`version${ext}`);
 }
