@@ -55,7 +55,7 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
 
 /**
  * `server.jar`やその関連するサーバーファイルを設置する
- * 
+ *
  * このクラスは各サーバーごとに１つのみ生成する
  */
 export abstract class ReadyVersion<
@@ -77,14 +77,11 @@ export abstract class ReadyVersion<
     if (!this.handler) {
       const verJsonHandler = await this.generateVersionJson();
       if (verJsonHandler.isErr) return verJsonHandler;
-      this.handler = verJsonHandler.value()
+      this.handler = verJsonHandler.value();
     }
 
     // STEP2: キャッシュデータを整備
-    const copyFiles = await this.readyCache(
-      this.handler,
-      readyRuntime
-    );
+    const copyFiles = await this.readyCache(this.handler, readyRuntime);
     if (copyFiles.isErr) return copyFiles;
 
     // STEP3: ファイルをキャッシュから移動
