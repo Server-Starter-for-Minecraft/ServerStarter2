@@ -1,12 +1,11 @@
-import { AssertionError } from 'assert';
 import {
-  minecraftRuntimeVersions,
   oldestMajorVersion,
   Runtime,
 } from 'app/src-electron/v2/schema/runtime';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { MD5, SHA1, SHA256 } from 'app/src-electron/v2/util/binary/hash';
+import { JavaVersionInfo } from './versionJson';
 
 /**
  * ダウンロードしたJarのデータをHash値で確認する
@@ -40,39 +39,23 @@ export async function checkJarHash(
 
 /**
  * 指定されたRuntimeオブジェクトを返す
+ *
+ * @param javaVersion `version.json`の'javaVersion'を渡す
  */
 export function getRuntimeObj(
-  runtimeType: 'minecraft',
-  javaVersion?: (typeof minecraftRuntimeVersions)[number]
-): Runtime;
-export function getRuntimeObj(
-  runtimeType: 'universal',
-  javaVersion?: number
-): Runtime;
-export function getRuntimeObj(
   runtimeType: Runtime['type'],
-  javaVersion?: (typeof minecraftRuntimeVersions)[number] | number
+  javaVersion?: JavaVersionInfo
 ): Runtime {
-  // javaVersionのデフォルトがないときには，一番古いJavaバージョンを当てておく
-  if (!javaVersion) {
-    if (runtimeType === 'minecraft') {
-      javaVersion = 'jre-legacy';
-    } else {
-      javaVersion = oldestMajorVersion;
-    }
+  switch (runtimeType) {
+    case 'minecraft':
+      return {
+        type: 'minecraft',
+        version: javaVersion?.component ?? 'jre-legacy',
+      };
+    case 'universal':
+      return {
+        type: 'universal',
+        majorVersion: javaVersion?.majorVersion ?? oldestMajorVersion,
+      };
   }
-
-  if (runtimeType === 'minecraft' && typeof javaVersion === 'string') {
-    return {
-      type: 'minecraft',
-      version: javaVersion,
-    };
-  } else if (runtimeType === 'universal' && typeof javaVersion === 'number') {
-    return {
-      type: 'universal',
-      majorVersion: javaVersion,
-    };
-  }
-
-  throw new AssertionError({ message: 'INVALID_ARG_PAIR' });
 }

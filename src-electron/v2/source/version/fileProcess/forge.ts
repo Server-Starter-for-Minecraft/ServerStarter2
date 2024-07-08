@@ -80,7 +80,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     if (verJson.isErr) return verJson;
 
     return ok(
-      getRuntimeObj('universal', verJson.value().javaVersion?.majorVersion)
+      getRuntimeObj('universal', verJson.value().javaVersion)
     );
   }
   get serverID(): string {

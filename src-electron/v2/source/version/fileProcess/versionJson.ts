@@ -18,22 +18,22 @@ const JarArgsZod = z.string().or(
   })
 );
 
+const javaVersionZod = z.object({
+  component: z.enum(minecraftRuntimeVersions),
+  majorVersion: z.number(),
+});
 const VersionJsonZod = z.object({
   download: z.object({
     url: z.string(),
     hash: z.string().optional(),
   }),
-  javaVersion: z
-    .object({
-      component: z.enum(minecraftRuntimeVersions),
-      majorVersion: z.number(),
-    })
-    .optional(),
+  javaVersion: javaVersionZod.optional(),
   arguments: JarArgsZod.array(),
 });
 
 type EmbedType = (typeof embedTypes)[number];
 export type VerJsonArg = z.infer<typeof JarArgsZod>;
+export type JavaVersionInfo = z.infer<typeof javaVersionZod>;
 export type VersionJson = z.infer<typeof VersionJsonZod>;
 
 /**

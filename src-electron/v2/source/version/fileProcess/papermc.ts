@@ -99,7 +99,7 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
     if (verJson.isErr) return verJson;
 
     return ok(
-      getRuntimeObj('minecraft', verJson.value().javaVersion?.component)
+      getRuntimeObj('minecraft', verJson.value().javaVersion)
     );
   }
   get serverID(): string {
