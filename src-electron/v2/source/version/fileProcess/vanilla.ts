@@ -92,9 +92,7 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
     const verJson = await verJsonHandler.read();
     if (verJson.isErr) return verJson;
 
-    return ok(
-      getRuntimeObj('minecraft', verJson.value().javaVersion)
-    );
+    return ok(getRuntimeObj('minecraft', verJson.value().javaVersion));
   }
   get serverID(): string {
     return getServerID(this._version);
