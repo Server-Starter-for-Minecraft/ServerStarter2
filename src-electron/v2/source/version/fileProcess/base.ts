@@ -6,6 +6,7 @@ import { ok, Result } from '../../../util/base';
 import { Path } from '../../../util/binary/path';
 import { getLog4jArg, saveLog4JPatch } from './log4j';
 import {
+  generateVersionJsonHandler,
   getVersionJsonPath,
   replaceEmbedArgs,
   VersionJson,
@@ -79,9 +80,17 @@ export abstract class ReadyVersion<
   ) {
     // STEP1: `version.json`の生成
     if (!this.handler) {
-      const verJsonHandler = await this.generateVersionJsonHandler();
-      if (verJsonHandler.isErr) return verJsonHandler;
-      this.handler = verJsonHandler.value();
+      // `version.json`のオブジェクトを生成
+      const verJson = await this.generateVersionJson();
+      if (verJson.isErr) return verJson;
+
+      // handlerを生成
+      this.handler = generateVersionJsonHandler(
+        this._version.type,
+        this.serverID
+      );
+      const res = await this.handler.write(verJson.value());
+      if (res.isErr) return res;
     }
 
     // STEP2: キャッシュデータを整備
@@ -147,8 +156,8 @@ export abstract class ReadyVersion<
   /**
    * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を生成する
    */
-  protected abstract generateVersionJsonHandler(): Promise<
-    Result<JsonSourceHandler<VersionJson>>
+  protected abstract generateVersionJson(): Promise<
+    Result<VersionJson>
   >;
 
   /**

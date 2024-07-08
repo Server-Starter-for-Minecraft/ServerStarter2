@@ -12,11 +12,7 @@ import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { getJarPath, ReadyVersion, RemoveVersion } from '../fileProcess/base';
 import { getVersionMainfest } from '../getVersions/mainfest';
 import { checkJarHash, getRuntimeObj } from './serverJar';
-import {
-  generateVersionJsonHandler,
-  getVersionJsonObj,
-  VersionJson,
-} from './versionJson';
+import { getVersionJsonObj, VersionJson } from './versionJson';
 
 /**
  * manifestのURLから取得される各バージョンのJSON情報を`version.json`の内容に変換
@@ -57,19 +53,13 @@ function getServerID(version: VanillaVersion) {
 }
 
 export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
-  protected async generateVersionJsonHandler(): Promise<
-    Result<JsonSourceHandler<VersionJson>>
-  > {
+  constructor(version: VanillaVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version);
+  }
+  protected generateVersionJson() {
     // `version.json`に書き込めるオブジェクトを生成
-    const verJson = await getVanillaVersionJson(this._version.id);
-    if (verJson.isErr) return verJson;
-
-    // handlerを生成して，verJsonを書き込み
-    const handler = generateVersionJsonHandler('vanilla', this._version.id);
-    const res = await handler.write(verJson.value());
-    if (res.isErr) return res;
-
-    return ok(handler);
+    return getVanillaVersionJson(this._version.id);
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
@@ -83,9 +73,13 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
     if (downloadJar.isErr) return downloadJar;
 
     // JarのHashを確認
-    const correctHash = verJson.value().download.sha1;
+    const correctHash = verJson.value().download.hash;
     if (correctHash) {
-      const downloadHash = await checkJarHash(downloadJar.value(), correctHash);
+      const downloadHash = await checkJarHash(
+        downloadJar.value(),
+        correctHash,
+        'sha1'
+      );
       if (downloadHash?.isErr) return downloadHash;
     }
 
@@ -182,7 +176,7 @@ if (import.meta.vitest) {
     // 条件をそろえるために，ファイル類を削除する
     await outputPath.remove();
     // キャッシュの威力を試したいときは以下の行をコメントアウト
-    await cachePath?.remove();
+    // await cachePath?.remove();
 
     const res = await readyOperator.completeReady4VersionFiles(
       outputPath,

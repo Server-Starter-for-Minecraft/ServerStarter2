@@ -4,22 +4,38 @@ import {
   oldestMajorVersion,
   Runtime,
 } from 'app/src-electron/v2/schema/runtime';
-import { err, ok } from 'app/src-electron/v2/util/base';
+import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
-import { SHA1 } from 'app/src-electron/v2/util/binary/hash';
+import { MD5, SHA1, SHA256 } from 'app/src-electron/v2/util/binary/hash';
 
 /**
  * ダウンロードしたJarのデータをHash値で確認する
  */
-export async function checkJarHash(jarData: Bytes, correctHash: string) {
-  const downloadJarHash = (await jarData.into(SHA1)).onOk((hash) => {
+export async function checkJarHash(
+  jarData: Bytes,
+  correctHash: string,
+  hashType: 'sha1' | 'sha256' | 'md5'
+): Promise<Result<string>> {
+  const hashProcesser = () => {
+    switch (hashType) {
+      case 'sha1':
+        return SHA1;
+      case 'sha256':
+        return SHA256;
+      case 'md5':
+        return MD5;
+    }
+  };
+
+  const downloadJarHash = (await jarData.into(hashProcesser())).onOk((hash) => {
     if (correctHash === hash) {
       return ok(hash);
     } else {
       return err(new Error('DOWNLOAD_INVALID_SERVER_JAR'));
     }
   });
-  if (downloadJarHash.isErr) return downloadJarHash;
+
+  return downloadJarHash;
 }
 
 /**

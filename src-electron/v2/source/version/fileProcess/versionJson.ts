@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { versionsCachePath } from 'app/src-electron/v2/core/const';
 import { minecraftRuntimeVersions } from 'app/src-electron/v2/schema/runtime';
-import { Version, VersionId } from 'app/src-electron/v2/schema/version';
+import { Version } from 'app/src-electron/v2/schema/version';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 
@@ -21,7 +21,7 @@ const JarArgsZod = z.string().or(
 const VersionJsonZod = z.object({
   download: z.object({
     url: z.string(),
-    sha1: z.string().optional(),
+    hash: z.string().optional(),
   }),
   javaVersion: z
     .object({
@@ -50,14 +50,10 @@ export function getVersionJsonPath(cwdPath: Path) {
  */
 export function generateVersionJsonHandler(
   verType: Version['type'],
-  verId: VersionId,
-  ...childDirs: string[]
+  serverID: string
 ) {
-  const childPath = [`${verType}`, verId];
-  childPath.push(...childDirs);
-
   return JsonSourceHandler.fromPath(
-    getVersionJsonPath(versionsCachePath.child(childPath.join('/'))),
+    getVersionJsonPath(versionsCachePath.child(`${verType}/${serverID}`)),
     VersionJsonZod
   );
 }
@@ -85,7 +81,7 @@ export function getVersionJsonObj(
   const returnObj: VersionJson = {
     download: {
       url: downloadURL,
-      sha1: jarSha1,
+      hash: jarSha1,
     },
     arguments: args,
   };
@@ -129,7 +125,7 @@ if (import.meta.vitest) {
     const baseVerJsonDummy: VersionJson = {
       download: {
         url: 'https://piston-data.mojang.com/v1/objects/8dd1a28015f51b1803213892b50b7b4fc76e594d/server.jar',
-        sha1: '',
+        hash: '',
       },
       arguments: [
         { embed: 'JVM_ARGUMENT' },

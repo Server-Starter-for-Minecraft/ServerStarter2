@@ -14,11 +14,16 @@ import { Path } from '../../util/binary/path';
 import { ReadyVersion } from './fileProcess/base';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
+  ReadyPaperMCVersion,
+  RemovePaperMCVersion,
+} from './fileProcess/papermc';
+import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
 } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
 import { getForgeVersionLoader } from './getVersions/forge';
+import { getPaperVersionLoader } from './getVersions/papermc';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
 
 /**
@@ -85,7 +90,7 @@ export class VersionContainer {
   async listPaperMcVersions(
     useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
-    return getVersionlist('papermc', useCache, undefined);
+    return getVersionlist('papermc', useCache, getPaperVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */

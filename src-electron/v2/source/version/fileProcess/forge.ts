@@ -10,7 +10,7 @@ import { getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { constructExecPath, getNewForgeArgs } from './forgeArgAnalyzer';
 import { getRuntimeObj } from './serverJar';
 import { getVanillaVersionJson } from './vanilla';
-import { generateVersionJsonHandler, VersionJson } from './versionJson';
+import { VersionJson } from './versionJson';
 
 function getServerID(version: ForgeVersion) {
   return `${version.id}_${version.forge_version}`;
@@ -22,9 +22,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     super(version, ['user_jvm_args.txt']);
   }
 
-  protected async generateVersionJsonHandler(): Promise<
-    Result<JsonSourceHandler<VersionJson>>
-  > {
+  protected async generateVersionJson() {
     // バニラの情報をもとにForgeのversionJsonを生成
     const vanillaVerJson = await getVanillaVersionJson(this._version.id);
     if (vanillaVerJson.isErr) return vanillaVerJson;
@@ -33,12 +31,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     const returnVerJson = deepcopy(vanillaVerJson.value());
     returnVerJson.download = { url: this._version.download_url };
 
-    // handlerを生成して，verJsonを書き込み
-    const handler = generateVersionJsonHandler('forge', this._version.id);
-    const res = await handler.write(returnVerJson);
-    if (res.isErr) return res;
-
-    return ok(handler);
+    return ok(returnVerJson);
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
