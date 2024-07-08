@@ -156,9 +156,7 @@ export abstract class ReadyVersion<
   /**
    * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を生成する
    */
-  protected abstract generateVersionJson(): Promise<
-    Result<VersionJson>
-  >;
+  protected abstract generateVersionJson(): Promise<Result<VersionJson>>;
 
   /**
    * キャッシュされたJarを生成する
