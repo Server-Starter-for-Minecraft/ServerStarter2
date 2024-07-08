@@ -1,6 +1,7 @@
 import { deepcopy } from 'app/src-electron/util/deepcopy';
+import { serverSourcePath } from 'app/src-electron/v2/core/const';
 import { Runtime } from 'app/src-electron/v2/schema/runtime';
-import { ForgeVersion } from 'app/src-electron/v2/schema/version';
+import { ForgeVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Path } from 'app/src-electron/v2/util/binary/path';
@@ -165,4 +166,52 @@ async function renameFilesFromInstaller(
       await file.rename(constructExecPath(cachePath, version, '.sh'));
     }
   }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+
+  const ver21: ForgeVersion = {
+    id: '1.21' as VersionId,
+    type: 'forge',
+    forge_version: '51.0.21',
+    download_url:
+      'https://adfoc.us/serve/sitelinks/?id=271228&url=https://maven.minecraftforge.net/net/minecraftforge/forge/1.21-51.0.22/forge-1.21-51.0.22-installer.jar',
+  };
+
+  test('setForgeJar', async () => {
+    const outputPath = serverSourcePath.child('testForge/ver21');
+    const readyOperator = new ReadyForgeVersion(ver21);
+    const cachePath = readyOperator.cachePath;
+
+    // 条件をそろえるために，ファイル類を削除する
+    await outputPath.remove();
+    // キャッシュの威力を試したいときは以下の行をコメントアウト
+    await cachePath?.remove();
+
+    const res = await readyOperator.completeReady4VersionFiles(
+      outputPath,
+      async (runtime) => ok()
+    );
+
+    // 戻り値の検証
+    expect(res.isOk).toBe(true);
+    expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
+      'replaceArg'
+    );
+
+    // ファイルの設置状況の検証
+    expect(getJarPath(outputPath).exists()).toBe(true);
+    // Jarを実行しないと生成されないため，今回はTestの対象外
+    // expect(outputPath.child('libraries').exists()).toBe(true);
+
+    // 実行後にファイル削除
+    const remover = new RemoveForgeVersion(ver21);
+    await remover.completeRemoveVersion(outputPath);
+
+    // 削除後の状態を確認
+    expect(getJarPath(outputPath).exists()).toBe(false);
+    expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+  });
 }

@@ -124,7 +124,7 @@ if (import.meta.vitest) {
   };
 
   test('setPaperJar', async () => {
-    const outputPath = serverSourcePath.child('test/ver21');
+    const outputPath = serverSourcePath.child('testPaper/ver21');
     const readyOperator = new ReadyPaperMCVersion(ver21);
     const cachePath = readyOperator.cachePath;
 
