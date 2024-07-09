@@ -80,17 +80,20 @@ export abstract class ReadyVersion<
   ) {
     // STEP1: `version.json`の生成
     if (!this.handler) {
-      // `version.json`のオブジェクトを生成
-      const verJson = await this.generateVersionJson();
-      if (verJson.isErr) return verJson;
-
       // handlerを生成
       this.handler = generateVersionJsonHandler(
         this._version.type,
         this.serverID
       );
-      const res = await this.handler.write(verJson.value());
-      if (res.isErr) return res;
+
+      if ((await this.handler.read()).isErr) {
+        // `version.json`のオブジェクトを生成
+        const verJson = await this.generateVersionJson();
+        if (verJson.isErr) return verJson;
+        
+        const res = await this.handler.write(verJson.value());
+        if (res.isErr) return res;
+      }
     }
 
     // STEP2: キャッシュデータを整備
