@@ -14,6 +14,10 @@ import { Path } from '../../util/binary/path';
 import { ReadyVersion } from './fileProcess/base';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
+  ReadyMohistMCVersion,
+  RemoveMohistMCVersion,
+} from './fileProcess/mohistmc';
+import {
   ReadyPaperMCVersion,
   RemovePaperMCVersion,
 } from './fileProcess/papermc';
@@ -23,6 +27,7 @@ import {
 } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
 import { getForgeVersionLoader } from './getVersions/forge';
+import { getMohistMCVersionLoader } from './getVersions/mohistmc';
 import { getPaperVersionLoader } from './getVersions/papermc';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
 
@@ -97,7 +102,7 @@ export class VersionContainer {
   async listMohistMcVersions(
     useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
-    return getVersionlist('mohistmc', useCache, undefined);
+    return getVersionlist('mohistmc', useCache, getMohistMCVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */

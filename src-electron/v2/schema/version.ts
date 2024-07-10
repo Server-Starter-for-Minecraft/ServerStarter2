@@ -36,6 +36,10 @@ export type MohistmcVersion = {
   type: 'mohistmc';
   forge_version?: string;
   number: number;
+  jar: {
+    url: string;
+    md5: string;
+  };
 };
 
 export type FabricVersion = {
@@ -68,7 +72,14 @@ export type AllForgeVersion = {
 
 export type AllMohistmcVersion = {
   id: VersionId;
-  builds: { number: number; forge_version?: string }[];
+  builds: {
+    number: number;
+    forge_version?: string;
+    jar: {
+      url: string;
+      md5: string;
+    };
+  }[];
 }[];
 
 export type AllFabricVersion = {
