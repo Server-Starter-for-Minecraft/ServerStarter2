@@ -16,7 +16,7 @@ const paperVerZod = z.object({
 });
 
 /**
- * バニラにおける`all.json`を定義
+ * Paperにおける`all.json`を定義
  */
 const allPapersHandler = JsonSourceHandler.fromPath<AllPapermcVersion>(
   getVersionCacheFilePath('papermc'),
@@ -48,24 +48,14 @@ export function getPaperVersionLoader(): VersionListLoader<AllPapermcVersion> {
   return {
     getFromCache: () => getFromCacheBase('papermc', allPapersHandler),
     getFromURL: async (): Promise<Result<AllPapermcVersion>> => {
-      const jsonTxt = (await new Url(paperAllVersionsURL).into(Bytes)).onOk(
-        (val) => val.toStr()
+      // 全バージョンのメタ情報を読み込み
+      const allVerMeta = await loadAllVersion();
+      if (allVerMeta.isErr) return allVerMeta;
+
+      // メタ情報を各バージョンオブジェクトに変換
+      const results = await Promise.all(
+        allVerMeta.value().versions.reverse().map(loadEachVersion)
       );
-      if (jsonTxt.isErr) return jsonTxt;
-
-      // json文字列をパース（エラーの可能性があるためResultでラップ）
-      const parsedAllVersJson = Result.catchSync(() =>
-        paperAllVersionsZod.parse(JSON.parse(jsonTxt.value()))
-      );
-      if (parsedAllVersJson.isErr) return parsedAllVersJson;
-
-      const promisses = parsedAllVersJson
-        .value()
-        .versions.reverse()
-        .map(loadEachVersion);
-
-      const results = await Promise.all(promisses);
-
       return ok(results.filter((v) => v.isOk).map((v) => v.value()));
     },
     write4Cache: (obj) => {
@@ -74,6 +64,24 @@ export function getPaperVersionLoader(): VersionListLoader<AllPapermcVersion> {
   };
 }
 
+/**
+ * 全てのバージョンのメタ情報を収集
+ */
+async function loadAllVersion() {
+  const jsonTxt = (await new Url(paperAllVersionsURL).into(Bytes)).onOk((val) =>
+    val.toStr()
+  );
+  if (jsonTxt.isErr) return jsonTxt;
+
+  // json文字列をパース（エラーの可能性があるためResultでラップ）
+  return Result.catchSync(() =>
+    paperAllVersionsZod.parse(JSON.parse(jsonTxt.value()))
+  );
+}
+
+/**
+ * メタ情報から当該バージョンのオブジェクトを生成
+ */
 async function loadEachVersion(
   versionName: string
 ): Promise<Result<AllPapermcVersion[number]>> {
