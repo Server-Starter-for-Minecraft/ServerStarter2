@@ -90,7 +90,7 @@ export abstract class ReadyVersion<
         // `version.json`のオブジェクトを生成
         const verJson = await this.generateVersionJson();
         if (verJson.isErr) return verJson;
-        
+
         const res = await this.handler.write(verJson.value());
         if (res.isErr) return res;
       }
