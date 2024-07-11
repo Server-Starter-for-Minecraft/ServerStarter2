@@ -59,7 +59,7 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
   }
   protected generateVersionJson() {
     // `version.json`に書き込めるオブジェクトを生成
-    return getVanillaVersionJson(this._version.id);
+    return getVanillaVersionJson(this._version.id, false);
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
@@ -111,10 +111,11 @@ export class RemoveVanillaVersion extends RemoveVersion<VanillaVersion> {
  * バニラの`version.json`をもとにほかのサーバーの`version.json`を作成するため，`export`している
  */
 export async function getVanillaVersionJson(
-  versionID: VersionId
+  versionID: VersionId,
+  useCache: boolean
 ): Promise<Result<VersionJson>> {
   // バージョン情報の大元は`version_manifest_v2.json`から取得する
-  const manifest = await getVersionMainfest();
+  const manifest = await getVersionMainfest(useCache);
   if (manifest.isErr) {
     return manifest;
   }

@@ -25,7 +25,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
 
   protected async generateVersionJson() {
     // バニラの情報をもとにForgeのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id);
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // ダウンロードURLを更新

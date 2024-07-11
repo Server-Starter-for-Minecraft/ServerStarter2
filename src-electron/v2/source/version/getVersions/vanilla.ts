@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { err, ok } from 'app/src-electron/v2/util/base';
+import { ok } from 'app/src-electron/v2/util/base';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { AllVanillaVersion, VersionId } from '../../../schema/version';
 import {
@@ -29,7 +29,7 @@ export function getVanillaVersionLoader(): VersionListLoader<AllVanillaVersion> 
   return {
     getFromCache: () => getFromCacheBase('vanilla', allVanillasHandler),
     getFromURL: async () => {
-      const manifest = await getVersionMainfest();
+      const manifest = await getVersionMainfest(false);
       if (manifest.isErr) return manifest;
 
       // 1.2.5以前はマルチサーバーが存在しない

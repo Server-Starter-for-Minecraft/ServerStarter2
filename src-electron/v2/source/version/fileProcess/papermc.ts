@@ -41,7 +41,7 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
   }
   protected async generateVersionJson() {
     // バニラの情報をもとにPaperのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id);
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // Jarの情報を取得

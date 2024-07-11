@@ -37,8 +37,13 @@ const manifestHandler = JsonSourceHandler.fromPath(
 );
 
 /** version_manifest_v2.jsonを取得して内容を返す */
-export async function getVersionMainfest(): Promise<Result<ManifestJson>> {
-  // URLからデータを取得 (内容が変わっている可能性があるのでsha1チェックは行わない)
+export async function getVersionMainfest(useCache: boolean): Promise<Result<ManifestJson>> {
+  if (useCache) {
+    const cachedManifest = await manifestHandler.read()
+    if (cachedManifest.isOk) return cachedManifest
+  }
+  
+  // URLからデータを取得
   const response = await new Url(MANIFEST_URL).into(Bytes);
 
   if (response.isOk) {
@@ -75,12 +80,6 @@ async function getLocalVersionMainfest(): Promise<Result<ManifestJson>> {
   if (manifestJsonHash.isErr) {
     return manifestJsonHash;
   } else if (manifestJsonHash.value() !== manifestSha1)
-    // 旧実装
-    // return errorMessage.data.hashNotMatch({
-    //   hashtype: 'sha1',
-    //   type: 'file',
-    //   path: versionManifestPath.path,
-    // });
     return err(new Error('NOT_MATCHED_MANIFEST_HASH'));
 
   return ok(manifestData.value());
@@ -90,7 +89,7 @@ async function getLocalVersionMainfest(): Promise<Result<ManifestJson>> {
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('manifest-handler-check', async () => {
-    const res = await getVersionMainfest();
+    const res = await getVersionMainfest(false);
     expect(res.isOk).toBe(true);
   });
 }

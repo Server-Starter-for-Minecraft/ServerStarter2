@@ -21,7 +21,7 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
     // バニラの情報をもとにMohistのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id);
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // ダウンロードURLを更新
