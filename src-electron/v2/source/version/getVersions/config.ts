@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ok } from 'app/src-electron/v2/util/base';
 import { versionsCachePath } from '../../../core/const';
 import { Version } from '../../../schema/version';
 import { Bytes } from '../../../util/binary/bytes';
@@ -9,16 +10,18 @@ import { AllVerison } from './base';
 /**
  * Version全体の設定を保存するファイルを定義
  */
-const VersConfigZod = z.object({
-  version_manifest_v2_sha1: z.string().optional(),
-  spigot_buildtool_sha1: z.string().optional(),
-  versions_sha1: z
-    .record(
-      z.string().transform((ver) => ver as Version['type']),
-      z.string()
-    )
-    .optional(),
-});
+const VersConfigZod = z
+  .object({
+    version_manifest_v2_sha1: z.string().optional(),
+    spigot_buildtool_sha1: z.string().optional(),
+    versions_sha1: z
+      .record(
+        z.string().transform((ver) => ver as Version['type']),
+        z.string()
+      )
+      .optional(),
+  })
+  .default({});
 
 const versConfigHandler = JsonSourceHandler.fromPath(
   versionsCachePath.child('config.json'),
@@ -70,18 +73,24 @@ export async function writeVersionListHash<T extends AllVerison>(
 ) {
   const tmpConfig = await getFromGeneralVerConfig();
   if (tmpConfig.isErr) {
-    return;
+    return tmpConfig;
   }
 
   const verHash = await getVerListHash(vers);
   if (verHash.isErr) {
-    return;
+    return verHash;
   }
 
-  tmpConfig.value().versions_sha1 = {
+  const config = tmpConfig.value();
+  const versConfig = config.versions_sha1 ?? {};
+  config.versions_sha1 = Object.assign(versConfig, {
     [verType]: verHash.value(),
-  };
-  versConfigHandler.write(tmpConfig.value());
+  });
+
+  const res = await versConfigHandler.write(config);
+  if (res.isErr) return res;
+
+  return ok();
 }
 
 /**

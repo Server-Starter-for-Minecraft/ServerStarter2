@@ -66,9 +66,11 @@ export async function getVersionlist<T extends AllVerison>(
   }
 
   // 結果を各サーバーのバージョン一覧（`all.json`）に保存
-  loader.write4Cache(allVers.value());
+  const writeAllJsonRes = await loader.write4Cache(allVers.value());
+  if (writeAllJsonRes.isErr) return writeAllJsonRes;
   // `all.json`のHash値を設定ファイルに保存
-  writeVersionListHash(verType, allVers.value());
+  const recordHashRes = await writeVersionListHash(verType, allVers.value());
+  if (recordHashRes.isErr) return recordHashRes;
 
   // TODO: v2版のloggerに登録？
   // logger.success('load from remote');
