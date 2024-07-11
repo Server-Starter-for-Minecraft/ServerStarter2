@@ -1,3 +1,4 @@
+import { versionsCachePath } from '../../core/const';
 import { Runtime } from '../../schema/runtime';
 import {
   AllFabricVersion,
@@ -26,7 +27,7 @@ import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
 } from './fileProcess/vanilla';
-import { getVersionlist } from './getVersions/base';
+import { AllVerison, getVersionlist } from './getVersions/base';
 import { getFabricVersionLoader } from './getVersions/fabric';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getMohistMCVersionLoader } from './getVersions/mohistmc';
@@ -221,27 +222,71 @@ export class VersionContainer {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('version-list', async () => {
-    const getList = await getVersionlist(
-      'vanilla',
-      false,
-      getVanillaVersionLoader()
-    );
-    // 取得に成功したか
-    expect(getList.isOk).toEqual(true);
-    // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-    expect(getList.value()[getList.value().length - 1].id).toEqual('1.3');
+
+  type TestCase = {
+    type: Version['type'];
+    loader: any;
+    oldestVersion: string;
+  };
+  const testCases: TestCase[] = [
+    {
+      type: 'vanilla',
+      loader: getVanillaVersionLoader,
+      oldestVersion: '1.3',
+    },
+    {
+      type: 'forge',
+      loader: getForgeVersionLoader,
+      oldestVersion: '1.5.2',
+    },
+    {
+      type: 'papermc',
+      loader: getPaperVersionLoader,
+      oldestVersion: '1.8.8',
+    },
+    {
+      type: 'mohistmc',
+      loader: getMohistMCVersionLoader,
+      oldestVersion: '1.7.10',
+    },
+    {
+      type: 'fabric',
+      loader: getFabricVersionLoader,
+      oldestVersion: '18w43b',
+    },
+    // {
+    //   type: 'spigot',
+    //   loader: getSpigotVersionLoader,
+    //   oldestVersion: '1.3'
+    // },
+  ];
+
+  test.each(testCases)('versionList ($type)', async (tCase) => {
+    // キャッシュの威力を試したいときは以下の行をコメントアウト
+    const cachePath = versionsCachePath.child(`${tCase.type}/all.json`);
+    // await cachePath.remove();
 
     const getCachedList = await getVersionlist(
-      'vanilla',
+      tCase.type,
       true,
-      getVanillaVersionLoader()
+      tCase.loader()
     );
+
     // 取得に成功したか
     expect(getCachedList.isOk).toEqual(true);
+
     // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-    expect(getCachedList.value()[getCachedList.value().length - 1].id).toEqual(
-      '1.3'
-    );
+    if (tCase.type !== 'fabric') {
+      const cachedList = getCachedList.value() as Exclude<
+        AllVerison,
+        AllFabricVersion
+      >;
+      expect(cachedList[cachedList.length - 1].id).toEqual(tCase.oldestVersion);
+    } else {
+      const cachedList = getCachedList.value() as AllFabricVersion;
+      expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
+        tCase.oldestVersion
+      );
+    }
   });
 }
