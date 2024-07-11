@@ -12,6 +12,7 @@ import {
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { ReadyVersion } from './fileProcess/base';
+import { ReadyFabricVersion, RemoveFabricVersion } from './fileProcess/fabric';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
   ReadyMohistMCVersion,
@@ -26,6 +27,7 @@ import {
   RemoveVanillaVersion,
 } from './fileProcess/vanilla';
 import { getVersionlist } from './getVersions/base';
+import { getFabricVersionLoader } from './getVersions/fabric';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getMohistMCVersionLoader } from './getVersions/mohistmc';
 import { getPaperVersionLoader } from './getVersions/papermc';
@@ -109,7 +111,7 @@ export class VersionContainer {
   async listFabricVersions(
     useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
-    return getVersionlist('fabric', useCache, undefined);
+    return getVersionlist('fabric', useCache, getFabricVersionLoader());
   }
 
   /**

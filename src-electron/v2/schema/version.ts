@@ -84,8 +84,8 @@ export type AllMohistmcVersion = {
 
 export type AllFabricVersion = {
   games: { id: VersionId; release: boolean }[];
-  loaders: string[];
-  installers: string[];
+  loaders: { version: string; stable: boolean }[];
+  installers: { version: string; stable: boolean }[];
 };
 
 export type Version =
