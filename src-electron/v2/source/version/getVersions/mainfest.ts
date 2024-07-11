@@ -37,12 +37,14 @@ const manifestHandler = JsonSourceHandler.fromPath(
 );
 
 /** version_manifest_v2.jsonを取得して内容を返す */
-export async function getVersionMainfest(useCache: boolean): Promise<Result<ManifestJson>> {
+export async function getVersionMainfest(
+  useCache: boolean
+): Promise<Result<ManifestJson>> {
   if (useCache) {
-    const cachedManifest = await manifestHandler.read()
-    if (cachedManifest.isOk) return cachedManifest
+    const cachedManifest = await manifestHandler.read();
+    if (cachedManifest.isOk) return cachedManifest;
   }
-  
+
   // URLからデータを取得
   const response = await new Url(MANIFEST_URL).into(Bytes);
 
