@@ -19,8 +19,8 @@ const JarArgsZod = z.string().or(
 );
 
 const javaVersionZod = z.object({
-  component: z.enum(minecraftRuntimeVersions),
-  majorVersion: z.number(),
+  component: z.enum(minecraftRuntimeVersions).optional(),
+  majorVersion: z.number().optional(),
 });
 const VersionJsonZod = z.object({
   download: z.object({
@@ -94,7 +94,7 @@ export function getVersionJsonObj(
 }
 
 /** stdin,stdout,stderrの文字コードをutf-8に */
-function javaEncodingToUtf8() {
+export function javaEncodingToUtf8() {
   return '-Dfile.encoding=UTF-8';
 }
 

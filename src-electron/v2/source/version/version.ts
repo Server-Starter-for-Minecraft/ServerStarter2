@@ -23,6 +23,7 @@ import {
   ReadyPaperMCVersion,
   RemovePaperMCVersion,
 } from './fileProcess/papermc';
+import { ReadySpigotVersion, RemoveSpigotVersion } from './fileProcess/spigot';
 import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
@@ -32,6 +33,7 @@ import { getFabricVersionLoader } from './getVersions/fabric';
 import { getForgeVersionLoader } from './getVersions/forge';
 import { getMohistMCVersionLoader } from './getVersions/mohistmc';
 import { getPaperVersionLoader } from './getVersions/papermc';
+import { getSpigotVersionLoader } from './getVersions/spigot';
 import { getVanillaVersionLoader } from './getVersions/vanilla';
 
 /**
@@ -91,7 +93,7 @@ export class VersionContainer {
   async listSpigotVersions(
     useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
-    return getVersionlist('spigot', useCache, undefined);
+    return getVersionlist('spigot', useCache, getSpigotVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
@@ -254,11 +256,11 @@ if (import.meta.vitest) {
       loader: getFabricVersionLoader,
       oldestVersion: '18w43b',
     },
-    // {
-    //   type: 'spigot',
-    //   loader: getSpigotVersionLoader,
-    //   oldestVersion: '1.3'
-    // },
+    {
+      type: 'spigot',
+      loader: getSpigotVersionLoader,
+      oldestVersion: '1.9',
+    },
   ];
 
   test.each(testCases)('versionList ($type)', async (tCase) => {

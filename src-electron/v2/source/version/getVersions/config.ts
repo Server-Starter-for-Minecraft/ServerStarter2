@@ -13,7 +13,6 @@ import { AllVerison } from './base';
 const VersConfigZod = z
   .object({
     version_manifest_v2_sha1: z.string().optional(),
-    spigot_buildtool_sha1: z.string().optional(),
     versions_sha1: z
       .record(
         z.string().transform((ver) => ver as Version['type']),
@@ -51,17 +50,6 @@ export async function writeVersManifestHash(manifestData: Bytes) {
 
   tmpConfig.value().version_manifest_v2_sha1 = hashRes.value();
   versConfigHandler.write(tmpConfig.value());
-}
-
-/**
- * SpigotをビルドするJarのHashを保管する
- */
-export async function writeSpigotBuilderHash(hash: string) {
-  const tmpConfig = await getFromGeneralVerConfig();
-  if (tmpConfig.isOk) {
-    tmpConfig.value().spigot_buildtool_sha1 = hash;
-    versConfigHandler.write(tmpConfig.value());
-  }
 }
 
 /**
