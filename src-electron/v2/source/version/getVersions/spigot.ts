@@ -28,7 +28,7 @@ const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 
 /**
  * Spigotのビルドに失敗するバージョンは一覧から除外する
- * 
+ *
  * - `1.20` 1.20を指定しても1.20.1がビルドされてしまう
  */
 const REMOVE_VERSIONS = ['1.20'];
