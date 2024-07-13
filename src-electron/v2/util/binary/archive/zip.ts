@@ -28,7 +28,11 @@ class Zip extends WritableStreamer<void> {
       path: this.pathObj.path,
       verbose: false,
     });
-    str.on('close', () => console.log('close'));
+
+    str.on('close', () => {
+      readable.destroy();
+    });
+
     return asyncPipe(readable, str);
   }
 }
@@ -60,10 +64,10 @@ export async function iterateZip(
     forceStream: true,
     verbose: false,
   });
-  const pipe = asyncPipe(readable.createReadStream().stream, parse);
+  const stream = await readable.createReadStream().stream;
+  const pipe = asyncPipe(stream, parse);
   for await (const entry of parse) {
     const stream = new Readable(entry);
-    console.log(entry.path);
     await mapFunc(entry.path, stream);
   }
   await pipe;
@@ -87,13 +91,11 @@ if (import.meta.vitest) {
     const srcPath = new Path(
       'src-electron/v2/util/binary/archive/test/src.zip'
     );
-    console.log(srcPath.exists());
     await iterateZip(srcPath, async (path, stream) => {
       console.log(
         (await stream.into(Bytes)).onOk((b) => b.toStr('utf-8')).value()
       );
     });
-    console.log(srcPath.exists());
   });
 }
 
