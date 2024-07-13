@@ -5,7 +5,7 @@ import { Bytes } from './bytes';
 import { DuplexStreamer, Readable } from './stream';
 
 export class Json<T> extends DuplexStreamer<T> {
-  private validator: z.ZodType<T>;
+  private validator: z.ZodType<T, z.ZodTypeDef, any>;
   private _data: Result<T>;
 
   get data(): Result<T> {
@@ -15,7 +15,7 @@ export class Json<T> extends DuplexStreamer<T> {
     this._data = data.onOk((x) => Result.catchSync(() => structuredClone(x)));
   }
 
-  constructor(validator: z.ZodType<T>) {
+  constructor(validator: z.ZodType<T, z.ZodTypeDef, any>) {
     super();
     this.validator = validator;
     this._data = err.error('value is unset');
