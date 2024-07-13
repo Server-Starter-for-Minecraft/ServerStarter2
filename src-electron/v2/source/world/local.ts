@@ -1,61 +1,58 @@
-import { World, WorldContainer, WorldName } from '../../schema/world';
+import { World, WorldLocation, WorldName } from '../../schema/world';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { WorldSource } from './world';
+import { InfinitMap } from '../../util/helper/infinitMap';
+import { WorldContainerHandler } from './container';
 
 /**
  * ローカルのワールドを管理するクラス
  */
-export class LocalWorldSource extends WorldSource {
-  /**
-   * コンテナ内のワールド名一覧を表示
-   */
-  async listWorldNames(): Promise<WorldName[]> {
-    return [];
+export class LocalWorldSource implements WorldContainerHandler {
+  private dirpath: Path;
+  worldMataMap: any;
+
+  constructor(dirpath: Path) {
+    this.dirpath = dirpath;
+    this.worldMataMap = InfinitMap.primitiveKeyWeakValue<WorldName, any>(
+      (k) => {}
+    );
   }
 
-  /**
-   * コンテナ内でメタデータを上書き
-   */
-  async setWorldMeta(meta: World): Promise<Result<void, Error>> {
-    return err(new Error('notImplemented'));
+  async listWorldLocations(): Promise<WorldLocation[]> {
+    const paths = await this.dirpath.iter();
+    const parsed = await Promise.all(
+      paths.map(async (path) => {
+        if (await path.isDirectory()) {
+          return Result.fromZod(
+            WorldLocation.safeParse({
+              container: {
+                containerType: 'local',
+                path: this.dirpath.toStr(),
+              },
+              worldName: path.basename(),
+            })
+          );
+        }
+        return err.error('ENOTDIR');
+      })
+    );
+    return parsed.filter((x) => x.isOk).map((x) => x.value());
   }
 
-  /**
-   * メタデータを取得
-   */
-  async getWorldMeta(
-    container: WorldContainer,
-    name: WorldName
-  ): Promise<Result<World>> {
-    return err(new Error('notImplemented'));
+  setWorldMeta(name: WorldName, world: World): Promise<Result<void>> {
+    throw new Error('Method not implemented.');
   }
-
-  /**
-   * ワールドデータを削除
-   */
-  async deleteWorldData(name: WorldName): Promise<Result<void>> {
-    return err(new Error('notImplemented'));
+  getWorldMeta(name: WorldName): Promise<Result<World>> {
+    throw new Error('Method not implemented.');
   }
-
-  /**
-   * ワールドを特定の形のディレクトリ構造に展開し、展開先のPathを返す
-   *
-   * 展開に失敗した場合は元の状態に戻す
-   *
-   * properties / eula / op / whitelist
-   *
-   * mod / plugin / datapack の展開は行わない
-   */
-  async extractWorldDataTo(world: World): Promise<Result<Path>> {
-    return err(new Error('notImplemented'));
+  deleteWorldData(name: WorldName): Promise<Result<void>> {
+    throw new Error('Method not implemented.');
   }
-
-  /**
-   * extractWorldDataToで展開されたデータをWorldContainerに格納
-   */
-  async packWorldDataFrom(world: World): Promise<Result<void>> {
-    return err(new Error('notImplemented'));
+  extractWorldData(name: WorldName): Promise<Result<Path>> {
+    throw new Error('Method not implemented.');
+  }
+  packWorldData(name: WorldName): Promise<Result<void>> {
+    throw new Error('Method not implemented.');
   }
 }
 

@@ -1,4 +1,4 @@
-import { NewType } from '../util/type/newtype';
+import { z } from 'zod';
 import { DatapackMeta } from './datapack';
 import { IpAdress } from './ipadress';
 import { Mod } from './mod';
@@ -9,14 +9,26 @@ import { UnixMillisec } from './time';
 import { McTimestamp } from './timestamp';
 import { Version } from './version';
 
-export type WorldName = NewType<string, 'WorldName'>;
+export const WorldName = z
+  .string()
+  .regex(/^[a-zA-Z0-9_-]+$/)
+  .brand('WorldName');
+export type WorldName = z.infer<typeof WorldName>;
 
-export type LocalWorldContainer = {
-  readonly containerType: 'local';
-  readonly path: string;
-};
+export const LocalWorldContainer = z.object({
+  containerType: z.enum(['local']),
+  path: z.string(),
+});
+export type LocalWorldContainer = z.infer<typeof LocalWorldContainer>;
 
-export type WorldContainer = LocalWorldContainer;
+const WorldContainer = LocalWorldContainer;
+export type WorldContainer = z.infer<typeof WorldContainer>;
+
+export const WorldLocation = z.object({
+  container: WorldContainer,
+  worldName: WorldName,
+});
+export type WorldLocation = z.infer<typeof WorldLocation>;
 
 export type BannedPlayer = {
   uuid: PlayerUUID;
@@ -42,12 +54,6 @@ export type OpPlayer = {
 };
 
 export type World = {
-  /** ワールドの保存コンテナ */
-  readonly container: WorldContainer;
-
-  /** ワールド名 */
-  readonly name: WorldName;
-
   /** 起動中フラグ */
   using?: boolean;
 
