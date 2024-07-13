@@ -3,8 +3,6 @@
 
   "ngrok_setting": { "use_ngrok": true },
 
-  "eula": false,
-
   "version": { "id": "1.20.6", "type": "vanilla", "release": true },
 
   "runtime": {

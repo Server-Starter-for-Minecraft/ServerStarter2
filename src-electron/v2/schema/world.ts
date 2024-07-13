@@ -62,9 +62,6 @@ export const World = z.object({
   /** 起動中フラグ */
   using: z.boolean(),
 
-  /** eula同意フラグ */
-  eula: z.boolean(),
-
   /** バージョン情報 */
   version: Version,
 
