@@ -9,12 +9,12 @@ type DymanicRecordOptions<K, V> = {
  * 初期化関数を受け取り、始めてアクセスされるキーの場合に内部で実行する
  */
 export class InfinitMap<K, V> {
-  private init: () => V;
+  private init: (key: K) => V;
   private getter: (key: K) => V | undefined;
   private setter: (key: K, value: V) => void;
 
   private constructor(
-    init: () => V,
+    init: (key: K) => V,
     getter: (key: K) => V | undefined,
     setter: (key: K, value: V) => void
   ) {
@@ -25,7 +25,7 @@ export class InfinitMap<K, V> {
 
   /** 誰からも参照されなくなった値も残り続ける */
   static objectKeyStrongValue<K extends object, V extends object>(
-    init: () => V
+    init: (key: K) => V
   ): InfinitMap<K, V> {
     const map = new WeakMap<K, V>();
     const getter = (k: K) => map.get(k);
@@ -38,7 +38,7 @@ export class InfinitMap<K, V> {
    * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakRef
    */
   static objectKeyWeakValue<K extends object, V extends object>(
-    init: () => V
+    init: (key: K) => V
   ): InfinitMap<K, V> {
     const map = new WeakMap<K, WeakRef<V>>();
     const getter = (k: K) => map.get(k)?.deref();
@@ -49,7 +49,7 @@ export class InfinitMap<K, V> {
   static objectKeyPrimitiveValue<
     K extends object,
     V extends number | string | boolean
-  >(init: () => V): InfinitMap<K, V> {
+  >(init: (key: K) => V): InfinitMap<K, V> {
     const map = new WeakMap<K, V>();
     const getter = (k: K) => map.get(k);
     const setter = (k: K, v: V) => map.set(k, v);
@@ -58,7 +58,7 @@ export class InfinitMap<K, V> {
 
   /** 誰からも参照されなくなった値も残り続ける */
   static primitiveKeyStrongValue<K extends number | string, V extends object>(
-    init: () => V
+    init: (key: K) => V
   ): InfinitMap<K, V> {
     const map = {} as Record<K, V>;
     const getter = (k: K) => map[k];
@@ -71,7 +71,7 @@ export class InfinitMap<K, V> {
    * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakRef
    */
   static primitiveKeyWeakValue<K extends number | string, V extends object>(
-    init: () => V
+    init: (key: K) => V
   ): InfinitMap<K, V> {
     const map = {} as Record<K, WeakRef<V>>;
     const getter = (k: K) => map[k]?.deref();
@@ -82,7 +82,7 @@ export class InfinitMap<K, V> {
   static primitiveKeyPrimitiveValue<
     K extends number | string,
     V extends number | string | boolean
-  >(init: () => V): InfinitMap<K, V> {
+  >(init: (key: K) => V): InfinitMap<K, V> {
     const map = {} as Record<K, V>;
     const getter = (k: K) => map[k];
     const setter = (k: K, v: V) => (map[k] = v);
@@ -93,7 +93,7 @@ export class InfinitMap<K, V> {
   get(key: K): V {
     const val = this.getter(key);
     if (val !== undefined) return val;
-    const newVal = this.init();
+    const newVal = this.init(key);
     this.setter(key, newVal);
     return newVal;
   }
