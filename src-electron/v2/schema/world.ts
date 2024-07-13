@@ -30,69 +30,78 @@ export const WorldLocation = z.object({
 });
 export type WorldLocation = z.infer<typeof WorldLocation>;
 
-export type BannedPlayer = {
-  uuid: PlayerUUID;
-  created: McTimestamp;
-  source: string;
-  expires: 'forever' | McTimestamp;
-  reason: string;
-};
+const foreverOrTime = z.union([z.literal('forever'), McTimestamp]);
 
-export type BannedIp = {
-  ip: IpAdress;
-  created: McTimestamp;
-  source: string;
-  expires: 'forever' | McTimestamp;
-  reason: string;
-};
+export const BannedPlayer = z.object({
+  uuid: PlayerUUID,
+  created: McTimestamp,
+  source: z.string(),
+  expires: foreverOrTime,
+  reason: z.string(),
+});
+export type BannedPlayer = z.infer<typeof BannedPlayer>;
 
-export type OpPlayer = {
-  uuid: PlayerUUID;
-  name: PlayerName;
-  level: OpLevel;
-  bypassesPlayerLimit: boolean;
-};
+export const BannedIp = z.object({
+  ip: IpAdress,
+  created: McTimestamp,
+  source: z.string(),
+  expires: foreverOrTime,
+  reason: z.string(),
+});
+export type BannedIp = z.infer<typeof BannedIp>;
 
-export type World = {
+export const OpPlayer = z.object({
+  uuid: PlayerUUID,
+  name: PlayerName,
+  level: OpLevel,
+  bypassesPlayerLimit: z.boolean(),
+});
+export type OpPlayer = z.infer<typeof OpPlayer>;
+
+export const World = z.object({
   /** 起動中フラグ */
-  using?: boolean;
+  using: z.boolean(),
 
   /** eula同意フラグ */
-  eula?: boolean;
+  eula: z.boolean(),
 
   /** バージョン情報 */
-  version?: Version;
+  version: Version,
 
   /** データパック */
-  datapack: DatapackMeta[];
+  datapack: z.array(DatapackMeta),
 
   /** プラグイン */
-  plugin: Plugin[];
+  plugin: z.array(Plugin),
 
   /** Mod */
-  mod: Mod[];
+  mod: z.array(Mod),
 
   /** メモリ等ランタイムの設定 */
-  runtime?: RuntimeSettings;
+  runtime: RuntimeSettings,
 
   /** whitelist / op に登録せれているプレイヤー */
-  players: [];
+  players: z.array(OpPlayer),
 
   /** banされたプレイヤー */
-  bannedPlayers: BannedPlayer[];
+  bannedPlayers: z.array(BannedPlayer),
 
   /** banされたip */
-  bannedIps: BannedIp[];
+  bannedIps: z.array(BannedIp),
 
   /** 最終起動時のデータ */
-  readonly last?: {
-    /** 最後に起動した時刻 */
-    readonly time: UnixMillisec;
+  last: z
+    .object({
+      /** 最後に起動した時刻 */
+      time: UnixMillisec,
 
-    /** 最後に起動したサーバー主 */
-    readonly user?: PlayerName;
+      /** 最後に起動したサーバー主 */
+      user: PlayerName.optional(),
 
-    /** 最後に起動したバージョン */
-    readonly version: Version;
-  };
-};
+      /** 最後に起動したバージョン */
+      version: Version,
+    })
+    .optional(),
+});
+
+export type World = z.infer<typeof World>;

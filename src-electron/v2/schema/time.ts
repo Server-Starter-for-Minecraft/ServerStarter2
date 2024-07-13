@@ -1,3 +1,4 @@
-import { NewType } from '../util/type/newtype';
+import { z } from 'zod';
 
-export type UnixMillisec = NewType<number, 'UnixMillisec'>;
+export const UnixMillisec = z.number().brand('UnixMillisec');
+export type UnixMillisec = z.infer<typeof UnixMillisec>;
