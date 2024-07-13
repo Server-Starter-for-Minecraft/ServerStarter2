@@ -6,7 +6,7 @@ import { err, ok, Result } from '../base';
  * - getterは取得する
  * - setterは変換して更新する
  */
-export class AsyncCache<T, U> {
+export class AsyncCache<T, U = T> {
   private getter: () => Promise<Result<T>>;
   private setter: (value: U) => Promise<Result<T>>;
   private value: Result<T>;
