@@ -123,11 +123,25 @@ export const ok: OkGen = (<T>(value: T = undefined as T): Ok<T> => {
 
 type ErrGen = {
   <T>(error: T): Err<T>;
+  (): Err<void>;
   /** よく使うので糖衣構文 : err(new Error(MESSAGE)) === err.error(MESSAGE) */
   error(message: string): Err<Error>;
 };
 
-export const err: ErrGen = <T>(error: T): Err<T> => {
+/** Err<void>は生成せずにこれを使いまわす */
+const errVoid: Err<void> = {
+  isOk: false,
+  isErr: true,
+  value: throwPanic,
+  error: emptyfunc,
+  onOk: () => errVoid,
+  onErr: (op) => op(undefined),
+  valueOrDefault: identity,
+  errorOrDefault: emptyfunc,
+};
+
+export const err: ErrGen = <T>(error: T = undefined as T): Err<T> => {
+  if (error === undefined) return errVoid as Err<T>;
   const returnError = () => error;
   const result: Err<T> = {
     isOk: false,
