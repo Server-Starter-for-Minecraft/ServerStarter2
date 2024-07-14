@@ -1,7 +1,7 @@
 import { ChildProcess } from 'child_process';
+import * as fs from 'fs';
 import { authorize } from 'rclone.js';
 import * as readline from 'readline';
-import * as fs from 'fs';
 
 const authorizeProcess: ChildProcess = authorize('drive');
 function handleAuthorizeProcess(authorizeProcess: ChildProcess) {
