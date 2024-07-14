@@ -44,3 +44,6 @@ yarn-error.log*
 design/schedule.xlsx
 
 .temp/
+
+# config file for rclone
+rclone.conf
