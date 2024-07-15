@@ -131,11 +131,6 @@ export class Path extends DuplexStreamer<void> {
     if (!this.exists()) await fs.mkdir(this._path, { recursive: true });
   }
 
-  /** 同期ディレクトリ生成(非推奨) */
-  mkdirSync() {
-    if (!this.exists()) fs.mkdirSync(this._path, { recursive: true });
-  }
-
   mklink = exclusive(this._mklink);
   private async _mklink(target: Path) {
     await new Promise((resolve) => fs.link(target._path, this._path, resolve));
