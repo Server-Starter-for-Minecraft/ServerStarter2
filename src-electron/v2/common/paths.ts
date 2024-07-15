@@ -8,7 +8,7 @@ const mainPath = (
 ).absolute();
 
 /** ログファイルの格納先 */
-export const logDir = new Path('test');
+export const logDir = mainPath.child('serverstarter/log');
 
 const sourcePath = mainPath.child('serverstarter/source');
 
