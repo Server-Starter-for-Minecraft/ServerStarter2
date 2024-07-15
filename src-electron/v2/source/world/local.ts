@@ -1,10 +1,21 @@
-import { World, WorldLocation, WorldName } from '../../schema/world';
+import { z } from 'zod';
+import {
+  BannedIp,
+  BannedPlayer,
+  OpPlayer,
+  WhitelistPlayer,
+  World,
+  WorldLocation,
+  WorldName,
+} from '../../schema/world';
 import { err, ok, Result } from '../../util/base';
 import { Json } from '../../util/binary/json';
 import { Path } from '../../util/binary/path';
 import { InfinitMap } from '../../util/helper/infinitMap';
 import { AsyncCache } from '../../util/promise/cache';
+import { JsonSourceHandler } from '../../util/wrapper/jsonFile';
 import { WorldContainerHandler } from './container';
+import { stringify } from './properties';
 
 const SETTING_FILE_NAME = 'server_settings.json';
 
@@ -13,10 +24,34 @@ const SETTING_FILE_NAME = 'server_settings.json';
  */
 export class LocalWorldSource implements WorldContainerHandler {
   private dirpath: Path;
+  private jsonHandlers;
+  private outputPaths;
   private worldMataMap: InfinitMap<WorldName, AsyncCache<World>>;
 
   constructor(dirpath: Path) {
     this.dirpath = dirpath;
+    this.outputPaths = {
+      properties: dirpath.child('server.properties'),
+      bannedIps: dirpath.child('banned-ips.json'),
+      bannedPlayers: dirpath.child('banned-players.json'),
+      whitelist: dirpath.child('whitelist.json'),
+      ops: dirpath.child('ops.json'),
+    };
+    this.jsonHandlers = {
+      bannedIps: JsonSourceHandler.fromPath(
+        this.outputPaths.bannedIps,
+        z.array(BannedIp)
+      ),
+      bannedPlayers: JsonSourceHandler.fromPath(
+        this.outputPaths.bannedPlayers,
+        z.array(BannedPlayer)
+      ),
+      whitelist: JsonSourceHandler.fromPath(
+        this.outputPaths.whitelist,
+        z.array(WhitelistPlayer)
+      ),
+      ops: JsonSourceHandler.fromPath(this.outputPaths.ops, z.array(OpPlayer)),
+    };
 
     const settingJson = new Json(World);
 
@@ -88,7 +123,29 @@ export class LocalWorldSource implements WorldContainerHandler {
     if (meta.isErr) return meta;
     const world = meta.value();
 
-    // TODO: ここでデータを展開
+    // データを展開
+    const res = await Promise.all([
+      this.jsonHandlers.bannedIps.write(world.bannedIps),
+      this.jsonHandlers.bannedPlayers.write(world.bannedPlayers),
+      this.jsonHandlers.ops.write(world.players.filter((p) => p.level !== 0)),
+      this.jsonHandlers.whitelist.write(
+        world.players.map(({ name, uuid }) => {
+          return { name, uuid };
+        })
+      ),
+      this.outputPaths.properties.writeText(stringify(world.properties)),
+    ]);
+
+    // エラーがあった場合は展開したファイルを削除
+    const errRes = res.filter((v) => v.isErr);
+    if (errRes.length > 0) {
+      await Promise.all(Object.values(this.outputPaths).map((p) => p.remove()));
+      // エラーは代表して1つ目を返す
+      return errRes[0];
+    }
+
+    // TODO: @txkodo ここの戻り値はこれでOK？
+    return ok(this.dirpath);
   }
 
   packWorldData(name: WorldName): Promise<Result<void>> {
