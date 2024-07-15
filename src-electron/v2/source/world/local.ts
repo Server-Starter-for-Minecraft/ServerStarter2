@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OpLevel, PlayerUUID } from '../../schema/player';
 import {
   BannedIp,
   BannedPlayer,
@@ -15,7 +16,7 @@ import { InfinitMap } from '../../util/helper/infinitMap';
 import { AsyncCache } from '../../util/promise/cache';
 import { JsonSourceHandler } from '../../util/wrapper/jsonFile';
 import { WorldContainerHandler } from './container';
-import { stringify } from './properties';
+import { parse, stringify } from './properties';
 
 const SETTING_FILE_NAME = 'server_settings.json';
 
@@ -148,9 +149,61 @@ export class LocalWorldSource implements WorldContainerHandler {
     return ok(this.dirpath);
   }
 
-  packWorldData(name: WorldName): Promise<Result<void>> {
-    throw new Error('Method not implemented.');
+  async packWorldData(name: WorldName): Promise<Result<void>> {
+    const meta = await this.getWorldMeta(name);
+    if (meta.isErr) return meta;
+    const world = meta.value();
+
+    // データを読取
+    const res = await Promise.all([
+      this.jsonHandlers.bannedIps.read(),
+      this.jsonHandlers.bannedPlayers.read(),
+      this.jsonHandlers.ops.read(),
+      this.jsonHandlers.whitelist.read(),
+      this.outputPaths.properties.readText(),
+    ]);
+
+    // エラーがあった場合は読取を中断
+    const errRes = res.filter((v) => v.isErr);
+    if (errRes.length > 0) {
+      return errRes[0];
+    }
+
+    world.bannedIps = res[0].value();
+    world.bannedPlayers = res[1].value();
+    world.properties = parse(res[4].value());
+
+    // 全てのホワイトリストプレイヤーを'OpLevel.0'で登録する
+    const playerObj = toRecord(
+      res[3].value().map((p): OpPlayer => {
+        return {
+          name: p.name,
+          uuid: p.uuid,
+          level: 0 as OpLevel,
+          bypassesPlayerLimit: false,
+        };
+      }),
+      'uuid'
+    );
+    // Opリストに登録済みのプレイヤーの情報を更新
+    res[2].value().forEach((p) => {
+      playerObj[p.uuid] = p;
+    });
+    // OpLevel更新済みの前夫レイヤーデータを格納する
+    world.players = Object.values(playerObj);
+
+    return ok();
   }
+}
+
+function toRecord<
+  T extends { [K in keyof T]: any }, // added constraint,
+  K extends keyof T
+>(array: T[], selector: K): Record<string, T> {
+  return array.reduce(
+    (acc, item) => ((acc[item[selector]] = item), acc),
+    {} as Record<T[K], T>
+  );
 }
 
 /** In Source Testing */
