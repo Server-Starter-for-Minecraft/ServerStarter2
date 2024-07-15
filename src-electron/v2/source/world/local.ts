@@ -219,9 +219,7 @@ export class LocalWorldSource implements WorldContainerHandler {
     world.players = this.packPlayerData(res[3].value(), res[2].value());
 
     // 更新済みのオブジェクトを登録
-    this.setWorldMeta(name, world);
-
-    return ok();
+    return this.setWorldMeta(name, world);
   }
 
   private packPlayerData(whitelist: WhitelistPlayers, ops: OpPlayers) {
@@ -251,5 +249,43 @@ export class LocalWorldSource implements WorldContainerHandler {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('', () => {});
+  const { Bytes } = await import('../../util/binary/bytes');
+  const { SHA1 } = await import('../../util/binary/hash');
+
+  const getFileHash = async (path: Path) => {
+    // ファイルの中身を取得
+    const fileData = await path.into(Bytes);
+    if (fileData.isErr) return err(new Error('FILE_IS_INVALID'));
+
+    // ファイルのHashを取得
+    return fileData.value().into(SHA1);
+  };
+
+  const testPath = new Path('src-electron/v2/source/world/test/assets/worlds');
+  const source = new LocalWorldSource(testPath);
+
+  test('packWorldSettingFiles', async () => {
+    // 梱包前の設定ファイルのHashを取得
+    const beforePackSettingFileHash = await getFileHash(
+      testPath.child('展開済/server_settings.json')
+    );
+    expect(beforePackSettingFileHash.isOk).toBe(true);
+    if (beforePackSettingFileHash.isErr) return;
+
+    // 各種データを梱包
+    const res = await source.packWorldData('展開済' as WorldName);
+    expect(res.isOk).toBe(true);
+
+    // 梱包後の設定ファイルのHashを取得
+    const afterPackSettingFileHash = await getFileHash(
+      testPath.child('展開済/server_settings.json')
+    );
+    expect(afterPackSettingFileHash.isOk).toBe(true);
+    if (afterPackSettingFileHash.isErr) return;
+
+    // Hashが変化していなければOK
+    expect(beforePackSettingFileHash.value()).toBe(
+      afterPackSettingFileHash.value()
+    );
+  });
 }
