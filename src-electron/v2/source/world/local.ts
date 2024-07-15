@@ -262,23 +262,24 @@ if (import.meta.vitest) {
   };
 
   const testPath = new Path('src-electron/v2/source/world/test/assets/worlds');
+  const targetWorldName = '展開済' as WorldName;
   const source = new LocalWorldSource(testPath);
 
   test('packWorldSettingFiles', async () => {
     // 梱包前の設定ファイルのHashを取得
     const beforePackSettingFileHash = await getFileHash(
-      testPath.child('展開済/server_settings.json')
+      testPath.child(`${targetWorldName}/server_settings.json`)
     );
     expect(beforePackSettingFileHash.isOk).toBe(true);
     if (beforePackSettingFileHash.isErr) return;
 
     // 各種データを梱包
-    const res = await source.packWorldData('展開済' as WorldName);
+    const res = await source.packWorldData(targetWorldName);
     expect(res.isOk).toBe(true);
 
     // 梱包後の設定ファイルのHashを取得
     const afterPackSettingFileHash = await getFileHash(
-      testPath.child('展開済/server_settings.json')
+      testPath.child(`${targetWorldName}/server_settings.json`)
     );
     expect(afterPackSettingFileHash.isOk).toBe(true);
     if (afterPackSettingFileHash.isErr) return;
@@ -287,5 +288,43 @@ if (import.meta.vitest) {
     expect(beforePackSettingFileHash.value()).toBe(
       afterPackSettingFileHash.value()
     );
+  });
+
+  test('extractWorldSettingFiles', async () => {
+    // 展開するファイル群
+    const checkFileNames = [
+      PROPERTY_FILE_NAME,
+      BANNEDIPS_FILE_NAME,
+      BANNEDPLAYERS_FILE_NAME,
+      OPS_FILE_NAME,
+      WHITELIST_FILE_NAME,
+    ];
+
+    // 展開前データのHashを取得
+    const beforeHashs = await Promise.all(
+      checkFileNames.map((fName) =>
+        getFileHash(testPath.child(`${targetWorldName}/${fName}`))
+      )
+    );
+    const okBeforeHashs = beforeHashs.filter((h) => h.isOk);
+    expect(okBeforeHashs.length).toBe(checkFileNames.length);
+
+    // データを展開
+    const res = await source.extractWorldData(targetWorldName);
+    expect(res.isOk).toBe(true);
+
+    // 展開後データのHashを取得
+    const afterHashs = await Promise.all(
+      checkFileNames.map((fName) =>
+        getFileHash(testPath.child(`${targetWorldName}/${fName}`))
+      )
+    );
+    const okAfterHashs = afterHashs.filter((h) => h.isOk);
+    expect(okAfterHashs.length).toBe(checkFileNames.length);
+
+    // Hashが変化していなければOK
+    for (let i = 0; i < checkFileNames.length; i++) {
+      expect(okBeforeHashs[i].value()).toBe(okAfterHashs[i].value());
+    }
   });
 }
