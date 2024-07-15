@@ -193,12 +193,7 @@ export class Path extends DuplexStreamer<void> {
    */
   remove = exclusive(this._remove);
   private async _remove(): Promise<void> {
-    if (!this.exists()) return;
-    if (await this._isDirectory()) {
-      await fs.rm(this._path, { recursive: true });
-    } else {
-      await fs.unlink(this._path);
-    }
+    await fs.rm(this._path, { recursive: true, force: true });
   }
 
   copyTo = exclusive(this._copyTo);
