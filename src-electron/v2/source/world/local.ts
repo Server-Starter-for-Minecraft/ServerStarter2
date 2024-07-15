@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { OpLevel, PlayerUUID } from '../../schema/player';
+import { OpLevel } from '../../schema/player';
 import {
   BannedIp,
   BannedPlayer,
@@ -13,57 +13,38 @@ import { err, ok, Result } from '../../util/base';
 import { Json } from '../../util/binary/json';
 import { Path } from '../../util/binary/path';
 import { InfinitMap } from '../../util/helper/infinitMap';
+import { toRecord } from '../../util/obj/obj';
 import { AsyncCache } from '../../util/promise/cache';
 import { JsonSourceHandler } from '../../util/wrapper/jsonFile';
 import { WorldContainerHandler } from './container';
 import { parse, stringify } from './properties';
 
 const SETTING_FILE_NAME = 'server_settings.json';
-
-const outputFilePaths = (worldPath: Path) => {
-  return {
-    properties: worldPath.child('server.properties'),
-    bannedIps: worldPath.child('banned-ips.json'),
-    bannedPlayers: worldPath.child('banned-players.json'),
-    whitelist: worldPath.child('whitelist.json'),
-    ops: worldPath.child('ops.json'),
-  };
-};
+const PROPERTY_FILE_NAME = 'server.properties';
 
 // types
+const BANNEDIPS_FILE_NAME = 'banned-ips.json';
 const BannedIps = z.array(BannedIp);
 type BannedIps = z.infer<typeof BannedIps>;
 
+const BANNEDPLAYERS_FILE_NAME = 'banned-players.json';
 const BannedPlayers = z.array(BannedPlayer);
 type BannedPlayers = z.infer<typeof BannedPlayers>;
 
+const WHITELIST_FILE_NAME = 'whitelist.json';
 const WhitelistPlayers = z.array(WhitelistPlayer);
 type WhitelistPlayers = z.infer<typeof WhitelistPlayers>;
 
+const OPS_FILE_NAME = 'ops.json';
 const OpPlayers = z.array(OpPlayer);
 type OpPlayers = z.infer<typeof OpPlayers>;
 
 type OutputJsonHandlers = {
-  bannedIps: typeof JsonSourceHandler<BannedIps>;
-  bannedPlayers: typeof JsonSourceHandler<BannedPlayers>;
-  whitelist: typeof JsonSourceHandler<WhitelistPlayers>;
-  ops: typeof JsonSourceHandler<OpPlayers>;
+  bannedIps: JsonSourceHandler<BannedIps>;
+  bannedPlayers: JsonSourceHandler<BannedPlayers>;
+  whitelist: JsonSourceHandler<WhitelistPlayers>;
+  ops: JsonSourceHandler<OpPlayers>;
 };
-
-interface Test {
-  bannedIps: JsonSourceHandler<
-    {
-      ip: string & z.BRAND<'IpAdress'>;
-      created: string & z.BRAND<'McTimestamp'>;
-      source: string;
-      expires: (string & z.BRAND<'McTimestamp'>) | 'forever';
-      reason: string;
-    }[]
-  >;
-  bannedPlayers: JsonSourceHandler;
-  whitelist: JsonSourceHandler;
-  ops: JsonSourceHandler;
-}
 
 /**
  * ローカルのワールドを管理するクラス
@@ -77,7 +58,7 @@ export class LocalWorldSource implements WorldContainerHandler {
     this.dirpath = dirpath;
     this.jsonHandlers = InfinitMap.primitiveKeyWeakValue(
       (worldName: WorldName) => {
-        const outputPaths = outputFilePaths(dirpath.child(worldName));
+        const outputPaths = this.outputFilePaths(worldName);
         return {
           bannedIps: JsonSourceHandler.fromPath(
             outputPaths.bannedIps,
@@ -124,8 +105,23 @@ export class LocalWorldSource implements WorldContainerHandler {
     );
   }
 
+  private targetPath(worldName: WorldName): Path {
+    return this.dirpath.child(worldName);
+  }
+
   private settingFilePath(worldName: WorldName): Path {
-    return this.dirpath.child(worldName).child(SETTING_FILE_NAME);
+    return this.targetPath(worldName).child(SETTING_FILE_NAME);
+  }
+
+  private outputFilePaths(worldName: WorldName) {
+    const worldPath = this.targetPath(worldName);
+    return {
+      properties: worldPath.child(PROPERTY_FILE_NAME),
+      bannedIps: worldPath.child(BANNEDIPS_FILE_NAME),
+      bannedPlayers: worldPath.child(BANNEDPLAYERS_FILE_NAME),
+      whitelist: worldPath.child(WHITELIST_FILE_NAME),
+      ops: worldPath.child(OPS_FILE_NAME),
+    };
   }
 
   async listWorldLocations(): Promise<WorldLocation[]> {
@@ -166,29 +162,31 @@ export class LocalWorldSource implements WorldContainerHandler {
     if (meta.isErr) return meta;
     const world = meta.value();
 
+    const handlers = this.jsonHandlers.get(name);
+    const outputPaths = this.outputFilePaths(name);
+
     // データを展開
     const res = await Promise.all([
-      this.jsonHandlers.bannedIps.write(world.bannedIps),
-      this.jsonHandlers.bannedPlayers.write(world.bannedPlayers),
-      this.jsonHandlers.ops.write(world.players.filter((p) => p.level !== 0)),
-      this.jsonHandlers.whitelist.write(
+      handlers.bannedIps.write(world.bannedIps),
+      handlers.bannedPlayers.write(world.bannedPlayers),
+      handlers.ops.write(world.players.filter((p) => p.level !== 0)),
+      handlers.whitelist.write(
         world.players.map(({ name, uuid }) => {
           return { name, uuid };
         })
       ),
-      this.outputPaths.properties.writeText(stringify(world.properties)),
+      outputPaths.properties.writeText(stringify(world.properties)),
     ]);
 
     // エラーがあった場合は展開したファイルを削除
     const errRes = res.filter((v) => v.isErr);
     if (errRes.length > 0) {
-      await Promise.all(Object.values(this.outputPaths).map((p) => p.remove()));
+      await Promise.all(Object.values(outputPaths).map((p) => p.remove()));
       // エラーは代表して1つ目を返す
       return errRes[0];
     }
 
-    // TODO: @txkodo ここの戻り値はこれでOK？
-    return ok(this.dirpath);
+    return ok(this.targetPath(name));
   }
 
   async packWorldData(name: WorldName): Promise<Result<void>> {
@@ -196,13 +194,16 @@ export class LocalWorldSource implements WorldContainerHandler {
     if (meta.isErr) return meta;
     const world = meta.value();
 
+    const handlers = this.jsonHandlers.get(name);
+    const outputPaths = this.outputFilePaths(name);
+
     // データを読取
     const res = await Promise.all([
-      this.jsonHandlers.bannedIps.read(),
-      this.jsonHandlers.bannedPlayers.read(),
-      this.jsonHandlers.ops.read(),
-      this.jsonHandlers.whitelist.read(),
-      this.outputPaths.properties.readText(),
+      handlers.bannedIps.read(),
+      handlers.bannedPlayers.read(),
+      handlers.ops.read(),
+      handlers.whitelist.read(),
+      outputPaths.properties.readText(),
     ]);
 
     // エラーがあった場合は読取を中断
@@ -211,13 +212,22 @@ export class LocalWorldSource implements WorldContainerHandler {
       return errRes[0];
     }
 
+    // オブジェクト内のデータを更新
     world.bannedIps = res[0].value();
     world.bannedPlayers = res[1].value();
     world.properties = parse(res[4].value());
+    world.players = this.packPlayerData(res[3].value(), res[2].value());
 
-    // 全てのホワイトリストプレイヤーを'OpLevel.0'で登録する
+    // 更新済みのオブジェクトを登録
+    this.setWorldMeta(name, world);
+
+    return ok();
+  }
+
+  private packPlayerData(whitelist: WhitelistPlayers, ops: OpPlayers) {
+    // 全てのホワイトリストプレイヤーを'OpLevel=0'で登録する
     const playerObj = toRecord(
-      res[3].value().map((p): OpPlayer => {
+      whitelist.map((p): OpPlayer => {
         return {
           name: p.name,
           uuid: p.uuid,
@@ -227,25 +237,15 @@ export class LocalWorldSource implements WorldContainerHandler {
       }),
       'uuid'
     );
+
     // Opリストに登録済みのプレイヤーの情報を更新
-    res[2].value().forEach((p) => {
+    ops.forEach((p) => {
       playerObj[p.uuid] = p;
     });
-    // OpLevel更新済みの前夫レイヤーデータを格納する
-    world.players = Object.values(playerObj);
 
-    return ok();
+    // OpLevel更新済みの全プレイヤーデータを格納する
+    return Object.values(playerObj);
   }
-}
-
-function toRecord<
-  T extends { [K in keyof T]: any }, // added constraint,
-  K extends keyof T
->(array: T[], selector: K): Record<string, T> {
-  return array.reduce(
-    (acc, item) => ((acc[item[selector]] = item), acc),
-    {} as Record<T[K], T>
-  );
 }
 
 /** In Source Testing */
