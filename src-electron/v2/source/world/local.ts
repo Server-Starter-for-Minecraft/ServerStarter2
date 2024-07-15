@@ -20,39 +20,81 @@ import { parse, stringify } from './properties';
 
 const SETTING_FILE_NAME = 'server_settings.json';
 
+const outputFilePaths = (worldPath: Path) => {
+  return {
+    properties: worldPath.child('server.properties'),
+    bannedIps: worldPath.child('banned-ips.json'),
+    bannedPlayers: worldPath.child('banned-players.json'),
+    whitelist: worldPath.child('whitelist.json'),
+    ops: worldPath.child('ops.json'),
+  };
+};
+
+// types
+const BannedIps = z.array(BannedIp);
+type BannedIps = z.infer<typeof BannedIps>;
+
+const BannedPlayers = z.array(BannedPlayer);
+type BannedPlayers = z.infer<typeof BannedPlayers>;
+
+const WhitelistPlayers = z.array(WhitelistPlayer);
+type WhitelistPlayers = z.infer<typeof WhitelistPlayers>;
+
+const OpPlayers = z.array(OpPlayer);
+type OpPlayers = z.infer<typeof OpPlayers>;
+
+type OutputJsonHandlers = {
+  bannedIps: typeof JsonSourceHandler<BannedIps>;
+  bannedPlayers: typeof JsonSourceHandler<BannedPlayers>;
+  whitelist: typeof JsonSourceHandler<WhitelistPlayers>;
+  ops: typeof JsonSourceHandler<OpPlayers>;
+};
+
+interface Test {
+  bannedIps: JsonSourceHandler<
+    {
+      ip: string & z.BRAND<'IpAdress'>;
+      created: string & z.BRAND<'McTimestamp'>;
+      source: string;
+      expires: (string & z.BRAND<'McTimestamp'>) | 'forever';
+      reason: string;
+    }[]
+  >;
+  bannedPlayers: JsonSourceHandler;
+  whitelist: JsonSourceHandler;
+  ops: JsonSourceHandler;
+}
+
 /**
  * ローカルのワールドを管理するクラス
  */
 export class LocalWorldSource implements WorldContainerHandler {
   private dirpath: Path;
-  private jsonHandlers;
-  private outputPaths;
+  private jsonHandlers: InfinitMap<WorldName, OutputJsonHandlers>;
   private worldMataMap: InfinitMap<WorldName, AsyncCache<World>>;
 
   constructor(dirpath: Path) {
     this.dirpath = dirpath;
-    this.outputPaths = {
-      properties: dirpath.child('server.properties'),
-      bannedIps: dirpath.child('banned-ips.json'),
-      bannedPlayers: dirpath.child('banned-players.json'),
-      whitelist: dirpath.child('whitelist.json'),
-      ops: dirpath.child('ops.json'),
-    };
-    this.jsonHandlers = {
-      bannedIps: JsonSourceHandler.fromPath(
-        this.outputPaths.bannedIps,
-        z.array(BannedIp)
-      ),
-      bannedPlayers: JsonSourceHandler.fromPath(
-        this.outputPaths.bannedPlayers,
-        z.array(BannedPlayer)
-      ),
-      whitelist: JsonSourceHandler.fromPath(
-        this.outputPaths.whitelist,
-        z.array(WhitelistPlayer)
-      ),
-      ops: JsonSourceHandler.fromPath(this.outputPaths.ops, z.array(OpPlayer)),
-    };
+    this.jsonHandlers = InfinitMap.primitiveKeyWeakValue(
+      (worldName: WorldName) => {
+        const outputPaths = outputFilePaths(dirpath.child(worldName));
+        return {
+          bannedIps: JsonSourceHandler.fromPath(
+            outputPaths.bannedIps,
+            BannedIps
+          ),
+          bannedPlayers: JsonSourceHandler.fromPath(
+            outputPaths.bannedPlayers,
+            BannedPlayers
+          ),
+          whitelist: JsonSourceHandler.fromPath(
+            outputPaths.whitelist,
+            WhitelistPlayers
+          ),
+          ops: JsonSourceHandler.fromPath(outputPaths.ops, OpPlayers),
+        };
+      }
+    );
 
     const settingJson = new Json(World);
 
