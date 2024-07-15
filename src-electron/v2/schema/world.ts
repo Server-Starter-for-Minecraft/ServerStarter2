@@ -5,6 +5,7 @@ import { Mod } from './mod';
 import { OpLevel, PlayerName, PlayerUUID } from './player';
 import { Plugin } from './plugin';
 import { RuntimeSettings } from './runtime';
+import { ServerProperties } from './serverproperty';
 import { UnixMillisec } from './time';
 import { McTimestamp } from './timestamp';
 import { Version } from './version';
@@ -58,12 +59,21 @@ export const OpPlayer = z.object({
 });
 export type OpPlayer = z.infer<typeof OpPlayer>;
 
+export const WhitelistPlayer = z.object({
+  uuid: PlayerUUID,
+  name: PlayerName,
+});
+export type WhitelistPlayer = z.infer<typeof WhitelistPlayer>;
+
 export const World = z.object({
   /** 起動中フラグ */
   using: z.boolean(),
 
   /** バージョン情報 */
   version: Version,
+
+  /** `server.properties`の情報 */
+  properties: ServerProperties,
 
   /** データパック */
   datapack: z.array(DatapackMeta),
