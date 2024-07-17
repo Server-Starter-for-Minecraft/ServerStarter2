@@ -20,7 +20,7 @@ export function brAnalyzer(content: string, returnObj: UrlAnalyzed[]) {
  * 取得したテキストからURL部分とそれ以外の部分を分離して返す
  */
 export function urlAnalyzer(content: string) {
-  const urlRgx = /https?:\/\/[\w!?/+\-_~;.,=*&@#$%()'[\]]+/g;
+  const urlRgx = /https?:\/\/[\w!?/+\-_~:;.,=*&@#$%()'[\]]+/g;
   const naturalText = content.split(urlRgx);
 
   const analyzedTxts = brAnalyzer(naturalText[0], []);
@@ -45,4 +45,17 @@ export function urlAnalyzer(content: string) {
   structedTxts.push(currentSubArray);
 
   return structedTxts;
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  const testCases = [
+    'https://fonts.google.com/icons',
+    'https://github.com/Server-Starter-for-Minecraft/ServerStarter2?tab=readme-ov-file#serverstarter2',
+    'https://fonts.google.com/icons?selected=Material+Symbols+Outlined:check_circle:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=check&icon.size=24&icon.color=%23e8eaed&icon.platform=android',
+  ];
+  test.each(testCases)('urlAnalyzerInMemoText (%#)', (url) => {
+    expect(urlAnalyzer(url)[0][1].value).toBe(url);
+  });
 }
