@@ -85,7 +85,7 @@ function removeContent(contentName: string) {
         <div>
           <q-list>
             <template
-              v-for="worldItem in mainStore.allWorlds.readonlyWorlds"
+              v-for="worldItem in mainStore.allWorlds.filteredWorlds()"
               :key="worldItem.world.id"
             >
               <WorldItemView
