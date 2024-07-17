@@ -94,6 +94,13 @@ function removeContent(contentName: string) {
                   worldItem.world.id !== mainStore.selectedWorldID
                 "
                 :active="worldItem.world.id === selectedWorld?.id"
+                :is-selected="
+                  worldItem.world.additional[`${contentType}s`].some((c) =>
+                    selectedContentsIds.some(
+                      (cId) => cId === `${worldItem.world.id}#${c.name}`
+                    )
+                  )
+                "
                 :world="worldItem.world"
                 @clicked="onWorldClicked"
               />

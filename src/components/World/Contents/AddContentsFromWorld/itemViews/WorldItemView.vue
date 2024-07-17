@@ -5,6 +5,7 @@ import { assets } from 'src/assets/assets';
 interface Prop {
   active?: boolean;
   world: WorldEdited;
+  isSelected?: boolean;
   onClicked: (world: WorldEdited) => void;
 }
 defineProps<Prop>();
@@ -26,7 +27,10 @@ defineProps<Prop>();
       />
     </q-item-section>
     <q-item-section>
-      <q-item-label lines="1">{{ world.name }}</q-item-label>
+      <q-item-label lines="1">
+        <q-icon v-if="isSelected" name="circle" color="primary" size="10px" />
+        {{ world.name }}
+      </q-item-label>
       <q-item-label v-if="world.last_date" caption lines="1">
         {{
           $t('mainLayout.customMapImporter.lastPlayed', {
