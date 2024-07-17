@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import log4js from 'log4js';
@@ -25,7 +26,7 @@ log4js.addLayout('custom', () => {
       param,
       msg: logEvent.data[1],
     };
-    return stringify(json);
+    return JSON.stringify(json);
   };
 });
 log4js.configure({
@@ -52,26 +53,15 @@ log4js.configure({
 /** 過去のログをアーカイブ開始 */
 if (latestPath) archiveLog(latestPath);
 
-/** ログ出力時に値を変換するマッチャー */
-const conversionRules: ((key: string, value: any) => Result<any, void>)[] = [];
-
-/** ngrokTokenを隠す */
-conversionRules.push((k, v) => {
-  if (k === 'ngrokToken') return err();
-  return ok('***');
-});
-
-function stringify(data: any) {
-  return JSON.stringify(data);
-}
-
 /** パスにあるログをアーカイブする */
 async function archiveLog(logPath: Path) {
   // .latestをgz圧縮してアーカイブ
   if (logPath.exists()) {
     const lastUpdateTime = dayjs(fs.statSync(logPath.toStr()).mtimeMs);
-    const newlogPath = getNextArchivePath(lastUpdateTime);
-    fs.moveSync(logPath.toStr(), newlogPath.toStr());
+    const tmp = logDir.child(`tmp.${randomInt(2 ** 31)}`);
+    fs.moveSync(logPath.toStr(), tmp.toStr(), { overwrite: true });
+    await tmp.convert(toGzip()).into(getNextArchivePath(lastUpdateTime));
+    await tmp.remove();
   }
 
   // 一週間前のログファイルを削除
@@ -79,9 +69,7 @@ async function archiveLog(logPath: Path) {
   for (const path of await logPath.iter()) {
     if (!path.toStr().endsWith(ARCHIVE_EXT)) continue;
     const updateDate = await path.lastUpdateTime();
-    if (updateDate.isBefore(thresholdDate)) {
-      await path.remove();
-    }
+    if (updateDate.isBefore(thresholdDate)) await path.remove();
   }
 }
 
@@ -106,24 +94,21 @@ class LoggerWrapper {
     this.logger = logger;
     this.arg = arg;
   }
-  trace(...message: any[]) {
-    this.logger.trace(this.arg, simplifyArgs(...message));
-  }
-  debug(...message: any[]) {
-    this.logger.debug(this.arg, simplifyArgs(...message));
-  }
-  info(...message: any[]) {
-    this.logger.info(this.arg, simplifyArgs(...message));
-  }
-  warn(...message: any[]) {
-    this.logger.warn(this.arg, simplifyArgs(...message));
-  }
-  error(...message: any[]) {
-    this.logger.error(this.arg, simplifyArgs(...message));
-  }
-  fatal(...message: any[]) {
-    this.logger.fatal(this.arg, simplifyArgs(...message));
-  }
+
+  private log =
+    (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal') =>
+    (...message: any[]) =>
+      this.logger[level](
+        applyOmission(this.arg),
+        simplifyArgs(...applyOmission(message))
+      ); // 伏字処理を施してログを吐く
+
+  trace = this.log('trace');
+  debug = this.log('debug');
+  info = this.log('info');
+  warn = this.log('warn');
+  error = this.log('error');
+  fatal = this.log('fatal');
 }
 
 export interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
@@ -155,6 +140,40 @@ function simplifyArgs(...args: any[]): any {
   return params;
 }
 
+type LogOmission = (
+  value: string,
+  path: (string | number)[]
+) => Result<string, void>;
+
+const omissions: Set<LogOmission> = new Set();
+
+/** オブジェクトに伏字を適用する */
+function applyOmission<T>(value: T, path: (string | number)[] = []): T {
+  switch (typeof value) {
+    case 'string':
+      let val: string = value;
+      for (const omission of omissions) {
+        const omitted = omission(val, path);
+        if (omitted.isOk) val = omitted.value();
+      }
+      return val as T;
+    case 'object': {
+      if (value === null) return null as T;
+      if (Array.isArray(value)) {
+        return value.map((v, i) => applyOmission(v, [...path, i])) as T;
+      }
+      return Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [
+          k,
+          applyOmission(v, [...path, k]),
+        ])
+      ) as T;
+    }
+    default:
+      return value;
+  }
+}
+
 const handler: ProxyHandler<LoggerHierarchy> = {
   get(target, subCategory: string) {
     const category = target[CATEGORY];
@@ -163,26 +182,38 @@ const handler: ProxyHandler<LoggerHierarchy> = {
   },
 };
 
+/**
+ * 伏字ルールを追加
+ * @returns 伏字ルールを解除する
+ */
+export function addOmisstionRule(omisstionRule: LogOmission) {
+  omissions.add(omisstionRule);
+  return () => omissions.delete(omisstionRule);
+}
+
 /** ルート要素のロガー */
 export const rootLogger = loggerHierarchies.get('');
 
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('', async () => {
+  const { sleep } = await import('../util/promise/sleep');
+
+  const readLastLogLine = async () => {
+    const lines = await (
+      await latestPath.readText()
+    )
+      .value()
+      .trim()
+      .split(/\r?\n|\r/);
+    return lines[lines.length - 1];
+  };
+
+  test('ログ出力のテスト', async () => {
     for (const path of await logDir.iter()) {
       if (path.toStr() === latestPath.toStr()) continue;
       await path.remove();
     }
-    const readLastLogLine = async () => {
-      const lines = await (
-        await latestPath.readText()
-      )
-        .value()
-        .trim()
-        .split(/\r?\n|\r/);
-      return lines[lines.length - 1];
-    };
 
     rootLogger('DEFAULT').info('message');
 
@@ -201,5 +232,57 @@ if (import.meta.vitest) {
     expect(await readLastLogLine()).toEqual(
       '{"lv":"TRACE","on":"nest.more.deeply"}'
     );
+
+    // 伏字チェック
+
+    const unsetRule = addOmisstionRule((v) =>
+      v === 'invalid' ? ok('***') : err()
+    );
+
+    rootLogger().info('invalid');
+    expect(await readLastLogLine()).toBe(
+      '{"lv":"INFO","on":"default","msg":"***"}'
+    );
+
+    rootLogger().info({ nest: 'invalid' });
+    expect(await readLastLogLine()).toBe(
+      '{"lv":"INFO","on":"default","msg":{"nest":"***"}}'
+    );
+
+    rootLogger().info(['pass', 'is', 'invalid']);
+    expect(await readLastLogLine()).toBe(
+      '{"lv":"INFO","on":"default","msg":["pass","is","***"]}'
+    );
+
+    unsetRule();
+
+    rootLogger().info('invalid');
+    expect(await readLastLogLine()).toBe(
+      '{"lv":"INFO","on":"default","msg":"invalid"}' // 伏字ルールが消えているはず
+    );
+
+    addOmisstionRule((v, p) =>
+      p[p.length - 1] === 'secret' ? ok('***') : err()
+    );
+
+    rootLogger({ secret: 'XXXXXX' }).info();
+    expect(await readLastLogLine()).toBe(
+      '{"lv":"INFO","on":"default","param":{"secret":"***"}}'
+    );
+
+    // アーカイブチェック
+    for (const path of await logDir.iter()) {
+      if (path.toStr() === latestPath.toStr()) continue;
+      await path.remove();
+    }
+    await archiveLog(latestPath);
+
+    // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
+    expect((await logDir.iter()).map((p) => p.basename())).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.gz/),
+      ])
+    );
+    expect(latestPath.exists()).toBe(false);
   });
 }
