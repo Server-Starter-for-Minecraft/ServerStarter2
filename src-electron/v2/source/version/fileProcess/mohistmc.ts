@@ -92,38 +92,42 @@ if (import.meta.vitest) {
     },
   };
 
-  test('setMohistJar', async () => {
-    const outputPath = serverSourcePath.child('testMohist/ver21');
-    const readyOperator = new ReadyMohistMCVersion(ver21);
-    const cachePath = readyOperator.cachePath;
+  test(
+    'setMohistJar',
+    async () => {
+      const outputPath = serverSourcePath.child('testMohist/ver21');
+      const readyOperator = new ReadyMohistMCVersion(ver21);
+      const cachePath = readyOperator.cachePath;
 
-    // 条件をそろえるために，ファイル類を削除する
-    await outputPath.remove();
-    // キャッシュの威力を試したいときは以下の行をコメントアウト
-    await cachePath?.remove();
+      // 条件をそろえるために，ファイル類を削除する
+      await outputPath.remove();
+      // キャッシュの威力を試したいときは以下の行をコメントアウト
+      await cachePath?.remove();
 
-    const res = await readyOperator.completeReady4VersionFiles(
-      outputPath,
-      async (runtime) => ok()
-    );
+      const res = await readyOperator.completeReady4VersionFiles(
+        outputPath,
+        async (runtime) => ok()
+      );
 
-    // 戻り値の検証
-    expect(res.isOk).toBe(true);
-    expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
-      'replaceArg'
-    );
+      // 戻り値の検証
+      expect(res.isOk).toBe(true);
+      expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
+        'replaceArg'
+      );
 
-    // ファイルの設置状況の検証
-    expect(getJarPath(outputPath).exists()).toBe(true);
-    // Jarを実行しないと生成されないため，今回はTestの対象外
-    // expect(outputPath.child('libraries').exists()).toBe(true);
+      // ファイルの設置状況の検証
+      expect(getJarPath(outputPath).exists()).toBe(true);
+      // Jarを実行しないと生成されないため，今回はTestの対象外
+      // expect(outputPath.child('libraries').exists()).toBe(true);
 
-    // 実行後にファイル削除
-    const remover = new RemoveMohistMCVersion(ver21);
-    await remover.completeRemoveVersion(outputPath);
+      // 実行後にファイル削除
+      const remover = new RemoveMohistMCVersion(ver21);
+      await remover.completeRemoveVersion(outputPath);
 
-    // 削除後の状態を確認
-    expect(getJarPath(outputPath).exists()).toBe(false);
-    expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
-  });
+      // 削除後の状態を確認
+      expect(getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+    },
+    1000 * 100
+  );
 }
