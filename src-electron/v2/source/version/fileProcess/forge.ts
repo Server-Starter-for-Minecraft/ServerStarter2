@@ -177,11 +177,11 @@ if (import.meta.vitest) {
   const { serverSourcePath } = await import('app/src-electron/v2/core/const');
 
   const ver21: ForgeVersion = {
-    id: '1.21' as VersionId,
+    id: '1.13.2' as VersionId,
     type: 'forge',
-    forge_version: '51.0.21',
+    forge_version: '25.0.223',
     download_url:
-      'https://adfoc.us/serve/sitelinks/?id=271228&url=https://maven.minecraftforge.net/net/minecraftforge/forge/1.21-51.0.22/forge-1.21-51.0.22-installer.jar',
+      'https://maven.minecraftforge.net/net/minecraftforge/forge/1.13.2-25.0.223/forge-1.13.2-25.0.223-installer.jar',
   };
 
   const JVM_ARGS = ['JVM', 'ARGUMENT'];
@@ -197,6 +197,7 @@ if (import.meta.vitest) {
       args: [
         ...JVM_ARGS,
         '-Dfile.encoding=UTF-8',
+        '-Dlog4j.configurationFile=log4j2_112-116.xml',
         '--jar',
         expect.any(String),
         '--nogui',
@@ -214,7 +215,13 @@ if (import.meta.vitest) {
           content: '-a foo\n--bar buz\n-a.a.a=b',
         },
       ],
-      args: ['JVM', 'ARGUMENT', '@path/to/args.txt', '--nogui'],
+      args: [
+        'JVM',
+        'ARGUMENT',
+        '-Dlog4j.configurationFile=log4j2_112-116.xml',
+        '@path/to/args.txt',
+        '--nogui',
+      ],
     },
     {
       genfiles: [
@@ -227,7 +234,13 @@ if (import.meta.vitest) {
           content: '-a foo\n--bar buz\n-a.a.a=b',
         },
       ],
-      args: ['JVM', 'ARGUMENT', '@path/to/args.txt', '--nogui'],
+      args: [
+        'JVM',
+        'ARGUMENT',
+        '-Dlog4j.configurationFile=log4j2_112-116.xml',
+        '@path/to/args.txt',
+        '--nogui',
+      ],
     },
   ])('setForgeJar', async ({ genfiles, args }) => {
     const outputPath = serverSourcePath.child('testForge/ver21');
