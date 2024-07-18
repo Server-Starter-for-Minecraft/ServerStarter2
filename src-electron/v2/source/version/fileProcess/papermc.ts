@@ -1,13 +1,12 @@
 import { z } from 'zod';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { serverSourcePath } from 'app/src-electron/v2/core/const';
 import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { PapermcVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getJarPath, ReadyVersion, RemoveVersion } from './base';
+import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { checkJarHash, getRuntimeObj } from './serverJar';
 import { getVanillaVersionJson } from './vanilla';
 import { VersionJson } from './versionJson';
@@ -69,7 +68,7 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<void>> {
     const verJson = await verJsonHandler.read();
     if (verJson.isErr) return verJson;
@@ -114,6 +113,7 @@ export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
 
   const ver21: PapermcVersion = {
     id: '1.21' as VersionId,

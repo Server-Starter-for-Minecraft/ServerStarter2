@@ -19,6 +19,13 @@ export function getJarPath(cwdPath: Path) {
   return cwdPath.child('version.jar');
 }
 
+export type ExecRuntime = (options: {
+  runtime: Runtime;
+  args: string[];
+  currentDir: Path;
+  onOut: (line: Result<string, string>) => void;
+}) => Promise<Result<void>>;
+
 /**
  * 各サーバーバージョンに関連するファイルの操作をするための抽象クラス
  */
@@ -74,10 +81,7 @@ export abstract class ReadyVersion<
   /**
    * バージョン関連のファイル操作を完全に完了する
    */
-  async completeReady4VersionFiles(
-    targetPath: Path,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
-  ) {
+  async completeReady4VersionFiles(targetPath: Path, execRuntime: ExecRuntime) {
     // STEP1: `version.json`の生成
     if (!this.handler) {
       // handlerを生成
@@ -97,7 +101,7 @@ export abstract class ReadyVersion<
     }
 
     // STEP2: キャッシュデータを整備
-    const copyFiles = await this.readyCache(this.handler, readyRuntime);
+    const copyFiles = await this.readyCache(this.handler, execRuntime);
     if (copyFiles.isErr) return copyFiles;
 
     // STEP3: ファイルをキャッシュから移動
@@ -114,7 +118,7 @@ export abstract class ReadyVersion<
    */
   protected async readyCache(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<Path[]>> {
     // Jarの生成
     const cachedJarPath = getJarPath(this.cachePath);
@@ -122,7 +126,7 @@ export abstract class ReadyVersion<
       // Jarのダウンロードとファイルへの書き出し
       const generateJarRes = await this.generateCachedJar(
         verJsonHandler,
-        readyRuntime
+        execRuntime
       );
       if (generateJarRes.isErr) return generateJarRes;
     }
@@ -166,7 +170,7 @@ export abstract class ReadyVersion<
    */
   protected abstract generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<void>>;
 
   /**
@@ -192,6 +196,7 @@ export abstract class ReadyVersion<
     if (verJson.isErr) return verJson;
 
     const runtime = await this.getRuntime(verJsonHandler);
+
     if (runtime.isErr) return runtime;
 
     return ok({

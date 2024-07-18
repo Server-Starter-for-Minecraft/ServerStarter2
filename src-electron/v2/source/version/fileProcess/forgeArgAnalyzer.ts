@@ -25,7 +25,7 @@ export async function getNewForgeArgs(
 ): Promise<Result<VersionJson>> {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
   let runPath: Path;
-  // TODO: @txkodo `osPlatform`はv1から引用しているが問題ない？
+  // `osPlatform`はv1から引用
   if (osPlatform == 'windows-x64') {
     // windows
     runPath = constructExecPath(serverCwdPath, version, '.bat');

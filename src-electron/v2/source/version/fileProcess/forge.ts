@@ -1,5 +1,4 @@
 import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { serverSourcePath } from 'app/src-electron/v2/core/const';
 import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { ForgeVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
@@ -7,7 +6,7 @@ import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getJarPath, ReadyVersion, RemoveVersion } from './base';
+import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { constructExecPath, getNewForgeArgs } from './forgeArgAnalyzer';
 import { getRuntimeObj } from './serverJar';
 import { getVanillaVersionJson } from './vanilla';
@@ -36,7 +35,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<void>> {
     const verJson = await verJsonHandler.read();
     if (verJson.isErr) return verJson;
@@ -55,7 +54,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     const installerRunRes = await getServerJarFromInstaller(
       installerPath,
       runtime.value(),
-      readyRuntime
+      execRuntime
     );
     if (installerRunRes.isErr) return installerRunRes;
 
@@ -112,16 +111,15 @@ async function downloadInstaller(
 }
 
 /**
- * 入手した`installer.jar`を実行して`server.jar`を書き出す
+ * 入手した`installer.jar`を実行して`***.(jar|bat|sh)`を書き出す
+ *
+ * 何が書き出されるかはバージョン次第
  */
 async function getServerJarFromInstaller(
   installFilePath: Path,
   runtime: Runtime,
-  readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+  execRuntime: ExecRuntime
 ): Promise<Result<void>> {
-  const readyRuntimeRes = await readyRuntime(runtime);
-  if (readyRuntimeRes.isErr) return readyRuntimeRes;
-
   // `installer.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
   const args = [
     '-jar',
@@ -129,8 +127,15 @@ async function getServerJarFromInstaller(
     '--installServer',
   ];
 
-  // TODO: @txkodo Runtimeを準備した後にどのようにしてinstallerを起動するのか
-  // (インストーラーを実行して，Jarファイルを生成)
+  const installRes = await execRuntime({
+    runtime,
+    args,
+    currentDir: installFilePath.parent(),
+    onOut(line) {
+      /** TODO: プログレスに出力 */
+    },
+  });
+  if (installRes.isErr) return installRes;
 
   return ok();
 }
@@ -169,6 +174,7 @@ async function renameFilesFromInstaller(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
 
   const ver21: ForgeVersion = {
     id: '1.21' as VersionId,
@@ -178,7 +184,52 @@ if (import.meta.vitest) {
       'https://adfoc.us/serve/sitelinks/?id=271228&url=https://maven.minecraftforge.net/net/minecraftforge/forge/1.21-51.0.22/forge-1.21-51.0.22-installer.jar',
   };
 
-  test('setForgeJar', async () => {
+  const JVM_ARGS = ['JVM', 'ARGUMENT'];
+
+  test.each([
+    {
+      genfiles: [
+        {
+          path: 'forge-1.21-51.0.22.jar',
+          content: 'foo',
+        },
+      ],
+      args: [
+        ...JVM_ARGS,
+        '-Dfile.encoding=UTF-8',
+        '--jar',
+        expect.any(String),
+        '--nogui',
+      ],
+    },
+    {
+      genfiles: [
+        {
+          path: 'run.bat',
+          content:
+            '# COMMENT\r\n   java @user_jvm_args.txt @path/to/args.txt %*   \r\n',
+        },
+        {
+          path: 'libraries/to/args.txt',
+          content: '-a foo\n--bar buz\n-a.a.a=b',
+        },
+      ],
+      args: ['JVM', 'ARGUMENT', '@path/to/args.txt', '--nogui'],
+    },
+    {
+      genfiles: [
+        {
+          path: 'run.sh',
+          content: 'java @user_jvm_args.txt @path/to/args.txt "$@"\n# COMMENT',
+        },
+        {
+          path: 'libraries/to/args.txt',
+          content: '-a foo\n--bar buz\n-a.a.a=b',
+        },
+      ],
+      args: ['JVM', 'ARGUMENT', '@path/to/args.txt', '--nogui'],
+    },
+  ])('setForgeJar', async ({ genfiles, args }) => {
     const outputPath = serverSourcePath.child('testForge/ver21');
     const readyOperator = new ReadyForgeVersion(ver21);
     const cachePath = readyOperator.cachePath;
@@ -188,16 +239,22 @@ if (import.meta.vitest) {
     // キャッシュの威力を試したいときは以下の行をコメントアウト
     await cachePath?.remove();
 
+    const execRuntime: ExecRuntime = vi.fn(async (options) => {
+      for (const { path, content } of genfiles) {
+        const tgtJarPath = options.currentDir.child(path);
+        await tgtJarPath.writeText(content);
+      }
+      return ok();
+    });
+
     const res = await readyOperator.completeReady4VersionFiles(
       outputPath,
-      async (runtime) => ok()
+      execRuntime
     );
 
     // 戻り値の検証
     expect(res.isOk).toBe(true);
-    expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
-      'replaceArg'
-    );
+    expect(res.value().getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
     // ファイルの設置状況の検証
     expect(getJarPath(outputPath).exists()).toBe(true);

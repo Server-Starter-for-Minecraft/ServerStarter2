@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { serverSourcePath } from 'app/src-electron/v2/core/const';
 import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { SpigotVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
@@ -8,7 +7,7 @@ import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getJarPath, ReadyVersion, RemoveVersion } from './base';
+import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { getRuntimeObj } from './serverJar';
 import { getVanillaVersionJson } from './vanilla';
 import { javaEncodingToUtf8, VersionJson } from './versionJson';
@@ -17,7 +16,7 @@ import { javaEncodingToUtf8, VersionJson } from './versionJson';
 const spigotVerInfoURL = (v: SpigotVersion) =>
   `https://hub.spigotmc.org/versions/${v.id}.json`;
 const spigotVerInfoZod = z.object({
-  name: z.number(),
+  name: z.string(),
   description: z.string(),
   refs: z.object({
     BuildData: z.string(),
@@ -43,7 +42,7 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     super(version, ['bundler']);
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
-    // バニラの情報をもとにPaperのversionJsonを生成
+    // バニラの情報をもとにSpigotのversionJsonを生成
     const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
@@ -67,18 +66,17 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     returnVerJson.javaVersion = {
       majorVersion: spigotVerInfo.value().javaVersions[1],
     };
-
     return ok(returnVerJson);
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<void>> {
     const verJson = await verJsonHandler.read();
     if (verJson.isErr) return verJson;
 
     // `BuildTools.jar`をダウンロード
-    const installerPath = this.cachePath.child('BuildTools.jar');
+    const installerPath = this.cachePath.child('build/BuildTools.jar');
     const installerRes = await downloadBuildTools(
       verJson.value().download.url,
       installerPath
@@ -92,8 +90,9 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     return getServerJarFromBuildTools(
       this._version.id,
       installerPath,
+      this.cachePath,
       runtime.value(),
-      readyRuntime
+      execRuntime
     );
   }
   protected async getRuntime(
@@ -122,6 +121,8 @@ async function downloadBuildTools(
   downloadURL: string,
   buildToolsPath: Path
 ): Promise<Result<void>> {
+  await buildToolsPath.parent().mkdir();
+
   // BuildTools.jarをダウンロード
   const downloadJar = await new Url(downloadURL).into(Bytes);
   if (downloadJar.isErr) return downloadJar;
@@ -140,12 +141,10 @@ async function downloadBuildTools(
 async function getServerJarFromBuildTools(
   versionId: VersionId,
   buildToolsPath: Path,
+  serverCachePath: Path,
   runtime: Runtime,
-  readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+  execRuntime: ExecRuntime
 ): Promise<Result<void>> {
-  const readyRuntimeRes = await readyRuntime(runtime);
-  if (readyRuntimeRes.isErr) return readyRuntimeRes;
-
   // `BuildTools.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
   const args = [
     javaEncodingToUtf8(),
@@ -155,28 +154,36 @@ async function getServerJarFromBuildTools(
     versionId,
   ];
 
-  // TODO: @txkodo Runtimeを準備した後にどのようにしてinstallerを起動するのか
+  const buildRes = await execRuntime({
+    runtime,
+    args,
+    currentDir: buildToolsPath.parent(),
+    onOut(line) {
+      /** TODO: プログレスに出力 */
+    },
+  });
+
+  if (buildRes.isErr) return buildRes;
+
   // (インストーラーを実行して，Jarファイルを生成)
 
   // jarをリネーム
-  const sourceJarPath = buildToolsPath.parent().child(`spigot-${versionId}`);
-  const targetJarPath = getJarPath(buildToolsPath.parent());
-  sourceJarPath.rename(targetJarPath);
+  const sourceJarPath = buildToolsPath
+    .parent()
+    .child(`spigot-${versionId}.jar`);
+  const targetJarPath = getJarPath(serverCachePath);
+  await sourceJarPath.rename(targetJarPath);
 
   // 余計なファイルを削除
-  const outputFiles = await buildToolsPath.parent().iter();
-  await Promise.all(
-    outputFiles
-      .filter((p) => p.basename() !== targetJarPath.basename())
-      .map((p) => p.remove())
-  );
+  await buildToolsPath.parent().remove();
 
   return ok();
 }
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
+  const { test, expect, vi } = import.meta.vitest;
+  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
 
   const ver21: SpigotVersion = {
     id: '1.21' as VersionId,
@@ -193,9 +200,16 @@ if (import.meta.vitest) {
     // キャッシュの威力を試したいときは以下の行をコメントアウト
     await cachePath?.remove();
 
+    const execRuntime: ExecRuntime = vi.fn(async (options) => {
+      const versionId = options.args[4];
+      const tgtJarPath = options.currentDir.child(`spigot-${versionId}.jar`);
+      tgtJarPath.writeText(`spigot-${versionId}.jar`);
+      return ok();
+    });
+
     const res = await readyOperator.completeReady4VersionFiles(
       outputPath,
-      async (runtime) => ok()
+      execRuntime
     );
 
     // 戻り値の検証
@@ -203,6 +217,24 @@ if (import.meta.vitest) {
     expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
       'replaceArg'
     );
+
+    // execRuntime が正しい引数で呼ばれている
+    expect(execRuntime).toHaveBeenCalledTimes(1);
+    expect(execRuntime).toHaveBeenNthCalledWith(1, {
+      args: [
+        '-Dfile.encoding=UTF-8',
+        '-jar',
+        expect.any(String),
+        '--rev',
+        '1.21',
+      ],
+      currenrDir: expect.any(Path),
+      onOut: expect.any(Function),
+      runtime: {
+        majorVersion: 66,
+        type: 'universal',
+      },
+    });
 
     // ファイルの設置状況の検証
     expect(getJarPath(outputPath).exists()).toBe(true);

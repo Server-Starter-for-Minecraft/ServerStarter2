@@ -12,7 +12,7 @@ import {
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { ReadyVersion } from './fileProcess/base';
+import { ExecRuntime, ReadyVersion } from './fileProcess/base';
 import { ReadyFabricVersion, RemoveFabricVersion } from './fileProcess/fabric';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
@@ -129,14 +129,14 @@ export class VersionContainer {
    * ```
    *
    * @param path サーバーのディレクトリパス jarファイルはここの直下に置く
-   * @param readyRuntime jarファイルを用意する際にランタイムが必要なことがあるので、指定したランタイムを用意する
+   * @param execRuntime jarファイルを用意するためのJavaランタイムの実行を提供する
    *
    * @returns 使用するランタイムの種類と, サブプロセスのコマンドを生成する関数 を返す
    */
   async readyVersion(
     version: Version,
     path: Path,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<
     Result<{
       runtime: Runtime;
@@ -151,37 +151,37 @@ export class VersionContainer {
           version.type,
           new ReadyVanillaVersion(version)
         );
-        return vanillaFp.completeReady4VersionFiles(path, readyRuntime);
+        return vanillaFp.completeReady4VersionFiles(path, execRuntime);
       case 'spigot':
         const spigotFp = callReadyVersionOperator(
           version.type,
           new ReadySpigotVersion(version)
         );
-        return spigotFp.completeReady4VersionFiles(path, readyRuntime);
+        return spigotFp.completeReady4VersionFiles(path, execRuntime);
       case 'papermc':
         const papermcFp = callReadyVersionOperator(
           version.type,
           new ReadyPaperMCVersion(version)
         );
-        return papermcFp.completeReady4VersionFiles(path, readyRuntime);
+        return papermcFp.completeReady4VersionFiles(path, execRuntime);
       case 'forge':
         const forgeFp = callReadyVersionOperator(
           version.type,
           new ReadyForgeVersion(version)
         );
-        return forgeFp.completeReady4VersionFiles(path, readyRuntime);
+        return forgeFp.completeReady4VersionFiles(path, execRuntime);
       case 'mohistmc':
         const mohistmcFp = callReadyVersionOperator(
           version.type,
           new ReadyMohistMCVersion(version)
         );
-        return mohistmcFp.completeReady4VersionFiles(path, readyRuntime);
+        return mohistmcFp.completeReady4VersionFiles(path, execRuntime);
       case 'fabric':
         const fabricFp = callReadyVersionOperator(
           version.type,
           new ReadyFabricVersion(version)
         );
-        return fabricFp.completeReady4VersionFiles(path, readyRuntime);
+        return fabricFp.completeReady4VersionFiles(path, execRuntime);
     }
   }
 

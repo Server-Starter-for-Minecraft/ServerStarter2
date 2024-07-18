@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { serverSourcePath } from 'app/src-electron/v2/core/const';
 import {
   minecraftRuntimeVersions,
   Runtime,
@@ -9,7 +8,12 @@ import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getJarPath, ReadyVersion, RemoveVersion } from '../fileProcess/base';
+import {
+  ExecRuntime,
+  getJarPath,
+  ReadyVersion,
+  RemoveVersion,
+} from '../fileProcess/base';
 import { getVersionMainfest } from '../getVersions/mainfest';
 import { checkJarHash, getRuntimeObj } from './serverJar';
 import { getVersionJsonObj, VersionJson } from './versionJson';
@@ -63,7 +67,7 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<void>> {
     const verJson = await verJsonHandler.read();
     if (verJson.isErr) return verJson;
@@ -143,6 +147,7 @@ export async function getVanillaVersionJson(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
 
   const ver21: VanillaVersion = {
     id: '1.21' as VersionId,

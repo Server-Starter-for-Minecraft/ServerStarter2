@@ -5,7 +5,7 @@ import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
-import { getJarPath, ReadyVersion, RemoveVersion } from './base';
+import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { checkJarHash, getRuntimeObj } from './serverJar';
 import { getVanillaVersionJson } from './vanilla';
 import { VersionJson } from './versionJson';
@@ -35,7 +35,7 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    readyRuntime: (runtime: Runtime) => Promise<Result<void>>
+    execRuntime: ExecRuntime
   ): Promise<Result<void>> {
     const verJson = await verJsonHandler.read();
     if (verJson.isErr) return verJson;
