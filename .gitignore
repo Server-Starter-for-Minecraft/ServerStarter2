@@ -44,3 +44,6 @@ yarn-error.log*
 design/schedule.xlsx
 
 .temp/
+
+# テスト実行時ファイル用
+work/
