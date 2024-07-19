@@ -130,6 +130,18 @@ export class Path extends DuplexStreamer<void> {
     if (!this.exists()) await fs.mkdir(this._path, { recursive: true });
   }
 
+  /** ディレクトリが無かったら作成する */
+  ensureDir = exclusive(this._ensureDir);
+  private async _ensureDir(options?: { mode?: number }) {
+    await fs.ensureDir(this._path, options);
+  }
+
+  /** ディレクトリが空の状態を保証する */
+  emptyDir = exclusive(this._emptyDir);
+  private async _emptyDir() {
+    await fs.emptyDir(this._path);
+  }
+
   /** 同期ディレクトリ生成(非推奨) */
   mkdirSync() {
     if (!this.exists()) fs.mkdirSync(this._path, { recursive: true });
