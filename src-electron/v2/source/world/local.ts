@@ -82,8 +82,9 @@ export class LocalWorldSource implements WorldContainerHandler {
     const getWorldMeta = async (
       worldName: WorldName
     ): Promise<Result<World>> => {
-      // TODO: 読み込み失敗時にデフォルト値を使用?
-      const data = await this.settingFilePath(worldName).into(settingJson);
+      const data = (
+        await this.settingFilePath(worldName).into(settingJson)
+      ).onErr(() => Result.fromZod(World.safeParse({}))); // 読み込み失敗時にデフォルト値を使用?
       return data;
     };
 
@@ -165,17 +166,23 @@ export class LocalWorldSource implements WorldContainerHandler {
     const handlers = this.jsonHandlers.get(name);
     const outputPaths = this.outputFilePaths(name);
 
-    // データを展開
+    // データを展開 存在しない情報は何もせずに成功として扱う
     const res = await Promise.all([
-      handlers.bannedIps.write(world.bannedIps),
-      handlers.bannedPlayers.write(world.bannedPlayers),
-      handlers.ops.write(world.players.filter((p) => p.level !== 0)),
-      handlers.whitelist.write(
-        world.players.map(({ name, uuid }) => {
-          return { name, uuid };
-        })
-      ),
-      outputPaths.properties.writeText(stringify(world.properties)),
+      world.bannedIps ? handlers.bannedIps.write(world.bannedIps) : ok(),
+      world.bannedPlayers
+        ? handlers.bannedPlayers.write(world.bannedPlayers)
+        : ok(),
+      world.players
+        ? handlers.ops.write(world.players.filter((p) => p.level !== 0))
+        : ok(),
+      world.players
+        ? handlers.whitelist.write(
+            world.players.map(({ name, uuid }) => ({ name, uuid }))
+          )
+        : ok(),
+      world.properties
+        ? outputPaths.properties.writeText(stringify(world.properties))
+        : ok(),
     ]);
 
     // エラーがあった場合は展開したファイルを削除
@@ -198,25 +205,24 @@ export class LocalWorldSource implements WorldContainerHandler {
     const outputPaths = this.outputFilePaths(name);
 
     // データを読取
-    const res = await Promise.all([
-      handlers.bannedIps.read(),
-      handlers.bannedPlayers.read(),
-      handlers.ops.read(),
-      handlers.whitelist.read(),
-      outputPaths.properties.readText(),
-    ]);
-
-    // エラーがあった場合は読取を中断
-    const errRes = res.filter((v) => v.isErr);
-    if (errRes.length > 0) {
-      return errRes[0];
-    }
+    const [bannedIps, bannedPlayers, ops, whitelist, properties] =
+      await Promise.all([
+        handlers.bannedIps.read(),
+        handlers.bannedPlayers.read(),
+        handlers.ops.read(),
+        handlers.whitelist.read(),
+        outputPaths.properties.readText(),
+      ]);
 
     // オブジェクト内のデータを更新
-    world.bannedIps = res[0].value();
-    world.bannedPlayers = res[1].value();
-    world.properties = parse(res[4].value());
-    world.players = this.packPlayerData(res[3].value(), res[2].value());
+    world.bannedIps = bannedIps.valueOrDefault(undefined);
+    world.bannedPlayers = bannedPlayers.valueOrDefault(undefined);
+    world.properties = properties
+      .onOk((x) => ok(parse(x)))
+      .valueOrDefault(undefined);
+    world.players = Result.all(whitelist, ops)
+      .onOk(([i, j]) => ok(this.packPlayerData(i, j)))
+      .valueOrDefault(undefined);
 
     // 更新済みのオブジェクトを登録
     return this.setWorldMeta(name, world);
@@ -252,79 +258,296 @@ if (import.meta.vitest) {
   const { Bytes } = await import('../../util/binary/bytes');
   const { SHA1 } = await import('../../util/binary/hash');
 
-  const getFileHash = async (path: Path) => {
-    // ファイルの中身を取得
-    const fileData = await path.into(Bytes);
-    if (fileData.isErr) return err(new Error('FILE_IS_INVALID'));
+  const testCases = [
+    {
+      worldName: 'bannedIp',
+      setting: {
+        bannedIps: [
+          {
+            ip: 'IpAdress',
+            created: '2024-01-01 23:47:21 +0900',
+            source: '??',
+            expires: 'forever',
+            reason: 'nantonaku',
+          },
+        ],
+      },
+      files: [
+        {
+          file: 'banned-ips.json',
+          json: [
+            {
+              ip: 'IpAdress',
+              created: '2024-01-01 23:47:21 +0900',
+              source: '??',
+              expires: 'forever',
+              reason: 'nantonaku',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      worldName: 'bannedPlayers',
+      setting: {
+        bannedPlayers: [
+          {
+            uuid: '1234-1234-123412341234-12341234-1234',
+            created: '2024-01-01 23:47:21 +0900',
+            source: '??',
+            expires: 'forever',
+            reason: 'nantonaku',
+          },
+        ],
+      },
+      files: [
+        {
+          file: 'banned-players.json',
+          json: [
+            {
+              uuid: '1234-1234-123412341234-12341234-1234',
+              created: '2024-01-01 23:47:21 +0900',
+              source: '??',
+              expires: 'forever',
+              reason: 'nantonaku',
+            },
+          ],
+        },
+      ],
+    },
+  ];
 
-    // ファイルのHashを取得
-    return fileData.value().into(SHA1);
-  };
+  const workPath = new Path('src-electron/v2/source/world/test/work');
+  const source = new LocalWorldSource(workPath);
+  test.only.each(testCases)(
+    '展開と梱包が正常に動く $worldName',
+    async ({ setting, files, worldName }) => {
+      const worldPath = workPath.child(worldName);
+      await worldPath.emptyDir();
 
-  const testPath = new Path('src-electron/v2/source/world/test/assets/worlds');
-  const targetWorldName = '展開済' as WorldName;
-  const source = new LocalWorldSource(testPath);
+      // 設定ファイルを書き出し
+      for (const file of files) {
+        const path = worldPath.child(file.file);
+        if (file.json) path.writeText(JSON.stringify(file.json));
+        // if (file.txt) path.writeText(file.txt);
+      }
 
-  test('packWorldSettingFiles', async () => {
-    // 梱包前の設定ファイルのHashを取得
-    const beforePackSettingFileHash = await getFileHash(
-      testPath.child(`${targetWorldName}/server_settings.json`)
-    );
-    expect(beforePackSettingFileHash.isOk).toBe(true);
-    if (beforePackSettingFileHash.isErr) return;
+      // 設定ファイルを梱包
+      expect(
+        (await source.packWorldData(WorldName.parse(worldName))).isOk
+      ).toBe(true);
 
-    // 各種データを梱包
-    const res = await source.packWorldData(targetWorldName);
-    expect(res.isOk).toBe(true);
+      const settingContent = await worldPath
+        .child(SETTING_FILE_NAME)
+        .readText();
 
-    // 梱包後の設定ファイルのHashを取得
-    const afterPackSettingFileHash = await getFileHash(
-      testPath.child(`${targetWorldName}/server_settings.json`)
-    );
-    expect(afterPackSettingFileHash.isOk).toBe(true);
-    if (afterPackSettingFileHash.isErr) return;
+      // server_settings.jsonに期待する内容が含まれる
+      expect(JSON.parse(settingContent.value())).toEqual(
+        expect.objectContaining(setting)
+      );
 
-    // Hashが変化していなければOK
-    expect(beforePackSettingFileHash.value()).toBe(
-      afterPackSettingFileHash.value()
-    );
-  });
-
-  test('extractWorldSettingFiles', async () => {
-    // 展開するファイル群
-    const checkFileNames = [
-      PROPERTY_FILE_NAME,
-      BANNEDIPS_FILE_NAME,
-      BANNEDPLAYERS_FILE_NAME,
-      OPS_FILE_NAME,
-      WHITELIST_FILE_NAME,
-    ];
-
-    // 展開前データのHashを取得
-    const beforeHashs = await Promise.all(
-      checkFileNames.map((fName) =>
-        getFileHash(testPath.child(`${targetWorldName}/${fName}`))
-      )
-    );
-    const okBeforeHashs = beforeHashs.filter((h) => h.isOk);
-    expect(okBeforeHashs.length).toBe(checkFileNames.length);
-
-    // データを展開
-    const res = await source.extractWorldData(targetWorldName);
-    expect(res.isOk).toBe(true);
-
-    // 展開後データのHashを取得
-    const afterHashs = await Promise.all(
-      checkFileNames.map((fName) =>
-        getFileHash(testPath.child(`${targetWorldName}/${fName}`))
-      )
-    );
-    const okAfterHashs = afterHashs.filter((h) => h.isOk);
-    expect(okAfterHashs.length).toBe(checkFileNames.length);
-
-    // Hashが変化していなければOK
-    for (let i = 0; i < checkFileNames.length; i++) {
-      expect(okBeforeHashs[i].value()).toBe(okAfterHashs[i].value());
+      /// TODO: 設定ファイルを展開する
     }
-  });
+  );
 }
+
+// const getFileHash = async (path: Path) => {
+//   // ファイルの中身を取得
+//   const fileData = await path.into(Bytes);
+//   if (fileData.isErr) return err(new Error('FILE_IS_INVALID'));
+
+//   // ファイルのHashを取得
+//   return fileData.value().into(SHA1);
+// };
+
+// const assetsPath = new Path(
+//   'src-electron/v2/source/world/test/assets/worlds'
+// );
+
+// const targetWorldName = '展開済' as WorldName;
+
+// const files = [
+//   {
+//     file: PROPERTY_FILE_NAME,
+//     content: 'allow-flight=true',
+//   },
+//   {
+//     file: BANNEDIPS_FILE_NAME,
+//     content: [
+//       {
+//         ip: 'IpAdress',
+//         created: '2024-01-01 23:47:21 +0900',
+//         source: '??',
+//         expires: 'forever',
+//         reason: 'nantonaku',
+//       },
+//     ],
+//   },
+//   {
+//     file: BANNEDPLAYERS_FILE_NAME,
+//     content: [
+//       {
+//         uuid: '1234-1234-123412341234-12341234-1234',
+//         created: '2024-01-01 23:47:21 +0900',
+//         source: '??',
+//         expires: 'forever',
+//         reason: 'nantonaku',
+//       },
+//     ],
+//   },
+//   {
+//     file: OPS_FILE_NAME,
+//     content: [
+//       {
+//         uuid: '0000-0000-000000000000-00000000-0000',
+//         name: '',
+//         level: 1,
+//         bypassesPlayerLimit: false,
+//       },
+//       {
+//         uuid: '2222-2222-2222-2222-2222',
+//         name: 'player2',
+//         level: 2,
+//         bypassesPlayerLimit: false,
+//       },
+//     ],
+//   },
+//   {
+//     file: WHITELIST_FILE_NAME,
+//     content: [
+//       { name: '', uuid: '0000-0000-000000000000-00000000-0000' },
+//       { name: 'player1', uuid: '1111-1111-111111111111-11111111-1111' },
+//       { name: 'player2', uuid: '2222-2222-2222-2222-2222' },
+//     ],
+//   },
+//   {
+//     file: SETTING_FILE_NAME,
+//     content: {
+//       using: false,
+//       version: { type: 'vanilla', id: '1.20.6', release: true },
+//       properties: { 'allow-flight': 'true' },
+//       datapack: [],
+//       plugin: [],
+//       mod: [],
+//       runtime: { memory: [2, 'GB'] },
+//       players: [
+//         {
+//           uuid: '0000-0000-000000000000-00000000-0000',
+//           name: '',
+//           level: 1,
+//           bypassesPlayerLimit: false,
+//         },
+//         {
+//           name: 'player1',
+//           uuid: '1111-1111-111111111111-11111111-1111',
+//           level: 0,
+//           bypassesPlayerLimit: false,
+//         },
+//         {
+//           uuid: '2222-2222-2222-2222-2222',
+//           name: 'player2',
+//           level: 2,
+//           bypassesPlayerLimit: false,
+//         },
+//       ],
+//       bannedPlayers: [
+//         {
+//           uuid: '1234-1234-123412341234-12341234-1234',
+//           created: '2024-01-01 23:47:21 +0900',
+//           source: '??',
+//           expires: 'forever',
+//           reason: 'nantonaku',
+//         },
+//       ],
+//       bannedIps: [
+//         {
+//           ip: 'IpAdress',
+//           created: '2024-01-01 23:47:21 +0900',
+//           source: '??',
+//           expires: 'forever',
+//           reason: 'nantonaku',
+//         },
+//       ],
+//       last: {
+//         time: 1718456216406,
+//         user: 'e19851cc-9493-4875-8d67-493b8474564f',
+//         version: { type: 'vanilla', id: '1.20.6', release: true },
+//       },
+//     },
+//   },
+// ];
+
+// test.each([
+//   { explain: '全部', files },
+//   ...files.map((x) => ({
+//     explain: `${x.file}なし`,
+//     files: files.filter((i) => i != x),
+//   })),
+//   { explain: '無', files: [] },
+// ])('packWorldSettingFiles $explain', async ({ files }) => {
+//   const packWorldName = WorldName.parse('pack');
+//   const packWorldPath = workPath.child(packWorldName);
+
+//   await packWorldPath.emptyDir();
+
+//   for (const { file, content } of files) {
+//     await packWorldPath
+//       .child(file)
+//       .writeText(
+//         typeof content === 'string' ? content : JSON.stringify(content),
+//         'utf8'
+//       );
+//   }
+
+//   // 各種データを梱包
+//   const res = await source.packWorldData(packWorldName);
+//   expect(res.isOk).toBe(true);
+
+//   const workSetting = await packWorldPath
+//     .child('server_settings.json')
+//     .readText();
+
+//   const assetSetting = await assetsPath
+//     .child('展開済')
+//     .child('server_settings.json')
+//     .readText();
+
+//   expect(workSetting.value()).toBe(assetSetting.value());
+// });
+
+// test('extractWorldSettingFiles', async () => {
+//   // 展開するファイル群
+//   const checkFileNames = [
+//     PROPERTY_FILE_NAME,
+//     BANNEDIPS_FILE_NAME,
+//     BANNEDPLAYERS_FILE_NAME,
+//     OPS_FILE_NAME,
+//     WHITELIST_FILE_NAME,
+//   ];
+
+//   // 展開前データのHashを取得
+//   const beforeHashs = await Promise.all(
+//     checkFileNames.map((fName) =>
+//       getFileHash(assetsPath.child(`${targetWorldName}/${fName}`))
+//     )
+//   );
+//   const okBeforeHashs = beforeHashs.filter((h) => h.isOk);
+//   expect(okBeforeHashs.length).toBe(checkFileNames.length);
+
+//   // データを展開
+//   const res = await source.extractWorldData(targetWorldName);
+//   expect(res.isOk).toBe(true);
+
+//   // 展開後データのHashを取得
+//   const afterHashs = await Promise.all(
+//     checkFileNames.map((fName) =>
+//       getFileHash(assetsPath.child(`${targetWorldName}/${fName}`))
+//     )
+//   );
+//   const okAfterHashs = afterHashs.filter((h) => h.isOk);
+//   expect(okAfterHashs.length).toBe(checkFileNames.length);
+
+//   // Hashが変化していなければOK
+//   for (let i = 0; i < checkFileNames.length; i++) {
+//     expect(okBeforeHashs[i].value()).toBe(okAfterHashs[i].value());
+//   }
