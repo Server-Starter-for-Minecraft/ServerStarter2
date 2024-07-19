@@ -67,34 +67,34 @@ export type WhitelistPlayer = z.infer<typeof WhitelistPlayer>;
 
 export const World = z.object({
   /** 起動中フラグ */
-  using: z.boolean(),
+  using: z.boolean().default(false),
 
   /** バージョン情報 */
-  version: Version,
+  version: Version.default({ type: 'unknown' }),
 
   /** `server.properties`の情報 */
-  properties: ServerProperties,
+  properties: ServerProperties.optional(),
 
   /** データパック */
-  datapack: z.array(DatapackMeta),
+  datapack: z.array(DatapackMeta).optional(),
 
   /** プラグイン */
-  plugin: z.array(Plugin),
+  plugin: z.array(Plugin).optional(),
 
   /** Mod */
-  mod: z.array(Mod),
+  mod: z.array(Mod).optional(),
 
   /** メモリ等ランタイムの設定 */
-  runtime: RuntimeSettings,
+  runtime: RuntimeSettings.optional(),
 
   /** whitelist / op に登録せれているプレイヤー */
-  players: z.array(OpPlayer),
+  players: z.array(OpPlayer).optional(),
 
   /** banされたプレイヤー */
-  bannedPlayers: z.array(BannedPlayer),
+  bannedPlayers: z.array(BannedPlayer).optional(),
 
   /** banされたip */
-  bannedIps: z.array(BannedIp),
+  bannedIps: z.array(BannedIp).optional(),
 
   /** 最終起動時のデータ */
   last: z
