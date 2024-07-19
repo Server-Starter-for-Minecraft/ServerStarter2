@@ -1,6 +1,6 @@
 import { ChildProcess } from 'child_process';
 import { ls, sync } from 'rclone.js';
-
+import { getFileList } from './getFileList';
 //const rclone = require('rclone.js');
 /** @see https://rclone.js.org/ */
 
@@ -25,30 +25,6 @@ syncProcess.stderr?.on('data', (data) => {
 });
 
 const lsProcess = ls('src-electron/rclone-sample/sync');
-
-async function getFileList(lsProcess: ChildProcess) {
-  const fileList: string[] = [];
-  return new Promise<string[]>((resolve, reject) => {
-    lsProcess.stdout?.on('data', (data) => {
-      console.log(data.toString());
-      const lines = data.toString().split('\n');
-      fileList.push(...lines.filter((line) => line.trim() !== ''));
-    });
-
-    lsProcess.stderr?.on('data', (data) => {
-      console.error('Error reading file list:', data.toString());
-      reject(new Error(data.toString()));
-    });
-
-    lsProcess.on('close', (code) => {
-      if (code === 0) {
-        resolve(fileList.sort());
-      } else {
-        reject(new Error(`ls process exited with code ${code}`));
-      }
-    });
-  });
-}
 
 /** In Source Testing */
 if (import.meta.vitest) {
