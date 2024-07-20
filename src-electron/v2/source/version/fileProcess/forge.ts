@@ -17,7 +17,7 @@ function getServerID(version: ForgeVersion) {
 }
 
 // ReadyVersionの標準対応以外のキャッシュからコピーすべきファイル群
-const SUPPORT_SECONDARY_FILES = ['user_jvm_args.txt']
+const SUPPORT_SECONDARY_FILES = ['version.bat', 'version.sh'];
 
 export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
   constructor(version: ForgeVersion) {
@@ -213,7 +213,7 @@ if (import.meta.vitest) {
     {
       genfiles: [
         {
-          path: 'run.bat',
+          path: 'version.bat',
           content:
             '# COMMENT\r\n   java @user_jvm_args.txt @path/to/args.txt %*   \r\n',
         },
@@ -223,8 +223,8 @@ if (import.meta.vitest) {
         },
       ],
       args: [
-        'JVM',
-        'ARGUMENT',
+        ...JVM_ARGS,
+        '-Dfile.encoding=UTF-8',
         '-Dlog4j.configurationFile=log4j2_112-116.xml',
         '@path/to/args.txt',
         '--nogui',
@@ -233,7 +233,7 @@ if (import.meta.vitest) {
     {
       genfiles: [
         {
-          path: 'run.sh',
+          path: 'version.sh',
           content: 'java @user_jvm_args.txt @path/to/args.txt "$@"\n# COMMENT',
         },
         {
@@ -242,8 +242,8 @@ if (import.meta.vitest) {
         },
       ],
       args: [
-        'JVM',
-        'ARGUMENT',
+        ...JVM_ARGS,
+        '-Dfile.encoding=UTF-8',
         '-Dlog4j.configurationFile=log4j2_112-116.xml',
         '@path/to/args.txt',
         '--nogui',

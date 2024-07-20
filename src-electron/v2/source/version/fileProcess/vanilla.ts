@@ -198,6 +198,8 @@ if (import.meta.vitest) {
     );
 
     // ファイルの設置状況の検証
+    // TODO: Log4Jのファイルが`outputPath`にコピーされていることを確認する（各Log4Jのバージョンで確認）
+    // TODO: 上記に関連して，各バージョンのgetCommand()が正しいArgsを返すことを確認する
     expect(getJarPath(outputPath).exists()).toBe(true);
     // Jarを実行しないと生成されないため，今回はTestの対象外
     // expect(outputPath.child('libraries').exists()).toBe(true);
