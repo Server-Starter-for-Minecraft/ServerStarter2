@@ -290,6 +290,11 @@ if (import.meta.vitest) {
     expect(new Path('./').child('foo').path).toBe('foo');
     expect(new Path('./').child('/foo/').path).toBe('foo');
 
+    expect(new Path('./').child('foo/bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo\\bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo', 'bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(new Path('foo/bar/buz').path);
+
     expect(new Path('foo').path).toBe('foo');
     expect(new Path('foo/').path).toBe('foo');
 
