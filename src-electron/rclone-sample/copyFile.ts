@@ -4,20 +4,6 @@ import { copy, ls, delete as rcloneDelete } from 'rclone.js';
 import * as readline from 'readline';
 import { getFileList } from './getFileList';
 
-async function copyFile(sourcePath: string, destPath: string) {
-  const copyProcess: ChildProcess = copy(sourcePath, destPath, {
-    env: {
-      RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
-    },
-  });
-  copyProcess.stdout?.on('data', (data) => {
-    console.log(data.toString());
-  });
-  copyProcess.stderr?.on('data', (data) => {
-    console.error(data.toString());
-  });
-}
-
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
