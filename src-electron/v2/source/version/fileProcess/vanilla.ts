@@ -104,6 +104,10 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
 }
 
 export class RemoveVanillaVersion extends RemoveVersion<VanillaVersion> {
+  constructor(version: VanillaVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version);
+  }
   get serverID(): string {
     return getServerID(this._version);
   }

@@ -72,6 +72,10 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
 }
 
 export class RemoveMohistMCVersion extends RemoveVersion<MohistmcVersion> {
+  constructor(version: MohistmcVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version);
+  }
   get serverID(): string {
     return getServerID(this._version);
   }

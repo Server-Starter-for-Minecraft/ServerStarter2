@@ -64,6 +64,10 @@ export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
 }
 
 export class RemoveFabricVersion extends RemoveVersion<FabricVersion> {
+  constructor(version: FabricVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version);
+  }
   get serverID(): string {
     return getServerID(this._version);
   }

@@ -16,10 +16,13 @@ function getServerID(version: ForgeVersion) {
   return `${version.id}_${version.forge_version}`;
 }
 
+// ReadyVersionの標準対応以外のキャッシュからコピーすべきファイル群
+const SUPPORT_SECONDARY_FILES = ['user_jvm_args.txt']
+
 export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
   constructor(version: ForgeVersion) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version, ['user_jvm_args.txt']);
+    super(version, SUPPORT_SECONDARY_FILES);
   }
 
   protected async generateVersionJson() {
@@ -86,6 +89,10 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
 }
 
 export class RemoveForgeVersion extends RemoveVersion<ForgeVersion> {
+  constructor(version: ForgeVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version, SUPPORT_SECONDARY_FILES);
+  }
   get serverID(): string {
     return getServerID(this._version);
   }

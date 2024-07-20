@@ -105,6 +105,10 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
 }
 
 export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
+  constructor(version: PapermcVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version);
+  }
   get serverID(): string {
     return getServerID(this._version);
   }

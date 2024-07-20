@@ -36,10 +36,13 @@ function getServerID(version: SpigotVersion) {
   return `${version.id}`;
 }
 
+// ReadyVersionの標準対応以外のキャッシュからコピーすべきファイル群
+const SUPPORT_SECONDARY_FILES = ['bundler']
+
 export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
   constructor(version: SpigotVersion) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version, ['bundler']);
+    super(version, SUPPORT_SECONDARY_FILES);
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
     // バニラの情報をもとにSpigotのversionJsonを生成
@@ -109,6 +112,10 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
 }
 
 export class RemoveSpigotVersion extends RemoveVersion<SpigotVersion> {
+  constructor(version: SpigotVersion) {
+    // キャッシュから本番環境へコピーするファイルを追加
+    super(version, SUPPORT_SECONDARY_FILES);
+  }
   get serverID(): string {
     return getServerID(this._version);
   }
