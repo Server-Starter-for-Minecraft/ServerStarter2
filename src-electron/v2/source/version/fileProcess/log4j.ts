@@ -547,17 +547,17 @@ function processSwitcher<T, U>(
   other: U
 ) {
   // 1.17-1.18
-  if (versionID in ver_17_18) {
+  if (ver_17_18.some((ver) => ver === versionID)) {
     return process_17_18;
   }
 
   // 1.12-1.16.5
-  else if (versionID in ver_12_16) {
+  else if (ver_12_16.some((ver) => ver === versionID)) {
     return process_12_16;
   }
 
   // 1.7-1.11.2
-  else if (versionID in ver_7_11) {
+  else if (ver_7_11.some((ver) => ver === versionID)) {
     return process_7_11;
   }
 
@@ -594,4 +594,28 @@ export function saveLog4JPatch(
     () => download_xml_7_11(savePath),
     async () => ok(null)
   );
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+
+  const cases = ['17-18', '12-16', '7-11', 'other'];
+
+  test.each([
+    {
+      ver: '1.21' as VersionId,
+      val: 'other',
+    },
+    {
+      ver: '1.13.1' as VersionId,
+      val: '12-16',
+    },
+    {
+      ver: '1.7' as VersionId,
+      val: '7-11',
+    },
+  ])('processSwitcher', ({ ver, val }) => {
+    expect(processSwitcher(ver, ...cases)).toBe(val);
+  });
 }
