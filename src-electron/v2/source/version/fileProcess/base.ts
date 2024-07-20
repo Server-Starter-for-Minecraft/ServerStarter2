@@ -203,7 +203,7 @@ export abstract class ReadyVersion<
       runtime: runtime.value(),
       getCommand: (option: { jvmArgs: string[] }) => {
         return replaceEmbedArgs(verJson.value().arguments, {
-          JAR_PATH: [getVersionJsonPath(targetPath).toStr()],
+          JAR_PATH: [getJarPath(targetPath).toStr()],
           JVM_ARGUMENT: option.jvmArgs,
           LOG4J_ARG: [getLog4jArg(this._version.id) ?? ''],
         });

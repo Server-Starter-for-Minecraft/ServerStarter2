@@ -108,11 +108,13 @@ export function replaceEmbedArgs(
   const returnArgs = deepcopy(args);
 
   (Object.keys(replaceValue) as EmbedType[]).forEach((embedType) => {
-    const replaceIdx = args.findIndex(
+    const replaceIdx = returnArgs.findIndex(
       (arg) => typeof arg !== 'string' && arg['embed'] === embedType
     );
 
-    returnArgs.splice(replaceIdx, 1, ...replaceValue[embedType]);
+    if (replaceIdx !== -1) {
+      returnArgs.splice(replaceIdx, 1, ...replaceValue[embedType]);
+    }
   });
 
   return returnArgs as string[];
