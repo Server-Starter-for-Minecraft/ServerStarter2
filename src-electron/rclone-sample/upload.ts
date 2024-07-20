@@ -50,7 +50,7 @@ if (import.meta.vitest) {
     const localFileList = await getFileList(locallsProcess);
 
     expect(remoteFileList).toEqual(localFileList);
-  },50000);
+  }, 50000);
   test('conflictTest', async () => {
     /**コンフリクトを起こすファイルを判別する正規表現 */
     const regexPattern = /hoge3$/;
@@ -151,13 +151,15 @@ if (import.meta.vitest) {
     });
 
     await new Promise<void>((r) => conflictSyncProcess.on('close', r));
-    const conflictlsProcess = ls('src-electron/rclone-sample/sync')
+    const conflictlsProcess = ls('src-electron/rclone-sample/sync');
 
     const conflictRemoteFileList = await getFileList(conflictlsProcess);
-    const conflictContainsFile = conflictRemoteFileList.some((file) => regexPattern.test(file));
+    const conflictContainsFile = conflictRemoteFileList.some((file) =>
+      regexPattern.test(file)
+    );
     expect(conflictContainsFile).toBe(true);
 
     /**最初の動機とコンフリクト後の同期でリモートの内容が変わっていないことを確認 */
-    expect(conflictRemoteFileList).toEqual(beforeRemoteFileList)
-  },50000);
+    expect(conflictRemoteFileList).toEqual(beforeRemoteFileList);
+  }, 50000);
 }
