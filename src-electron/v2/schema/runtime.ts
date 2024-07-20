@@ -12,6 +12,7 @@ export type MinecraftRuntime = {
 };
 
 // バージョンだけを指定するランタイム
+// 実際は MinecraftRuntime か CorrettoRuntime かになる
 export type UniversalRuntime = {
   type: 'universal';
   majorVersion: number;

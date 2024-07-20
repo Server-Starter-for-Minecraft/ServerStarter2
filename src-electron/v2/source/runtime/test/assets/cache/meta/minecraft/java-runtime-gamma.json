@@ -1,0 +1,10 @@
+{
+  "java_version": {
+    "major": 21
+  },
+  "os": {
+    "windows64": {
+      "runtimePath": "bin/minecraft/windows-x64/bin/javaw.exe"
+    }
+  }
+}
