@@ -56,11 +56,11 @@ export class Path extends DuplexStreamer<void> {
     return asyncPipe(readable, writable);
   }
 
-  child(child: string) {
+  child(...paths: string[]) {
     if (this._path !== '') {
-      return new Path(path.join(this._path, child));
+      return new Path(path.join(this._path, ...paths));
     }
-    return new Path(child);
+    return new Path(path.join(...paths));
   }
 
   parent(times = 1) {
