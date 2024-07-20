@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { keys } from 'app/src-public/scripts/obj/obj';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { AllFileData } from 'app/src-electron/schema/filedata';
@@ -18,6 +19,8 @@ import {
   openSavedFolder,
   OptContents,
 } from './contentsPage';
+import AddNewContentsDialog from './ListView/AddNewContentsDialog.vue';
+import { AddContentDialogProp } from './ListView/iAddNewContentsDialog';
 import ListItem from './ListView/ListItem.vue';
 import SearchResultItem from './ListView/SearchResultItem.vue';
 
@@ -25,6 +28,8 @@ interface Prop {
   contentType: ContentsType;
 }
 const prop = defineProps<Prop>();
+
+const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
@@ -65,6 +70,15 @@ function addContentClicked(content: AllFileData<ContentsData>) {
   addContent(prop.contentType, content);
   selectedContent.value = undefined;
 }
+
+function openAddContentDialog() {
+  $q.dialog({
+    component: AddNewContentsDialog,
+    componentProps: {
+      contentType: prop.contentType,
+    } as AddContentDialogProp,
+  });
+}
 </script>
 
 <template>
@@ -104,17 +118,23 @@ function addContentClicked(content: AllFileData<ContentsData>) {
       <SsBtn
         free-width
         icon="library_add"
+        label="コンテンツを新規追加"
+        @click="() => openAddContentDialog()"
+      />
+      <!-- <SsBtn
+        free-width
+        icon="library_add"
         label="まとめて追加"
         :disable="keys(mainStore.allWorlds.filteredWorlds()).length < 2"
         @click="() => importMultipleContents($q, contentType)"
-      />
-      <SsIconBtn
+      /> -->
+      <!-- <SsIconBtn
         flat
         size=".8rem"
         icon="add_box"
         tooltip="追加コンテンツを新規追加"
         @click="() => importNewContent(contentType, true)"
-      />
+      /> -->
       <SsIconBtn
         v-if="contentType !== 'datapack'"
         flat
