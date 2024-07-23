@@ -10,7 +10,6 @@ import {
   WorldName,
 } from '../../schema/world';
 import { err, ok, Result } from '../../util/base';
-import { Json } from '../../util/binary/json';
 import { Path } from '../../util/binary/path';
 import { InfinitMap } from '../../util/helper/infinitMap';
 import { AsyncCache } from '../../util/promise/cache';
@@ -76,23 +75,28 @@ export class LocalWorldSource implements WorldContainerHandler {
       }
     );
 
-    const settingJson = new Json(World);
+    const worldMataHandlers = InfinitMap.primitiveKeyWeakValue(
+      (worldName: WorldName) => {
+        return JsonSourceHandler.fromPath(
+          this.settingFilePath(worldName),
+          World
+        );
+      }
+    );
 
     const getWorldMeta = async (
       worldName: WorldName
     ): Promise<Result<World>> => {
-      const data = (
-        await this.settingFilePath(worldName).into(settingJson)
-      ).onErr(() => Result.fromZod(World.safeParse({}))); // 読み込み失敗時にデフォルト値を使用?
-      return data;
+      const getResult = await worldMataHandlers.get(worldName).read();
+      // 読み込み失敗時にデフォルト値を使用
+      return getResult.onErr(() => Result.fromZod(World.safeParse({})));
     };
 
     const setWorldMeta = async (
       worldName: WorldName,
       world: World
     ): Promise<Result<World>> => {
-      settingJson.data = ok(world);
-      const setResult = await settingJson.into(this.settingFilePath(worldName));
+      const setResult = await worldMataHandlers.get(worldName).write(world);
       return setResult.onOk(() => ok(world));
     };
 
