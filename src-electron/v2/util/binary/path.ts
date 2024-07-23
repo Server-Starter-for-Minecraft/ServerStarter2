@@ -56,11 +56,11 @@ export class Path extends DuplexStreamer<void> {
     return asyncPipe(readable, writable);
   }
 
-  child(child: string) {
+  child(...paths: string[]) {
     if (this._path !== '') {
-      return new Path(path.join(this._path, child));
+      return new Path(path.join(this._path, ...paths));
     }
-    return new Path(child);
+    return new Path(path.join(...paths));
   }
 
   parent(times = 1) {
@@ -301,6 +301,11 @@ if (import.meta.vitest) {
 
     expect(new Path('./').child('foo').path).toBe('foo');
     expect(new Path('./').child('/foo/').path).toBe('foo');
+
+    expect(new Path('./').child('foo/bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo\\bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo', 'bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(new Path('foo/bar/buz').path);
 
     expect(new Path('foo').path).toBe('foo');
     expect(new Path('foo/').path).toBe('foo');

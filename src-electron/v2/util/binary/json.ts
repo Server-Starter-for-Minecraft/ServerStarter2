@@ -2,48 +2,27 @@ import * as stream from 'stream';
 import { z } from 'zod';
 import { err, ok, Result } from '../base';
 import { Bytes } from './bytes';
-import { DuplexStreamer, Readable } from './stream';
+import { WritableStreamer } from './stream';
 
-export class Json<T> extends DuplexStreamer<T> {
+export class Json<T> extends WritableStreamer<T> {
   private validator: z.ZodType<T, z.ZodTypeDef, any>;
-  private _data: Result<T>;
-
-  get data(): Result<T> {
-    return this._data.onOk((x) => Result.catchSync(() => structuredClone(x)));
-  }
-  set data(data: Result<T>) {
-    this._data = data.onOk((x) => Result.catchSync(() => structuredClone(x)));
-  }
 
   constructor(validator: z.ZodType<T, z.ZodTypeDef, any>) {
     super();
     this.validator = validator;
-    this._data = err.error('value is unset');
   }
 
   async write(readable: stream.Readable): Promise<Result<T, Error>> {
     const bytes = await Bytes.write(readable);
-    this._data = bytes
+    const data = bytes
       .onOk((x) => x.toStr())
       .onOk((x) => Result.catchSync(() => JSON.parse(x)))
       .onOk((x) => Result.fromZod(this.validator.safeParse(x)));
-    return this.data;
+    return data;
   }
 
-  createReadStream(): Readable {
-    if (this._data.isErr) {
-      const error = this._data.error();
-      return new Readable(
-        new stream.Readable({
-          read() {
-            this.destroy(error);
-          },
-        })
-      );
-    }
-    return Bytes.fromString(
-      JSON.stringify(this.data.value())
-    ).createReadStream();
+  stringify(data: T): Bytes {
+    return Bytes.fromString(JSON.stringify(data));
   }
 }
 
@@ -85,10 +64,8 @@ if (import.meta.vitest) {
     ];
 
     test.each(testCases)('$explain', async (testCase) => {
-      const jsonStream = new Json(testCase.validator);
-      const jsonValue = await Bytes.fromString(testCase.jsonStr).into(
-        jsonStream
-      );
+      const json = new Json(testCase.validator);
+      const jsonValue = await Bytes.fromString(testCase.jsonStr).into(json);
 
       if ('value' in testCase)
         expect(jsonValue.value()).toStrictEqual(testCase.value);
@@ -129,9 +106,8 @@ if (import.meta.vitest) {
 
     test.each(testCases)('$explain', async (testCase) => {
       const jsonStream = new Json(z.any());
-      jsonStream.data = testCase.data;
 
-      const bytes = await jsonStream.into(Bytes);
+      const bytes = await jsonStream.stringify(testCase.data).into(Bytes);
 
       if ('jsonStr' in testCase)
         expect(bytes.value().toStr('utf8').value()).toBe(testCase.jsonStr);
@@ -142,25 +118,5 @@ if (import.meta.vitest) {
       explain: string;
       data: Result<any>;
     } & ({ jsonStr: string } | { error: Record<string, never> });
-  });
-
-  test('オブジェクト参照が切れている', async () => {
-    const jsonStream = new Json(z.object({ a: z.number() }));
-
-    await Bytes.fromString('{"a":100}').into(jsonStream);
-
-    const getData = jsonStream.data.value();
-
-    expect(getData).toStrictEqual({ a: 100 });
-
-    getData.a = 200;
-    expect(getData).toStrictEqual({ a: 200 });
-    expect(jsonStream.data.value()).toStrictEqual({ a: 100 }); // 元データは変更されない
-
-    const setData = { a: 300 };
-    jsonStream.data = ok(setData);
-    expect(jsonStream.data.value()).toStrictEqual({ a: 300 });
-    setData.a = 400;
-    expect(jsonStream.data.value()).toStrictEqual({ a: 300 }); // 元データは変更されない
   });
 }

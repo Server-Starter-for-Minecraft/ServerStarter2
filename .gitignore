@@ -45,5 +45,5 @@ design/schedule.xlsx
 
 .temp/
 
-# テスト実行時ファイル用
+# テストの一時使用フォルダ
 work/

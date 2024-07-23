@@ -54,5 +54,24 @@
       "}"
     ],
     "description": "in source test snippet"
+  },
+  "In Source Testing (Async with workPath)": {
+    "prefix": "test (async + workPath)",
+    "body": [
+      "/** In Source Testing */",
+      "if (import.meta.vitest) {",
+      "  const { test, expect } = import.meta.vitest;",
+      "  const { Path } = await import('src-electron/v2/util/binary/path');",
+      "",
+      "  // 一時使用フォルダを初期化",
+      "  const workPath = new Path(__dirname).child('work');",
+      "  workPath.mkdir();",
+      "",
+      "  test('$1',async () => {",
+      "    $2",
+      "  })",
+      "}"
+    ],
+    "description": "in source test snippet"
   }
 }
