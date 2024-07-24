@@ -1,4 +1,3 @@
-import { versionsCachePath } from '../../core/const';
 import { Runtime } from '../../schema/runtime';
 import {
   AllFabricVersion,
@@ -82,40 +81,40 @@ export class VersionContainer {
   async listVanillaVersions(
     useCache: boolean
   ): Promise<Result<AllVanillaVersion>> {
-    return getVersionlist('vanilla', useCache, getVanillaVersionLoader());
+    return getVersionlist(this.cachePath, useCache, getVanillaVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listForgeVersions(useCache: boolean): Promise<Result<AllForgeVersion>> {
-    return getVersionlist('forge', useCache, getForgeVersionLoader());
+    return getVersionlist(this.cachePath, useCache, getForgeVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listSpigotVersions(
     useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
-    return getVersionlist('spigot', useCache, getSpigotVersionLoader());
+    return getVersionlist(this.cachePath, useCache, getSpigotVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listPaperMcVersions(
     useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
-    return getVersionlist('papermc', useCache, getPaperVersionLoader());
+    return getVersionlist(this.cachePath, useCache, getPaperVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listMohistMcVersions(
     useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
-    return getVersionlist('mohistmc', useCache, getMohistMCVersionLoader());
+    return getVersionlist(this.cachePath, useCache, getMohistMCVersionLoader());
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listFabricVersions(
     useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
-    return getVersionlist('fabric', useCache, getFabricVersionLoader());
+    return getVersionlist(this.cachePath, useCache, getFabricVersionLoader());
   }
 
   /**
@@ -225,6 +224,11 @@ export class VersionContainer {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
 
   type TestCase = {
     type: Version['type'];
@@ -265,12 +269,12 @@ if (import.meta.vitest) {
   ];
 
   test.each(testCases)('versionList ($type)', async (tCase) => {
+    const cachePath = workPath.child(`${tCase.type}/all.json`);
     // キャッシュの威力を試したいときは以下の行をコメントアウト
-    const cachePath = versionsCachePath.child(`${tCase.type}/all.json`);
     // await cachePath.remove();
 
     const getCachedList = await getVersionlist(
-      tCase.type,
+      cachePath,
       true,
       tCase.loader()
     );

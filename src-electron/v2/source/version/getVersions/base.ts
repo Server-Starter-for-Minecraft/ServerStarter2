@@ -1,4 +1,4 @@
-import { versionsCachePath } from 'app/src-electron/v2/core/const';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import {
   AllFabricVersion,
@@ -10,15 +10,13 @@ import {
   Version,
 } from '../../../schema/version';
 import { err, Result } from '../../../util/base';
-import {
-  getFromGeneralVerConfig,
-  getVerListHash,
-  writeVersionListHash,
-} from './config';
 
 const ALL_VERSION_JSON_NAME = 'all.json';
-export function getVersionCacheFilePath(verType: Version['type']) {
-  return versionsCachePath.child(`${verType}/${ALL_VERSION_JSON_NAME}`);
+export function getVersionCacheFilePath(
+  cachePath: Path,
+  verType: Version['type']
+) {
+  return cachePath.child(`${verType}/${ALL_VERSION_JSON_NAME}`);
 }
 
 export type AllVerison =
@@ -39,9 +37,9 @@ export type AllVerison =
  * |`write4Cache(obj)`| 取得した一覧情報`obj`を`all.json`に保存し，そのHashデータは`versions/config.json`に保存する|
  */
 export interface VersionListLoader<T extends AllVerison> {
-  getFromCache: () => Promise<Result<T>>;
+  getFromCache: (cachePath: Path) => Promise<Result<T>>;
   getFromURL: () => Promise<Result<T>>;
-  write4Cache: (obj: T) => Promise<Result<void>>;
+  write4Cache: (cachePath: Path, obj: T) => Promise<Result<void>>;
 }
 
 /**
@@ -50,13 +48,15 @@ export interface VersionListLoader<T extends AllVerison> {
  * 各バージョンは専用の`loader`を作成し，それをこの関数に与えることで適切な一覧を返すことができる
  */
 export async function getVersionlist<T extends AllVerison>(
-  verType: Version['type'],
+  cachePath: Path,
   useCache: boolean,
   loader: VersionListLoader<T>
 ): Promise<Result<T>> {
-  const cacheRes = await checkHashVer(verType, useCache, loader);
-  if (cacheRes.isOk) {
-    return cacheRes;
+  if (useCache) {
+    const cacheRes = await loader.getFromCache(cachePath);
+    if (cacheRes.isOk) {
+      return cacheRes;
+    }
   }
 
   // cacheを利用しなかった or cacheの読み取りに失敗した 場合はURLからデータを取得
@@ -66,50 +66,12 @@ export async function getVersionlist<T extends AllVerison>(
   }
 
   // 結果を各サーバーのバージョン一覧（`all.json`）に保存
-  const writeAllJsonRes = await loader.write4Cache(allVers.value());
+  const writeAllJsonRes = await loader.write4Cache(cachePath, allVers.value());
   if (writeAllJsonRes.isErr) return writeAllJsonRes;
-  // `all.json`のHash値を設定ファイルに保存
-  const recordHashRes = await writeVersionListHash(verType, allVers.value());
-  if (recordHashRes.isErr) return recordHashRes;
 
   // TODO: v2版のloggerに登録？
   // logger.success('load from remote');
   return allVers;
-}
-
-/**
- * キャッシュを用いてデータを取得して問題ないか確認し，
- * 問題がない場合は一覧データを返す
- */
-async function checkHashVer<T extends AllVerison>(
-  verType: Version['type'],
-  useCache: boolean,
-  loader: VersionListLoader<T>
-): Promise<Result<T>> {
-  if (!useCache) {
-    return err(new Error('CACHE_WILL_NOT_USE'));
-  }
-
-  const cacheVers = await loader.getFromCache();
-  if (cacheVers.isErr) {
-    return cacheVers;
-  }
-
-  const versHash = await getVerListHash(cacheVers.value());
-  if (versHash.isErr) {
-    return versHash;
-  }
-
-  const versConfig = await getFromGeneralVerConfig();
-  if (versConfig.isErr) {
-    return versConfig;
-  }
-
-  if (versConfig.value().versions_sha1?.[verType] === versHash.value()) {
-    return cacheVers;
-  } else {
-    return err(new Error('NOT_MATCHED_VERSION_LIST_HASH'));
-  }
 }
 
 /**
@@ -118,10 +80,11 @@ async function checkHashVer<T extends AllVerison>(
  * 当該サーバーの`all.json`がある場合は，このキャッシュデータを読み取る，
  */
 export async function getFromCacheBase<T>(
+  cachePath: Path,
   verType: Version['type'],
   handler: JsonSourceHandler<T>
 ): Promise<Result<T>> {
-  if (!getVersionCacheFilePath(verType).exists()) {
+  if (!getVersionCacheFilePath(cachePath, verType).exists()) {
     return err(new Error(`NOT_FOUND_VERSION_LIST_(${verType.toUpperCase()})`));
   }
   return handler.read();

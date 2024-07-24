@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { versionManifestPath } from 'app/src-electron/v2/core/const';
 import { VersionId } from 'app/src-electron/v2/schema/version';
-import { err, ok, Result } from 'app/src-electron/v2/util/base';
-import { SHA1 } from 'app/src-electron/v2/util/binary/hash';
+import { Result } from 'app/src-electron/v2/util/base';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { Bytes } from '../../../util/binary/bytes';
-import { getFromGeneralVerConfig, writeVersManifestHash } from './config';
 
 const MANIFEST_URL =
   'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
+const MANIFEST_PATH = (cachePath: Path) =>
+  cachePath.child('version_manifest_v2.json');
 
 const ManifestRecordZod = z.object({
   id: z.string().transform((val) => val as VersionId),
@@ -31,15 +31,20 @@ const ManifestJsonZod = z.object({
 });
 export type ManifestJson = z.infer<typeof ManifestJsonZod>;
 
-const manifestHandler = JsonSourceHandler.fromPath(
-  versionManifestPath,
-  ManifestJsonZod
-);
+let manifestHandler: JsonSourceHandler<ManifestJson> | undefined = undefined;
 
 /** version_manifest_v2.jsonを取得して内容を返す */
 export async function getVersionMainfest(
+  cachePath: Path,
   useCache: boolean
 ): Promise<Result<ManifestJson>> {
+  if (!manifestHandler) {
+    manifestHandler = JsonSourceHandler.fromPath(
+      MANIFEST_PATH(cachePath),
+      ManifestJsonZod
+    );
+  }
+
   if (useCache) {
     const cachedManifest = await manifestHandler.read();
     if (cachedManifest.isOk) return cachedManifest;
@@ -53,45 +58,25 @@ export async function getVersionMainfest(
     if (strRes.isErr) {
       return strRes;
     } else {
-      // 取得したJsonのHashデータを保存する
-      writeVersManifestHash(response.value());
       // 取得したJsonを`version_manifest_v2.json`に保存する
       await manifestHandler.write(JSON.parse(strRes.value()));
     }
-  } else {
-    // 失敗した場合ローカルから取得
-    return getLocalVersionMainfest();
   }
 
   return manifestHandler.read();
 }
 
-/** ローカルから取得 */
-async function getLocalVersionMainfest(): Promise<Result<ManifestJson>> {
-  const manifestData = await manifestHandler.read();
-  if (manifestData.isErr) return manifestData;
-
-  const versConfig = await getFromGeneralVerConfig();
-  if (versConfig.isErr) return versConfig;
-
-  const manifestSha1 = versConfig.value().version_manifest_v2_sha1;
-  const manifestJsonHash = await Bytes.fromString(
-    JSON.stringify(manifestData.value())
-  ).into(SHA1);
-
-  if (manifestJsonHash.isErr) {
-    return manifestJsonHash;
-  } else if (manifestJsonHash.value() !== manifestSha1)
-    return err(new Error('NOT_MATCHED_MANIFEST_HASH'));
-
-  return ok(manifestData.value());
-}
-
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
   test('manifest-handler-check', async () => {
-    const res = await getVersionMainfest(false);
+    const res = await getVersionMainfest(workPath, false);
     expect(res.isOk).toBe(true);
   });
 }
