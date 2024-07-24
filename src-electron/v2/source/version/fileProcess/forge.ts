@@ -27,7 +27,11 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
 
   protected async generateVersionJson() {
     // バニラの情報をもとにForgeのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id, this._cacheFolder, true);
+    const vanillaVerJson = await getVanillaVersionJson(
+      this._version.id,
+      this._cacheFolder,
+      true
+    );
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // ダウンロードURLを更新
@@ -187,8 +191,8 @@ if (import.meta.vitest) {
   const workPath = new Path(__dirname).child('work');
   workPath.mkdir();
 
-  const cacheFolder = workPath.child('cache')
-  const serverFolder = workPath.child('servers')
+  const cacheFolder = workPath.child('cache');
+  const serverFolder = workPath.child('servers');
 
   const ver21: ForgeVersion = {
     id: '1.13.2' as VersionId,

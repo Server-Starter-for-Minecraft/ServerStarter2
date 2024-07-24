@@ -6,6 +6,7 @@ import {
 import { VanillaVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import {
@@ -17,7 +18,6 @@ import {
 import { getVersionMainfest } from '../getVersions/mainfest';
 import { checkJarHash, getRuntimeObj } from './serverJar';
 import { getVersionJsonObj, VersionJson } from './versionJson';
-import { Path } from 'app/src-electron/v2/util/binary/path';
 
 /**
  * manifestのURLから取得される各バージョンのJSON情報を`version.json`の内容に変換

@@ -46,7 +46,11 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
     // バニラの情報をもとにSpigotのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id, this._cacheFolder, true);
+    const vanillaVerJson = await getVanillaVersionJson(
+      this._version.id,
+      this._cacheFolder,
+      true
+    );
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // 実行に必要なJavaのバージョンのJsonを取得
