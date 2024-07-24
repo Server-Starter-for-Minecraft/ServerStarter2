@@ -1,4 +1,4 @@
-import { NewType } from '../util/type/newtype';
+import { z } from 'zod';
 
 /**
  * banned-players banned-ips で使われる時刻の文字列形式
@@ -9,4 +9,5 @@ import { NewType } from '../util/type/newtype';
  *
  * e.g '2024-05-23 23:47:21 +0900'
  */
-export type McTimestamp = NewType<string, 'McTimestamp'>;
+export const McTimestamp = z.string().brand('McTimestamp');
+export type McTimestamp = z.infer<typeof McTimestamp>;

@@ -1,3 +1,5 @@
+import type { z } from 'zod';
+
 export class PanicError extends Error {}
 
 export type Awaitable<T> = T | PromiseLike<T>;
@@ -46,6 +48,14 @@ export const Result = {
       if (e instanceof Error) return err(e);
       throw new PanicError();
     }
+  },
+
+  /** zodのパース結果をResultに */
+  fromZod: <I, O>(
+    parse: z.SafeParseReturnType<I, O>
+  ): Result<O, z.ZodError<I>> => {
+    if (parse.success) return ok(parse.data);
+    else return err(parse.error);
   },
 };
 

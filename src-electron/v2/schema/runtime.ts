@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export const minecraftRuntimeVersions = [
   'jre-legacy',
   'java-runtime-alpha',
@@ -35,10 +37,8 @@ export type CorrettoRuntime = {
 export type Runtime = MinecraftRuntime | UniversalRuntime; // | CorrettoRuntime
 
 /** メモリ等ランタイムの設定 */
-export type RuntimeSettings =
-  | {
-      jvmarg: string;
-    }
-  | {
-      memory: [number, 'MB' | 'GB' | 'TB'];
-    };
+export const RuntimeSettings = z.union([
+  z.object({ jvmarg: z.string() }),
+  z.object({ memory: z.tuple([z.number(), z.enum(['MB', 'GB', 'TB'])]) }),
+]);
+export type RuntimeSettings = z.infer<typeof RuntimeSettings>;

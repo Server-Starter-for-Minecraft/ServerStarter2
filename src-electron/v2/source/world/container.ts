@@ -1,36 +1,29 @@
-import { World, WorldContainer, WorldLocation } from '../../schema/world';
+import {
+  World,
+  WorldContainer,
+  WorldLocation,
+  WorldName,
+} from '../../schema/world';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { WorldContainerHandler } from './container';
 
 /**
  * ワールドを管理するクラス
  *
  * 場所はどこにあってもよい
  */
-export class WorldSource {
-  private getContainer(container: WorldContainer): WorldContainerHandler {
-    container;
-  }
-
+export interface WorldContainerHandler {
   /**
    * コンテナ内のワールド名一覧を表示
    */
-  listWorldLocations(container: WorldContainer): Promise<WorldLocation[]> {
-    return this.getContainer(container).listWorldLocations();
-  }
+  listWorldLocations(): Promise<WorldLocation[]>;
 
   /**
    * メタデータを保存
    *
    * server_settings.jsonを上書きすればOK
    */
-  setWorldMeta(location: WorldLocation, world: World): Promise<Result<void>> {
-    return this.getContainer(location.container).setWorldMeta(
-      location.name,
-      world
-    );
-  }
+  setWorldMeta(name: WorldName, world: World): Promise<Result<void>>;
 
   /**
    * メタデータを取得
@@ -40,16 +33,12 @@ export class WorldSource {
    *
    * 何度も呼ばれる可能性があるので、キャッシュしておくとよい
    */
-  getWorldMeta(location: WorldLocation): Promise<Result<World>> {
-    return this.getContainer(location.container).getWorldMeta(location.name);
-  }
+  getWorldMeta(name: WorldName): Promise<Result<World>>;
 
   /**
    * ワールドデータを削除
    */
-  deleteWorldData(location: WorldLocation): Promise<Result<void>> {
-    return this.getContainer(location.container).deleteWorldData(location.name);
-  }
+  deleteWorldData(name: WorldName): Promise<Result<void>>;
 
   /**
    * ワールドを特定の形のディレクトリ構造に展開し、展開先のPathを返す
@@ -60,11 +49,7 @@ export class WorldSource {
    *
    * mod / plugin / datapack の展開は行わない
    */
-  extractWorldData(location: WorldLocation): Promise<Result<Path>> {
-    return this.getContainer(location.container).extractWorldData(
-      location.name
-    );
-  }
+  extractWorldData(name: WorldName): Promise<Result<Path>>;
 
   /**
    * ディレクトリに展開されたデータをWorldContainerに格納
@@ -79,7 +64,5 @@ export class WorldSource {
    * server.properties
    * whitelist.json
    */
-  packWorldData(location: WorldLocation): Promise<Result<void>> {
-    return this.getContainer(location.container).packWorldData(location.name);
-  }
+  packWorldData(name: WorldName): Promise<Result<void>>;
 }
