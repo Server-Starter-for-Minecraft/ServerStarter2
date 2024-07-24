@@ -37,7 +37,7 @@ function getServerID(version: SpigotVersion) {
 }
 
 // ReadyVersionの標準対応以外のキャッシュからコピーすべきファイル群
-const SUPPORT_SECONDARY_FILES = ['bundler']
+const SUPPORT_SECONDARY_FILES = ['bundler'];
 
 export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
   constructor(version: SpigotVersion) {
