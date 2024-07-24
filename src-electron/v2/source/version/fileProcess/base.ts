@@ -1,4 +1,3 @@
-import { versionsCachePath } from 'app/src-electron/v2/core/const';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { Runtime } from '../../../schema/runtime';
 import { UnknownVersion, Version } from '../../../schema/version';
@@ -7,7 +6,6 @@ import { Path } from '../../../util/binary/path';
 import { getLog4jArg, saveLog4JPatch } from './log4j';
 import {
   generateVersionJsonHandler,
-  getVersionJsonPath,
   replaceEmbedArgs,
   VersionJson,
 } from './versionJson';
@@ -35,14 +33,19 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
    */
   protected _version: V;
   /**
+   * キャッシュデータ一式を格納するフォルダ
+   */
+  protected _cacheFolder: Path;
+  /**
    * 「サーバーJar」や「log4Jのパッチファイル」といった主要なキャッシュファイル以外で対象とすべきキャッシュファイル群
    *
    * 各サーバーでこのほかに必要なファイルがある場合はコンストラクタの引数で指定する
    */
   protected _cachedSecondaryFiles: string[];
 
-  constructor(version: V, cachedSecondaryFiles?: string[]) {
+  constructor(version: V, cacheFolder: Path, cachedSecondaryFiles?: string[]) {
     this._version = version;
+    this._cacheFolder = cacheFolder;
     this._cachedSecondaryFiles = [
       'libraries',
       'eula.txt',
@@ -61,7 +64,7 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
    * 各サーバー別のキャッシュファイルの保存先
    */
   get cachePath() {
-    return versionsCachePath.child(`${this._version.type}/${this.serverID}`);
+    return this._cacheFolder.child(`${this._version.type}/${this.serverID}`);
   }
 }
 
@@ -86,6 +89,7 @@ export abstract class ReadyVersion<
     if (!this.handler) {
       // handlerを生成
       this.handler = generateVersionJsonHandler(
+        this._cacheFolder,
         this._version.type,
         this.serverID
       );

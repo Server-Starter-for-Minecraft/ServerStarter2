@@ -3,6 +3,7 @@ import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { FabricVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
@@ -18,13 +19,17 @@ function getServerID(version: FabricVersion) {
 }
 
 export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
-  constructor(version: FabricVersion) {
+  constructor(version: FabricVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
     // バニラの情報をもとにFabricのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
+    const vanillaVerJson = await getVanillaVersionJson(
+      this._version.id,
+      this._cacheFolder,
+      true
+    );
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // ダウンロードURLを更新
@@ -64,9 +69,9 @@ export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
 }
 
 export class RemoveFabricVersion extends RemoveVersion<FabricVersion> {
-  constructor(version: FabricVersion) {
+  constructor(version: FabricVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   get serverID(): string {
     return getServerID(this._version);
@@ -76,7 +81,14 @@ export class RemoveFabricVersion extends RemoveVersion<FabricVersion> {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
+  const cacheFolder = workPath.child('cache');
+  const serverFolder = workPath.child('servers');
 
   const ver21: FabricVersion = {
     id: '1.21' as VersionId,
@@ -87,8 +99,8 @@ if (import.meta.vitest) {
   };
 
   test('setFabricJar', async () => {
-    const outputPath = serverSourcePath.child('testFabric/ver21');
-    const readyOperator = new ReadyFabricVersion(ver21);
+    const outputPath = serverFolder.child('testFabric/ver21');
+    const readyOperator = new ReadyFabricVersion(ver21, cacheFolder);
     const cachePath = readyOperator.cachePath;
 
     // 条件をそろえるために，ファイル類を削除する
@@ -113,7 +125,7 @@ if (import.meta.vitest) {
     // expect(outputPath.child('libraries').exists()).toBe(true);
 
     // 実行後にファイル削除
-    const remover = new RemoveFabricVersion(ver21);
+    const remover = new RemoveFabricVersion(ver21, cacheFolder);
     await remover.completeRemoveVersion(outputPath);
 
     // 削除後の状態を確認

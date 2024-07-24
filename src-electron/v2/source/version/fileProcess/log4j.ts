@@ -600,7 +600,7 @@ export function saveLog4JPatch(
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
 
-  const cases = ['17-18', '12-16', '7-11', 'other'];
+  const cases = ['17-18', '12-16', '7-11', 'other'] as const;
 
   test.each([
     {

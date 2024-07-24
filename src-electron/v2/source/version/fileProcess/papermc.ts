@@ -4,6 +4,7 @@ import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { PapermcVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
@@ -34,13 +35,13 @@ function getServerID(version: PapermcVersion) {
 }
 
 export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
-  constructor(version: PapermcVersion) {
+  constructor(version: PapermcVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   protected async generateVersionJson() {
     // バニラの情報をもとにPaperのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id, this._cacheFolder, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // Jarの情報を取得
@@ -105,9 +106,9 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
 }
 
 export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
-  constructor(version: PapermcVersion) {
+  constructor(version: PapermcVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   get serverID(): string {
     return getServerID(this._version);
@@ -117,7 +118,14 @@ export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
+  const cacheFolder = workPath.child('cache');
+  const serverFolder = workPath.child('servers');
 
   const ver21: PapermcVersion = {
     id: '1.21' as VersionId,
@@ -126,8 +134,8 @@ if (import.meta.vitest) {
   };
 
   test('setPaperJar', async () => {
-    const outputPath = serverSourcePath.child('testPaper/ver21');
-    const readyOperator = new ReadyPaperMCVersion(ver21);
+    const outputPath = serverFolder.child('testPaper/ver21');
+    const readyOperator = new ReadyPaperMCVersion(ver21, cacheFolder);
     const cachePath = readyOperator.cachePath;
 
     // 条件をそろえるために，ファイル類を削除する
@@ -152,7 +160,7 @@ if (import.meta.vitest) {
     // expect(outputPath.child('libraries').exists()).toBe(true);
 
     // 実行後にファイル削除
-    const remover = new RemovePaperMCVersion(ver21);
+    const remover = new RemovePaperMCVersion(ver21, cacheFolder);
     await remover.completeRemoveVersion(outputPath);
 
     // 削除後の状態を確認

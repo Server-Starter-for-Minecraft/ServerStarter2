@@ -17,6 +17,7 @@ import {
 import { getVersionMainfest } from '../getVersions/mainfest';
 import { checkJarHash, getRuntimeObj } from './serverJar';
 import { getVersionJsonObj, VersionJson } from './versionJson';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 
 /**
  * manifestのURLから取得される各バージョンのJSON情報を`version.json`の内容に変換
@@ -57,13 +58,13 @@ function getServerID(version: VanillaVersion) {
 }
 
 export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
-  constructor(version: VanillaVersion) {
+  constructor(version: VanillaVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   protected generateVersionJson() {
     // `version.json`に書き込めるオブジェクトを生成
-    return getVanillaVersionJson(this._version.id, false);
+    return getVanillaVersionJson(this._version.id, this._cacheFolder, false);
   }
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
@@ -104,9 +105,9 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
 }
 
 export class RemoveVanillaVersion extends RemoveVersion<VanillaVersion> {
-  constructor(version: VanillaVersion) {
+  constructor(version: VanillaVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   get serverID(): string {
     return getServerID(this._version);
@@ -120,10 +121,11 @@ export class RemoveVanillaVersion extends RemoveVersion<VanillaVersion> {
  */
 export async function getVanillaVersionJson(
   versionID: VersionId,
+  cacheFolder: Path,
   useCache: boolean
 ): Promise<Result<VersionJson>> {
   // バージョン情報の大元は`version_manifest_v2.json`から取得する
-  const manifest = await getVersionMainfest(useCache);
+  const manifest = await getVersionMainfest(cacheFolder, useCache);
   if (manifest.isErr) {
     return manifest;
   }
@@ -151,7 +153,14 @@ export async function getVanillaVersionJson(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
+  const cacheFolder = workPath.child('cache');
+  const serverFolder = workPath.child('servers');
 
   const ver21: VanillaVersion = {
     id: '1.21' as VersionId,
@@ -177,8 +186,8 @@ if (import.meta.vitest) {
   });
 
   test('setVersionJar', async () => {
-    const outputPath = serverSourcePath.child('test/ver21');
-    const readyOperator = new ReadyVanillaVersion(ver21);
+    const outputPath = serverFolder.child('test/ver21');
+    const readyOperator = new ReadyVanillaVersion(ver21, cacheFolder);
     const cachePath = readyOperator.cachePath;
 
     // 条件をそろえるために，ファイル類を削除する
@@ -205,7 +214,7 @@ if (import.meta.vitest) {
     // expect(outputPath.child('libraries').exists()).toBe(true);
 
     // 実行後にファイル削除
-    const remover = new RemoveVanillaVersion(ver21);
+    const remover = new RemoveVanillaVersion(ver21, cacheFolder);
     await remover.completeRemoveVersion(outputPath);
 
     // 削除後の状態を確認

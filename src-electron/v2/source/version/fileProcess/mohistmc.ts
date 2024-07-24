@@ -3,6 +3,7 @@ import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { MohistmcVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
@@ -15,13 +16,13 @@ function getServerID(version: MohistmcVersion) {
 }
 
 export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
-  constructor(version: MohistmcVersion) {
+  constructor(version: MohistmcVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
     // バニラの情報をもとにMohistのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id, this._cacheFolder, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // ダウンロードURLを更新
@@ -72,9 +73,9 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
 }
 
 export class RemoveMohistMCVersion extends RemoveVersion<MohistmcVersion> {
-  constructor(version: MohistmcVersion) {
+  constructor(version: MohistmcVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version);
+    super(version, cacheFolder);
   }
   get serverID(): string {
     return getServerID(this._version);
@@ -84,7 +85,14 @@ export class RemoveMohistMCVersion extends RemoveVersion<MohistmcVersion> {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
+  const cacheFolder = workPath.child('cache');
+  const serverFolder = workPath.child('servers');
 
   const ver21: MohistmcVersion = {
     id: '1.20.1' as VersionId,
@@ -99,8 +107,8 @@ if (import.meta.vitest) {
   test(
     'setMohistJar',
     async () => {
-      const outputPath = serverSourcePath.child('testMohist/ver21');
-      const readyOperator = new ReadyMohistMCVersion(ver21);
+      const outputPath = serverFolder.child('testMohist/ver21');
+      const readyOperator = new ReadyMohistMCVersion(ver21, cacheFolder);
       const cachePath = readyOperator.cachePath;
 
       // 条件をそろえるために，ファイル類を削除する
@@ -125,7 +133,7 @@ if (import.meta.vitest) {
       // expect(outputPath.child('libraries').exists()).toBe(true);
 
       // 実行後にファイル削除
-      const remover = new RemoveMohistMCVersion(ver21);
+      const remover = new RemoveMohistMCVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認

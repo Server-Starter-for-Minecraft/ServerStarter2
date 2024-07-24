@@ -5,7 +5,6 @@
  */
 import { z } from 'zod';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { versionsCachePath } from 'app/src-electron/v2/core/const';
 import { minecraftRuntimeVersions } from 'app/src-electron/v2/schema/runtime';
 import { Version } from 'app/src-electron/v2/schema/version';
 import { Path } from 'app/src-electron/v2/util/binary/path';
@@ -49,11 +48,12 @@ export function getVersionJsonPath(cwdPath: Path) {
  * @param childDirs VersionID以下にビルド番号のようなさらに細かいフォルダ分けが必要な時，仕分け順にフォルダ名のリストを渡す
  */
 export function generateVersionJsonHandler(
+  cacheFolder: Path,
   verType: Version['type'],
   serverID: string
 ) {
   return JsonSourceHandler.fromPath(
-    getVersionJsonPath(versionsCachePath.child(`${verType}/${serverID}`)),
+    getVersionJsonPath(cacheFolder.child(`${verType}/${serverID}`)),
     VersionJsonZod
   );
 }

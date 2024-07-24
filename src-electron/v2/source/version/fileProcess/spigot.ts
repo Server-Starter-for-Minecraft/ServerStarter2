@@ -40,13 +40,13 @@ function getServerID(version: SpigotVersion) {
 const SUPPORT_SECONDARY_FILES = ['bundler'];
 
 export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
-  constructor(version: SpigotVersion) {
+  constructor(version: SpigotVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version, SUPPORT_SECONDARY_FILES);
+    super(version, cacheFolder, SUPPORT_SECONDARY_FILES);
   }
   protected async generateVersionJson(): Promise<Result<VersionJson>> {
     // バニラの情報をもとにSpigotのversionJsonを生成
-    const vanillaVerJson = await getVanillaVersionJson(this._version.id, true);
+    const vanillaVerJson = await getVanillaVersionJson(this._version.id, this._cacheFolder, true);
     if (vanillaVerJson.isErr) return vanillaVerJson;
 
     // 実行に必要なJavaのバージョンのJsonを取得
@@ -112,9 +112,9 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
 }
 
 export class RemoveSpigotVersion extends RemoveVersion<SpigotVersion> {
-  constructor(version: SpigotVersion) {
+  constructor(version: SpigotVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
-    super(version, SUPPORT_SECONDARY_FILES);
+    super(version, cacheFolder, SUPPORT_SECONDARY_FILES);
   }
   get serverID(): string {
     return getServerID(this._version);
@@ -190,7 +190,14 @@ async function getServerJarFromBuildTools(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect, vi } = import.meta.vitest;
-  const { serverSourcePath } = await import('app/src-electron/v2/core/const');
+  const { Path } = await import('src-electron/v2/util/binary/path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
+  const cacheFolder = workPath.child('cache');
+  const serverFolder = workPath.child('servers');
 
   const ver21: SpigotVersion = {
     id: '1.21' as VersionId,
@@ -198,8 +205,8 @@ if (import.meta.vitest) {
   };
 
   test('setSpigotJar', async () => {
-    const outputPath = serverSourcePath.child('testSpigot/ver21');
-    const readyOperator = new ReadySpigotVersion(ver21);
+    const outputPath = serverFolder.child('testSpigot/ver21');
+    const readyOperator = new ReadySpigotVersion(ver21, cacheFolder);
     const cachePath = readyOperator.cachePath;
 
     // 条件をそろえるために，ファイル類を削除する
@@ -249,7 +256,7 @@ if (import.meta.vitest) {
     // expect(outputPath.child('libraries').exists()).toBe(true);
 
     // 実行後にファイル削除
-    const remover = new RemoveSpigotVersion(ver21);
+    const remover = new RemoveSpigotVersion(ver21, cacheFolder);
     await remover.completeRemoveVersion(outputPath);
 
     // 削除後の状態を確認

@@ -128,14 +128,14 @@ export class VersionContainer {
    * // -> ["--XmX=2G", "-Dlog4j2.formatMsgNoLookups=true", "--jar", "version.jar", "--nogui"]
    * ```
    *
-   * @param path サーバーのディレクトリパス jarファイルはここの直下に置く
+   * @param serverPath サーバーのディレクトリパス jarファイルはここの直下に置く
    * @param execRuntime jarファイルを用意するためのJavaランタイムの実行を提供する
    *
    * @returns 使用するランタイムの種類と, サブプロセスのコマンドを生成する関数 を返す
    */
   async readyVersion(
     version: Version,
-    path: Path,
+    serverPath: Path,
     execRuntime: ExecRuntime
   ): Promise<
     Result<{
@@ -149,39 +149,39 @@ export class VersionContainer {
       case 'vanilla':
         const vanillaFp = callReadyVersionOperator(
           version.type,
-          new ReadyVanillaVersion(version)
+          new ReadyVanillaVersion(version, this.cachePath)
         );
-        return vanillaFp.completeReady4VersionFiles(path, execRuntime);
+        return vanillaFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'spigot':
         const spigotFp = callReadyVersionOperator(
           version.type,
-          new ReadySpigotVersion(version)
+          new ReadySpigotVersion(version, this.cachePath)
         );
-        return spigotFp.completeReady4VersionFiles(path, execRuntime);
+        return spigotFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'papermc':
         const papermcFp = callReadyVersionOperator(
           version.type,
-          new ReadyPaperMCVersion(version)
+          new ReadyPaperMCVersion(version, this.cachePath)
         );
-        return papermcFp.completeReady4VersionFiles(path, execRuntime);
+        return papermcFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'forge':
         const forgeFp = callReadyVersionOperator(
           version.type,
-          new ReadyForgeVersion(version)
+          new ReadyForgeVersion(version, this.cachePath)
         );
-        return forgeFp.completeReady4VersionFiles(path, execRuntime);
+        return forgeFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'mohistmc':
         const mohistmcFp = callReadyVersionOperator(
           version.type,
-          new ReadyMohistMCVersion(version)
+          new ReadyMohistMCVersion(version, this.cachePath)
         );
-        return mohistmcFp.completeReady4VersionFiles(path, execRuntime);
+        return mohistmcFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'fabric':
         const fabricFp = callReadyVersionOperator(
           version.type,
-          new ReadyFabricVersion(version)
+          new ReadyFabricVersion(version, this.cachePath)
         );
-        return fabricFp.completeReady4VersionFiles(path, execRuntime);
+        return fabricFp.completeReady4VersionFiles(serverPath, execRuntime);
     }
   }
 
@@ -200,22 +200,22 @@ export class VersionContainer {
       case 'unknown':
         return err(new Error('VERSION_IS_UNKNOWN'));
       case 'vanilla':
-        const vanillaFp = new RemoveVanillaVersion(version);
+        const vanillaFp = new RemoveVanillaVersion(version, this.cachePath);
         return vanillaFp.completeRemoveVersion(path);
       case 'spigot':
-        const spigotFp = new RemoveSpigotVersion(version);
+        const spigotFp = new RemoveSpigotVersion(version, this.cachePath);
         return spigotFp.completeRemoveVersion(path);
       case 'papermc':
-        const papermcFp = new RemovePaperMCVersion(version);
+        const papermcFp = new RemovePaperMCVersion(version, this.cachePath);
         return papermcFp.completeRemoveVersion(path);
       case 'forge':
-        const forgeFp = new RemoveForgeVersion(version);
+        const forgeFp = new RemoveForgeVersion(version, this.cachePath);
         return forgeFp.completeRemoveVersion(path);
       case 'mohistmc':
-        const mohistmcFp = new RemoveMohistMCVersion(version);
+        const mohistmcFp = new RemoveMohistMCVersion(version, this.cachePath);
         return mohistmcFp.completeRemoveVersion(path);
       case 'fabric':
-        const fabricFp = new RemoveFabricVersion(version);
+        const fabricFp = new RemoveFabricVersion(version, this.cachePath);
         return fabricFp.completeRemoveVersion(path);
     }
   }
@@ -273,11 +273,7 @@ if (import.meta.vitest) {
     // キャッシュの威力を試したいときは以下の行をコメントアウト
     // await cachePath.remove();
 
-    const getCachedList = await getVersionlist(
-      cachePath,
-      true,
-      tCase.loader()
-    );
+    const getCachedList = await getVersionlist(cachePath, true, tCase.loader());
 
     // 取得に成功したか
     expect(getCachedList.isOk).toEqual(true);
