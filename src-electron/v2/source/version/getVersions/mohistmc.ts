@@ -1,36 +1,10 @@
 import { z } from 'zod';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
-import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { AllMohistmcVersion, VersionId } from '../../../schema/version';
-import {
-  getFromCacheBase,
-  getVersionCacheFilePath,
-  VersionListLoader,
-} from './base';
-
-const mohistVerZod = z.object({
-  id: z.string().transform((ver) => ver as VersionId),
-  builds: z
-    .object({
-      number: z.number(),
-      forge_version: z.string().optional(),
-      jar: z.object({
-        url: z.string(),
-        md5: z.string(),
-      }),
-    })
-    .array(),
-});
-
-/**
- * Mohistにおける`all.json`を定義
- */
-const allMohistsHandler = JsonSourceHandler.fromPath<AllMohistmcVersion>(
-  getVersionCacheFilePath('mohistmc'),
-  mohistVerZod.array()
-);
+import { VersionListLoader } from './base';
 
 // Mohistのバージョン一覧を返すURLとその解析パーサー
 const mohistAllVersionsURL = 'https://mohistmc.com/api/v2/projects';
@@ -40,6 +14,7 @@ const mohistAllVersionsZod = z
     versions: z.string().array(),
   })
   .array();
+
 // 各バージョンのビルド情報一覧を返すURLとその解析パーサー
 const mohistEachVersionURL = (versionName: string) =>
   `https://mohistmc.com/api/v2/projects/mohist/${versionName}/builds`;
@@ -63,24 +38,22 @@ const mohistEachVersionZod = z.object({
 /**
  * Mohist版のVersionLoaderを作成
  */
-export function getMohistMCVersionLoader(): VersionListLoader<AllMohistmcVersion> {
-  return {
-    getFromCache: () => getFromCacheBase('mohistmc', allMohistsHandler),
-    getFromURL: async () => {
-      // 全バージョンのメタ情報を読み込み
-      const allVerMeta = await loadAllVersion();
-      if (allVerMeta.isErr) return allVerMeta;
+export class MohistMCVersionLoader extends VersionListLoader<AllMohistmcVersion> {
+  constructor(cachePath: Path) {
+    super(cachePath, 'mohistmc', AllMohistmcVersion);
+  }
 
-      // メタ情報を各バージョンオブジェクトに変換
-      const results = await Promise.all(
-        allVerMeta.value().reverse().map(loadEachVersion)
-      );
-      return ok(results.filter((v) => v.isOk).map((v) => v.value()));
-    },
-    write4Cache: (obj) => {
-      return allMohistsHandler.write(obj);
-    },
-  };
+  async getFromURL() {
+    // 全バージョンのメタ情報を読み込み
+    const allVerMeta = await loadAllVersion();
+    if (allVerMeta.isErr) return allVerMeta;
+
+    // メタ情報を各バージョンオブジェクトに変換
+    const results = await Promise.all(
+      allVerMeta.value().reverse().map(loadEachVersion)
+    );
+    return ok(results.filter((v) => v.isOk).map((v) => v.value()));
+  }
 }
 
 /**

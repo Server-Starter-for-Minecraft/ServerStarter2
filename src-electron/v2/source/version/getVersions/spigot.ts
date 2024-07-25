@@ -1,28 +1,11 @@
 import * as cheerio from 'cheerio';
-import { z } from 'zod';
-import { ok, Result } from 'app/src-electron/v2/util/base';
+import { ok } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
+import { Path } from 'app/src-electron/v2/util/binary/path';
 import { Url } from 'app/src-electron/v2/util/binary/url';
-import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
 import { AllSpigotVersion, VersionId } from '../../../schema/version';
-import {
-  getFromCacheBase,
-  getVersionCacheFilePath,
-  VersionListLoader,
-} from './base';
+import { VersionListLoader } from './base';
 import { getVersionMainfest } from './mainfest';
-
-const spigotVerZod = z.object({
-  id: z.string().transform((ver) => ver as VersionId),
-});
-
-/**
- * Spigotにおける`all.json`を定義
- */
-const allSpigotsHandler = JsonSourceHandler.fromPath<AllSpigotVersion>(
-  getVersionCacheFilePath('spigot'),
-  spigotVerZod.array()
-);
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 
@@ -36,57 +19,55 @@ const REMOVE_VERSIONS = ['1.20'];
 /**
  * Spigot版のVersionLoaderを作成
  */
-export function getSpigotVersionLoader(): VersionListLoader<AllSpigotVersion> {
-  return {
-    getFromCache: () => getFromCacheBase('spigot', allSpigotsHandler),
-    getFromURL: async (): Promise<Result<AllSpigotVersion>> => {
-      const pageHtml = (await new Url(SPIGOT_VERSIONS_URL).into(Bytes)).onOk(
-        (val) => val.toStr()
-      );
-      if (pageHtml.isErr) return pageHtml;
+export class SpigotVersionLoader extends VersionListLoader<AllSpigotVersion> {
+  constructor(cachePath: Path) {
+    super(cachePath, 'spigot', AllSpigotVersion);
+  }
 
-      const ids: string[] = [];
+  async getFromURL() {
+    const pageHtml = (await new Url(SPIGOT_VERSIONS_URL).into(Bytes)).onOk(
+      (val) => val.toStr()
+    );
+    if (pageHtml.isErr) return pageHtml;
 
-      cheerio
-        .load(pageHtml.value())('body > pre > a')
-        .each((_, elem) => {
-          const href = elem.attribs['href'];
-          const match = href.match(/^(\d+\.\d+(?:\.\d+)?)\.json$/);
-          if (match) {
-            ids.push(match[1]);
-          }
-        });
+    const ids: string[] = [];
 
-      // idsをバージョン順に並び替え
-      sortIds(ids);
+    cheerio
+      .load(pageHtml.value())('body > pre > a')
+      .each((_, elem) => {
+        const href = elem.attribs['href'];
+        const match = href.match(/^(\d+\.\d+(?:\.\d+)?)\.json$/);
+        if (match) {
+          ids.push(match[1]);
+        }
+      });
 
-      return ok(
-        ids
-          .filter((id) => !REMOVE_VERSIONS.includes(id))
-          .map((id) => ({
-            id: id as VersionId,
-          }))
-      );
-    },
-    write4Cache: (obj) => {
-      return allSpigotsHandler.write(obj);
-    },
-  };
-}
+    // idsをバージョン順に並び替え
+    this.sortIds(ids);
 
-/**
- * HTMLから取得したID一覧をManifestに掲載の順番で並び替える
- */
-async function sortIds(ids: string[]) {
-  const manifest = await getVersionMainfest(true);
-  if (manifest.isErr) return manifest;
+    return ok(
+      ids
+        .filter((id) => !REMOVE_VERSIONS.includes(id))
+        .map((id) => ({
+          id: id as VersionId,
+        }))
+    );
+  }
 
-  // Manifest掲載のバージョン順を取得
-  const entries: [string, number][] = manifest
-    .value()
-    .versions.map((version, index) => [version.id, index]);
-  const versionIndexMap = Object.fromEntries(entries);
+  /**
+   * HTMLから取得したID一覧をManifestに掲載の順番で並び替える
+   */
+  private async sortIds(ids: string[]) {
+    const manifest = await getVersionMainfest(this.cachePath, true);
+    if (manifest.isErr) return manifest;
 
-  // 取得したバージョン順で`ids`を並び替え
-  ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
+    // Manifest掲載のバージョン順を取得
+    const entries: [string, number][] = manifest
+      .value()
+      .versions.map((version, index) => [version.id, index]);
+    const versionIndexMap = Object.fromEntries(entries);
+
+    // 取得したバージョン順で`ids`を並び替え
+    ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
+  }
 }

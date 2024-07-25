@@ -6,12 +6,11 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
-  UnknownVersion,
   Version,
 } from '../../schema/version';
 import { err, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { ExecRuntime, ReadyVersion } from './fileProcess/base';
+import { ExecRuntime } from './fileProcess/base';
 import { ReadyFabricVersion, RemoveFabricVersion } from './fileProcess/fabric';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
@@ -27,44 +26,13 @@ import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
 } from './fileProcess/vanilla';
-import { AllVerison, getVersionlist } from './getVersions/base';
-import { getFabricVersionLoader } from './getVersions/fabric';
-import { getForgeVersionLoader } from './getVersions/forge';
-import { getMohistMCVersionLoader } from './getVersions/mohistmc';
-import { getPaperVersionLoader } from './getVersions/papermc';
-import { getSpigotVersionLoader } from './getVersions/spigot';
-import { getVanillaVersionLoader } from './getVersions/vanilla';
-
-/**
- * ReadyVersion内で保持するversionJsonのHandlerを，
- * 各バージョンごとに一つのみ生成とするために，ReadyVersionの生成は各バージョン１回までに制限する
- */
-const readyVersionOperators: {
-  [K in Version['type']]: {
-    [ServerID in string]: ReadyVersion<Exclude<Version, UnknownVersion>>;
-  };
-} = {
-  vanilla: {},
-  spigot: {},
-  papermc: {},
-  forge: {},
-  mohistmc: {},
-  fabric: {},
-  unknown: {},
-};
-
-function callReadyVersionOperator(
-  verType: Version['type'],
-  newObj: ReadyVersion<Exclude<Version, UnknownVersion>>
-) {
-  const tmpObj = readyVersionOperators[verType][newObj.serverID];
-  if (tmpObj) {
-    return tmpObj;
-  } else {
-    readyVersionOperators[verType][newObj.serverID] = newObj;
-    return newObj;
-  }
-}
+import { getVersionlist } from './getVersions/base';
+import { FabricVersionLoader } from './getVersions/fabric';
+import { ForgeVersionLoader } from './getVersions/forge';
+import { MohistMCVersionLoader } from './getVersions/mohistmc';
+import { PaperVersionLoader } from './getVersions/papermc';
+import { SpigotVersionLoader } from './getVersions/spigot';
+import { VanillaVersionLoader } from './getVersions/vanilla';
 
 /**
  * バージョンを管理するクラス
@@ -81,40 +49,40 @@ export class VersionContainer {
   async listVanillaVersions(
     useCache: boolean
   ): Promise<Result<AllVanillaVersion>> {
-    return getVersionlist(this.cachePath, useCache, getVanillaVersionLoader());
+    return getVersionlist(useCache, new VanillaVersionLoader(this.cachePath));
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listForgeVersions(useCache: boolean): Promise<Result<AllForgeVersion>> {
-    return getVersionlist(this.cachePath, useCache, getForgeVersionLoader());
+    return getVersionlist(useCache, new ForgeVersionLoader(this.cachePath));
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listSpigotVersions(
     useCache: boolean
   ): Promise<Result<AllSpigotVersion>> {
-    return getVersionlist(this.cachePath, useCache, getSpigotVersionLoader());
+    return getVersionlist(useCache, new SpigotVersionLoader(this.cachePath));
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listPaperMcVersions(
     useCache: boolean
   ): Promise<Result<AllPapermcVersion>> {
-    return getVersionlist(this.cachePath, useCache, getPaperVersionLoader());
+    return getVersionlist(useCache, new PaperVersionLoader(this.cachePath));
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listMohistMcVersions(
     useCache: boolean
   ): Promise<Result<AllMohistmcVersion>> {
-    return getVersionlist(this.cachePath, useCache, getMohistMCVersionLoader());
+    return getVersionlist(useCache, new MohistMCVersionLoader(this.cachePath));
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
   async listFabricVersions(
     useCache: boolean
   ): Promise<Result<AllFabricVersion>> {
-    return getVersionlist(this.cachePath, useCache, getFabricVersionLoader());
+    return getVersionlist(useCache, new FabricVersionLoader(this.cachePath));
   }
 
   /**
@@ -147,40 +115,22 @@ export class VersionContainer {
       case 'unknown':
         return err(new Error('VERSION_IS_UNKNOWN'));
       case 'vanilla':
-        const vanillaFp = callReadyVersionOperator(
-          version.type,
-          new ReadyVanillaVersion(version, this.cachePath)
-        );
+        const vanillaFp = new ReadyVanillaVersion(version, this.cachePath);
         return vanillaFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'spigot':
-        const spigotFp = callReadyVersionOperator(
-          version.type,
-          new ReadySpigotVersion(version, this.cachePath)
-        );
+        const spigotFp = new ReadySpigotVersion(version, this.cachePath);
         return spigotFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'papermc':
-        const papermcFp = callReadyVersionOperator(
-          version.type,
-          new ReadyPaperMCVersion(version, this.cachePath)
-        );
+        const papermcFp = new ReadyPaperMCVersion(version, this.cachePath);
         return papermcFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'forge':
-        const forgeFp = callReadyVersionOperator(
-          version.type,
-          new ReadyForgeVersion(version, this.cachePath)
-        );
+        const forgeFp = new ReadyForgeVersion(version, this.cachePath);
         return forgeFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'mohistmc':
-        const mohistmcFp = callReadyVersionOperator(
-          version.type,
-          new ReadyMohistMCVersion(version, this.cachePath)
-        );
+        const mohistmcFp = new ReadyMohistMCVersion(version, this.cachePath);
         return mohistmcFp.completeReady4VersionFiles(serverPath, execRuntime);
       case 'fabric':
-        const fabricFp = callReadyVersionOperator(
-          version.type,
-          new ReadyFabricVersion(version, this.cachePath)
-        );
+        const fabricFp = new ReadyFabricVersion(version, this.cachePath);
         return fabricFp.completeReady4VersionFiles(serverPath, execRuntime);
     }
   }
@@ -226,70 +176,70 @@ if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   const { Path } = await import('src-electron/v2/util/binary/path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+  describe('listupVersions', () => {
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('getVersions/work');
+    workPath.mkdir();
 
-  type TestCase = {
-    type: Version['type'];
-    loader: any;
-    oldestVersion: string;
-  };
-  const testCases: TestCase[] = [
-    {
-      type: 'vanilla',
-      loader: getVanillaVersionLoader,
-      oldestVersion: '1.3',
-    },
-    {
-      type: 'forge',
-      loader: getForgeVersionLoader,
-      oldestVersion: '1.5.2',
-    },
-    {
-      type: 'papermc',
-      loader: getPaperVersionLoader,
-      oldestVersion: '1.8.8',
-    },
-    {
-      type: 'mohistmc',
-      loader: getMohistMCVersionLoader,
-      oldestVersion: '1.7.10',
-    },
-    {
-      type: 'fabric',
-      loader: getFabricVersionLoader,
-      oldestVersion: '18w43b',
-    },
-    {
-      type: 'spigot',
-      loader: getSpigotVersionLoader,
-      oldestVersion: '1.9',
-    },
-  ];
+    type TestCase = {
+      type: Version['type'];
+      loader: any;
+      oldestVersion: string;
+    };
+    const testCases: TestCase[] = [
+      {
+        type: 'vanilla',
+        loader: new VanillaVersionLoader(workPath),
+        oldestVersion: '1.3',
+      },
+      {
+        type: 'forge',
+        loader: new ForgeVersionLoader(workPath),
+        oldestVersion: '1.5.2',
+      },
+      {
+        type: 'papermc',
+        loader: new PaperVersionLoader(workPath),
+        oldestVersion: '1.8.8',
+      },
+      {
+        type: 'mohistmc',
+        loader: new MohistMCVersionLoader(workPath),
+        oldestVersion: '1.7.10',
+      },
+      {
+        type: 'fabric',
+        loader: new FabricVersionLoader(workPath),
+        oldestVersion: '18w43b',
+      },
+      {
+        type: 'spigot',
+        loader: new SpigotVersionLoader(workPath),
+        oldestVersion: '1.9',
+      },
+    ];
 
-  test.each(testCases)('versionList ($type)', async (tCase) => {
-    const cachePath = workPath.child(`${tCase.type}/all.json`);
-    // キャッシュの威力を試したいときは以下の行をコメントアウト
-    // await cachePath.remove();
+    test.each(testCases)('versionList ($type)', async (tCase) => {
+      // キャッシュの威力を確認するときにはTrueにする
+      const useCache = true;
+      const getCachedList = await getVersionlist(useCache, tCase.loader);
 
-    const getCachedList = await getVersionlist(cachePath, true, tCase.loader());
+      // 取得に成功したか
+      expect(getCachedList.isOk).toEqual(true);
 
-    // 取得に成功したか
-    expect(getCachedList.isOk).toEqual(true);
-
-    // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-    if (tCase.type !== 'fabric') {
-      const cachedList = getCachedList.value() as Exclude<
-        AllVerison,
-        AllFabricVersion
-      >;
-      expect(cachedList[cachedList.length - 1].id).toEqual(tCase.oldestVersion);
-    } else {
-      const cachedList = getCachedList.value() as AllFabricVersion;
-      expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
-        tCase.oldestVersion
-      );
-    }
+      // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
+      const cachedList = getCachedList.value();
+      if ('games' in cachedList) {
+        // fabricのみ特別対応
+        expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
+          tCase.oldestVersion
+        );
+      } else {
+        // その他のサーバー
+        expect(cachedList[cachedList.length - 1].id).toEqual(
+          tCase.oldestVersion
+        );
+      }
+    });
   });
 }
