@@ -2,6 +2,7 @@ import { World, WorldContainer, WorldLocation } from '../../schema/world';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { WorldContainerHandler } from './container';
+import { LocalWorldSource } from './local';
 
 /**
  * ワールドを管理するクラス
@@ -10,7 +11,10 @@ import { WorldContainerHandler } from './container';
  */
 export class WorldSource {
   private getContainer(container: WorldContainer): WorldContainerHandler {
-    container;
+    switch (container.containerType) {
+      case 'local':
+        return new LocalWorldSource(new Path(container.path));
+    }
   }
 
   /**
@@ -27,7 +31,7 @@ export class WorldSource {
    */
   setWorldMeta(location: WorldLocation, world: World): Promise<Result<void>> {
     return this.getContainer(location.container).setWorldMeta(
-      location.name,
+      location.worldName,
       world
     );
   }
@@ -41,14 +45,18 @@ export class WorldSource {
    * 何度も呼ばれる可能性があるので、キャッシュしておくとよい
    */
   getWorldMeta(location: WorldLocation): Promise<Result<World>> {
-    return this.getContainer(location.container).getWorldMeta(location.name);
+    return this.getContainer(location.container).getWorldMeta(
+      location.worldName
+    );
   }
 
   /**
    * ワールドデータを削除
    */
   deleteWorldData(location: WorldLocation): Promise<Result<void>> {
-    return this.getContainer(location.container).deleteWorldData(location.name);
+    return this.getContainer(location.container).deleteWorldData(
+      location.worldName
+    );
   }
 
   /**
@@ -62,7 +70,7 @@ export class WorldSource {
    */
   extractWorldData(location: WorldLocation): Promise<Result<Path>> {
     return this.getContainer(location.container).extractWorldData(
-      location.name
+      location.worldName
     );
   }
 
@@ -80,6 +88,8 @@ export class WorldSource {
    * whitelist.json
    */
   packWorldData(location: WorldLocation): Promise<Result<void>> {
-    return this.getContainer(location.container).packWorldData(location.name);
+    return this.getContainer(location.container).packWorldData(
+      location.worldName
+    );
   }
 }

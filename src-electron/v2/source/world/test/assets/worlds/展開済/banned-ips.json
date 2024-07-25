@@ -1,9 +1,1 @@
-[
-  {
-    "ip": "IpAdress",
-    "created": "2024-01-01 23:47:21 +0900",
-    "source": "??",
-    "expires": "forever",
-    "reason": "nantonaku"
-  }
-]
+[{"ip":"IpAdress","created":"2024-01-01 23:47:21 +0900","source":"??","expires":"forever","reason":"nantonaku"}]
