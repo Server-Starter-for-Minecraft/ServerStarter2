@@ -6,7 +6,7 @@ import { err, ok, Result } from '../base';
 import { InfinitMap } from '../helper/infinitMap';
 import { sleep } from '../promise/sleep';
 import { PromiseSpooler } from '../promise/spool';
-import { DuplexStreamer, Readable } from './stream';
+import { DuplexStreamer, Readable, WritableStreamer } from './stream';
 import { asyncPipe } from './util';
 
 function replaceSep(pathstr: string) {
@@ -50,10 +50,26 @@ export class Path extends DuplexStreamer<void> {
   private async _write(
     readable: stream.Readable
   ): Promise<Result<void, Error>> {
-    // ファイルが既に存在する場合、エラーにする
     await this._remove();
     const writable = fs.createWriteStream(this.path);
     return asyncPipe(readable, writable);
+  }
+
+  /**
+   * writable作成時に引数を渡したいときにこっちを使う
+   * ```
+   * readableStreamer.into(path.writer(options))
+   * ```
+   */
+  writer(
+    options: Parameters<typeof fs.createWriteStream>[1]
+  ): WritableStreamer<void> {
+    const write = async (readable: stream.Readable) => {
+      await this._remove();
+      const writable = fs.createWriteStream(this.path, options);
+      return asyncPipe(readable, writable);
+    };
+    return { write: exclusive(write) };
   }
 
   child(...paths: string[]) {
@@ -291,9 +307,15 @@ if (import.meta.vitest) {
     expect(new Path('./').child('/foo/').path).toBe('foo');
 
     expect(new Path('./').child('foo/bar').path).toBe(new Path('foo/bar').path);
-    expect(new Path('./').child('foo\\bar').path).toBe(new Path('foo/bar').path);
-    expect(new Path('./').child('foo', 'bar').path).toBe(new Path('foo/bar').path);
-    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(new Path('foo/bar/buz').path);
+    expect(new Path('./').child('foo\\bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('foo', 'bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(
+      new Path('foo/bar/buz').path
+    );
 
     expect(new Path('foo').path).toBe('foo');
     expect(new Path('foo/').path).toBe('foo');
