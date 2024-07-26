@@ -46,6 +46,7 @@ function vanillaMetaInfo2VersionJson(
     .transform((obj) =>
       getVersionJsonObj(
         obj.downloads.server.url,
+        true,
         obj.downloads.server.sha1,
         obj.javaVersion
       )

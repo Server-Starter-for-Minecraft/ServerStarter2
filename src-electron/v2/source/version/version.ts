@@ -40,7 +40,6 @@ import { VanillaVersionLoader } from './getVersions/vanilla';
 export class VersionContainer {
   cachePath: Path;
 
-  // TODO: キャッシュパスを`core`から呼び出さないで，この値を用いる方法に変更
   constructor(cachePath: Path) {
     this.cachePath = cachePath;
   }

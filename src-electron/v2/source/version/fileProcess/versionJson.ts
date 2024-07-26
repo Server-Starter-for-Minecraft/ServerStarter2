@@ -60,21 +60,33 @@ export function generateVersionJsonHandler(
 
 /**
  * `version.json`に書き込むオブジェクトを生成
+ *
+ * @param downloadURL JarをダウンロードするURL
+ * @param containJarArgs 戻り値の中の`arguments`にJar関連の引数を入れるか
+ * @param jarSha1 JarのSHA1が判明している場合は，登録しておくことでJarの配置時にJarの検証が行われる
+ * @param javaVer Jarを実行するJavaのバージョンを指定する
+ * @param customArgs 規定値の引数以外に引数を登録しておきたい場合に指定する
+ *
  */
 export function getVersionJsonObj(
   downloadURL: string,
+  containJarArgs: boolean,
   jarSha1?: string,
   javaVer?: VersionJson['javaVersion'],
   customArgs?: string[]
 ): VersionJson {
+  const _customArgs: VersionJson['arguments'] = deepcopy(customArgs) ?? [];
+  if (containJarArgs) {
+    _customArgs.push('--jar');
+    _customArgs.push({ embed: 'JAR_PATH' });
+  }
+
   // 引数群
   const args: VersionJson['arguments'] = [
     { embed: 'JVM_ARGUMENT' },
     javaEncodingToUtf8(),
     { embed: 'LOG4J_ARG' },
-    ...(customArgs ?? []),
-    '--jar',
-    { embed: 'JAR_PATH' },
+    ..._customArgs,
     '--nogui',
   ];
 

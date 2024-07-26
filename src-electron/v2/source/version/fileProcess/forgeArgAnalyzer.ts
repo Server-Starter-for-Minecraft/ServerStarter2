@@ -72,10 +72,8 @@ async function getProgramArgumentsFromBat(
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      // TODO: user_jvm_argsは削除して`forge.ts`のテストが通るように再登録
       return ok(
-        getVersionJsonObj(downloadURL, undefined, javaVersion, [
-          '"@user_jvm_args.txt"',
+        getVersionJsonObj(downloadURL, false, undefined, javaVersion, [
           ...arg.split(' '),
         ])
       );
@@ -98,10 +96,8 @@ async function getProgramArgumentsFromSh(
     const match = line.match(pattern);
     if (match) {
       const arg = match[1];
-      // TODO: user_jvm_argsは削除して`forge.ts`のテストが通るように再登録
       return ok(
-        getVersionJsonObj(downloadURL, undefined, javaVersion, [
-          '"@user_jvm_args.txt"',
+        getVersionJsonObj(downloadURL, false, undefined, javaVersion, [
           ...arg.split(' '),
         ])
       );

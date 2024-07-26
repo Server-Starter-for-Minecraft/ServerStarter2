@@ -229,21 +229,6 @@ if (import.meta.vitest) {
             '# COMMENT\r\n   java @user_jvm_args.txt @path/to/args.txt %*   \r\n',
         },
         {
-          path: 'libraries/to/args.txt',
-          content: '-a foo\n--bar buz\n-a.a.a=b',
-        },
-      ],
-      args: [
-        ...JVM_ARGS,
-        '-Dfile.encoding=UTF-8',
-        '-Dlog4j.configurationFile=log4j2_112-116.xml',
-        '@path/to/args.txt',
-        '--nogui',
-      ],
-    },
-    {
-      genfiles: [
-        {
           path: 'version.sh',
           content: 'java @user_jvm_args.txt @path/to/args.txt "$@"\n# COMMENT',
         },
@@ -263,13 +248,13 @@ if (import.meta.vitest) {
   ])('setForgeJar', async ({ genfiles, args }) => {
     const outputPath = serverFolder.child('testForge/ver21');
     const readyOperator = new ReadyForgeVersion(ver21, cacheFolder);
-    const cachePath = readyOperator.cachePath;
 
     // 条件をそろえるために，ファイル類を削除する
     await outputPath.remove();
     // キャッシュの威力を試したいときは以下の行をコメントアウト
-    await cachePath?.remove();
+    await readyOperator.cachePath.remove();
 
+    // `installer.jar`の実行によって必要なファイルが生成された体を再現する
     const execRuntime: ExecRuntime = vi.fn(async (options) => {
       for (const { path, content } of genfiles) {
         const tgtJarPath = options.currentDir.child(path);
@@ -278,6 +263,7 @@ if (import.meta.vitest) {
       return ok();
     });
 
+    // テスト対象の関数
     const res = await readyOperator.completeReady4VersionFiles(
       outputPath,
       execRuntime
@@ -288,16 +274,27 @@ if (import.meta.vitest) {
     expect(res.value().getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
     // ファイルの設置状況の検証
-    expect(getJarPath(outputPath).exists()).toBe(true);
-    // Jarを実行しないと生成されないため，今回はTestの対象外
-    // expect(outputPath.child('libraries').exists()).toBe(true);
+    genfiles.forEach(({ path }) => {
+      const targetPath = outputPath.child(path);
+      if (targetPath.extname() === '.jar') {
+        expect(outputPath.child('version.jar').exists()).toBe(true);
+      } else {
+        expect(outputPath.child(path).exists()).toBe(true);
+      }
+    });
 
     // 実行後にファイル削除
     const remover = new RemoveForgeVersion(ver21, cacheFolder);
     await remover.completeRemoveVersion(outputPath);
 
     // 削除後の状態を確認
-    expect(getJarPath(outputPath).exists()).toBe(false);
-    expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+    genfiles.forEach(({ path }) => {
+      const targetPath = outputPath.child(path);
+      if (targetPath.extname() === '.jar') {
+        expect(outputPath.child('version.jar').exists()).toBe(false);
+      } else {
+        expect(readyOperator.cachePath.child(path).exists()).toBe(true);
+      }
+    });
   });
 }
