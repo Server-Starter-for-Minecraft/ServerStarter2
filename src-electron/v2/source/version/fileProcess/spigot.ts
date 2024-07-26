@@ -218,6 +218,7 @@ if (import.meta.vitest) {
     // キャッシュの威力を試したいときは以下の行をコメントアウト
     await cachePath?.remove();
 
+    // `BuildTools.jar`の実行によって必要なファイルが生成された体を再現する
     const execRuntime: ExecRuntime = vi.fn(async (options) => {
       const versionId = options.args[4];
       const tgtJarPath = options.currentDir.child(`spigot-${versionId}.jar`);
@@ -225,6 +226,7 @@ if (import.meta.vitest) {
       return ok();
     });
 
+    // テスト対象の関数
     const res = await readyOperator.completeReady4VersionFiles(
       outputPath,
       execRuntime
@@ -246,7 +248,7 @@ if (import.meta.vitest) {
         '--rev',
         '1.21',
       ],
-      currenrDir: expect.any(Path),
+      currentDir: expect.any(Path),
       onOut: expect.any(Function),
       runtime: {
         majorVersion: 66,

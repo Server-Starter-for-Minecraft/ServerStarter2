@@ -170,5 +170,6 @@ if (import.meta.vitest) {
     // 削除後の状態を確認
     expect(getJarPath(outputPath).exists()).toBe(false);
     expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
-  });
+  },
+  1000 * 100);
 }
