@@ -252,9 +252,7 @@ if (import.meta.vitest) {
   test.each(log4JCaseVers)(
     'log4Jcheck ($ver)',
     async ({ ver, command, log4JFile }) => {
-      const outputPath = serverFolder.child(
-        `log4Jtest/ver${ver}`
-      );
+      const outputPath = serverFolder.child(`log4Jtest/ver${ver}`);
       const readyOperator = new ReadyVanillaVersion(
         {
           type: 'vanilla',
