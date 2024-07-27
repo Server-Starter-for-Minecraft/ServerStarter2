@@ -64,7 +64,7 @@
       "  const { Path } = await import('src-electron/v2/util/binary/path');",
       "",
       "  // 一時使用フォルダを初期化",
-      "  const workPath = new Path(__dirname).child('work');",
+      "  const workPath = new Path(__dirname).child('work', __filename);",
       "  workPath.mkdir();",
       "",
       "  test('$1',async () => {",
