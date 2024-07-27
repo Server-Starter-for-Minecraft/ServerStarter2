@@ -208,8 +208,6 @@ if (import.meta.vitest) {
     );
 
     // ファイルの設置状況の検証
-    // TODO: Log4Jのファイルが`outputPath`にコピーされていることを確認する（各Log4Jのバージョンで確認）
-    // TODO: 上記に関連して，各バージョンのgetCommand()が正しいArgsを返すことを確認する
     expect(getJarPath(outputPath).exists()).toBe(true);
     // Jarを実行しないと生成されないため，今回はTestの対象外
     // expect(outputPath.child('libraries').exists()).toBe(true);
@@ -222,4 +220,76 @@ if (import.meta.vitest) {
     expect(getJarPath(outputPath).exists()).toBe(false);
     expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
   });
+
+  // Log4Jのファイルが`outputPath`にコピーされていることを確認する（各Log4Jのバージョンで確認）
+  // 上記に関連して，各バージョンのgetCommand()が正しいArgsを返すことを確認する
+  const log4JCaseVers: {
+    ver: VersionId;
+    log4JFile?: string;
+    command?: string;
+  }[] = [
+    {
+      ver: VersionId.parse('1.21'),
+    },
+    {
+      ver: VersionId.parse('1.17'),
+      command: '-Dlog4j2.formatMsgNoLookups=true',
+    },
+    {
+      ver: VersionId.parse('1.16'),
+      command: '-Dlog4j.configurationFile=log4j2_112-116.xml',
+      log4JFile: 'log4j2_112-116.xml',
+    },
+    {
+      ver: VersionId.parse('1.9'),
+      command: '-Dlog4j.configurationFile=log4j2_17-111.xml',
+      log4JFile: 'log4j2_17-111.xml',
+    },
+    {
+      ver: VersionId.parse('1.5'),
+    },
+  ];
+  test.each(log4JCaseVers)(
+    'log4Jcheck ($ver)',
+    async ({ ver, command, log4JFile }) => {
+      const outputPath = serverFolder.child(
+        `log4Jtest/ver${ver}`
+      );
+      const readyOperator = new ReadyVanillaVersion(
+        {
+          type: 'vanilla',
+          id: ver,
+          release: true,
+        },
+        cacheFolder
+      );
+
+      // 条件をそろえるために，ファイル類を削除する
+      await outputPath.remove();
+      // キャッシュの威力を試したいときは以下の行をコメントアウト
+      // await readyOperator.cachePath.remove();
+
+      const res = await readyOperator.completeReady4VersionFiles(
+        outputPath,
+        async (runtime) => ok()
+      );
+
+      // 戻り値の検証
+      expect(res.isOk).toBe(true);
+      if (command) {
+        expect(
+          res
+            .value()
+            .getCommand({ jvmArgs: ['replaceArg'] })
+            .includes(command)
+        ).toBe(true);
+      }
+
+      // ファイルの存在確認
+      if (log4JFile) {
+        expect(outputPath.child(log4JFile).exists()).toBe(true);
+      }
+    },
+    1000 * 100
+  );
 }
