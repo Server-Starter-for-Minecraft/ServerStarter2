@@ -1,0 +1,10 @@
+{
+  "javaw": {
+    "path": "bin/minecraft/windows-x64/bin/javaw.exe",
+    "sha1": "*****"
+  },
+  "java": {
+    "path": "bin/minecraft/windows-x64/bin/java.exe",
+    "sha1": "*****"
+  }
+}
