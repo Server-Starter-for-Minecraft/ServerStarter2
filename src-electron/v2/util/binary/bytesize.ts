@@ -4,9 +4,8 @@ import { WritableStreamer } from './stream';
 export const bytesize: WritableStreamer<number> = {
   async write(readable) {
     let size = 0;
-    for await (const chunk of readable) {
-      size += (chunk as Buffer).byteLength;
-    }
+    readable.on('data', (chunk: Buffer) => (size += chunk.length));
+    await new Promise((r) => readable.on('close', r));
     return ok(size);
   },
 };
