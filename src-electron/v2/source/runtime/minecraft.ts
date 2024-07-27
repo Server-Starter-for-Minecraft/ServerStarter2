@@ -7,7 +7,7 @@ import { Json } from '../../util/binary/json';
 import { Path } from '../../util/binary/path';
 import { Url } from '../../util/binary/url';
 import { RuntimeInstaller, RuntimeMeta } from './base';
-import { installManifest, ManifestFiles } from './manifest';
+import { installManifest, ManifestContent, ManifestFile } from './manifest';
 
 const allManifestUrl = new Url(
   'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json'
@@ -52,7 +52,7 @@ export class MinecraftRuntimeInstaller
     if (osManifest.length === 0) return err.error('missing manifest');
 
     const result = await new Url(osManifest[0].manifest.url).into(
-      new Json(ManifestFiles)
+      new Json(ManifestContent)
     );
     if (result.isErr) return result;
     const manifestFiles = result.value();
@@ -61,30 +61,27 @@ export class MinecraftRuntimeInstaller
 
     const runtimeFileNames = getRuntimeFileNames(osPlatform);
 
-    const java = Object.keys(manifestFiles.files).find((k) =>
-      k.endsWith(runtimeFileNames.java)
-    );
+    const java = Object.entries(manifestFiles.files).find(
+      ([k, value]) => k.endsWith(runtimeFileNames.java) && value.type === 'file'
+    ) as [string, ManifestFile];
     if (java === undefined) return err.error('MISSING JAVA RUNTIME FILE PATH');
-    const javaSha256 = await installPath.child(java).into(SHA256);
-    if (javaSha256.isErr) return javaSha256;
 
-    const javaw = Object.keys(manifestFiles.files).find((k) =>
-      k.endsWith(runtimeFileNames.javaw)
-    );
+    const javaw = Object.entries(manifestFiles.files).find(
+      ([k, value]) =>
+        k.endsWith(runtimeFileNames.javaw) && value.type === 'file'
+    ) as [string, ManifestFile];
     if (javaw === undefined)
       return err.error('MISSING JAVAW RUNTIME FILE PATH');
-    const javawSha256 = await installPath.child(javaw).into(SHA256);
-    if (javawSha256.isErr) return javawSha256;
 
     return ok({
       base: { path: installPath.toStr() },
       javaw: {
-        path: installPath.child(java).toStr(),
-        sha256: javaSha256.value(),
+        path: installPath.child(java[0]).toStr(),
+        sha1: java[1].downloads.raw.sha1,
       },
       java: {
-        path: installPath.child(javaw).toStr(),
-        sha256: javawSha256.value(),
+        path: installPath.child(javaw[0]).toStr(),
+        sha1: javaw[1].downloads.raw.sha1,
       },
     });
   }
@@ -162,4 +159,3 @@ if (import.meta.vitest) {
     1000 * 1000
   );
 }
-

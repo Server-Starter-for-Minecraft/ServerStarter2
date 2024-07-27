@@ -3,62 +3,89 @@ import { Err, err, ok } from '../../util/base';
 import { Bytes } from '../../util/binary/bytes';
 import { Path } from '../../util/binary/path';
 import { Url } from '../../util/binary/url';
-
-export const ManifestFiles = z.object({
-  files: z.record(
-    z.string(),
-    z.discriminatedUnion('type', [
-      z.object({
-        type: z.literal('directory'),
-      }),
-      z.object({
-        type: z.literal('link'),
-        target: z.string(),
-      }),
-      z.object({
-        type: z.literal('file'),
-        executable: z.boolean(),
-        downloads: z.object({
-          raw: z.object({
-            sha1: z.string(),
-            size: z.number(),
-            url: z.string(),
-          }),
-        }),
-      }),
-    ])
-  ),
-});
-export type ManifestFiles = z.infer<typeof ManifestFiles>;
+import { groupBy } from '../../util/object/groupBy';
 
 export async function installManifest(
   installPath: Path,
-  manifest: ManifestFiles
+  manifest: ManifestContent
 ) {
   await installPath.remove();
-  for (const [relpath, entry] of Object.entries(manifest.files)) {
-    const path = installPath.child(relpath);
-    switch (entry.type) {
-      case 'directory':
-        await path.mkdir();
-        break;
-      case 'file':
-        await path.parent().mkdir();
-        const writeRes = await new Url(entry.downloads.raw.url).into(path);
-        if (writeRes.isErr) return writeRes;
-        await path.changePermission(0o755);
-        break;
-      case 'link':
-        await path.mklink(path.child(entry.target));
-        break;
-    }
-  }
-  return ok();
-  // const allOk = results.every((x): x is Err<Error> => x === undefined);
+  await installPath.mkdir();
 
-  // return allOk ? ok() : err.error('manifest installation failed');
+  const { directory, link, file } = groupBy(
+    Object.entries(manifest.files).map(([k, v]) => ({
+      path: installPath.child(k),
+      entry: v,
+    })),
+    (x) => x.entry.type
+  ) as {
+    directory: { path: Path; entry: ManifestDirectory }[] | undefined;
+    link: { path: Path; entry: ManifestLink }[] | undefined;
+    file: { path: Path; entry: ManifestFile }[] | undefined;
+  };
+
+  if (directory) await Promise.all(directory.map(({ path }) => path.mkdir()));
+
+  if (file) {
+    const results = await Promise.all(
+      file.map(async ({ path, entry }) => {
+        const writeRes = await new Url(entry.downloads.raw.url).into(
+          path.writer({ mode: entry.executable ? 0o755 : undefined })
+        );
+        if (writeRes.isErr) return writeRes;
+      })
+    );
+    const err = results.find((x) => x?.isErr);
+    if (err) return err;
+  }
+
+  if (link) {
+    const results = await Promise.all(
+      link.map(async ({ path, entry }) => path.mklink(path.child(entry.target)))
+    );
+    const err = results.find((x) => x?.isErr);
+    if (err) return err;
+  }
+
+  return ok();
 }
 
+export const ManifestDirectory = z.object({
+  type: z.literal('directory'),
+});
+export type ManifestDirectory = z.infer<typeof ManifestDirectory>;
+
+export const ManifestLink = z.object({
+  type: z.literal('link'),
+  target: z.string(),
+});
+export type ManifestLink = z.infer<typeof ManifestLink>;
+
+export const ManifestFile = z.object({
+  type: z.literal('file'),
+  executable: z.boolean(),
+  downloads: z.object({
+    raw: z.object({
+      sha1: z.string(),
+      size: z.number(),
+      url: z.string(),
+    }),
+  }),
+});
+export type ManifestFile = z.infer<typeof ManifestFile>;
+
+export const ManifestContent = z.object({
+  files: z.record(
+    z.string(),
+    z.discriminatedUnion('type', [
+      ManifestDirectory,
+      ManifestLink,
+      ManifestFile,
+    ])
+  ),
+});
+
+export type ManifestContent = z.infer<typeof ManifestContent>;
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect, vi } = import.meta.vitest;
@@ -140,7 +167,7 @@ if (import.meta.vitest) {
 
   type TestCase = {
     explain: string;
-    manifest: ManifestFiles['files'];
+    manifest: ManifestContent['files'];
     files?: { path: string; value: string }[];
     links?: { path: string; target: string }[];
     dirs?: { path: string }[];

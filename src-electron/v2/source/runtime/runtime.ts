@@ -5,7 +5,7 @@ import {
   UniversalRuntime,
 } from '../../schema/runtime';
 import { err, ok, Result } from '../../util/base';
-import { SHA256 } from '../../util/binary/hash';
+import { SHA1 } from '../../util/binary/hash';
 import { Json } from '../../util/binary/json';
 import { Path } from '../../util/binary/path';
 import { RuntimeInstaller, RuntimeMeta } from './base';
@@ -129,11 +129,11 @@ export class RuntimeContainer {
     osPlatform: OsPlatform
   ): Promise<Result<void>> {
     const metapath = this.metaPath(runtime, osPlatform);
+    if (!metapath.exists()) return ok();
     const meta = await metapath.into(metaJson);
     if (meta.isErr) return meta;
     await new Path(meta.value().base.path).remove();
     await metapath.remove();
-    console.log(metapath)
     return ok();
   }
 
@@ -142,10 +142,10 @@ export class RuntimeContainer {
     if (meta.isOk) {
       const info = meta.value()?.[useJavaw ? 'javaw' : 'java'];
       if (info) {
-        const { path, sha256 } = info;
+        const { path, sha1 } = info;
         const binPath = new Path(path);
-        const a = await binPath.into(SHA256);
-        if (a.isOk && a.value() === sha256) {
+        const a = await binPath.into(SHA1);
+        if (a.isOk && a.value() === sha1) {
           return ok(binPath);
         }
       }
@@ -244,6 +244,14 @@ if (import.meta.vitest) {
     'debian',
   ];
 
+  // 公式がランタイムを提供していない組
+  const missingCases: { os: OsPlatform; explain: string }[] = [
+    { os: 'mac-os-arm64', explain: 'jre-legacy' },
+    { os: 'mac-os-arm64', explain: 'java-runtime-alpha' },
+    { os: 'mac-os-arm64', explain: 'java-runtime-beta' },
+    { os: 'mac-os-arm64', explain: 'universal-8' },
+  ];
+
   test.each(
     osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
   )(
@@ -255,7 +263,14 @@ if (import.meta.vitest) {
         testCase.os,
         true
       );
-      expect(readyResult.isOk).toBe(true);
+
+      // ランタイムが提供されている組み合わせかどうかをチェック
+      const isValidPair =
+        missingCases.find(
+          (x) => x.os === testCase.os && x.explain === testCase.runtime.explain
+        ) === undefined;
+
+      expect(readyResult.isOk).toBe(isValidPair);
 
       // アンインストール
       const removeResult = await runtimeContainer.remove(

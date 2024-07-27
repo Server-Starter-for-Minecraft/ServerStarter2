@@ -70,7 +70,7 @@ export class Path extends DuplexStreamer<void> {
       const writable = fs.createWriteStream(this.path, options);
       return asyncPipe(readable, writable);
     };
-    return { write: exclusive(write) };
+    return { write: exclusive(write).bind(this) };
   }
 
   child(...paths: string[]) {
