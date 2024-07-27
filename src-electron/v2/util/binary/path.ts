@@ -124,15 +124,18 @@ export class Path extends DuplexStreamer<void> {
     return fs.existsSync(this._path);
   }
 
-  isDirectory = exclusive(this._isDirectory);
-  private async _isDirectory() {
-    return (await fs.stat(this.absolute().path)).isDirectory();
+  stat = exclusive(this._stat);
+  private async _stat() {
+    return await fs.stat(this.absolute().path);
   }
 
-  /** ファイルの最終更新時刻を取得 */
-  lastUpdateTime = exclusive(this._lastUpdateTime);
-  private async _lastUpdateTime(): Promise<Date> {
-    return (await fs.stat(this.path)).mtime;
+  isDirectory = exclusive(this._isDirectory);
+  private async _isDirectory() {
+    return (await this._stat()).isDirectory();
+  }
+
+  async lastUpdateTime() {
+    (await this.stat()).mtime;
   }
 
   rename = exclusive(this._rename);
@@ -152,8 +155,13 @@ export class Path extends DuplexStreamer<void> {
   }
 
   mklink = exclusive(this._mklink);
-  private async _mklink(target: Path) {
-    await new Promise((resolve) => fs.link(target._path, this._path, resolve));
+  private async _mklink(target: Path): Promise<Result<void>> {
+    await this.parent().mkdir();
+    return await new Promise<Result<void>>((resolve) =>
+      fs.link(target._path, this._path, (e) => {
+        resolve(e ? err(e) : ok());
+      })
+    );
   }
 
   /**
@@ -237,7 +245,7 @@ export class Path extends DuplexStreamer<void> {
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
     async function recursiveMove(path: Path, target: Path) {
-      if (await path._isDirectory()) {
+      if ((await fs.stat(path.absolute().toStr())).isDirectory()) {
         await target.mkdir();
         await asyncForEach(await path._iter(), async (child) => {
           await recursiveMove(child, target.child(child.basename()));
