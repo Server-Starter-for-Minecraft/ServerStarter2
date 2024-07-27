@@ -38,6 +38,7 @@ export class Path extends DuplexStreamer<void> {
       new Promise<stream.Readable>((r) => {
         const key = this.absolute().toStr();
         spoolers.get(key).spool(async () => {
+          await this.parent().mkdir();
           const stream = fs.createReadStream(this.path);
           r(stream);
           await new Promise<void>((r) => stream.on('error', r).on('close', r));
