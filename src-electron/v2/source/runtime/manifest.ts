@@ -35,9 +35,9 @@ export async function installManifest(
   installPath: Path,
   manifest: ManifestFiles
 ) {
+  await installPath.remove();
   for (const [relpath, entry] of Object.entries(manifest.files)) {
     const path = installPath.child(relpath);
-    console.log(path.path);
     switch (entry.type) {
       case 'directory':
         await path.mkdir();
