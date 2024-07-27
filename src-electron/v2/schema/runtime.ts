@@ -1,21 +1,27 @@
 import { z } from 'zod';
 
+export const JavaMajorVersion = z.number().brand('JavaMajorVersion');
+export type JavaMajorVersion = z.infer<typeof JavaMajorVersion>;
+
 // minecraftのデフォルトのランタイム
-export type MinecraftRuntime = {
-  type: 'minecraft';
-  version:
-    | 'jre-legacy'
-    | 'java-runtime-alpha'
-    | 'java-runtime-beta'
-    | 'java-runtime-gamma'
-    | 'java-runtime-delta';
-};
+export const MinecraftRuntime = z.object({
+  type: z.literal('minecraft'),
+  /**
+   * 'jre-legacy'
+   * 'java-runtime-alpha'
+   * 'java-runtime-beta'
+   * 'java-runtime-gamma'
+   * 'java-runtime-delta';
+   */
+  version: z.string(),
+});
+export type MinecraftRuntime = z.infer<typeof MinecraftRuntime>;
 
 // バージョンだけを指定するランタイム
 // 実際は MinecraftRuntime か CorrettoRuntime かになる
 export type UniversalRuntime = {
   type: 'universal';
-  majorVersion: number;
+  majorVersion: JavaMajorVersion;
 };
 
 /**
@@ -25,7 +31,7 @@ export type UniversalRuntime = {
  */
 export type CorrettoRuntime = {
   type: 'corretto';
-  majorVersion: number;
+  majorVersion: JavaMajorVersion;
 };
 
 export type Runtime = MinecraftRuntime | UniversalRuntime; // | CorrettoRuntime
