@@ -56,11 +56,11 @@ export class Path extends DuplexStreamer<void> {
     return asyncPipe(readable, writable);
   }
 
-  child(child: string) {
+  child(...paths: string[]) {
     if (this._path !== '') {
-      return new Path(path.join(this._path, child));
+      return new Path(path.join(this._path, ...paths));
     }
-    return new Path(child);
+    return new Path(path.join(...paths));
   }
 
   parent(times = 1) {
@@ -128,6 +128,18 @@ export class Path extends DuplexStreamer<void> {
   mkdir = exclusive(this._mkdir);
   private async _mkdir() {
     if (!this.exists()) await fs.mkdir(this._path, { recursive: true });
+  }
+
+  /** ディレクトリが無かったら作成する */
+  ensureDir = exclusive(this._ensureDir);
+  private async _ensureDir(options?: { mode?: number }) {
+    await fs.ensureDir(this._path, options);
+  }
+
+  /** ディレクトリが空の状態を保証する */
+  emptyDir = exclusive(this._emptyDir);
+  private async _emptyDir() {
+    await fs.emptyDir(this._path);
   }
 
   /** 同期ディレクトリ生成(非推奨) */
@@ -289,6 +301,17 @@ if (import.meta.vitest) {
 
     expect(new Path('./').child('foo').path).toBe('foo');
     expect(new Path('./').child('/foo/').path).toBe('foo');
+
+    expect(new Path('./').child('foo/bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo\\bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('foo', 'bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(
+      new Path('foo/bar/buz').path
+    );
 
     expect(new Path('foo').path).toBe('foo');
     expect(new Path('foo/').path).toBe('foo');
