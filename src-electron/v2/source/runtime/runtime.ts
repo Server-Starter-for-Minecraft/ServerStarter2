@@ -121,6 +121,22 @@ export class RuntimeContainer {
     return refInstallResult;
   }
 
+  /**
+   * 指定されたランタイムをキャッシュから削除
+   */
+  async remove(
+    runtime: Runtime,
+    osPlatform: OsPlatform
+  ): Promise<Result<void>> {
+    const metapath = this.metaPath(runtime, osPlatform);
+    const meta = await metapath.into(metaJson);
+    if (meta.isErr) return meta;
+    await new Path(meta.value().base.path).remove();
+    await metapath.remove();
+    console.log(metapath)
+    return ok();
+  }
+
   private async checkExists(metapath: Path, useJavaw: boolean) {
     const meta = await metapath.into(metaJson);
     if (meta.isOk) {
@@ -240,6 +256,13 @@ if (import.meta.vitest) {
         true
       );
       expect(readyResult.isOk).toBe(true);
+
+      // アンインストール
+      const removeResult = await runtimeContainer.remove(
+        testCase.runtime,
+        testCase.os
+      );
+      expect(removeResult.isOk).toBe(true);
     },
     1000 * 1000
   );
