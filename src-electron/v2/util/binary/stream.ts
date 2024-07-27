@@ -1,5 +1,7 @@
+import { nextTick } from 'process';
 import * as stream from 'stream';
 import { Awaitable, Result } from '../base';
+import { tick } from '../promise/tick';
 
 export abstract class ReadableStreamer {
   /**
@@ -68,6 +70,10 @@ export class Readable implements ReadableStreamer {
     return new Readable(this.pipe(duplex));
   }
   async into<T>(target: WritableStreamer<T>): Promise<Result<T, Error>> {
-    return target.write(await this.stream);
+    const stream = await this.stream;
+    stream.pause();
+    await tick();
+    stream.resume();
+    return target.write(stream);
   }
 }

@@ -51,7 +51,7 @@ export class Path extends DuplexStreamer<void> {
   private async _write(
     readable: stream.Readable
   ): Promise<Result<void, Error>> {
-    await this._remove();
+    fs.rmSync(this._path, { recursive: true, force: true });
     const writable = fs.createWriteStream(this.path);
     return asyncPipe(readable, writable);
   }
