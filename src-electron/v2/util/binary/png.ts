@@ -1,37 +1,92 @@
 /**
  * TODO: Streamを使った処理に換装する
  */
-
 import sharp from 'sharp';
-import { ImageURI } from '../../schema/player';
-import { Bytes } from './bytes';
-import { toBase64 } from './converter/base64';
+import * as stream from 'stream';
+// import { ImageURI } from '../../schema/player';
+import { err, Err, ok, Result } from '../base';
+import { Readable, ReadableStreamer } from './stream';
+import { Url } from './url';
 
-export class Png {
-  data: sharp.Sharp;
-  constructor(data: sharp.Sharp) {
-    this.data = data;
+// export class Png {
+//   data: sharp.Sharp;
+//   constructor(data: sharp.Sharp) {
+//     this.data = data;
+//   }
+
+//   /** 切り抜いた画像データを返す */
+//   async crop(region: {
+//     top: number;
+//     left: number;
+//     width: number;
+//     height: number;
+//   }) {
+//     return new Png(this.data.clone().extract(region));
+//   }
+
+//   async toBeyesData() {
+//     return new Bytes(await this.data.toBuffer());
+//   }
+// }
+
+// export async function encodeURI(img: Png): Promise<ImageURI> {
+//   // ArrayBufferからbase64に変換
+//   // TODO: 下記のコードを改善してテストが走り続けるようにする
+//   const base64uri = (await img.toBeyesData()).convert(toBase64());
+
+//   return ImageURI.parse(`data:image/png;base64,${base64uri}`);
+// }
+
+export class Png extends ReadableStreamer {
+  static write(readable: stream.Readable): Promise<Result<Png>> {
+    const buffers: Buffer[] = [];
+    let e: undefined | Err<Error> = undefined;
+
+    readable.on('error', (error) => (e = err(error)));
+
+    readable.on('data', (chunk) => buffers.push(chunk));
+
+    return new Promise<Result<Png, Error>>((resolve) => {
+      readable.on('close', () => {
+        try {
+          if (e !== undefined) return resolve(e);
+          resolve(ok(new Png(sharp(Buffer.concat(buffers)).png())));
+        } catch (error) {
+          resolve(err(error as Error));
+        }
+      });
+    });
   }
 
-  /** 切り抜いた画像データを返す */
-  async crop(region: {
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-  }) {
-    return new Png(this.data.clone().extract(region));
+  readonly img: sharp.Sharp;
+
+  constructor(img: sharp.Sharp) {
+    super();
+    this.img = img;
   }
 
-  async toBeyesData() {
-    return new Bytes(await this.data.toBuffer());
+  createReadStream(): Readable {
+    return new Readable(this.img);
   }
 }
 
-export async function encodeURI(img: Png): Promise<ImageURI> {
-  // ArrayBufferからbase64に変換
-  // TODO: 下記のコードを改善してテストが走り続けるようにする
-  const base64uri = (await img.toBeyesData()).convert(toBase64());
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  const { Path } = await import('src-electron/v2/util/binary/path');
 
-  return ImageURI.parse(`data:image/png;base64,${base64uri}`);
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.mkdir();
+
+  const testImgUrl =
+    'https://server-starter-for-minecraft.github.io/assets/servers/vanilla.png';
+
+  test('png import', async () => {
+    const img = await new Url(testImgUrl).into(Png);
+    expect(img.isOk).toBe(true);
+
+    const res = await img.value().into(workPath.child('test.png'));
+    expect(res.isOk).toBe(true);
+  });
 }
