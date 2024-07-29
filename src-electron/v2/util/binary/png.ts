@@ -30,6 +30,7 @@ export class Png {
 
 export async function encodeURI(img: Png): Promise<ImageURI> {
   // ArrayBufferからbase64に変換
+  // TODO: 下記のコードを改善してテストが走り続けるようにする
   const base64uri = (await img.toBeyesData()).convert(toBase64());
 
   return ImageURI.parse(`data:image/png;base64,${base64uri}`);

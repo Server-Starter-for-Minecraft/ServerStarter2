@@ -76,3 +76,20 @@ async function constructFaceImg(skin: Png): Promise<Result<ImageURI[]>> {
 
   return ok([_avatar.value(), _avatar_overlay.value()]);
 }
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+
+  const players: { name: string; uuid: string }[] = [
+    { name: 'CivilTT', uuid: '7aa8d952-5617-4a8c-8f4f-8761999a1f1a' },
+    { name: 'txkodo', uuid: 'e19851cc-9493-4875-8d67-493b8474564f' },
+  ];
+
+  test.each(players)('searchCheck', async ({ name, uuid }) => {
+    expect((await searchPlayerFromName(name)).value().uuid).toBe(uuid);
+    expect(
+      (await searchPlayerFromUUID(PlayerUUID.parse(uuid))).value().name
+    ).toBe(name);
+  });
+}

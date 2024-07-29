@@ -3,9 +3,11 @@ import { z } from 'zod';
 import { PlayerName, PlayerUUID } from '../../schema/player';
 import { err, ok, Result } from '../../util/base';
 import { Bytes } from '../../util/binary/bytes';
+import { fromBase64 } from '../../util/binary/converter/base64';
 import { Json } from '../../util/binary/json';
 import { Png } from '../../util/binary/png';
 import { Url } from '../../util/binary/url';
+import { formatUUID } from '../../util/random/uuid';
 
 const UserProfile = z.object({
   name: PlayerName,
@@ -24,17 +26,25 @@ export async function UsernameToUUID(
     return err.error('INVALID_USER_NAME');
   }
 
-  const userprofileJson = new Json(UserProfile);
-  const jsonData = await res.value().into(userprofileJson)
+  const userprofileJson = new Json(
+    z.object({ name: z.string(), id: z.string() })
+  );
+  const jsonData = await res.value().into(userprofileJson);
   if (jsonData.isErr) return jsonData;
+
+  const parseRes = Result.all(
+    Result.fromZod(PlayerName.safeParse(formatUUID(jsonData.value().name))),
+    Result.fromZod(PlayerUUID.safeParse(formatUUID(jsonData.value().id)))
+  );
+  if (parseRes.isErr) return parseRes;
   return ok({
-    name: jsonData.value().name,
-    id: jsonData.value().id,
+    name: parseRes.value()[0],
+    id: parseRes.value()[1],
   });
 }
 
 const Profile = z.object({
-  id: PlayerUUID,
+  id: z.string(),
   name: PlayerName,
   properties: z
     .object({
@@ -46,8 +56,8 @@ const Profile = z.object({
 type Profile = z.infer<typeof Profile>;
 
 const ProfileTextures = z.object({
-  timestamp: z.string(),
-  profileId: PlayerUUID,
+  timestamp: z.number(),
+  profileId: z.string(),
   profileName: z.string(),
   textures: z.object({
     SKIN: z
@@ -91,9 +101,9 @@ export async function GetProfile(
   if (profile.isErr) return profile;
 
   const profileTexturesJson = new Json(ProfileTextures);
-  const textures = await Bytes.fromString(
-    profile.value().properties[0].value
-  ).into(profileTexturesJson);
+  const textures = await Bytes.fromString(profile.value().properties[0].value)
+    .convert(fromBase64())
+    .into(profileTexturesJson);
   if (textures.isErr) return textures;
 
   const name = profile.value().name;

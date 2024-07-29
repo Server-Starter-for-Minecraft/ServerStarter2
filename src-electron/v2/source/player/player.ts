@@ -1,10 +1,6 @@
 import dayjs from 'dayjs';
 import { z } from 'zod';
-import {
-  PlayerAvatar,
-  PlayerName,
-  PlayerUUID,
-} from '../../schema/player';
+import { PlayerAvatar, PlayerName, PlayerUUID } from '../../schema/player';
 import { McTimestamp, McTimestampTemplate } from '../../schema/timestamp';
 import { ok, Result } from '../../util/base';
 import { Json } from '../../util/binary/json';
@@ -128,7 +124,7 @@ export class PlayerContainer {
    * `HELLOWORLD` 等名前っぽい文字列だったら名前として検索
    *
    * キャッシュに存在する場合それを使用
-   * 
+   *
    * 新規プレイヤーの場合はキャッシュへの登録も実施する
    */
   async searchPleyer(searchWord: string): Promise<Result<PlayerAvatar>> {
@@ -138,13 +134,15 @@ export class PlayerContainer {
     if (parsedUUID.isOk) {
       targetPlayer = await this.fetchPleyerFromUUID(parsedUUID.value());
     } else {
-      targetPlayer = await this.fetchPleyerFromName(PlayerName.parse(searchWord));
+      targetPlayer = await this.fetchPleyerFromName(
+        PlayerName.parse(searchWord)
+      );
     }
 
     // 検索結果を`player.json`に登録する
     const existPlayers = await this.playerJsonHandler.read();
     if (existPlayers.isOk && targetPlayer.isOk) {
-      this.playerJsonHandler.write(
+      await this.playerJsonHandler.write(
         Object.assign(
           existPlayers.value(),
           this.avatar2PlayerCache(targetPlayer.value())
@@ -167,7 +165,7 @@ export class PlayerContainer {
 
     // 既に探索履歴がある場合はそのデータを返す
     if (players.isOk) {
-      const target = players.value().find(p => p.uuid === playerUUID);
+      const target = players.value().find((p) => p.uuid === playerUUID);
       if (target) {
         return ok(target);
       }
@@ -186,7 +184,7 @@ export class PlayerContainer {
 
     // 既に探索履歴がある場合はそのデータを返す
     if (players.isOk) {
-      const target = players.value().find(p => p.name === playerName);
+      const target = players.value().find((p) => p.name === playerName);
       if (target) {
         return ok(target);
       }
@@ -195,4 +193,135 @@ export class PlayerContainer {
     // 未知のプレイヤーはMinecraft APIに検索をかける
     return searchPlayerFromName(playerName);
   }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  const { Path } = await import('src-electron/v2/util/binary/path');
+  const { ImageURI } = await import('../../schema/player');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child('work');
+  workPath.emptyDir();
+  const cacheFolder = workPath.child('cache');
+  const cacheFile = cacheFolder.child(PLAYER_FILE_NAME);
+  const worldFolder = workPath.child('anyWorld');
+
+  const players: { name: string; uuid: string }[] = [
+    { name: 'CivilTT', uuid: '7aa8d952-5617-4a8c-8f4f-8761999a1f1a' },
+    { name: 'txkodo', uuid: 'e19851cc-9493-4875-8d67-493b8474564f' },
+  ];
+
+  const container = new PlayerContainer(cacheFolder);
+  test.each(players)('searchPlayer ($name)', async ({ name, uuid }) => {
+    // remove cache file
+    await cacheFile.remove();
+
+    // name -> uuid
+    const n2uResult = await container.searchPleyer(name);
+    expect(n2uResult.isOk).toBe(true);
+    expect(n2uResult.value().uuid).toBe(uuid);
+
+    // name -> uuid
+    const u2nResult = await container.searchPleyer(uuid);
+    expect(u2nResult.isOk).toBe(true);
+    expect(u2nResult.value().name).toBe(name);
+
+    // cache file check
+    expect(cacheFile.exists()).toBe(true);
+    const json = new Json(PlayerCache);
+    const jsonVal = (await cacheFile.into(json)).value()[0];
+    expect(jsonVal.name).toBe(name);
+    expect(McTimestamp.safeParse(jsonVal.expire).success).toBe(true);
+  });
+
+  test('cache -> world (exportUserCache)', async () => {
+    // reset test env
+    await workPath.remove();
+
+    // static value
+    const expireTime = McTimestamp.parse(dayjs().format(McTimestampTemplate));
+
+    // set cache
+    const cacheHandler = JsonSourceHandler.fromPath(cacheFile, PlayerCache);
+    cacheHandler.write(
+      players.map(({ name, uuid }) => {
+        return {
+          name: PlayerName.parse(name),
+          uuid: PlayerUUID.parse(uuid),
+          avatar: ImageURI.parse(''),
+          avatar_overlay: ImageURI.parse(''),
+          expire: expireTime,
+        };
+      })
+    );
+
+    // test function
+    const res = await container.exportUserCache(worldFolder);
+
+    // check `usercache.json`
+    expect(res.isOk).toBe(true);
+    expect(worldFolder.child(USERCACHE_NAME).exists()).toBe(true);
+    const targetJson = new Json(UserCache);
+    expect(
+      (await worldFolder.child(USERCACHE_NAME).into(targetJson)).value()
+    ).toEqual(
+      players.map(({ name, uuid }) => {
+        return {
+          name,
+          uuid,
+          expiresOn: expireTime,
+        };
+      })
+    );
+  });
+
+  test('world -> cache (importUserCache)', async () => {
+    // reset test env
+    await workPath.remove();
+
+    // static value
+    const expireTime = McTimestamp.parse(dayjs().format(McTimestampTemplate));
+
+    // set cache in world
+    const cacheHandler = JsonSourceHandler.fromPath(
+      worldFolder.child(USERCACHE_NAME),
+      UserCache
+    );
+    cacheHandler.write(
+      players.map(({ name, uuid }) => {
+        return {
+          name: PlayerName.parse(name),
+          uuid: PlayerUUID.parse(uuid),
+          expiresOn: expireTime,
+        };
+      })
+    );
+
+    // test function
+    const res = await container.importUserCache(worldFolder);
+
+    // check `player.json` (Omit `avatar imgs`)
+    expect(res.isOk).toBe(true);
+    expect(cacheFile.exists()).toBe(true);
+    const targetJson = new Json(PlayerCache);
+    expect(
+      (await cacheFile.into(targetJson)).value().map((obj) => {
+        return {
+          name: obj.name,
+          uuid: obj.uuid,
+          expire: obj.expire,
+        };
+      })
+    ).toEqual(
+      players.map(({ name, uuid }) => {
+        return {
+          name,
+          uuid,
+          expire: expireTime,
+        };
+      })
+    );
+  });
 }
