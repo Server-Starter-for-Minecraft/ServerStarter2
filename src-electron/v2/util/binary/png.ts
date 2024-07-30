@@ -4,7 +4,8 @@
 import sharp from 'sharp';
 import * as stream from 'stream';
 // import { ImageURI } from '../../schema/player';
-import { err, Err, ok, Result } from '../base';
+import { Result } from '../base';
+import { Bytes } from './bytes';
 import { Readable, ReadableStreamer } from './stream';
 import { Url } from './url';
 
@@ -38,24 +39,11 @@ import { Url } from './url';
 // }
 
 export class Png extends ReadableStreamer {
-  static write(readable: stream.Readable): Promise<Result<Png>> {
-    const buffers: Buffer[] = [];
-    let e: undefined | Err<Error> = undefined;
-
-    readable.on('error', (error) => (e = err(error)));
-
-    readable.on('data', (chunk) => buffers.push(chunk));
-
-    return new Promise<Result<Png, Error>>((resolve) => {
-      readable.on('close', () => {
-        try {
-          if (e !== undefined) return resolve(e);
-          resolve(ok(new Png(sharp(Buffer.concat(buffers)).png())));
-        } catch (error) {
-          resolve(err(error as Error));
-        }
-      });
-    });
+  static async write(readable: stream.Readable): Promise<Result<Png>> {
+    const bytes = await Bytes.write(readable);
+    return bytes.onOk((x) =>
+      Result.catchSync(() => new Png(sharp(x.data).png()))
+    );
   }
 
   readonly img: sharp.Sharp;
