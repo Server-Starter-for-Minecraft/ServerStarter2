@@ -1,6 +1,6 @@
 import { ImageURI, PlayerAvatar, PlayerUUID } from '../../schema/player';
 import { ok, Result } from '../../util/base';
-import { encodeURI, Png } from '../../util/binary/png';
+import { Png } from '../../util/binary/png';
 import { GetProfile, UsernameToUUID } from './minecraftAvatarAPI';
 
 const steveB64 =
@@ -56,25 +56,30 @@ export async function searchPlayerFromUUID(
 
 /** プレイヤーのスキンから顔面を抽出 */
 async function constructFaceImg(skin: Png): Promise<Result<ImageURI[]>> {
-  async function crop(left: number): Promise<Result<ImageURI>> {
-    const crop = await skin.crop({
+  const cropRegion = (left: number) => {
+    return {
       top: 8,
       left: left,
       width: 8,
       height: 8,
-    });
-    return ok(await encodeURI(crop));
-  }
+    };
+  };
+  // 顔写真本体とオーバーレイに使用する画像を取得
+  const avatarLeftPosition = 8;
+  const avatarOverlayLeftPosition = 40;
+  const avatarImgs = Result.all(
+    await skin.crop(cropRegion(avatarLeftPosition)),
+    await skin.crop(cropRegion(avatarOverlayLeftPosition))
+  );
+  if (avatarImgs.isErr) return avatarImgs;
 
-  const avatarPromise = crop(8);
-  const avatarOverlayPromise = crop(40);
+  const encodeUris = await Promise.all(
+    avatarImgs.value().map((img) => img.encodeURI())
+  );
+  const encodeUriErrors = encodeUris.filter((img) => img.isErr);
+  if (encodeUriErrors.length > 0) return encodeUriErrors[0];
 
-  const _avatar = await avatarPromise;
-  if (_avatar.isErr) return _avatar;
-  const _avatar_overlay = await avatarOverlayPromise;
-  if (_avatar_overlay.isErr) return _avatar_overlay;
-
-  return ok([_avatar.value(), _avatar_overlay.value()]);
+  return ok(encodeUris.map((img) => img.value()));
 }
 
 /** In Source Testing */

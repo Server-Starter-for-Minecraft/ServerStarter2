@@ -1,4 +1,3 @@
-import sharp from 'sharp';
 import { z } from 'zod';
 import { PlayerName, PlayerUUID } from '../../schema/player';
 import { err, ok, Result } from '../../util/base';
@@ -113,13 +112,10 @@ export async function GetProfile(
     const slim = getDefaultIsSlim(id.replace('-', ''));
     return ok({ uuid: id, name, slim });
   } else {
-    // TODO: PNG化の処理をStreamを使ったものに変更
     const slim = skin.metadata?.model === 'slim';
-    const skin_image = await new Url(skin.url).into(Bytes);
+    const skin_image = await new Url(skin.url).into(Png);
     if (skin_image.isErr) return skin_image;
-
-    const skin_png = new Png(sharp(skin_image.value().data));
-    return ok({ uuid: id, name, slim, skin: skin_png });
+    return ok({ uuid: id, name, slim, skin: skin_image.value() });
   }
 }
 
