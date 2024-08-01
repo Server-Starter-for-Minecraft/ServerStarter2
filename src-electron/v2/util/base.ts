@@ -11,7 +11,7 @@ export type Ok<T> = {
   error(): never;
   onOk<U extends Result<any, any>>(op: (value: T) => U): U;
   onErr(op: (error: never) => Result<T, any>): Ok<T>;
-  valueOrDefault(defaultValue: T): T;
+  valueOrDefault<U = T>(defaultValue: U): T | U;
   errorOrDefault<U>(defaultError: U): U;
 };
 
@@ -23,7 +23,7 @@ export type Err<E> = {
   onOk(op: (value: never) => Result<any, E>): Err<E>;
   onErr<U extends Result<any, E>>(op: (error: E) => U): U;
   valueOrDefault<U>(defaultValue: U): U;
-  errorOrDefault(defaultError: E): E;
+  errorOrDefault<U = E>(defaultError: U): E | U;
 };
 
 export type Result<T, E = Error> = Ok<T> | Err<E>;
@@ -56,6 +56,14 @@ export const Result = {
   ): Result<O, z.ZodError<I>> => {
     if (parse.success) return ok(parse.data);
     else return err(parse.error);
+  },
+
+  all<T extends any[]>(
+    ...results: { [K in keyof T]: Result<T[K]> }
+  ): Result<T> {
+    const err = results.find((x) => x.isErr);
+    if (err) return err;
+    return ok(results.map((x) => x.value()) as T);
   },
 };
 

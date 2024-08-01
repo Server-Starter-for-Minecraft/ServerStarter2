@@ -45,7 +45,7 @@ export interface WorldContainerHandler {
    *
    * 展開に失敗した場合は元の状態に戻す
    *
-   * properties / eula / op / whitelist
+   * properties / op / whitelist / bannedIps / bannedPlayers
    *
    * mod / plugin / datapack の展開は行わない
    */
