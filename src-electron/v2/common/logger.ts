@@ -197,7 +197,6 @@ export const rootLogger = loggerHierarchies.get('');
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  const { sleep } = await import('../util/promise/sleep');
 
   const readLastLogLine = async () => {
     const lines = await (
@@ -216,19 +215,16 @@ if (import.meta.vitest) {
     }
 
     rootLogger('DEFAULT').info('message');
-
     expect(await readLastLogLine()).toBe(
       '{"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"}'
     );
 
     rootLogger.custom('multi', ['value']).warn({ key: 'value' });
-
     expect(await readLastLogLine()).toBe(
       '{"lv":"WARN","on":"custom","param":["multi",["value"]],"msg":{"key":"value"}}'
     );
 
     rootLogger.nest.more.deeply().trace();
-
     expect(await readLastLogLine()).toEqual(
       '{"lv":"TRACE","on":"nest.more.deeply"}'
     );
