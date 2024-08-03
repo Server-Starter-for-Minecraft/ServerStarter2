@@ -15,13 +15,24 @@ const UserProfile = z.object({
 type UserProfile = z.infer<typeof UserProfile>;
 
 /** mojangのapiからプレイヤーの名前で検索(過去の名前も検索可能) 戻り値のnameは現在の名前 */
-export async function UsernameToUUID(
+export async function usernameToUUID(
   username: string
 ): Promise<Result<UserProfile>> {
   const url = `https://api.mojang.com/users/profiles/minecraft/${username}`;
   const res = await new Url(url).into(Bytes);
-  if (res.isErr) {
-    // TODO: 1分あたり200リクエストの制限に抵触した場合とエラーを使い分ける？
+  if (res.isErr) return res;
+
+  const resTxt = res.value().toStr();
+  if (resTxt.isErr) return resTxt;
+
+  // 1分あたり200リクエストの制限に抵触した場合
+  if (resTxt.value().startsWith('<!DOCTYPE')) {
+    return err.error('USER_PROFILE_REQUEST_IS_BLOCKED');
+  }
+
+  // 無効な名前の場合
+  const invalidNameJson = new Json(z.object({ path: z.string() }));
+  if ((await res.value().into(invalidNameJson)).isOk) {
     return err.error('INVALID_USER_NAME');
   }
 
@@ -32,7 +43,7 @@ export async function UsernameToUUID(
   if (jsonData.isErr) return jsonData;
 
   const parseRes = Result.all(
-    Result.fromZod(PlayerName.safeParse(formatUUID(jsonData.value().name))),
+    Result.fromZod(PlayerName.safeParse(jsonData.value().name)),
     Result.fromZod(PlayerUUID.safeParse(formatUUID(jsonData.value().id)))
   );
   if (parseRes.isErr) return parseRes;
@@ -85,9 +96,12 @@ type PlayerProfile = {
   skin?: Png;
 };
 
-/** mojangのapiからUUIDでプレイヤー情報を取得 */
-// TODO: 1分当たり200リクエスト制限があるので対応
-export async function GetProfile(
+/**
+ * mojangのapiからUUIDでプレイヤー情報を取得
+ *
+ * ※短時間に大量のリクエストを送ってもエラーにならないことを確認済み（24/08/03 現在）
+ */
+export async function getProfile(
   id: PlayerUUID
 ): Promise<Result<PlayerProfile>> {
   const profileJson = new Json(Profile);
@@ -135,4 +149,59 @@ function getDefaultIsSlim(uuid: string) {
     parseInt(uuid[23], 16) ^
     parseInt(uuid[31], 16);
   return slim ? true : false;
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+
+  const testPlayer = {
+    name: 'CivilTT',
+    uuid: PlayerUUID.parse('7aa8d952-5617-4a8c-8f4f-8761999a1f1a'),
+  };
+
+  // 不用意に実行するとBANされる危険性があるため普段はスキップ
+  test.skip('mojang api (UsernameToUUID)', async () => {
+    // 210回リクエストを送り，エラーの内容を調査
+    const processes = [];
+    const REQUEST_TIMES = 210;
+    for (let i = 0; i < REQUEST_TIMES; i++) {
+      processes.push(usernameToUUID(testPlayer.name));
+    }
+    const res = await Promise.all(processes);
+
+    // エラーの内容をチェック
+    expect(res.filter((obj) => obj.isErr)[0].error().name).toBe(
+      'USER_PROFILE_REQUEST_IS_BLOCKED'
+    );
+  });
+
+  // 不用意に実行するとBANされる危険性があるため普段はスキップ
+  test.skip(
+    'mojang api (getProfile)',
+    async () => {
+      // 1000回リクエストを送り，エラーの内容を調査
+      const processes = [];
+      const REQUEST_TIMES = 1000;
+      for (let i = 0; i < REQUEST_TIMES; i++) {
+        processes.push(getProfile(testPlayer.uuid));
+      }
+      const res = await Promise.all(processes);
+
+      // エラーをチェック
+      // 1000回リクエストを送ってもエラーが起きなかったため，下記は失敗するテスト
+      expect(res.filter((obj) => obj.isErr).length > 0).toBe(true);
+    },
+    1000 * 100
+  );
+
+  test('get user data', async () => {
+    const validUser = await usernameToUUID(testPlayer.name);
+    expect(validUser.isOk).toBe(true);
+    expect(validUser.value().id).toBe(testPlayer.uuid);
+
+    const invalidUser = await usernameToUUID('a');
+    expect(invalidUser.isErr).toBe(true);
+    expect(invalidUser.error().message).toBe('INVALID_USER_NAME');
+  });
 }

@@ -1,7 +1,7 @@
 import { ImageURI, PlayerAvatar, PlayerUUID } from '../../schema/player';
 import { ok, Result } from '../../util/base';
 import { Png } from '../../util/binary/png';
-import { GetProfile, UsernameToUUID } from './minecraftAvatarAPI';
+import { getProfile, usernameToUUID } from './minecraftAvatarAPI';
 
 const steveB64 =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADOSURBVBhXY9RX4P3zj4GFkenn3z9//vxlYmJiZWH+/5+BCSgKBH/+/+PmYJMT4pIU4GZkYPz3/x8LULQ7O56dlY2Tg+/7108MzEzvXzzrWL+DcVVtGhc7+7efP5mZ2d9/ei8vLvbwwS2gaiagqHf1pBUHlDl+/wKKTt8injxtM5+IFOOcZDdxCRkWdoHN+/YBFYZ42Dx5dPvey7fMTroKXz+/m71xs6mMvAAb+8Idu2QkRH79ZmC5//zlv38gl+24eJaZFeSWL9///vz9CwC6elD7wuNtxAAAAABJRU5ErkJggg==' as ImageURI;
@@ -18,7 +18,7 @@ const clearB64 =
 export async function searchPlayerFromName(
   name: string
 ): Promise<Result<PlayerAvatar>> {
-  const res = await UsernameToUUID(name);
+  const res = await usernameToUUID(name);
   if (res.isErr) return res;
   return searchPlayerFromUUID(res.value().id);
 }
@@ -32,7 +32,7 @@ export async function searchPlayerFromUUID(
   let avatar: ImageURI;
   let avatar_overlay: ImageURI;
 
-  const profile = await GetProfile(uuid);
+  const profile = await getProfile(uuid);
   if (profile.isErr) return profile;
 
   const skin = profile.value().skin;
