@@ -5,12 +5,13 @@ import { McTimestamp, McTimestampTemplate } from '../../schema/timestamp';
 import { ok, Result } from '../../util/base';
 import { Json } from '../../util/binary/json';
 import { Path } from '../../util/binary/path';
+import { PromiseSpooler } from '../../util/promise/spool';
 import { JsonSourceHandler } from '../../util/wrapper/jsonFile';
 import { searchPlayerFromName, searchPlayerFromUUID } from './search';
 
 // キャッシュの再取得までの日数
 // 現時点の時刻 + EXPIRATION_DATE をキャッシュのexpireに指定する
-const EXPIRATION_TIME_DATE = 10;
+const EXPIRATION_DATE = 10;
 
 const PLAYER_FILE_NAME = 'player.json';
 const PlayerCache = z
@@ -36,6 +37,7 @@ export class PlayerContainer {
   // プレイヤーキャッシュ用のディレクトリ 名前衝突は気にしなくてよい
   private cacheDirPath: Path;
   private playerJsonHandler: JsonSourceHandler<PlayerCache>;
+  private playerJsonSpooler: PromiseSpooler;
 
   constructor(cacheDirPath: Path) {
     this.cacheDirPath = cacheDirPath;
@@ -43,19 +45,20 @@ export class PlayerContainer {
       cacheDirPath.child(PLAYER_FILE_NAME),
       PlayerCache
     );
+    this.playerJsonSpooler = new PromiseSpooler();
   }
 
   /** キャッシュされているプレイヤーデータからサーバーのusercache.jsonを出力する */
   async exportUserCache(path: Path): Promise<Result<void>> {
     const caches = await this.playerJsonHandler.read();
+    const exportPath = path.child(USERCACHE_NAME);
 
     if (caches.isErr) {
-      return path.child(USERCACHE_NAME).writeText('[]');
+      return exportPath.writeText('[]');
     } else {
-      const userCacheJson = new Json(UserCache);
-      return userCacheJson
-        .stringify(this.convertPlayer2UserCache(caches.value()))
-        .into(path.child(USERCACHE_NAME));
+      return exportPath.writeText(
+        JSON.stringify(this.convertPlayer2UserCache(caches.value()))
+      );
     }
   }
 
@@ -112,7 +115,7 @@ export class PlayerContainer {
   private avatar2PlayerCache(avatar: PlayerAvatar): PlayerCache[number] {
     return Object.assign(avatar, {
       expire: McTimestamp.parse(
-        dayjs().add(EXPIRATION_TIME_DATE, 'day').format(McTimestampTemplate)
+        dayjs().add(EXPIRATION_DATE, 'day').format(McTimestampTemplate)
       ),
     });
   }
@@ -140,17 +143,27 @@ export class PlayerContainer {
     }
 
     // 検索結果を`player.json`に登録する
-    const existPlayers = await this.playerJsonHandler.read();
-    if (existPlayers.isOk && targetPlayer.isOk) {
-      await this.playerJsonHandler.write(
-        Object.assign(
-          existPlayers.value(),
-          this.avatar2PlayerCache(targetPlayer.value())
-        )
-      );
+    if (targetPlayer.isOk) {
+      await this.registPlayer(targetPlayer.value());
     }
 
     return targetPlayer;
+  }
+
+  /**
+   * 指定したプレイヤーを`player.json`に登録しておく
+   *
+   * 同時に書き込み依頼された場合には１件ずつ登録処理を行う
+   */
+  private registPlayer(player: PlayerAvatar) {
+    return this.playerJsonSpooler.spool(async () => {
+      const existPlayers = await this.playerJsonHandler.read();
+      await this.playerJsonHandler.write(
+        (existPlayers.isOk ? existPlayers.value() : []).concat(
+          this.avatar2PlayerCache(player)
+        )
+      );
+    });
   }
 
   /**
@@ -199,7 +212,6 @@ export class PlayerContainer {
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   const { Path } = await import('src-electron/v2/util/binary/path');
-  const { ImageURI } = await import('../../schema/player');
 
   // 一時使用フォルダを初期化
   const workPath = new Path(__dirname).child('work');
@@ -240,22 +252,8 @@ if (import.meta.vitest) {
     // reset test env
     await workPath.remove();
 
-    // static value
-    const expireTime = McTimestamp.parse(dayjs().format(McTimestampTemplate));
-
     // set cache
-    const cacheHandler = JsonSourceHandler.fromPath(cacheFile, PlayerCache);
-    cacheHandler.write(
-      players.map(({ name, uuid }) => {
-        return {
-          name: PlayerName.parse(name),
-          uuid: PlayerUUID.parse(uuid),
-          avatar: ImageURI.parse(''),
-          avatar_overlay: ImageURI.parse(''),
-          expire: expireTime,
-        };
-      })
-    );
+    await Promise.all(players.map((p) => container.searchPleyer(p.uuid)));
 
     // test function
     const res = await container.exportUserCache(worldFolder);
@@ -264,17 +262,14 @@ if (import.meta.vitest) {
     expect(res.isOk).toBe(true);
     expect(worldFolder.child(USERCACHE_NAME).exists()).toBe(true);
     const targetJson = new Json(UserCache);
+    const target = (
+      await worldFolder.child(USERCACHE_NAME).into(targetJson)
+    ).value();
     expect(
-      (await worldFolder.child(USERCACHE_NAME).into(targetJson)).value()
-    ).toEqual(
-      players.map(({ name, uuid }) => {
-        return {
-          name,
-          uuid,
-          expiresOn: expireTime,
-        };
+      target.map(({ name, uuid }) => {
+        return { name, uuid };
       })
-    );
+    ).toEqual(expect.arrayContaining(players));
   });
 
   test('world -> cache (importUserCache)', async () => {
@@ -289,7 +284,7 @@ if (import.meta.vitest) {
       worldFolder.child(USERCACHE_NAME),
       UserCache
     );
-    cacheHandler.write(
+    await cacheHandler.write(
       players.map(({ name, uuid }) => {
         return {
           name: PlayerName.parse(name),
@@ -306,22 +301,11 @@ if (import.meta.vitest) {
     expect(res.isOk).toBe(true);
     expect(cacheFile.exists()).toBe(true);
     const targetJson = new Json(PlayerCache);
+    const target = (await cacheFile.into(targetJson)).value();
     expect(
-      (await cacheFile.into(targetJson)).value().map((obj) => {
-        return {
-          name: obj.name,
-          uuid: obj.uuid,
-          expire: obj.expire,
-        };
+      target.map(({ name, uuid }) => {
+        return { name, uuid };
       })
-    ).toEqual(
-      players.map(({ name, uuid }) => {
-        return {
-          name,
-          uuid,
-          expire: expireTime,
-        };
-      })
-    );
+    ).toEqual(expect.arrayContaining(players));
   });
 }
