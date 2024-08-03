@@ -26,7 +26,7 @@ export class CacheableAccessor<T> {
    * @param options.useCache [default : true] キャッシュデータがある場合それを使用する (高速)
    */
   async get(
-    options: { useCache: boolean } = { useCache: false }
+    options: { useCache: boolean } = { useCache: true }
   ): Promise<Result<T>> {
     await this.lock;
     if (options.useCache && this.value.isOk) return this.value;
