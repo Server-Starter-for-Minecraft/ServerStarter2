@@ -1,4 +1,4 @@
-import { PlayerUUID } from "../../schema/player";
+import { PlayerUUID } from '../../schema/player';
 
 const crypto = require('crypto');
 //export const uuid:string = crypto.randomUUID()
@@ -46,5 +46,5 @@ export function formatUUID(uuid: string) {
     return result;
   }
 
-  return uuid
+  return uuid;
 }
