@@ -22,7 +22,7 @@ jobs:
       - name: 'Install Coverage Plugin'
         run: npm install @vitest/coverage-istanbul
       - name: 'Execute Test'
-        run: npx vitest --coverage.enabled true
+        run: npx vitest --coverage --coverage.extension=['.ts']
       - name: Coverage Report
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2.5.0
