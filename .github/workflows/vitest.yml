@@ -19,8 +19,6 @@ jobs:
             node-version: '20.x'
       - name: 'Install Deps'
         run: npm install
-      - name: 'Install Coverage Plugin'
-        run: npm install '@vitest/coverage-c8'
       - name: 'Execute Test'
         run: npx vitest --coverage.enabled true
       - name: Coverage Report
