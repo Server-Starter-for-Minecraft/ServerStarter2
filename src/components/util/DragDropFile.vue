@@ -1,11 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import SsI18nT from './base/ssI18nT.vue';
+
+interface Prop {
+  /** ドラッグ＆ドロップされたときの処理 */
+  draged: (path: string[]) => void;
+  acceptExt: string;
+}
+const prop = defineProps<Prop>();
 
 const dropFileBox = ref();
 const isDragging = ref(false);
 
 function onChange() {
-  console.log(dropFileBox.value.files);
+  const targetPaths: string[] = [];
+  const files = dropFileBox.value.files as FileList;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files.item(i);
+    if (file) {
+      targetPaths.push(file.path);
+    }
+  }
+
+  prop.draged(targetPaths);
 }
 
 function dragover(e: DragEvent) {
@@ -27,7 +45,7 @@ function drop(e: DragEvent) {
 <template>
   <div class="main">
     <div
-      class="dropzone-container"
+      :class="isDragging ? 'dropzone-container-active' : 'dropzone-container'"
       @dragover="dragover"
       @dragleave="dragleave"
       @drop="drop"
@@ -40,12 +58,19 @@ function drop(e: DragEvent) {
         class="hidden-input"
         @change="onChange"
         ref="dropFileBox"
-        accept=".pdf,.jpg,.jpeg,.png"
+        :accept="acceptExt"
       />
 
       <label for="fileInput" class="file-label">
-        <div v-if="isDragging">Release to drop files here.</div>
-        <div v-else>Drop files here or <u>click here</u> to upload.</div>
+        <SsI18nT
+          :keypath="`additionalContents.dragdrop.${
+            isDragging ? 'dragging' : 'default'
+          }`"
+        >
+          <u class="text-primary">
+            {{ $t('additionalContents.dragdrop.click') }}
+          </u>
+        </SsI18nT>
       </label>
     </div>
   </div>
@@ -53,7 +78,6 @@ function drop(e: DragEvent) {
 
 <style scoped lang="scss">
 .main {
-  display: flex;
   flex-grow: 1;
   align-items: center;
   justify-content: center;
@@ -61,8 +85,15 @@ function drop(e: DragEvent) {
 }
 
 .dropzone-container {
-  padding: 4rem;
-  border: 1px solid #e2e8f0;
+  padding: 4rem 0rem;
+  border: 1px dashed #e2e8f0;
+  border-radius: 3px;
+}
+
+.dropzone-container-active {
+  padding: 4rem 0rem;
+  border: 3px dashed $primary;
+  border-radius: 3px;
 }
 
 .hidden-input {
@@ -77,25 +108,5 @@ function drop(e: DragEvent) {
   font-size: 20px;
   display: block;
   cursor: pointer;
-}
-
-.preview-container {
-  display: flex;
-  margin-top: 2rem;
-}
-
-.preview-card {
-  display: flex;
-  border: 1px solid #a2a2a2;
-  padding: 5px;
-  margin-left: 5px;
-}
-
-.preview-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 5px;
-  border: 1px solid #a2a2a2;
-  background-color: #a2a2a2;
 }
 </style>

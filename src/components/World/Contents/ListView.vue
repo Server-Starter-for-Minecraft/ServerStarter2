@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { keys } from 'app/src-public/scripts/obj/obj';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { AllFileData } from 'app/src-electron/schema/filedata';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -13,8 +12,6 @@ import {
   ContentsData,
   ContentsType,
   getAllContents,
-  importMultipleContents,
-  importNewContent,
   isSameContent,
   openSavedFolder,
   OptContents,
@@ -121,22 +118,7 @@ function openAddContentDialog() {
         label="コンテンツを新規追加"
         @click="() => openAddContentDialog()"
       />
-      <!-- <SsBtn
-        free-width
-        icon="library_add"
-        label="まとめて追加"
-        :disable="keys(mainStore.allWorlds.filteredWorlds()).length < 2"
-        @click="() => importMultipleContents($q, contentType)"
-      /> -->
-      <!-- <SsIconBtn
-        flat
-        size=".8rem"
-        icon="add_box"
-        tooltip="追加コンテンツを新規追加"
-        @click="() => importNewContent(contentType, true)"
-      /> -->
       <SsIconBtn
-        v-if="contentType !== 'datapack'"
         flat
         size=".8rem"
         icon="folder_open"

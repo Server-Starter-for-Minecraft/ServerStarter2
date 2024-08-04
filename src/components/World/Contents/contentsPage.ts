@@ -131,6 +131,36 @@ export async function importNewContent(cType: ContentsType, isFile = false) {
 }
 
 /**
+ * コンテンツをパスから新規導入
+ */
+export async function importNewContentFromPath(cType: ContentsType, path: string) {
+  // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
+  switch (cType) {
+    case 'datapack':
+      checkError(
+        await window.API.invokeGetAdditionalContent('datapack', path),
+        (c) => addNewContent2World(cType, c),
+        (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+      );
+      break;
+    case 'plugin':
+      checkError(
+        await window.API.invokeGetAdditionalContent('plugin', path),
+        (c) => addNewContent2World(cType, c),
+        (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+      );
+      break;
+    case 'mod':
+      checkError(
+        await window.API.invokeGetAdditionalContent('mod', path),
+        (c) => addNewContent2World(cType, c),
+        (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
+      );
+      break;
+  }
+}
+
+/**
  * 複数のコンテンツをまとめて追加するためのダイアログを表示
  */
 export function importMultipleContents($q: QVueGlobals, cType: ContentsType) {
@@ -184,7 +214,7 @@ export function addContent(
 /**
  * 指定したキャッシュコンテンツを追加する
  */
-export function addCacheContent(
+function addCacheContent(
   cType: ContentsType,
   content: AllFileData<ContentsData>
 ) {

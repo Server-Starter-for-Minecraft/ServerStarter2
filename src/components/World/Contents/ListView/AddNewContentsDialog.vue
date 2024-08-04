@@ -3,63 +3,56 @@ import { useDialogPluginComponent } from 'quasar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import DragDropFile from 'src/components/util/DragDropFile.vue';
-import { importMultipleContents, importNewContent } from '../contentsPage';
+import {
+  importMultipleContents,
+  importNewContentFromPath,
+} from '../contentsPage';
 import { AddContentDialogProp } from './iAddNewContentsDialog';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
-defineProps<AddContentDialogProp>();
+const prop = defineProps<AddContentDialogProp>();
+
+function importNewContent(paths: string[]) {
+  paths.forEach((p) => {
+    importNewContentFromPath(prop.contentType, p);
+  });
+
+  onDialogOK();
+}
 </script>
 
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      title="追加コンテンツを新規追加"
-      @ok-click="onDialogOK"
+      :title="$t('additionalContents.newContentDialog.title')"
       @close="onDialogCancel"
     >
       <div class="q-pl-md" style="opacity: 0.6">
-        このワールドに導入する追加コンテンツを下記いずれかより設定できます
+        {{ $t('additionalContents.newContentDialog.desc') }}
       </div>
 
       <q-card-section>
-        <h1 class="q-pt-none">ファイルから追加</h1>
-
-        <DragDropFile />
-
-        <!-- <div
-          class="full-width drop-box column items-center justify-center"
-          style="height: 10rem"
-        >
-          <input
-            ref="dropFileBox"
-            type="file"
-            name="file"
-            multiple
-            id="fileInput"
-            class="hidden-input"
-            @change="onChange"
-            accept=".pdf,.jpg,.jpeg,.png"
-          />
-
-          <span>追加したいコンテンツをドラッグ＆ドロップ</span>
-          <div class="q-py-md" style="opacity: 0.6">または</div>
-          <SsBtn
-            label="ファイルを選択"
-            @click="() => importNewContent(contentType, true)"
-          />
-        </div> -->
+        <h1 class="q-pt-none">
+          {{ $t('additionalContents.newContentDialog.file_title') }}
+        </h1>
+        <DragDropFile
+          :draged="importNewContent"
+          :accept-ext="contentType === 'datapack' ? '.zip' : '.zip,.jar'"
+        />
       </q-card-section>
       <q-card-section>
-        <h1 class="q-pt-none">まとめて追加</h1>
-        <div style="opacity: 0.6">
-          各ワールドに導入済みの追加コンテンツをまとめて追加できます．<br />
-          追加用のダイアログを開いて各ワールドのコンテンツを確認しましょう．
+        <h1 class="q-pt-none">
+          {{ $t('additionalContents.newContentDialog.world_title') }}
+        </h1>
+        <div style="opacity: 0.6; white-space: pre-line">
+          {{ $t('additionalContents.newContentDialog.world_desc') }}
         </div>
         <SsBtn
           free-width
-          label="各ワールドからコンテンツを追加する"
+          color="primary"
+          :label="$t('additionalContents.newContentDialog.world_btn')"
           class="full-width q-my-md"
           @click="() => importMultipleContents($q, contentType)"
           v-close-popup
