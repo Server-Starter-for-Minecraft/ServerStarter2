@@ -4,6 +4,13 @@ on: [pull_request]
 jobs:
   vitest:
     runs-on: ubuntu-latest
+    
+    permissions:
+      # Required to checkout the code
+      contents: read
+      # Required to put a comment into the pull-request
+      pull-requests: write
+    
     steps:
       - uses: actions/checkout@v4
       - name: 'Install Node'
@@ -12,6 +19,8 @@ jobs:
             node-version: '20.x'
       - name: 'Install Deps'
         run: npm install
+      - name: 'Install Coverage Plugin'
+        run: npm install '@vitest/coverage-c8'
       - name: 'Execute Test'
         run: npx vitest --coverage.enabled true
       - name: Coverage Report
