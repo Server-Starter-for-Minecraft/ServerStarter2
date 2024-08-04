@@ -13,6 +13,13 @@ export default defineConfig({
       reportOnFailure: true,
       // target is only backend files
       include: ['**/src-electron/**'],
+      // removed no test files
+      exclude: [
+        'src-electron/*.ts',
+        '**/schema/**',
+        '**/api/**',
+        '**/dummy/**',
+      ],
       // set limit ratio
       thresholds: {
         lines: 60,
