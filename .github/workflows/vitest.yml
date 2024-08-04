@@ -5,6 +5,15 @@ jobs:
   vitest:
     runs-on: ubuntu-latest
     steps:
-      - name: Vitest Coverage Report
+      - uses: actions/checkout@v4
+      - name: 'Install Node'
+        uses: actions/setup-node@v4
+        with:
+            node-version: '20.x'
+      - name: 'Install Deps'
+        run: npm install
+      - name: 'Execute Test'
+        run: npx vitest --coverage.enabled true
+      - name: Coverage Report
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2.5.0
