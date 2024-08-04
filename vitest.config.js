@@ -13,6 +13,13 @@ export default defineConfig({
       reportOnFailure: true,
       // target is only backend files
       include: ['**/src-electron/**'],
+      // set limit ratio
+      thresholds: {
+        lines: 60,
+        branches: 60,
+        functions: 60,
+        statements: 60
+      }
     },
   },
   resolve: {
