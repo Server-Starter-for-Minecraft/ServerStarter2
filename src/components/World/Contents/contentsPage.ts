@@ -133,7 +133,10 @@ export async function importNewContent(cType: ContentsType, isFile = false) {
 /**
  * コンテンツをパスから新規導入
  */
-export async function importNewContentFromPath(cType: ContentsType, path: string) {
+export async function importNewContentFromPath(
+  cType: ContentsType,
+  path: string
+) {
   // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
   switch (cType) {
     case 'datapack':

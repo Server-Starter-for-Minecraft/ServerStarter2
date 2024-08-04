@@ -1,7 +1,6 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
-import { getWorldPaths } from '../core/world/paths';
 import { getPlayer } from '../core/player/main';
 import {
   deleteRemoteWorld,
@@ -15,7 +14,9 @@ import { getSystemSettings, setSystemSettings } from '../core/stores/system';
 import { getAllLocalSaveData } from '../core/user/launcher/localSave';
 import { getVersions } from '../core/version/version';
 import { pickDialog } from '../core/world/dialog';
+import { getAdditionalContent } from '../core/world/files/addtional/all';
 import { validateNewWorldName } from '../core/world/name';
+import { getWorldPaths } from '../core/world/paths';
 import {
   backupWorld,
   createWorld,
@@ -34,7 +35,6 @@ import {
 import { readyWindow } from '../lifecycle/lifecycle';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getGlobalIP } from '../util/ip';
-import { getAdditionalContent } from '../core/world/files/addtional/all';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
