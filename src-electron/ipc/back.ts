@@ -34,6 +34,7 @@ import {
 import { readyWindow } from '../lifecycle/lifecycle';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getGlobalIP } from '../util/ip';
+import { getAdditionalContent } from '../core/world/files/addtional/all';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -86,6 +87,8 @@ export const getBackListener = (
     GetLocalSaveData: getAllLocalSaveData,
     GetRemoteWorlds: getRemoteWorlds,
     DeleteRemoteWorld: deleteRemoteWorld,
+
+    GetAdditionalContent: getAdditionalContent,
 
     PickDialog: pickDialog(windowGetter),
   },

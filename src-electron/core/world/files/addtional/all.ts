@@ -1,5 +1,15 @@
-import { ErrorMessage, WithError } from 'app/src-electron/schema/error';
-import { AllFileData } from 'app/src-electron/schema/filedata';
+import {
+  ErrorMessage,
+  Failable,
+  WithError,
+} from 'app/src-electron/schema/error';
+import {
+  AllFileData,
+  DatapackData,
+  ModData,
+  NewFileData,
+  PluginData,
+} from 'app/src-electron/schema/filedata';
 import {
   WorldAdditional,
   WorldAdditionalEdited,
@@ -55,3 +65,36 @@ export const serverAllAdditionalFiles = {
     return withError(undefined, errors);
   },
 };
+
+/**
+ * パスを指定してNewContentsを返す
+ */
+export async function getAdditionalContent(
+  cType: 'datapack',
+  path: string
+): Promise<Failable<NewFileData<DatapackData>>>;
+export async function getAdditionalContent(
+  cType: 'plugin',
+  path: string
+): Promise<Failable<NewFileData<PluginData>>>;
+export async function getAdditionalContent(
+  cType: 'mod',
+  path: string
+): Promise<Failable<NewFileData<ModData>>>;
+export async function getAdditionalContent(
+  cType: 'datapack' | 'plugin' | 'mod',
+  path: string
+): Promise<Failable<NewFileData<DatapackData | PluginData | ModData>>> {
+  // pathを変換
+  const pathObj = new Path(path);
+
+  // typeに応じて結果を変える
+  switch (cType) {
+    case 'datapack':
+      return datapackFiles.loadNew(pathObj);
+    case 'plugin':
+      return pluginFiles.loadNew(pathObj);
+    case 'mod':
+      return modFiles.loadNew(pathObj);
+  }
+}

@@ -233,6 +233,17 @@ export interface API extends IAPI {
     /** ワールド名が使用可能かどうかを検証する */
     GetGlobalIP: () => Promise<Failable<string>>;
 
+    /** 追加コンテンツのオブジェクトを返す */
+    GetAdditionalContent: ((
+      cType: 'datapack',
+      path: string
+    ) => Promise<Failable<NewFileData<DatapackData>>>) &
+      ((
+        cType: 'plugin',
+        path: string
+      ) => Promise<Failable<NewFileData<PluginData>>>) &
+      ((cType: 'mod', path: string) => Promise<Failable<NewFileData<ModData>>>);
+
     /** ファイル/ディレクトリ を選択する */
     PickDialog: ((
       options: {

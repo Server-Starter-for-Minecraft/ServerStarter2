@@ -147,6 +147,8 @@ const api: FrontAPI = {
 
   invokeValidateNewRemoteWorldName: invoke('ValidateNewRemoteWorldName'),
 
+  invokeGetAdditionalContent: invoke('GetAdditionalContent'),
+
   invokePickDialog: invoke('PickDialog'),
 };
 
