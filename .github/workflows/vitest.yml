@@ -1,0 +1,10 @@
+name: Vitest
+
+on: [pull_request]
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vitest Coverage Report
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2.5.0
