@@ -1,3 +1,4 @@
+import { v2Error } from '../../common/error';
 import { Runtime } from '../../schema/runtime';
 import {
   AllFabricVersion,
@@ -6,11 +7,13 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
+  UnknownVersion,
   Version,
 } from '../../schema/version';
-import { err, Result } from '../../util/base';
+import { err, ok, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
-import { ExecRuntime } from './fileProcess/base';
+import { getEulaAgreement, setEulaAgreement } from './eula';
+import { ExecRuntime, ReadyVersion } from './fileProcess/base';
 import { ReadyFabricVersion, RemoveFabricVersion } from './fileProcess/fabric';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
@@ -103,35 +106,52 @@ export class VersionContainer {
   async readyVersion(
     version: Version,
     serverPath: Path,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    eulaAgreementAction: () => Promise<Result<boolean>>
   ): Promise<
     Result<{
       runtime: Runtime;
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
-    switch (version.type) {
-      case 'unknown':
-        return err(new Error('VERSION_IS_UNKNOWN'));
-      case 'vanilla':
-        const vanillaFp = new ReadyVanillaVersion(version, this.cachePath);
-        return vanillaFp.completeReady4VersionFiles(serverPath, execRuntime);
-      case 'spigot':
-        const spigotFp = new ReadySpigotVersion(version, this.cachePath);
-        return spigotFp.completeReady4VersionFiles(serverPath, execRuntime);
-      case 'papermc':
-        const papermcFp = new ReadyPaperMCVersion(version, this.cachePath);
-        return papermcFp.completeReady4VersionFiles(serverPath, execRuntime);
-      case 'forge':
-        const forgeFp = new ReadyForgeVersion(version, this.cachePath);
-        return forgeFp.completeReady4VersionFiles(serverPath, execRuntime);
-      case 'mohistmc':
-        const mohistmcFp = new ReadyMohistMCVersion(version, this.cachePath);
-        return mohistmcFp.completeReady4VersionFiles(serverPath, execRuntime);
-      case 'fabric':
-        const fabricFp = new ReadyFabricVersion(version, this.cachePath);
-        return fabricFp.completeReady4VersionFiles(serverPath, execRuntime);
+    const getRedeayVersionInstance = (version: Version) => {
+      switch (version.type) {
+        case 'unknown':
+          return err(new Error('VERSION_IS_UNKNOWN'));
+        case 'vanilla':
+          return ok(new ReadyVanillaVersion(version, this.cachePath));
+        case 'spigot':
+          return ok(new ReadySpigotVersion(version, this.cachePath));
+        case 'papermc':
+          return ok(new ReadyPaperMCVersion(version, this.cachePath));
+        case 'forge':
+          return ok(new ReadyForgeVersion(version, this.cachePath));
+        case 'mohistmc':
+          return ok(new ReadyMohistMCVersion(version, this.cachePath));
+        case 'fabric':
+          return ok(new ReadyFabricVersion(version, this.cachePath));
+      }
+    };
+
+    // バージョンを用意する
+    const readyVersion = await getRedeayVersionInstance(version);
+    if (readyVersion.isErr) return readyVersion;
+    const result = await readyVersion
+      .value()
+      .completeReady4VersionFiles(serverPath, execRuntime);
+
+    // Eulaチェック
+    const eulaPath = serverPath.child('eula.txt');
+    const currentEula = await getEulaAgreement(eulaPath);
+    if (currentEula.valueOrDefault(false) === false) {
+      const newEula = await eulaAgreementAction();
+      if (newEula.isErr) return newEula;
+      const newEulaValue = newEula.value();
+      await setEulaAgreement(eulaPath, newEulaValue);
+      if (newEulaValue === false) return v2Error.disagreeEula.err(undefined);
     }
+
+    return result;
   }
 
   /**
