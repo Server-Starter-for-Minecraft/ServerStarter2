@@ -7,13 +7,12 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
-  UnknownVersion,
   Version,
 } from '../../schema/version';
 import { err, ok, Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { getEulaAgreement, setEulaAgreement } from './eula';
-import { ExecRuntime, ReadyVersion } from './fileProcess/base';
+import { ExecRuntime } from './fileProcess/base';
 import { ReadyFabricVersion, RemoveFabricVersion } from './fileProcess/fabric';
 import { ReadyForgeVersion, RemoveForgeVersion } from './fileProcess/forge';
 import {
@@ -192,8 +191,9 @@ export class VersionContainer {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
+  const { test, expect, vi } = import.meta.vitest;
   const { Path } = await import('src-electron/v2/util/binary/path');
+  const { VanillaVersion } = await import('../../schema/version');
 
   describe('listupVersions', () => {
     // 一時使用フォルダを初期化
@@ -261,4 +261,91 @@ if (import.meta.vitest) {
       }
     });
   });
+
+  test(
+    'eula生成テスト',
+    async () => {
+      const workPath = new Path(__dirname).child('work', 'version');
+      await workPath.remove();
+      const container = new VersionContainer(workPath.child('cache'));
+
+      const vanilla = VanillaVersion.parse({
+        type: 'vanilla',
+        id: '1.12.1',
+        release: false,
+      });
+
+      const serverPath = workPath.child('server');
+
+      // 1回目 (eula=false)
+      {
+        const eulaDisagree = vi.fn(async () => ok(false));
+        const readyResult = await container.readyVersion(
+          vanilla,
+          serverPath,
+          async () => ok(),
+          eulaDisagree
+        );
+        // eulaの同意を求める関数が実行されるはず
+        expect(eulaDisagree).toHaveBeenCalledTimes(1);
+        // eula.txtが "eula=false" であるはず
+        expect((await serverPath.child('eula.txt').readText()).value()).toBe(
+          'eula=false'
+        );
+        // readyResultが失敗するはず
+        expect(readyResult.isErr).toBe(true);
+
+        // 撤収
+        await container.removeVersion(vanilla, serverPath);
+        expect(await serverPath.child('eula.txt').exists()).toBe(false);
+      }
+
+      // 2回目 (eula=true)
+      {
+        const eulaAgree = vi.fn(async () => ok(true));
+        const readyResult = await container.readyVersion(
+          vanilla,
+          serverPath,
+          async () => ok(),
+          eulaAgree
+        );
+        // eulaの同意を求める関数が実行されるはず
+        expect(eulaAgree).toHaveBeenCalledTimes(1);
+        // eula.txtが "eula=true" であるはず
+        expect((await serverPath.child('eula.txt').readText()).value()).toBe(
+          'eula=true'
+        );
+        // readyResultが成功するはず
+        expect(readyResult.isOk).toBe(true);
+
+        // 撤収
+        await container.removeVersion(vanilla, serverPath);
+        expect(await serverPath.child('eula.txt').exists()).toBe(false);
+      }
+
+      // 3回目 (eula=true)
+      {
+        const eulaAgree = vi.fn(async () => ok(true));
+        const readyResult = await container.readyVersion(
+          vanilla,
+          serverPath,
+          async () => ok(),
+          eulaAgree
+        );
+        // eulaの同意を求める関数は既に同意済みなので実行されないはず
+        expect(eulaAgree).toHaveBeenCalledTimes(0);
+        // eula.txtが "eula=true" であるはず
+        expect((await serverPath.child('eula.txt').readText()).value()).toBe(
+          'eula=true'
+        );
+        // readyResultが成功するはず
+        expect(readyResult.isOk).toBe(true);
+
+        // 撤収
+        await container.removeVersion(vanilla, serverPath);
+        expect(await serverPath.child('eula.txt').exists()).toBe(false);
+      }
+    },
+    1000 * 60
+  );
 }
