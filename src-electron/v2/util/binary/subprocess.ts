@@ -1,7 +1,7 @@
+import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import * as stream from 'stream';
-import { Err, Opt, Result, err, none, ok, value } from '../base';
+import { Err, err, none, ok, Opt, Result, value } from '../base';
 import { Readable, WritableStreamer } from './stream';
-import { ChildProcess, SpawnOptions, spawn } from 'child_process';
 
 export interface SubprocessOptions {}
 
@@ -30,7 +30,11 @@ export class Subprocess extends WritableStreamer<void> {
     subprocess.stdout;
   }
 
-  spawn(command: string, args: readonly string[], options: SpawnOptions) {
+  static spawn(
+    command: string,
+    args: readonly string[],
+    options: SpawnOptions
+  ) {
     return new Subprocess(spawn(command, args, options));
   }
 
@@ -82,15 +86,21 @@ export class Subprocess extends WritableStreamer<void> {
    *  - string の場合はSignal
    */
   promise(): Promise<Result<number | string, Error>> {
-    return new Promise<Result<number | string, Error>>((resolve) =>
+    return new Promise<Result<number | string, Error>>((resolve) => {
+      // すでに終了している場合
+      if (this.subprocess.pid === undefined) {
+        const code = this.subprocess.exitCode ?? this.subprocess.signalCode;
+        if (code === null) throw new Error('ASSERTION');
+        return resolve(ok(code));
+      }
       this.subprocess
         .on('error', (e) => resolve(err(e)))
         .on('exit', (code, signal) => {
           const result = code ?? signal;
           if (result === null) throw new Error('ASSERTION');
           resolve(ok(result));
-        })
-    );
+        });
+    });
   }
 }
 
@@ -106,9 +116,9 @@ if (import.meta.vitest) {
       env: { ...process.env, LANG: 'en_US.UTF-8' },
     });
     const sub = new Subprocess(proc);
-    const result = await sub.stdout.value.into(Bytes);
+    const result = await sub.stdout.value().into(Bytes);
     // OSによって改行コードが違うのでとりあえずtrimEndで対処
-    expect(result.value.toString().trimEnd()).toEqual('hello world');
+    expect(result.value().toStr().value().trimEnd()).toEqual('hello world');
 
     //TODO: readable.into(subprocess) したときに、(readable|subprocess)が先に(終了|エラー)するときの挙動を確認する
   });
