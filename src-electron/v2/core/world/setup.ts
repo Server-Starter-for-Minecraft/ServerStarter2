@@ -1,5 +1,5 @@
 import { Server } from '../../schema/server';
-import { World } from '../../schema/world';
+import { World } from '../../schema/world_2';
 import { RuntimeContainer } from '../../source/runtime/runtime';
 import { VersionContainer } from '../../source/version/version';
 import { WorldSource } from '../../source/world/world';

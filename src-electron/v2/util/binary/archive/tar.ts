@@ -26,7 +26,7 @@ export const tarArchiver: Archiver<PackOptions, ExtractOptions> = {
   pack(path, opts) {
     return new Readable(pack(path.path, opts));
   },
-  extrect(path, opts) {
+  extract(path, opts) {
     return new Tar(path, opts);
   },
 };

@@ -7,7 +7,7 @@ import { Subprocess } from '../../util/binary/subprocess';
 import { sleep } from '../../util/promise/sleep';
 import { randomString } from '../../util/random/ramdomString';
 import { NewType } from '../../util/type/newtype';
-import { JsonFile } from '../../util/wrapper/jsonFile';
+import { JsonSourceHandler } from '../../util/wrapper/jsonFile';
 
 export type ServerId = NewType<string, 'ServerId'>;
 
@@ -39,7 +39,7 @@ export class ServerContainer {
   }
 
   private mataJson(serverId: ServerId) {
-    return new JsonFile(
+    return new JsonSourceHandler(
       this.cwdPath(serverId).child('server.ssmeta'),
       serverValidator
     );
@@ -71,10 +71,10 @@ export class ServerContainer {
     const dirPath = this.cwdPath(serverId);
     const server = await setup(dirPath);
 
-    if (server.isErr()) return server;
+    if (server.isErr) return server;
 
     // メタデータを保存
-    this.setMeta(serverId, server.value);
+    this.setMeta(serverId, server.value());
 
     return ok(serverId);
   }

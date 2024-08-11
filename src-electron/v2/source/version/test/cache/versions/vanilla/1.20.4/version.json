@@ -1,0 +1,13 @@
+{
+  "download": {
+    "url": "https://piston-data.mojang.com/v1/objects/8dd1a28015f51b1803213892b50b7b4fc76e594d/server.jar"
+  },
+  "javaVersion": { "component": "java-runtime-gamma", "majorVersion": 17 },
+  "arguments": [
+    { "embed": "JVM_ARGUMENT" },
+    "-Dlog4j2.formatMsgNoLookups=true",
+    "--jar",
+    { "embed": "JAR_PATH" },
+    "--nogui"
+  ]
+}

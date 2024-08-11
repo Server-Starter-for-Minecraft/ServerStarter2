@@ -1,6 +1,8 @@
-import { World, WorldContainer, WorldName } from '../../schema/world';
+import { World, WorldContainer, WorldLocation } from '../../schema/world';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
+import { WorldContainerHandler } from './container';
+import { LocalWorldSource } from './local';
 
 /**
  * ワールドを管理するクラス
@@ -8,50 +10,86 @@ import { Path } from '../../util/binary/path';
  * 場所はどこにあってもよい
  */
 export class WorldSource {
+  private getContainer(container: WorldContainer): WorldContainerHandler {
+    switch (container.containerType) {
+      case 'local':
+        return new LocalWorldSource(new Path(container.path));
+    }
+  }
+
   /**
    * コンテナ内のワールド名一覧を表示
    */
-  static listWorldNames(container: WorldContainer): Promise<WorldName[]>;
+  listWorldLocations(container: WorldContainer): Promise<WorldLocation[]> {
+    return this.getContainer(container).listWorldLocations();
+  }
 
   /**
-   * コンテナ内でメタデータを上書き
+   * メタデータを保存
+   *
+   * server_settings.jsonを上書きすればOK
    */
-  static setWorldMeta(meta: World): Promise<Result<void, Error>>;
+  setWorldMeta(location: WorldLocation, world: World): Promise<Result<void>> {
+    return this.getContainer(location.container).setWorldMeta(
+      location.worldName,
+      world
+    );
+  }
 
   /**
    * メタデータを取得
+   *
+   * server_settings.jsonの内容を読み取って返す
+   * server_settings.jsonが読みとれない場合は復元して返す
+   *
+   * 何度も呼ばれる可能性があるので、キャッシュしておくとよい
    */
-  static getWorldMeta(
-    container: WorldContainer,
-    name: WorldName
-  ): Promise<Result<World>>;
+  getWorldMeta(location: WorldLocation): Promise<Result<World>> {
+    return this.getContainer(location.container).getWorldMeta(
+      location.worldName
+    );
+  }
 
   /**
    * ワールドデータを削除
    */
-  static deleteWorldData(name: WorldName): Promise<Result<World>>;
+  deleteWorldData(location: WorldLocation): Promise<Result<void>> {
+    return this.getContainer(location.container).deleteWorldData(
+      location.worldName
+    );
+  }
 
   /**
-   * ワールドを特定の形のディレクトリ構造に展開
+   * ワールドを特定の形のディレクトリ構造に展開し、展開先のPathを返す
    *
    * 展開に失敗した場合は元の状態に戻す
    *
    * properties / eula / op / whitelist
    *
    * mod / plugin / datapack の展開は行わない
-   *
-   * TODO: 展開先のワールドのひな形の用意
    */
-  static extractWorldDataTo(path: Path, world: World): Promise<Result<void>>;
+  extractWorldData(location: WorldLocation): Promise<Result<Path>> {
+    return this.getContainer(location.container).extractWorldData(
+      location.worldName
+    );
+  }
 
   /**
    * ディレクトリに展開されたデータをWorldContainerに格納
    *
-   * WorldContainerに該当データがある場合上書き
+   * その際に下記ファイルの内容を読み取ってserver_settings.jsonに反映する
    *
-   * WorldContainerに該当データがない場合新規作成
-   *
-   * TODO: 展開先のワールドのひな形の用意
+   * banned-ips.json
+   * banned-players.json
+   * eula.txt
+   * ops.json
+   * server_settings.json
+   * server.properties
+   * whitelist.json
    */
-  static packWorldDataFrom(path: Path, world: World): Promise<Result<void>>;
+  packWorldData(location: WorldLocation): Promise<Result<void>> {
+    return this.getContainer(location.container).packWorldData(
+      location.worldName
+    );
+  }
 }

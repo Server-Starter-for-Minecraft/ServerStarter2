@@ -1,51 +1,43 @@
-import { Datapack } from '../../schema/datapack';
+import { WithExists } from '../../schema/additional';
+import { DatapackInfo } from '../../schema/datapack';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 
 /**
  * データパックを格納するフォルダのような何か
- *
- * 現状シングルトンの予定
  */
-export class DatapackContainer {
-  path: Path;
-
-  constructor(path: Path) {
-    this.path = path;
-  }
-
+export abstract class DatapackContainer {
   /**
    * コンテナ内のデータパック一覧を表示
    *
-   * @param quick true の時は cache.json から内容を読み取る / false の時はdataディレクトリを走査して cache.jsonの内容を更新する
+   * @param fromCache true の時は cache.json から内容を読み取る / false の時はdataディレクトリを走査して cache.jsonの内容を更新する
    */
-  list(quick: boolean): Promise<Datapack[]> {}
-
+  abstract list(fromCache: boolean): Promise<WithExists<DatapackInfo>[]>;
   /**
    * データパックを作成
    *
    * メタデータのみの作成も許可
    */
-  create(
-    meta: Datapack,
+  abstract create(
+    meta: DatapackInfo,
     srcPath: Path | undefined
-  ): Promise<Result<Datapack, Error>> {}
+  ): Promise<Result<void, Error>>;
 
   /**
    * メタデータを更新
    */
-  updateMeta(meta: Datapack): Promise<Result<void, Error>> {}
+  abstract updateInfo(meta: DatapackInfo): Promise<Result<void, Error>>;
 
   /**
    * データパックとメタデータを削除
    */
-  delete(): Promise<Result<void, Error>> {}
+  abstract delete(): Promise<Result<void, Error>>;
 
   /**
    * データパックをpathに導入
    * @param path
    */
-  extractTo(mata: Datapack, path: Path): Promise<Result<void>> {}
+  abstract extractTo(mata: DatapackInfo, path: Path): Promise<Result<void>>;
 }
 
 // ('api/v1/container/:container_id/world/:world_id');

@@ -1,72 +1,89 @@
-import type { z } from 'zod';
+import { z, ZodTypeDef } from 'zod';
 import { err, ok, Result } from '../base';
-import { Bytes } from '../binary/bytes';
-import { IReadableStreamer, IWritableStreamer } from '../binary/stream';
+import { Path } from '../binary/path';
+import { CacheableAccessor } from '../cache';
 
 /**
- * JSONファイルを扱うクラス
- *
- * データのバリデーションも行う
+ * JSON文字列を扱うクラス
  */
-export class JsonFile<T extends IReadableStreamer | IWritableStreamer<any>, U> {
-  private target: T;
-  private encoding: BufferEncoding;
-  private validator: z.ZodType<U>;
-  private lock: undefined | Promise<any>;
+export class JsonSourceHandler<T> {
+  private accessor: CacheableAccessor<T>;
 
-  constructor(
-    target: T,
-    validator: z.ZodSchema<U>,
-    encoding: BufferEncoding = 'utf8'
+  private constructor(accessor: CacheableAccessor<T>) {
+    this.accessor = accessor;
+  }
+
+  /** ローカルにあるJSONを扱う */
+  static fromPath<T>(
+    path: Path,
+    validator: z.ZodSchema<T, ZodTypeDef, any>,
+    options?: { encoding?: BufferEncoding }
   ) {
-    this.target = target;
-    this.validator = validator;
-    this.encoding = encoding;
-    this.lock = undefined;
+    const getter = async (): Promise<Result<T>> => {
+      const jsonResult = (await path.readText(options?.encoding)).onOk((x) =>
+        Result.catchSync(() => JSON.parse(x))
+      );
+      const result = jsonResult.valueOrDefault(undefined);
+
+      const validated = await validator.safeParseAsync(result);
+      if (validated.success) return ok(validated.data);
+      return err(validated.error);
+    };
+
+    const setter = async (value: T): Promise<Result<void>> => {
+      const str = Result.catchSync(() => JSON.stringify(value));
+      if (str.isErr) return str;
+      return await path.writeText(str.value(), options?.encoding);
+    };
+
+    const accessor = new CacheableAccessor<T>(getter, setter);
+    return new JsonSourceHandler(accessor);
   }
 
   /**
-   * ファイルからJSONを読み込む
+   * JSONを読み込む
    */
-  async read(this: JsonFile<IReadableStreamer, U>): Promise<Result<U>> {
-    // 読み書き処理中の場合待機
-    await this.lock;
-
-    // ロックして読み取り
-    const promise = this.target.into(Bytes);
-    this.lock = promise;
-    const str = //  ((x) => x.toStr());
-      ((await promise).this.lock = undefined);
-
-    if (str.isErr()) return str;
-    try {
-      const value = JSON.parse(str.value);
-      const parsed = await this.validator.safeParseAsync(value);
-      if (parsed.success) return ok(parsed.data);
-      return err(new Error('ZOD_PARSE_ERROR'));
-    } catch (e) {
-      return err(e as Error);
-    }
-  }
+  read = (
+    options: { useCache: boolean } = { useCache: false }
+  ): Promise<Result<T>> => this.accessor.get(options);
 
   /**
-   * ファイにJSONを書き込む
+   * JSONを書き込む
    */
-  async write<T>(
-    this: JsonFile<IWritableStreamer<T>, U>,
-    content: U
-  ): Promise<Result<T>> {
-    const str = JSON.stringify(content);
+  write = (content: T): Promise<Result<void>> => this.accessor.set(content);
+}
 
-    // 読み書き処理中の場合待機
-    await this.lock;
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('', async () => {
+    const { Path } = await import('../binary/path');
+    const testPath = new Path('userData/test');
+    await testPath.mkdir();
+    const jsonPath = testPath.child('a.json');
+    await jsonPath.remove();
 
-    // ロックして読み取り
-    const promise = Bytes.fromString(str, this.encoding).into(this.target);
-    this.lock = promise;
-    const result = await promise;
-    this.lock = undefined;
+    type A = {
+      a: number;
+      b: string;
+    };
 
-    return result;
-  }
+    const jsonHandler = JsonSourceHandler.fromPath<A>(
+      jsonPath,
+      z
+        .object({
+          a: z.number().default(1),
+          b: z.string().default('hello'),
+        })
+        .default({})
+    );
+
+    const content = await jsonHandler.read();
+    expect(content.value()).toEqual({ a: 1, b: 'hello' });
+
+    await jsonHandler.write({ a: 2, b: 'world' });
+    expect((await jsonPath.readText()).value()).toBe('{"a":2,"b":"world"}');
+
+    expect(content.value()).toEqual({ a: 1, b: 'hello' });
+  });
 }

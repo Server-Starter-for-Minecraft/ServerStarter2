@@ -6,7 +6,7 @@ export interface Archiver<
   ExtractOPT extends Record<string, any>
 > {
   pack(path: Path, opt?: PackOPT): ReadableStreamer;
-  extrect(path: Path, opt?: ExtractOPT): WritableStreamer<void>;
+  extract(path: Path, opt?: ExtractOPT): WritableStreamer<void>;
 }
 
 // declare const archiver: Archiver;
