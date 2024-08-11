@@ -37,10 +37,13 @@ export class Url extends DuplexStreamer<Response> {
   /** URLそのままリクエストを変えた新しいUrlを返す
    *
    *  headerはマージしたものを返す
-  */
+   */
   with(option: UrlOption) {
     const newOption = { ...this.option, ...option };
-    newOption.headers = { ...(this.option.headers ?? {}), ...(option.headers ?? {}) };
+    newOption.headers = {
+      ...(this.option.headers ?? {}),
+      ...(option.headers ?? {}),
+    };
     return new Url(this.url, newOption);
   }
 
@@ -235,12 +238,18 @@ if (import.meta.vitest) {
     );
 
     const testUrl3 = new Url('https://example.com/hoge/');
-    expect(testUrl3.with({method: 'GET', headers: { foo: 'bar', 'ho-ge': 'fuga'}, body: 'bodybody'})).toEqual(
+    expect(
+      testUrl3.with({
+        method: 'GET',
+        headers: { foo: 'bar', 'ho-ge': 'fuga' },
+        body: 'bodybody',
+      })
+    ).toEqual(
       new Url('https://example.com/hoge/', {
         method: 'GET',
         headers: { foo: 'bar', 'ho-ge': 'fuga' },
         body: 'bodybody',
       })
-    )
+    );
   });
 }
