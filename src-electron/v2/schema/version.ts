@@ -42,6 +42,10 @@ export const MohistmcVersion = z.object({
   id: VersionId,
   forge_version: z.string().optional(),
   number: z.number(),
+  jar: z.object({
+    url: z.string(),
+    md5: z.string(),
+  }),
 });
 export type MohistmcVersion = z.infer<typeof MohistmcVersion>;
 
@@ -54,36 +58,86 @@ export const FabricVersion = z.object({
 });
 export type FabricVersion = z.infer<typeof FabricVersion>;
 
-export type AllVanillaVersion = {
-  id: VersionId;
-  release: boolean;
-}[];
+export const AllVanillaVersion = z
+  .object({
+    id: VersionId,
+    release: z.boolean(),
+  })
+  .array();
+export type AllVanillaVersion = z.infer<typeof AllVanillaVersion>;
 
-export type AllSpigotVersion = {
-  id: VersionId;
-}[];
+export const AllSpigotVersion = z
+  .object({
+    id: VersionId,
+  })
+  .array();
+export type AllSpigotVersion = z.infer<typeof AllSpigotVersion>;
 
-export type AllPapermcVersion = {
-  id: VersionId;
-  builds: number[];
-}[];
+export const AllPapermcVersion = z
+  .object({
+    id: VersionId,
+    builds: z.number().array(),
+  })
+  .array();
+export type AllPapermcVersion = z.infer<typeof AllPapermcVersion>;
 
-export type AllForgeVersion = {
-  id: VersionId;
-  forge_versions: { version: string; url: string }[];
-  recommended?: { version: string; url: string };
-}[];
+export const AllForgeVersion = z
+  .object({
+    id: VersionId,
+    forge_versions: z
+      .object({
+        version: z.string(),
+        url: z.string(),
+      })
+      .array(),
+    recommended: z
+      .object({
+        version: z.string(),
+        url: z.string(),
+      })
+      .optional(),
+  })
+  .array();
+export type AllForgeVersion = z.infer<typeof AllForgeVersion>;
 
-export type AllMohistmcVersion = {
-  id: VersionId;
-  builds: { number: number; forge_version?: string }[];
-}[];
+export const AllMohistmcVersion = z
+  .object({
+    id: VersionId,
+    builds: z
+      .object({
+        number: z.number(),
+        forge_version: z.string().optional(),
+        jar: z.object({
+          url: z.string(),
+          md5: z.string(),
+        }),
+      })
+      .array(),
+  })
+  .array();
+export type AllMohistmcVersion = z.infer<typeof AllMohistmcVersion>;
 
-export type AllFabricVersion = {
-  games: { id: VersionId; release: boolean }[];
-  loaders: string[];
-  installers: string[];
-};
+export const AllFabricVersion = z.object({
+  games: z
+    .object({
+      id: VersionId,
+      release: z.boolean(),
+    })
+    .array(),
+  loaders: z
+    .object({
+      version: z.string(),
+      stable: z.boolean(),
+    })
+    .array(),
+  installers: z
+    .object({
+      version: z.string(),
+      stable: z.boolean(),
+    })
+    .array(),
+});
+export type AllFabricVersion = z.infer<typeof AllFabricVersion>;
 
 export const Version = z.discriminatedUnion('type', [
   UnknownVersion,
