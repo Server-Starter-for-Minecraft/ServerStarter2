@@ -1,3 +1,4 @@
+import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as stream from 'stream';
@@ -135,8 +136,10 @@ export class Path extends DuplexStreamer<void> {
     return (await this._stat()).isDirectory();
   }
 
-  async lastUpdateTime() {
-    (await this.stat()).mtime;
+  /** ファイルの最終更新時刻を取得 */
+  lastUpdateTime = exclusive(this._lastUpdateTime);
+  private async _lastUpdateTime(): Promise<Dayjs> {
+    return dayjs((await fs.stat(this.path)).mtimeMs);
   }
 
   rename = exclusive(this._rename);
@@ -234,12 +237,7 @@ export class Path extends DuplexStreamer<void> {
    */
   remove = exclusive(this._remove);
   private async _remove(): Promise<void> {
-    if (!this.exists()) return;
-    if (await this._isDirectory()) {
-      await fs.rm(this._path, { recursive: true });
-    } else {
-      await fs.unlink(this._path);
-    }
+    await fs.rm(this._path, { recursive: true, force: true });
   }
 
   copyTo = exclusive(this._copyTo);
