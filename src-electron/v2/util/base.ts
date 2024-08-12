@@ -1,3 +1,5 @@
+import type { z } from 'zod';
+
 export class PanicError extends Error {}
 
 export type Awaitable<T> = T | PromiseLike<T>;
@@ -9,7 +11,7 @@ export type Ok<T> = {
   error(): never;
   onOk<U extends Result<any, any>>(op: (value: T) => U): U;
   onErr(op: (error: never) => Result<T, any>): Ok<T>;
-  valueOrDefault(defaultValue: T): T;
+  valueOrDefault<U = T>(defaultValue: U): T | U;
   errorOrDefault<U>(defaultError: U): U;
 };
 
@@ -21,7 +23,7 @@ export type Err<E> = {
   onOk(op: (value: never) => Result<any, E>): Err<E>;
   onErr<U extends Result<any, E>>(op: (error: E) => U): U;
   valueOrDefault<U>(defaultValue: U): U;
-  errorOrDefault(defaultError: E): E;
+  errorOrDefault<U = E>(defaultError: U): E | U;
 };
 
 export type Result<T, E = Error> = Ok<T> | Err<E>;
@@ -46,6 +48,22 @@ export const Result = {
       if (e instanceof Error) return err(e);
       throw new PanicError();
     }
+  },
+
+  /** zodのパース結果をResultに */
+  fromZod: <I, O>(
+    parse: z.SafeParseReturnType<I, O>
+  ): Result<O, z.ZodError<I>> => {
+    if (parse.success) return ok(parse.data);
+    else return err(parse.error);
+  },
+
+  all<T extends any[]>(
+    ...results: { [K in keyof T]: Result<T[K]> }
+  ): Result<T> {
+    const err = results.find((x) => x.isErr);
+    if (err) return err;
+    return ok(results.map((x) => x.value()) as T);
   },
 };
 
@@ -113,11 +131,25 @@ export const ok: OkGen = (<T>(value: T = undefined as T): Ok<T> => {
 
 type ErrGen = {
   <T>(error: T): Err<T>;
+  (): Err<void>;
   /** よく使うので糖衣構文 : err(new Error(MESSAGE)) === err.error(MESSAGE) */
   error(message: string): Err<Error>;
 };
 
-export const err: ErrGen = <T>(error: T): Err<T> => {
+/** Err<void>は生成せずにこれを使いまわす */
+const errVoid: Err<void> = {
+  isOk: false,
+  isErr: true,
+  value: throwPanic,
+  error: emptyfunc,
+  onOk: () => errVoid,
+  onErr: (op) => op(undefined),
+  valueOrDefault: identity,
+  errorOrDefault: emptyfunc,
+};
+
+export const err: ErrGen = <T>(error: T = undefined as T): Err<T> => {
+  if (error === undefined) return errVoid as Err<T>;
   const returnError = () => error;
   const result: Err<T> = {
     isOk: false,

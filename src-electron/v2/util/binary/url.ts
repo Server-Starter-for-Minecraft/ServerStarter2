@@ -5,9 +5,14 @@ import { err, ok, Result } from '../base';
 import { Bytes } from './bytes';
 import { DuplexStreamer, Readable } from './stream';
 
+type UrlMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
 export type UrlOption = {
-  method?: string;
-  headers?: HeadersInit;
+  /** URL にアクセスするときのメソッド */
+  method?: UrlMethod;
+  /** URL にアクセス際のヘッダの内容 */
+  headers?: Record<string, string>;
+  /** URL にアクセス際のリクエストボディ */
   body?: BodyInit;
 };
 
@@ -17,7 +22,10 @@ export type UrlOption = {
  * HeadersInit, BodyInit, Response は node のものではなく electron-fetch のものである点に注意
  */
 export class Url extends DuplexStreamer<Response> {
+  // URLデータ
   readonly url: URL;
+
+  // リクエストパラメータ等の設定
   readonly option: UrlOption;
 
   constructor(url: string | URL, option?: UrlOption) {
@@ -26,14 +34,28 @@ export class Url extends DuplexStreamer<Response> {
     this.option = option ?? {};
   }
 
-  /** URLそのままリクエストを変えた新しいUrlを返す */
+  /** URLそのままリクエストを変えた新しいUrlを返す
+   *
+   *  headerはマージしたものを返す
+   */
   with(option: UrlOption) {
-    return new Url(this.url, { ...this.option, ...option });
+    const newOption = { ...this.option, ...option };
+    newOption.headers = {
+      ...(this.option.headers ?? {}),
+      ...(option.headers ?? {}),
+    };
+    return new Url(this.url, newOption);
   }
 
-  /** リクエストそのまま新しい子URLを返す */
+  /** リクエストそのまま新しい子URLを返す
+   *
+   *  URLパラメータは取り除いて返す
+   */
   child(path: string) {
-    return new Url(new URL(path, this.url));
+    const basePath = this.url.pathname.replace(/\/+$/, '');
+    const newPath = `${basePath}/${path}`.replace(/\/+$/, '');
+    const newUrl = new URL(newPath, this.url.origin);
+    return new Url(newUrl, this.option);
   }
 
   createReadStream(): Readable {
@@ -77,6 +99,157 @@ if (import.meta.vitest) {
       method: 'GET',
     });
 
-    // TODO: Url.child Url.with のテストを書く
+    // TODO: Url.child のテストを書く
+    // url:https://example.com の child(foo) が url:https://example.com/foo になってればOK
+    // その際、optionの値に変化があってはいけない
+    const testUrl = new Url('https://example.com', {
+      method: 'GET',
+      headers: { foo: 'bar' },
+      body: 'bodyTest',
+    });
+
+    expect(testUrl.child('foo')).toEqual(
+      new Url('https://example.com/foo', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.child('foo/bar')).toEqual(
+      new Url('https://example.com/foo/bar', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.child('foo').child('bar')).toEqual(
+      new Url('https://example.com/foo/bar', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.child('')).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+
+    const testUrl1 = new Url('https://example.com/hoge', {
+      method: 'GET',
+      headers: { foo: 'bar' },
+      body: 'bodyTest',
+    });
+    expect(testUrl1.child('fuga')).toEqual(
+      new Url('https://example.com/hoge/fuga', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+
+    const testUrl2 = new Url('https://example.com/hoge/', {
+      method: 'GET',
+      headers: { foo: 'bar' },
+      body: 'bodyTest',
+    });
+    expect(testUrl2.child('fuga')).toEqual(
+      new Url('https://example.com/hoge/fuga', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+
+    // TODO: Url.with のテストを書く
+    // option:{method:'GET',headers:{foo:bar}} の with({method:'POST'}) が option:{method:'POST',headers:{foo:bar}} になってればOK
+    // その際、urlの値に変化があってはいけない
+    expect(testUrl.with({ method: 'POST' })).toEqual(
+      new Url('https://example.com', {
+        method: 'POST',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { hoge: 'fuga' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar', hoge: 'fuga' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { foo: 'fuga' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'fuga' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ method: 'PUT' }).with({ body: 'hoge' })).toEqual(
+      new Url('https://example.com', {
+        method: 'PUT',
+        headers: { foo: 'bar' },
+        body: 'hoge',
+      })
+    );
+    expect(
+      testUrl.with({
+        method: 'POST',
+        headers: { bar: 'fuga', fizz: 'buzz' },
+        body: 'hogehoge',
+      })
+    ).toEqual(
+      new Url('https://example.com', {
+        method: 'POST',
+        headers: { foo: 'bar', bar: 'fuga', fizz: 'buzz' },
+        body: 'hogehoge',
+      })
+    );
+    expect(testUrl.with({})).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { foo: '' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: '' },
+        body: 'bodyTest',
+      })
+    );
+    expect(testUrl.with({ headers: { 'f-oo': '' } })).toEqual(
+      new Url('https://example.com', {
+        method: 'GET',
+        headers: { foo: 'bar', 'f-oo': '' },
+        body: 'bodyTest',
+      })
+    );
+
+    expect(testUrl2.with({ body: 'testTest' })).toEqual(
+      new Url('https://example.com/hoge/', {
+        method: 'GET',
+        headers: { foo: 'bar' },
+        body: 'testTest',
+      })
+    );
+
+    const testUrl3 = new Url('https://example.com/hoge/');
+    expect(
+      testUrl3.with({
+        method: 'GET',
+        headers: { foo: 'bar', 'ho-ge': 'fuga' },
+        body: 'bodybody',
+      })
+    ).toEqual(
+      new Url('https://example.com/hoge/', {
+        method: 'GET',
+        headers: { foo: 'bar', 'ho-ge': 'fuga' },
+        body: 'bodybody',
+      })
+    );
   });
 }

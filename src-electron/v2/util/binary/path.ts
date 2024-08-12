@@ -1,8 +1,12 @@
+import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as stream from 'stream';
 import { asyncForEach } from 'app/src-electron/util/objmap';
 import { err, ok, Result } from '../base';
+import { InfinitMap } from '../helper/infinitMap';
+import { sleep } from '../promise/sleep';
+import { PromiseSpooler } from '../promise/spool';
 import { DuplexStreamer, Readable } from './stream';
 import { asyncPipe } from './util';
 
@@ -26,22 +30,38 @@ export class Path extends DuplexStreamer<void> {
     return this.path;
   }
 
-  createReadStream(): Readable {
-    return new Readable(fs.createReadStream(this.path));
+  isLocked(): boolean {
+    return spoolers.get(this.absolute().toStr()).hasSpooled();
   }
 
-  async write(readable: stream.Readable): Promise<Result<void, Error>> {
+  createReadStream(): Readable {
+    return new Readable(
+      new Promise<stream.Readable>((r) => {
+        const key = this.absolute().toStr();
+        spoolers.get(key).spool(async () => {
+          const stream = fs.createReadStream(this.path);
+          r(stream);
+          await new Promise<void>((r) => stream.on('error', r).on('close', r));
+        });
+      })
+    );
+  }
+
+  write = exclusive(this._write);
+  private async _write(
+    readable: stream.Readable
+  ): Promise<Result<void, Error>> {
     // ファイルが既に存在する場合、エラーにする
-    await this.remove();
+    await this._remove();
     const writable = fs.createWriteStream(this.path);
     return asyncPipe(readable, writable);
   }
 
-  child(child: string) {
+  child(...paths: string[]) {
     if (this._path !== '') {
-      return new Path(path.join(this._path, child));
+      return new Path(path.join(this._path, ...paths));
     }
-    return new Path(child);
+    return new Path(path.join(...paths));
   }
 
   parent(times = 1) {
@@ -89,22 +109,38 @@ export class Path extends DuplexStreamer<void> {
     return fs.existsSync(this._path);
   }
 
-  async isDirectory() {
+  isDirectory = exclusive(this._isDirectory);
+  private async _isDirectory() {
     return (await fs.stat(this.absolute().path)).isDirectory();
   }
 
   /** ファイルの最終更新時刻を取得 */
-  async lastUpdateTime(): Promise<Date> {
-    return (await fs.stat(this.path)).mtime;
+  lastUpdateTime = exclusive(this._lastUpdateTime);
+  private async _lastUpdateTime(): Promise<Dayjs> {
+    return dayjs((await fs.stat(this.path)).mtimeMs);
   }
 
-  async rename(newpath: Path) {
+  rename = exclusive(this._rename);
+  private async _rename(newpath: Path) {
     await newpath.parent().mkdir();
     await fs.rename(this._path, newpath.absolute().path);
   }
 
-  async mkdir() {
+  mkdir = exclusive(this._mkdir);
+  private async _mkdir() {
     if (!this.exists()) await fs.mkdir(this._path, { recursive: true });
+  }
+
+  /** ディレクトリが無かったら作成する */
+  ensureDir = exclusive(this._ensureDir);
+  private async _ensureDir(options?: { mode?: number }) {
+    await fs.ensureDir(this._path, options);
+  }
+
+  /** ディレクトリが空の状態を保証する */
+  emptyDir = exclusive(this._emptyDir);
+  private async _emptyDir() {
+    await fs.emptyDir(this._path);
   }
 
   /** 同期ディレクトリ生成(非推奨) */
@@ -112,7 +148,8 @@ export class Path extends DuplexStreamer<void> {
     if (!this.exists()) fs.mkdirSync(this._path, { recursive: true });
   }
 
-  async mklink(target: Path) {
+  mklink = exclusive(this._mklink);
+  private async _mklink(target: Path) {
     await new Promise((resolve) => fs.link(target._path, this._path, resolve));
   }
 
@@ -121,7 +158,8 @@ export class Path extends DuplexStreamer<void> {
    * @param content 書き込む内容
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async writeText(
+  writeText = exclusive(this._writeText);
+  private async _writeText(
     content: string,
     encoding: BufferEncoding = 'utf8'
   ): Promise<Result<void>> {
@@ -135,7 +173,10 @@ export class Path extends DuplexStreamer<void> {
    * ファイルからテキストを読み込む
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async readText(encoding: BufferEncoding = 'utf8'): Promise<Result<string>> {
+  readText = exclusive(this._readText);
+  private async _readText(
+    encoding: BufferEncoding = 'utf8'
+  ): Promise<Result<string>> {
     Result.catchAsync(() => fs.readFile(this._path, { encoding }));
     try {
       return ok(await fs.readFile(this._path, { encoding }));
@@ -148,13 +189,18 @@ export class Path extends DuplexStreamer<void> {
    * ファイルの末尾にテキストを追加
    * @param encoding エンコード形式 デフォルト:utf-8
    */
-  async appendText(content: string, encoding: BufferEncoding = 'utf8') {
+  appendText = exclusive(this._appendText);
+  private async _appendText(
+    content: string,
+    encoding: BufferEncoding = 'utf8'
+  ) {
     await this.parent().mkdir();
     await fs.appendFile(this._path, content, { encoding });
   }
 
-  async iter() {
-    if (this.exists() && (await this.isDirectory()))
+  iter = exclusive(this._iter);
+  private async _iter() {
+    if (this.exists() && (await this._isDirectory()))
       return (await fs.readdir(this._path)).map((p) => this.child(p));
     return [];
   }
@@ -162,32 +208,30 @@ export class Path extends DuplexStreamer<void> {
   /**
    * ファイル / ディレクトリ を再帰的に削除
    */
-  async remove(): Promise<void> {
-    if (!this.exists()) return;
-    if (await this.isDirectory()) {
-      await fs.rm(this._path, { recursive: true });
-    } else {
-      await fs.unlink(this._path);
-    }
+  remove = exclusive(this._remove);
+  private async _remove(): Promise<void> {
+    await fs.rm(this._path, { recursive: true, force: true });
   }
 
-  async copyTo(target: Path) {
+  copyTo = exclusive(this._copyTo);
+  private async _copyTo(target: Path) {
     if (!this.exists()) return;
     await target.parent().mkdir();
     await target.remove();
     await fs.copy(this.path, target.path);
   }
 
-  async moveTo(target: Path) {
+  moveTo = exclusive(this._moveTo);
+  private async _moveTo(target: Path) {
     if (!this.exists()) return;
     await target.parent().mkdir();
     await target.remove();
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
     async function recursiveMove(path: Path, target: Path) {
-      if (await path.isDirectory()) {
+      if (await path._isDirectory()) {
         await target.mkdir();
-        await asyncForEach(await path.iter(), async (child) => {
+        await asyncForEach(await path._iter(), async (child) => {
           await recursiveMove(child, target.child(child.basename()));
         });
       } else {
@@ -198,9 +242,15 @@ export class Path extends DuplexStreamer<void> {
     await recursiveMove(this, target);
   }
 
-  async changePermission(premission: number) {
+  changePermission = exclusive(this._changePermission);
+  private async _changePermission(premission: number) {
     await changePermissionsRecursively(this._path, premission);
   }
+
+  test = exclusive(async function (message: string) {
+    await sleep(300);
+    return 10;
+  });
 }
 
 /** 再帰的にファイルの権限を書き換える */
@@ -215,6 +265,18 @@ async function changePermissionsRecursively(basePath: string, mode: number) {
       }
     }
   }
+}
+
+const spoolers = InfinitMap.primitiveKeyWeakValue(
+  (key: string) => new PromiseSpooler()
+);
+function exclusive<P extends any[], R>(
+  target: (this: Path, ...args: P) => Promise<R>
+) {
+  return function (this: Path, ...args: P) {
+    const key = this.absolute().toStr();
+    return spoolers.get(key).spool(() => target.bind(this)(...args));
+  };
 }
 
 /** In Source Testing */
@@ -235,6 +297,17 @@ if (import.meta.vitest) {
 
     expect(new Path('./').child('foo').path).toBe('foo');
     expect(new Path('./').child('/foo/').path).toBe('foo');
+
+    expect(new Path('./').child('foo/bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo\\bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('foo', 'bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(
+      new Path('foo/bar/buz').path
+    );
 
     expect(new Path('foo').path).toBe('foo');
     expect(new Path('foo/').path).toBe('foo');
@@ -343,5 +416,17 @@ if (import.meta.vitest) {
 
     // await bytes.into(SHA256);
     // await bytes.into(SHA128);
+  });
+
+  test('exclusive', async () => {
+    const p1 = new Path('test1');
+    const p2 = new Path('test2');
+    await Promise.all([
+      p1.test('01'),
+      p1.test('02'),
+      p1.parent().child('test1').test('03'),
+    ]);
+    sleep(1000);
+    await Promise.all([p1.test('11'), p2.test('12')]);
   });
 }

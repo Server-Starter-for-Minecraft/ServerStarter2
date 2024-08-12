@@ -44,3 +44,7 @@ yarn-error.log*
 design/schedule.xlsx
 
 .temp/
+
+# テストの一時使用フォルダ
+work/
+/coverage

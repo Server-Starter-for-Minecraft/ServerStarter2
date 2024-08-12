@@ -1,3 +1,4 @@
-import { NewType } from '../util/type/newtype';
+import { z } from 'zod';
 
-export type IpAdress = NewType<string, 'IpAdress'>;
+export const IpAdress = z.string().brand('IpAdress');
+export type IpAdress = z.infer<typeof IpAdress>;

@@ -1,43 +1,57 @@
-import { NewType } from '../util/type/newtype';
+import { z } from 'zod';
 
-export type DatapackHash = NewType<string, 'DatapackHash'>;
-export type DatapackName = NewType<string, 'DatapackName'>;
-export type DatapackId = NewType<string, 'DatapackId'>;
+// export const DatapackHash = z.string().brand('DatapackHash');
+// export type DatapackHash = z.infer<typeof DatapackHash>;
+
+// export const DatapackName = z.string().brand('DatapackName');
+// export type DatapackName = z.infer<typeof DatapackName>;
+
+export const DatapackId = z.string().brand('DatapackId');
+export type DatapackId = z.infer<typeof DatapackId>;
+
+export const ZipDatapackIdentity = z.object({
+  type: z.literal('zip'),
+  datapackId: DatapackId,
+});
+export type ZipDatapackIdentity = z.infer<typeof ZipDatapackIdentity>;
+
+export const DirDatapackIdentity = z.object({
+  type: z.literal('dir'),
+  datapackId: DatapackId,
+});
+export type DirDatapackIdentity = z.infer<typeof DirDatapackIdentity>;
+
+/** データパックの同一性を示すデータ */
+const DatapackIdentity = z.discriminatedUnion('type', [
+  ZipDatapackIdentity,
+  DirDatapackIdentity,
+]);
+type DatapackIdentity = z.infer<typeof DatapackIdentity>;
 
 /** データパックの読み取り専用データ */
-export type DatapackInfo = {
-  /**
-   * データパックのID
-   *
-   * zipの場合は "zip_${sha1}"       になる
-   * dirの場合は "dir_${ファイル名}" になる
-   */
-  readonly datapackId: DatapackId;
+export const DatapackInfo = z.object({
+  identity: DatapackIdentity,
 
-  /** データパックの種類 */
-  readonly type: 'dir' | 'zip';
-
-  /** データパック説明文 (pack.mcmetaの内容) */
-  readonly description: string;
-};
+  /** データパック説明文 */
+  description: z.string(),
+});
+export type DatapackInfo = z.infer<typeof DatapackInfo>;
 
 /** ワールドごとに設定できるデータパックのメタデータ */
-export type DatapackAnnotation = {
-  /** 名前(拡張子なし) */
-  name: DatapackName;
-
-  /** データを共有していいか デフォルト値=undefined */
-  canShare?: boolean;
-
-  /** データを他のワールドで使用していいか デフォルト値=undefined */
-  canCopy?: boolean;
-
-  /** データパックに対する任意のコメント デフォルト値="" */
-  memo: string;
-};
+export const DatapackAnnotation = z.object({
+  /** ファイル名 */
+  name: z.string(),
+  /** データを共有していいか */
+  canShare: z.boolean(),
+  /** データを他のワールドで使用していいか */
+  canCopy: z.boolean(),
+  comment: z.string(),
+});
+export type DatapackAnnotation = z.infer<typeof DatapackAnnotation>;
 
 /** データパック+メタデータ */
-export type DatapackMeta = {
-  readonly info: DatapackInfo;
-  annotation: DatapackAnnotation;
-};
+export const DatapackMeta = z.object({
+  info: DatapackInfo,
+  annotation: DatapackAnnotation,
+});
+export type DatapackMeta = z.infer<typeof DatapackMeta>;

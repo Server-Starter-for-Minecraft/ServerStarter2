@@ -3,6 +3,7 @@ import { Err, err, Result } from '../util/base';
 /** フロントにそのまま伝わる翻訳すべきエラーのスキーマ Record<strig,any> */
 export type V2ErrorSchema = {
   unknown: string;
+  disagreeEula: undefined;
 };
 
 /** フロントにそのまま伝わる翻訳すべきエラー */
