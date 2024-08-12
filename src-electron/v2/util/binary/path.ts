@@ -1,3 +1,4 @@
+import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as stream from 'stream';
@@ -56,11 +57,11 @@ export class Path extends DuplexStreamer<void> {
     return asyncPipe(readable, writable);
   }
 
-  child(child: string) {
+  child(...paths: string[]) {
     if (this._path !== '') {
-      return new Path(path.join(this._path, child));
+      return new Path(path.join(this._path, ...paths));
     }
-    return new Path(child);
+    return new Path(path.join(...paths));
   }
 
   parent(times = 1) {
@@ -115,8 +116,8 @@ export class Path extends DuplexStreamer<void> {
 
   /** ファイルの最終更新時刻を取得 */
   lastUpdateTime = exclusive(this._lastUpdateTime);
-  private async _lastUpdateTime(): Promise<Date> {
-    return (await fs.stat(this.path)).mtime;
+  private async _lastUpdateTime(): Promise<Dayjs> {
+    return dayjs((await fs.stat(this.path)).mtimeMs);
   }
 
   rename = exclusive(this._rename);
@@ -128,6 +129,18 @@ export class Path extends DuplexStreamer<void> {
   mkdir = exclusive(this._mkdir);
   private async _mkdir() {
     if (!this.exists()) await fs.mkdir(this._path, { recursive: true });
+  }
+
+  /** ディレクトリが無かったら作成する */
+  ensureDir = exclusive(this._ensureDir);
+  private async _ensureDir(options?: { mode?: number }) {
+    await fs.ensureDir(this._path, options);
+  }
+
+  /** ディレクトリが空の状態を保証する */
+  emptyDir = exclusive(this._emptyDir);
+  private async _emptyDir() {
+    await fs.emptyDir(this._path);
   }
 
   /** 同期ディレクトリ生成(非推奨) */
@@ -197,12 +210,7 @@ export class Path extends DuplexStreamer<void> {
    */
   remove = exclusive(this._remove);
   private async _remove(): Promise<void> {
-    if (!this.exists()) return;
-    if (await this._isDirectory()) {
-      await fs.rm(this._path, { recursive: true });
-    } else {
-      await fs.unlink(this._path);
-    }
+    await fs.rm(this._path, { recursive: true, force: true });
   }
 
   copyTo = exclusive(this._copyTo);
@@ -289,6 +297,17 @@ if (import.meta.vitest) {
 
     expect(new Path('./').child('foo').path).toBe('foo');
     expect(new Path('./').child('/foo/').path).toBe('foo');
+
+    expect(new Path('./').child('foo/bar').path).toBe(new Path('foo/bar').path);
+    expect(new Path('./').child('foo\\bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('foo', 'bar').path).toBe(
+      new Path('foo/bar').path
+    );
+    expect(new Path('./').child('/foo/', '/bar/', '/buz/').path).toBe(
+      new Path('foo/bar/buz').path
+    );
 
     expect(new Path('foo').path).toBe('foo');
     expect(new Path('foo/').path).toBe('foo');
