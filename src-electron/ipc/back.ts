@@ -1,5 +1,6 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
+import { getWorldPaths } from 'src-electron/core/world/paths';
 import { BackListener } from 'src-electron/ipc/link';
 import { getPlayer } from '../core/player/main';
 import {
@@ -16,7 +17,6 @@ import { getVersions } from '../core/version/version';
 import { pickDialog } from '../core/world/dialog';
 import { getAdditionalContent } from '../core/world/files/addtional/all';
 import { validateNewWorldName } from '../core/world/name';
-import { getWorldPaths } from '../core/world/paths';
 import {
   backupWorld,
   createWorld,
