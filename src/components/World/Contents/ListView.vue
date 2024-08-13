@@ -92,7 +92,7 @@ function openAddContentDialog() {
       <q-select
         dense
         filled
-        placeholder="追加したいコンテンツ名を入力"
+        :placeholder="$t('additionalContents.header.search.placeholder')"
         v-model="selectedContent"
         @update:model-value="(newVal: OptContents) => addContentClicked(newVal.file)"
         use-input
@@ -104,7 +104,9 @@ function openAddContentDialog() {
       >
         <template v-slot:no-option>
           <q-item>
-            <q-item-section class="text-grey"> No results </q-item-section>
+            <q-item-section class="text-grey">
+              {{ $t('additionalContents.header.noResults') }}
+            </q-item-section>
           </q-item>
         </template>
 
@@ -115,14 +117,14 @@ function openAddContentDialog() {
       <SsBtn
         free-width
         icon="library_add"
-        label="コンテンツを新規追加"
+        :label="$t('additionalContents.header.addBtn')"
         @click="() => openAddContentDialog()"
       />
       <SsIconBtn
         flat
         size=".8rem"
         icon="folder_open"
-        tooltip="保存先フォルダを開く"
+        :tooltip="$t('additionalContents.header.openSavedFolder')"
         @click="() => openSavedFolder(contentType)"
       />
     </div>

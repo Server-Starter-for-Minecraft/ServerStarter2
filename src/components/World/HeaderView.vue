@@ -62,7 +62,9 @@ function copyIP() {
     <q-space />
     <div class="row q-gutter-sm items-center">
       <div class="force-oneline">
-        <span class="user-select">IP : {{ mainStore.worldIP }}</span>
+        <span class="user-select">
+          IP : {{ mainStore.worldIP ?? $t('systemsetting.store.failedIP') }}
+        </span>
       </div>
       <q-btn
         dense

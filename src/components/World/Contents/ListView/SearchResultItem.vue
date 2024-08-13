@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $T } from 'src/i18n/utils/tFunc';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { OptContents } from '../contentsPage';
 
@@ -19,13 +20,15 @@ const showingNames = () => {
     .join(', ')}${endStr}`;
 };
 
-const titleTooltip = `タイトル：${prop.opt.file.name}`;
+const titleTooltip = $T('additionalContents.header.search.item.tooltipTitle', {
+  title: prop.opt.file.name,
+});
 const worldNameTooltip =
   prop.opt.wNames.length > 0
-    ? `導入されているワールドの一覧\n${prop.opt.wNames
-        .map((n) => `・${n}`)
-        .join('\n')}`
-    : '導入履歴のあるコンテンツ';
+    ? $T('additionalContents.header.search.item.tooltipDesc', {
+        worldList: prop.opt.wNames.map((n) => `・${n}`).join('\n'),
+      })
+    : $T('additionalContents.header.search.item.historicalContent');
 </script>
 
 <template>
@@ -37,8 +40,10 @@ const worldNameTooltip =
       <q-item-label caption>
         {{
           opt.wNames.length > 0
-            ? `${showingNames()}に存在します`
-            : '導入履歴のあるコンテンツ'
+            ? $t('additionalContents.header.search.item.caption', {
+                worldList: showingNames(),
+              })
+            : $t('additionalContents.header.search.item.historicalContent')
         }}
       </q-item-label>
     </q-item-section>

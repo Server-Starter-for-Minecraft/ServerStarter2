@@ -28,8 +28,8 @@ function onOkClicked() {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <BaseDialogCard
-      title="詳細情報"
-      ok-btn-txt="変更を保存"
+      :title="$t('additionalContents.contentDetails')"
+      :ok-btn-txt="$t('additionalContents.detailsEditor.okBtn')"
       @ok-click="onOkClicked"
       @close="onDialogCancel"
     >
@@ -37,37 +37,42 @@ function onOkClicked() {
         <div class="column q-gutter-y-lg">
           <div class="text-caption" style="opacity: 0.6">
             <span v-if="isShareWorld">
-              コンテンツの詳細設定は、このワールドにのみ適用されます
+              {{ $t('additionalContents.detailsEditor.descSW') }}
             </span>
             <span v-else>
-              コンテンツの詳細設定は、ServerStarter2に登録されてているすべてのワールド（ShareWorldを除く）に適用されます
+              {{ $t('additionalContents.detailsEditor.desc') }}
             </span>
           </div>
 
           <div>
-            <p class="q-my-sm">コンテンツ名</p>
+            <p class="q-my-sm">
+              {{ $t('additionalContents.detailsEditor.contentsName') }}
+            </p>
             <SsInput v-model="contentTitle" dense />
           </div>
 
           <div v-if="isShareWorld">
-            <p class="q-my-sm">コンテンツを共有するか</p>
-            <p class="text-caption" style="opacity: 0.6">
-              コンテンツの規約等を確認し，ShareWorldによる共有が再配布等の規定に抵触しないことを確認してご利用ください．<br />
-              本機能をOFFにすると，コンテンツの詳細情報のみ共有され，コンテンツの本体データは共有されません．
+            <p class="q-my-sm">
+              {{ $t('additionalContents.detailsEditor.share.title') }}
+            </p>
+            <p class="text-caption" style="opacity: 0.6; white-space: pre-line">
+              {{$t('additionalContents.detailsEditor.share.desc')}}
             </p>
             <q-toggle
               v-model="contentShareable"
               dense
               :label="
                 contentShareable
-                  ? 'コンテンツをShareWorldに入れて共有する'
-                  : 'コンテンツをShareWorldで共有しない'
+                  ? $t('additionalContents.detailsEditor.share.toggleON')
+                  : $t('additionalContents.detailsEditor.share.toggleOFF')
               "
             />
           </div>
 
           <div>
-            <p class="q-my-sm col">メモ</p>
+            <p class="q-my-sm col">
+              {{ $t('additionalContents.detailsEditor.memoField.title') }}
+            </p>
             <MemoFieldView v-model="contentDesc" />
           </div>
         </div>

@@ -74,8 +74,8 @@ function removeContent(contentName: string) {
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <BaseDialogCard
-      title="まとめてコンテンツを追加"
-      ok-btn-txt="選択したコンテンツを追加"
+      :title="$t('additionalContents.addMultipleContentsDialog.title')"
+      :ok-btn-txt="$t('additionalContents.addMultipleContentsDialog.okBtn')"
       :disable="selectedContentsIds.length === 0"
       @ok-click="onOkClicked"
       @close="onDialogCancel"
@@ -112,7 +112,7 @@ function removeContent(contentName: string) {
 
         <div style="min-height: 40vh; max-height: 80vh">
           <div v-if="!selectedWorld" style="opacity: 0.6; width: 15rem">
-            左側から追加したいコンテンツを含むワールドを選択してください
+            {{ $t('additionalContents.addMultipleContentsDialog.desc') }}
           </div>
           <div
             v-else-if="showingContents()?.length ?? 0 > 0"
@@ -135,7 +135,9 @@ function removeContent(contentName: string) {
             <div class="row q-gutter-x-sm">
               <SsBtn
                 free-width
-                label="全て追加する"
+                :label="
+                  $t('additionalContents.addMultipleContentsDialog.addBtn')
+                "
                 class="col"
                 @click="
                   () => showingContents()?.forEach((c) => registContent(c.name))
@@ -143,7 +145,9 @@ function removeContent(contentName: string) {
               />
               <SsBtn
                 free-width
-                label="全て解除する"
+                :label="
+                  $t('additionalContents.addMultipleContentsDialog.releaseBtn')
+                "
                 class="col"
                 @click="
                   () => showingContents()?.forEach((c) => removeContent(c.name))
@@ -156,7 +160,9 @@ function removeContent(contentName: string) {
             class="text-center"
             style="opacity: 0.6; min-width: 15rem"
           >
-            追加可能なコンテンツがありません
+            {{
+              $t('additionalContents.addMultipleContentsDialog.noContentMsg')
+            }}
           </div>
         </div>
       </q-card-section>

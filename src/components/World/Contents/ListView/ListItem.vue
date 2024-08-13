@@ -64,14 +64,14 @@ function onDetailBtnClicked() {
         <SsIconBtn
           flat
           icon="info"
-          tooltip="詳細情報"
+          :tooltip="$t('additionalContents.contentDetails')"
           @click="onDetailBtnClicked"
         />
         <q-separator vertical />
         <SsIconBtn
           flat
           icon="close"
-          tooltip="削除"
+          :tooltip="$t('general.delete')"
           color="negative"
           @click="() => deleteContent($q, contentType, innerContent)"
         />

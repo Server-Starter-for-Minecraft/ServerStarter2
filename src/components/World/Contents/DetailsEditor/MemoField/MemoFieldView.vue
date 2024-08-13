@@ -35,7 +35,9 @@ function lostFocus() {
           :class="contentDesc === '' ? 'placeholder' : ''"
           style="word-break: break-all"
         >
-          <span v-if="contentDesc === ''">クリックしてメモを編集</span>
+          <span v-if="contentDesc === ''">
+            {{ $t('additionalContents.detailsEditor.memoField.desc') }}
+          </span>
           <!-- 生成した行を連ねる -->
           <template
             v-else
