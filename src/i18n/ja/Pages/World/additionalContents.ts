@@ -58,16 +58,15 @@ export const jaAdditionalContents = {
     contentsName: 'コンテンツ名',
     share: {
       title: 'コンテンツを共有するか',
-      desc: 
-        'コンテンツの規約等を確認し，ShareWorldによる共有が再配布等の規定に抵触しないことを確認してご利用ください．\n\
+      desc: 'コンテンツの規約等を確認し，ShareWorldによる共有が再配布等の規定に抵触しないことを確認してご利用ください．\n\
         本機能をOFFにすると，コンテンツの詳細情報のみ共有され，コンテンツの本体データは共有されません．',
       toggleON: 'コンテンツをShareWorldに入れて共有する',
-      toggleOFF: 'コンテンツをShareWorldで共有しない'
+      toggleOFF: 'コンテンツをShareWorldで共有しない',
     },
     memoField: {
       title: 'メモ',
-      desc: 'クリックしてメモを編集'
-    }
+      desc: 'クリックしてメモを編集',
+    },
   },
   dragdrop: {
     default: 'ここにドラッグ または {0}',

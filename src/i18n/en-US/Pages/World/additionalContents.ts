@@ -60,16 +60,15 @@ export const enAdditionalContents: MessageSchema['additionalContents'] = {
     contentsName: 'Content name',
     share: {
       title: 'Do you want to share this content via ShareWorld?',
-      desc: 
-        'Please check the terms of the content and make sure that sharing via ShareWorld does not violate any redistribution or other regulations. \n\
+      desc: 'Please check the terms of the content and make sure that sharing via ShareWorld does not violate any redistribution or other regulations. \n\
         When this function is turned off, only this details will be shared, not the main body data of the content.',
       toggleON: 'Share this content include the main body data',
-      toggleOFF: 'Not share this content'
+      toggleOFF: 'Not share this content',
     },
     memoField: {
       title: 'Notes',
-      desc: 'Click on this area to edit notes'
-    }
+      desc: 'Click on this area to edit notes',
+    },
   },
   dragdrop: {
     default: 'Drop files here or {0} to upload',

@@ -56,7 +56,7 @@ function onOkClicked() {
               {{ $t('additionalContents.detailsEditor.share.title') }}
             </p>
             <p class="text-caption" style="opacity: 0.6; white-space: pre-line">
-              {{$t('additionalContents.detailsEditor.share.desc')}}
+              {{ $t('additionalContents.detailsEditor.share.desc') }}
             </p>
             <q-toggle
               v-model="contentShareable"
