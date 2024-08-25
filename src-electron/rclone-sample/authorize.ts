@@ -5,6 +5,7 @@ import { authorize } from 'rclone.js';
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  /**rcloneを用いたgoogle driveのOauth認証を行う */
   test('googleAuthorizeTest', async () => {
     const authorizeProcess = authorize('drive');
     const tokenPromise = new Promise<string>((resolve) => {
