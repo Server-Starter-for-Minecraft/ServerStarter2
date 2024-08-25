@@ -1,14 +1,20 @@
 import { ChildProcess } from 'child_process';
 import * as fs from 'fs';
-import { copy, ls, delete as rcloneDelete } from 'rclone.js';
+import { copy, ls, delete as rcloneDelete, purge,touch } from 'rclone.js';
 import * as readline from 'readline';
 import { getFileList } from './getFileList';
+import { Path } from 'src-electron/util/path';
 
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  /** ローカルからリモートへのファイルの送信 */
+  /**ローカルとリモートで単一ファイルの送受信を行う機能のテスト */
   test('copyFileLocalToRemote', async () => {
+    /** ローカルからリモートへのファイルの送信 */
+    /**必要ファイルの生成 */
+    const syncDirectory = new Path('src-electron/rclone-sample/sync');
+    const copyFile = syncDirectory.child('hoge3')
+    await copyFile.writeText('testtest')
     const copyProcess: ChildProcess = copy(
       'src-electron/rclone-sample/sync/hoge3',
       'gdrive:sync',
@@ -48,9 +54,14 @@ if (import.meta.vitest) {
       regexPattern.test(file)
     );
     expect(containsDeletedFile).toBe(false);
+
+    //使ったファイルを削除
+    await syncDirectory.remove();
   }),
     /**リモートからローカルへのデータの受信 */
     test('copyFileRemoteToLocal', async () => {
+      const touchProcess:ChildProcess = touch('gdrive:sync/hoge4')
+      await new Promise<void>((r) => touchProcess.on('close', r));
       const copyProcess: ChildProcess = copy(
         'gdrive:sync/hoge4',
         'src-electron/rclone-sample/sync',
@@ -88,5 +99,14 @@ if (import.meta.vitest) {
         regexPattern.test(file)
       );
       expect(containsDeletedFile).toBe(false);
+      //使ったファイルの削除
+      const syncDirectory = new Path('src-electron/rclone-sample/sync');
+      await syncDirectory.remove();
+      const deleteRemoteDirectoryProcess = purge('gdrive:sync', {
+        env: {
+          RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
+        },
+      });
+      await new Promise<void>((r) => deleteRemoteDirectoryProcess.on('close', r));
     });
 }
