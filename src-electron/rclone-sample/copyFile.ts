@@ -1,9 +1,9 @@
 import { ChildProcess } from 'child_process';
 import * as fs from 'fs';
-import { copy, ls, delete as rcloneDelete, purge,touch } from 'rclone.js';
+import { copy, ls, purge, delete as rcloneDelete, touch } from 'rclone.js';
 import * as readline from 'readline';
-import { getFileList } from './getFileList';
 import { Path } from 'src-electron/util/path';
+import { getFileList } from './getFileList';
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -13,8 +13,8 @@ if (import.meta.vitest) {
     /** ローカルからリモートへのファイルの送信 */
     /**必要ファイルの生成 */
     const syncDirectory = new Path('src-electron/rclone-sample/sync');
-    const copyFile = syncDirectory.child('hoge3')
-    await copyFile.writeText('testtest')
+    const copyFile = syncDirectory.child('hoge3');
+    await copyFile.writeText('testtest');
     const copyProcess: ChildProcess = copy(
       'src-electron/rclone-sample/sync/hoge3',
       'gdrive:sync',
@@ -60,7 +60,7 @@ if (import.meta.vitest) {
   }),
     /**リモートからローカルへのデータの受信 */
     test('copyFileRemoteToLocal', async () => {
-      const touchProcess:ChildProcess = touch('gdrive:sync/hoge4')
+      const touchProcess: ChildProcess = touch('gdrive:sync/hoge4');
       await new Promise<void>((r) => touchProcess.on('close', r));
       const copyProcess: ChildProcess = copy(
         'gdrive:sync/hoge4',
@@ -107,6 +107,8 @@ if (import.meta.vitest) {
           RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
         },
       });
-      await new Promise<void>((r) => deleteRemoteDirectoryProcess.on('close', r));
+      await new Promise<void>((r) =>
+        deleteRemoteDirectoryProcess.on('close', r)
+      );
     });
 }

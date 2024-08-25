@@ -17,12 +17,12 @@ if (import.meta.vitest) {
     remotelsProcess.stderr?.on('data', (data) => {
       console.error(data.toString());
     });
-    await new Promise<void>(r => remotelsProcess.on('close',r))
+    await new Promise<void>((r) => remotelsProcess.on('close', r));
   });
 
   test('locallsTest', async () => {
     const locallsProcess = ls('src-electron/rclone-sample/sync');
-    console.log(locallsProcess.stdout)
+    console.log(locallsProcess.stdout);
     locallsProcess.stdout?.on('data', (data) => {
       console.log(data.toString());
     });
@@ -30,6 +30,6 @@ if (import.meta.vitest) {
     locallsProcess.stderr?.on('data', (data) => {
       console.error(data.toString());
     });
-    await new Promise<void>(r => locallsProcess.on('close',r))
+    await new Promise<void>((r) => locallsProcess.on('close', r));
   });
 }
