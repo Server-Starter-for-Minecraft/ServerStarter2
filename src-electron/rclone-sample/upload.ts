@@ -1,5 +1,6 @@
 import { ChildProcess } from 'child_process';
-import { copy, ls, delete as rcloneDelete, sync } from 'rclone.js';
+import { copy, ls, delete as rcloneDelete, purge, sync } from 'rclone.js';
+import { Path } from 'src-electron/util/path';
 import { getFileList } from './getFileList';
 
 //const rclone = require('rclone.js');
@@ -8,18 +9,34 @@ import { getFileList } from './getFileList';
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  /**ローカルからリモートへの同期を行うテスト
+   * ローカルにファイルを生成し、リモートと同期することでリモートとローカルのディレクトリ構成が一致していることを確認する
+   */
   test('syncTest', async () => {
-    const beforeRemotelsProcess = ls('gdrive:sync', {
-      env: {
-        RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
-      },
-    });
+    const syncDirectory = new Path('src-electron/rclone-sample/sync');
+    const filesToTest = [
+      { name: 'test1.txt', content: 'Content for file 1' },
+      { name: 'test2.txt', content: 'Content for file 2' },
+      { name: 'test3.txt', content: 'Content for file 3' },
+    ];
+    await Promise.all(
+      filesToTest.map((file) =>
+        syncDirectory.child(file.name).writeText(file.content)
+      )
+    );
+    // ファイルが生成されているか確認
+    for (const file of filesToTest) {
+      const filePath = syncDirectory.child(file.name);
+      expect(filePath.exists()).toBe(true);
 
-    const beforeRemoteFileList = await getFileList(beforeRemotelsProcess);
+      // 内容が正しいかも確認
+      const content = await filePath.readText();
+      expect(content).toBe(file.content);
+    }
 
     const syncProcess: ChildProcess = sync(
-      'src-electron/rclone-sample/sync',
-      'gdrive:sync',
+      'src-electron/rclone-sample/sync', //from
+      'gdrive:sync', //to
       {
         // Spawn options:
         env: {
@@ -50,14 +67,57 @@ if (import.meta.vitest) {
     const localFileList = await getFileList(locallsProcess);
 
     expect(remoteFileList).toEqual(localFileList);
+    //gdrive:syncの削除
+    const deleteRemoteDirectoryProcess = purge('gdrive:sync', {
+      env: {
+        RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
+      },
+    });
+    await new Promise<void>((r) => deleteRemoteDirectoryProcess.on('close', r));
+    //消えていることの確認
+    const deletedlsProcess = ls('gdrive:', {
+      env: {
+        RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
+      },
+    });
+    const deletedRemoteFileList = await getFileList(deletedlsProcess);
+    expect(deletedRemoteFileList).not.toContain('sync/*');
   }, 50000);
+  /**コンフリクトが起こった際の動機の挙動に関するテスト
+   * 一度ローカルと同期したリモートを一部書き換えて再度同期を行う
+   * rclone.syncでは２つ目に指定したディレクトリを1つ目に指定したディレクトリで置き換えるという挙動をする
+   * このことをテストで確認
+   * 確認はローカル→リモート方向で行っている
+   */
   test('conflictTest', async () => {
     /**コンフリクトを起こすファイルを判別する正規表現 */
     const regexPattern = /hoge3$/;
+    /**ファイルの生成 */
+    const syncDirectory = new Path('src-electron/rclone-sample/sync');
+    const filesToTest = [
+      { name: 'test1.txt', content: 'Content for file 1' },
+      { name: 'test2.txt', content: 'Content for file 2' },
+      { name: 'hoge3', content: 'Content for file 3' },
+    ];
+    await Promise.all(
+      filesToTest.map((file) =>
+        syncDirectory.child(file.name).writeText(file.content)
+      )
+    );
+    // ファイルが生成されているか確認
+    for (const file of filesToTest) {
+      const filePath = syncDirectory.child(file.name);
+      expect(filePath.exists()).toBe(true);
+
+      // 内容が正しいかも確認
+      const content = await filePath.readText();
+      expect(content).toBe(file.content);
+    }
+
     /**リモートとローカルを同期 */
     const syncProcess: ChildProcess = sync(
-      'src-electron/rclone-sample/sync',
-      'gdrive:sync_conflict',
+      'src-electron/rclone-sample/sync', //from
+      'gdrive:sync_conflict', //to
       {
         // Spawn options:
         env: {
@@ -103,6 +163,17 @@ if (import.meta.vitest) {
     );
     expect(containsDeletedFile).toBe(false);
 
+    /**コンフリクト用ファイルを生成 */
+    const conflictDirectory = new Path('src-electron/rclone-sample/conflict');
+    const conflictFile = conflictDirectory.child('hoge3');
+    await conflictFile.writeText('hogehogehogehogeconflict');
+
+    /**生成したファイルが存在することを確認 */
+    expect(conflictFile.exists()).toBe(true);
+    /**内容が正しいことも確認 */
+    const content = await conflictFile.readText();
+    expect(content).toBe('hogehogehogehogeconflict');
+
     /**コンフリクト用のファイルをアップロード */
     const copyProcess: ChildProcess = copy(
       'src-electron/rclone-sample/conflict/hoge3',
@@ -130,7 +201,7 @@ if (import.meta.vitest) {
     const containsFile = remoteFileList.some((file) => regexPattern.test(file));
     expect(containsFile).toBe(true);
 
-    /**コンフリクトが起こっていローカルとリモートを再度同期 */
+    /**コンフリクトが起こっているローカルとリモートを再度同期 */
     const conflictSyncProcess: ChildProcess = sync(
       'src-electron/rclone-sample/sync',
       'gdrive:sync_conflict',
@@ -159,7 +230,26 @@ if (import.meta.vitest) {
     );
     expect(conflictContainsFile).toBe(true);
 
-    /**最初の動機とコンフリクト後の同期でリモートの内容が変わっていないことを確認 */
+    /**最初の同期とコンフリクト後の同期でリモートの内容が変わっていないことを確認 */
     expect(conflictRemoteFileList).toEqual(beforeRemoteFileList);
-  }, 50000);
+    /**使用したファイル群を削除 */
+    await syncDirectory.remove();
+    await conflictDirectory.remove();
+
+    //gdrive:syncの削除
+    const deleteRemoteDirectoryProcess = purge('gdrive:sync_conflict', {
+      env: {
+        RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
+      },
+    });
+    await new Promise<void>((r) => deleteRemoteDirectoryProcess.on('close', r));
+    //消えていることの確認
+    const deletedlsProcess = ls('gdrive:', {
+      env: {
+        RCLONE_CONFIG: 'src-electron/rclone-sample/rclone.conf',
+      },
+    });
+    const deletedRemoteDirectoryList = await getFileList(deletedlsProcess);
+    expect(deletedRemoteDirectoryList).not.toContain('sync_conflict/*');
+  }, 500000);
 }
