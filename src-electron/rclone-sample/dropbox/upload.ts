@@ -81,7 +81,9 @@ if (import.meta.vitest) {
       },
     });
     const deletedRemoteFileList = await getFileList(deletedlsProcess);
-    expect(deletedRemoteFileList.some(file => file.includes(' sync/'))).toBe(false);
+    expect(deletedRemoteFileList.some((file) => file.includes(' sync/'))).toBe(
+      false
+    );
   }, 50000);
   /**コンフリクトが起こった際の動機の挙動に関するテスト
    * 一度ローカルと同期したリモートを一部書き換えて再度同期を行う
@@ -250,6 +252,10 @@ if (import.meta.vitest) {
       },
     });
     const deletedRemoteDirectoryList = await getFileList(deletedlsProcess);
-    expect(deletedRemoteDirectoryList.some(file => file.includes(' sync_conflict/'))).toBe(false);
+    expect(
+      deletedRemoteDirectoryList.some((file) =>
+        file.includes(' sync_conflict/')
+      )
+    ).toBe(false);
   }, 500000);
 }

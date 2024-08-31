@@ -1,9 +1,8 @@
-import { isValid } from 'app/src-electron/util/error/error';
-import { Path } from 'app/src-electron/util/path';
 import { ChildProcess } from 'child_process';
 import * as fs from 'fs';
 import { authorize } from 'rclone.js';
-
+import { isValid } from 'app/src-electron/util/error/error';
+import { Path } from 'app/src-electron/util/path';
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -38,10 +37,11 @@ if (import.meta.vitest) {
 
       if (isValid(fileContent)) {
         // [dropbox]セクションが含まれているかチェック
-        const dropboxSectionRegex = /\[dropbox\]\ntype = dropbox\ntoken = .*\n?/;
+        const dropboxSectionRegex =
+          /\[dropbox\]\ntype = dropbox\ntoken = .*\n?/;
 
         const updatedContent = dropboxSectionRegex.test(fileContent)
-          ?fileContent.replace(dropboxSectionRegex, configContent) // 既存セクションの置き換え
+          ? fileContent.replace(dropboxSectionRegex, configContent) // 既存セクションの置き換え
           : `${fileContent}\n${configContent}`; // 改行して追記
 
         // 新しい内容を書き込む
@@ -54,5 +54,5 @@ if (import.meta.vitest) {
       await configPath.writeText(configContent);
     }
     console.log('rclone.conf updated');
-  },50000);
+  }, 50000);
 }

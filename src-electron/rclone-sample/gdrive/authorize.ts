@@ -36,8 +36,7 @@ if (import.meta.vitest) {
 
       if (isValid(fileContent)) {
         // [dropbox]セクションが含まれているかチェック
-        const dropboxSectionRegex =
-          /\[gdrive\]\ntype = drive\ntoken = .*\n?/;
+        const dropboxSectionRegex = /\[gdrive\]\ntype = drive\ntoken = .*\n?/;
 
         const updatedContent = dropboxSectionRegex.test(fileContent)
           ? fileContent.replace(dropboxSectionRegex, configContent) // 既存セクションの置き換え
@@ -53,5 +52,5 @@ if (import.meta.vitest) {
       await configPath.writeText(configContent);
     }
     console.log('rclone.conf updated');
-  },50000);
+  }, 50000);
 }
