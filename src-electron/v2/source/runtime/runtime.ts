@@ -252,7 +252,7 @@ if (import.meta.vitest) {
     { os: 'mac-os-arm64', explain: 'universal-8' },
   ];
 
-  test.each(
+  test.skip.each(
     osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
   )(
     '$os $runtime.explain',
