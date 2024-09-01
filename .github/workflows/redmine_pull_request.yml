@@ -1,0 +1,118 @@
+name: Pull Request to Redmine
+
+on: 
+  pull_request: 
+    types: [opened,closed]
+  pull_request_review: 
+    types: [submitted,dismissed]
+
+env:
+  # RedmineのURL
+  TARGET_URL: http://redmine-serverstarter2:3000
+  
+  # RedmineのプロジェクトID
+  # 現在は v2.3.0 のプロジェクトにIssueを立てる設定となっているため，プロジェクト変更時はここを変更する
+  # PROJECT_ID: 2
+  
+  # ステータスの番号（「ステータスの管理」におけるIdを Dev Tools で確認する）
+  # ステータスが自動で切り替わらない場合は，「ワークフロー」の設定で当該ステータスから変えようとするステータスへの遷移が許可されているか確認する
+  TARGET_STATUS_ID_Progress: 2
+  TARGET_STATUS_ID_WantCheck: 3
+  TARGET_STATUS_ID_Approve: 7
+  TARGET_STATUS_ID_RequireFix: 8
+  TARGET_STATUS_ID_MERGED: 5
+  TARGET_STATUS_ID_REJECT: 6
+
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+jobs:
+  pr_notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Tailescaleは https://zenn.dev/mimi_chan/articles/599841c45b4d49 の記事に従って設定する
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      # Titleのパース
+      # PRのタイトルで「PR#00 タイトル」のようにしたとき，チケット番号である#00の数値を抽出
+      - name: Parse PR Title
+        id: ticket_id
+        run: |
+          if [[ "${{github.event.pull_request.title}}" =~ PR#([0-9]+) ]]; then
+            echo "::set-output name=number::${BASH_REMATCH[1]}"
+          else
+            echo "::set-output name=number::0"
+          fi
+
+      # Redmine側のタイトルを取得する
+      - name: Get Redmine Title
+        run: |
+          curl -H "Accept: application/json" ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json -o data.json
+      # Redmine側のチケットのタイトルにある「Issues#00」のうち，#00の数値を抽出
+      - name: Parse Ticket Title
+        id: issue_id
+        run: |
+          if [[ $(jq .issue.subject data.json) =~ Issue#([0-9]+) ]]; then
+            echo "::set-output name=number::${BASH_REMATCH[1]}"
+          else
+            echo "::set-output name=number::0"
+          fi
+
+      # pull requestが開かれたことを受けて，Ticketのステータスを「承認待ち」に変更する
+      - name: Send pr info to redmine
+        if: github.event.action == 'opened' && steps.ticket_id.outputs.number != 0
+        run: |
+          curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_WantCheck}},"notes":"Pull Request [${{github.event.pull_request.title}}](${{github.event.pull_request._links.html.href}}) is opened"}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
+      - name: Set comment for related issue
+        if: github.event.action == 'opened' && steps.issue_id.outputs.number != 0
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.issue_id.outputs.number }}
+          body: |
+            このIssueは #${{github.event.pull_request.number}} によって修正予定です
+
+      
+      # ステータスを「マージ待ち」に進める
+      - name: Send pr info to redmine
+        if: github.event.action == 'submitted' && steps.ticket_id.outputs.number != 0
+        run: |
+          curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_Approve}}}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
+      
+
+      # ステータスを「修正要求」に進める
+      - name: Send pr info to redmine
+        if: github.event.action == 'submitted' && steps.ticket_id.outputs.number != 0
+        run: |
+          curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_RequireFix}}}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
+
+
+      # ステータスを「終了」に進める
+      - name: Send pr info to redmine (pr is closed)
+        if: github.event.action == 'closed' && steps.ticket_id.outputs.number != 0 && github.event.pull_request.merged == true
+        run: |
+          curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_MERGED}}}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
+      # ステータスを「却下」に進める
+      - name: Send pr info to redmine (pr is rejected)
+        if: github.event.action == 'closed' && steps.ticket_id.outputs.number != 0 && github.event.pull_request.merged == false
+        run: |
+          curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_REJECT}}}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
+      # 関連するIssueを閉じる
+      - name: Close a related issue
+        if: github.event.action == 'closed' && steps.issue_id.outputs.number != 0
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{steps.issue_id.outputs.number}},
+              state: 'closed'
+            });
