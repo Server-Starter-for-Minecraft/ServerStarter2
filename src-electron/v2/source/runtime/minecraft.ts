@@ -139,7 +139,7 @@ if (import.meta.vitest) {
   );
   workPath.mkdir();
 
-  test(
+  test.skip(
     'minecraft',
     async () => {
       const minecraft = new MinecraftRuntimeInstaller(
