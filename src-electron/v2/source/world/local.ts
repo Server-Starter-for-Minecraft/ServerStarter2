@@ -325,7 +325,7 @@ if (import.meta.vitest) {
         version: { type: 'unknown' },
         bannedPlayers: [
           {
-            uuid: PlayerUUID.parse('1234-1234-123412341234-12341234-1234'),
+            uuid: PlayerUUID.parse('12341234-1234-1234-1234-123412341234'),
             created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
             source: '??',
             expires: 'forever',
@@ -338,7 +338,7 @@ if (import.meta.vitest) {
           file: BANNEDPLAYERS_FILE_NAME,
           json: [
             {
-              uuid: PlayerUUID.parse('1234-1234-123412341234-12341234-1234'),
+              uuid: PlayerUUID.parse('12341234-1234-1234-1234-123412341234'),
               created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
               source: '??',
               expires: 'forever',
@@ -355,26 +355,26 @@ if (import.meta.vitest) {
         version: { type: 'unknown' },
         players: [
           {
-            name: PlayerName.parse(''),
-            uuid: PlayerUUID.parse('0000-0000-000000000000-00000000-0000'),
+            name: PlayerName.parse('player0'),
+            uuid: PlayerUUID.parse('00000000-0000-0000-0000-000000000000'),
             level: OpLevel.parse(0),
             bypassesPlayerLimit: false,
           },
           {
             name: PlayerName.parse('player1'),
-            uuid: PlayerUUID.parse('1111-1111-111111111111-11111111-1111'),
+            uuid: PlayerUUID.parse('11111111-1111-1111-1111-111111111111'),
             level: OpLevel.parse(1),
             bypassesPlayerLimit: false,
           },
           {
             name: PlayerName.parse('player2'),
-            uuid: PlayerUUID.parse('2222-2222-2222-2222-2222'),
+            uuid: PlayerUUID.parse('22222222-2222-2222-2222-222222222222'),
             level: OpLevel.parse(2),
             bypassesPlayerLimit: false,
           },
           {
             name: PlayerName.parse('player3'),
-            uuid: PlayerUUID.parse('3333-3333-3333-3333-3333'),
+            uuid: PlayerUUID.parse('33333333-3333-3333-3333-333333333333'),
             level: OpLevel.parse(0),
             bypassesPlayerLimit: false,
           },
@@ -385,12 +385,12 @@ if (import.meta.vitest) {
           file: WHITELIST_FILE_NAME,
           json: [
             {
-              name: '',
-              uuid: '0000-0000-000000000000-00000000-0000',
+              name: 'player0',
+              uuid: '00000000-0000-0000-0000-000000000000',
             },
-            { name: 'player1', uuid: '1111-1111-111111111111-11111111-1111' },
-            { name: 'player2', uuid: '2222-2222-2222-2222-2222' },
-            { name: 'player3', uuid: '3333-3333-3333-3333-3333' },
+            { name: 'player1', uuid: '11111111-1111-1111-1111-111111111111' },
+            { name: 'player2', uuid: '22222222-2222-2222-2222-222222222222' },
+            { name: 'player3', uuid: '33333333-3333-3333-3333-333333333333' },
           ],
         },
         {
@@ -398,12 +398,12 @@ if (import.meta.vitest) {
           json: [
             {
               name: 'player1',
-              uuid: '1111-1111-111111111111-11111111-1111',
+              uuid: '11111111-1111-1111-1111-111111111111',
               level: 1,
               bypassesPlayerLimit: false,
             },
             {
-              uuid: '2222-2222-2222-2222-2222',
+              uuid: '22222222-2222-2222-2222-222222222222',
               name: 'player2',
               level: 2,
               bypassesPlayerLimit: false,
