@@ -32,7 +32,7 @@
     "pinia": "^2.1.4",
     "prismarine-nbt": "^2.2.1",
     "quasar": "^2.12.2",
-    "sharp": "^0.33.4",
+    "sharp": "^0.33.5",
     "simple-git": "^3.19.1",
     "string-argv": "^0.3.2",
     "unzipper": "^0.12.1",
