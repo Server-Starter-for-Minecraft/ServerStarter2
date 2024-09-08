@@ -26,6 +26,7 @@ export class Path extends DuplexStreamer<void> {
       this._path = value._path;
     }
   }
+  /** @deprecated use Path.path instead. */
   toStr(): string {
     return this.path;
   }
