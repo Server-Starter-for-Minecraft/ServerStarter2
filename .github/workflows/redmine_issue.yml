@@ -1,0 +1,60 @@
+name: Redmine
+
+on:
+ issues: 
+   types: [opened,closed]
+
+env:
+  # RedmineのURL
+  TARGET_URL: http://redmine-serverstarter2:3000
+  # RedmineのプロジェクトID
+  # ServerStarter2の本体プロジェクトに向けてチケットを発行する
+  PROJECT_ID: 1
+  
+  # ステータスの番号（「ステータスの管理」におけるIdを Dev Tools で確認する）
+  TARGET_STATUS_ID_CLOSED: 5
+  TARGET_STATUS_ID_REJECT: 6
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      # Tailescaleは https://zenn.dev/mimi_chan/articles/599841c45b4d49 の記事に従って設定する
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+      
+      # Redmineは env が設定されていれば動く
+      # Issue（Ticket）を作ったことにしたいユーザーの REDMINE_API_KEY をsecretに登録しておく
+      - name: Create new Ticket
+        if: github.event.action == 'opened'
+        run: curl -X POST -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"project_id":${{env.PROJECT_ID}},"subject":"[Issue#${{github.event.issue.number}}] ${{github.event.issue.title}}","description":"詳細は元のIssuesを参照\n${{github.event.issue.html_url}}","priority_id":2,"tracker_id":1,"status_id":1}}' ${{env.TARGET_URL}}/issues.json
+
+
+      # Issuesが「Not Planned」で閉じられた場合はTicketも却下する
+      - name: Checkout repository
+        if: github.event.action == 'closed'
+        uses: actions/checkout@v2
+
+      - name: Get issues from API
+        if: github.event.action == 'closed'
+        run: |
+          curl -s ${{env.TARGET_URL}}/issues.json -o issues.json
+  
+      - name: Filter issues containing target one
+        if: github.event.action == 'closed'
+        id: ticket_id
+        run: |
+          tmp=$(cat issues.json | jq -r '.issues[] | select(.subject | contains("${{github.event.issue.title}}")) | .id')
+          echo "::set-output name=number::${tmp}"
+      
+      # 実装現在では，「新規」⇒「終了」のステータス遷移は禁止しているため，下記はコメントアウト
+      # - name: Close a ticket
+      #   if: github.event.issue.state_reason == 'completed'
+      #   run: curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_CLOSED}}}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
+      - name: Reject a ticket
+        if: github.event.issue.state_reason == 'not_planned'
+        run: curl -X PUT -H "Content-Type:application/json" -H "X-Redmine-API-Key:${{secrets.REDMINE_API_KEY}}" -d '{"issue":{"status_id":${{env.TARGET_STATUS_ID_REJECT}}}}' ${{env.TARGET_URL}}/issues/${{steps.ticket_id.outputs.number}}.json
