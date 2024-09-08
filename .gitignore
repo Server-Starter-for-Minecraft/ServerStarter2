@@ -45,6 +45,9 @@ design/schedule.xlsx
 
 .temp/
 
+# config file for rclone
+rclone.conf
+
 # テストの一時使用フォルダ
 work/
 /coverage
