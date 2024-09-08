@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
-import { Path } from 'src-electron/v2/util/binary/path';
 import ini from 'ini';
+import { Path } from 'src-electron/v2/util/binary/path';
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -10,8 +10,8 @@ if (import.meta.vitest) {
     const configPath = new Path('src-electron/rclone-sample/rclone.conf');
     const config = await configPath.readText();
     if (config.isOk) {
-      const tokenSection=ini.parse(config.value())
-      console.log(tokenSection)
+      const tokenSection = ini.parse(config.value());
+      console.log(tokenSection);
       if (tokenSection) {
         const token = JSON.parse(tokenSection.gdrive.token);
         // OAuth2クライアントを初期化

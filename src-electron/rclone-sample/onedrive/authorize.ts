@@ -40,10 +40,10 @@ if (import.meta.vitest) {
     const userInfo = await onedrive.items.customEndpoint({
       accessToken: accessToken,
       url: `/drives/${driveId}`,
-      method: 'GET'
+      method: 'GET',
     });
     const displayName = userInfo.owner?.user?.displayName;
-    expect(displayName).toBe('serverstarter serverstarter')
+    expect(displayName).toBe('serverstarter serverstarter');
     console.log('Display name :', displayName);
 
     //configの書き込み
