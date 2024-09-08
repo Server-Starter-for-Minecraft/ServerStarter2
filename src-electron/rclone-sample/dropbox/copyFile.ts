@@ -1,7 +1,5 @@
 import { ChildProcess } from 'child_process';
-import * as fs from 'fs';
 import { copy, ls, purge, delete as rcloneDelete, touch } from 'rclone.js';
-import * as readline from 'readline';
 import { Path } from 'src-electron/util/path';
 import { getFileList } from './getFileList';
 

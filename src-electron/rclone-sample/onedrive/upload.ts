@@ -1,6 +1,6 @@
 import { ChildProcess } from 'child_process';
 import { copy, ls, purge, delete as rcloneDelete, sync } from 'rclone.js';
-import { Path } from 'src-electron/util/path';
+import { Path } from 'src-electron/v2/util/binary/path';
 import { getFileList } from './getFileList';
 
 //const rclone = require('rclone.js');

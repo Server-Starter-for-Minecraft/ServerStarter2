@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
-import { Path } from 'src-electron/util/path';
-import { isValid } from 'app/src-electron/util/error/error';
+import { Path } from 'src-electron/v2/util/binary/path';
+import ini from 'ini';
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -9,18 +9,14 @@ if (import.meta.vitest) {
   test('checkAuthorizedAccount', async () => {
     const configPath = new Path('src-electron/rclone-sample/rclone.conf');
     const config = await configPath.readText();
-    if (isValid(config)) {
-      const tokenSection = config.match(
-        /\[gdrive\][\s\S]*token\s*=\s*(\{[\s\S]*?\})/
-      );
+    if (config.isOk) {
+      const tokenSection=ini.parse(config.value())
+      console.log(tokenSection)
       if (tokenSection) {
-        const token = JSON.parse(tokenSection[1]);
-        console.log(token);
-
+        const token = JSON.parse(tokenSection.gdrive.token);
         // OAuth2クライアントを初期化
         const oAuth2Client = new google.auth.OAuth2();
         oAuth2Client.setCredentials(token);
-
         // Google Drive APIクライアントを初期化
         const drive = google.drive({ version: 'v3', auth: oAuth2Client });
         try {

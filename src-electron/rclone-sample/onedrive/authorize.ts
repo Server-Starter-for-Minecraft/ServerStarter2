@@ -1,8 +1,6 @@
-import { ChildProcess } from 'child_process';
 import onedrive from 'onedrive-api';
 import { authorize } from 'rclone.js';
-import { isValid } from 'app/src-electron/util/error/error';
-import { Path } from 'app/src-electron/util/path';
+import { Path } from 'src-electron/v2/util/binary/path';
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -39,6 +37,15 @@ if (import.meta.vitest) {
     expect(driveId).toBeTruthy();
     console.log('Drive ID:', driveId);
 
+    const userInfo = await onedrive.items.customEndpoint({
+      accessToken: accessToken,
+      url: `/drives/${driveId}`,
+      method: 'GET'
+    });
+    const displayName = userInfo.owner?.user?.displayName;
+    expect(displayName).toBe('serverstarter serverstarter')
+    console.log('Display name :', displayName);
+
     //configの書き込み
     const configPath = new Path('src-electron/rclone-sample/rclone.conf');
     const configContent = `[onedrive]\ntype = onedrive\ntoken = ${token}\ndrive_id = ${driveId}\ndrive_type = personal\n`;
@@ -47,12 +54,12 @@ if (import.meta.vitest) {
     if (configPath.exists()) {
       const fileContent = await configPath.readText();
 
-      if (isValid(fileContent)) {
+      if (fileContent.isOk) {
         // [onedrive]セクションが含まれているかチェック
         const onedriveSectionRegex =
           /\[onedrive\]\ntype = onedrive\ntoken = [\s\S]*?(?=\n\[|\n*$)/;
-        const updatedContent = onedriveSectionRegex.test(fileContent)
-          ? fileContent.replace(onedriveSectionRegex, configContent) // 既存セクションの置き換え
+        const updatedContent = onedriveSectionRegex.test(fileContent.value())
+          ? fileContent.value().replace(onedriveSectionRegex, configContent) // 既存セクションの置き換え
           : `${fileContent}\n${configContent}`; // 改行して追記
 
         // 新しい内容を書き込む
