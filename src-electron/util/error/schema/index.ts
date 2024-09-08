@@ -1,4 +1,4 @@
-import { FlattenErrors } from './base';
+import { ErrorMessageContent, FlattenErrors } from './base';
 import { CoreErrors } from './core';
 import { DataErrors } from './data';
 import { LibErrors } from './lib';
@@ -11,6 +11,7 @@ export type ErrorMessageTypes = {
   value: ValueErrors;
   core: CoreErrors;
   lib: LibErrors;
+  unknown: ErrorMessageContent<{ message: string }>;
 };
 
 export type FlattenErrorMessageTypes = FlattenErrors<ErrorMessageTypes>;
