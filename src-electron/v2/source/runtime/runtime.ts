@@ -16,13 +16,8 @@ import { MinecraftRuntimeInstaller } from './minecraft';
 const metaJson = new Json(RuntimeMeta);
 
 export class RuntimeContainer {
-  private cacheDirPath: Path;
   private metaDirPath: Path;
   private binDirPath: Path;
-  private getUniversalConfig: (
-    osPlatform: OsPlatform,
-    majorVersion: JavaMajorVersion
-  ) => Promise<Exclude<Runtime, UniversalRuntime>>;
   private installerMap: {
     [R in Exclude<Runtime, UniversalRuntime> as R['type']]: RuntimeInstaller<R>;
   };
@@ -31,17 +26,14 @@ export class RuntimeContainer {
    * @param getUniversalConfig universalのjavaの実体を返す OuterResourcesから取得する構成
    */
   constructor(
-    cacheDirPath: Path,
-    getUniversalConfig: (
+    private cacheDirPath: Path,
+    private getUniversalConfig: (
       osPlatform: OsPlatform,
       majorVersion: JavaMajorVersion
-    ) => Promise<Exclude<Runtime, UniversalRuntime>>
+    ) => Promise<Result<Exclude<Runtime, UniversalRuntime>>>
   ) {
-    this.cacheDirPath = cacheDirPath;
     this.metaDirPath = cacheDirPath.child('meta');
     this.binDirPath = cacheDirPath.child('bin');
-    this.getUniversalConfig = getUniversalConfig;
-
     this.installerMap = {
       minecraft: new MinecraftRuntimeInstaller(
         cacheDirPath.child('minecraft', 'manifest.json')
@@ -100,10 +92,12 @@ export class RuntimeContainer {
     osPlatform: OsPlatform,
     useJavaw: boolean
   ) {
-    const refRuntime = await this.getUniversalConfig(
+    const refRuntimeOrError = await this.getUniversalConfig(
       osPlatform,
       runtime.majorVersion
     );
+    if (refRuntimeOrError.isErr) return refRuntimeOrError;
+    const refRuntime = refRuntimeOrError.value();
 
     const refInstallResult = await this._ready(
       refRuntime,
@@ -203,10 +197,12 @@ if (import.meta.vitest) {
   );
   await workPath.mkdir();
 
-  const runtimeContainer = new RuntimeContainer(workPath, async () => ({
-    type: 'minecraft',
-    version: 'jre-legacy',
-  }));
+  const runtimeContainer = new RuntimeContainer(workPath, async () =>
+    ok({
+      type: 'minecraft',
+      version: 'jre-legacy',
+    } as const)
+  );
 
   const runtimes: (Runtime & { explain: string })[] = [
     { explain: 'jre-legacy', type: 'minecraft', version: 'jre-legacy' },
