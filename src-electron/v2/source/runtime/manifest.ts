@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Err, err, ok } from '../../util/base';
+import { ok } from '../../util/base';
 import { Bytes } from '../../util/binary/bytes';
 import { Path } from '../../util/binary/path';
 import { Url } from '../../util/binary/url';

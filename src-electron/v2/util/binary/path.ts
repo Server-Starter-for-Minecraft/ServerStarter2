@@ -66,8 +66,8 @@ export class Path extends DuplexStreamer<void> {
   writer(
     options: Parameters<typeof fs.createWriteStream>[1]
   ): WritableStreamer<void> {
-    const write = async (readable: stream.Readable) => {
-      await this._remove();
+    const write = (readable: stream.Readable) => {
+      fs.rmSync(this._path, { recursive: true, force: true });
       const writable = fs.createWriteStream(this.path, options);
       return asyncPipe(readable, writable);
     };
