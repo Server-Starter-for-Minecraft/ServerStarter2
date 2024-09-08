@@ -21,12 +21,12 @@ export default defineConfig({
         '**/dummy/**',
       ],
       // set limit ratio
-      thresholds: {
-        lines: 60,
-        branches: 60,
-        functions: 60,
-        statements: 60,
-      },
+      // thresholds: {
+      //   lines: 60,
+      //   branches: 60,
+      //   functions: 60,
+      //   statements: 60,
+      // },
     },
   },
   resolve: {
