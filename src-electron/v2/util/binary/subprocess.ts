@@ -1,6 +1,6 @@
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import * as stream from 'stream';
-import { Err, err, none, ok, Opt, Result, value } from '../base';
+import { Err, err, ok, Result } from '../base';
 import { Readable, WritableStreamer } from './stream';
 
 export interface SubprocessOptions {}
@@ -39,15 +39,15 @@ export class Subprocess extends WritableStreamer<void> {
   }
 
   /** 標準出力 */
-  get stdout(): Opt<Readable> {
-    if (this.subprocess.stdout === null) return none;
-    return value(new Readable(this.subprocess.stdout));
+  get stdout(): Result<Readable> {
+    if (this.subprocess.stdout === null) return err.error('STDOUT_NOT_PIPED');
+    return ok(new Readable(this.subprocess.stdout));
   }
 
   /** 標準エラー */
-  get stderr(): Opt<Readable> {
-    if (this.subprocess.stderr === null) return none;
-    return value(new Readable(this.subprocess.stderr));
+  get stderr(): Result<Readable> {
+    if (this.subprocess.stderr === null) return err.error('STDERR_NOT_PIPED');
+    return ok(new Readable(this.subprocess.stderr));
   }
 
   /**
