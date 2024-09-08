@@ -50,15 +50,17 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
     if (downloadJar.isErr) return downloadJar;
 
     // JarのHashを確認
-    const correctHash = verJson.value().download.hash;
-    if (correctHash) {
-      const downloadHash = await checkJarHash(
-        downloadJar.value(),
-        correctHash,
-        'md5'
-      );
-      if (downloadHash?.isErr) return downloadHash;
-    }
+    // 2024/09/08 時点でmohistから提供されるhashに信用が置けないためコメントアウトしている
+
+    // const correctHash = verJson.value().download.hash;
+    // if (correctHash) {
+    //   const downloadHash = await checkJarHash(
+    //     downloadJar.value(),
+    //     correctHash,
+    //     'md5'
+    //   );
+    //   if (downloadHash?.isErr) return downloadHash;
+    // }
 
     // Jarをキャッシュ先に書き出して終了
     return await downloadJar.value().into(getJarPath(this.cachePath));

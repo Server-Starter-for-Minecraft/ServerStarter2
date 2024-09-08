@@ -7,7 +7,7 @@ import { err, ok, Result } from '../base';
 import { InfinitMap } from '../helper/infinitMap';
 import { sleep } from '../promise/sleep';
 import { PromiseSpooler } from '../promise/spool';
-import { DuplexStreamer, Readable } from './stream';
+import { DuplexStreamer, Readable, WritableStreamer } from './stream';
 import { asyncPipe } from './util';
 
 function replaceSep(pathstr: string) {
@@ -39,6 +39,7 @@ export class Path extends DuplexStreamer<void> {
       new Promise<stream.Readable>((r) => {
         const key = this.absolute().toStr();
         spoolers.get(key).spool(async () => {
+          await this.parent().mkdir();
           const stream = fs.createReadStream(this.path);
           r(stream);
           await new Promise<void>((r) => stream.on('error', r).on('close', r));
@@ -51,10 +52,26 @@ export class Path extends DuplexStreamer<void> {
   private async _write(
     readable: stream.Readable
   ): Promise<Result<void, Error>> {
-    // ファイルが既に存在する場合、エラーにする
-    await this._remove();
+    fs.rmSync(this._path, { recursive: true, force: true });
     const writable = fs.createWriteStream(this.path);
     return asyncPipe(readable, writable);
+  }
+
+  /**
+   * writable作成時に引数を渡したいときにこっちを使う
+   * ```
+   * readableStreamer.into(path.writer(options))
+   * ```
+   */
+  writer(
+    options: Parameters<typeof fs.createWriteStream>[1]
+  ): WritableStreamer<void> {
+    const write = (readable: stream.Readable) => {
+      fs.rmSync(this._path, { recursive: true, force: true });
+      const writable = fs.createWriteStream(this.path, options);
+      return asyncPipe(readable, writable);
+    };
+    return { write: exclusive(write).bind(this) };
   }
 
   child(...paths: string[]) {
@@ -109,9 +126,14 @@ export class Path extends DuplexStreamer<void> {
     return fs.existsSync(this._path);
   }
 
+  stat = exclusive(this._stat);
+  private async _stat() {
+    return await fs.stat(this.absolute().path);
+  }
+
   isDirectory = exclusive(this._isDirectory);
   private async _isDirectory() {
-    return (await fs.stat(this.absolute().path)).isDirectory();
+    return (await this._stat()).isDirectory();
   }
 
   /** ファイルの最終更新時刻を取得 */
@@ -149,8 +171,13 @@ export class Path extends DuplexStreamer<void> {
   }
 
   mklink = exclusive(this._mklink);
-  private async _mklink(target: Path) {
-    await new Promise((resolve) => fs.link(target._path, this._path, resolve));
+  private async _mklink(target: Path): Promise<Result<void>> {
+    await this.parent().mkdir();
+    return await new Promise<Result<void>>((resolve) =>
+      fs.link(target._path, this._path, (e) => {
+        resolve(e ? err(e) : ok());
+      })
+    );
   }
 
   /**
@@ -229,7 +256,7 @@ export class Path extends DuplexStreamer<void> {
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
     async function recursiveMove(path: Path, target: Path) {
-      if (await path._isDirectory()) {
+      if ((await fs.stat(path.absolute().toStr())).isDirectory()) {
         await target.mkdir();
         await asyncForEach(await path._iter(), async (child) => {
           await recursiveMove(child, target.child(child.basename()));
