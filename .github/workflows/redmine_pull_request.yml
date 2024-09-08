@@ -73,7 +73,7 @@ jobs:
         if: github.event.action == 'opened' && steps.issue_id.outputs.number != 0
         uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CIVILTT_PERSONAL_ACCESS_TOKEN }}
           issue-number: ${{ steps.issue_id.outputs.number }}
           body: |
             このIssueは #${{github.event.pull_request.number}} によって修正予定です
@@ -108,7 +108,7 @@ jobs:
         if: github.event.action == 'closed' && steps.issue_id.outputs.number != 0
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.CIVILTT_PERSONAL_ACCESS_TOKEN }}
           script: |
             await github.rest.issues.update({
               owner: context.repo.owner,
