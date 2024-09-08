@@ -137,12 +137,12 @@ if (import.meta.vitest) {
     expect(await rcloneSource.isAccessible(testDrive, true)).toBe(false);
 
     // 認証トークンを設定すればアクセスできる
-    rcloneSource.registerAuthToken(testDrive, testDriveToken);
+    rcloneSource.renewToken(testDrive, testDriveToken);
     expect(await rcloneSource.isAccessible(testDrive, false)).toBe(true);
     expect(await rcloneSource.isAccessible(testDrive, true)).toBe(true);
 
     // 認証トークンを何度設定しても大丈夫
-    rcloneSource.registerAuthToken(testDrive, testDriveToken);
+    rcloneSource.renewToken(testDrive, testDriveToken);
     expect(await rcloneSource.isAccessible(testDrive, false)).toBe(true);
     expect(await rcloneSource.isAccessible(testDrive, true)).toBe(true);
   });
