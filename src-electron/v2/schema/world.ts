@@ -22,7 +22,7 @@ export const LocalWorldContainer = z.object({
 });
 export type LocalWorldContainer = z.infer<typeof LocalWorldContainer>;
 
-const WorldContainer = LocalWorldContainer;
+export const WorldContainer = LocalWorldContainer;
 export type WorldContainer = z.infer<typeof WorldContainer>;
 
 export const WorldLocation = z.object({
