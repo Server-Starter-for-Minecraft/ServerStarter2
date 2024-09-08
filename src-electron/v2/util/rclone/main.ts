@@ -128,6 +128,9 @@ if (import.meta.vitest) {
     driveType: 'google',
     mailAdress: 'serverstarter.contact@gmail.com',
   };
+
+  // TODO: 下記については，API Keyを`key.private.ts`としてexportする変数にKeyを入れて，それをここでimportして呼び出す
+  // `key.private.ts`はgitignoreに追加してPushされないようにする
   const testDriveToken =
     ''; /** ここで認証トークンを設定 環境変数 or GitHub Secret から取得する */
 
