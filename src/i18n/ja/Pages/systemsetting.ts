@@ -50,4 +50,7 @@ export const jaSystemSetting = {
     technicalManager: '技術責任者',
     support: '実装補助',
   },
+  store: {
+    failedIP: '取得できませんでした',
+  },
 };

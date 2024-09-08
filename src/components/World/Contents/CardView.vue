@@ -5,7 +5,6 @@ import {
   CacheFileData,
   DatapackData,
   ModData,
-  NewFileData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
 import { tError } from 'src/i18n/utils/tFunc';
@@ -14,12 +13,17 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
-import ItemCardView from './itemCardView.vue';
+import ItemCard from './CardView/itemCard.vue';
+import {
+  ContentsType,
+  importNewContent,
+  openSavedFolder,
+} from './contentsPage';
 
 type T = DatapackData | PluginData | ModData;
 
 interface Prop {
-  contentType: 'datapack' | 'plugin' | 'mod';
+  contentType: ContentsType;
 }
 const prop = defineProps<Prop>();
 
@@ -36,86 +40,6 @@ function getNewContents(worldContents?: AllFileData<T>[]) {
   ).filter((c) => !worldContents?.map((wc) => wc.name).includes(c.name));
 }
 
-/**
- * コンテンツを新規導入
- */
-async function importNewContent(isFile = false) {
-  // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
-  switch (prop.contentType) {
-    case 'datapack':
-      checkError(
-        await window.API.invokePickDialog({ type: 'datapack', isFile: isFile }),
-        (c) => addContent2World(c),
-        (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
-      );
-      break;
-    case 'plugin':
-      checkError(
-        await window.API.invokePickDialog({ type: 'plugin' }),
-        (c) => addContent2World(c),
-        (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
-      );
-      break;
-    case 'mod':
-      checkError(
-        await window.API.invokePickDialog({ type: 'mod' }),
-        (c) => addContent2World(c),
-        (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
-      );
-      break;
-  }
-}
-
-/**
- * コンテンツを各種データベースに登録
- */
-function addContent2World(content: NewFileData<T>) {
-  function NewFile2CacheFile(): CacheFileData<T> {
-    if (content.kind === 'datapack') {
-      return {
-        kind: 'datapack',
-        description: content.description,
-        type: 'system',
-        name: content.name,
-        ext: content.ext,
-        isFile: content.isFile,
-      };
-    } else {
-      return {
-        kind: content.kind,
-        type: 'system',
-        name: content.name,
-        ext: content.ext,
-        isFile: content.isFile,
-      };
-    }
-  }
-  (
-    mainStore.world?.additional[`${prop.contentType}s`] as AllFileData<T>[]
-  ).push(content);
-  (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).push(
-    NewFile2CacheFile()
-  );
-}
-
-/**
- * 保存済みデータのフォルダを開く
- */
-async function openSavedFolder() {
-  const path = await window.API.invokeGetWorldPaths(
-    mainStore.selectedWorldID,
-    `${prop.contentType}s`
-  );
-
-  checkError(
-    path,
-    async (p) => {
-      const res = await window.API.sendOpenFolder(p, true);
-      checkError(res, undefined, (e) => tError(e));
-    },
-    (e) => tError(e)
-  );
-}
 /**
  * キャッシュフォルダを開く
  */
@@ -157,7 +81,7 @@ async function openCacheFolder() {
         icon="folder"
         color="grey"
         size=".7rem"
-        @click="openSavedFolder"
+        @click="() => openSavedFolder(contentType)"
         class="folderBtn"
       />
     </div>
@@ -179,7 +103,7 @@ async function openCacheFolder() {
           :key="item.name"
           class="col-"
         >
-          <ItemCardView :content-type="contentType" is-delete :content="item" />
+          <ItemCard :content-type="contentType" is-delete :content="item" />
         </div>
       </template>
       <div v-else class="full-width">
@@ -227,7 +151,7 @@ async function openCacheFolder() {
               : $t('additionalContents.newInstall')
           "
           min-height="4rem"
-          @click="importNewContent(true)"
+          @click="importNewContent(contentType, true)"
           :card-style="{
             'border-radius': '6px',
             'border-color': getCssVar('primary'),
@@ -235,25 +159,26 @@ async function openCacheFolder() {
           class="text-primary"
         />
       </div>
-      <div v-if="contentType === 'datapack'">
+      <!-- 【Obsolete】仕様変更によってフォルダ構造のデータパックは導入不可となった -->
+      <!-- <div v-if="contentType === 'datapack'">
         <AddContentsCard
           :label="$t('additionalContents.installFromFolder')"
           min-height="4rem"
-          @click="importNewContent(false)"
+          @click="importNewContent(contentType, false)"
           :card-style="{
             'border-radius': '6px',
             'border-color': getCssVar('primary'),
           }"
           class="text-primary"
         />
-      </div>
+      </div> -->
       <div
         v-for="item in getNewContents(
           mainStore.world?.additional[`${contentType}s`]
         )"
         :key="item.name"
       >
-        <ItemCardView :content-type="contentType" :content="item" />
+        <ItemCard :content-type="contentType" :content="item" />
       </div>
     </div>
   </div>

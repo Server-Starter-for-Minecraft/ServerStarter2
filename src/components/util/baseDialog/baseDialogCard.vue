@@ -21,7 +21,7 @@ defineProps<baseDialogProp>();
     <q-card-actions align="right">
       <slot name="additionalBtns" />
       <ss-btn
-        v-if="okBtnTxt !== void 0 || onOkClick !== void 0"
+        v-if="okBtnTxt !== void 0 && onOkClick !== void 0"
         :disable="disable"
         :loading="loading"
         :label="okBtnTxt"

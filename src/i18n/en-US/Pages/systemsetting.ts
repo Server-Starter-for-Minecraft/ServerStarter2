@@ -50,4 +50,7 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     technicalManager: 'Technical Manager',
     support: 'Supports',
   },
+  store: {
+    failedIP: 'Failed to get a global IP',
+  },
 };
