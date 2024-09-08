@@ -32,6 +32,10 @@ yarn-error.log*
 *.njsproj
 *.sln
 
+# yarn cache files
+.yarn/
+.yarnrc.yml
+
 # World data
 /server
 /logs
