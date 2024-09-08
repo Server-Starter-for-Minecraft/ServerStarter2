@@ -57,7 +57,7 @@ if (import.meta.vitest) {
 
     //使ったファイルを削除
     await syncDirectory.remove();
-  },50000),
+  }, 50000),
     /**リモートからローカルへのデータの受信 */
     test('copyFileRemoteToLocal', async () => {
       const touchProcess: ChildProcess = touch('onedrive:sync/hoge4');
@@ -110,5 +110,5 @@ if (import.meta.vitest) {
       await new Promise<void>((r) =>
         deleteRemoteDirectoryProcess.on('close', r)
       );
-    },50000);
+    }, 50000);
 }

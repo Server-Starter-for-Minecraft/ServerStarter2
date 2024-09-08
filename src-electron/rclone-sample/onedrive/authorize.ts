@@ -1,8 +1,8 @@
+import { ChildProcess } from 'child_process';
+import onedrive from 'onedrive-api';
+import { authorize } from 'rclone.js';
 import { isValid } from 'app/src-electron/util/error/error';
 import { Path } from 'app/src-electron/util/path';
-import { ChildProcess } from 'child_process';
-import { authorize } from 'rclone.js';
-import onedrive from 'onedrive-api';
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -49,9 +49,10 @@ if (import.meta.vitest) {
 
       if (isValid(fileContent)) {
         // [onedrive]セクションが含まれているかチェック
-        const onedriveSectionRegex = /\[onedrive\]\ntype = onedrive\ntoken = [\s\S]*?(?=\n\[|\n*$)/;
+        const onedriveSectionRegex =
+          /\[onedrive\]\ntype = onedrive\ntoken = [\s\S]*?(?=\n\[|\n*$)/;
         const updatedContent = onedriveSectionRegex.test(fileContent)
-          ?fileContent.replace(onedriveSectionRegex, configContent) // 既存セクションの置き換え
+          ? fileContent.replace(onedriveSectionRegex, configContent) // 既存セクションの置き換え
           : `${fileContent}\n${configContent}`; // 改行して追記
 
         // 新しい内容を書き込む
@@ -64,5 +65,5 @@ if (import.meta.vitest) {
       await configPath.writeText(configContent);
     }
     console.log('rclone.conf updated');
-  },50000);
+  }, 50000);
 }
