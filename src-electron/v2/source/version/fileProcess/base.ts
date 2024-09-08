@@ -206,10 +206,11 @@ export abstract class ReadyVersion<
     return ok({
       runtime: runtime.value(),
       getCommand: (option: { jvmArgs: string[] }) => {
+        const log4jArg = getLog4jArg(this._version.id);
         return replaceEmbedArgs(verJson.value().arguments, {
           JAR_PATH: [getJarPath(targetPath).toStr()],
           JVM_ARGUMENT: option.jvmArgs,
-          LOG4J_ARG: [getLog4jArg(this._version.id) ?? ''],
+          LOG4J_ARG: log4jArg ? [log4jArg] : [],
         });
       },
     });

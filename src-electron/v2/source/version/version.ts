@@ -94,7 +94,7 @@ export class VersionContainer {
    * getCommandはjvm引数を受け取ってjavaの実行時引数を返す
    * ```
    * getCommand({jvmArgs:["--XmX=2G"]})
-   * // -> ["--XmX=2G", "-Dlog4j2.formatMsgNoLookups=true", "--jar", "version.jar", "--nogui"]
+   * // -> ["--XmX=2G", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "version.jar", "--nogui"]
    * ```
    *
    * @param serverPath サーバーのディレクトリパス jarファイルはここの直下に置く

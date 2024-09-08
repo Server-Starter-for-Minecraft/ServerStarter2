@@ -216,7 +216,7 @@ if (import.meta.vitest) {
         ...JVM_ARGS,
         '-Dfile.encoding=UTF-8',
         '-Dlog4j.configurationFile=log4j2_112-116.xml',
-        '--jar',
+        '-jar',
         expect.any(String),
         '--nogui',
       ],

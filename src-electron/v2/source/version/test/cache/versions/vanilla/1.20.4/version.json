@@ -6,7 +6,7 @@
   "arguments": [
     { "embed": "JVM_ARGUMENT" },
     "-Dlog4j2.formatMsgNoLookups=true",
-    "--jar",
+    "-jar",
     { "embed": "JAR_PATH" },
     "--nogui"
   ]
