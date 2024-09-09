@@ -5,6 +5,7 @@ import { Mod } from '../../schema/mod';
 import { OsPlatform } from '../../schema/os';
 import { Plugin } from '../../schema/plugin';
 import { Runtime } from '../../schema/runtime';
+import { VanillaVersion } from '../../schema/version';
 import { World, WorldLocation } from '../../schema/world';
 import { RuntimeContainer } from '../../source/runtime/runtime';
 import { VersionContainer } from '../../source/version/version';
@@ -26,11 +27,11 @@ export class WorldHandler {
   >;
 
   private constructor(
-    private source: WorldSource,
-    private versionContainer: VersionContainer,
-    private runtimeContainer: RuntimeContainer,
-    private osPlatform: OsPlatform,
-    private location: WorldLocation,
+    private readonly source: WorldSource,
+    private readonly versionContainer: VersionContainer,
+    private readonly runtimeContainer: RuntimeContainer,
+    private readonly osPlatform: OsPlatform,
+    private readonly location: WorldLocation,
     private world: World
   ) {
     this.robooting = false;
@@ -85,8 +86,22 @@ export class WorldHandler {
   }
 
   /**
+   * メタデータを取得
+   *
+   * TODO: 細かいAPIに分解する
+   *
+   * @deprecated
+   */
+  async getMeta(): Promise<Result<World, never>> {
+    return ok(this.world);
+  }
+
+  /**
    * メタデータを更新
-   * @param world
+   *
+   * TODO: 細かいAPIに分解する
+   *
+   * @deprecated
    */
   updateMeta(world: Partial<World>): Promise<Result<void>> {
     this.world = { ...this.world, ...world };
@@ -292,11 +307,11 @@ if (import.meta.vitest) {
       ).then((x) => x.value());
 
       handler.updateMeta({
-        version: {
+        version: VanillaVersion.parse({
           type: 'vanilla',
           id: '1.20.1',
           release: true,
-        },
+        }),
         using: false,
       });
 

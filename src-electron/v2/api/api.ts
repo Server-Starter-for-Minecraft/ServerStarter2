@@ -1,20 +1,37 @@
+import { z } from 'zod';
 import { API } from 'app/src-electron/api/api';
 import { BackListener } from 'app/src-electron/ipc/link';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { withError } from 'app/src-electron/util/error/witherror';
 import { WorldHandler } from '../core/world/world';
-import { WorldContainer } from '../schema/world';
+import { OsPlatform } from '../schema/os';
+import { WorldLocation } from '../schema/world';
+import { RuntimeContainer } from '../source/runtime/runtime';
+import { VersionContainer } from '../source/version/version';
 import { WorldSource } from '../source/world/world';
-import { ok, Result } from '../util/base';
-import { InfinitMap } from '../util/helper/infinitMap';
+import { err, ok, Result } from '../util/base';
 import { genUUID } from '../util/random/uuid';
+import { worldDataConverter } from './converter/world';
 import * as v1 from './v1schema';
 
 declare const worldSource: WorldSource;
+declare const versionContainer: VersionContainer;
+declare const runtimeContainer: RuntimeContainer;
+declare const osPlatform: OsPlatform;
+
+const worldHandlers = new WorldHandlers(
+  worldSource,
+  versionContainer,
+  runtimeContainer,
+  osPlatform
+);
 
 const APIV2: BackListener<API> = {
   on: {
     Command(world: v1.WorldID, command: string) {
-      worldIdToHandler.get(world).runCommand(command);
+      worldHandlers
+        .getByWorldId(world)
+        .onOk(({ handler }) => ok(handler.runCommand(command)));
     },
     OpenBrowser: function (url: string): void {
       throw new Error('Function not implemented.');
@@ -53,11 +70,14 @@ const APIV2: BackListener<API> = {
       });
       const abbrs = await Promise.all(
         locations.map(async (location): Promise<Result<v1.WorldAbbr>> => {
-          const world = await WorldHandler.create(worldSource, location);
-          return world.onOk((world) =>
+          let world = worldHandlers.getByWorldLocation(location);
+          if (world.isErr)
+            world = await worldHandlers.createWorldHandler(location);
+
+          return world.onOk(({ id }) =>
             ok({
               container: worldContainer,
-              id: worldHandlerToId.get(world),
+              id,
               name: location.worldName as string as v1.WorldName,
             })
           );
@@ -72,10 +92,23 @@ const APIV2: BackListener<API> = {
         value,
       };
     },
-    GetWorld: function (
+
+    async GetWorld(
       WorldId: v1.WorldID
     ): Promise<v1.WithError<v1.Failable<v1.World>>> {
-      throw new Error('Function not implemented.');
+      const world = worldHandlers.getByWorldId(WorldId);
+      if (world.isErr)
+        return withError(
+          errorMessage.unknown({ message: 'WORLD BINDED TO ID NOT EXISTS' })
+        );
+      const { location, handler } = world.value();
+      return withError(
+        worldDataConverter.V2ToV1(
+          (await handler.getMeta()).value(),
+          WorldId,
+          location
+        )
+      );
     },
     SetWorld: function (
       world: v1.WorldEdited
@@ -180,17 +213,77 @@ const APIV2: BackListener<API> = {
   },
 };
 
-const worldHandlerToId = InfinitMap.objectKeyPrimitiveValue<
-  WorldHandler,
-  v1.WorldID
->((hander) => {
-  const id = genUUID() as v1.WorldID;
-  worldIdToHandler.set(id, hander);
-  return id;
-});
-const worldIdToHandler = InfinitMap.primitiveKeyStrongValue<
-  v1.WorldID,
-  WorldHandler
->(() => {
-  throw new Error('');
-});
+const WorldLocationId = z.string().brand('WorldLocationId');
+type WorldLocationId = z.infer<typeof WorldLocationId>;
+
+type WorldDef = {
+  id: v1.WorldID;
+  handler: WorldHandler;
+  location: WorldLocation;
+};
+
+class WorldHandlers {
+  private readonly worldIdToHandler: Map<v1.WorldID, WorldDef>;
+  private readonly worldLocationToHandler: Map<WorldLocationId, WorldDef>;
+
+  constructor(
+    private readonly worldSource: WorldSource,
+    private readonly versionContainer: VersionContainer,
+    private readonly runtimeContainer: RuntimeContainer,
+    private readonly osPlatform: OsPlatform
+  ) {
+    this.worldIdToHandler = new Map();
+    this.worldLocationToHandler = new Map();
+  }
+
+  // WorldLocationから一意の文字列を出力
+  private encodeWorldLocation(worldLocation: WorldLocation): WorldLocationId {
+    return WorldLocationId.parse(
+      `${worldLocation.container}::${worldLocation.worldName}`
+    );
+  }
+
+  private generateNextWorldId(): v1.WorldID {
+    return genUUID() as v1.WorldID;
+  }
+
+  async createWorldHandler(worldLocation: WorldLocation) {
+    if (this.getByWorldLocation(worldLocation).isOk)
+      return err.error('WORLD ALREADY EXISTS');
+
+    const worldHandler = await WorldHandler.create(
+      this.worldSource,
+      this.versionContainer,
+      this.runtimeContainer,
+      this.osPlatform,
+      worldLocation
+    );
+
+    if (worldHandler.isErr) return worldHandler;
+    const worldLocationId = this.encodeWorldLocation(worldLocation);
+
+    const worldId = this.generateNextWorldId();
+    const worldDef: WorldDef = {
+      id: worldId,
+      location: worldLocation,
+      handler: worldHandler.value(),
+    };
+
+    this.worldIdToHandler.set(worldId, worldDef);
+    this.worldLocationToHandler.set(worldLocationId, worldDef);
+
+    return ok(worldDef);
+  }
+
+  getByWorldId(worldId: v1.WorldID): Result<WorldDef> {
+    const result = this.worldIdToHandler.get(worldId);
+    return result === undefined ? err.error('WORLD_IS_MISSSING') : ok(result);
+  }
+
+  getByWorldLocation(worldLocation: WorldLocation): Result<WorldDef> {
+    const result = this.worldLocationToHandler.get(
+      this.encodeWorldLocation(worldLocation)
+    );
+    return result === undefined ? err.error('WORLD_IS_MISSSING') : ok(result);
+  }
+}
