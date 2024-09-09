@@ -10,3 +10,4 @@ export * from 'app/src-electron/schema/system';
 export * from 'app/src-electron/schema/version';
 export * from 'app/src-electron/schema/world';
 export * from 'app/src-electron/schema/brands';
+export * from 'app/src-electron/schema/memory';

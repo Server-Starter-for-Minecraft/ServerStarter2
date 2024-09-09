@@ -103,7 +103,7 @@ export const World = z.object({
       time: UnixMillisec,
 
       /** 最後に起動したサーバー主 */
-      user: PlayerName.optional(),
+      user: PlayerUUID.optional(),
 
       /** 最後に起動したバージョン */
       version: Version,
