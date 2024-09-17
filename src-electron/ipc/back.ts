@@ -58,7 +58,7 @@ export const getBackListener = (
     GetWorldAbbrs: APIV2.handle.GetWorldAbbrs,
 
     GetWorld: APIV2.handle.GetWorld,
-    SetWorld: setWorld,
+    SetWorld: APIV2.handle.SetWorld,
     NewWorld: newWorld,
     CreateWorld: createWorld,
     DeleteWorld: deleteWorld,

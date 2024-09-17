@@ -1,5 +1,7 @@
+import * as nodePath from 'path';
 import { z } from 'zod';
 import { API } from 'app/src-electron/api/api';
+import { worldContainerToPath } from 'app/src-electron/core/world/worldContainer';
 import { BackListener } from 'app/src-electron/ipc/link';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { withError } from 'app/src-electron/util/error/witherror';
@@ -48,7 +50,7 @@ class WorldHandlers {
   // WorldLocationから一意の文字列を出力
   private encodeWorldLocation(worldLocation: WorldLocation): WorldLocationId {
     return WorldLocationId.parse(
-      `${worldLocation.container}::${worldLocation.worldName}`
+      `${worldLocation.container.containerType}::${worldLocation.container.path}::${worldLocation.worldName}`
     );
   }
 
@@ -142,10 +144,13 @@ export const APIV2: BackListener<API> = {
     async GetWorldAbbrs(
       worldContainer: v1.WorldContainer
     ): Promise<v1.WithError<v1.WorldAbbr[]>> {
-      const locations = await worldSource.listWorldLocations({
-        containerType: 'local',
-        path: worldContainer,
-      });
+      console.log(worldContainer, nodePath.isAbsolute(worldContainer));
+      const locations = await worldSource.listWorldLocations(
+        nodePath.isAbsolute(worldContainer)
+          ? { containerType: 'local', path: worldContainer }
+          : { containerType: 'relative', path: worldContainer }
+      );
+
       const abbrs = await Promise.all(
         locations.map(async (location): Promise<Result<v1.WorldAbbr>> => {
           let world = worldHandlers.getByWorldLocation(location);
@@ -180,6 +185,7 @@ export const APIV2: BackListener<API> = {
           errorMessage.unknown({ message: 'WORLD BINDED TO ID NOT EXISTS' })
         );
       const { location, handler } = world.value();
+      console.log('GetWorld', location, (await handler.getMeta()).value());
       return withError(
         worldDataConverter.V2ToV1(
           (await handler.getMeta()).value(),
@@ -188,10 +194,10 @@ export const APIV2: BackListener<API> = {
         )
       );
     },
-    SetWorld: function (
+    async SetWorld(
       world: v1.WorldEdited
     ): Promise<v1.WithError<v1.Failable<v1.World>>> {
-      throw new Error('Function not implemented.');
+      return withError(world);
     },
     NewWorld: function (): Promise<v1.WithError<v1.Failable<v1.World>>> {
       throw new Error('Function not implemented.');
@@ -257,7 +263,7 @@ export const APIV2: BackListener<API> = {
     > {
       throw new Error('Function not implemented.');
     },
-    ValidateNewWorldName: function (
+    async ValidateNewWorldName(
       worldContainer: v1.WorldContainer,
       worldName: string
     ): Promise<v1.Failable<v1.WorldName>> {

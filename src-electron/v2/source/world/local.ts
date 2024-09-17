@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { worldContainerToPath } from 'app/src-electron/core/world/worldContainer';
 import { OpLevel, PlayerUUID } from '../../schema/player';
 import {
   BannedIp,
@@ -48,7 +49,7 @@ type OutputJsonHandlers = {
  * ローカルのワールドを管理するクラス
  */
 export class LocalWorldSource implements WorldContainerHandler {
-  private dirpath: Path;
+  protected dirpath: Path;
   private jsonHandlers: InfinitMap<WorldName, OutputJsonHandlers>;
   private worldMataMap: InfinitMap<WorldName, AsyncCache<World>>;
 
@@ -263,6 +264,35 @@ export class LocalWorldSource implements WorldContainerHandler {
 
     // OpLevel更新済みの全プレイヤーデータを格納する
     return ok(Object.values(playerObj));
+  }
+}
+
+/** 相対パス形式のローカルコンテナを扱う */
+export class RelativeWorldSource extends LocalWorldSource {
+  constructor(private readonly relPath: string) {
+    // TODO: worldContainerToPath は非推奨なので要修正
+    super(new Path(worldContainerToPath(relPath as any).path));
+  }
+
+  async listWorldLocations(): Promise<WorldLocation[]> {
+    const paths = await this.dirpath.iter();
+    const parsed = await Promise.all(
+      paths.map(async (path) => {
+        if (await path.isDirectory()) {
+          return Result.fromZod(
+            WorldLocation.safeParse({
+              container: {
+                containerType: 'relative',
+                path: this.relPath,
+              },
+              worldName: path.basename(),
+            })
+          );
+        }
+        return err.error('ENOTDIR');
+      })
+    );
+    return parsed.filter((x) => x.isOk).map((x) => x.value());
   }
 }
 

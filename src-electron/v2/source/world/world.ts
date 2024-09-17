@@ -2,7 +2,7 @@ import { World, WorldContainer, WorldLocation } from '../../schema/world';
 import { Result } from '../../util/base';
 import { Path } from '../../util/binary/path';
 import { WorldContainerHandler } from './container';
-import { LocalWorldSource } from './local';
+import { LocalWorldSource, RelativeWorldSource } from './local';
 
 /**
  * ワールドを管理するクラス
@@ -14,6 +14,8 @@ export class WorldSource {
     switch (container.containerType) {
       case 'local':
         return new LocalWorldSource(new Path(container.path));
+      case 'relative':
+        return new RelativeWorldSource(container.path);
     }
   }
 

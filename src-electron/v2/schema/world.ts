@@ -16,13 +16,24 @@ export const WorldName = z
   .brand('WorldName');
 export type WorldName = z.infer<typeof WorldName>;
 
+/** 絶対パスで表されるローカルコンテナ */
 export const LocalWorldContainer = z.object({
   containerType: z.enum(['local']),
   path: z.string(),
 });
 export type LocalWorldContainer = z.infer<typeof LocalWorldContainer>;
 
-export const WorldContainer = LocalWorldContainer;
+/** 相対パスで表されるローカルコンテナ */
+export const RelativeWorldContainer = z.object({
+  containerType: z.enum(['relative']),
+  path: z.string(),
+});
+export type RelativeWorldContainer = z.infer<typeof RelativeWorldContainer>;
+
+export const WorldContainer = z.discriminatedUnion('containerType', [
+  LocalWorldContainer,
+  RelativeWorldContainer,
+]);
 export type WorldContainer = z.infer<typeof WorldContainer>;
 
 export const WorldLocation = z.object({
