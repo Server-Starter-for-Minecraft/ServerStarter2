@@ -1,7 +1,4 @@
-import {
-  oldestMajorVersion,
-  Runtime,
-} from 'app/src-electron/v2/schema/runtime';
+import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
 import { MD5, SHA1, SHA256 } from 'app/src-electron/v2/util/binary/hash';
@@ -45,17 +42,21 @@ export async function checkJarHash(
 export function getRuntimeObj(
   runtimeType: Runtime['type'],
   javaVersion?: JavaVersionInfo
-): Runtime {
+): Result<Runtime> {
   switch (runtimeType) {
     case 'minecraft':
-      return {
-        type: 'minecraft',
-        version: javaVersion?.component ?? 'jre-legacy',
-      };
+      return Result.fromZod(
+        Runtime.safeParse({
+          type: 'minecraft',
+          version: javaVersion?.component ?? 'jre-legacy',
+        })
+      );
     case 'universal':
-      return {
-        type: 'universal',
-        majorVersion: javaVersion?.majorVersion ?? oldestMajorVersion,
-      };
+      return Result.fromZod(
+        Runtime.safeParse({
+          type: 'universal',
+          majorVersion: javaVersion?.majorVersion,
+        })
+      );
   }
 }

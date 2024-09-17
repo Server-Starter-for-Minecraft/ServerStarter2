@@ -19,10 +19,13 @@ export type MinecraftRuntime = z.infer<typeof MinecraftRuntime>;
 
 // バージョンだけを指定するランタイム
 // 実際は MinecraftRuntime か CorrettoRuntime かになる
-export type UniversalRuntime = {
-  type: 'universal';
-  majorVersion: JavaMajorVersion;
-};
+
+export const UniversalRuntime = z.object({
+  type: z.literal('universal'),
+  majorVersion: JavaMajorVersion,
+});
+
+export type UniversalRuntime = z.infer<typeof UniversalRuntime>;
 
 /**
  * Amazon Coretto で提供されているランタイム (未使用)
@@ -34,7 +37,12 @@ export type CorrettoRuntime = {
   majorVersion: JavaMajorVersion;
 };
 
-export type Runtime = MinecraftRuntime | UniversalRuntime; // | CorrettoRuntime
+export const Runtime = z.discriminatedUnion('type', [
+  MinecraftRuntime,
+  UniversalRuntime,
+  // CorrettoRuntime
+]);
+export type Runtime = z.infer<typeof Runtime>;
 
 /** メモリ等ランタイムの設定 */
 export const RuntimeSettings = z.union([
