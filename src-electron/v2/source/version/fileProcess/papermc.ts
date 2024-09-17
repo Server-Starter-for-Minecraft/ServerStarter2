@@ -121,58 +121,60 @@ export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work');
+    workPath.mkdir();
 
-  const cacheFolder = workPath.child('cache');
-  const serverFolder = workPath.child('servers');
+    const cacheFolder = workPath.child('cache');
+    const serverFolder = workPath.child('servers');
 
-  const ver21: PapermcVersion = {
-    id: '1.21' as VersionId,
-    type: 'papermc',
-    build: 40,
-  };
+    const ver21: PapermcVersion = {
+      id: '1.21' as VersionId,
+      type: 'papermc',
+      build: 40,
+    };
 
-  test(
-    'setPaperJar',
-    async () => {
-      const outputPath = serverFolder.child('testPaper/ver21');
-      const readyOperator = new ReadyPaperMCVersion(ver21, cacheFolder);
-      const cachePath = readyOperator.cachePath;
+    test(
+      'setPaperJar',
+      async () => {
+        const outputPath = serverFolder.child('testPaper/ver21');
+        const readyOperator = new ReadyPaperMCVersion(ver21, cacheFolder);
+        const cachePath = readyOperator.cachePath;
 
-      // 条件をそろえるために，ファイル類を削除する
-      await outputPath.remove();
-      // キャッシュの威力を試したいときは以下の行をコメントアウト
-      await cachePath?.remove();
+        // 条件をそろえるために，ファイル類を削除する
+        await outputPath.remove();
+        // キャッシュの威力を試したいときは以下の行をコメントアウト
+        await cachePath?.remove();
 
-      const res = await readyOperator.completeReady4VersionFiles(
-        outputPath,
-        async (runtime) => ok()
-      );
+        const res = await readyOperator.completeReady4VersionFiles(
+          outputPath,
+          async (runtime) => ok()
+        );
 
-      // 戻り値の検証
-      expect(res.isOk).toBe(true);
-      expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
-        'replaceArg'
-      );
+        // 戻り値の検証
+        expect(res.isOk).toBe(true);
+        expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
+          'replaceArg'
+        );
 
-      // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
-      // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+        // ファイルの設置状況の検証
+        expect(getJarPath(outputPath).exists()).toBe(true);
+        // Jarを実行しないと生成されないため，今回はTestの対象外
+        // expect(outputPath.child('libraries').exists()).toBe(true);
 
-      // 実行後にファイル削除
-      const remover = new RemovePaperMCVersion(ver21, cacheFolder);
-      await remover.completeRemoveVersion(outputPath);
+        // 実行後にファイル削除
+        const remover = new RemovePaperMCVersion(ver21, cacheFolder);
+        await remover.completeRemoveVersion(outputPath);
 
-      // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
-    },
-    1000 * 100
-  );
+        // 削除後の状態を確認
+        expect(getJarPath(outputPath).exists()).toBe(false);
+        expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      },
+      1000 * 100
+    );
+  });
 }

@@ -90,11 +90,10 @@ module.exports = configure(function (/* ctx */) {
       // distDir
 
       extendViteConf(viteConf) {
-        viteConf.define = {
-          ...viteConf.define,
+        viteConf.define = Object.assign(viteConf.define, {
           'import.meta.vitest': 'undefined',
-          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ :false
-        };
+          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+        });
       },
 
       viteVuePluginOptions: {

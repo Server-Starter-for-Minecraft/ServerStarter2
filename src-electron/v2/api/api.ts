@@ -10,14 +10,92 @@ import { RuntimeContainer } from '../source/runtime/runtime';
 import { VersionContainer } from '../source/version/version';
 import { WorldSource } from '../source/world/world';
 import { err, ok, Result } from '../util/base';
+import { Path } from '../util/binary/path';
 import { genUUID } from '../util/random/uuid';
 import { worldDataConverter } from './converter/world';
 import * as v1 from './v1schema';
 
-declare const worldSource: WorldSource;
-declare const versionContainer: VersionContainer;
-declare const runtimeContainer: RuntimeContainer;
-declare const osPlatform: OsPlatform;
+const worldSource = new WorldSource();
+const versionContainer = new VersionContainer(new Path(''));
+const runtimeContainer = new RuntimeContainer(new Path(''), async () =>
+  err.error('TODO:')
+);
+const osPlatform = OsPlatform.parse('windows-x64');
+
+const WorldLocationId = z.string().brand('WorldLocationId');
+type WorldLocationId = z.infer<typeof WorldLocationId>;
+
+type WorldDef = {
+  id: v1.WorldID;
+  handler: WorldHandler;
+  location: WorldLocation;
+};
+
+class WorldHandlers {
+  private readonly worldIdToHandler: Map<v1.WorldID, WorldDef>;
+  private readonly worldLocationToHandler: Map<WorldLocationId, WorldDef>;
+
+  constructor(
+    private readonly worldSource: WorldSource,
+    private readonly versionContainer: VersionContainer,
+    private readonly runtimeContainer: RuntimeContainer,
+    private readonly osPlatform: OsPlatform
+  ) {
+    this.worldIdToHandler = new Map();
+    this.worldLocationToHandler = new Map();
+  }
+
+  // WorldLocationから一意の文字列を出力
+  private encodeWorldLocation(worldLocation: WorldLocation): WorldLocationId {
+    return WorldLocationId.parse(
+      `${worldLocation.container}::${worldLocation.worldName}`
+    );
+  }
+
+  private generateNextWorldId(): v1.WorldID {
+    return genUUID() as v1.WorldID;
+  }
+
+  async createWorldHandler(worldLocation: WorldLocation) {
+    if (this.getByWorldLocation(worldLocation).isOk)
+      return err.error('WORLD ALREADY EXISTS');
+
+    const worldHandler = await WorldHandler.create(
+      this.worldSource,
+      this.versionContainer,
+      this.runtimeContainer,
+      this.osPlatform,
+      worldLocation
+    );
+
+    if (worldHandler.isErr) return worldHandler;
+    const worldLocationId = this.encodeWorldLocation(worldLocation);
+
+    const worldId = this.generateNextWorldId();
+    const worldDef: WorldDef = {
+      id: worldId,
+      location: worldLocation,
+      handler: worldHandler.value(),
+    };
+
+    this.worldIdToHandler.set(worldId, worldDef);
+    this.worldLocationToHandler.set(worldLocationId, worldDef);
+
+    return ok(worldDef);
+  }
+
+  getByWorldId(worldId: v1.WorldID): Result<WorldDef> {
+    const result = this.worldIdToHandler.get(worldId);
+    return result === undefined ? err.error('WORLD_IS_MISSSING') : ok(result);
+  }
+
+  getByWorldLocation(worldLocation: WorldLocation): Result<WorldDef> {
+    const result = this.worldLocationToHandler.get(
+      this.encodeWorldLocation(worldLocation)
+    );
+    return result === undefined ? err.error('WORLD_IS_MISSSING') : ok(result);
+  }
+}
 
 const worldHandlers = new WorldHandlers(
   worldSource,
@@ -26,7 +104,7 @@ const worldHandlers = new WorldHandlers(
   osPlatform
 );
 
-const APIV2: BackListener<API> = {
+export const APIV2: BackListener<API> = {
   on: {
     Command(world: v1.WorldID, command: string) {
       worldHandlers
@@ -212,78 +290,3 @@ const APIV2: BackListener<API> = {
     PickDialog: undefined,
   },
 };
-
-const WorldLocationId = z.string().brand('WorldLocationId');
-type WorldLocationId = z.infer<typeof WorldLocationId>;
-
-type WorldDef = {
-  id: v1.WorldID;
-  handler: WorldHandler;
-  location: WorldLocation;
-};
-
-class WorldHandlers {
-  private readonly worldIdToHandler: Map<v1.WorldID, WorldDef>;
-  private readonly worldLocationToHandler: Map<WorldLocationId, WorldDef>;
-
-  constructor(
-    private readonly worldSource: WorldSource,
-    private readonly versionContainer: VersionContainer,
-    private readonly runtimeContainer: RuntimeContainer,
-    private readonly osPlatform: OsPlatform
-  ) {
-    this.worldIdToHandler = new Map();
-    this.worldLocationToHandler = new Map();
-  }
-
-  // WorldLocationから一意の文字列を出力
-  private encodeWorldLocation(worldLocation: WorldLocation): WorldLocationId {
-    return WorldLocationId.parse(
-      `${worldLocation.container}::${worldLocation.worldName}`
-    );
-  }
-
-  private generateNextWorldId(): v1.WorldID {
-    return genUUID() as v1.WorldID;
-  }
-
-  async createWorldHandler(worldLocation: WorldLocation) {
-    if (this.getByWorldLocation(worldLocation).isOk)
-      return err.error('WORLD ALREADY EXISTS');
-
-    const worldHandler = await WorldHandler.create(
-      this.worldSource,
-      this.versionContainer,
-      this.runtimeContainer,
-      this.osPlatform,
-      worldLocation
-    );
-
-    if (worldHandler.isErr) return worldHandler;
-    const worldLocationId = this.encodeWorldLocation(worldLocation);
-
-    const worldId = this.generateNextWorldId();
-    const worldDef: WorldDef = {
-      id: worldId,
-      location: worldLocation,
-      handler: worldHandler.value(),
-    };
-
-    this.worldIdToHandler.set(worldId, worldDef);
-    this.worldLocationToHandler.set(worldLocationId, worldDef);
-
-    return ok(worldDef);
-  }
-
-  getByWorldId(worldId: v1.WorldID): Result<WorldDef> {
-    const result = this.worldIdToHandler.get(worldId);
-    return result === undefined ? err.error('WORLD_IS_MISSSING') : ok(result);
-  }
-
-  getByWorldLocation(worldLocation: WorldLocation): Result<WorldDef> {
-    const result = this.worldLocationToHandler.get(
-      this.encodeWorldLocation(worldLocation)
-    );
-    return result === undefined ? err.error('WORLD_IS_MISSSING') : ok(result);
-  }
-}

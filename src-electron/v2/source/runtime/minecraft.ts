@@ -128,34 +128,36 @@ const AllManifest = z.object({
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
-  const path = await import('path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
+    const path = await import('path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child(
-    'work',
-    path.basename(__filename, '.ts')
-  );
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    workPath.mkdir();
 
-  test.skip(
-    'minecraft',
-    async () => {
-      const minecraft = new MinecraftRuntimeInstaller(
-        workPath.child('01', 'cache')
-      );
+    test.skip(
+      'minecraft',
+      async () => {
+        const minecraft = new MinecraftRuntimeInstaller(
+          workPath.child('01', 'cache')
+        );
 
-      const installResult = await minecraft.install(
-        workPath.child('01', 'java-runtime-alpha'),
-        {
-          type: 'minecraft',
-          version: 'java-runtime-alpha',
-        },
-        'windows-x64'
-      );
-      expect(installResult.isOk).toBe(true);
-    },
-    1000 * 1000
-  );
+        const installResult = await minecraft.install(
+          workPath.child('01', 'java-runtime-alpha'),
+          {
+            type: 'minecraft',
+            version: 'java-runtime-alpha',
+          },
+          'windows-x64'
+        );
+        expect(installResult.isOk).toBe(true);
+      },
+      1000 * 1000
+    );
+  });
 }

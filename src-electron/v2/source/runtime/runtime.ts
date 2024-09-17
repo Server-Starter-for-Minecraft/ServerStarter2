@@ -186,95 +186,98 @@ export class RuntimeContainer {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
-  const path = await import('path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
+    const path = await import('path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child(
-    'work',
-    path.basename(__filename, '.ts')
-  );
-  await workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    await workPath.mkdir();
 
-  const runtimeContainer = new RuntimeContainer(workPath, async () =>
-    ok({
-      type: 'minecraft',
-      version: 'jre-legacy',
-    } as const)
-  );
+    const runtimeContainer = new RuntimeContainer(workPath, async () =>
+      ok({
+        type: 'minecraft',
+        version: 'jre-legacy',
+      } as const)
+    );
 
-  const runtimes: (Runtime & { explain: string })[] = [
-    { explain: 'jre-legacy', type: 'minecraft', version: 'jre-legacy' },
-    {
-      explain: 'java-runtime-alpha',
-      type: 'minecraft',
-      version: 'java-runtime-alpha',
-    },
-    {
-      explain: 'java-runtime-beta',
-      type: 'minecraft',
-      version: 'java-runtime-beta',
-    },
-    {
-      explain: 'java-runtime-gamma',
-      type: 'minecraft',
-      version: 'java-runtime-gamma',
-    },
-    {
-      explain: 'java-runtime-delta',
-      type: 'minecraft',
-      version: 'java-runtime-delta',
-    },
-    {
-      explain: 'universal-8',
-      type: 'universal',
-      majorVersion: JavaMajorVersion.parse(21),
-    },
-  ];
+    const runtimes: (Runtime & { explain: string })[] = [
+      { explain: 'jre-legacy', type: 'minecraft', version: 'jre-legacy' },
+      {
+        explain: 'java-runtime-alpha',
+        type: 'minecraft',
+        version: 'java-runtime-alpha',
+      },
+      {
+        explain: 'java-runtime-beta',
+        type: 'minecraft',
+        version: 'java-runtime-beta',
+      },
+      {
+        explain: 'java-runtime-gamma',
+        type: 'minecraft',
+        version: 'java-runtime-gamma',
+      },
+      {
+        explain: 'java-runtime-delta',
+        type: 'minecraft',
+        version: 'java-runtime-delta',
+      },
+      {
+        explain: 'universal-8',
+        type: 'universal',
+        majorVersion: JavaMajorVersion.parse(21),
+      },
+    ];
 
-  const osPlatforms: OsPlatform[] = [
-    'windows-x64',
-    'mac-os',
-    'mac-os-arm64',
-    'debian',
-  ];
+    const osPlatforms: OsPlatform[] = [
+      'windows-x64',
+      'mac-os',
+      'mac-os-arm64',
+      'debian',
+    ];
 
-  // 公式がランタイムを提供していない組
-  const missingCases: { os: OsPlatform; explain: string }[] = [
-    { os: 'mac-os-arm64', explain: 'jre-legacy' },
-    { os: 'mac-os-arm64', explain: 'java-runtime-alpha' },
-    { os: 'mac-os-arm64', explain: 'java-runtime-beta' },
-    { os: 'mac-os-arm64', explain: 'universal-8' },
-  ];
+    // 公式がランタイムを提供していない組
+    const missingCases: { os: OsPlatform; explain: string }[] = [
+      { os: 'mac-os-arm64', explain: 'jre-legacy' },
+      { os: 'mac-os-arm64', explain: 'java-runtime-alpha' },
+      { os: 'mac-os-arm64', explain: 'java-runtime-beta' },
+      { os: 'mac-os-arm64', explain: 'universal-8' },
+    ];
 
-  test.skip.each(
-    osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
-  )(
-    '$os $runtime.explain',
-    async (testCase) => {
-      // インストール
-      const readyResult = await runtimeContainer.ready(
-        testCase.runtime,
-        testCase.os,
-        true
-      );
+    test.skip.each(
+      osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
+    )(
+      '$os $runtime.explain',
+      async (testCase) => {
+        // インストール
+        const readyResult = await runtimeContainer.ready(
+          testCase.runtime,
+          testCase.os,
+          true
+        );
 
-      // ランタイムが提供されている組み合わせかどうかをチェック
-      const isValidPair =
-        missingCases.find(
-          (x) => x.os === testCase.os && x.explain === testCase.runtime.explain
-        ) === undefined;
+        // ランタイムが提供されている組み合わせかどうかをチェック
+        const isValidPair =
+          missingCases.find(
+            (x) =>
+              x.os === testCase.os && x.explain === testCase.runtime.explain
+          ) === undefined;
 
-      expect(readyResult.isOk).toBe(isValidPair);
+        expect(readyResult.isOk).toBe(isValidPair);
 
-      // アンインストール
-      const removeResult = await runtimeContainer.remove(
-        testCase.runtime,
-        testCase.os
-      );
-      expect(removeResult.isOk).toBe(true);
-    },
-    1000 * 1000
-  );
+        // アンインストール
+        const removeResult = await runtimeContainer.remove(
+          testCase.runtime,
+          testCase.os
+        );
+        expect(removeResult.isOk).toBe(true);
+      },
+      1000 * 1000
+    );
+  });
 }

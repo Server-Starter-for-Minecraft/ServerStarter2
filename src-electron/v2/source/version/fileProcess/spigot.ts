@@ -193,80 +193,82 @@ async function getServerJarFromBuildTools(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect, vi } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work');
+    workPath.mkdir();
 
-  const cacheFolder = workPath.child('cache');
-  const serverFolder = workPath.child('servers');
+    const cacheFolder = workPath.child('cache');
+    const serverFolder = workPath.child('servers');
 
-  const ver21: SpigotVersion = {
-    id: '1.21' as VersionId,
-    type: 'spigot',
-  };
+    const ver21: SpigotVersion = {
+      id: '1.21' as VersionId,
+      type: 'spigot',
+    };
 
-  test('setSpigotJar', async () => {
-    const outputPath = serverFolder.child('testSpigot/ver21');
-    const readyOperator = new ReadySpigotVersion(ver21, cacheFolder);
-    const cachePath = readyOperator.cachePath;
+    test('setSpigotJar', async () => {
+      const outputPath = serverFolder.child('testSpigot/ver21');
+      const readyOperator = new ReadySpigotVersion(ver21, cacheFolder);
+      const cachePath = readyOperator.cachePath;
 
-    // 条件をそろえるために，ファイル類を削除する
-    await outputPath.remove();
-    // キャッシュの威力を試したいときは以下の行をコメントアウト
-    await cachePath?.remove();
+      // 条件をそろえるために，ファイル類を削除する
+      await outputPath.remove();
+      // キャッシュの威力を試したいときは以下の行をコメントアウト
+      await cachePath?.remove();
 
-    // `BuildTools.jar`の実行によって必要なファイルが生成された体を再現する
-    const execRuntime: ExecRuntime = vi.fn(async (options) => {
-      const versionId = options.args[4];
-      const tgtJarPath = options.currentDir.child(`spigot-${versionId}.jar`);
-      tgtJarPath.writeText(`spigot-${versionId}.jar`);
-      return ok();
+      // `BuildTools.jar`の実行によって必要なファイルが生成された体を再現する
+      const execRuntime: ExecRuntime = vi.fn(async (options) => {
+        const versionId = options.args[4];
+        const tgtJarPath = options.currentDir.child(`spigot-${versionId}.jar`);
+        tgtJarPath.writeText(`spigot-${versionId}.jar`);
+        return ok();
+      });
+
+      // テスト対象の関数
+      const res = await readyOperator.completeReady4VersionFiles(
+        outputPath,
+        execRuntime
+      );
+
+      // 戻り値の検証
+      expect(res.isOk).toBe(true);
+      expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
+        'replaceArg'
+      );
+
+      // execRuntime が正しい引数で呼ばれている
+      expect(execRuntime).toHaveBeenCalledTimes(1);
+      expect(execRuntime).toHaveBeenNthCalledWith(1, {
+        args: [
+          '-Dfile.encoding=UTF-8',
+          '-jar',
+          expect.any(String),
+          '--rev',
+          '1.21',
+        ],
+        currentDir: expect.any(Path),
+        onOut: expect.any(Function),
+        runtime: {
+          majorVersion: 66,
+          type: 'universal',
+        },
+      });
+
+      // ファイルの設置状況の検証
+      expect(getJarPath(outputPath).exists()).toBe(true);
+      // Jarを実行しないと生成されないため，今回はTestの対象外
+      // expect(outputPath.child('libraries').exists()).toBe(true);
+
+      // 実行後にファイル削除
+      const remover = new RemoveSpigotVersion(ver21, cacheFolder);
+      await remover.completeRemoveVersion(outputPath);
+
+      // 削除後の状態を確認
+      expect(getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
     });
-
-    // テスト対象の関数
-    const res = await readyOperator.completeReady4VersionFiles(
-      outputPath,
-      execRuntime
-    );
-
-    // 戻り値の検証
-    expect(res.isOk).toBe(true);
-    expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
-      'replaceArg'
-    );
-
-    // execRuntime が正しい引数で呼ばれている
-    expect(execRuntime).toHaveBeenCalledTimes(1);
-    expect(execRuntime).toHaveBeenNthCalledWith(1, {
-      args: [
-        '-Dfile.encoding=UTF-8',
-        '-jar',
-        expect.any(String),
-        '--rev',
-        '1.21',
-      ],
-      currentDir: expect.any(Path),
-      onOut: expect.any(Function),
-      runtime: {
-        majorVersion: 66,
-        type: 'universal',
-      },
-    });
-
-    // ファイルの設置状況の検証
-    expect(getJarPath(outputPath).exists()).toBe(true);
-    // Jarを実行しないと生成されないため，今回はTestの対象外
-    // expect(outputPath.child('libraries').exists()).toBe(true);
-
-    // 実行後にファイル削除
-    const remover = new RemoveSpigotVersion(ver21, cacheFolder);
-    await remover.completeRemoveVersion(outputPath);
-
-    // 削除後の状態を確認
-    expect(getJarPath(outputPath).exists()).toBe(false);
-    expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
   });
 }

@@ -150,119 +150,49 @@ export async function getVanillaVersionJson(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work');
+    workPath.mkdir();
 
-  const cacheFolder = workPath.child('cache');
-  const serverFolder = workPath.child('servers');
+    const cacheFolder = workPath.child('cache');
+    const serverFolder = workPath.child('servers');
 
-  const ver21: VanillaVersion = {
-    id: '1.21' as VersionId,
-    type: 'vanilla',
-    release: true,
-  };
+    const ver21: VanillaVersion = {
+      id: '1.21' as VersionId,
+      type: 'vanilla',
+      release: true,
+    };
 
-  test('metaJsonParser', async () => {
-    const urlFromManifest =
-      'https://piston-meta.mojang.com/v1/packages/177e49d3233cb6eac42f0495c0a48e719870c2ae/1.21.json';
+    test('metaJsonParser', async () => {
+      const urlFromManifest =
+        'https://piston-meta.mojang.com/v1/packages/177e49d3233cb6eac42f0495c0a48e719870c2ae/1.21.json';
 
-    const jsonStr = (await new Url(urlFromManifest).into(Bytes)).onOk((val) =>
-      val.toStr()
-    );
-    if (jsonStr.isErr) {
-      return jsonStr;
-    }
-
-    // JSON情報を変換して`version.json`に書き込めるオブジェクトを生成
-    const verJson = vanillaMetaInfo2VersionJson(JSON.parse(jsonStr.value()));
-
-    expect(verJson.javaVersion?.component).toEqual('java-runtime-delta');
-  });
-
-  test('setVersionJar', async () => {
-    const outputPath = serverFolder.child('test/ver21');
-    const readyOperator = new ReadyVanillaVersion(ver21, cacheFolder);
-    const cachePath = readyOperator.cachePath;
-
-    // 条件をそろえるために，ファイル類を削除する
-    await outputPath.remove();
-    // キャッシュの威力を試したいときは以下の行をコメントアウト
-    // await cachePath?.remove();
-
-    const res = await readyOperator.completeReady4VersionFiles(
-      outputPath,
-      async (runtime) => ok()
-    );
-
-    // 戻り値の検証
-    expect(res.isOk).toBe(true);
-    expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
-      'replaceArg'
-    );
-
-    // ファイルの設置状況の検証
-    expect(getJarPath(outputPath).exists()).toBe(true);
-    // Jarを実行しないと生成されないため，今回はTestの対象外
-    // expect(outputPath.child('libraries').exists()).toBe(true);
-
-    // 実行後にファイル削除
-    const remover = new RemoveVanillaVersion(ver21, cacheFolder);
-    await remover.completeRemoveVersion(outputPath);
-
-    // 削除後の状態を確認
-    expect(getJarPath(outputPath).exists()).toBe(false);
-    expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
-  });
-
-  // Log4Jのファイルが`outputPath`にコピーされていることを確認する（各Log4Jのバージョンで確認）
-  // 上記に関連して，各バージョンのgetCommand()が正しいArgsを返すことを確認する
-  const log4JCaseVers: {
-    ver: VersionId;
-    log4JFile?: string;
-    command?: string;
-  }[] = [
-    {
-      ver: VersionId.parse('1.21'),
-    },
-    {
-      ver: VersionId.parse('1.17'),
-      command: '-Dlog4j2.formatMsgNoLookups=true',
-    },
-    {
-      ver: VersionId.parse('1.16'),
-      command: '-Dlog4j.configurationFile=log4j2_112-116.xml',
-      log4JFile: 'log4j2_112-116.xml',
-    },
-    {
-      ver: VersionId.parse('1.9'),
-      command: '-Dlog4j.configurationFile=log4j2_17-111.xml',
-      log4JFile: 'log4j2_17-111.xml',
-    },
-    {
-      ver: VersionId.parse('1.5'),
-    },
-  ];
-  test.each(log4JCaseVers)(
-    'log4Jcheck ($ver)',
-    async ({ ver, command, log4JFile }) => {
-      const outputPath = serverFolder.child(`log4Jtest/ver${ver}`);
-      const readyOperator = new ReadyVanillaVersion(
-        {
-          type: 'vanilla',
-          id: ver,
-          release: true,
-        },
-        cacheFolder
+      const jsonStr = (await new Url(urlFromManifest).into(Bytes)).onOk((val) =>
+        val.toStr()
       );
+      if (jsonStr.isErr) {
+        return jsonStr;
+      }
+
+      // JSON情報を変換して`version.json`に書き込めるオブジェクトを生成
+      const verJson = vanillaMetaInfo2VersionJson(JSON.parse(jsonStr.value()));
+
+      expect(verJson.javaVersion?.component).toEqual('java-runtime-delta');
+    });
+
+    test('setVersionJar', async () => {
+      const outputPath = serverFolder.child('test/ver21');
+      const readyOperator = new ReadyVanillaVersion(ver21, cacheFolder);
+      const cachePath = readyOperator.cachePath;
 
       // 条件をそろえるために，ファイル類を削除する
       await outputPath.remove();
       // キャッシュの威力を試したいときは以下の行をコメントアウト
-      // await readyOperator.cachePath.remove();
+      // await cachePath?.remove();
 
       const res = await readyOperator.completeReady4VersionFiles(
         outputPath,
@@ -271,20 +201,92 @@ if (import.meta.vitest) {
 
       // 戻り値の検証
       expect(res.isOk).toBe(true);
-      if (command) {
-        expect(
-          res
-            .value()
-            .getCommand({ jvmArgs: ['replaceArg'] })
-            .includes(command)
-        ).toBe(true);
-      }
+      expect(res.value().getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
+        'replaceArg'
+      );
 
-      // ファイルの存在確認
-      if (log4JFile) {
-        expect(outputPath.child(log4JFile).exists()).toBe(true);
-      }
-    },
-    1000 * 100
-  );
+      // ファイルの設置状況の検証
+      expect(getJarPath(outputPath).exists()).toBe(true);
+      // Jarを実行しないと生成されないため，今回はTestの対象外
+      // expect(outputPath.child('libraries').exists()).toBe(true);
+
+      // 実行後にファイル削除
+      const remover = new RemoveVanillaVersion(ver21, cacheFolder);
+      await remover.completeRemoveVersion(outputPath);
+
+      // 削除後の状態を確認
+      expect(getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+    });
+
+    // Log4Jのファイルが`outputPath`にコピーされていることを確認する（各Log4Jのバージョンで確認）
+    // 上記に関連して，各バージョンのgetCommand()が正しいArgsを返すことを確認する
+    const log4JCaseVers: {
+      ver: VersionId;
+      log4JFile?: string;
+      command?: string;
+    }[] = [
+      {
+        ver: VersionId.parse('1.21'),
+      },
+      {
+        ver: VersionId.parse('1.17'),
+        command: '-Dlog4j2.formatMsgNoLookups=true',
+      },
+      {
+        ver: VersionId.parse('1.16'),
+        command: '-Dlog4j.configurationFile=log4j2_112-116.xml',
+        log4JFile: 'log4j2_112-116.xml',
+      },
+      {
+        ver: VersionId.parse('1.9'),
+        command: '-Dlog4j.configurationFile=log4j2_17-111.xml',
+        log4JFile: 'log4j2_17-111.xml',
+      },
+      {
+        ver: VersionId.parse('1.5'),
+      },
+    ];
+    test.each(log4JCaseVers)(
+      'log4Jcheck ($ver)',
+      async ({ ver, command, log4JFile }) => {
+        const outputPath = serverFolder.child(`log4Jtest/ver${ver}`);
+        const readyOperator = new ReadyVanillaVersion(
+          {
+            type: 'vanilla',
+            id: ver,
+            release: true,
+          },
+          cacheFolder
+        );
+
+        // 条件をそろえるために，ファイル類を削除する
+        await outputPath.remove();
+        // キャッシュの威力を試したいときは以下の行をコメントアウト
+        // await readyOperator.cachePath.remove();
+
+        const res = await readyOperator.completeReady4VersionFiles(
+          outputPath,
+          async (runtime) => ok()
+        );
+
+        // 戻り値の検証
+        expect(res.isOk).toBe(true);
+        if (command) {
+          expect(
+            res
+              .value()
+              .getCommand({ jvmArgs: ['replaceArg'] })
+              .includes(command)
+          ).toBe(true);
+        }
+
+        // ファイルの存在確認
+        if (log4JFile) {
+          expect(outputPath.child(log4JFile).exists()).toBe(true);
+        }
+      },
+      1000 * 100
+    );
+  });
 }

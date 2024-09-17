@@ -184,117 +184,120 @@ async function renameFilesFromInstaller(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work');
+    workPath.mkdir();
 
-  const cacheFolder = workPath.child('cache');
-  const serverFolder = workPath.child('servers');
+    const cacheFolder = workPath.child('cache');
+    const serverFolder = workPath.child('servers');
 
-  const ver21: ForgeVersion = {
-    id: '1.13.2' as VersionId,
-    type: 'forge',
-    forge_version: '25.0.223',
-    download_url:
-      'https://maven.minecraftforge.net/net/minecraftforge/forge/1.13.2-25.0.223/forge-1.13.2-25.0.223-installer.jar',
-  };
+    const ver21: ForgeVersion = {
+      id: '1.13.2' as VersionId,
+      type: 'forge',
+      forge_version: '25.0.223',
+      download_url:
+        'https://maven.minecraftforge.net/net/minecraftforge/forge/1.13.2-25.0.223/forge-1.13.2-25.0.223-installer.jar',
+    };
 
-  const JVM_ARGS = ['JVM', 'ARGUMENT'];
+    const JVM_ARGS = ['JVM', 'ARGUMENT'];
 
-  test.each([
-    {
-      genfiles: [
-        {
-          path: 'forge-1.21-51.0.22.jar',
-          content: 'foo',
-        },
-      ],
-      args: [
-        ...JVM_ARGS,
-        '-Dfile.encoding=UTF-8',
-        '-Dlog4j.configurationFile=log4j2_112-116.xml',
-        '-jar',
-        expect.any(String),
-        '--nogui',
-      ],
-    },
-    {
-      genfiles: [
-        {
-          path: 'version.bat',
-          content:
-            '# COMMENT\r\n   java @user_jvm_args.txt @path/to/args.txt %*   \r\n',
-        },
-        {
-          path: 'version.sh',
-          content: 'java @user_jvm_args.txt @path/to/args.txt "$@"\n# COMMENT',
-        },
-        {
-          path: 'libraries/to/args.txt',
-          content: '-a foo\n--bar buz\n-a.a.a=b',
-        },
-      ],
-      args: [
-        ...JVM_ARGS,
-        '-Dfile.encoding=UTF-8',
-        '-Dlog4j.configurationFile=log4j2_112-116.xml',
-        '@path/to/args.txt',
-        '--nogui',
-      ],
-    },
-  ])('setForgeJar', async ({ genfiles, args }) => {
-    const outputPath = serverFolder.child('testForge/ver21');
-    const readyOperator = new ReadyForgeVersion(ver21, cacheFolder);
+    test.each([
+      {
+        genfiles: [
+          {
+            path: 'forge-1.21-51.0.22.jar',
+            content: 'foo',
+          },
+        ],
+        args: [
+          ...JVM_ARGS,
+          '-Dfile.encoding=UTF-8',
+          '-Dlog4j.configurationFile=log4j2_112-116.xml',
+          '-jar',
+          expect.any(String),
+          '--nogui',
+        ],
+      },
+      {
+        genfiles: [
+          {
+            path: 'version.bat',
+            content:
+              '# COMMENT\r\n   java @user_jvm_args.txt @path/to/args.txt %*   \r\n',
+          },
+          {
+            path: 'version.sh',
+            content:
+              'java @user_jvm_args.txt @path/to/args.txt "$@"\n# COMMENT',
+          },
+          {
+            path: 'libraries/to/args.txt',
+            content: '-a foo\n--bar buz\n-a.a.a=b',
+          },
+        ],
+        args: [
+          ...JVM_ARGS,
+          '-Dfile.encoding=UTF-8',
+          '-Dlog4j.configurationFile=log4j2_112-116.xml',
+          '@path/to/args.txt',
+          '--nogui',
+        ],
+      },
+    ])('setForgeJar', async ({ genfiles, args }) => {
+      const outputPath = serverFolder.child('testForge/ver21');
+      const readyOperator = new ReadyForgeVersion(ver21, cacheFolder);
 
-    // 条件をそろえるために，ファイル類を削除する
-    await outputPath.remove();
-    // キャッシュの威力を試したいときは以下の行をコメントアウト
-    await readyOperator.cachePath.remove();
+      // 条件をそろえるために，ファイル類を削除する
+      await outputPath.remove();
+      // キャッシュの威力を試したいときは以下の行をコメントアウト
+      await readyOperator.cachePath.remove();
 
-    // `installer.jar`の実行によって必要なファイルが生成された体を再現する
-    const execRuntime: ExecRuntime = vi.fn(async (options) => {
-      for (const { path, content } of genfiles) {
-        const tgtJarPath = options.currentDir.child(path);
-        await tgtJarPath.writeText(content);
-      }
-      return ok();
-    });
+      // `installer.jar`の実行によって必要なファイルが生成された体を再現する
+      const execRuntime: ExecRuntime = vi.fn(async (options) => {
+        for (const { path, content } of genfiles) {
+          const tgtJarPath = options.currentDir.child(path);
+          await tgtJarPath.writeText(content);
+        }
+        return ok();
+      });
 
-    // テスト対象の関数
-    const res = await readyOperator.completeReady4VersionFiles(
-      outputPath,
-      execRuntime
-    );
+      // テスト対象の関数
+      const res = await readyOperator.completeReady4VersionFiles(
+        outputPath,
+        execRuntime
+      );
 
-    // 戻り値の検証
-    expect(res.isOk).toBe(true);
-    expect(res.value().getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
+      // 戻り値の検証
+      expect(res.isOk).toBe(true);
+      expect(res.value().getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
-    // ファイルの設置状況の検証
-    genfiles.forEach(({ path }) => {
-      const targetPath = outputPath.child(path);
-      if (targetPath.extname() === '.jar') {
-        expect(outputPath.child('version.jar').exists()).toBe(true);
-      } else {
-        expect(outputPath.child(path).exists()).toBe(true);
-      }
-    });
+      // ファイルの設置状況の検証
+      genfiles.forEach(({ path }) => {
+        const targetPath = outputPath.child(path);
+        if (targetPath.extname() === '.jar') {
+          expect(outputPath.child('version.jar').exists()).toBe(true);
+        } else {
+          expect(outputPath.child(path).exists()).toBe(true);
+        }
+      });
 
-    // 実行後にファイル削除
-    const remover = new RemoveForgeVersion(ver21, cacheFolder);
-    await remover.completeRemoveVersion(outputPath);
+      // 実行後にファイル削除
+      const remover = new RemoveForgeVersion(ver21, cacheFolder);
+      await remover.completeRemoveVersion(outputPath);
 
-    // 削除後の状態を確認
-    genfiles.forEach(({ path }) => {
-      const targetPath = outputPath.child(path);
-      if (targetPath.extname() === '.jar') {
-        expect(outputPath.child('version.jar').exists()).toBe(false);
-      } else {
-        expect(readyOperator.cachePath.child(path).exists()).toBe(true);
-      }
+      // 削除後の状態を確認
+      genfiles.forEach(({ path }) => {
+        const targetPath = outputPath.child(path);
+        if (targetPath.extname() === '.jar') {
+          expect(outputPath.child('version.jar').exists()).toBe(false);
+        } else {
+          expect(readyOperator.cachePath.child(path).exists()).toBe(true);
+        }
+      });
     });
   });
 }

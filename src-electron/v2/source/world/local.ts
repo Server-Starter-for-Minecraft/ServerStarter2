@@ -268,75 +268,63 @@ export class LocalWorldSource implements WorldContainerHandler {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { IpAdress } = await import('../../schema/ipadress');
-  const { PlayerName, PlayerUUID } = await import('../../schema/player');
-  const { McTimestamp } = await import('../../schema/timestamp');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { IpAdress } = await import('../../schema/ipadress');
+    const { PlayerName, PlayerUUID } = await import('../../schema/player');
+    const { McTimestamp } = await import('../../schema/timestamp');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  await workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work');
+    await workPath.mkdir();
 
-  type TestCase = {
-    worldName: string;
-    setting: World;
-    files: {
-      file: string;
-      json?: any;
-      txt?: string;
-    }[];
-  };
+    type TestCase = {
+      worldName: string;
+      setting: World;
+      files: {
+        file: string;
+        json?: any;
+        txt?: string;
+      }[];
+    };
 
-  const testCases: TestCase[] = [
-    {
-      worldName: 'bannedIp',
-      setting: {
-        using: false,
-        version: { type: 'unknown' },
-        bannedIps: [
-          {
-            ip: IpAdress.parse('IpAdress'),
-            created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
-            source: '??',
-            expires: 'forever',
-            reason: 'nantonaku',
-          },
-        ],
-      },
-      files: [
-        {
-          file: BANNEDIPS_FILE_NAME,
-          json: [
+    const testCases: TestCase[] = [
+      {
+        worldName: 'bannedIp',
+        setting: {
+          using: false,
+          version: { type: 'unknown' },
+          bannedIps: [
             {
-              ip: 'IpAdress',
-              created: '2024-01-01 23:47:21 +0900',
+              ip: IpAdress.parse('IpAdress'),
+              created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
               source: '??',
               expires: 'forever',
               reason: 'nantonaku',
             },
           ],
         },
-      ],
-    },
-    {
-      worldName: 'bannedPlayers',
-      setting: {
-        using: false,
-        version: { type: 'unknown' },
-        bannedPlayers: [
+        files: [
           {
-            uuid: PlayerUUID.parse('12341234-1234-1234-1234-123412341234'),
-            created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
-            source: '??',
-            expires: 'forever',
-            reason: 'nantonaku',
+            file: BANNEDIPS_FILE_NAME,
+            json: [
+              {
+                ip: 'IpAdress',
+                created: '2024-01-01 23:47:21 +0900',
+                source: '??',
+                expires: 'forever',
+                reason: 'nantonaku',
+              },
+            ],
           },
         ],
       },
-      files: [
-        {
-          file: BANNEDPLAYERS_FILE_NAME,
-          json: [
+      {
+        worldName: 'bannedPlayers',
+        setting: {
+          using: false,
+          version: { type: 'unknown' },
+          bannedPlayers: [
             {
               uuid: PlayerUUID.parse('12341234-1234-1234-1234-123412341234'),
               created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
@@ -346,149 +334,163 @@ if (import.meta.vitest) {
             },
           ],
         },
-      ],
-    },
-    {
-      worldName: 'whitelist_op',
-      setting: {
-        using: false,
-        version: { type: 'unknown' },
-        players: [
+        files: [
           {
-            name: PlayerName.parse('player0'),
-            uuid: PlayerUUID.parse('00000000-0000-0000-0000-000000000000'),
-            level: OpLevel.parse(0),
-            bypassesPlayerLimit: false,
-          },
-          {
-            name: PlayerName.parse('player1'),
-            uuid: PlayerUUID.parse('11111111-1111-1111-1111-111111111111'),
-            level: OpLevel.parse(1),
-            bypassesPlayerLimit: false,
-          },
-          {
-            name: PlayerName.parse('player2'),
-            uuid: PlayerUUID.parse('22222222-2222-2222-2222-222222222222'),
-            level: OpLevel.parse(2),
-            bypassesPlayerLimit: false,
-          },
-          {
-            name: PlayerName.parse('player3'),
-            uuid: PlayerUUID.parse('33333333-3333-3333-3333-333333333333'),
-            level: OpLevel.parse(0),
-            bypassesPlayerLimit: false,
+            file: BANNEDPLAYERS_FILE_NAME,
+            json: [
+              {
+                uuid: PlayerUUID.parse('12341234-1234-1234-1234-123412341234'),
+                created: McTimestamp.parse('2024-01-01 23:47:21 +0900'),
+                source: '??',
+                expires: 'forever',
+                reason: 'nantonaku',
+              },
+            ],
           },
         ],
       },
-      files: [
-        {
-          file: WHITELIST_FILE_NAME,
-          json: [
+      {
+        worldName: 'whitelist_op',
+        setting: {
+          using: false,
+          version: { type: 'unknown' },
+          players: [
             {
-              name: 'player0',
-              uuid: '00000000-0000-0000-0000-000000000000',
-            },
-            { name: 'player1', uuid: '11111111-1111-1111-1111-111111111111' },
-            { name: 'player2', uuid: '22222222-2222-2222-2222-222222222222' },
-            { name: 'player3', uuid: '33333333-3333-3333-3333-333333333333' },
-          ],
-        },
-        {
-          file: OPS_FILE_NAME,
-          json: [
-            {
-              name: 'player1',
-              uuid: '11111111-1111-1111-1111-111111111111',
-              level: 1,
+              name: PlayerName.parse('player0'),
+              uuid: PlayerUUID.parse('00000000-0000-0000-0000-000000000000'),
+              level: OpLevel.parse(0),
               bypassesPlayerLimit: false,
             },
             {
-              uuid: '22222222-2222-2222-2222-222222222222',
-              name: 'player2',
-              level: 2,
+              name: PlayerName.parse('player1'),
+              uuid: PlayerUUID.parse('11111111-1111-1111-1111-111111111111'),
+              level: OpLevel.parse(1),
+              bypassesPlayerLimit: false,
+            },
+            {
+              name: PlayerName.parse('player2'),
+              uuid: PlayerUUID.parse('22222222-2222-2222-2222-222222222222'),
+              level: OpLevel.parse(2),
+              bypassesPlayerLimit: false,
+            },
+            {
+              name: PlayerName.parse('player3'),
+              uuid: PlayerUUID.parse('33333333-3333-3333-3333-333333333333'),
+              level: OpLevel.parse(0),
               bypassesPlayerLimit: false,
             },
           ],
         },
-      ],
-    },
-    {
-      worldName: 'properties',
-      setting: {
-        using: false,
-        version: { type: 'unknown' },
-        properties: { 'allow-flight': 'true', motd: 'A Minecraft Server' },
+        files: [
+          {
+            file: WHITELIST_FILE_NAME,
+            json: [
+              {
+                name: 'player0',
+                uuid: '00000000-0000-0000-0000-000000000000',
+              },
+              { name: 'player1', uuid: '11111111-1111-1111-1111-111111111111' },
+              { name: 'player2', uuid: '22222222-2222-2222-2222-222222222222' },
+              { name: 'player3', uuid: '33333333-3333-3333-3333-333333333333' },
+            ],
+          },
+          {
+            file: OPS_FILE_NAME,
+            json: [
+              {
+                name: 'player1',
+                uuid: '11111111-1111-1111-1111-111111111111',
+                level: 1,
+                bypassesPlayerLimit: false,
+              },
+              {
+                uuid: '22222222-2222-2222-2222-222222222222',
+                name: 'player2',
+                level: 2,
+                bypassesPlayerLimit: false,
+              },
+            ],
+          },
+        ],
       },
-      files: [
-        {
-          file: 'server.properties',
-          txt: 'allow-flight=true\nmotd=A Minecraft Server',
+      {
+        worldName: 'properties',
+        setting: {
+          using: false,
+          version: { type: 'unknown' },
+          properties: { 'allow-flight': 'true', motd: 'A Minecraft Server' },
         },
-      ],
-    },
-  ];
+        files: [
+          {
+            file: 'server.properties',
+            txt: 'allow-flight=true\nmotd=A Minecraft Server',
+          },
+        ],
+      },
+    ];
 
-  const source = new LocalWorldSource(workPath);
-  test.each(testCases)(
-    'packFiles ($worldName)',
-    async ({ setting, files, worldName }) => {
-      // テスト先をリセット
-      const worldPath = workPath.child(worldName);
-      await worldPath.emptyDir();
+    const source = new LocalWorldSource(workPath);
+    test.each(testCases)(
+      'packFiles ($worldName)',
+      async ({ setting, files, worldName }) => {
+        // テスト先をリセット
+        const worldPath = workPath.child(worldName);
+        await worldPath.emptyDir();
 
-      // 設定ファイルを書き出し
-      for (const file of files) {
-        const path = worldPath.child(file.file);
-        if (file.json) await path.writeText(JSON.stringify(file.json));
-        if (file.txt) await path.writeText(file.txt);
-      }
-
-      // 設定ファイルを梱包
-      expect(
-        (await source.packWorldData(WorldName.parse(worldName))).isOk
-      ).toBe(true);
-
-      const settingContent = await worldPath
-        .child(SETTING_FILE_NAME)
-        .readText();
-
-      // server_settings.jsonに期待する内容が含まれる
-      expect(JSON.parse(settingContent.value())).toEqual(
-        expect.objectContaining(setting)
-      );
-    }
-  );
-
-  test.each(testCases)(
-    'extractFiles ($worldName)',
-    async ({ setting, files, worldName }) => {
-      // テスト先をリセット
-      const worldPath = workPath.child(worldName);
-      await worldPath.emptyDir();
-
-      // server_settings.jsonを書き出し
-      await worldPath
-        .child(SETTING_FILE_NAME)
-        .writeText(JSON.stringify(setting));
-
-      // 設定ファイルを展開する
-      expect(
-        (await source.extractWorldData(WorldName.parse(worldName))).isOk
-      ).toBe(true);
-
-      // 展開したファイルの中身を確認する
-      files.forEach(async (file) => {
-        const extractedFileContent = await worldPath
-          .child(file.file)
-          .readText();
-        if (file.json) {
-          expect(JSON.parse(extractedFileContent.value())).toEqual(
-            expect.objectContaining(file.json)
-          );
-        } else {
-          expect(extractedFileContent.value()).toEqual(file.txt);
+        // 設定ファイルを書き出し
+        for (const file of files) {
+          const path = worldPath.child(file.file);
+          if (file.json) await path.writeText(JSON.stringify(file.json));
+          if (file.txt) await path.writeText(file.txt);
         }
-      });
-    }
-  );
+
+        // 設定ファイルを梱包
+        expect(
+          (await source.packWorldData(WorldName.parse(worldName))).isOk
+        ).toBe(true);
+
+        const settingContent = await worldPath
+          .child(SETTING_FILE_NAME)
+          .readText();
+
+        // server_settings.jsonに期待する内容が含まれる
+        expect(JSON.parse(settingContent.value())).toEqual(
+          expect.objectContaining(setting)
+        );
+      }
+    );
+
+    test.each(testCases)(
+      'extractFiles ($worldName)',
+      async ({ setting, files, worldName }) => {
+        // テスト先をリセット
+        const worldPath = workPath.child(worldName);
+        await worldPath.emptyDir();
+
+        // server_settings.jsonを書き出し
+        await worldPath
+          .child(SETTING_FILE_NAME)
+          .writeText(JSON.stringify(setting));
+
+        // 設定ファイルを展開する
+        expect(
+          (await source.extractWorldData(WorldName.parse(worldName))).isOk
+        ).toBe(true);
+
+        // 展開したファイルの中身を確認する
+        files.forEach(async (file) => {
+          const extractedFileContent = await worldPath
+            .child(file.file)
+            .readText();
+          if (file.json) {
+            expect(JSON.parse(extractedFileContent.value())).toEqual(
+              expect.objectContaining(file.json)
+            );
+          } else {
+            expect(extractedFileContent.value()).toEqual(file.txt);
+          }
+        });
+      }
+    );
+  });
 }

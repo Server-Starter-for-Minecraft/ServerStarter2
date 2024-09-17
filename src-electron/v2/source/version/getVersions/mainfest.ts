@@ -68,15 +68,17 @@ export async function getVersionMainfest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work');
+    workPath.mkdir();
 
-  test('manifest-handler-check', async () => {
-    const res = await getVersionMainfest(workPath, false);
-    expect(res.isOk).toBe(true);
+    test('manifest-handler-check', async () => {
+      const res = await getVersionMainfest(workPath, false);
+      expect(res.isOk).toBe(true);
+    });
   });
 }

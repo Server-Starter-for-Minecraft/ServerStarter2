@@ -41,68 +41,70 @@ export class PromiseSpooler {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
-  const { sleep } = await import('./sleep');
+  describe('', async () => {
+    const { sleep } = await import('./sleep');
 
-  describe('Promise直列化のテスト', () => {
-    test('プロミス1つで問題なく動く', async () => {
-      const spooler = new PromiseSpooler();
+    describe('Promise直列化のテスト', () => {
+      test('プロミス1つで問題なく動く', async () => {
+        const spooler = new PromiseSpooler();
 
-      expect(spooler.hasSpooled(), '実行中のプロミスはない').toBe(false);
+        expect(spooler.hasSpooled(), '実行中のプロミスはない').toBe(false);
 
-      const log: string[] = [];
+        const log: string[] = [];
 
-      const promise1 = spooler.spool(async () => {
-        log.push('1 start');
-        await sleep(100);
-        log.push('1 end');
-        return 1;
+        const promise1 = spooler.spool(async () => {
+          log.push('1 start');
+          await sleep(100);
+          log.push('1 end');
+          return 1;
+        });
+
+        expect(spooler.hasSpooled(), '実行中のプロミスあり').toBe(true);
+
+        expect(await promise1).toBe(1);
+
+        expect(spooler.hasSpooled(), '実行中のプロミスはない').toBe(false);
+        expect(log, '実行中のプロミスはない').toEqual(['1 start', '1 end']);
       });
 
-      expect(spooler.hasSpooled(), '実行中のプロミスあり').toBe(true);
+      test('プロミス複数が直列実行される', async () => {
+        const spooler = new PromiseSpooler();
 
-      expect(await promise1).toBe(1);
+        expect(spooler.hasSpooled(), '実行中のプロミスはない').toBe(false);
 
-      expect(spooler.hasSpooled(), '実行中のプロミスはない').toBe(false);
-      expect(log, '実行中のプロミスはない').toEqual(['1 start', '1 end']);
-    });
+        const log: string[] = [];
 
-    test('プロミス複数が直列実行される', async () => {
-      const spooler = new PromiseSpooler();
+        const promise1 = spooler.spool(async () => {
+          log.push('1 start');
+          await sleep(100);
+          log.push('1 end');
+          return 1;
+        });
+        const promise2 = spooler.spool(async () => {
+          log.push('2 start');
+          await sleep(200);
+          log.push('2 end');
+          return 2;
+        });
 
-      expect(spooler.hasSpooled(), '実行中のプロミスはない').toBe(false);
+        expect(spooler.hasSpooled(), '実行中のプロミスあり').toBe(true);
+        expect(log, '実行順の確認').toEqual(['1 start']);
 
-      const log: string[] = [];
+        expect(await promise1).toBe(1);
 
-      const promise1 = spooler.spool(async () => {
-        log.push('1 start');
-        await sleep(100);
-        log.push('1 end');
-        return 1;
+        expect(spooler.hasSpooled(), '実行中のプロミスあり').toBe(true);
+        expect(log, '実行順の確認').toEqual(['1 start', '1 end', '2 start']);
+
+        expect(await promise2).toBe(2);
+
+        expect(spooler.hasSpooled(), '実行中のプロミスなし').toBe(false);
+        expect(log, '実行順の確認').toEqual([
+          '1 start',
+          '1 end',
+          '2 start',
+          '2 end',
+        ]);
       });
-      const promise2 = spooler.spool(async () => {
-        log.push('2 start');
-        await sleep(200);
-        log.push('2 end');
-        return 2;
-      });
-
-      expect(spooler.hasSpooled(), '実行中のプロミスあり').toBe(true);
-      expect(log, '実行順の確認').toEqual(['1 start']);
-
-      expect(await promise1).toBe(1);
-
-      expect(spooler.hasSpooled(), '実行中のプロミスあり').toBe(true);
-      expect(log, '実行順の確認').toEqual(['1 start', '1 end', '2 start']);
-
-      expect(await promise2).toBe(2);
-
-      expect(spooler.hasSpooled(), '実行中のプロミスなし').toBe(false);
-      expect(log, '実行順の確認').toEqual([
-        '1 start',
-        '1 end',
-        '2 start',
-        '2 end',
-      ]);
     });
   });
 }

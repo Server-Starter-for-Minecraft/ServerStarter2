@@ -276,64 +276,66 @@ export class WorldHandler {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/v2/util/binary/path');
-  const path = await import('path');
+  const { test, expect, describe } = import.meta.vitest;
+  describe('', async () => {
+    const { Path } = await import('src-electron/v2/util/binary/path');
+    const path = await import('path');
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(path.dirname(__dirname)).child(
-    'work',
-    path.basename(__filename, '.ts')
-  );
-  workPath.mkdir();
+    // 一時使用フォルダを初期化
+    const workPath = new Path(path.dirname(__dirname)).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    workPath.mkdir();
 
-  test(
-    '',
-    async () => {
-      const handler = await WorldHandler.create(
-        new WorldSource(),
-        new VersionContainer(workPath.child('version')),
-        new RuntimeContainer(workPath.child('runtime'), async () =>
-          err.error('TODO: NOT_IMPLEMENTED')
-        ),
-        'windows-x64',
-        WorldLocation.parse({
-          container: {
-            path: workPath.child('worlds').path,
-            containerType: 'local',
+    test(
+      '',
+      async () => {
+        const handler = await WorldHandler.create(
+          new WorldSource(),
+          new VersionContainer(workPath.child('version')),
+          new RuntimeContainer(workPath.child('runtime'), async () =>
+            err.error('TODO: NOT_IMPLEMENTED')
+          ),
+          'windows-x64',
+          WorldLocation.parse({
+            container: {
+              path: workPath.child('worlds').path,
+              containerType: 'local',
+            },
+            worldName: 'test001',
+          })
+        ).then((x) => x.value());
+
+        handler.updateMeta({
+          version: VanillaVersion.parse({
+            type: 'vanilla',
+            id: '1.20.1',
+            release: true,
+          }),
+          using: false,
+        });
+
+        const promise = handler.run({
+          onStart() {
+            setTimeout(() => {
+              handler.runCommand('say hello\n');
+              handler.runCommand('stop\n');
+            }, 10000);
+            return {
+              onStderr(value) {
+                console.error(value);
+              },
+              onStdout(value) {
+                console.log(value);
+              },
+            };
           },
-          worldName: 'test001',
-        })
-      ).then((x) => x.value());
+        });
 
-      handler.updateMeta({
-        version: VanillaVersion.parse({
-          type: 'vanilla',
-          id: '1.20.1',
-          release: true,
-        }),
-        using: false,
-      });
-
-      const promise = handler.run({
-        onStart() {
-          setTimeout(() => {
-            handler.runCommand('say hello\n');
-            handler.runCommand('stop\n');
-          }, 10000);
-          return {
-            onStderr(value) {
-              console.error(value);
-            },
-            onStdout(value) {
-              console.log(value);
-            },
-          };
-        },
-      });
-
-      expect((await promise).isOk).toBe(true);
-    },
-    1000 * 1000
-  );
+        expect((await promise).isOk).toBe(true);
+      },
+      1000 * 1000
+    );
+  });
 }

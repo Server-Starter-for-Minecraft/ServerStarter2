@@ -106,20 +106,22 @@ export class Subprocess extends WritableStreamer<void> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { Bytes } = await import('./bytes');
-  const { test, expect } = import.meta.vitest;
-  test('', async () => {
-    const proc = spawn('echo', ['hello world'], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: './',
-      shell: true,
-      env: { ...process.env, LANG: 'en_US.UTF-8' },
-    });
-    const sub = new Subprocess(proc);
-    const result = await sub.stdout.value().into(Bytes);
-    // OSによって改行コードが違うのでとりあえずtrimEndで対処
-    expect(result.value().toStr().value().trimEnd()).toEqual('hello world');
+  const { describe, test, expect } = import.meta.vitest;
+  describe('', async () => {
+    const { Bytes } = await import('./bytes');
+    test('', async () => {
+      const proc = spawn('echo', ['hello world'], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: './',
+        shell: true,
+        env: { ...process.env, LANG: 'en_US.UTF-8' },
+      });
+      const sub = new Subprocess(proc);
+      const result = await sub.stdout.value().into(Bytes);
+      // OSによって改行コードが違うのでとりあえずtrimEndで対処
+      expect(result.value().toStr().value().trimEnd()).toEqual('hello world');
 
-    //TODO: readable.into(subprocess) したときに、(readable|subprocess)が先に(終了|エラー)するときの挙動を確認する
+      //TODO: readable.into(subprocess) したときに、(readable|subprocess)が先に(終了|エラー)するときの挙動を確認する
+    });
   });
 }

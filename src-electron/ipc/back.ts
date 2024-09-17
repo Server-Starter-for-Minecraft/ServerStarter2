@@ -34,6 +34,9 @@ import {
 import { readyWindow } from '../lifecycle/lifecycle';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getGlobalIP } from '../util/ip';
+import { APIV2 } from '../v2/api/api';
+
+
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
@@ -52,9 +55,9 @@ export const getBackListener = (
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,
 
-    GetWorldAbbrs: getWorldAbbrs,
+    GetWorldAbbrs: APIV2.handle.GetWorldAbbrs,
 
-    GetWorld: getWorld,
+    GetWorld: APIV2.handle.GetWorld,
     SetWorld: setWorld,
     NewWorld: newWorld,
     CreateWorld: createWorld,
