@@ -86,11 +86,11 @@ export class ServerContainer {
       return err(new Error('SERVER_IS_RUNNING'));
     const dirPath = this.cwdPath(serverId);
     const meta = await this.getMeta(serverId);
-    if (meta.isErr()) return meta;
+    if (meta.isErr) return meta;
 
     const process = Subprocess.spawn(
-      meta.value.command.process,
-      meta.value.command.args,
+      meta.value().command.process,
+      meta.value().command.args,
       {
         cwd: dirPath.toStr(),
         stdio: 'pipe',
@@ -156,7 +156,7 @@ export class ServerContainer {
 
     const dirPath = this.cwdPath(serverId);
     const tearResult = await teardown(dirPath);
-    if (tearResult.isErr()) return tearResult;
+    if (tearResult.isErr) return tearResult;
     return ok(await dirPath.remove());
   }
 }

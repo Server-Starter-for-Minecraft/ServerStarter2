@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "id": "dir_pack06",
+      "exists": true,
+      "type": "dir",
+      "description": "TestDescritption06",
+      "canCopy": true,
+      "canShare": true,
+      "comment": "TestComment06",
+      "name": "pack06"
+    },
+    {
+      "id": "dir_pack07",
+      "exists": false,
+      "type": "dir",
+      "description": "ErrorDescripton",
+      "canCopy": false,
+      "canShare": true,
+      "comment": "TestComment07",
+      "name": "pack07"
+    },
+    {
+      "id": "zip_330882b5515e8f95ef26884c9a8bc2239ffaa7d8",
+      "type": "zip",
+      "exists": true,
+      "description": "TestDescritption08",
+      "canCopy": true,
+      "canShare": false,
+      "comment": "TestComment08",
+      "name": "pack08"
+    },
+    {
+      "id": "zip_b0f7cd5651b34245f170a3096cc2f5e2c470659b",
+      "type": "zip",
+      "exists": true,
+      "description": "TestDescritption09",
+      "canCopy": false,
+      "canShare": false,
+      "comment": "TestComment09",
+      "name": "pack09"
+    }
+  ]
+}
