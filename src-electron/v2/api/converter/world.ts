@@ -1,4 +1,5 @@
 import { createI18n } from 'vue-i18n';
+import { isDeepStrictEqual } from 'util';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { orDefault } from 'app/src-electron/util/error/failable';
 import { VanillaVersion, Version } from '../../schema/version';
@@ -86,3 +87,61 @@ export const versionConverter = {
     });
   },
 };
+
+type _WorldDiff<K extends keyof v1.World> = {
+  type: K;
+  old: v1.World[K];
+  edited: v1.World[K];
+};
+
+export type WorldDiffItem =
+  | _WorldDiff<'version'>
+  | _WorldDiff<'players'>
+  | _WorldDiff<'ngrok_setting'>
+  | _WorldDiff<'properties'>
+  | _WorldDiff<'memory'>
+  | _WorldDiff<'javaArguments'>
+  | _WorldDiff<'avater_path'>
+  | {
+      type: 'location';
+      old: { container: v1.WorldContainer; name: v1.WorldName };
+      edited: { container: v1.WorldContainer; name: v1.WorldName };
+    };
+
+/** ワールド更新の差分を取得 */
+export function worldDiff(
+  old: v1.World,
+  edited: v1.WorldEdited
+): WorldDiffItem[] {
+  const diffs: WorldDiffItem[] = [];
+
+  const checkDiff = (key: Extract<WorldDiffItem['type'], keyof v1.World>) => {
+    if (!isDeepStrictEqual(old[key], edited[key])) {
+      diffs.push({
+        type: key,
+        old: old[key],
+        edited: edited[key],
+      } as WorldDiffItem);
+    }
+  };
+
+  checkDiff('version');
+  checkDiff('players');
+  checkDiff('memory');
+  checkDiff('javaArguments');
+  checkDiff('ngrok_setting');
+  checkDiff('properties');
+  checkDiff('avater_path');
+
+  if (
+    !isDeepStrictEqual(old.container, edited.container) ||
+    !isDeepStrictEqual(old.name, edited.name)
+  ) {
+    diffs.push({
+      type: 'location',
+      old: { container: old.container, name: old.name },
+      edited: { container: edited.container, name: edited.name },
+    });
+  }
+  return diffs;
+}
