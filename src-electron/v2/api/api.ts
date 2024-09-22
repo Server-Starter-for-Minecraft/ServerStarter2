@@ -14,7 +14,7 @@ import { WorldSource } from '../source/world/world';
 import { err, ok, Result } from '../util/base';
 import { Path } from '../util/binary/path';
 import { genUUID } from '../util/random/uuid';
-import { worldDataConverter } from './converter/world';
+import { worldDataConverter, worldDiff } from './converter/world';
 import * as v1 from './v1schema';
 
 const worldSource = new WorldSource();
@@ -185,7 +185,6 @@ export const APIV2: BackListener<API> = {
           errorMessage.unknown({ message: 'WORLD BINDED TO ID NOT EXISTS' })
         );
       const { location, handler } = world.value();
-      console.log('GetWorld', location, (await handler.getMeta()).value());
       return withError(
         worldDataConverter.V2ToV1(
           (await handler.getMeta()).value(),
@@ -194,11 +193,27 @@ export const APIV2: BackListener<API> = {
         )
       );
     },
+
     async SetWorld(
       world: v1.WorldEdited
     ): Promise<v1.WithError<v1.Failable<v1.World>>> {
-      return withError(world);
+      const { location, handler } = worldHandlers
+        .getByWorldId(world.id)
+        .value();
+
+      const old = worldDataConverter.V2ToV1(
+        (await handler.getMeta()).value(),
+        world.id,
+        location
+      );
+
+      const diffs = worldDiff(old, world);
+
+      console.log(diffs);
+
+      return withError(old);
     },
+
     NewWorld: function (): Promise<v1.WithError<v1.Failable<v1.World>>> {
       throw new Error('Function not implemented.');
     },

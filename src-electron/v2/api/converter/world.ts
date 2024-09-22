@@ -106,6 +106,10 @@ export type WorldDiffItem =
       type: 'location';
       old: { container: v1.WorldContainer; name: v1.WorldName };
       edited: { container: v1.WorldContainer; name: v1.WorldName };
+    }
+  | {
+      type: 'custom_map';
+      map: v1.CustomMapData;
     };
 
 /** ワールド更新の差分を取得 */
@@ -132,6 +136,12 @@ export function worldDiff(
   checkDiff('ngrok_setting');
   checkDiff('properties');
   checkDiff('avater_path');
+
+  if (edited.custom_map) {
+    diffs.push({ type: 'custom_map', map: edited.custom_map });
+  }
+
+  // TODO: additionalはいったん無視
 
   if (
     !isDeepStrictEqual(old.container, edited.container) ||
