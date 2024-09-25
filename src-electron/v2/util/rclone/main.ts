@@ -1,4 +1,9 @@
-import { Result } from '../base';
+import { Dropbox } from 'dropbox';
+import { google } from 'googleapis';
+import ini from 'ini';
+import onedrive from 'onedrive-api';
+import { authorize } from 'rclone.js';
+import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
 import { Path } from '../binary/path';
 
@@ -35,15 +40,112 @@ class RcloneSource {
   async isAccessible(
     remote: RemoteDrive,
     checkOnlyExpiration: boolean
-  ): Promise<boolean> {}
+  ): Promise<boolean> {
+    const config = ini.parse(
+      await this.cacheDirPath.child('rclone.conf').readText()
+    );
+    if (checkOnlyExpiration) {
+      // トークンの期限だけチェック
+      const token = config[remote.mailAdress].token;
+      const expires = config[remote.mailAdress].expiry;
+      if (token === undefined || expires === undefined) return false;
+      const now = new Date();
+      return now < new Date(expires);
+    } else {
+      // 実際にurl叩いてチェック
+    }
+  }
 
   /**
    * アカウントをOAuthで新規登録
    * 登録済みの場合エラー
    */
-  registerNewRemoteWithOAuth(
+  async registerNewRemoteWithOAuth(
     driveType: RemoteDrive['driveType']
-  ): Promise<Result<RemoteDrive>> {}
+  ): Promise<Result<RemoteDrive>> {
+    const authorizeProcess = authorize(driveType,'--auth-no-open-browser');
+    //標準出力からurlを取得
+    const urlPromise = new Promise<string | null>((resolve, reject) => {
+      authorizeProcess.stdout?.on('data', (data) => {
+        console.log(data.toString());
+        // URLマッチングのための正規表現
+        const urlMatch = data.toString().match(/https?:\/\/[^\s]+/);
+
+        if (urlMatch) {
+          resolve(urlMatch[0]); // URLが見つかった場合は解決
+        } else {
+          reject('No URL found in output'); // URLが見つからない場合
+        }
+      });
+    });
+    //TODO: urlをelectronのブラウザで開く
+
+    const tokenPromise = new Promise<string>((resolve) => {
+      authorizeProcess.stdout?.on('data', (data) => {
+        console.log(data.toString());
+        const tokenMatch = data.toString().match(/({.*?})/);
+        resolve(tokenMatch ? tokenMatch[0] : null);
+      });
+    });
+    await new Promise<void>((r) => authorizeProcess.on('close', r));
+
+    const tokenJson = await tokenPromise;
+    const accessToken = JSON.parse(tokenJson);
+    if (driveType === 'onedrive') {
+      const driveInfo = await onedrive.items.listChildren({
+        accessToken: accessToken,
+        itemId: 'root',
+      });
+
+      const driveId = driveInfo.value[0]?.parentReference?.driveId;
+      expect(driveId).toBeTruthy();
+
+      const userInfo = await onedrive.items.customEndpoint({
+        accessToken: accessToken,
+        url: `/drives/${driveId}`,
+        method: 'GET',
+      });
+      const displayName = userInfo.owner?.user?.displayName;
+      expect(displayName).toBe('serverstarter serverstarter');
+
+      //configの書き込み
+      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+      const configContent = `[${driveType}_${displayName}]\ntype = onedrive\ntoken = ${tokenJson}\ndrive_id = ${driveId}\ndrive_type = personal\n`;
+      await configPath.writeText(configContent);
+      return ok({
+        driveType: driveType,
+        mailAdress: displayName,
+      });
+    } else {
+      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+
+      if (driveType === 'google') {
+        const oAuth2Client = new google.auth.OAuth2();
+        oAuth2Client.setCredentials(accessToken);
+        // Google Drive APIクライアントを初期化
+        const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+        // 認証されたユーザー情報を取得
+        const about = await drive.about.get({ fields: 'user' });
+        const mailAdress = about.data.user.emailAddress;
+        const configContent = `[${driveType}_${mailAdress}]]\ntype = ${driveType}\ntoken = ${tokenJson}\n`;
+        await configPath.writeText(configContent);
+        return ok({
+          driveType: driveType,
+          mailAdress: mailAdress,
+        });
+      } else {
+        const dropbox = new Dropbox({ accessToken: accessToken });
+        const response = dropbox.usersGetCurrentAccount();
+        const mailAdress = (await response).result.email;
+        const configContent = `[${driveType}_${mailAdress}]]\ntype = ${driveType}\ntoken = ${tokenJson}\n`;
+        await configPath.writeText(configContent);
+        return ok({
+          driveType: driveType,
+          mailAdress: mailAdress,
+        });
+      }
+    }
+  }
 
   /** 登録解除 */
   unregister(remote: RemoteDrive): Promise<Result<void>> {
