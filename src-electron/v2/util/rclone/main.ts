@@ -148,9 +148,18 @@ class RcloneSource {
   }
 
   /** 登録解除 */
-  unregister(remote: RemoteDrive): Promise<Result<void>> {
+  async unregister(remote: RemoteDrive): Promise<Result<void>> {
     // たぶんトークン消すだけ
     // もともと未登録だった場合は何もせずに成功
+    const config = ini.parse(
+      await this.cacheDirPath.child('rclone.conf').readText()
+    );
+    if (config[remote.mailAdress] === undefined) {
+      return ok(undefined);
+    }
+    delete config[remote.mailAdress];
+    await this.cacheDirPath.child('rclone.conf').writeText(ini.stringify(config));
+    return ok(undefined);
   }
 
   /**
