@@ -90,60 +90,57 @@ class RcloneSource {
     await new Promise<void>((r) => authorizeProcess.on('close', r));
 
     const tokenJson = await tokenPromise;
-    const accessToken = JSON.parse(tokenJson);
+    const userName = await this.getUserName(driveType, tokenJson);
     if (driveType === 'onedrive') {
+      //configの書き込み
+      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+      const configContent = `[${driveType}_${userName}]\ntype = onedrive\ntoken = ${tokenJson}\ndrive_id = ${driveId}\ndrive_type = personal\n`;
+      await configPath.writeText(configContent);
+      return ok({
+        driveType: driveType,
+        mailAdress: userName,
+      });
+    } else {
+      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+
+      const configContent = `[${driveType}_${userName}]]\ntype = ${driveType}\ntoken = ${tokenJson}\n`;
+      await configPath.writeText(configContent);
+      return ok({
+        driveType: driveType,
+        mailAdress: userName,
+      });
+      }
+    }
+
+  async getUserName(driveType: RemoteDrive['driveType'], tokenJson: string): Promise<Result<string>> {
+    const accessToken = JSON.parse(tokenJson);
+    if (driveType === 'google') {
+      const oAuth2Client = new google.auth.OAuth2();
+      oAuth2Client.setCredentials(accessToken);
+      const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+      const about = await drive.about.get({ fields: 'user' });
+      return ok(about.data.user.emailAddress);
+
+    } else if (driveType === 'dropbox') {
+      const dropbox = new Dropbox({ accessToken: accessToken });
+      const response = await dropbox.usersGetCurrentAccount();
+      return ok(response.result.email);
+
+    } else if (driveType === 'onedrive') {
       const driveInfo = await onedrive.items.listChildren({
         accessToken: accessToken,
         itemId: 'root',
       });
-
       const driveId = driveInfo.value[0]?.parentReference?.driveId;
-      expect(driveId).toBeTruthy();
-
       const userInfo = await onedrive.items.customEndpoint({
         accessToken: accessToken,
         url: `/drives/${driveId}`,
         method: 'GET',
       });
-      const displayName = userInfo.owner?.user?.displayName;
-      expect(displayName).toBe('serverstarter serverstarter');
+      return ok(userInfo.owner?.user?.displayName);
 
-      //configの書き込み
-      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
-      const configContent = `[${driveType}_${displayName}]\ntype = onedrive\ntoken = ${tokenJson}\ndrive_id = ${driveId}\ndrive_type = personal\n`;
-      await configPath.writeText(configContent);
-      return ok({
-        driveType: driveType,
-        mailAdress: displayName,
-      });
     } else {
-      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
-
-      if (driveType === 'google') {
-        const oAuth2Client = new google.auth.OAuth2();
-        oAuth2Client.setCredentials(accessToken);
-        // Google Drive APIクライアントを初期化
-        const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-        // 認証されたユーザー情報を取得
-        const about = await drive.about.get({ fields: 'user' });
-        const mailAdress = about.data.user.emailAddress;
-        const configContent = `[${driveType}_${mailAdress}]]\ntype = ${driveType}\ntoken = ${tokenJson}\n`;
-        await configPath.writeText(configContent);
-        return ok({
-          driveType: driveType,
-          mailAdress: mailAdress,
-        });
-      } else {
-        const dropbox = new Dropbox({ accessToken: accessToken });
-        const response = dropbox.usersGetCurrentAccount();
-        const mailAdress = (await response).result.email;
-        const configContent = `[${driveType}_${mailAdress}]]\ntype = ${driveType}\ntoken = ${tokenJson}\n`;
-        await configPath.writeText(configContent);
-        return ok({
-          driveType: driveType,
-          mailAdress: mailAdress,
-        });
-      }
+      return err(new Error('Invalid drive type'));
     }
   }
 
