@@ -20,6 +20,11 @@ type RemoteDrive =
       driveType: 'onedrive';
       mailAdress: string;
     };
+type userName =
+  {
+    mailAdress: string;
+    driveId?: string;
+  }
 
 type RemotePath = {
   drive: RemoteDrive;
@@ -63,7 +68,35 @@ class RcloneSource {
   async registerNewRemoteWithOAuth(
     driveType: RemoteDrive['driveType']
   ): Promise<Result<RemoteDrive>> {
-    const authorizeProcess = authorize(driveType,'--auth-no-open-browser');
+    const tokenJson = await this.getTokenWithOAuth(driveType);
+    if (tokenJson.isErr){return err(new Error ('failed to get token'))}
+    const userNameResult = await this.getUserName(driveType, tokenJson.value());
+    if (userNameResult.isErr){return err(new Error ('failed to get mailAdderss'))}
+    const userName = userNameResult.value()
+    if (driveType === 'onedrive') {
+      //configの書き込み
+      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+      const configContent = `[${driveType}_${userName.mailAdress}]\ntype = onedrive\ntoken = ${tokenJson.value()}\ndrive_id = ${userName.driveId}\ndrive_type = personal\n`;
+      await configPath.writeText(configContent);
+      return ok({
+        driveType: driveType,
+        mailAdress: userName.mailAdress
+      });
+    } else {
+      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+
+      const configContent = `[${driveType}_${userName.mailAdress}]]\ntype = ${driveType}\ntoken = ${tokenJson.value()}\n`;
+      await configPath.writeText(configContent);
+      return ok({
+        driveType: driveType,
+        mailAdress: userName.mailAdress,
+      });
+    }
+  }
+  async getTokenWithOAuth(
+    driveType: RemoteDrive['driveType']
+  ): Promise<Result<string>> {
+    const authorizeProcess = authorize(driveType, '--auth-no-open-browser');
     //標準出力からurlを取得
     const urlPromise = new Promise<string | null>((resolve, reject) => {
       authorizeProcess.stdout?.on('data', (data) => {
@@ -78,7 +111,6 @@ class RcloneSource {
         }
       });
     });
-    //TODO: urlをelectronのブラウザで開く
 
     const tokenPromise = new Promise<string>((resolve) => {
       authorizeProcess.stdout?.on('data', (data) => {
@@ -90,42 +122,27 @@ class RcloneSource {
     await new Promise<void>((r) => authorizeProcess.on('close', r));
 
     const tokenJson = await tokenPromise;
-    const userName = await this.getUserName(driveType, tokenJson);
-    if (driveType === 'onedrive') {
-      //configの書き込み
-      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
-      const configContent = `[${driveType}_${userName}]\ntype = onedrive\ntoken = ${tokenJson}\ndrive_id = ${driveId}\ndrive_type = personal\n`;
-      await configPath.writeText(configContent);
-      return ok({
-        driveType: driveType,
-        mailAdress: userName,
-      });
-    } else {
-      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+    return ok(tokenJson);
+  }
 
-      const configContent = `[${driveType}_${userName}]]\ntype = ${driveType}\ntoken = ${tokenJson}\n`;
-      await configPath.writeText(configContent);
-      return ok({
-        driveType: driveType,
-        mailAdress: userName,
-      });
-      }
-    }
-
-  async getUserName(driveType: RemoteDrive['driveType'], tokenJson: string): Promise<Result<string>> {
+  /**TODO: onedriveの時にdriveIdも返すようにする
+   */
+  /**トークンからメールアドレスか表示名を取得 */
+  async getUserName(
+    driveType: RemoteDrive['driveType'],
+    tokenJson: string
+  ): Promise<Result<userName>> {
     const accessToken = JSON.parse(tokenJson);
     if (driveType === 'google') {
       const oAuth2Client = new google.auth.OAuth2();
       oAuth2Client.setCredentials(accessToken);
       const drive = google.drive({ version: 'v3', auth: oAuth2Client });
       const about = await drive.about.get({ fields: 'user' });
-      return ok(about.data.user.emailAddress);
-
+      return ok({mailAdress: about.data.user.emailAddress});
     } else if (driveType === 'dropbox') {
       const dropbox = new Dropbox({ accessToken: accessToken });
       const response = await dropbox.usersGetCurrentAccount();
-      return ok(response.result.email);
-
+      return ok({mailAdress: response.result.email});
     } else if (driveType === 'onedrive') {
       const driveInfo = await onedrive.items.listChildren({
         accessToken: accessToken,
@@ -137,8 +154,11 @@ class RcloneSource {
         url: `/drives/${driveId}`,
         method: 'GET',
       });
-      return ok(userInfo.owner?.user?.displayName);
-
+      return ok(
+        {
+          mailAdress: userInfo.owner?.user?.displayName,
+          driveId: driveId,
+      });
     } else {
       return err(new Error('Invalid drive type'));
     }
@@ -155,7 +175,9 @@ class RcloneSource {
       return ok(undefined);
     }
     delete config[remote.mailAdress];
-    await this.cacheDirPath.child('rclone.conf').writeText(ini.stringify(config));
+    await this.cacheDirPath
+      .child('rclone.conf')
+      .writeText(ini.stringify(config));
     return ok(undefined);
   }
 
@@ -169,7 +191,25 @@ class RcloneSource {
   async renewTokenWithOAuth(
     remote: RemoteDrive,
     showAuthWindow: (url: string) => void
-  ): Promise<Result<boolean>> {}
+  ): Promise<Result<boolean>> {
+    const tokenJson = await this.getTokenWithOAuth(remote.driveType);
+    if (tokenJson.isErr) {
+      return err(new Error('failed to get token'));
+    }
+    const userNameResult = await this.getUserName(
+      remote.driveType,
+      tokenJson.value()
+    );
+    if (userNameResult.isErr) {
+      return err(new Error('failed to get username'));
+    }
+    const userName = userNameResult.value()
+    if (userName.mailAdress === remote.mailAdress) {
+      return ok(true);
+    } else {
+      return ok(false);
+    }
+  }
 
   /**
    * 認証トークンを手動設定
