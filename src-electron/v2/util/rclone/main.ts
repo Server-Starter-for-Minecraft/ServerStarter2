@@ -73,9 +73,10 @@ class RcloneSource {
    * 登録済みの場合エラー
    */
   async registerNewRemoteWithOAuth(
-    driveType: RemoteDrive['driveType']
+    driveType: RemoteDrive['driveType'],
+    showAuthWindow: (url: string) => void
   ): Promise<Result<RemoteDrive>> {
-    const tokenJson = await this.getTokenWithOAuth(driveType);
+    const tokenJson = await this.getTokenWithOAuth(driveType,showAuthWindow);
     if (tokenJson.isErr) {
       return err(new Error('failed to get token'));
     }
@@ -109,14 +110,16 @@ class RcloneSource {
       });
     }
   }
-  async getTokenWithOAuth(
-    driveType: RemoteDrive['driveType']
+
+  private async getTokenWithOAuth(
+    driveType: RemoteDrive['driveType'],
+    showAuthWindow: (url: string) => void
   ): Promise<Result<string>> {
     const authorizeProcess = authorize(driveType, '--auth-no-open-browser');
     //標準出力からurlを取得
     const urlPromise = new Promise<string | null>((resolve, reject) => {
       authorizeProcess.stdout?.on('data', (data) => {
-        console.log(data.toString());
+        //console.log(data.toString());
         // URLマッチングのための正規表現
         const urlMatch = data.toString().match(/https?:\/\/[^\s]+/);
 
@@ -128,9 +131,10 @@ class RcloneSource {
       });
     });
     /**TODO: ここでelectronからブラウザを立ち上げたい */
+    showAuthWindow(await urlPromise)
     const tokenPromise = new Promise<string>((resolve) => {
       authorizeProcess.stdout?.on('data', (data) => {
-        console.log(data.toString());
+        //console.log(data.toString());
         const tokenMatch = data.toString().match(/({.*?})/);
         resolve(tokenMatch ? tokenMatch[0] : null);
       });
@@ -142,7 +146,7 @@ class RcloneSource {
   }
 
   /**トークンからメールアドレスか表示名を取得 */
-  async getUserInfo(
+  private async getUserInfo(
     driveType: RemoteDrive['driveType'],
     tokenJson: string
   ): Promise<Result<userInfo>> {
@@ -205,7 +209,7 @@ class RcloneSource {
     remote: RemoteDrive,
     showAuthWindow: (url: string) => void
   ): Promise<Result<boolean>> {
-    const tokenJson = await this.getTokenWithOAuth(remote.driveType);
+    const tokenJson = await this.getTokenWithOAuth(remote.driveType, showAuthWindow);
     if (tokenJson.isErr) {
       return err(new Error('failed to get token'));
     }
