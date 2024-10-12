@@ -46,9 +46,6 @@ export interface WorldBase extends WorldAbbr {
   /** 起動中フラグ */
   using?: boolean;
 
-  /** 同期先のリモート */
-  remote?: Remote;
-
   /** 最終プレイ日
    *
    * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
@@ -111,20 +108,6 @@ export type WorldAdditionalEdited = {
 export interface WorldEdited extends WorldBase {
   /** カスタムマップを導入する場合 */
   custom_map?: CustomMapData;
-
-  /** データの取得元のリモート(同期はしない)
-   * リモート版カスタムマップ的な感じ
-   * 新規ワールドで既存リモートを読み込むときくらいにしか使わないと思う
-   * {
-   *   remote_source:A
-   *   remote:B
-   * }
-   * とした場合 Aからワールドのデータを取得して Bと同期する
-   */
-  remote_source?: Remote;
-
-  /** ワールドが実行中の場合にreloadコマンドを実行するかどうか */
-  reload?: boolean;
 
   /** 導入済み */
   additional: WorldAdditionalEdited;

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { DatapackMeta } from './datapack';
 import { IpAdress } from './ipadress';
 import { Mod } from './mod';
-import { OpLevel, PlayerName, PlayerUUID } from './player';
+import { ImageURI, OpLevel, PlayerName, PlayerUUID } from './player';
 import { Plugin } from './plugin';
 import { RuntimeSettings } from './runtime';
 import { ServerProperties } from './serverproperty';
@@ -83,6 +83,9 @@ export const World = z.object({
   /** バージョン情報 */
   version: Version.default({ type: 'unknown' }),
 
+  /** バージョン情報 */
+  avater_uri: ImageURI.optional(),
+
   /** `server.properties`の情報 */
   properties: ServerProperties.optional(),
 
@@ -96,7 +99,7 @@ export const World = z.object({
   mod: z.array(Mod).optional(),
 
   /** メモリ等ランタイムの設定 */
-  runtime: RuntimeSettings.optional(),
+  runtime: RuntimeSettings.default({ memory: [2, 'GB'] }),
 
   /** whitelist / op に登録せれているプレイヤー */
   players: z.array(OpPlayer).optional(),

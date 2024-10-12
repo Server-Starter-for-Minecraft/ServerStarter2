@@ -8,74 +8,42 @@ import {
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { isError, isValid } from 'app/src-electron/util/error/error';
+import { isError } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
-import { asyncMap } from '../../util/objmap';
-import { Path } from '../../util/path';
 import { NEW_WORLD_NAME } from '../const';
 import { WorldProgressor } from '../progress/progress';
 import { getSystemSettings } from '../stores/system';
 import { vanillaVersionLoader } from '../version/vanilla';
-import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
 import { validateNewWorldName } from './name';
-import { worldContainerToPath } from './worldContainer';
+import { worldSource } from './v2const';
+import { worldContainerV1V2 } from './worldUtil';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
 ): Promise<WithError<WorldAbbr[]>> {
-  const dir = worldContainerToPath(worldContainer);
-  const subdir = await dir.iter();
-  const results = await asyncMap(subdir, (x) =>
-    getWorldAbbr(x, worldContainer)
+  const worldContainerV2 = worldContainerV1V2(worldContainer);
+  const locations = await worldSource.listWorldLocations(worldContainerV2);
+  return withError(
+    locations.map((x): WorldAbbr => {
+      return {
+        container: worldContainer,
+        id: WorldHandler.registerV2(x),
+        name: x.worldName as unknown as WorldName,
+      };
+    })
   );
-  // ワールドが一つもない場合はディレクトリを削除(設定からは削除しない)
-  if (subdir.length === 0) dir.remove();
-
-  return withError(results.filter(isValid), results.filter(isError));
 }
 
-async function getWorldAbbr(
-  path: Path,
-  worldContainer: WorldContainer
-): Promise<Failable<WorldAbbr>> {
-  if (!path.isDirectory())
-    return errorMessage.data.path.invalidContent.mustBeDirectory({
-      type: 'file',
-      path: path.path,
-    });
-  const jsonpath = serverJsonFile.path(path);
-
-  if (!jsonpath.exists())
-    return errorMessage.data.path.notFound({
-      type: 'file',
-      path: jsonpath.path,
-    });
-
-  const name = path.basename() as WorldName;
-  const container = worldContainer as WorldContainer;
-
-  // WorldHandlerに登録
-  const id = WorldHandler.register(name, container);
-
-  const result: WorldAbbr = {
-    id,
-    name,
-    container,
-  };
-
-  return result;
-}
-
-/** WorldIDからワールドデータ取得 (リモートが存在する場合リモートから読み込む) */
+/** WorldIDからワールドデータ取得*/
 export async function getWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(worldID);
-  if (isError(handler)) return withError(handler);
-  return await handler.load();
+  const handler = WorldHandler.getV2(worldID);
+  if (handler.isErr) return withError(errorMessage.unknown(handler.error()));
+  return await handler.value().load();
 }
 
 /** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
@@ -121,7 +89,6 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     id,
     version: { type: 'vanilla', ...latestRelease },
     using: false,
-    remote: undefined,
     last_date: getCurrentTimestamp(true),
     last_user: undefined,
     memory: systemSettings.world.memory,
@@ -260,9 +227,8 @@ export async function fetchLatestWorldLog(
   const log = await new WorldLogHandler(handler.getSavePath()).loadLatest();
 
   if (isError(log)) {
-    return errorMessage.core.world.missingLatestLog({
-      name: handler.name,
-      container: handler.container,
+    return errorMessage.unknown({
+      message: `fail:fetchLatestWorldLog ${worldID}`,
     });
   }
 
