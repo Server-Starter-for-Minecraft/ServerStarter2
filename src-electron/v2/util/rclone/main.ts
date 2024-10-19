@@ -3,10 +3,12 @@ import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize } from 'rclone.js';
+import { authorize, sync, copy } from 'rclone.js';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
 import { Path } from '../binary/path';
+import { getSystemSettings } from 'app/src-electron/core/stores/system';
+import { ChildProcess } from 'child_process';
 
 type RemoteDrive =
   | {
@@ -270,32 +272,136 @@ class RcloneSource {
    * remote -> local (強制上書き)
    * トークンが無効ならエラー
    */
-  async pull(remote: RemotePath, path: Path): Promise<Result<void>> {}
+  async pull(remote: RemotePath, path: Path): Promise<Result<void>> {
+    const isAccessible = await this.isAccessible(remote.drive, false);
+    if (!isAccessible) {
+      return err(new Error('token is invalid'));
+    }
+    const syncProcess: ChildProcess = sync(
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//from
+      path, //to
+      {
+        // Spawn options:
+        env: {
+          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+        },
+      }
+    );
+
+    syncProcess.stdout?.on('data', (data) => {
+      console.log(data.toString());
+    });
+
+    syncProcess.stderr?.on('data', (data) => {
+      console.error(data.toString());
+    });
+
+    await new Promise<void>((r) => syncProcess.on('close', r));
+    return ok()
+  }
 
   /**
    * local -> remote (強制上書き)
    * トークンが無効ならエラー
    * */
-  async push(remote: RemotePath, path: Path): Promise<Result<void>> {}
+  async push(remote: RemotePath, path: Path): Promise<Result<void>> {
+    // トークンが有効かどうかチェック
+    const isAccessible = await this.isAccessible(remote.drive, false);
+    if (!isAccessible) {
+      return err(new Error('token is invalid'));
+    }
+    const syncProcess: ChildProcess = sync(
+      path, //from
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//to
+      {
+        // Spawn options:
+        env: {
+          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+        },
+      }
+    );
+
+    syncProcess.stdout?.on('data', (data) => {
+      console.log(data.toString());
+    });
+
+    syncProcess.stderr?.on('data', (data) => {
+      console.error(data.toString());
+    });
+
+    await new Promise<void>((r) => syncProcess.on('close', r));
+    return ok()
+  }
 
   /**
    * remote -> local
    * ファイル単体 取得
    * トークンが無効ならエラー
    */
-  async getFile(remote: RemotePath): Promise<Result<Bytes>> {}
+  async getFile(remote: RemotePath): Promise<Result<Bytes>> {
+    const isAccessible = await this.isAccessible(remote.drive, false);
+    if (!isAccessible) {
+      return err(new Error('token is invalid'));
+    }
+    const uploadProcess: ChildProcess = copy(
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//from
+      this.cacheDirPath.child('downloadedFile').toStr(),
+      {
+        env: {
+          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+        },
+      }
+    );
+    uploadProcess.stdout?.on('data', (data) => {
+      console.log(data.toString());
+    });
+    uploadProcess.stderr?.on('data', (data) => {
+      console.error(data.toString());
+    });
+    await new Promise<void>((r) => uploadProcess.on('close', r));
+    //ダウンロードしたデータをBytesDataに変換して返す
+    const downloadedFile = this.cacheDirPath.child('downloadedFile')
+    const downloadedFileBytes = (await downloadedFile.into(Bytes)).value();
+    return ok(downloadedFileBytes)
+  }
 
   /**
    * ファイル単体 作成/更新
    * トークンが無効ならエラー
    */
-  async putFile(remote: RemotePath, data: Bytes): Promise<Result<void>> {}
+  async putFile(remote: RemotePath, data: Bytes): Promise<Result<void>> {
+    const isAccessible = await this.isAccessible(remote.drive, false);
+    if (!isAccessible) {
+      return err(new Error('token is invalid'));
+    }
+    const uploadFile = this.cacheDirPath.child('uploadFile')
+    await data.into(uploadFile)
+    const uploadProcess: ChildProcess = copy(
+      uploadFile.toStr(),//from
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//to
+      {
+        env: {
+          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+        },
+      }
+    );
+    uploadProcess.stdout?.on('data', (data) => {
+      console.log(data.toString());
+    });
+    uploadProcess.stderr?.on('data', (data) => {
+      console.error(data.toString());
+    });
+    await new Promise<void>((r) => uploadProcess.on('close', r));
+    return ok()
+  }
 
   /**
    * ディレクトリ内のファイル列挙
    * トークンが無効ならエラー
    */
-  async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {}
+  async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {
+
+  }
 }
 
 /** In Source Testing */
