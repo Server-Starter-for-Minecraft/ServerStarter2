@@ -76,7 +76,7 @@ class RcloneSource {
     driveType: RemoteDrive['driveType'],
     showAuthWindow: (url: string) => void
   ): Promise<Result<RemoteDrive>> {
-    const tokenJson = await this.getTokenWithOAuth(driveType,showAuthWindow);
+    const tokenJson = await this.getTokenWithOAuth(driveType, showAuthWindow);
     if (tokenJson.isErr) {
       return err(new Error('failed to get token'));
     }
@@ -86,6 +86,7 @@ class RcloneSource {
     }
     const userInfo = userInfoResult.value();
     const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+    /**TODO: 登録済みのdriveTyope,mailAdressと登録したいdriveType,mailAdressが被ったら弾く */
     if (driveType === 'onedrive') {
       //configの書き込み
       const configContent = `[
@@ -189,13 +190,13 @@ class RcloneSource {
       await this.cacheDirPath.child('rclone.conf').readText()
     );
     if (config[remote.mailAddress] === undefined) {
-      return ok(undefined);
+      return ok();
     }
     delete config[remote.mailAddress];
     await this.cacheDirPath
       .child('rclone.conf')
       .writeText(ini.stringify(config));
-    return ok(undefined);
+    return ok();
   }
 
   /**
@@ -209,7 +210,10 @@ class RcloneSource {
     remote: RemoteDrive,
     showAuthWindow: (url: string) => void
   ): Promise<Result<boolean>> {
-    const tokenJson = await this.getTokenWithOAuth(remote.driveType, showAuthWindow);
+    const tokenJson = await this.getTokenWithOAuth(
+      remote.driveType,
+      showAuthWindow
+    );
     if (tokenJson.isErr) {
       return err(new Error('failed to get token'));
     }
@@ -220,8 +224,8 @@ class RcloneSource {
     if (userInfoResult.isErr) {
       return err(new Error('failed to get username'));
     }
-    const result = this.renewToken(remote, tokenJson.value())
-    return result
+    const result = this.renewToken(remote, tokenJson.value());
+    return result;
   }
 
   /**
@@ -237,7 +241,7 @@ class RcloneSource {
     //  与えられたトークンが与えられたアカウントにアクセスできることを確認すること
     const userInfoResult = await this.getUserInfo(remote.driveType, token);
     if (userInfoResult.isErr) {
-      return err(new Error('failed to get user info'));
+      return err.error('failed to get user info');
     }
     const userInfo = userInfoResult.value();
     if (userInfo.mailAddress === remote.mailAddress) {
