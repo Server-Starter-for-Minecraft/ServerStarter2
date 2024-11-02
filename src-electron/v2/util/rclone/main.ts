@@ -607,6 +607,54 @@ if (import.meta.vitest) {
     expect(await rcloneSource.isAccessible(testDriveOneDrive, true)).toBe(true);
     await rcloneSource.unregister(testDriveOneDrive)
   });
+  //OAuthを使った認証テスト
+  test.skip('registerWithOauth_google', async () => {
+    //トークンを取得
+    const promiseDriveGoogle = await rcloneSource.registerNewRemoteWithOAuth('drive',showAuthWindow)
+    expect(promiseDriveGoogle.isOk).toBe(true)
+    const newDriveGoogle = promiseDriveGoogle.value()
+    //rclone.confに書き込間れていることを確認
+    const configIni = await workPath.child('cache').child('rclone.conf').readText()
+    expect(configIni.isOk).toBe(true)
+    const config = ini.parse(configIni.value())
+    //登録名を生成
+    const remoteKey = `${newDriveGoogle.driveType}_${removePeriodOfMailAddress(newDriveGoogle.mailAddress)}`
+    //登録名に一致するキーがあれば登録成功
+    expect(remoteKey in config).toBe(true)
+  },50000)
+
+
+  test.skip('registerWithOauth_dropbox', async () => {
+    //トークンを取得
+    const promiseDriveDropbox = await rcloneSource.registerNewRemoteWithOAuth('dropbox',showAuthWindow)
+    expect(promiseDriveDropbox.isOk).toBe(true)
+    const newDriveDropbox = promiseDriveDropbox.value()
+    //rclone.confに書き込間れていることを確認
+    const configIni = await workPath.child('cache').child('rclone.conf').readText()
+    expect(configIni.isOk).toBe(true)
+    const config = ini.parse(configIni.value())
+    //登録名を生成
+    const remoteKey = `${newDriveDropbox.driveType}_${removePeriodOfMailAddress(newDriveDropbox.mailAddress)}`
+    //登録名に一致するキーがあれば登録成功
+    expect(remoteKey in config).toBe(true)
+  },50000)
+
+  //onedriveについて
+  //理論上は動くはずだがgetUserInfoに必ず失敗する→アカウントが凍っているせい→APIを使って大量にファイル操作するとアカウントが凍るならそもそも対象から外す？
+  test.skip('registerWithOauth_onedrive', async () => {
+    //トークンを取得
+    const promiseDriveOneDrive = await rcloneSource.registerNewRemoteWithOAuth('onedrive',showAuthWindow)
+    expect(promiseDriveOneDrive.isOk).toBe(true)
+    const newDriveOneDrive = promiseDriveOneDrive.value()
+    //rclone.confに書き込間れていることを確認
+    const configIni = await workPath.child('cache').child('rclone.conf').readText()
+    expect(configIni.isOk).toBe(true)
+    const config = ini.parse(configIni.value())
+    //登録名を生成
+    const remoteKey = `${newDriveOneDrive.driveType}_${removePeriodOfMailAddress(newDriveOneDrive.mailAddress)}`
+    //登録名に一致するキーがあれば登録成功
+    expect(remoteKey in config).toBe(true)
+  },500000)
   await workPath.remove()
 
   //await rcloneSource.saveConfig()
