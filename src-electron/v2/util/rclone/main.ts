@@ -39,6 +39,9 @@ class RcloneSource {
     private readonly cacheDirPath: Path
   ) {}
 
+  private removePeriodOfMailAddress(email: string): string {
+    return email.replace(/[.@]/g, '');
+  }
   /**
    * ドライブにアクセスできることを確認
    *
@@ -48,21 +51,30 @@ class RcloneSource {
     remote: RemoteDrive,
     checkOnlyExpiration: boolean
   ): Promise<boolean> {
-    const config = ini.parse(
-      await this.cacheDirPath.child('rclone.conf').readText()
-    );
+    const configIni = await this.cacheDirPath.child('rclone.conf').readText()
+    const config = configIni.isOk
+    ? ini.parse(configIni.value())
+    : null;
+    if(config === null){return false}
     if (checkOnlyExpiration) {
       // トークンの期限だけチェック
-      const token = config[remote.mailAddress].token;
-      const expires = config[remote.mailAddress].expiry;
+      const mailKey = this.removePeriodOfMailAddress(remote.mailAddress)
+      const remoteKey = `${remote.driveType}_${mailKey}`
+      if(!config[remoteKey]){return false}
+      const token = config[remoteKey].token;
+      const tokenJson = JSON.parse(token)
+      const expires = tokenJson.expiry;
       if (token === undefined || expires === undefined) return false;
       const now = new Date();
       return now < new Date(expires);
     } else {
       // 実際にurl叩いてチェック
+      const mailKey = this.removePeriodOfMailAddress(remote.mailAddress)
+      const remoteKey = `${remote.driveType}_${mailKey}`
+      if(!config[remoteKey]){return false}
       const userInfo = await this.getUserInfo(
         remote.driveType,
-        config[`${remote.driveType}_${remote.mailAddress}`].token
+        config[remoteKey].token
       );
       return userInfo.isErr
         ? false
@@ -91,22 +103,22 @@ class RcloneSource {
     /**TODO: 登録済みのdriveTyope,mailAdressと登録したいdriveType,mailAdressが被ったら弾く */
     if (driveType === 'onedrive') {
       //configの書き込み
+      const key = this.removePeriodOfMailAddress(userInfo.mailAddress)
       const configContent = `[
-      ${driveType}_${userInfo.mailAddress}]\n
+      ${driveType}_${key}]\n
       type = onedrive\n
       token = ${tokenJson.value()}\n
       drive_id = ${userInfo.driveId}\n
       drive_type = personal\n`;
-      await configPath.writeText(configContent);
+      await this.register(`${driveType}_${key}`,configContent);
       return ok({
         driveType: driveType,
         mailAddress: userInfo.mailAddress,
       });
     } else {
-      const configContent = `[${driveType}_${
-        userInfo.mailAddress
-      }]]\ntype = ${driveType}\ntoken = ${tokenJson.value()}\n`;
-      await configPath.writeText(configContent);
+      const key = this.removePeriodOfMailAddress(userInfo.mailAddress)
+      const configContent = `[${driveType}_${key}]\ntype = ${driveType}\ntoken = ${tokenJson.value()}\n`;
+      await this.register(`${driveType}_${key}`,configContent);
       return ok({
         driveType: driveType,
         mailAddress: userInfo.mailAddress,
@@ -188,17 +200,34 @@ class RcloneSource {
   async unregister(remote: RemoteDrive): Promise<Result<void>> {
     // たぶんトークン消すだけ
     // もともと未登録だった場合は何もせずに成功
-    const config = ini.parse(
-      await this.cacheDirPath.child('rclone.conf').readText()
-    );
-    if (config[remote.mailAddress] === undefined) {
+    const key = this.removePeriodOfMailAddress(remote.mailAddress)
+    if (config[`${remote.driveType}_${key}`] === undefined) {
       return ok();
     }
-    delete config[remote.mailAddress];
+    delete config[`${remote.driveType}_${key}`];
     await this.cacheDirPath
       .child('rclone.conf')
       .writeText(ini.stringify(config));
     return ok();
+  }
+
+  private async register(remoteKey: string, configContent: string): Promise<Result<void>>{
+    const configIni = await this.cacheDirPath.child('rclone.conf').readText()
+    const config = configIni.isOk
+    ? ini.parse(configIni.value())
+    : null;
+    if(config === null){
+      await this.cacheDirPath.child('rclone.conf').writeText(configContent)
+      return ok()
+    }
+    if (config[remoteKey]){
+      delete config[remoteKey];
+      await this.cacheDirPath
+      .child('rclone.conf')
+      .writeText(ini.stringify(config));
+    }
+    await this.cacheDirPath.child('rclone.conf').appendText(configContent)
+    return ok()
   }
 
   /**
@@ -248,19 +277,18 @@ class RcloneSource {
     const userInfo = userInfoResult.value();
     if (userInfo.mailAddress === remote.mailAddress) {
       /**トークンをrclone.confに書き込む */
-      this.unregister(remote);
-      const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
+      const key = this.removePeriodOfMailAddress(userInfo.mailAddress)
       if (remote.driveType === 'onedrive') {
         const configContent = `[
-      ${remote.driveType}_${userInfo.mailAddress}]\n
+      ${remote.driveType}_${key}]\n
       type = onedrive\n
       token = ${token}\n
       drive_id = ${userInfo.driveId}\n
       drive_type = personal\n`;
-        await configPath.writeText(configContent);
+        await this.register(`${remote.driveType}_${key}`,configContent);
       } else {
-        const configContent = `[${remote.driveType}_${userInfo.mailAddress}]]\ntype = ${remote.driveType}\ntoken = ${token}\n`;
-        await configPath.writeText(configContent);
+        const configContent = `[${remote.driveType}_${key}]\ntype = ${remote.driveType}\ntoken = ${token}\n`;
+        await this.register(`${remote.driveType}_${key}`,configContent);
       }
       return ok(true);
     } else {
@@ -278,7 +306,7 @@ class RcloneSource {
       return err(new Error('token is invalid'));
     }
     const syncProcess: ChildProcess = sync(
-      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//from
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`, //from
       path, //to
       {
         // Spawn options:
@@ -344,7 +372,7 @@ class RcloneSource {
       return err(new Error('token is invalid'));
     }
     const uploadProcess: ChildProcess = copy(
-      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//from
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`, //from
       this.cacheDirPath.child('downloadedFile').toStr(),
       {
         env: {
