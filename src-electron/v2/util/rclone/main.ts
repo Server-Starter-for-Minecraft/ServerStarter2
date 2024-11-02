@@ -14,7 +14,7 @@ import { SystemRemoteSetting } from 'app/src-electron/schema/system';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
 import { Path } from '../binary/path';
-import { dropboxTokenForTest, googleTokenForTest, onedriveTokenForTest, tokenForTest } from './token.private';
+import { openBrowser } from 'app/src-electron/tools/shell';
 
 type RemoteDrive =
   | {
@@ -41,7 +41,7 @@ type RemotePath = {
 
 async function showAuthWindow(url: string): Promise<void> {
   try {
-    await open(url, '_blank');
+    await openBrowser(url);
   } catch (error) {
     err.error('Failed to open URL.');
   }
@@ -197,10 +197,11 @@ class RcloneSource {
     driveType: RemoteDrive['driveType'],
     showAuthWindow: (url: string) => void
   ): Promise<Result<string>> {
-    const authorizeProcess = authorize(driveType, '--auth-no-open-browser');
+    const authorizeProcess = authorize(driveType,'--auth-no-open-browser');
     //標準出力からurlを取得
     const urlPromise = new Promise<string | null>((resolve, reject) => {
-      authorizeProcess.stdout?.on('data', (data) => {
+      //urlは標準エラー出力に出ている
+      authorizeProcess.stderr?.on('data', (data) => {
         // URLマッチングのための正規表現
         const urlMatch = data.toString().match(/https?:\/\/[^\s]+/);
 
@@ -212,10 +213,10 @@ class RcloneSource {
       });
     });
     const url = await urlPromise.catch(() => null);
-    url === null ? err.error('URLの取得に失敗しました') : showAuthWindow(url);
+    //TODO: showAuthWindowが動かない、テスト時は手動でurlを開いて実行
+    url === null ? err.error('URLの取得に失敗しました') : await showAuthWindow(url);
     const tokenPromise = new Promise<string>((resolve) => {
       authorizeProcess.stdout?.on('data', (data) => {
-        //console.log(data.toString());
         const tokenMatch = data.toString().match(/({.*?})/);
         resolve(tokenMatch ? tokenMatch[0] : null);
       });
