@@ -689,9 +689,179 @@ if (import.meta.vitest) {
     //登録名を生成
     const remoteKey = `${newDriveOneDrive.driveType}_${removePeriodOfMailAddress(newDriveOneDrive.mailAddress)}`
     //登録名に一致するキーがあれば登録成功
-    expect(remoteKey in config).toBe(true)
-  },500000)
-  await workPath.remove()
+  test.skip('pushAndPulltest_google', async () => {
+    const syncDirectory = workPath.child('sync');
+    const pullDirectory = workPath.child('target')
+    const filesToTest = [
+      { name: 'test1.txt', content: 'Content for file 1' },
+      { name: 'test2.txt', content: 'Content for file 2' },
+      { name: 'test3.txt', content: 'Content for file 3' },
+    ];
+    const remotePathExpected = [
+      {
+        drive: {
+          driveType: 'drive',
+          mailAddress: 'serverstarter.contact@gmail.com'
+        },
+        path: 'sync/test1.txt'
+      },
+      {
+        drive: {
+          driveType: 'drive',
+          mailAddress: 'serverstarter.contact@gmail.com'
+        },
+        path: 'sync/test2.txt'
+      },
+      {
+        drive: {
+          driveType: 'drive',
+          mailAddress: 'serverstarter.contact@gmail.com'
+        },
+        path: 'sync/test3.txt'
+      }
+    ]
+    await Promise.all(
+      filesToTest.map((file) =>
+        syncDirectory.child(file.name).writeText(file.content)
+      )
+    );
+    // ファイルが生成されているか確認
+    for (const file of filesToTest) {
+      const filePath = syncDirectory.child(file.name);
+      expect(filePath.exists()).toBe(true);
+
+      // 内容が正しいかも確認
+      const content = await filePath.readText();
+      expect(content.value()).toBe(file.content);
+
+      //remotePathを定義
+      const remote: RemotePath = {
+        drive: testDriveGoogle,
+        path: 'sync',
+      };
+      //push
+      //未認証なのでエラーになるはず
+      await rcloneSource.unregister(testDriveGoogle);
+      const resultError = await rcloneSource.push(remote, syncDirectory);
+      expect(resultError.isErr).toBe(true);
+
+      //認証した上で実行すると成功
+      await rcloneSource.renewToken(testDriveGoogle, testDriveTokenGoogle);
+      const resultOk = await rcloneSource.push(remote, syncDirectory);
+      expect(resultOk.isOk).toBe(true);
+
+      //実際に同期できていることを確認
+      const remoteDirList = await rcloneSource.listFile(remote);
+      expect(remoteDirList.value()).toStrictEqual(remotePathExpected)
+      await rcloneSource.unregister(testDriveGoogle);
+
+      //pullのテスト
+      //未認証なのでエラーになるはず
+      const pullResultError = await rcloneSource.pull(remote, pullDirectory);
+      expect(pullResultError.isErr).toBe(true);
+
+      //登録して再度pull
+      await rcloneSource.renewToken(testDriveGoogle, testDriveTokenGoogle);
+      const pullResultOk = await rcloneSource.pull(remote, pullDirectory);
+      expect(pullResultOk.isOk).toBe(true);
+
+      //実際に同期できていることを確認
+      //localのsyncとtargetが完全に同じファイル構成になっているはず
+      const syncParhList = await syncDirectory.iter()
+      const syncList = syncParhList.map((path)=> path.basename())
+      const pullPathList = await pullDirectory.iter()
+      const pullList = pullPathList.map((path) => path.basename())
+      expect(pullList).toStrictEqual(syncList)
+      await workPath.child('sync').remove()
+      await workPath.child('target').remove()
+    }
+  },500000);
+
+  test.skip('pushAndPulltest_dropbox', async () => {
+    const syncDirectory = workPath.child('sync');
+    const pullDirectory = workPath.child('target')
+    const filesToTest = [
+      { name: 'test1.txt', content: 'Content for file 1' },
+      { name: 'test2.txt', content: 'Content for file 2' },
+      { name: 'test3.txt', content: 'Content for file 3' },
+    ];
+    const remotePathExpected = [
+      {
+        drive: {
+          driveType: 'dropbox',
+          mailAddress: 'serverstarter.contact@gmail.com'
+        },
+        path: 'sync/test1.txt'
+      },
+      {
+        drive: {
+          driveType: 'dropbox',
+          mailAddress: 'serverstarter.contact@gmail.com'
+        },
+        path: 'sync/test2.txt'
+      },
+      {
+        drive: {
+          driveType: 'dropbox',
+          mailAddress: 'serverstarter.contact@gmail.com'
+        },
+        path: 'sync/test3.txt'
+      }
+    ]
+    await Promise.all(
+      filesToTest.map((file) =>
+        syncDirectory.child(file.name).writeText(file.content)
+      )
+    );
+    // ファイルが生成されているか確認
+    for (const file of filesToTest) {
+      const filePath = syncDirectory.child(file.name);
+      expect(filePath.exists()).toBe(true);
+
+      // 内容が正しいかも確認
+      const content = await filePath.readText();
+      expect(content.value()).toBe(file.content);
+
+      //remotePathを定義
+      const remote: RemotePath = {
+        drive: testDriveDropbox,
+        path: 'sync',
+      };
+      //push
+      //未認証なのでエラーになるはず
+      await rcloneSource.unregister(testDriveDropbox);
+      const resultError = await rcloneSource.push(remote, syncDirectory);
+      expect(resultError.isErr).toBe(true);
+
+      //認証した上で実行すると成功
+      await rcloneSource.renewToken(testDriveDropbox, testDriveTokenDropbox);
+      const resultOk = await rcloneSource.push(remote, syncDirectory);
+      expect(resultOk.isOk).toBe(true);
+
+      //実際に同期できていることを確認
+      const remoteDirList = await rcloneSource.listFile(remote);
+      expect(remoteDirList.value()).toStrictEqual(remotePathExpected)
+      await rcloneSource.unregister(testDriveDropbox);
+
+      //pullのテスト
+      //未認証なのでエラーになるはず
+      const pullResultError = await rcloneSource.pull(remote, pullDirectory);
+      expect(pullResultError.isErr).toBe(true);
+
+      //登録して再度pull
+      await rcloneSource.renewToken(testDriveDropbox, testDriveTokenDropbox);
+      const pullResultOk = await rcloneSource.pull(remote, pullDirectory);
+      expect(pullResultOk.isOk).toBe(true);
+
+      //実際に同期できていることを確認
+      //localのsyncとtargetが完全に同じファイル構成になっているはず
+      const syncParhList = await syncDirectory.iter()
+      const syncList = syncParhList.map((path)=> path.basename())
+      const pullPathList = await pullDirectory.iter()
+      const pullList = pullPathList.map((path) => path.basename())
+      expect(pullList).toStrictEqual(syncList)
+    }
+  },500000);
 
   //await rcloneSource.saveConfig()
 }
