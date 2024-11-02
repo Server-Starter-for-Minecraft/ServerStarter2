@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize, copy, ls, sync } from 'rclone.js';
+import { authorize, copy, ls, sync, purge } from 'rclone.js';
 import {
   getSystemSettings,
   setSystemSettings,
@@ -566,6 +566,39 @@ class RcloneSource {
     });
     return ok(remotePaths)
   }
+
+  /**
+   * 渡されたRemoteParhを消す
+   * @param remote
+   */
+  async deleteRemoteDirectory(remote: RemotePath): Promise<Result<void>> {
+    // トークンが有効かどうかチェック
+    const isAccessible = await this.isAccessible(remote.drive, false);
+    if (!isAccessible) {
+      return err.error('token is invalid');
+    }
+    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
+    const purgeProcess: ChildProcess = purge(
+      `${remoteKey}:${remote.path}`,
+      {
+        // Spawn options:
+        env: {
+          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+        },
+      }
+    );
+
+    purgeProcess.stdout?.on('data', (data) => {
+      //console.log(data.toString());
+    });
+
+    purgeProcess.stderr?.on('data', (data) => {
+      //console.error(data.toString());
+    });
+
+    await new Promise<void>((r) => purgeProcess.on('close', r));
+    return ok();
+  }
 }
 
 /** In Source Testing */
@@ -815,6 +848,10 @@ if (import.meta.vitest) {
       const pullPathList = await pullDirectory.iter()
       const pullList = pullPathList.map((path) => path.basename())
       expect(pullList).toStrictEqual(syncList)
+
+      //　使ったファイルを削除
+      const purgeResult = await rcloneSource.deleteRemoteDirectory(remote)
+      expect(purgeResult.isOk).toBe(true)
       await workPath.child('sync').remove()
       await workPath.child('target').remove()
     }
@@ -903,9 +940,17 @@ if (import.meta.vitest) {
       const pullPathList = await pullDirectory.iter()
       const pullList = pullPathList.map((path) => path.basename())
       expect(pullList).toStrictEqual(syncList)
+      //　使ったファイルを削除
+      const purgeResult = await rcloneSource.deleteRemoteDirectory(remote)
+      expect(purgeResult.isOk).toBe(true)
+      await workPath.child('sync').remove()
+      await workPath.child('target').remove()
     }
   },500000);
 
+  test('putFileTest')
+
+  test('getFileTest')
   await workPath.remove();
 
   //await rcloneSource.saveConfig()
