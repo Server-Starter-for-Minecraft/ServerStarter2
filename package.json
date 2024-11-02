@@ -16,6 +16,7 @@
   "dependencies": {
     "@ngrok/ngrok": "^0.9.1",
     "@quasar/extras": "^1.16.4",
+    "@types/ini": "^4.1.1",
     "archiver": "^7.0.1",
     "base64-stream": "^1.0.0",
     "browser-image-compression": "^2.0.2",

@@ -1613,6 +1613,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ini@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "@types/ini@npm:4.1.1"
+  checksum: 10c0/a060753a39f8bd73b615186018f7aded0eeb5698c0cb00e2f92ae495aa44b6351260e27f938891eeb304e28c2d42036bac5793a4e2031eff1df1a47de8cc8a97
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.9":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -2221,6 +2228,7 @@ __metadata:
     "@trivago/prettier-plugin-sort-imports": "npm:^4.3.0"
     "@types/archiver": "npm:^6.0.2"
     "@types/base64-stream": "npm:^1.0.5"
+    "@types/ini": "npm:^4.1.1"
     "@types/jszip": "npm:^3.4.1"
     "@types/node": "npm:^20.3.3"
     "@types/rclone.js": "npm:^0"
