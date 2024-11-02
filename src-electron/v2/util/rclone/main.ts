@@ -1,8 +1,10 @@
+import { ChildProcess } from 'child_process';
 import { Dropbox } from 'dropbox';
 import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
+import { authorize, copy, sync } from 'rclone.js';
 import {
   getSystemSettings,
   setSystemSettings,
@@ -12,8 +14,7 @@ import { SystemRemoteSetting } from 'app/src-electron/schema/system';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
 import { Path } from '../binary/path';
-import { getSystemSettings } from 'app/src-electron/core/stores/system';
-import { ChildProcess } from 'child_process';
+import { dropboxTokenForTest, googleTokenForTest, onedriveTokenForTest, tokenForTest } from './token.private';
 
 type RemoteDrive =
   | {
@@ -166,8 +167,7 @@ class RcloneSource {
       return err(new Error('failed to get mailAdderss'));
     }
     const userInfo = userInfoResult.value();
-    const configPath = new Path(this.cacheDirPath.child('rclone.conf'));
-    /**TODO: 登録済みのdriveTyope,mailAdressと登録したいdriveType,mailAdressが被ったら弾く */
+    /**TODO: 登録済みのdriveType,mailAdressと登録したいdriveType,mailAdressが被ったら弾く */
     if (driveType === 'onedrive') {
       //configの書き込み
       const key = this.removePeriodOfMailAddress(userInfo.mailAddress)
@@ -201,7 +201,6 @@ class RcloneSource {
     //標準出力からurlを取得
     const urlPromise = new Promise<string | null>((resolve, reject) => {
       authorizeProcess.stdout?.on('data', (data) => {
-        //console.log(data.toString());
         // URLマッチングのための正規表現
         const urlMatch = data.toString().match(/https?:\/\/[^\s]+/);
 
@@ -212,8 +211,8 @@ class RcloneSource {
         }
       });
     });
-    /**TODO: ここでelectronからブラウザを立ち上げたい */
-    showAuthWindow(await urlPromise)
+    const url = await urlPromise.catch(() => null);
+    url === null ? err.error('URLの取得に失敗しました') : showAuthWindow(url);
     const tokenPromise = new Promise<string>((resolve) => {
       authorizeProcess.stdout?.on('data', (data) => {
         //console.log(data.toString());
@@ -278,6 +277,11 @@ class RcloneSource {
   async unregister(remote: RemoteDrive): Promise<Result<void>> {
     // たぶんトークン消すだけ
     // もともと未登録だった場合は何もせずに成功
+    const configIni = await this.cacheDirPath.child('rclone.conf').readText()
+    const config = configIni.isOk
+    ? ini.parse(configIni.value())
+    : null;
+    if(config === null){return err.error('failed to load rclone.conf')}
     const key = this.removePeriodOfMailAddress(remote.mailAddress)
     if (config[`${remote.driveType}_${key}`] === undefined) {
       return ok();
@@ -403,7 +407,7 @@ class RcloneSource {
     });
 
     await new Promise<void>((r) => syncProcess.on('close', r));
-    return ok()
+    return ok();
   }
 
   /**
@@ -418,7 +422,7 @@ class RcloneSource {
     }
     const syncProcess: ChildProcess = sync(
       path, //from
-      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//to
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`, //to
       {
         // Spawn options:
         env: {
@@ -436,7 +440,7 @@ class RcloneSource {
     });
 
     await new Promise<void>((r) => syncProcess.on('close', r));
-    return ok()
+    return ok();
   }
 
   /**
@@ -466,9 +470,9 @@ class RcloneSource {
     });
     await new Promise<void>((r) => uploadProcess.on('close', r));
     //ダウンロードしたデータをBytesDataに変換して返す
-    const downloadedFile = this.cacheDirPath.child('downloadedFile')
+    const downloadedFile = this.cacheDirPath.child('downloadedFile');
     const downloadedFileBytes = (await downloadedFile.into(Bytes)).value();
-    return ok(downloadedFileBytes)
+    return ok(downloadedFileBytes);
   }
 
   /**
@@ -480,11 +484,11 @@ class RcloneSource {
     if (!isAccessible) {
       return err(new Error('token is invalid'));
     }
-    const uploadFile = this.cacheDirPath.child('uploadFile')
-    await data.into(uploadFile)
+    const uploadFile = this.cacheDirPath.child('uploadFile');
+    await data.into(uploadFile);
     const uploadProcess: ChildProcess = copy(
-      uploadFile.toStr(),//from
-      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`,//to
+      uploadFile.toStr(), //from
+      `${remote.drive.driveType}_${remote.drive.mailAddress}:${remote.path}`, //to
       {
         env: {
           RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
@@ -498,16 +502,14 @@ class RcloneSource {
       console.error(data.toString());
     });
     await new Promise<void>((r) => uploadProcess.on('close', r));
-    return ok()
+    return ok();
   }
 
   /**
    * ディレクトリ内のファイル列挙
    * トークンが無効ならエラー
    */
-  async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {
-
-  }
+  async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {}
 }
 
 /** In Source Testing */
