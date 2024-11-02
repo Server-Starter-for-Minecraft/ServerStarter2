@@ -17,7 +17,7 @@ import { ChildProcess } from 'child_process';
 
 type RemoteDrive =
   | {
-      driveType: 'google';
+      driveType: 'drive';
       mailAddress: string;
     }
   | {
