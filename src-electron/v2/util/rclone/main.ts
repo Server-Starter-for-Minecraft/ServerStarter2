@@ -38,6 +38,14 @@ type RemotePath = {
   path: string;
 };
 
+async function showAuthWindow(url: string): Promise<void> {
+  try {
+    await open(url, '_blank');
+  } catch (error) {
+    err.error('Failed to open URL.');
+  }
+}
+
 class RcloneSource {
   constructor(
     /** 何か値をキャッシュする必要がある場合、このディレクトリの中を使うこと */
