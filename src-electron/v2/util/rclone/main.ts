@@ -3,7 +3,12 @@ import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize, sync, copy } from 'rclone.js';
+import {
+  getSystemSettings,
+  setSystemSettings,
+} from 'app/src-electron/core/stores/system';
+import { rcloneSetting } from 'app/src-electron/schema/remote';
+import { SystemRemoteSetting } from 'app/src-electron/schema/system';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
 import { Path } from '../binary/path';
@@ -38,6 +43,60 @@ class RcloneSource {
     /** 何か値をキャッシュする必要がある場合、このディレクトリの中を使うこと */
     private readonly cacheDirPath: Path
   ) {}
+
+  /**
+   * 起動時処理としてsettings.ssconfigを読み込んでrclone.confを生成する
+   *
+   */
+  async makeConfigFile(): Promise<Result<void>> {
+    const systemSetting = await getSystemSettings();
+    const setting = systemSetting.remote;
+    const configPath = this.cacheDirPath.child('rclone.conf');
+    const configContent = setting
+      .map((setting) => {
+        return `[${setting.type}_${this.removePeriodOfMailAddress(setting.mailAddress)}]\n
+          type = ${setting.type}\n
+          token = ${setting.token}\n
+          ${setting.driveId ? `drive_id = ${setting.driveId}\n` : ''}
+          ${setting.driveType ? `drive_type = ${setting.driveType}\n` : ''}\n`;
+      })
+      .join('');
+    await configPath.writeText(configContent);
+    return ok();
+  }
+
+  async saveConfig(): Promise<Result<void>> {
+    const configIni = await this.cacheDirPath.child('rclone.conf').readText()
+    const config = configIni.isOk
+    ? ini.parse(configIni.value())
+    : null;
+    if(config === null){return err.error('failed to load rclone.conf')}
+    const settings: SystemRemoteSetting = Object.entries(config).map(
+      ([key, value]: [string, any]) => {
+        const [type, mailAddress] = key.split('_');
+
+        const setting: rcloneSetting = {
+          type: type as 'drive' | 'dropbox' | 'onedrive',
+          mailAddress,
+          token: value.token
+        };
+
+        // driveId, driveTypeが存在する場合のみ追加
+        if (value.drive_id) {
+          setting.driveId = value.drive_id;
+        }
+        if (value.drive_type) {
+          setting.driveType = value.drive_type;
+        }
+
+        return setting;
+      }
+    );
+    const systemSetting = await getSystemSettings();
+    systemSetting.remote = settings;
+    await setSystemSettings(systemSetting);
+    return ok();
+  }
 
   private removePeriodOfMailAddress(email: string): string {
     return email.replace(/[.@]/g, '');
