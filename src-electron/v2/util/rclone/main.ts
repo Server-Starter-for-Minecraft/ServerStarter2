@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize, copy, sync } from 'rclone.js';
+import { authorize, copy, ls, sync } from 'rclone.js';
 import {
   getSystemSettings,
   setSystemSettings,
@@ -514,7 +514,43 @@ class RcloneSource {
    * ディレクトリ内のファイル列挙
    * トークンが無効ならエラー
    */
-  async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {}
+  async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {
+    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
+    const lsProcess = ls(`${remoteKey}:${remote.path}`, {
+      env: {
+        RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+      },
+    });
+    const fileList: string[] = [];
+    const fileLists = await new Promise<string[]>((resolve, reject) => {
+      lsProcess.stdout?.on('data', (data) => {
+        //console.log(data.toString());
+        const lines = data.toString().split('\n');
+        fileList.push(...lines.filter((line) => line.trim() !== ''));
+      });
+
+      lsProcess.stderr?.on('data', (data) => {
+        //console.log(data.toString())
+        reject(new Error('Error reading file list:', data.toString()));
+      });
+
+      lsProcess.on('close', (code) => {
+        if (code === 0) {
+          resolve(fileList.sort());
+        } else {
+          reject(new Error(`ls process exited with code ${code}`));
+        }
+      });
+    });
+    const remotePaths: RemotePath[] = fileLists.map(file => {
+      const fileName = file.trim().replace(/^\d+\s+/, ''); // ファイル名のみ抽出
+      return {
+        drive: remote.drive,
+        path: `${remote.path}/${fileName}`,
+      };
+    });
+    return ok(remotePaths)
+  }
 }
 
 /** In Source Testing */
