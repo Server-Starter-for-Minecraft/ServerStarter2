@@ -391,7 +391,7 @@ class RcloneSource {
     const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`
     const syncProcess: ChildProcess = sync(
       `${remoteKey}:${remote.path}`, //from
-      path, //to
+      path.toStr(), //to
       {
         // Spawn options:
         env: {
@@ -424,7 +424,7 @@ class RcloneSource {
     }
     const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`
     const syncProcess: ChildProcess = sync(
-      path, //from
+      path.toStr(), //from
       `${remoteKey}:${remote.path}`, //to
       {
         // Spawn options:
