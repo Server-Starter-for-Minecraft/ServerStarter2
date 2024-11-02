@@ -14,7 +14,11 @@ import { SystemRemoteSetting } from 'app/src-electron/schema/system';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
 import { Path } from '../binary/path';
-import { openBrowser } from 'app/src-electron/tools/shell';
+import {
+  dropboxTokenForTest,
+  googleTokenForTest,
+  onedriveTokenForTest,
+} from './token.private';
 
 type RemoteDrive =
   | {
