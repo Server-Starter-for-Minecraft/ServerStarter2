@@ -225,14 +225,21 @@ class RcloneSource {
     tokenJson: string
   ): Promise<Result<userInfo>> {
     const accessToken = JSON.parse(tokenJson);
-    if (driveType === 'google') {
+    if (driveType === 'drive') {
       const oAuth2Client = new google.auth.OAuth2();
+      //googleはrcloneで取得できたトークンをJSON.parseしてそのまま渡す
       oAuth2Client.setCredentials(accessToken);
+      console.log(accessToken)
       const drive = google.drive({ version: 'v3', auth: oAuth2Client });
       const about = await drive.about.get({ fields: 'user' });
-      return ok({ mailAddress: about.data.user.emailAddress });
+      const mailAdderss = about.data?.user?.emailAddress;
+      return typeof mailAdderss === 'string'
+        ? ok({ mailAddress: mailAdderss })
+        : err.error('failed to get mailAddress');
+
     } else if (driveType === 'dropbox') {
-      const dropbox = new Dropbox({ accessToken: accessToken });
+      //dropboxはJSON.parseしたもののaccess_tokenだけ渡す
+      const dropbox = new Dropbox({ accessToken: accessToken.access_token });
       const response = await dropbox.usersGetCurrentAccount();
       return ok({ mailAddress: response.result.email });
     } else if (driveType === 'onedrive') {
@@ -246,10 +253,14 @@ class RcloneSource {
         url: `/drives/${driveId}`,
         method: 'GET',
       });
-      return ok({
-        mailAddress: userInfo.owner?.user?.displayName,
-        driveId: driveId,
-      });
+      const mailAddress = userInfo.owner?.user?.displayName;
+      //返り値に正しいmailAddress/driveIdが入っていることを確認してから返す？
+      return typeof mailAddress === 'string' && typeof driveId === 'string'
+        ? ok({
+            mailAddress: userInfo.owner?.user?.displayName.toString(),
+            driveId: driveId.toString(),
+          })
+        : err.error('failed to get mailAddress or drive ID');
     } else {
       return err(new Error('Invalid drive type'));
     }
