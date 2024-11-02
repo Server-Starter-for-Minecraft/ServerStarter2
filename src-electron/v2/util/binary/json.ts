@@ -84,23 +84,18 @@ if (import.meta.vitest) {
     const testCases: TestCase[] = [
       {
         explain: 'string',
-        data: ok('a'),
+        data: 'a',
         jsonStr: '"a"',
       },
       {
         explain: 'object',
-        data: ok({ a: 100 }),
+        data: { a: 100 },
         jsonStr: '{"a":100}',
       },
       {
         explain: 'array',
-        data: ok([true, false]),
+        data: [true, false],
         jsonStr: '[true,false]',
-      },
-      {
-        explain: 'error',
-        data: err.error('test error'),
-        error: {},
       },
     ];
 
@@ -109,14 +104,16 @@ if (import.meta.vitest) {
 
       const bytes = await jsonStream.stringify(testCase.data).into(Bytes);
 
-      if ('jsonStr' in testCase)
+      if ('jsonStr' in testCase) {
+        const a = bytes.value().toStr('utf8').value();
         expect(bytes.value().toStr('utf8').value()).toBe(testCase.jsonStr);
+      }
       if ('error' in testCase) expect(bytes.error()).toBeInstanceOf(Error);
     });
 
     type TestCase = {
       explain: string;
-      data: Result<any>;
+      data: any;
     } & ({ jsonStr: string } | { error: Record<string, never> });
   });
 }

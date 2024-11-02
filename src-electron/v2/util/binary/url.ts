@@ -73,7 +73,7 @@ export class Url extends DuplexStreamer<Response> {
 
   write(readable: stream.Readable): Promise<Result<Response, Error>> {
     return fetch(this.url.toString(), { ...this.option, body: readable })
-      .then(ok)
+      .then((x) => ok(x))
       .catch(err);
   }
 }

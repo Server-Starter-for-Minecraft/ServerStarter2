@@ -22,7 +22,7 @@ export const LocalWorldContainer = z.object({
 });
 export type LocalWorldContainer = z.infer<typeof LocalWorldContainer>;
 
-const WorldContainer = LocalWorldContainer;
+export const WorldContainer = LocalWorldContainer;
 export type WorldContainer = z.infer<typeof WorldContainer>;
 
 export const WorldLocation = z.object({
@@ -103,7 +103,7 @@ export const World = z.object({
       time: UnixMillisec,
 
       /** 最後に起動したサーバー主 */
-      user: PlayerName.optional(),
+      user: PlayerUUID.optional(),
 
       /** 最後に起動したバージョン */
       version: Version,

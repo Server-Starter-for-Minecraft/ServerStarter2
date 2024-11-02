@@ -197,16 +197,41 @@ export const rootLogger = loggerHierarchies.get('');
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { Path } = await import('src-electron/v2/util/binary/path');
+  const path = await import('path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child(
+    'work',
+    path.basename(__filename, '.ts')
+  );
+  workPath.mkdir();
+
+  const logpath = workPath.child('test.log');
 
   const readLastLogLine = async () => {
     const lines = await (
-      await latestPath.readText()
+      await logpath.readText()
     )
       .value()
       .trim()
       .split(/\r?\n|\r/);
     return lines[lines.length - 1];
   };
+
+  // テスト用ログ設定
+  log4js.configure({
+    appenders: {
+      test: {
+        type: 'fileSync',
+        filename: logpath.path,
+        layout: { type: 'custom', max: 500 },
+      },
+    },
+    categories: {
+      default: { appenders: ['test'], level: 'trace' },
+    },
+  });
 
   test('ログ出力のテスト', async () => {
     for (const path of await logDir.iter()) {
@@ -239,6 +264,8 @@ if (import.meta.vitest) {
     expect(await readLastLogLine()).toBe(
       '{"lv":"INFO","on":"default","msg":"***"}'
     );
+
+    log4js.recording();
 
     rootLogger().info({ nest: 'invalid' });
     expect(await readLastLogLine()).toBe(

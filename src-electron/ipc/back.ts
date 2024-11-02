@@ -35,57 +35,63 @@ import { readyWindow } from '../lifecycle/lifecycle';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getGlobalIP } from '../util/ip';
 
+function todo(message: `TODO:${string}`): never {
+  throw new Error(message);
+}
+
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({
   on: {
-    Command: runCommand,
+    Command: todo('TODO:'),
     OpenBrowser: openBrowser,
     OpenFolder: openFolder,
     ReadyWindow: readyWindow,
   },
   handle: {
-    Reboot: reboot,
+    Reboot: todo('TODO:'),
 
     GetStaticResouce: getStaticResoure,
 
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,
 
-    GetWorldAbbrs: getWorldAbbrs,
+    GetWorldAbbrs: todo('TODO:'),
 
-    GetWorld: getWorld,
-    SetWorld: setWorld,
-    NewWorld: newWorld,
-    CreateWorld: createWorld,
-    DeleteWorld: deleteWorld,
-    DuplicateWorld: duplicateWorld,
-    BackupWorld: backupWorld,
-    RestoreWorld: restoreWorld,
+    GetWorld: todo('TODO:'),
+    SetWorld: todo('TODO:'),
+    NewWorld: todo('TODO:'),
+    CreateWorld: todo('TODO:'),
+    DeleteWorld: todo('TODO:'),
+    DuplicateWorld: todo('TODO:'),
 
-    RunWorld: runWorld,
+    BackupWorld: todo('TODO:'),
+    RestoreWorld: todo('TODO:'),
 
-    FetchLatestWorldLog: fetchLatestWorldLog,
+    RunWorld: todo('TODO:'),
 
-    GetWorldPaths: getWorldPaths,
+    FetchLatestWorldLog: todo('TODO:'),
 
-    GetPlayer: getPlayer,
+    GetWorldPaths: todo('TODO:'),
 
-    GetVersions: getVersions,
+    GetPlayer: todo('TODO:'),
 
-    GetCacheContents: getCacheContents,
+    GetVersions: todo('TODO:'),
+
+    GetCacheContents: todo('TODO:'),
 
     GetGlobalIP: getGlobalIP,
 
-    ValidateNewWorldName: validateNewWorldName,
+    ValidateNewWorldName: todo('TODO:'),
 
-    ValidateRemoteSetting: validateRemoteSetting,
+    ValidateRemoteSetting: todo('TODO:'),
 
-    ValidateNewRemoteWorldName: validateNewRemoteWorldName,
+    ValidateNewRemoteWorldName: todo('TODO:'),
 
     GetLocalSaveData: getAllLocalSaveData,
-    GetRemoteWorlds: getRemoteWorlds,
-    DeleteRemoteWorld: deleteRemoteWorld,
+
+    GetRemoteWorlds: todo('TODO:'),
+    DeleteRemoteWorld: todo('TODO:'),
 
     PickDialog: pickDialog(windowGetter),
   },

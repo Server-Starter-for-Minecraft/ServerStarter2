@@ -5,7 +5,6 @@
  */
 import { z } from 'zod';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
-import { minecraftRuntimeVersions } from 'app/src-electron/v2/schema/runtime';
 import { Version } from 'app/src-electron/v2/schema/version';
 import { Path } from 'app/src-electron/v2/util/binary/path';
 import { JsonSourceHandler } from 'app/src-electron/v2/util/wrapper/jsonFile';
@@ -18,7 +17,7 @@ const JarArgsZod = z.string().or(
 );
 
 const javaVersionZod = z.object({
-  component: z.enum(minecraftRuntimeVersions).optional(),
+  component: z.string().optional(),
   majorVersion: z.number().optional(),
 });
 const VersionJsonZod = z.object({
@@ -77,7 +76,7 @@ export function getVersionJsonObj(
 ): VersionJson {
   const _customArgs: VersionJson['arguments'] = deepcopy(customArgs) ?? [];
   if (containJarArgs) {
-    _customArgs.push('--jar');
+    _customArgs.push('-jar');
     _customArgs.push({ embed: 'JAR_PATH' });
   }
 
@@ -145,7 +144,7 @@ if (import.meta.vitest) {
         { embed: 'JVM_ARGUMENT' },
         { embed: 'LOG4J_ARG' },
         '-Dlog4j2.formatMsgNoLookups=true',
-        '--jar',
+        '-jar',
         { embed: 'JAR_PATH' },
         '--nogui',
       ],

@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  minecraftRuntimeVersions,
-  Runtime,
-} from 'app/src-electron/v2/schema/runtime';
+import { Runtime } from 'app/src-electron/v2/schema/runtime';
 import { VanillaVersion, VersionId } from 'app/src-electron/v2/schema/version';
 import { err, ok, Result } from 'app/src-electron/v2/util/base';
 import { Bytes } from 'app/src-electron/v2/util/binary/bytes';
@@ -36,7 +33,7 @@ function vanillaMetaInfo2VersionJson(
     }),
     javaVersion: z
       .object({
-        component: z.enum(minecraftRuntimeVersions),
+        component: z.string(),
         majorVersion: z.number(),
       })
       .optional(),
