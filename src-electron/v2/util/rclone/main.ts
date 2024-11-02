@@ -513,34 +513,86 @@ if (import.meta.vitest) {
     'work',
     path.basename(__filename, '.ts')
   );
-  workPath.mkdir();
+  if(workPath.exists()){await workPath.remove()}
+  await workPath.mkdir();
 
   /** RcloneSourceを作成 */
   const rcloneSource = new RcloneSource(workPath.child('cache'));
 
-  const testDrive: RemoteDrive = {
-    driveType: 'google',
+  const testDriveGoogle: RemoteDrive = {
+    driveType: 'drive',
     mailAddress: 'serverstarter.contact@gmail.com',
   };
+  const testDriveDropbox: RemoteDrive = {
+    driveType: 'dropbox',
+    mailAddress: 'serverstarter.contact@gmail.com',
+  };
+  const testDriveOneDrive: RemoteDrive = {
+    driveType: 'onedrive',
+    mailAddress: 'serverstarter serverstarter',
+  }
 
   // TODO: 下記については，API Keyを`key.private.ts`としてexportする変数にKeyを入れて，それをここでimportして呼び出す
   // `key.private.ts`はgitignoreに追加してPushされないようにする
-  const testDriveToken =
-    ''; /** ここで認証トークンを設定 環境変数 or GitHub Secret から取得する */
+  const testDriveTokenGoogle = googleTokenForTest; /** ここで認証トークンを設定 環境変数 or GitHub Secret から取得する */
+  const testDriveTokenDropbox = dropboxTokenForTest;
+  const testDriveTokenOneDrive = onedriveTokenForTest;
+  //await rcloneSource.makeConfigFile()
 
-  test('認証トークンを設定できる', async () => {
+  test('認証トークンを設定できる_google', async () => {
+    //一度登録解除してrclone.confから確実に削除
+    await rcloneSource.unregister(testDriveGoogle)
+    //消えている/元から存在しないことを確認
+
     // 最初はアクセスできない
-    expect(await rcloneSource.isAccessible(testDrive, false)).toBe(false);
-    expect(await rcloneSource.isAccessible(testDrive, true)).toBe(false);
-
+    expect(await rcloneSource.isAccessible(testDriveGoogle, false)).toBe(false);
+    expect(await rcloneSource.isAccessible(testDriveGoogle, true)).toBe(false);
     // 認証トークンを設定すればアクセスできる
-    rcloneSource.renewToken(testDrive, testDriveToken);
-    expect(await rcloneSource.isAccessible(testDrive, false)).toBe(true);
-    expect(await rcloneSource.isAccessible(testDrive, true)).toBe(true);
+    await rcloneSource.renewToken(testDriveGoogle, testDriveTokenGoogle);
+    expect(await rcloneSource.isAccessible(testDriveGoogle, false)).toBe(true);
+    expect(await rcloneSource.isAccessible(testDriveGoogle, true)).toBe(true);
 
     // 認証トークンを何度設定しても大丈夫
-    rcloneSource.renewToken(testDrive, testDriveToken);
-    expect(await rcloneSource.isAccessible(testDrive, false)).toBe(true);
-    expect(await rcloneSource.isAccessible(testDrive, true)).toBe(true);
+    await rcloneSource.renewToken(testDriveGoogle, testDriveTokenGoogle);
+    expect(await rcloneSource.isAccessible(testDriveGoogle, false)).toBe(true);
+    expect(await rcloneSource.isAccessible(testDriveGoogle, true)).toBe(true);
+    await rcloneSource.unregister(testDriveGoogle)
   });
+  test('認証トークンを設定できる_Dropbox', async () => {
+    //一度登録解除してrclone.confから確実に削除
+    await rcloneSource.unregister(testDriveDropbox)
+    // 最初はアクセスできない
+    expect(await rcloneSource.isAccessible(testDriveDropbox, false)).toBe(false);
+    expect(await rcloneSource.isAccessible(testDriveDropbox, true)).toBe(false);
+    // 認証トークンを設定すればアクセスできる
+    await rcloneSource.renewToken(testDriveDropbox, testDriveTokenDropbox);
+    expect(await rcloneSource.isAccessible(testDriveDropbox, false)).toBe(true);
+    expect(await rcloneSource.isAccessible(testDriveDropbox, true)).toBe(true);
+
+    // 認証トークンを何度設定しても大丈夫
+    await rcloneSource.renewToken(testDriveDropbox, testDriveTokenDropbox);
+    expect(await rcloneSource.isAccessible(testDriveDropbox, false)).toBe(true);
+    expect(await rcloneSource.isAccessible(testDriveDropbox, true)).toBe(true);
+    await rcloneSource.unregister(testDriveDropbox)
+  });
+  test.skip('認証トークンを設定できる_OneDrive', async () => {
+    //一度登録解除してrclone.confから確実に削除
+    await rcloneSource.unregister(testDriveOneDrive)
+    // 最初はアクセスできない
+    expect(await rcloneSource.isAccessible(testDriveOneDrive, false)).toBe(false);
+    expect(await rcloneSource.isAccessible(testDriveOneDrive, true)).toBe(false);
+    // 認証トークンを設定すればアクセスできる
+    await rcloneSource.renewToken(testDriveOneDrive, testDriveTokenOneDrive);
+    expect(await rcloneSource.isAccessible(testDriveOneDrive, false)).toBe(true);
+    expect(await rcloneSource.isAccessible(testDriveOneDrive, true)).toBe(true);
+
+    // 認証トークンを何度設定しても大丈夫
+    await rcloneSource.renewToken(testDriveOneDrive, testDriveTokenOneDrive);
+    expect(await rcloneSource.isAccessible(testDriveOneDrive, false)).toBe(true);
+    expect(await rcloneSource.isAccessible(testDriveOneDrive, true)).toBe(true);
+    await rcloneSource.unregister(testDriveOneDrive)
+  });
+  await workPath.remove()
+
+  //await rcloneSource.saveConfig()
 }
