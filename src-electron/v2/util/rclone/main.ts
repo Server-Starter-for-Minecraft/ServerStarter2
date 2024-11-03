@@ -718,7 +718,8 @@ if (import.meta.vitest) {
   // 一時使用フォルダを初期化
   const workPath = new Path(__dirname).child(
     'work',
-    path.basename(__filename, '.ts')
+    path.basename(__filename, '.ts'),
+    'cache',
   );
   if (workPath.exists()) {
     await workPath.remove();
@@ -726,7 +727,7 @@ if (import.meta.vitest) {
   await workPath.mkdir();
 
   /** RcloneSourceを作成 */
-  const rcloneSource = new RcloneSource(workPath.child('cache'));
+  const rcloneSource = new RcloneSource(workPath);
 
   const testDriveGoogle: RemoteDrive = {
     driveType: 'drive',
@@ -750,7 +751,6 @@ if (import.meta.vitest) {
   const parsedDriveTokenOneDrive = await Bytes.fromString(onedriveTokenForTest).into(jsonToken);
   const testDriveTokenOneDrive = parsedDriveTokenOneDrive.value()
   //await rcloneSource.makeConfigFile()
-  //TODO:test.eachで共通化
   describe('setTokenFromExternal', async() =>{
     const testCases: TestCase[] = [
       {
@@ -822,7 +822,6 @@ if (import.meta.vitest) {
     const newDrive = promiseDrive.value();
     //rclone.confに書き込まれていることを確認
     const configIni = await workPath
-      .child('cache')
       .child('rclone.conf')
       .readText();
     expect(configIni.isOk).toBe(true);
@@ -847,7 +846,6 @@ if (import.meta.vitest) {
     const newDriveGoogle = promiseDriveGoogle.value();
     //rclone.confに書き込まれていることを確認
     const configIni = await workPath
-      .child('cache')
       .child('rclone.conf')
       .readText();
     expect(configIni.isOk).toBe(true);
@@ -868,9 +866,8 @@ if (import.meta.vitest) {
     );
     expect(promiseDriveDropbox.isOk).toBe(true);
     const newDriveDropbox = promiseDriveDropbox.value();
-    //rclone.confに書き込間れていることを確認
+    //rclone.confに書き込まれていることを確認
     const configIni = await workPath
-      .child('cache')
       .child('rclone.conf')
       .readText();
     expect(configIni.isOk).toBe(true);
@@ -891,9 +888,8 @@ if (import.meta.vitest) {
     );
     expect(promiseDriveOneDrive.isOk).toBe(true);
     const newDriveOneDrive = promiseDriveOneDrive.value();
-    //rclone.confに書き込間れていることを確認
+    //rclone.confに書き込まれていることを確認
     const configIni = await workPath
-      .child('cache')
       .child('rclone.conf')
       .readText();
     expect(configIni.isOk).toBe(true);
