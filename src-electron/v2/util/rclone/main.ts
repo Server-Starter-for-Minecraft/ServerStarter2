@@ -82,10 +82,6 @@ type ConfigType = z.infer<typeof configValidator>;
 const iniConfig = new Ini(configValidator);
 const jsonToken = new Json(tokenValidator);
 
-const mergeConfig = (config1: ConfigType, config2: ConfigType): ConfigType => {
-  return { ...config1, ...config2 };
-};
-
 async function showAuthWindow(url: string): Promise<void> {
   try {
     await openBrowser(url);
