@@ -1127,6 +1127,172 @@ if (import.meta.vitest) {
     }
   },500000)
 
+  //コンフリクトを想定したテスト
+  //送ったデータで元にあったデータが置き換えられる仕様
+  describe('confilctTest', async () => {
+    const testCases: TestCase[] = [
+      {
+        explain: 'google',
+        drive: testDriveGoogle,
+        token: testDriveTokenGoogle,
+      },
+      {
+        explain: 'dropbox',
+        drive: testDriveDropbox,
+        token: testDriveTokenDropbox,
+      },
+      {
+        explain: 'onedrive',
+        drive: testDriveOneDrive,
+        token: testDriveTokenOneDrive,
+      },
+    ]
+    test.each(testCases)('$explain', async (testCase) => {
+      const syncDirectory = workPath.child('syncTarget');
+      const conflictDirectory = workPath.child('conflict');
+      const filesToTest = [
+        { name: 'conflict.txt', content: 'file for conflict' },
+        { name: 'test1.txt', content: 'Content for file 1' },
+        { name: 'test2.txt', content: 'Content for file 2' },
+      ];
+      const filesToConflict = [
+        {name: 'conflict.txt', content: 'hogehogehogehugahugahuga'},
+        { name: 'test1.txt', content: 'Content for file 1' },
+        { name: 'test2.txt', content: 'Content for file 2' },
+      ];
+      const remotePathExpected = [
+        {
+          drive: {
+            driveType: testCase.drive.driveType,
+            mailAddress: testCase.drive.mailAddress,
+          },
+          path: 'sync/test1.txt',
+        },
+        {
+          drive: {
+            driveType: testCase.drive.driveType,
+            mailAddress: testCase.drive.mailAddress,
+          },
+          path: 'sync/test2.txt',
+        },
+        {
+          drive: {
+            driveType: testCase.drive.driveType,
+            mailAddress: testCase.drive.mailAddress,
+          },
+          path: 'sync/conflict.txt',
+        },
+      ];
+      const remotePathConflict = {
+        drive: {
+          driveType: testCase.drive.driveType,
+          mailAddress: testCase.drive.mailAddress,
+        },
+        path: 'sync/conflict.txt',
+      }
+      //ファイルを生成
+      await Promise.all(
+        filesToTest.map((file) =>
+          syncDirectory.child(file.name).writeText(file.content)
+        )
+      );
+      // ファイルが生成されているか確認
+      for (const file of filesToTest) {
+        const filePath = syncDirectory.child(file.name);
+        expect(filePath.exists()).toBe(true);
+
+        // 内容が正しいかも確認
+        const content = await filePath.readText();
+        expect(content.value()).toBe(file.content);
+      }
+      //コンフリクト用ファイルの生成
+      await Promise.all(
+        filesToConflict.map((file) =>
+          conflictDirectory.child(file.name).writeText(file.content)
+        )
+      );
+      // ファイルが生成されているか確認
+      for (const file of filesToConflict) {
+        const filePath = conflictDirectory.child(file.name);
+        expect(filePath.exists()).toBe(true);
+
+        // 内容が正しいかも確認
+        const content = await filePath.readText();
+        expect(content.value()).toBe(file.content);
+      }
+      //remotePathを定義
+      const remote: RemotePath = {
+        drive: testCase.drive,
+        path: 'sync',
+      };
+      //push
+      //コンフリクト用に同期
+      //トークンを更新するために一度消して再登録
+      await rcloneSource.unregister(testCase.drive);
+      await rcloneSource.renewToken(testCase.drive, testCase.token);
+      const resultOk = await rcloneSource.push(remote, syncDirectory);
+      expect(resultOk.isOk).toBe(true);
+
+      //実際に同期できていることを確認
+      const remoteDirList = await rcloneSource.listFile(remote);
+      expect(remoteDirList.value()).toEqual(expect.arrayContaining(remotePathExpected));
+      expect(remotePathExpected).toEqual(expect.arrayContaining(remoteDirList.value()));
+
+      //コンフリクトを引き起こす
+      //コンフリクト用にリモートからデータを削除
+      const resultOkDelete = await rcloneSource.deleteFile(remotePathConflict)
+      expect(resultOkDelete.isOk).toBe(true);
+      //コンフリクト用ファイルをアップロード
+      const conflictFileData=Bytes.fromString((await conflictDirectory.child('conflict.txt').readText()).value())
+      const resultOkPut = await rcloneSource.putFile(remotePathConflict,conflictFileData)
+      expect(resultOkPut.isOk).toBe(true);
+      //リモートのファイル一覧を取得
+      const remoteDirListConflict = await rcloneSource.listFile(remote);
+      //ファイル名が変わっていないのでlsの結果は変わらないはず
+      expect(remoteDirListConflict.value()).toEqual(expect.arrayContaining(remotePathExpected));
+      expect(remotePathExpected).toEqual(expect.arrayContaining(remoteDirListConflict.value()));
+      //当該ファイルを一度ダウンロード
+      const downloadedDataConflict = await rcloneSource.getFile(remotePathConflict)
+      //このデータはconflict/conflict.txtと一致し、sync/conflict.txtとは異なるはず
+      expect(downloadedDataConflict.value()).toStrictEqual(conflictFileData)
+      //ローカルのsyncとリモートのsyncを再同期
+      const resultOkReSync = await rcloneSource.push(remote,syncDirectory)
+      expect(resultOkReSync.isOk).toBe(true)
+      //リモートのファイル一覧を取得
+      const remoteDirListConflictSync = await rcloneSource.listFile(remote);
+      //ファイル名が変わっていないのでlsの結果は変わらないはず
+      expect(remoteDirListConflictSync.value()).toEqual(expect.arrayContaining(remotePathExpected));
+      expect(remotePathExpected).toEqual(expect.arrayContaining(remoteDirListConflictSync.value()));
+
+      //当該ファイルをもう一度ダウンロード
+      const reDownloadedDataConflict = await rcloneSource.getFile(remotePathConflict)
+      //syncのconflict.txtと一致する
+      const syncFileData = Bytes.fromString((await syncDirectory.child('conflict.txt').readText()).value())
+      expect(reDownloadedDataConflict.value()).toStrictEqual(syncFileData)
+      expect((reDownloadedDataConflict.value()).toStr().value()).toBe('file for conflict')
+      //リモートのデータとローカルのconflictを同期
+      const syncLocalConflictDirectory = await rcloneSource.pull(remote,conflictDirectory)
+      expect(syncLocalConflictDirectory.isOk).toBe(true)
+      //conflict/conflict.txtとsync/conflict.txtが一致しているはず
+      const conflictConflict = await conflictDirectory.child('conflict.txt').readText()
+      const syncConflict = await syncDirectory.child('conflict.txt').readText()
+      expect(conflictConflict.value()).toBe(syncConflict.value())
+      expect(conflictConflict.value()).toBe('file for conflict')
+      //使ったデータを消す
+      const purgeResult = await rcloneSource.deleteRemoteDirectory(remote)
+      expect(purgeResult.isOk).toBe(true)
+      await workPath.child('synctarget').remove()
+      await workPath.child('conflict').remove()
+
+
+    })
+    type TestCase={
+      explain: string,
+      drive: RemoteDrive,
+      token: TokenType,
+    }
+  },500000)
+
   await workPath.remove();
 
   //await rcloneSource.saveConfig()
