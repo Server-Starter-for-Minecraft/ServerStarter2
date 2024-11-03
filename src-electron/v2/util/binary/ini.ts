@@ -34,7 +34,7 @@ export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
         if (typeof data[key] === 'string') {
           try {
             // JSON形式かを判定し、可能ならばパース
-            const parsed = JSON.parse(data[key].replace(/(\w+):/g, '"$1":'));
+            const parsed = JSON.parse(data[key]);
             data[key] = parsed;
           } catch {
             // JSONでない場合はそのまま
@@ -66,7 +66,7 @@ export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
     for (const key in data) {
       if (typeof data[key] === 'object' && data[key] !== null) {
         // 深さ2以上のネストされたオブジェクトのみをJSON文字列に変換
-        result[key] = JSON.stringify(data[key]).replace(/"(\w+)":/g, '$1:');
+        result[key] = JSON.stringify(data[key]);
       } else {
         result[key] = data[key];
       }
@@ -78,6 +78,23 @@ export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
+  const tokenValidator = z.object({
+    access_token: z.string(),
+    token_type: z.enum(['Brarer', 'bearer']),
+    refresh_token: z.string(),
+    expiry: z.string(),
+    }
+  );
+
+  const configValidator= z.record(
+    z.string(),
+    z.object({
+      type: z.enum(['drive', 'dropbox', 'onedrive']),
+      token: tokenValidator,
+      drive_id: z.string().optional(),
+      drive_type: z.string().optional(),
+    }),
+  );
   describe('Ini書き込み', () => {
     const testCases: TestCase[] = [
       {
@@ -88,21 +105,50 @@ if (import.meta.vitest) {
       },
       {
         explain: 'section',
-        iniStr: '[a]\nb=100\n',
-        validator: z.object({ a: z.object({ b : z.number() })}),
-        value: { a: { b : 100} },
+        iniStr: '[a]\nb=hoge\n',
+        validator: z.object({ a: z.object({ b : z.string() })}),
+        value: { a: { b : 'hoge'} },
       },
       {
         explain: 'includeJson',
-        iniStr: '[a]\nb=100\nc={d:100}\n',
-        validator: z.object({ a: z.object({ b : z.number(), c : z.object({d : z.number() })})}),
-        value: { a : {b : 100, c : { d : 100 }}},
+        iniStr: '[a]\nb=100\nc={"d":"hoge"}\n',
+        validator: z.object({ a: z.object({ b : z.number(), c : z.object({d : z.string() })})}),
+        value: { a : {b : 100, c : { d : 'hoge' }}},
       },
       {
         explain: 'nested',
-        iniStr: '[a]\nb=100\nc={d:100}\n[x]\nb=123\nc={d:15}\n',
+        iniStr: '[a]\nb=100\nc={"d":100}\n[x]\nb=123\nc={"d":15}\n',
         validator: z.record( z.string(), z.object({ b : z.number(), c : z.object({d : z.number() })})),
         value: { a : {b : 100, c : { d : 100 }}, x : {b : 123, c : { d : 15 }}},
+      },
+      {
+        explain: 'token',
+        iniStr: '[dropbox_serverstartercontactgmailcom]\ntype=dropbox\ntoken={"access_token":"token","token_type":"bearer","refresh_token":"refresh","expiry":"2024-11-03T21:22:56.718697+09:00"}\n',
+        validator: z.record(
+          z.string(),
+          z.object({
+            type: z.enum(['drive', 'dropbox', 'onedrive']),
+            token: z.object({
+              access_token: z.string(),
+              token_type: z.enum(['Bearer', 'bearer']),
+              refresh_token: z.string(),
+              expiry: z.string(),
+            }),
+            drive_id: z.string().optional(),
+            drive_type: z.string().optional(),
+          }),
+        ),
+        value: {
+          dropbox_serverstartercontactgmailcom: {
+            type: 'dropbox',
+            token: {
+              access_token: 'token',
+              token_type: 'bearer',
+              refresh_token: 'refresh',
+              expiry: '2024-11-03T21:22:56.718697+09:00'
+            }
+          }
+        }
       },
       {
         explain: 'invalid ini',
@@ -149,12 +195,12 @@ if (import.meta.vitest) {
       {
         explain: 'includeJson',
         data: { a : {b : 100, c : { d : 100 }}},
-        iniStr: '[a]\nb=100\nc={d:100}\n',
+        iniStr: '[a]\nb=100\nc={"d":100}\n',
       },
       {
         explain: 'nested',
         data: { a : {b : 100, c : { d : 100 }}, x : {b : 123, c : { d : 15 }}},
-        iniStr: '[a]\nb=100\nc={d:100}\n\n[x]\nb=123\nc={d:15}\n',
+        iniStr: '[a]\nb=100\nc={"d":100}\n\n[x]\nb=123\nc={"d":15}\n',
       },
     ];
 
