@@ -1044,7 +1044,7 @@ if (import.meta.vitest) {
       },
     ]
     test.each(testCases)('$explain', async (testCase) => {
-      const syncDirectory = workPath.child('cache').child('sync');
+      const syncDirectory = workPath.child('sync');
       const fileToTest = { name: 'test1.txt', content: 'Content for file 1' };
       const remotePathExpected = [
         {
@@ -1075,6 +1075,9 @@ if (import.meta.vitest) {
         drive: testCase.drive,
         path: 'sync'
       }
+      //リモートをリセット
+      await rcloneSource.renewToken(testCase.drive,testCase.token)
+      await rcloneSource.deleteRemoteDirectory(remoteDirectory)
       const putDataText = syncDirectory.child(fileToTest.name);
       const putData = (await putDataText.into(Bytes)).value();
       //put
