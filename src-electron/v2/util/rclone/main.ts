@@ -1,10 +1,12 @@
 import { ChildProcess } from 'child_process';
+import dayjs from 'dayjs';
 import { Dropbox } from 'dropbox';
 import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize, copy, ls, sync, purge } from 'rclone.js';
+import { authorize, copy, ls, purge, sync } from 'rclone.js';
+import { z } from 'zod';
 import {
   getSystemSettings,
   setSystemSettings,
@@ -20,6 +22,8 @@ import {
   googleTokenForTest,
   onedriveTokenForTest,
 } from './token.private';
+import { Ini } from '../binary/ini';
+import { Json } from '../binary/json';
 
 type RemoteDrive =
   | {
@@ -38,11 +42,46 @@ type userInfo = {
   mailAddress: string;
   driveId?: string;
 };
-
 type RemotePath = {
   drive: RemoteDrive;
   path: string;
 };
+
+const brand = <T extends string>(tag: T) => z.string().brand<T>();
+const configValidator= z.record(
+  z.string(),
+  z.object({
+    type: z.enum(['drive', 'dropbox', 'onedrive']),
+    token: z.object({
+      access_token: brand('accessToken'),
+      token_type: z.enum(['Brarer', 'bearer']),
+      refresh_token: brand('refreshToken'),
+      expiry: z.string().refine(
+        (date) => dayjs(date).isValid(), // dayjsで日付検証
+        {
+          message: 'expiry must be a valid date string',
+        }
+      ),
+    }),
+    drive_id: z.string().optional(),
+    drive_type: z.string().optional(),
+  }),
+);
+const tokenValidator = z.object({
+    access_token: brand('accessToken'),
+    token_type: z.enum(['Brarer', 'bearer']),
+    refresh_token: brand('refreshToken'),
+    expiry: z.string().refine(
+      (date) => dayjs(date).isValid(), // dayjsで日付検証
+      {
+        message: 'expiry must be a valid date string',
+      }
+    ),
+  }
+);
+
+const iniConfig = new Ini(configValidator);
+const jsonToken = new Json(tokenValidator)
 
 async function showAuthWindow(url: string): Promise<void> {
   try {
