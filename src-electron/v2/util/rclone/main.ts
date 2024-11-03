@@ -5,7 +5,7 @@ import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize, copy, ls, purge, sync } from 'rclone.js';
+import { authorize, copy, ls, purge, sync, delete as rcloneDelete } from 'rclone.js';
 import { z } from 'zod';
 import {
   getSystemSettings,
@@ -607,6 +607,35 @@ class RcloneSource {
     return ok();
   }
 
+  /**
+   *リモートのファイル単体削除
+   *トークンが無効ならエラー
+   */
+  async deleteFile(remote: RemotePath): Promise<Result<void>>{
+    const isAccessible = await this.isAccessible(remote.drive, false);
+    if (!isAccessible) {
+      return err(new Error('token is invalid'));
+    }
+    //console.log(remotePath.path);
+    const remoteKey = getRemoteKey(remote.drive);
+    const deleteProcess: ChildProcess = rcloneDelete(
+      `${remoteKey}:${remote.path}`, //to
+      {
+        env: {
+          RCLONE_CONFIG:this.configPath.path,
+        },
+      }
+    );
+    deleteProcess.stdout?.on('data', (data) => {
+      console.log(data.toString());
+    });
+    deleteProcess.stderr?.on('data', (data) => {
+      console.error(data.toString());
+      return err.error('delete failed');
+    });
+    await new Promise<void>((r) => deleteProcess.on('close', r));
+    return ok();
+  }
   /**
    * ディレクトリ内のファイル列挙
    * トークンが無効ならエラー
