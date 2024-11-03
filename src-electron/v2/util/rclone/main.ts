@@ -581,10 +581,15 @@ class RcloneSource {
     if (!isAccessible) {
       return err(new Error('token is invalid'));
     }
-    const uploadFile = this.cacheDirPath.child(remote.path);
+    const uploadFile = this.cacheDirPath.child('upload').child(remote.path);
     const remotePath = new Path(remote.path).parent();
     //console.log(remotePath.path);
-    await data.into(uploadFile);
+    const dataString = await data.toStr();
+    if (dataString.isErr === true) {
+      return err.error('failed to write uploadFile');
+    } else {
+      await uploadFile.writeText(dataString.value());
+    }
     const remoteKey = getRemoteKey(remote.drive);
     const uploadProcess: ChildProcess = copy(
       uploadFile.path, //from
