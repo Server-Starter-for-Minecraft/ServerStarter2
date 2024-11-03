@@ -48,28 +48,9 @@ type RemotePath = {
 };
 
 const brand = <T extends string>(tag: T) => z.string().brand<T>();
-const configValidator= z.record(
-  z.string(),
-  z.object({
-    type: z.enum(['drive', 'dropbox', 'onedrive']),
-    token: z.object({
-      access_token: brand('accessToken'),
-      token_type: z.enum(['Brarer', 'bearer']),
-      refresh_token: brand('refreshToken'),
-      expiry: z.string().refine(
-        (date) => dayjs(date).isValid(), // dayjsで日付検証
-        {
-          message: 'expiry must be a valid date string',
-        }
-      ),
-    }),
-    drive_id: z.string().optional(),
-    drive_type: z.string().optional(),
-  }),
-);
 const tokenValidator = z.object({
     access_token: brand('accessToken'),
-    token_type: z.enum(['Brarer', 'bearer']),
+    token_type: z.enum(['Bearer', 'bearer']),
     refresh_token: brand('refreshToken'),
     expiry: z.string().refine(
       (date) => dayjs(date).isValid(), // dayjsで日付検証
@@ -80,8 +61,24 @@ const tokenValidator = z.object({
   }
 );
 
+const configValidator= z.record(
+  z.string(),
+  z.object({
+    type: z.enum(['drive', 'dropbox', 'onedrive']),
+    token: tokenValidator,
+    drive_id: z.string().optional(),
+    drive_type: z.string().optional(),
+  }),
+);
+
+type TokenType = z.infer<typeof tokenValidator>;
+type ConfigType = z.infer<typeof configValidator>
 const iniConfig = new Ini(configValidator);
-const jsonToken = new Json(tokenValidator)
+const jsonToken = new Json(tokenValidator);
+
+const mergeConfig = (config1: ConfigType, config2: ConfigType): ConfigType => {
+  return { ...config1, ...config2 };
+};
 
 async function showAuthWindow(url: string): Promise<void> {
   try {
