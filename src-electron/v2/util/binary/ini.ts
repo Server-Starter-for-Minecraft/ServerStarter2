@@ -1,10 +1,10 @@
+import ini from 'ini';
 import * as stream from 'stream';
+import { x } from 'tar';
 import { z } from 'zod';
 import { err, ok, Result } from '../base';
 import { Bytes } from './bytes';
 import { WritableStreamer } from './stream';
-import ini from 'ini';
-import { x } from 'tar';
 
 export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
   private validator: z.ZodType<T, z.ZodTypeDef, any>;
@@ -19,16 +19,18 @@ export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
     const data = bytes
       .onOk((x) => x.toStr())
       .onOk((x) => Result.catchSync(() => ini.parse(x)))
-      .onOk((x) => Result.fromZod(this.validator.safeParse(this.transformJSONValues(x))));
+      .onOk((x) =>
+        Result.fromZod(this.validator.safeParse(this.transformJSONValues(x)))
+      );
     return data;
   }
 
   stringify(data: T): Bytes {
-      const stringifyData = this.prepareForStringify(data)
-      return Bytes.fromString(ini.stringify(stringifyData));
+    const stringifyData = this.prepareForStringify(data);
+    return Bytes.fromString(ini.stringify(stringifyData));
   }
 
-  private transformJSONValues(data:Record<string, any>): any {
+  private transformJSONValues(data: Record<string, any>): any {
     if (typeof data === 'object' && data !== null) {
       for (const key in data) {
         if (typeof data[key] === 'string') {
@@ -47,7 +49,7 @@ export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
     }
     return data;
   }
-  private prepareForStringify(data:Record<string, any>): any {
+  private prepareForStringify(data: Record<string, any>): any {
     if (typeof data === 'object' && data !== null) {
       const result: any = {};
       for (const key in data) {
@@ -61,7 +63,7 @@ export class Ini<T extends Record<string, any>> extends WritableStreamer<T> {
     }
     return data;
   }
-  private stringifyNestedObject(data:Record<string, any>): any {
+  private stringifyNestedObject(data: Record<string, any>): any {
     const result: any = {};
     for (const key in data) {
       if (typeof data[key] === 'object' && data[key] !== null) {
@@ -83,47 +85,52 @@ if (import.meta.vitest) {
     token_type: z.enum(['Brarer', 'bearer']),
     refresh_token: z.string(),
     expiry: z.string(),
-    }
-  );
+  });
 
-  const configValidator= z.record(
+  const configValidator = z.record(
     z.string(),
     z.object({
       type: z.enum(['drive', 'dropbox', 'onedrive']),
       token: tokenValidator,
       drive_id: z.string().optional(),
       drive_type: z.string().optional(),
-    }),
+    })
   );
   describe('Ini書き込み', () => {
     const testCases: TestCase[] = [
       {
         explain: 'keyValue',
         iniStr: 'a=100\n',
-        validator: z.object({ a : z.number()}),
-        value: { a : 100 },
+        validator: z.object({ a: z.number() }),
+        value: { a: 100 },
       },
       {
         explain: 'section',
         iniStr: '[a]\nb=hoge\n',
-        validator: z.object({ a: z.object({ b : z.string() })}),
-        value: { a: { b : 'hoge'} },
+        validator: z.object({ a: z.object({ b: z.string() }) }),
+        value: { a: { b: 'hoge' } },
       },
       {
         explain: 'includeJson',
         iniStr: '[a]\nb=100\nc={"d":"hoge"}\n',
-        validator: z.object({ a: z.object({ b : z.number(), c : z.object({d : z.string() })})}),
-        value: { a : {b : 100, c : { d : 'hoge' }}},
+        validator: z.object({
+          a: z.object({ b: z.number(), c: z.object({ d: z.string() }) }),
+        }),
+        value: { a: { b: 100, c: { d: 'hoge' } } },
       },
       {
         explain: 'nested',
         iniStr: '[a]\nb=100\nc={"d":100}\n[x]\nb=123\nc={"d":15}\n',
-        validator: z.record( z.string(), z.object({ b : z.number(), c : z.object({d : z.number() })})),
-        value: { a : {b : 100, c : { d : 100 }}, x : {b : 123, c : { d : 15 }}},
+        validator: z.record(
+          z.string(),
+          z.object({ b: z.number(), c: z.object({ d: z.number() }) })
+        ),
+        value: { a: { b: 100, c: { d: 100 } }, x: { b: 123, c: { d: 15 } } },
       },
       {
         explain: 'token',
-        iniStr: '[dropbox_serverstartercontactgmailcom]\ntype=dropbox\ntoken={"access_token":"token","token_type":"bearer","refresh_token":"refresh","expiry":"2024-11-03T21:22:56.718697+09:00"}\n',
+        iniStr:
+          '[dropbox_serverstartercontactgmailcom]\ntype=dropbox\ntoken={"access_token":"token","token_type":"bearer","refresh_token":"refresh","expiry":"2024-11-03T21:22:56.718697+09:00"}\n',
         validator: z.record(
           z.string(),
           z.object({
@@ -136,7 +143,7 @@ if (import.meta.vitest) {
             }),
             drive_id: z.string().optional(),
             drive_type: z.string().optional(),
-          }),
+          })
         ),
         value: {
           dropbox_serverstartercontactgmailcom: {
@@ -145,10 +152,10 @@ if (import.meta.vitest) {
               access_token: 'token',
               token_type: 'bearer',
               refresh_token: 'refresh',
-              expiry: '2024-11-03T21:22:56.718697+09:00'
-            }
-          }
-        }
+              expiry: '2024-11-03T21:22:56.718697+09:00',
+            },
+          },
+        },
       },
       {
         explain: 'invalid ini',
@@ -159,7 +166,7 @@ if (import.meta.vitest) {
       {
         explain: 'mismatch schema',
         iniStr: '[a]\nb=100\n',
-        validator: z.object({ a: z.number()}),
+        validator: z.object({ a: z.number() }),
         error: {},
       },
     ];
@@ -189,17 +196,17 @@ if (import.meta.vitest) {
       },
       {
         explain: 'section',
-        data: { a: { b : 100} },
+        data: { a: { b: 100 } },
         iniStr: '[a]\nb=100\n',
       },
       {
         explain: 'includeJson',
-        data: { a : {b : 100, c : { d : 100 }}},
+        data: { a: { b: 100, c: { d: 100 } } },
         iniStr: '[a]\nb=100\nc={"d":100}\n',
       },
       {
         explain: 'nested',
-        data: { a : {b : 100, c : { d : 100 }}, x : {b : 123, c : { d : 15 }}},
+        data: { a: { b: 100, c: { d: 100 } }, x: { b: 123, c: { d: 15 } } },
         iniStr: '[a]\nb=100\nc={"d":100}\n\n[x]\nb=123\nc={"d":15}\n',
       },
     ];

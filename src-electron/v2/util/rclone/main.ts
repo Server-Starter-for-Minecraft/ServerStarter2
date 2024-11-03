@@ -5,7 +5,14 @@ import { google } from 'googleapis';
 import ini from 'ini';
 import onedrive from 'onedrive-api';
 import { userInfo } from 'os';
-import { authorize, copy, ls, purge, sync, delete as rcloneDelete } from 'rclone.js';
+import {
+  authorize,
+  copy,
+  ls,
+  purge,
+  delete as rcloneDelete,
+  sync,
+} from 'rclone.js';
 import { z } from 'zod';
 import {
   getSystemSettings,
@@ -16,14 +23,14 @@ import { SystemRemoteSetting } from 'app/src-electron/schema/system';
 import { openBrowser } from 'app/src-electron/tools/shell';
 import { err, ok, Result } from '../base';
 import { Bytes } from '../binary/bytes';
+import { Ini } from '../binary/ini';
+import { Json } from '../binary/json';
 import { Path } from '../binary/path';
 import {
   dropboxTokenForTest,
   googleTokenForTest,
   onedriveTokenForTest,
 } from './token.private';
-import { Ini } from '../binary/ini';
-import { Json } from '../binary/json';
 
 type RemoteDrive =
   | {
@@ -49,30 +56,29 @@ type RemotePath = {
 
 const brand = <T extends string>(tag: T) => z.string().brand<T>();
 const tokenValidator = z.object({
-    access_token: brand('accessToken'),
-    token_type: z.enum(['Bearer', 'bearer']),
-    refresh_token: brand('refreshToken'),
-    expiry: z.string().refine(
-      (date) => dayjs(date).isValid(), // dayjsで日付検証
-      {
-        message: 'expiry must be a valid date string',
-      }
-    ),
-  }
-);
+  access_token: brand('accessToken'),
+  token_type: z.enum(['Bearer', 'bearer']),
+  refresh_token: brand('refreshToken'),
+  expiry: z.string().refine(
+    (date) => dayjs(date).isValid(), // dayjsで日付検証
+    {
+      message: 'expiry must be a valid date string',
+    }
+  ),
+});
 
-const configValidator= z.record(
+const configValidator = z.record(
   z.string(),
   z.object({
     type: z.enum(['drive', 'dropbox', 'onedrive']),
     token: tokenValidator,
     drive_id: z.string().optional(),
     drive_type: z.string().optional(),
-  }),
+  })
 );
 
 type TokenType = z.infer<typeof tokenValidator>;
-type ConfigType = z.infer<typeof configValidator>
+type ConfigType = z.infer<typeof configValidator>;
 const iniConfig = new Ini(configValidator);
 const jsonToken = new Json(tokenValidator);
 
@@ -116,7 +122,9 @@ class RcloneSource {
     const configPath = this.configPath;
     const configContent = setting
       .map((setting) => {
-        return `[${setting.type}_${removePeriodOfMailAddress(setting.mailAddress)}]\n
+        return `[${setting.type}_${removePeriodOfMailAddress(
+          setting.mailAddress
+        )}]\n
           type = ${setting.type}\n
           token = ${setting.token}\n
           ${setting.driveId ? `drive_id = ${setting.driveId}\n` : ''}
@@ -169,12 +177,14 @@ class RcloneSource {
     checkOnlyExpiration: boolean
   ): Promise<boolean> {
     const configIni = await this.configPath.readText();
-    const config = configIni.isOk ? await Bytes.fromString(configIni.value()).into(iniConfig) : null;
+    const config = configIni.isOk
+      ? await Bytes.fromString(configIni.value()).into(iniConfig)
+      : null;
     if (config === null) {
       return false;
     }
     const remoteKey = getRemoteKey(remote);
-    const configVal = config.value()
+    const configVal = config.value();
     if (!configVal[remoteKey]) {
       return false;
     }
@@ -184,7 +194,7 @@ class RcloneSource {
       if (expires === undefined) return false;
       const now = dayjs();
       const expiryDate = dayjs(expires);
-      return expiryDate.isValid() ? now.isBefore(expiryDate) : false
+      return expiryDate.isValid() ? now.isBefore(expiryDate) : false;
     } else {
       // 実際にurl叩いてチェック
       const userInfo = await this.getUserInfo(
@@ -209,7 +219,7 @@ class RcloneSource {
     if (tokenJson.isErr) {
       return err(new Error('failed to get token'));
     }
-    const token = tokenJson.value()
+    const token = tokenJson.value();
     const userInfoResult = await this.getUserInfo(driveType, tokenJson.value());
     if (userInfoResult.isErr) {
       return err(new Error('failed to get mailAdderss'));
@@ -221,32 +231,33 @@ class RcloneSource {
     const remote = {
       driveType: driveType,
       mailAddress: userInfo.mailAddress,
-    }
+    };
     if (driveType === 'onedrive') {
       //configの書き込み
-      const remoteKey = getRemoteKey(remote)
-      const configContent:ConfigType ={
+      const remoteKey = getRemoteKey(remote);
+      const configContent: ConfigType = {
         [remoteKey]: {
           type: driveType,
           token: token,
           drive_id: userInfo.driveId,
           drive_type: 'personal',
-        }}
+        },
+      };
 
       await this.register(configContent);
       return ok(remote);
     } else {
-      const remoteKey = getRemoteKey(remote)
-      const config:ConfigType = {
+      const remoteKey = getRemoteKey(remote);
+      const config: ConfigType = {
         [remoteKey]: {
           type: driveType,
-          token: token
-        }
-      }
+          token: token,
+        },
+      };
       await this.register(config);
       return ok(remote);
-    }}
-
+    }
+  }
 
   private async getTokenWithOAuth(
     driveType: RemoteDrive['driveType'],
@@ -258,7 +269,7 @@ class RcloneSource {
       //urlは標準エラー出力に出ている
       authorizeProcess.stderr?.on('data', (data) => {
         // URLマッチングのための正規表現
-        console.log(data.toString())
+        console.log(data.toString());
         const urlMatch = data.toString().match(/https?:\/\/[^\s]+/);
 
         if (urlMatch) {
@@ -282,7 +293,7 @@ class RcloneSource {
     await new Promise<void>((r) => authorizeProcess.on('close', r));
 
     const tokenJson = await tokenPromise;
-    const token = await Bytes.fromString(tokenJson).into(jsonToken)
+    const token = await Bytes.fromString(tokenJson).into(jsonToken);
 
     return token;
   }
@@ -337,35 +348,43 @@ class RcloneSource {
     // たぶんトークン消すだけ
     // もともと未登録だった場合は何もせずに成功
     const configIni = await this.configPath.readText();
-    const config = configIni.isOk ? (await Bytes.fromString(configIni.value()).into(iniConfig)).value() : null;
+    const config = configIni.isOk
+      ? (await Bytes.fromString(configIni.value()).into(iniConfig)).value()
+      : null;
     if (config === null) {
       //rclone.confがない時と読み込みに失敗した時で区別
-      return this.configPath.exists() ? err.error('failed to load rclone.conf') : ok()
+      return this.configPath.exists()
+        ? err.error('failed to load rclone.conf')
+        : ok();
     }
-    const remoteKey = getRemoteKey(remote)
+    const remoteKey = getRemoteKey(remote);
     if (config[remoteKey] === undefined) {
       return ok();
     }
     delete config[remoteKey];
-    const configBytes = await iniConfig.stringify(config).into(Bytes)
+    const configBytes = await iniConfig.stringify(config).into(Bytes);
     return configBytes.isErr
-    ? err.error('failed to unregister')
-    : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
+      ? err.error('failed to unregister')
+      : await this.configPath
+          .writeText(configBytes.value().toStr('utf8').value())
+          .then(() => ok());
   }
 
-  private async register(
-    configToRegister: ConfigType
-  ): Promise<Result<void>> {
+  private async register(configToRegister: ConfigType): Promise<Result<void>> {
     // configPathが存在するかチェック
     if (await this.configPath.exists()) {
       const configIni = await this.configPath.readText();
       //configPathが空ファイルだった場合、新しい設定を保存
-      if(configIni === null){
-        const configBytes = await iniConfig.stringify(configToRegister).into(Bytes);
+      if (configIni === null) {
+        const configBytes = await iniConfig
+          .stringify(configToRegister)
+          .into(Bytes);
 
         return configBytes.isErr
-        ? err.error('failed to register')
-        : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
+          ? err.error('failed to register')
+          : await this.configPath
+              .writeText(configBytes.value().toStr('utf8').value())
+              .then(() => ok());
       }
       // 読み込みが成功した場合のみパース
       const config = configIni.isOk
@@ -383,18 +402,22 @@ class RcloneSource {
 
       return configBytes.isErr
         ? err.error('failed to register')
-        : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
-
+        : await this.configPath
+            .writeText(configBytes.value().toStr('utf8').value())
+            .then(() => ok());
     } else {
       // configPathが存在しない場合、新しい設定を保存
-      const configBytes = await iniConfig.stringify(configToRegister).into(Bytes);
+      const configBytes = await iniConfig
+        .stringify(configToRegister)
+        .into(Bytes);
 
       return configBytes.isErr
         ? err.error('failed to register')
-        : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
+        : await this.configPath
+            .writeText(configBytes.value().toStr('utf8').value())
+            .then(() => ok());
     }
   }
-
 
   /**
    * OAuth経由で認証 (リフレッシュトークンが切れたときに発火)
@@ -445,22 +468,23 @@ class RcloneSource {
       /**トークンをrclone.confに書き込む */
       const remoteKey = getRemoteKey(remote);
       if (remote.driveType === 'onedrive') {
-        const config:ConfigType ={
+        const config: ConfigType = {
           [remoteKey]: {
             type: remote.driveType,
             token: token,
             drive_id: userInfo.driveId,
             drive_type: 'personal',
-          }}
+          },
+        };
 
         await this.register(config);
       } else {
-        const config:ConfigType = {
+        const config: ConfigType = {
           [remoteKey]: {
             type: remote.driveType,
-            token: token
-          }
-        }
+            token: token,
+          },
+        };
         await this.register(config);
       }
       return ok(true);
@@ -596,7 +620,7 @@ class RcloneSource {
       `${remoteKey}:${remotePath.path}`, //to
       {
         env: {
-          RCLONE_CONFIG:this.configPath.path,
+          RCLONE_CONFIG: this.configPath.path,
         },
       }
     );
@@ -616,7 +640,7 @@ class RcloneSource {
    *リモートのファイル単体削除
    *トークンが無効ならエラー
    */
-  async deleteFile(remote: RemotePath): Promise<Result<void>>{
+  async deleteFile(remote: RemotePath): Promise<Result<void>> {
     const isAccessible = await this.isAccessible(remote.drive, false);
     if (!isAccessible) {
       return err(new Error('token is invalid'));
@@ -627,7 +651,7 @@ class RcloneSource {
       `${remoteKey}:${remote.path}`, //to
       {
         env: {
-          RCLONE_CONFIG:this.configPath.path,
+          RCLONE_CONFIG: this.configPath.path,
         },
       }
     );
@@ -646,7 +670,7 @@ class RcloneSource {
    * トークンが無効ならエラー
    */
   async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {
-    const remoteKey =getRemoteKey(remote.drive);
+    const remoteKey = getRemoteKey(remote.drive);
     const lsProcess = ls(`${remoteKey}:${remote.path}`, {
       env: {
         RCLONE_CONFIG: this.configPath.path,
@@ -724,7 +748,7 @@ if (import.meta.vitest) {
   const workPath = new Path(__dirname).child(
     'work',
     path.basename(__filename, '.ts'),
-    'cache',
+    'cache'
   );
   if (workPath.exists()) {
     await workPath.remove();
@@ -749,14 +773,21 @@ if (import.meta.vitest) {
 
   // TODO: 下記については，API Keyを`key.private.ts`としてexportする変数にKeyを入れて，それをここでimportして呼び出す
   // `key.private.ts`はgitignoreに追加してPushされないようにする
-  const parsedDriveTokenGoogle =await Bytes.fromString(googleTokenForTest).into(jsonToken);
-  const testDriveTokenGoogle = parsedDriveTokenGoogle.value() /** ここで認証トークンを設定 環境変数 or GitHub Secret から取得する */
-  const parsedDriveTokenDropbox = await Bytes.fromString(dropboxTokenForTest).into(jsonToken);
-  const testDriveTokenDropbox = parsedDriveTokenDropbox.value()
-  const parsedDriveTokenOneDrive = await Bytes.fromString(onedriveTokenForTest).into(jsonToken);
-  const testDriveTokenOneDrive = parsedDriveTokenOneDrive.value()
+  const parsedDriveTokenGoogle = await Bytes.fromString(
+    googleTokenForTest
+  ).into(jsonToken);
+  const testDriveTokenGoogle =
+    parsedDriveTokenGoogle.value(); /** ここで認証トークンを設定 環境変数 or GitHub Secret から取得する */
+  const parsedDriveTokenDropbox = await Bytes.fromString(
+    dropboxTokenForTest
+  ).into(jsonToken);
+  const testDriveTokenDropbox = parsedDriveTokenDropbox.value();
+  const parsedDriveTokenOneDrive = await Bytes.fromString(
+    onedriveTokenForTest
+  ).into(jsonToken);
+  const testDriveTokenOneDrive = parsedDriveTokenOneDrive.value();
   //await rcloneSource.makeConfigFile()
-  describe('setTokenFromExternal', async() =>{
+  describe('setTokenFromExternal', async () => {
     const testCases: TestCase[] = [
       {
         explain: 'google',
@@ -766,40 +797,42 @@ if (import.meta.vitest) {
       {
         explain: 'dropbox',
         drive: testDriveDropbox,
-        token: testDriveTokenDropbox ,
+        token: testDriveTokenDropbox,
       },
       {
         explain: 'onedrive',
         drive: testDriveOneDrive,
-        token: testDriveTokenOneDrive ,
+        token: testDriveTokenOneDrive,
       },
-    ]
+    ];
     test.each(testCases)('$explain', async (testCase) => {
       //一度登録解除してrclone.confから確実に削除
-    await rcloneSource.unregister(testCase.drive);
-    //消えている/元から存在しないことを確認
+      await rcloneSource.unregister(testCase.drive);
+      //消えている/元から存在しないことを確認
 
-    // 最初はアクセスできない
-    expect(await rcloneSource.isAccessible(testCase.drive, false)).toBe(false);
-    expect(await rcloneSource.isAccessible(testCase.drive, true)).toBe(false);
-    // 認証トークンを設定すればアクセスできる
-    await rcloneSource.renewToken(testCase.drive, testCase.token);
-    expect(await rcloneSource.isAccessible(testCase.drive, false)).toBe(true);
-    expect(await rcloneSource.isAccessible(testCase.drive, true)).toBe(true);
+      // 最初はアクセスできない
+      expect(await rcloneSource.isAccessible(testCase.drive, false)).toBe(
+        false
+      );
+      expect(await rcloneSource.isAccessible(testCase.drive, true)).toBe(false);
+      // 認証トークンを設定すればアクセスできる
+      await rcloneSource.renewToken(testCase.drive, testCase.token);
+      expect(await rcloneSource.isAccessible(testCase.drive, false)).toBe(true);
+      expect(await rcloneSource.isAccessible(testCase.drive, true)).toBe(true);
 
-    // 認証トークンを何度設定しても大丈夫
-    await rcloneSource.renewToken(testCase.drive, testCase.token);
-    expect(await rcloneSource.isAccessible(testCase.drive, false)).toBe(true);
-    expect(await rcloneSource.isAccessible(testCase.drive, true)).toBe(true);
-    await rcloneSource.unregister(testCase.drive);
-    })
+      // 認証トークンを何度設定しても大丈夫
+      await rcloneSource.renewToken(testCase.drive, testCase.token);
+      expect(await rcloneSource.isAccessible(testCase.drive, false)).toBe(true);
+      expect(await rcloneSource.isAccessible(testCase.drive, true)).toBe(true);
+      await rcloneSource.unregister(testCase.drive);
+    });
 
-    type TestCase={
-      explain: string,
-      drive: RemoteDrive,
-      token: TokenType
-    }
-  },50000)
+    type TestCase = {
+      explain: string;
+      drive: RemoteDrive;
+      token: TokenType;
+    };
+  }, 50000);
   //OAuthを使った認証テスト
 
   describe('registerWithOAuth', async () => {
@@ -816,31 +849,31 @@ if (import.meta.vitest) {
         explain: 'onedrive',
         drive: testDriveOneDrive,
       },
-    ]
+    ];
     test.skip.each(testCases)('$explain', async (testCase) => {
-          //トークンを取得
-    const promiseDrive = await rcloneSource.registerNewRemoteWithOAuth(
-      testCase.drive.driveType,
-      showAuthWindow
-    );
-    expect(promiseDrive.isOk).toBe(true);
-    const newDrive = promiseDrive.value();
-    //rclone.confに書き込まれていることを確認
-    const configIni = await workPath
-      .child('rclone.conf')
-      .readText();
-    expect(configIni.isOk).toBe(true);
-    const config = (await Bytes.fromString(configIni.value()).into(iniConfig)).value()
-    //登録名を生成
-    const remoteKey = getRemoteKey(newDrive);
-    //登録名に一致するキーがあれば登録成功
-    expect(remoteKey in config).toBe(true);
-    })
-    type TestCase={
-      explain: string,
-      drive: RemoteDrive,
-    }
-  },5000000)
+      //トークンを取得
+      const promiseDrive = await rcloneSource.registerNewRemoteWithOAuth(
+        testCase.drive.driveType,
+        showAuthWindow
+      );
+      expect(promiseDrive.isOk).toBe(true);
+      const newDrive = promiseDrive.value();
+      //rclone.confに書き込まれていることを確認
+      const configIni = await workPath.child('rclone.conf').readText();
+      expect(configIni.isOk).toBe(true);
+      const config = (
+        await Bytes.fromString(configIni.value()).into(iniConfig)
+      ).value();
+      //登録名を生成
+      const remoteKey = getRemoteKey(newDrive);
+      //登録名に一致するキーがあれば登録成功
+      expect(remoteKey in config).toBe(true);
+    });
+    type TestCase = {
+      explain: string;
+      drive: RemoteDrive;
+    };
+  }, 5000000);
   test.skip('registerWithOauth_google', async () => {
     //トークンを取得
     const promiseDriveGoogle = await rcloneSource.registerNewRemoteWithOAuth(
@@ -850,9 +883,7 @@ if (import.meta.vitest) {
     expect(promiseDriveGoogle.isOk).toBe(true);
     const newDriveGoogle = promiseDriveGoogle.value();
     //rclone.confに書き込まれていることを確認
-    const configIni = await workPath
-      .child('rclone.conf')
-      .readText();
+    const configIni = await workPath.child('rclone.conf').readText();
     expect(configIni.isOk).toBe(true);
     const config = ini.parse(configIni.value());
     //登録名を生成
@@ -872,9 +903,7 @@ if (import.meta.vitest) {
     expect(promiseDriveDropbox.isOk).toBe(true);
     const newDriveDropbox = promiseDriveDropbox.value();
     //rclone.confに書き込まれていることを確認
-    const configIni = await workPath
-      .child('rclone.conf')
-      .readText();
+    const configIni = await workPath.child('rclone.conf').readText();
     expect(configIni.isOk).toBe(true);
     const config = ini.parse(configIni.value());
     //登録名を生成
@@ -894,9 +923,7 @@ if (import.meta.vitest) {
     expect(promiseDriveOneDrive.isOk).toBe(true);
     const newDriveOneDrive = promiseDriveOneDrive.value();
     //rclone.confに書き込まれていることを確認
-    const configIni = await workPath
-      .child('rclone.conf')
-      .readText();
+    const configIni = await workPath.child('rclone.conf').readText();
     expect(configIni.isOk).toBe(true);
     const config = ini.parse(configIni.value());
     //登録名を生成
@@ -925,7 +952,7 @@ if (import.meta.vitest) {
         drive: testDriveOneDrive,
         token: testDriveTokenOneDrive,
       },
-    ]
+    ];
     test.each(testCases)('$explain', async (testCase) => {
       const syncDirectory = workPath.child('sync');
       const pullDirectory = workPath.child('target');
@@ -1016,13 +1043,13 @@ if (import.meta.vitest) {
       await workPath.child('sync').remove();
       await workPath.child('target').remove();
       await rcloneSource.unregister(testCase.drive);
-    })
-    type TestCase={
-      explain: string,
-      drive: RemoteDrive,
-      token: TokenType,
-    }
-  },500000)
+    });
+    type TestCase = {
+      explain: string;
+      drive: RemoteDrive;
+      token: TokenType;
+    };
+  }, 500000);
 
   //単一ファイルの送受信テスト
   describe('putAndGetFileTest', async () => {
@@ -1042,7 +1069,7 @@ if (import.meta.vitest) {
         drive: testDriveOneDrive,
         token: testDriveTokenOneDrive,
       },
-    ]
+    ];
     test.each(testCases)('$explain', async (testCase) => {
       const syncDirectory = workPath.child('sync');
       const fileToTest = { name: 'test1.txt', content: 'Content for file 1' };
@@ -1073,28 +1100,22 @@ if (import.meta.vitest) {
       //listFile時のみディレクトリ指定
       const remoteDirectory: RemotePath = {
         drive: testCase.drive,
-        path: 'sync'
-      }
+        path: 'sync',
+      };
       //リモートをリセット
-      await rcloneSource.renewToken(testCase.drive,testCase.token)
-      await rcloneSource.deleteRemoteDirectory(remoteDirectory)
+      await rcloneSource.renewToken(testCase.drive, testCase.token);
+      await rcloneSource.deleteRemoteDirectory(remoteDirectory);
       const putDataText = syncDirectory.child(fileToTest.name);
       const putData = (await putDataText.into(Bytes)).value();
       //put
       //未認証なのでエラーになるはず
       await rcloneSource.unregister(testCase.drive);
-      const resultError = await rcloneSource.putFile(
-        remote,
-        putData,
-      );
+      const resultError = await rcloneSource.putFile(remote, putData);
       expect(resultError.isErr).toBe(true);
 
       //認証した上で実行すると成功
       await rcloneSource.renewToken(testCase.drive, testCase.token);
-      const resultOk = await rcloneSource.putFile(
-        remote,
-        putData,
-      );
+      const resultOk = await rcloneSource.putFile(remote, putData);
       expect(resultOk.isOk).toBe(true);
 
       //実際に同期できていることを確認
@@ -1114,18 +1135,20 @@ if (import.meta.vitest) {
       //実際に同期できていることを確認
       expect(getResultOk.value()).toStrictEqual(putData);
       //使ったファイルを削除
-      const purgeResult = await rcloneSource.deleteRemoteDirectory(remoteDirectory);
+      const purgeResult = await rcloneSource.deleteRemoteDirectory(
+        remoteDirectory
+      );
       expect(purgeResult.isOk).toBe(true);
       await workPath.child('sync').remove();
       await workPath.child('target').remove();
       await rcloneSource.unregister(testCase.drive);
-    })
-    type TestCase={
-      explain: string,
-      drive: RemoteDrive,
-      token: TokenType,
-    }
-  },500000)
+    });
+    type TestCase = {
+      explain: string;
+      drive: RemoteDrive;
+      token: TokenType;
+    };
+  }, 500000);
 
   //コンフリクトを想定したテスト
   //送ったデータで元にあったデータが置き換えられる仕様
@@ -1146,7 +1169,7 @@ if (import.meta.vitest) {
         drive: testDriveOneDrive,
         token: testDriveTokenOneDrive,
       },
-    ]
+    ];
     test.each(testCases)('$explain', async (testCase) => {
       const syncDirectory = workPath.child('syncTarget');
       const conflictDirectory = workPath.child('conflict');
@@ -1156,7 +1179,7 @@ if (import.meta.vitest) {
         { name: 'test2.txt', content: 'Content for file 2' },
       ];
       const filesToConflict = [
-        {name: 'conflict.txt', content: 'hogehogehogehugahugahuga'},
+        { name: 'conflict.txt', content: 'hogehogehogehugahugahuga' },
         { name: 'test1.txt', content: 'Content for file 1' },
         { name: 'test2.txt', content: 'Content for file 2' },
       ];
@@ -1189,7 +1212,7 @@ if (import.meta.vitest) {
           mailAddress: testCase.drive.mailAddress,
         },
         path: 'sync/conflict.txt',
-      }
+      };
       //ファイルを生成
       await Promise.all(
         filesToTest.map((file) =>
@@ -1235,63 +1258,91 @@ if (import.meta.vitest) {
 
       //実際に同期できていることを確認
       const remoteDirList = await rcloneSource.listFile(remote);
-      expect(remoteDirList.value()).toEqual(expect.arrayContaining(remotePathExpected));
-      expect(remotePathExpected).toEqual(expect.arrayContaining(remoteDirList.value()));
+      expect(remoteDirList.value()).toEqual(
+        expect.arrayContaining(remotePathExpected)
+      );
+      expect(remotePathExpected).toEqual(
+        expect.arrayContaining(remoteDirList.value())
+      );
 
       //コンフリクトを引き起こす
       //コンフリクト用にリモートからデータを削除
-      const resultOkDelete = await rcloneSource.deleteFile(remotePathConflict)
+      const resultOkDelete = await rcloneSource.deleteFile(remotePathConflict);
       expect(resultOkDelete.isOk).toBe(true);
       //コンフリクト用ファイルをアップロード
-      const conflictFileData=Bytes.fromString((await conflictDirectory.child('conflict.txt').readText()).value())
-      const resultOkPut = await rcloneSource.putFile(remotePathConflict,conflictFileData)
+      const conflictFileData = Bytes.fromString(
+        (await conflictDirectory.child('conflict.txt').readText()).value()
+      );
+      const resultOkPut = await rcloneSource.putFile(
+        remotePathConflict,
+        conflictFileData
+      );
       expect(resultOkPut.isOk).toBe(true);
       //リモートのファイル一覧を取得
       const remoteDirListConflict = await rcloneSource.listFile(remote);
       //ファイル名が変わっていないのでlsの結果は変わらないはず
-      expect(remoteDirListConflict.value()).toEqual(expect.arrayContaining(remotePathExpected));
-      expect(remotePathExpected).toEqual(expect.arrayContaining(remoteDirListConflict.value()));
+      expect(remoteDirListConflict.value()).toEqual(
+        expect.arrayContaining(remotePathExpected)
+      );
+      expect(remotePathExpected).toEqual(
+        expect.arrayContaining(remoteDirListConflict.value())
+      );
       //当該ファイルを一度ダウンロード
-      const downloadedDataConflict = await rcloneSource.getFile(remotePathConflict)
+      const downloadedDataConflict = await rcloneSource.getFile(
+        remotePathConflict
+      );
       //このデータはconflict/conflict.txtと一致し、sync/conflict.txtとは異なるはず
-      expect(downloadedDataConflict.value()).toStrictEqual(conflictFileData)
+      expect(downloadedDataConflict.value()).toStrictEqual(conflictFileData);
       //ローカルのsyncとリモートのsyncを再同期
-      const resultOkReSync = await rcloneSource.push(remote,syncDirectory)
-      expect(resultOkReSync.isOk).toBe(true)
+      const resultOkReSync = await rcloneSource.push(remote, syncDirectory);
+      expect(resultOkReSync.isOk).toBe(true);
       //リモートのファイル一覧を取得
       const remoteDirListConflictSync = await rcloneSource.listFile(remote);
       //ファイル名が変わっていないのでlsの結果は変わらないはず
-      expect(remoteDirListConflictSync.value()).toEqual(expect.arrayContaining(remotePathExpected));
-      expect(remotePathExpected).toEqual(expect.arrayContaining(remoteDirListConflictSync.value()));
+      expect(remoteDirListConflictSync.value()).toEqual(
+        expect.arrayContaining(remotePathExpected)
+      );
+      expect(remotePathExpected).toEqual(
+        expect.arrayContaining(remoteDirListConflictSync.value())
+      );
 
       //当該ファイルをもう一度ダウンロード
-      const reDownloadedDataConflict = await rcloneSource.getFile(remotePathConflict)
+      const reDownloadedDataConflict = await rcloneSource.getFile(
+        remotePathConflict
+      );
       //syncのconflict.txtと一致する
-      const syncFileData = Bytes.fromString((await syncDirectory.child('conflict.txt').readText()).value())
-      expect(reDownloadedDataConflict.value()).toStrictEqual(syncFileData)
-      expect((reDownloadedDataConflict.value()).toStr().value()).toBe('file for conflict')
+      const syncFileData = Bytes.fromString(
+        (await syncDirectory.child('conflict.txt').readText()).value()
+      );
+      expect(reDownloadedDataConflict.value()).toStrictEqual(syncFileData);
+      expect(reDownloadedDataConflict.value().toStr().value()).toBe(
+        'file for conflict'
+      );
       //リモートのデータとローカルのconflictを同期
-      const syncLocalConflictDirectory = await rcloneSource.pull(remote,conflictDirectory)
-      expect(syncLocalConflictDirectory.isOk).toBe(true)
+      const syncLocalConflictDirectory = await rcloneSource.pull(
+        remote,
+        conflictDirectory
+      );
+      expect(syncLocalConflictDirectory.isOk).toBe(true);
       //conflict/conflict.txtとsync/conflict.txtが一致しているはず
-      const conflictConflict = await conflictDirectory.child('conflict.txt').readText()
-      const syncConflict = await syncDirectory.child('conflict.txt').readText()
-      expect(conflictConflict.value()).toBe(syncConflict.value())
-      expect(conflictConflict.value()).toBe('file for conflict')
+      const conflictConflict = await conflictDirectory
+        .child('conflict.txt')
+        .readText();
+      const syncConflict = await syncDirectory.child('conflict.txt').readText();
+      expect(conflictConflict.value()).toBe(syncConflict.value());
+      expect(conflictConflict.value()).toBe('file for conflict');
       //使ったデータを消す
-      const purgeResult = await rcloneSource.deleteRemoteDirectory(remote)
-      expect(purgeResult.isOk).toBe(true)
-      await workPath.child('synctarget').remove()
-      await workPath.child('conflict').remove()
-
-
-    })
-    type TestCase={
-      explain: string,
-      drive: RemoteDrive,
-      token: TokenType,
-    }
-  },500000)
+      const purgeResult = await rcloneSource.deleteRemoteDirectory(remote);
+      expect(purgeResult.isOk).toBe(true);
+      await workPath.child('synctarget').remove();
+      await workPath.child('conflict').remove();
+    });
+    type TestCase = {
+      explain: string;
+      drive: RemoteDrive;
+      token: TokenType;
+    };
+  }, 500000);
 
   await workPath.remove();
 

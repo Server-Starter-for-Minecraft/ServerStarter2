@@ -3,12 +3,12 @@ import { NgrokSetting } from './ngrok';
 import { Version } from './version';
 
 export type rcloneSetting = {
-  type: 'drive'|'dropbox'|'onedrive'
+  type: 'drive' | 'dropbox' | 'onedrive';
   mailAddress: string;
   token: string;
   driveId?: string;
   driveType?: string;
-}
+};
 
 export type GithubRemoteFolder = {
   type: 'github';
