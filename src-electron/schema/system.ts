@@ -1,6 +1,6 @@
 import { PlayerUUID, UUID, WorldContainer } from './brands';
 import { PlayerGroup } from './player';
-import { RemoteSetting } from './remote';
+import { Setting } from './remote';
 import { SystemWorldSettings } from './world';
 
 /** システム設定まとめてここに格納 */
@@ -68,4 +68,5 @@ export type SystemPlayerSetting = {
   players: PlayerUUID[];
 };
 
-export type SystemRemoteSetting = RemoteSetting[];
+//export type SystemRemoteSetting = RemoteSetting[];
+export type SystemRemoteSetting = rcloneSetting[];
