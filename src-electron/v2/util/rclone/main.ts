@@ -90,13 +90,22 @@ async function showAuthWindow(url: string): Promise<void> {
 function removePeriodOfMailAddress(email: string): string {
   return email.replace(/[.@]/g, '');
 }
+/**
+ * iniParserに任意の文字列をsectionやpropertyで使用しても安全な文字列に変換する機能があったためラップ
+ *ini.safe(`${remote.driveType}_${remote.mailAddress}`)を返す
+ * */
+function getRemoteKey(remote: RemoteDrive): string {
+  return `${remote.driveType}_${removePeriodOfMailAddress(remote.mailAddress)}`;
+}
 
 class RcloneSource {
   constructor(
     /** 何か値をキャッシュする必要がある場合、このディレクトリの中を使うこと */
     private readonly cacheDirPath: Path
   ) {}
-
+  private get configPath() {
+    return this.cacheDirPath.child('rclone.conf');
+  }
   /**
    * 起動時処理としてsettings.ssconfigを読み込んでrclone.confを生成する
    *
@@ -104,7 +113,7 @@ class RcloneSource {
   async makeConfigFile(): Promise<Result<void>> {
     const systemSetting = await getSystemSettings();
     const setting = systemSetting.remote;
-    const configPath = this.cacheDirPath.child('rclone.conf');
+    const configPath = this.configPath;
     const configContent = setting
       .map((setting) => {
         return `[${setting.type}_${removePeriodOfMailAddress(setting.mailAddress)}]\n
@@ -159,35 +168,28 @@ class RcloneSource {
     remote: RemoteDrive,
     checkOnlyExpiration: boolean
   ): Promise<boolean> {
-    const configIni = await this.cacheDirPath.child('rclone.conf').readText();
-    const config = configIni.isOk ? ini.parse(configIni.value()) : null;
+    const configIni = await this.configPath.readText();
+    const config = configIni.isOk ? await Bytes.fromString(configIni.value()).into(iniConfig) : null;
     if (config === null) {
+      return false;
+    }
+    const remoteKey = getRemoteKey(remote);
+    const configVal = config.value()
+    if (!configVal[remoteKey]) {
       return false;
     }
     if (checkOnlyExpiration) {
       // トークンの期限だけチェック
-      const mailKey = removePeriodOfMailAddress(remote.mailAddress);
-      const remoteKey = `${remote.driveType}_${mailKey}`;
-      if (!config[remoteKey]) {
-        return false;
-      }
-      const token = config[remoteKey].token;
-      const tokenJson = JSON.parse(token);
-      const expires = tokenJson.expiry;
-      if (token === undefined || expires === undefined) return false;
-      const now = new Date();
-      return now < new Date(expires);
+      const expires = configVal[remoteKey].token.expiry;
+      if (expires === undefined) return false;
+      const now = dayjs();
+      const expiryDate = dayjs(expires);
+      return expiryDate.isValid() ? now.isBefore(expiryDate) : false
     } else {
       // 実際にurl叩いてチェック
-      const remoteKey = `${remote.driveType}_${removePeriodOfMailAddress(
-        remote.mailAddress
-      )}`;
-      if (!config[remoteKey]) {
-        return false;
-      }
       const userInfo = await this.getUserInfo(
         remote.driveType,
-        config[remoteKey].token
+        configVal[remoteKey].token
       );
       return userInfo.isErr
         ? false
@@ -207,6 +209,7 @@ class RcloneSource {
     if (tokenJson.isErr) {
       return err(new Error('failed to get token'));
     }
+    const token = tokenJson.value()
     const userInfoResult = await this.getUserInfo(driveType, tokenJson.value());
     if (userInfoResult.isErr) {
       return err(new Error('failed to get mailAdderss'));
@@ -215,43 +218,47 @@ class RcloneSource {
     /**TODO: 登録済みのdriveType,mailAdressと登録したいdriveType,mailAdressが被ったら弾く
      * 現状は勝手に置き換えられるようになっている
      */
+    const remote = {
+      driveType: driveType,
+      mailAddress: userInfo.mailAddress,
+    }
     if (driveType === 'onedrive') {
       //configの書き込み
-      const remoteKey = `${driveType}_${removePeriodOfMailAddress(
-        userInfo.mailAddress
-      )}`;
-      const configContent = `[
-      ${remoteKey}]\n
-      type = onedrive\n
-      token = ${tokenJson.value()}\n
-      drive_id = ${userInfo.driveId}\n
-      drive_type = personal\n`;
-      await this.register(remoteKey, configContent);
-      return ok({
-        driveType: driveType,
-        mailAddress: userInfo.mailAddress,
-      });
+      const remoteKey = getRemoteKey(remote)
+      const configContent:ConfigType ={
+        [remoteKey]: {
+          type: driveType,
+          token: token,
+          drive_id: userInfo.driveId,
+          drive_type: 'personal',
+        }}
+
+      await this.register(configContent);
+      return ok(remote);
     } else {
-      const remoteKey = `${driveType}_${removePeriodOfMailAddress(userInfo.mailAddress)}`;
-      const configContent = `[${remoteKey}]\ntype = ${driveType}\ntoken = ${tokenJson.value()}\n`;
-      await this.register(remoteKey, configContent);
-      return ok({
-        driveType: driveType,
-        mailAddress: userInfo.mailAddress,
-      });
-    }
-  }
+      const remoteKey = getRemoteKey(remote)
+      const config:ConfigType = {
+        [remoteKey]: {
+          type: driveType,
+          token: token
+        }
+      }
+      await this.register(config);
+      return ok(remote);
+    }}
+
 
   private async getTokenWithOAuth(
     driveType: RemoteDrive['driveType'],
     showAuthWindow: (url: string) => void
-  ): Promise<Result<string>> {
+  ): Promise<Result<TokenType>> {
     const authorizeProcess = authorize(driveType, '--auth-no-open-browser');
     //標準出力からurlを取得
     const urlPromise = new Promise<string | null>((resolve, reject) => {
       //urlは標準エラー出力に出ている
       authorizeProcess.stderr?.on('data', (data) => {
         // URLマッチングのための正規表現
+        console.log(data.toString())
         const urlMatch = data.toString().match(/https?:\/\/[^\s]+/);
 
         if (urlMatch) {
@@ -275,15 +282,16 @@ class RcloneSource {
     await new Promise<void>((r) => authorizeProcess.on('close', r));
 
     const tokenJson = await tokenPromise;
-    return ok(tokenJson);
+    const token = await Bytes.fromString(tokenJson).into(jsonToken)
+
+    return token;
   }
 
   /**トークンからメールアドレスか表示名を取得 */
   private async getUserInfo(
     driveType: RemoteDrive['driveType'],
-    tokenJson: string
+    accessToken: TokenType
   ): Promise<Result<userInfo>> {
-    const accessToken = JSON.parse(tokenJson);
     if (driveType === 'drive') {
       const oAuth2Client = new google.auth.OAuth2();
       //googleはrcloneで取得できたトークンをJSON.parseしてそのまま渡す
@@ -302,12 +310,12 @@ class RcloneSource {
       return ok({ mailAddress: response.result.email });
     } else if (driveType === 'onedrive') {
       const driveInfo = await onedrive.items.listChildren({
-        accessToken: accessToken,
+        accessToken: accessToken.access_token,
         itemId: 'root',
       });
       const driveId = driveInfo.value[0]?.parentReference?.driveId;
       const userInfo = await onedrive.items.customEndpoint({
-        accessToken: accessToken,
+        accessToken: accessToken.access_token,
         url: `/drives/${driveId}`,
         method: 'GET',
       });
@@ -328,41 +336,65 @@ class RcloneSource {
   async unregister(remote: RemoteDrive): Promise<Result<void>> {
     // たぶんトークン消すだけ
     // もともと未登録だった場合は何もせずに成功
-    const configIni = await this.cacheDirPath.child('rclone.conf').readText();
-    const config = configIni.isOk ? ini.parse(configIni.value()) : null;
+    const configIni = await this.configPath.readText();
+    const config = configIni.isOk ? (await Bytes.fromString(configIni.value()).into(iniConfig)).value() : null;
     if (config === null) {
-      return err.error('failed to load rclone.conf');
+      //rclone.confがない時と読み込みに失敗した時で区別
+      return this.configPath.exists() ? err.error('failed to load rclone.conf') : ok()
     }
-    const remoteKey = `${remote.driveType}_${removePeriodOfMailAddress(remote.mailAddress)}`;
+    const remoteKey = getRemoteKey(remote)
     if (config[remoteKey] === undefined) {
       return ok();
     }
     delete config[remoteKey];
-    await this.cacheDirPath
-      .child('rclone.conf')
-      .writeText(ini.stringify(config));
-    return ok();
+    const configBytes = await iniConfig.stringify(config).into(Bytes)
+    return configBytes.isErr
+    ? err.error('failed to unregister')
+    : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
   }
 
   private async register(
-    remoteKey: string,
-    configContent: string
+    configToRegister: ConfigType
   ): Promise<Result<void>> {
-    const configIni = await this.cacheDirPath.child('rclone.conf').readText();
-    const config = configIni.isOk ? ini.parse(configIni.value()) : null;
-    if (config === null) {
-      await this.cacheDirPath.child('rclone.conf').writeText(configContent);
-      return ok();
+    // configPathが存在するかチェック
+    if (await this.configPath.exists()) {
+      const configIni = await this.configPath.readText();
+      //configPathが空ファイルだった場合、新しい設定を保存
+      if(configIni === null){
+        const configBytes = await iniConfig.stringify(configToRegister).into(Bytes);
+
+        return configBytes.isErr
+        ? err.error('failed to register')
+        : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
+      }
+      // 読み込みが成功した場合のみパース
+      const config = configIni.isOk
+        ? (await Bytes.fromString(configIni.value()).into(iniConfig)).value()
+        : null;
+
+      // 読み込み失敗時エラーを返す
+      if (config === null) {
+        return err.error('failed to load rclone.conf');
+      }
+
+      // 設定をマージし、文字列化して保存
+      const mergedConfig = { ...config, ...configToRegister };
+      const configBytes = await iniConfig.stringify(mergedConfig).into(Bytes);
+
+      return configBytes.isErr
+        ? err.error('failed to register')
+        : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
+
+    } else {
+      // configPathが存在しない場合、新しい設定を保存
+      const configBytes = await iniConfig.stringify(configToRegister).into(Bytes);
+
+      return configBytes.isErr
+        ? err.error('failed to register')
+        : await this.configPath.writeText(configBytes.value().toStr('utf8').value()).then(() => ok());
     }
-    if (config[remoteKey]) {
-      delete config[remoteKey];
-      await this.cacheDirPath
-        .child('rclone.conf')
-        .writeText(ini.stringify(config));
-    }
-    await this.cacheDirPath.child('rclone.conf').appendText(configContent);
-    return ok();
   }
+
 
   /**
    * OAuth経由で認証 (リフレッシュトークンが切れたときに発火)
@@ -401,7 +433,7 @@ class RcloneSource {
    */
   async renewToken(
     remote: RemoteDrive,
-    token: string
+    token: TokenType
   ): Promise<Result<boolean>> {
     //  与えられたトークンが与えられたアカウントにアクセスできることを確認すること
     const userInfoResult = await this.getUserInfo(remote.driveType, token);
@@ -411,18 +443,25 @@ class RcloneSource {
     const userInfo = userInfoResult.value();
     if (userInfo.mailAddress === remote.mailAddress) {
       /**トークンをrclone.confに書き込む */
-      const remoteKey = `${remote.driveType}_${removePeriodOfMailAddress(userInfo.mailAddress)}`;
+      const remoteKey = getRemoteKey(remote);
       if (remote.driveType === 'onedrive') {
-        const configContent = `[
-      ${remoteKey}]\n
-      type = onedrive\n
-      token = ${token}\n
-      drive_id = ${userInfo.driveId}\n
-      drive_type = personal\n`;
-        await this.register(remoteKey, configContent);
+        const config:ConfigType ={
+          [remoteKey]: {
+            type: remote.driveType,
+            token: token,
+            drive_id: userInfo.driveId,
+            drive_type: 'personal',
+          }}
+
+        await this.register(config);
       } else {
-        const configContent = `[${remoteKey}]\ntype = ${remote.driveType}\ntoken = ${token}\n`;
-        await this.register(remoteKey, configContent);
+        const config:ConfigType = {
+          [remoteKey]: {
+            type: remote.driveType,
+            token: token
+          }
+        }
+        await this.register(config);
       }
       return ok(true);
     } else {
@@ -439,14 +478,14 @@ class RcloneSource {
     if (!isAccessible) {
       return err(new Error('token is invalid'));
     }
-    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
+    const remoteKey = getRemoteKey(remote.drive);
     const syncProcess: ChildProcess = sync(
       `${remoteKey}:${remote.path}`, //from
-      path.toStr(), //to
+      path.absolute().path, //to
       {
         // Spawn options:
         env: {
-          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+          RCLONE_CONFIG: this.configPath.path,
         },
       }
     );
@@ -473,14 +512,14 @@ class RcloneSource {
     if (!isAccessible) {
       return err.error('token is invalid');
     }
-    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
+    const remoteKey = getRemoteKey(remote.drive);
     const syncProcess: ChildProcess = sync(
-      path.toStr(), //from
+      path.absolute().path, //from
       `${remoteKey}:${remote.path}`, //to
       {
         // Spawn options:
         env: {
-          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+          RCLONE_CONFIG: this.configPath.path,
         },
       }
     );
@@ -507,25 +546,28 @@ class RcloneSource {
     if (!isAccessible) {
       return err.error('token is invalid');
     }
-    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
-    const uploadProcess: ChildProcess = copy(
+    const remoteKey = getRemoteKey(remote.drive);
+    const targetPath = this.cacheDirPath.child(`${remote.path}`).parent();
+    console.log(targetPath.path);
+    const getProcess: ChildProcess = copy(
       `${remoteKey}:${remote.path}`, //from
-      this.cacheDirPath.child('downloadedFile').toStr(),
+      targetPath.path,
       {
         env: {
-          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+          RCLONE_CONFIG: this.configPath.path,
         },
       }
     );
-    uploadProcess.stdout?.on('data', (data) => {
-      //console.log(data.toString());
+    getProcess.stdout?.on('data', (data) => {
+      console.log(data.toString());
     });
-    uploadProcess.stderr?.on('data', (data) => {
-      //console.error(data.toString());
+    getProcess.stderr?.on('data', (data) => {
+      console.error(data.toString());
     });
-    await new Promise<void>((r) => uploadProcess.on('close', r));
+    await new Promise<void>((r) => getProcess.on('close', r));
     //ダウンロードしたデータをBytesDataに変換して返す
-    const downloadedFile = this.cacheDirPath.child('downloadedFile');
+    const downloadedFile = this.cacheDirPath.child(`${remote.path}`);
+    console.log((await downloadedFile.readText()).value());
     const downloadedFileBytes = (await downloadedFile.into(Bytes)).value();
     return ok(downloadedFileBytes);
   }
@@ -539,25 +581,29 @@ class RcloneSource {
     if (!isAccessible) {
       return err(new Error('token is invalid'));
     }
-    const uploadFile = this.cacheDirPath.child('uploadFile');
+    const uploadFile = this.cacheDirPath.child(remote.path);
+    const remotePath = new Path(remote.path).parent();
+    //console.log(remotePath.path);
     await data.into(uploadFile);
-    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
+    const remoteKey = getRemoteKey(remote.drive);
     const uploadProcess: ChildProcess = copy(
-      uploadFile.toStr(), //from
-      `${remoteKey}:${remote.path}`, //to
+      uploadFile.path, //from
+      `${remoteKey}:${remotePath.path}`, //to
       {
         env: {
-          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+          RCLONE_CONFIG:this.configPath.path,
         },
       }
     );
     uploadProcess.stdout?.on('data', (data) => {
-      //console.log(data.toString());
+      console.log(data.toString());
     });
     uploadProcess.stderr?.on('data', (data) => {
-      //console.error(data.toString());
+      console.error(data.toString());
+      return err.error('upload failed');
     });
     await new Promise<void>((r) => uploadProcess.on('close', r));
+    await uploadFile.remove();
     return ok();
   }
 
@@ -566,10 +612,10 @@ class RcloneSource {
    * トークンが無効ならエラー
    */
   async listFile(remote: RemotePath): Promise<Result<RemotePath[]>> {
-    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
+    const remoteKey =getRemoteKey(remote.drive);
     const lsProcess = ls(`${remoteKey}:${remote.path}`, {
       env: {
-        RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
+        RCLONE_CONFIG: this.configPath.path,
       },
     });
     const fileList: string[] = [];
@@ -593,14 +639,14 @@ class RcloneSource {
         }
       });
     });
-    const remotePaths: RemotePath[] = fileLists.map(file => {
+    const remotePaths: RemotePath[] = fileLists.map((file) => {
       const fileName = file.trim().replace(/^\d+\s+/, ''); // ファイル名のみ抽出
       return {
         drive: remote.drive,
         path: `${remote.path}/${fileName}`,
       };
     });
-    return ok(remotePaths)
+    return ok(remotePaths);
   }
 
   /**
@@ -613,16 +659,13 @@ class RcloneSource {
     if (!isAccessible) {
       return err.error('token is invalid');
     }
-    const remoteKey = `${remote.drive.driveType}_${removePeriodOfMailAddress(remote.drive.mailAddress)}`;
-    const purgeProcess: ChildProcess = purge(
-      `${remoteKey}:${remote.path}`,
-      {
-        // Spawn options:
-        env: {
-          RCLONE_CONFIG: this.cacheDirPath.child('rclone.conf').toStr(),
-        },
-      }
-    );
+    const remoteKey = getRemoteKey(remote.drive);
+    const purgeProcess: ChildProcess = purge(`${remoteKey}:${remote.path}`, {
+      // Spawn options:
+      env: {
+        RCLONE_CONFIG: this.configPath.path,
+      },
+    });
 
     purgeProcess.stdout?.on('data', (data) => {
       //console.log(data.toString());
