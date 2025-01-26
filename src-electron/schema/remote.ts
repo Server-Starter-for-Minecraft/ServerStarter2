@@ -40,7 +40,7 @@ export const RemoteWorld = z.object({
   using: z.boolean().optional(),
   /**
    * 最終プレイ日
-   * 
+   *
    * 協定世界時 (UTC) 1970 年 1 月 1 日 00:00:00 からのミリ秒単位の経過時間を表す数値
    * new Dateの引数にすることで日付が得られる
    */

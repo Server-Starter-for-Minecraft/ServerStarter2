@@ -1,7 +1,6 @@
 /**
  * TODO: 最終的にはこのファイルは削除して，エラー構造はResult型に変更
  */
-
 import { z } from 'zod';
 import type {
   ErrorMessageTypes,
