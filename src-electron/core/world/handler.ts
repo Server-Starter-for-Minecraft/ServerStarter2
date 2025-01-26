@@ -156,7 +156,7 @@ export class WorldHandler {
     if (registered !== undefined) {
       return registered[0] as WorldID;
     }
-    const id = genUUID() as WorldID;
+    const id = WorldID.parse(genUUID());
     WorldHandler.worldHandlerMap[id] = new WorldHandler(id, name, container);
     return id;
   }

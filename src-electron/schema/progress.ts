@@ -1,3 +1,7 @@
+/**
+ * TODO: フロントエンドへの通信内容変更時に必要があれば更新する
+ */
+
 // プログレスの進捗状態を通知する型定義群
 import { ProgressMessage } from './progressMessage';
 

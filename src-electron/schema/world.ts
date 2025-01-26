@@ -1,4 +1,4 @@
-import { Brand } from '../util/brand';
+import { z } from 'zod';
 import {
   ImageURI,
   PlayerUUID,
@@ -23,20 +23,21 @@ import { Remote } from './remote';
 import { ServerProperties } from './serverproperty';
 import { Version } from './version';
 
-export type WorldID = Brand<UUID, 'WorldID'>;
+export const WorldID = z.string().brand('WorldID');
+export type WorldID = z.infer<typeof WorldID>;
 
 /** 取得が速い代わりに情報が少ないワールド */
-export interface WorldAbbr {
-  /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+export const WorldAbbr = z.object({
+  // /** ICONのパス (たぶんフロントからローカルのファイル読めないのでB64形式でエンコードされた物になるか) */
+  // icon: ImageURI.optional(),
   /** ワールド名 */
-  name: WorldName;
-
+  name: WorldName,
   /** ディレクトリ */
-  container: WorldContainer;
-
+  container: WorldContainer,
   /** ワールドのID (ServerStarterが起動するごとに変わる) */
-  id: WorldID;
-}
+  id: WorldID,
+});
+export type WorldAbbr = z.infer<typeof WorldAbbr>;
 
 /** ワールドごとの設定 */
 export interface WorldBase extends WorldAbbr {

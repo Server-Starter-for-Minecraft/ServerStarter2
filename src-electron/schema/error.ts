@@ -1,12 +1,19 @@
+/**
+ * TODO: 最終的にはこのファイルは削除して，エラー構造はResult型に変更
+ */
+
+import { z } from 'zod';
 import type {
   ErrorMessageTypes,
   FlattenErrorMessageTypes,
 } from '../util/error/schema';
 import { MessageDescTitleTranslation } from '../util/message/base';
 
-export type ErrorLevel = 'info' | 'error';
+export const ErrorLevel = z.enum(['info', 'error']);
+export type ErrorLevel = z.infer<typeof ErrorLevel>;
 
-/** エラーをオブジェクトとして渡す際の型
+/**
+ * エラーをオブジェクトとして渡す際の型
  * keyはi18nのキーが入るかな？
  */
 export type ErrorMessage = {

@@ -1,3 +1,7 @@
+/**
+ * TODO: フロントエンドへの通信内容変更時に必要があれば更新する
+ */
+
 import {
   FlattenMessages,
   MessageContent,
