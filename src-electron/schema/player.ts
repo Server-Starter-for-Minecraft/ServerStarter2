@@ -12,6 +12,7 @@ export const Player = z.object({
   /** プレイヤースキンの顔部分の外側レイヤーの画像 */
   avatar_overlay: ImageURI,
 });
+export type Player = z.infer<typeof Player>;
 
 /** システムのプレイヤーグループ設定 */
 export const PlayerGroup = z.object({
