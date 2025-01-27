@@ -6,8 +6,6 @@ import {
   SpigotVersion,
   VanillaVersion,
   Version,
-  VersionType,
-  versionTypes,
 } from 'app/src-electron/schema/version';
 import {
   booleanFixer,
@@ -20,8 +18,6 @@ import {
   stringFixer,
   unionFixer,
 } from 'app/src-electron/util/detaFixer/fixer';
-
-export const fixVersionType = literalFixer<VersionType>(versionTypes);
 
 export const fixVanillaVersion = objectFixer<VanillaVersion>(
   {

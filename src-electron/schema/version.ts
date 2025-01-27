@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+export const versionTypes = [
+  'vanilla',
+  'spigot',
+  'papermc',
+  'forge',
+  'mohistmc',
+  'fabric',
+] as const;
+
 export const VersionId = z.string().brand('VanillaVersionId');
 export type VersionId = z.infer<typeof VersionId>;
 
@@ -42,10 +51,10 @@ export const MohistmcVersion = z.object({
   id: VersionId,
   forge_version: z.string().optional(),
   number: z.number(),
-  jar: z.object({
-    url: z.string(),
-    md5: z.string(),
-  }),
+  // jar: z.object({
+  //   url: z.string(),
+  //   md5: z.string(),
+  // }),
 });
 export type MohistmcVersion = z.infer<typeof MohistmcVersion>;
 
