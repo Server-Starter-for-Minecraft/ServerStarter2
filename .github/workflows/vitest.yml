@@ -1,0 +1,26 @@
+name: Vitest
+
+on: [pull_request]
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      # Required to checkout the code
+      contents: read
+      # Required to put a comment into the pull-request
+      pull-requests: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: 'Install Node'
+        uses: actions/setup-node@v4
+        with:
+            node-version: '20.x'
+      - name: 'Install Deps'
+        run: npm install
+      - name: 'Execute Test'
+        run: npx vitest run --coverage --passWithNoTests
+      - name: Coverage Report
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2.5.0
