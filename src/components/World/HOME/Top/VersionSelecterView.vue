@@ -55,7 +55,7 @@ const validVersionTypes = versionTypes.filter(
   (serverType) => sysStore.serverVersions.get(serverType) !== void 0
 );
 
-function createServerMap(serverType: typeof versionTypes[number]) {
+function createServerMap(serverType: (typeof versionTypes)[number]) {
   return {
     value: serverType,
     label: t(`home.serverType.${serverType}`),
