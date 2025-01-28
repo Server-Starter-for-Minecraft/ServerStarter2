@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { genUUID } from '../util/random/uuid';
 import { PlayerUUID, UUID, WorldContainer } from './brands';
 import { PlayerGroup } from './player';
 import { RemoteSetting } from './remote';
@@ -44,7 +45,7 @@ export const SystemUserSetting = z
     /** 実行者情報 */
     owner: PlayerUUID.optional(),
     /** 実行環境ID(特に変更の必要なし) */
-    id: UUID.default('00000000-0000-0000-0000-000000000000'),
+    id: UUID.default(genUUID()),
     /** 自動シャットダウン */
     autoShutDown: z.boolean().default(false),
     /** ワールドリストの幅 */

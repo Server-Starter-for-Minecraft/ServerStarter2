@@ -1,4 +1,3 @@
-import { UUID } from '../../schema/brands';
 import { errorMessage } from '../error/construct';
 import { Failable } from '../error/failable';
 
@@ -10,7 +9,7 @@ const crypto = require('crypto');
 //   return uuid
 // }
 /**UUIDの生成関数(フォーマット済み) */
-export const genUUID = () => UUID.parse(crypto.randomUUID());
+export const genUUID = () => crypto.randomUUID();
 
 /**
  * uuidの文字列を正規化する
