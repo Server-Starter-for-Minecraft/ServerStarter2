@@ -132,12 +132,14 @@ export interface WorldEdited extends WorldBase {
 }
 
 /** serverstarterのシステム設定内のワールド設定 */
-export const SystemWorldSettings = z.object({
-  /** Javaの実行時引数 */
-  javaArguments: z.string().optional(),
-  memory: MemorySettings,
-  properties: ServerProperties,
-}).default({});
+export const SystemWorldSettings = z
+  .object({
+    /** Javaの実行時引数 */
+    javaArguments: z.string().optional(),
+    memory: MemorySettings,
+    properties: ServerProperties,
+  })
+  .default({});
 export type SystemWorldSettings = z.infer<typeof SystemWorldSettings>;
 
 /** サーバーCWD直下の設定系ファイルの情報 */

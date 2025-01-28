@@ -14,8 +14,10 @@ export const MemoryUnit = z.enum([
 ]);
 export type MemoryUnit = z.infer<typeof MemoryUnit>;
 
-export const MemorySettings = z.object({
-  size: z.number().default(2),
-  unit: MemoryUnit.default('GB'),
-}).default({});
+export const MemorySettings = z
+  .object({
+    size: z.number().default(2),
+    unit: MemoryUnit.default('GB'),
+  })
+  .default({});
 export type MemorySettings = z.infer<typeof MemorySettings>;
