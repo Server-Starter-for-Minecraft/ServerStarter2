@@ -11,7 +11,6 @@ import { BackupData } from 'app/src-electron/schema/filedata';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
-import { genUUID } from 'app/src-electron/tools/uuid';
 import { includes } from 'app/src-electron/util/array';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -20,6 +19,7 @@ import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
 import { portInUse } from 'app/src-electron/util/port';
+import { genUUID } from 'app/src-electron/util/random/uuid';
 import { sleep } from 'app/src-electron/util/sleep';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
@@ -39,7 +39,6 @@ import {
   loadLocalFiles,
   saveLocalFiles,
 } from './local';
-import { WorldLogHandler } from './loghandler';
 import { validateNewWorldName } from './name';
 import { getOpDiff } from './players';
 import { getWorld } from './world';

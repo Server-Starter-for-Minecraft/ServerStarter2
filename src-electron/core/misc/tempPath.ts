@@ -1,5 +1,5 @@
 import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
-import { genUUID } from 'app/src-electron/tools/uuid';
+import { genUUID } from 'app/src-electron/util/random/uuid';
 import { tempPath } from '../const';
 
 /** 一時的なディレクトリを確保 */

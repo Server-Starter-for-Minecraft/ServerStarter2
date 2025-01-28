@@ -1,6 +1,6 @@
-import { UUID } from '../schema/brands';
-import { errorMessage } from '../util/error/construct';
-import { Failable } from '../util/error/failable';
+import { UUID } from '../../schema/brands';
+import { errorMessage } from '../error/construct';
+import { Failable } from '../error/failable';
 
 const crypto = require('crypto');
 //export const uuid:string = crypto.randomUUID()
@@ -20,7 +20,7 @@ export const genUUID = () => UUID.parse(crypto.randomUUID());
  *
  * -> 00000000-0000-0000-0000-000000000000
  */
-export function formatUUID<U extends UUID>(uuid: string): Failable<U> {
+export function formatUUID(uuid: string): Failable<string> {
   const hyphen_match = uuid.match(
     /([0-9a-f-]{1,8})-([0-9a-f-]{1,4})-([0-9a-f-]{1,4})-([0-9a-f-]{1,4})-([0-9a-f-]{1,12})/
   );
@@ -32,7 +32,7 @@ export function formatUUID<U extends UUID>(uuid: string): Failable<U> {
       hyphen_match[3].padEnd(4, '0'),
       hyphen_match[4].padEnd(4, '0'),
       hyphen_match[5].padEnd(12, '0'),
-    ].join('-') as U;
+    ].join('-');
     return result;
   }
 
@@ -44,7 +44,7 @@ export function formatUUID<U extends UUID>(uuid: string): Failable<U> {
       uuid.slice(12, 16),
       uuid.slice(16, 20),
       uuid.slice(20, 32),
-    ].join('-') as U;
+    ].join('-');
     return result;
   }
 

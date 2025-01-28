@@ -20,7 +20,7 @@ import {
 } from '../dummy/handle';
 import { openBrowser, openFolder } from '../dummy/on';
 import { runCommand, runServer } from '../dummy/server';
-import { genUUID } from '../tools/uuid';
+import { genUUID } from '../util/random/uuid';
 import { testHandle, testOn } from './test';
 
 export const getBackListener = (

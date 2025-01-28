@@ -1,4 +1,4 @@
-import { ImageURI, UUID } from 'src-electron/schema/brands';
+import { ImageURI, PlayerUUID } from 'src-electron/schema/brands';
 import { Player } from 'src-electron/schema/player';
 import { GetProfile, UsernameToUUID } from 'src-electron/tools/minecraftApi';
 import { isError } from 'app/src-electron/util/error/error';
@@ -22,7 +22,7 @@ const clearB64 =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAOSURBVChTYxgFQMDAAAABCAABwQSzUgAAAABJRU5ErkJggg==' as ImageURI;
 
 export async function searchPlayerFromUUID(
-  uuid: UUID
+  uuid: PlayerUUID
 ): Promise<Failable<Player>> {
   let avatar: ImageURI;
   let avatar_overlay: ImageURI;

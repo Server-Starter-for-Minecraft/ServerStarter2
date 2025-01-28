@@ -1,6 +1,5 @@
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { formatUUID } from 'app/src-electron/tools/uuid';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
@@ -32,14 +31,14 @@ export async function getPlayer(
       if (isName(nameOrUuid)) return await getPlayerFromName(nameOrUuid);
 
       // autoの場合のみ 0-0-0-0-0 のような短縮UUIDやハイフンのないUUIDを許可する
-      const uuid = formatUUID<PlayerUUID>(nameOrUuid);
-      if (isError(uuid)) {
+      const uuid = PlayerUUID.safeParse(nameOrUuid);
+      if (!uuid.success) {
         return errorMessage.value.playerNameOrUUID({
           value: nameOrUuid,
         });
       }
 
-      return await getPlayerFromUUID(uuid);
+      return await getPlayerFromUUID(uuid.data);
   }
 }
 
