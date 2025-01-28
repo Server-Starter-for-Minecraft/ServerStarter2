@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { objValueMap } from 'app/src-public/scripts/obj/objmap';
+import * as server_properties from '../core/world/files/properties';
 
 export const StringServerPropertyAnnotation = z.object({
   type: z.literal('string'),
@@ -44,7 +46,7 @@ export type ServerPropertiesAnnotation = z.infer<
 >;
 
 /** サーバープロパティのデータ */
-export const ServerProperties = z.record(
-  z.string().or(z.number().or(z.boolean()))
-);
+export const ServerProperties = z
+  .record(z.string().or(z.number().or(z.boolean())))
+  .default(objValueMap(server_properties.annotations, (x) => x.default));
 export type ServerProperties = z.infer<typeof ServerProperties>;

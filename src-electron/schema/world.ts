@@ -23,7 +23,7 @@ import { Remote } from './remote';
 import { ServerProperties } from './serverproperty';
 import { Version } from './version';
 
-export const WorldID = z.string().brand('WorldID');
+export const WorldID = z.string().uuid().brand('WorldID');
 export type WorldID = z.infer<typeof WorldID>;
 
 /** 取得が速い代わりに情報が少ないワールド */
@@ -132,14 +132,13 @@ export interface WorldEdited extends WorldBase {
 }
 
 /** serverstarterのシステム設定内のワールド設定 */
-export type SystemWorldSettings = {
+export const SystemWorldSettings = z.object({
   /** Javaの実行時引数 */
-  javaArguments?: string;
-
-  memory: MemorySettings;
-
-  properties: ServerProperties;
-};
+  javaArguments: z.string().optional(),
+  memory: MemorySettings,
+  properties: ServerProperties,
+}).default({});
+export type SystemWorldSettings = z.infer<typeof SystemWorldSettings>;
 
 /** サーバーCWD直下の設定系ファイルの情報 */
 export type FoldSettings = {

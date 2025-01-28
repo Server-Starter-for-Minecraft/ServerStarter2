@@ -2,7 +2,6 @@ import { safeStorage } from 'electron';
 import { readFileSync, writeFileSync } from 'fs-extra';
 import { SystemSettings } from 'src-electron/schema/system';
 import { settingPath } from '../const';
-import { fixSystemSettings } from '../fixers/system';
 
 // 設定ファイルの書き込み
 function write(settings: SystemSettings) {
@@ -29,9 +28,9 @@ function read() {
     // パース
     parsed = JSON.parse(value) as SystemSettings;
   } catch {
-    parsed = undefined;
+    parsed = {};
   }
-  const fixed = fixSystemSettings(parsed);
+  const fixed = SystemSettings.parse(parsed);
   return fixed;
 }
 
