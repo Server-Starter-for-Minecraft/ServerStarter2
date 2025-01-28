@@ -70,7 +70,9 @@ export type WorldContainerSetting = z.infer<typeof WorldContainerSetting>;
  * GetWorldContainersの戻り値
  * SetWorldContainersの引数
  */
-export const WorldContainers = WorldContainerSetting.array().default([]);
+export const WorldContainers = WorldContainerSetting.array().default([
+  WorldContainerSetting.parse({}),
+]);
 export type WorldContainers = z.infer<typeof WorldContainers>;
 
 export const SystemPlayerSetting = z
