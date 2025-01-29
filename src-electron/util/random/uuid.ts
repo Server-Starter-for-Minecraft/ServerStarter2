@@ -1,5 +1,3 @@
-import { errorMessage } from '../error/construct';
-import { Failable } from '../error/failable';
 
 const crypto = require('crypto');
 //export const uuid:string = crypto.randomUUID()
@@ -19,7 +17,7 @@ export const genUUID = () => crypto.randomUUID();
  *
  * -> 00000000-0000-0000-0000-000000000000
  */
-export function formatUUID(uuid: string): Failable<string> {
+export function formatUUID(uuid: string): string {
   const hyphen_match = uuid.match(
     /([0-9a-f-]{1,8})-([0-9a-f-]{1,4})-([0-9a-f-]{1,4})-([0-9a-f-]{1,4})-([0-9a-f-]{1,12})/
   );
@@ -47,8 +45,5 @@ export function formatUUID(uuid: string): Failable<string> {
     return result;
   }
 
-  return errorMessage.system.runtime({
-    type: 'UUIDFormat',
-    message: uuid,
-  });
+  return uuid;
 }

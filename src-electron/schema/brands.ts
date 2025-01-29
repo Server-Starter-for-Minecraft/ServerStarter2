@@ -2,15 +2,14 @@ import { z } from 'zod';
 import { formatUUID } from '../util/random/uuid';
 
 /** UUID文字列 ( 00000000-0000-0000-0000-000000000000 の形にフォーマットされた文字列) */
-export const UUID = z
-  .preprocess((val) => {
-    if (typeof val === 'string') {
-      return formatUUID(val);
-    } else {
-      return val;
-    }
-  }, z.string().uuid())
-  .brand('UUID');
+const UUID_BASE = z.preprocess((val) => {
+  if (typeof val === 'string') {
+    return formatUUID(val);
+  } else {
+    return val;
+  }
+}, z.string().uuid());
+export const UUID = UUID_BASE.brand('UUID');
 export type UUID = z.infer<typeof UUID>;
 
 /** ワールドコンテナの名前文字列 */
@@ -24,16 +23,12 @@ export const WorldName = z
   .brand('WorldName');
 export type WorldName = z.infer<typeof WorldName>;
 
+/** ワールドの識別子 */
+export const WorldID = UUID_BASE.brand('WorldID');
+export type WorldID = z.infer<typeof WorldID>;
+
 /** プレイヤーのUUID文字列 */
-export const PlayerUUID = z
-  .preprocess((val) => {
-    if (typeof val === 'string') {
-      return formatUUID(val);
-    } else {
-      return val;
-    }
-  }, z.string().uuid())
-  .brand('PlayerUUID');
+export const PlayerUUID = UUID_BASE.brand('PlayerUUID');
 export type PlayerUUID = z.infer<typeof PlayerUUID>;
 
 /** 画像のuri文字列 <img src={ここに挿入可能}> */
