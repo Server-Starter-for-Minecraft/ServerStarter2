@@ -65,3 +65,22 @@ export async function searchPlayerFromUUID(
     avatar_overlay,
   };
 }
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('searchPlayerFromName', async () => {
+    const { isValid } = await import('app/src-electron/util/error/error');
+
+    const res = await searchPlayerFromName('Notch');
+
+    expect(isValid(res)).toBe(true);
+    if (isValid(res)) {
+      expect(res).not.toBeNull();
+      expect(res.name).toBe('Notch');
+      expect(res.uuid).toBe('069a79f4-44e9-4726-a5be-fca90e38aaf5');
+      expect(res.avatar).not.toBeNull();
+      expect(res.avatar_overlay).not.toBeNull();
+    }
+  });
+}
