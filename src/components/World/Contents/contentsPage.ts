@@ -8,7 +8,7 @@ type contentExists = {
   };
 };
 export const isContentsExists: contentExists = {
-  unknown: { datapack: false, plugin: false, mod: false },
+  unknown: { datapack: true, plugin: false, mod: false },
   vanilla: { datapack: true, plugin: false, mod: false },
   spigot: { datapack: true, plugin: true, mod: false },
   papermc: { datapack: true, plugin: true, mod: false },
