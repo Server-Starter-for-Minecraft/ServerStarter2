@@ -4,7 +4,6 @@ import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
 import { Failable } from '../util/error/failable';
 import { Png } from '../util/png';
-import { formatUUID } from './uuid';
 
 /** mojangのapiからプレイヤーの名前で検索(過去の名前も検索可能) 戻り値のnameは現在の名前 */
 export async function UsernameToUUID(
@@ -84,19 +83,25 @@ export async function GetProfile(id: string): Promise<Failable<PlayerProfile>> {
 
   const skin = textures.textures.SKIN;
 
-  const uuid = formatUUID(textures.profileId) as PlayerUUID;
+  const uuid = PlayerUUID.safeParse(textures.profileId);
   const name = textures.profileName;
+
+  if (!uuid.success) {
+    return errorMessage.value.playerUUID({
+      value: textures.profileId,
+    });
+  }
 
   if (skin === undefined) {
     const slim = getDefaultIsSlim(id);
-    return { uuid, name, slim };
+    return { uuid: uuid.data, name, slim };
   } else {
     const slim = skin.metadata?.model === 'slim';
     const skin_image = await BytesData.fromURL(skin.url);
     if (isError(skin_image)) return skin_image;
     const skin_png = await skin_image.png();
     if (isError(skin_png)) return skin_png;
-    return { uuid, name, slim, skin: skin_png };
+    return { uuid: uuid.data, name, slim, skin: skin_png };
   }
 }
 

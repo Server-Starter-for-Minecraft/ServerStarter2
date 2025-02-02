@@ -13,11 +13,7 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncMap } from 'app/src-electron/util/objmap';
 import { LEVEL_NAME } from '../../const';
-import {
-  WORLD_SETTINGS_PATH,
-  WorldSettings,
-  worldSettingsFixer,
-} from '../../world/files/json';
+import { WORLD_SETTINGS_PATH, WorldSettings } from '../../world/files/json';
 import { getGithubBranches, GithubBlob, GithubTree } from './githubApi';
 import { getGitPat } from './pat';
 
@@ -97,8 +93,7 @@ async function getWorldJson(
 ): Promise<Failable<WorldSettings>> {
   if (!(maybeGithubBlob instanceof GithubBlob)) return error;
 
-  const fixer = await worldSettingsFixer();
-  const json = await maybeGithubBlob.loadJson(fixer);
+  const json = await maybeGithubBlob.loadJson();
   return json;
 }
 

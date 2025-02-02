@@ -40,7 +40,12 @@ yarn-error.log*
 !/src/assets/encodeAssets.py
 
 # Ignore files
+*.private.ts
 *.private.test.ts
 design/schedule.xlsx
 
 .temp/
+
+# テストの一時使用フォルダ
+work/
+/coverage

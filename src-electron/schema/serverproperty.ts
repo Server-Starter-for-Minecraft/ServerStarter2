@@ -1,37 +1,52 @@
-export type StringServerPropertyAnnotation = {
-  type: 'string';
-  default: string;
-  enum?: string[];
-};
+import { z } from 'zod';
+import { objValueMap } from 'app/src-public/scripts/obj/objmap';
+import * as server_properties from '../core/world/files/properties';
 
-export type BooleanServerPropertyAnnotation = {
-  type: 'boolean';
-  default: boolean;
-};
+export const StringServerPropertyAnnotation = z.object({
+  type: z.literal('string'),
+  default: z.string(),
+  enum: z.string().array().optional(),
+});
+export type StringServerPropertyAnnotation = z.infer<
+  typeof StringServerPropertyAnnotation
+>;
 
-export type NumberServerPropertyAnnotation = {
-  type: 'number';
-  default: number;
+export const BooleanServerPropertyAnnotation = z.object({
+  type: z.literal('boolean'),
+  default: z.boolean(),
+});
+export type BooleanServerPropertyAnnotation = z.infer<
+  typeof BooleanServerPropertyAnnotation
+>;
+
+export const NumberServerPropertyAnnotation = z.object({
+  type: z.literal('number'),
+  default: z.number(),
 
   /** value % step == 0 */
-  step?: number;
+  step: z.number().optional(),
 
   /** min <= value <= max */
-  min?: number;
-  max?: number;
-};
+  min: z.number().optional(),
+  max: z.number().optional(),
+});
+export type NumberServerPropertyAnnotation = z.infer<
+  typeof NumberServerPropertyAnnotation
+>;
 
-export type ServerPropertyAnnotation =
-  | StringServerPropertyAnnotation
-  | BooleanServerPropertyAnnotation
-  | NumberServerPropertyAnnotation;
+export const ServerPropertyAnnotation = StringServerPropertyAnnotation.or(
+  BooleanServerPropertyAnnotation.or(NumberServerPropertyAnnotation)
+);
+export type ServerPropertyAnnotation = z.infer<typeof ServerPropertyAnnotation>;
 
 /** サーバープロパティのアノテーション */
-export type ServerPropertiesAnnotation = {
-  [key in string]: ServerPropertyAnnotation;
-};
+export const ServerPropertiesAnnotation = z.record(ServerPropertyAnnotation);
+export type ServerPropertiesAnnotation = z.infer<
+  typeof ServerPropertiesAnnotation
+>;
 
 /** サーバープロパティのデータ */
-export type ServerProperties = {
-  [key in string]: string | number | boolean;
-};
+export const ServerProperties = z
+  .record(z.string().or(z.number().or(z.boolean())))
+  .default(objValueMap(server_properties.annotations, (x) => x.default));
+export type ServerProperties = z.infer<typeof ServerProperties>;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { OpLevel } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -17,7 +17,7 @@ const playerStore = usePlayerStore();
 const player = ref(playerStore.cachePlayers[prop.uuid]);
 
 // キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
-onMounted(async () => {
+onBeforeMount(async () => {
   if (player.value === void 0) {
     checkError(
       await window.API.invokeGetPlayer(prop.uuid, 'uuid'),

@@ -50,8 +50,10 @@ export const DEFAULT_MEMORY: MemorySettings = {
 } as const;
 
 // システムの言語設定がjaだった場合ja、それ以外の場合en-USに
-export const getDefaultLocale = (): Locale =>
-  app.getLocale() === 'ja' ? 'ja' : 'en-US';
+export const getDefaultLocale = (): Locale => {
+  if (import.meta.env?.DEV) return 'ja';
+  return app.getLocale() === 'ja' ? 'ja' : 'en-US';
+};
 
 export const NEW_WORLD_NAME = 'NewWorld';
 
@@ -59,8 +61,6 @@ export const DEFAULT_SERVER_PROPERTIES: ServerProperties = objValueMap(
   server_properties.annotations,
   (x) => x.default
 );
-
-export const DEFAULT_WORLD_CONTAINER = 'servers' as WorldContainer;
 
 export const WORLDNAME_REGEX_STR = '[a-zA-Z0-9_-]+';
 export const WORLDNAME_REGEX = new RegExp(`^${WORLDNAME_REGEX_STR}$`);

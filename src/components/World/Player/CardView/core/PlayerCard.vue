@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import { getCssVar } from 'quasar';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
@@ -28,7 +28,7 @@ const isBelongingGroups = computed(
 );
 
 // キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
-onMounted(async () => {
+onBeforeMount(async () => {
   if (player.value === void 0) {
     checkError(
       await window.API.invokeGetPlayer(prop.uuid, 'uuid'),

@@ -1,41 +1,25 @@
+import { z } from 'zod';
 import {
   ImageURI,
   PlayerUUID,
   Timestamp,
 } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import {
-  objectFixer,
-  recordFixer,
-  stringFixer,
-} from 'app/src-electron/util/detaFixer/fixer';
 import { isValid } from 'app/src-electron/util/error/error';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { cachePath } from '../const';
-import { fixImageURI, fixPlayerUUID, fixTimestamp } from '../fixers/brands';
 
-export type PlayerCacheRecord = {
-  uuid: PlayerUUID;
-  name: string;
-  avatar: ImageURI;
-  avatar_overlay: ImageURI;
-  expire: Timestamp;
-};
+export const PlayerCacheRecord = z.object({
+  uuid: PlayerUUID,
+  name: z.string(),
+  avatar: ImageURI,
+  avatar_overlay: ImageURI,
+  expire: Timestamp,
+});
+export type PlayerCacheRecord = z.infer<typeof PlayerCacheRecord>;
 
-export type PlayerCache = Record<PlayerUUID, PlayerCacheRecord>;
-
-const fixPlayerCacheRecord = objectFixer(
-  {
-    uuid: fixPlayerUUID,
-    name: stringFixer(),
-    avatar: fixImageURI,
-    avatar_overlay: fixImageURI,
-    expire: fixTimestamp,
-  },
-  false
-);
-
-const fixPlayerCache = recordFixer(fixPlayerCacheRecord, true);
+export const PlayerCache = z.record(PlayerCacheRecord);
+export type PlayerCache = z.infer<typeof PlayerCache>;
 
 const PLAYER_CACHE_PATH = cachePath.child('player.json');
 
@@ -55,7 +39,12 @@ export async function getPlayerCache() {
   const player_cache_value = await PLAYER_CACHE_PATH.readJson<PlayerCache>();
 
   let result: PlayerCache = {};
-  if (isValid(player_cache_value)) result = fixPlayerCache(player_cache_value);
+  if (isValid(player_cache_value)) {
+    const _result = PlayerCache.safeParse(player_cache_value);
+    if (_result.success) {
+      result = _result.data;
+    }
+  }
 
   result = expirePlayers(result);
 

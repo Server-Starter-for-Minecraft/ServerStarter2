@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { DATAPACK_CACHE_PATH, LEVEL_NAME } from 'app/src-electron/core/const';
 import { DatapackData } from 'app/src-electron/schema/filedata';
 import { BytesData } from 'app/src-electron/util/bytesData';
@@ -8,12 +9,13 @@ import { Path } from 'app/src-electron/util/path';
 import { ZipFile } from 'app/src-electron/util/zipFile';
 import { ServerAdditionalFiles } from './base';
 
-type Mcmeta = {
-  pack: {
-    pack_format: number;
-    description: string;
-  };
-};
+const Mcmeta = z.object({
+  pack: z.object({
+    pack_format: z.number(),
+    description: z.string(),
+  }),
+});
+type Mcmeta = z.infer<typeof Mcmeta>;
 
 const MCMETA_FILE = 'pack.mcmeta';
 
@@ -44,14 +46,20 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
   }
   if (isError(mcmetaData)) return mcmetaData;
 
-  // TODO: pack.mcmetaにdataFixerを付ける
-
   const mcmeta = await mcmetaData.json<Mcmeta>();
   if (isError(mcmeta)) return mcmeta;
 
+  const fixed = Mcmeta.safeParse(mcmeta);
+  if (!fixed.success) {
+    return errorMessage.data.path.invalidContent.invalidDatapack({
+      type: 'file',
+      path: path.path,
+    });
+  }
+
   return {
     kind: 'datapack',
-    description: mcmeta.pack.description,
+    description: fixed.data.pack.description,
   };
 }
 

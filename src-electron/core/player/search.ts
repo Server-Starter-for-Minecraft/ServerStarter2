@@ -1,4 +1,4 @@
-import { ImageURI, UUID } from 'src-electron/schema/brands';
+import { ImageURI, PlayerUUID } from 'src-electron/schema/brands';
 import { Player } from 'src-electron/schema/player';
 import { GetProfile, UsernameToUUID } from 'src-electron/tools/minecraftApi';
 import { isError } from 'app/src-electron/util/error/error';
@@ -22,7 +22,7 @@ const clearB64 =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAOSURBVChTYxgFQMDAAAABCAABwQSzUgAAAABJRU5ErkJggg==' as ImageURI;
 
 export async function searchPlayerFromUUID(
-  uuid: UUID
+  uuid: PlayerUUID
 ): Promise<Failable<Player>> {
   let avatar: ImageURI;
   let avatar_overlay: ImageURI;
@@ -64,4 +64,23 @@ export async function searchPlayerFromUUID(
     avatar,
     avatar_overlay,
   };
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('searchPlayerFromName', async () => {
+    const { isValid } = await import('app/src-electron/util/error/error');
+
+    const res = await searchPlayerFromName('Notch');
+
+    expect(isValid(res)).toBe(true);
+    if (isValid(res)) {
+      expect(res).not.toBeNull();
+      expect(res.name).toBe('Notch');
+      expect(res.uuid).toBe('069a79f4-44e9-4726-a5be-fca90e38aaf5');
+      expect(res.avatar).not.toBeNull();
+      expect(res.avatar_overlay).not.toBeNull();
+    }
+  });
 }

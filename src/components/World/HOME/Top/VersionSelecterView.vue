@@ -9,7 +9,6 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
-  Version,
   versionTypes,
 } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
@@ -56,7 +55,7 @@ const validVersionTypes = versionTypes.filter(
   (serverType) => sysStore.serverVersions.get(serverType) !== void 0
 );
 
-function createServerMap(serverType: Version['type']) {
+function createServerMap(serverType: (typeof versionTypes)[number]) {
   return {
     value: serverType,
     label: t(`home.serverType.${serverType}`),
