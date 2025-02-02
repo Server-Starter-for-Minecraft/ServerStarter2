@@ -185,7 +185,9 @@ function filterSearchingText(wList: WorldList, searchText: string) {
           : false;
       // バージョン名に一致
       const hitVer =
-        w.type === 'edited' ? w.world.version.id.match(t) !== null : false;
+        w.type === 'edited' && w.world.version.type !== 'unknown'
+          ? w.world.version.id.match(t) !== null
+          : false;
       return hitName || hitVerType || hitVer;
     });
   });

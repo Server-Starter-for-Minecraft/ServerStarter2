@@ -292,6 +292,7 @@ export async function formatWorldDirectory(
   progress?: GroupProgressor
 ): Promise<WithError<undefined>> {
   const directoryTypeMap: Record<Version['type'], WorldDirectoryTypes> = {
+    unknown: 'vanilla',
     vanilla: 'vanilla',
     spigot: 'plugin',
     papermc: 'plugin',
