@@ -26,10 +26,10 @@ import { sleep } from 'app/src-electron/util/sleep';
 import { createTar, decompressTar } from 'app/src-electron/util/tar';
 import { allocateTempDir } from 'app/src-electron/util/tempPath';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
-import { getSystemSettings } from '../../source/stores/system';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { RunRebootableServer, runRebootableServer } from '../server/server';
 import { closeNgrok, runNgrok } from '../server/setup/ngrok';
+import { getSystemSettings } from '../stores/system';
 import { getBackUpPath, parseBackUpPath } from './backup';
 import { serverJsonFile, WorldSettings } from './files/json';
 import { serverPropertiesFile } from './files/properties';
@@ -117,6 +117,57 @@ class PromiseSpooler {
     }
     this.running = false;
   }
+}
+
+/** 複製する際のワールド名を取得 */
+async function getDuplicateWorldName(
+  container: WorldContainer,
+  name: WorldName
+) {
+  let baseName: string = name;
+  const match = name.match(/^(.*)_\d+$/);
+  if (match !== null) {
+    baseName = match[1];
+  }
+
+  let worldName: string = baseName;
+  let result = await validateNewWorldName(container, worldName);
+  let i = 1;
+  while (isError(result)) {
+    worldName = `${baseName}_${i}`;
+    i += 1;
+    result = await validateNewWorldName(container, worldName);
+  }
+  return result;
+}
+
+/**
+ * Ngrokを利用する場合の処理
+ *
+ * Ngrokを利用する場合はlistenerを返す
+ * Ngrokを利用しない場合はundefinedを返す
+ */
+async function readyNgrok(
+  worldID: WorldID,
+  port: number
+): Promise<Failable<Listener | undefined>> {
+  const systemSettings = await getSystemSettings();
+  const token = systemSettings.user.ngrokToken ?? '';
+
+  // 各ワールドに設定されたUseNgrokの値に応じてNgrokの実行有無を制御
+  const world = await getWorld(worldID);
+  if (isError(world.value)) return world.value;
+
+  if (token !== '' && world.value.ngrok_setting.use_ngrok) {
+    const listener = runNgrok(
+      token,
+      port,
+      world.value.ngrok_setting.remote_addr
+    );
+    return listener;
+  }
+
+  return undefined;
 }
 
 /** ワールドの(取得/保存)/サーバーの実行を担うクラス */
@@ -937,55 +988,4 @@ export class WorldHandler {
   async reboot() {
     await this.runner?.reboot();
   }
-}
-
-/** 複製する際のワールド名を取得 */
-async function getDuplicateWorldName(
-  container: WorldContainer,
-  name: WorldName
-) {
-  let baseName: string = name;
-  const match = name.match(/^(.*)_\d+$/);
-  if (match !== null) {
-    baseName = match[1];
-  }
-
-  let worldName: string = baseName;
-  let result = await validateNewWorldName(container, worldName);
-  let i = 1;
-  while (isError(result)) {
-    worldName = `${baseName}_${i}`;
-    i += 1;
-    result = await validateNewWorldName(container, worldName);
-  }
-  return result;
-}
-
-/**
- * Ngrokを利用する場合の処理
- *
- * Ngrokを利用する場合はlistenerを返す
- * Ngrokを利用しない場合はundefinedを返す
- */
-async function readyNgrok(
-  worldID: WorldID,
-  port: number
-): Promise<Failable<Listener | undefined>> {
-  const systemSettings = await getSystemSettings();
-  const token = systemSettings.user.ngrokToken ?? '';
-
-  // 各ワールドに設定されたUseNgrokの値に応じてNgrokの実行有無を制御
-  const world = await getWorld(worldID);
-  if (isError(world.value)) return world.value;
-
-  if (token !== '' && world.value.ngrok_setting.use_ngrok) {
-    const listener = runNgrok(
-      token,
-      port,
-      world.value.ngrok_setting.remote_addr
-    );
-    return listener;
-  }
-
-  return undefined;
 }
