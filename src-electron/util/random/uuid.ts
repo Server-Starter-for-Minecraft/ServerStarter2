@@ -1,5 +1,9 @@
-
-const crypto = require('crypto');
+let requiredCrypto;
+try {
+  requiredCrypto = require('crypto');
+} catch {
+  requiredCrypto = self.crypto;
+}
 //export const uuid:string = crypto.randomUUID()
 
 // export function genUUID():string{
@@ -7,7 +11,7 @@ const crypto = require('crypto');
 //   return uuid
 // }
 /**UUIDの生成関数(フォーマット済み) */
-export const genUUID = () => crypto.randomUUID();
+export const genUUID = () => requiredCrypto.randomUUID();
 
 /**
  * uuidの文字列を正規化する
