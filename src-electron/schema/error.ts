@@ -14,7 +14,15 @@ export type ErrorLevel = z.infer<typeof ErrorLevel>;
 /**
  * エラーをオブジェクトとして渡す際の型
  * keyはi18nのキーが入るかな？
+ *
+ * TODO: Zod実装は暫定的（最終的にはResultによるエラー管理に移行するため，その際に実装する）
  */
+export const ErrorMessage = z.object({
+  type: z.literal('error'),
+  level: ErrorLevel,
+  key: z.string(),
+  arg: z.any(),
+});
 export type ErrorMessage = {
   [K in keyof FlattenErrorMessageTypes]: {
     type: 'error';

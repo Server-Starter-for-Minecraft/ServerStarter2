@@ -1,8 +1,8 @@
 import { BytesData } from 'src-electron/util/bytesData';
 import { Failable } from 'app/src-electron/schema/error';
-import { FAIL, Fixer } from 'app/src-electron/util/detaFixer/fixer';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { WorldSettings } from '../../world/files/json';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 
 /** リポジトリのブランチ一覧を取得 */
@@ -102,11 +102,11 @@ export class GithubBlob {
     }
   }
 
-  async loadJson<T>(fixer?: Fixer<T | FAIL>): Promise<Failable<T>> {
+  async loadJson(): Promise<Failable<WorldSettings>> {
     const blobRes = await get<BlobRes>(this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
-    let data: Failable<T>;
+    let data: Failable<WorldSettings>;
     switch (blobRes.encoding) {
       case 'utf-8':
         data = JSON.parse(blobRes.content);
@@ -114,7 +114,7 @@ export class GithubBlob {
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
         if (isError(b64data)) return b64data;
-        data = await b64data.json<T>();
+        data = await b64data.json<WorldSettings>();
         break;
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
@@ -123,13 +123,12 @@ export class GithubBlob {
         });
     }
     if (isError(data)) return data;
-    if (fixer === undefined) return data;
 
-    const fixed = fixer(data);
-
-    if (fixed === FAIL) return errorMessage.data.failJsonFix();
-
-    return fixed;
+    const fixed = WorldSettings.safeParse(data);
+    if (!fixed.success) {
+      return errorMessage.data.failJsonFix();
+    }
+    return fixed.data;
   }
 }
 

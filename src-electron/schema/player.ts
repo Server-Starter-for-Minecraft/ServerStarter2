@@ -19,9 +19,9 @@ export const PlayerGroup = z.object({
   /** グループ名 */
   name: z.string(),
   /** グループのカラー(#入りコード) */
-  color: z.string(),
+  color: z.string().default('#FFFFFF'),
   /** 所属するプレイヤーのUUIDのリスト */
-  players: z.array(PlayerUUID),
+  players: z.array(PlayerUUID).default([]),
 });
 export type PlayerGroup = z.infer<typeof PlayerGroup>;
 
@@ -36,7 +36,7 @@ export type OpLevel = z.infer<typeof OpLevel>;
 
 export const OpSetting = z.object({
   level: OpLevel,
-  bypassesPlayerLimit: z.boolean(),
+  bypassesPlayerLimit: z.boolean().default(false),
 });
 export type OpSetting = z.infer<typeof OpSetting>;
 

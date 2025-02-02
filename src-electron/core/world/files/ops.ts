@@ -1,38 +1,20 @@
 import { OpLevel } from 'src-electron/schema/player';
+import { z } from 'zod';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import {
-  arrayFixer,
-  booleanFixer,
-  FAIL,
-  objectFixer,
-  stringFixer,
-} from 'app/src-electron/util/detaFixer/fixer';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
-import { fixPlayerUUID } from '../../fixers/brands';
-import { fixOpLevel } from '../../fixers/player';
 import { ServerSettingFile } from './base';
 
-export type OpRecord = {
-  uuid: PlayerUUID;
-  name: string;
-  level: OpLevel;
-  bypassesPlayerLimit: boolean;
-};
+export const OpRecord = z.object({
+  uuid: PlayerUUID,
+  name: z.string(),
+  level: OpLevel,
+  bypassesPlayerLimit: z.boolean().default(false),
+});
+export type OpRecord = z.infer<typeof OpRecord>;
 
-export type Ops = OpRecord[];
-
-export const fixOpRecord = objectFixer<OpRecord>(
-  {
-    uuid: fixPlayerUUID,
-    name: stringFixer(),
-    level: fixOpLevel,
-    bypassesPlayerLimit: booleanFixer(false),
-  },
-  false
-);
-
-export const fixOps = arrayFixer(fixOpRecord, false);
+export const Ops = z.array(OpRecord);
+export type Ops = z.infer<typeof Ops>;
 
 const OPS_FILE = 'ops.json';
 
@@ -45,13 +27,15 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
 
     const value = await filePath.readJson<Ops>();
     if (isError(value)) return value;
-    const fixed = fixOps(value);
-    if (fixed === FAIL)
+
+    const fixed = Ops.safeParse(value);
+    if (!fixed.success)
       return errorMessage.data.path.invalidContent.invalidOpsJson({
         type: 'file',
         path: filePath.path,
       });
-    return fixed;
+
+    return fixed.data;
   },
   save(cwdPath, value) {
     return cwdPath.child(OPS_FILE).writeText(JSON.stringify(value));
