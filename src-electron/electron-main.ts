@@ -2,10 +2,10 @@
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import * as os from 'os';
 import * as path from 'path';
-import { getSystemSettings, setSystemSettings } from './core/stores/system';
 import { setupIPC } from './ipc/setup';
 import { setServerStarterApp } from './lifecycle/exit';
 import { onQuit } from './lifecycle/lifecycle';
+import { getSystemSettings, setSystemSettings } from './source/stores/system';
 import { update } from './updater/updater';
 import { getCurrentTimestamp } from './util/timestamp';
 

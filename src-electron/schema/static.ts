@@ -1,33 +1,44 @@
+import { z } from 'zod';
+import {
+  DATAPACK_CACHE_PATH,
+  logPath,
+  MOD_CACHE_PATH,
+  PLUGIN_CACHE_PATH,
+} from '../source/const';
 import { ServerPropertiesAnnotation } from './serverproperty';
 
-export type MinecraftColors = {
-  dark_red: string;
-  red: string;
-  gold: string;
-  yellow: string;
-  dark_green: string;
-  green: string;
-  aqua: string;
-  dark_aqua: string;
-  dark_blue: string;
-  blue: string;
-  light_purple: string;
-  dark_purple: string;
-  white: string;
-  gray: string;
-  dark_gray: string;
-  black: string;
-};
+export const MinecraftColors = z
+  .object({
+    dark_red: z.string().default('#AA0000'),
+    red: z.string().default('#FF5555'),
+    gold: z.string().default('#FFAA00'),
+    yellow: z.string().default('#FFFF55'),
+    dark_green: z.string().default('#00AA00'),
+    green: z.string().default('#55FF55'),
+    aqua: z.string().default('#55FFFF'),
+    dark_aqua: z.string().default('#00AAAA'),
+    dark_blue: z.string().default('#0000AA'),
+    blue: z.string().default('#5555FF'),
+    light_purple: z.string().default('#FF55FF'),
+    dark_purple: z.string().default('#AA00AA'),
+    white: z.string().default('#FFFFFF'),
+    gray: z.string().default('#AAAAAA'),
+    dark_gray: z.string().default('#555555'),
+    black: z.string().default('#000000'),
+  })
+  .default({});
+export type MinecraftColors = z.infer<typeof MinecraftColors>;
 
-export type StaticResouce = {
-  properties: ServerPropertiesAnnotation;
-  minecraftColors: MinecraftColors;
-  paths: {
-    log: string;
-    cache: {
-      datapack: string;
-      plugin: string;
-      mod: string;
-    };
-  };
-};
+export const StaticResouce = z.object({
+  properties: ServerPropertiesAnnotation,
+  minecraftColors: MinecraftColors,
+  paths: z.object({
+    log: z.string().default(logPath.str()),
+    cache: z.object({
+      datapack: z.string().default(DATAPACK_CACHE_PATH.str()),
+      plugin: z.string().default(PLUGIN_CACHE_PATH.str()),
+      mod: z.string().default(MOD_CACHE_PATH.str()),
+    }),
+  }),
+});
+export type StaticResouce = z.infer<typeof StaticResouce>;

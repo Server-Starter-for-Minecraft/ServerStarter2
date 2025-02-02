@@ -1,6 +1,6 @@
-import { GroupProgressor } from 'app/src-electron/core/progress/progress';
-import { runtimePath } from '../../core/const';
-import { versionConfig } from '../../core/stores/config';
+import { GroupProgressor } from 'app/src-electron/common/progress';
+import { runtimePath } from '../../source/const';
+import { versionConfig } from '../../source/stores/config';
 import { BytesData } from '../bytesData';
 import { fromRuntimeError, isError } from '../error/error';
 import { Failable } from '../error/failable';

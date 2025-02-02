@@ -1,21 +1,22 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
-import { getWorldPaths } from '../core/world/paths';
-import { getPlayer } from '../core/player/main';
+import { getAllLocalSaveData } from '../source/launcher/localSave';
+import { readyWindow } from '../lifecycle/lifecycle';
+import { getPlayer } from '../source/player/main';
 import {
   deleteRemoteWorld,
   getRemoteWorlds,
   validateNewRemoteWorldName,
   validateRemoteSetting,
-} from '../core/remote/remote';
-import { getStaticResoure } from '../core/resource';
-import { getCacheContents } from '../core/stores/cache';
-import { getSystemSettings, setSystemSettings } from '../core/stores/system';
-import { getAllLocalSaveData } from '../core/user/launcher/localSave';
-import { getVersions } from '../core/version/version';
-import { pickDialog } from '../core/world/dialog';
-import { validateNewWorldName } from '../core/world/name';
+} from '../source/remote/remote';
+import { getCacheContents } from '../source/stores/cache';
+import { getSystemSettings, setSystemSettings } from '../source/stores/system';
+import { getStaticResoure } from '../source/system/resource';
+import { getVersions } from '../source/version/version';
+import { pickDialog } from '../source/world/dialog';
+import { validateNewWorldName } from '../source/world/name';
+import { getWorldPaths } from '../source/world/paths';
 import {
   backupWorld,
   createWorld,
@@ -30,8 +31,7 @@ import {
   runCommand,
   runWorld,
   setWorld,
-} from '../core/world/world';
-import { readyWindow } from '../lifecycle/lifecycle';
+} from '../source/world/world';
 import { openBrowser, openFolder } from '../tools/shell';
 import { getGlobalIP } from '../util/ip';
 

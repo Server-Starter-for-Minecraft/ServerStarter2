@@ -1,6 +1,6 @@
+import { getRootLogger } from '../common/logger';
 import { onQuit } from '../lifecycle/lifecycle';
-import { getRootLogger } from '../util/logger';
-import { logPath } from './const';
+import { logPath } from '../source/const';
 
 const { logger, archive } = getRootLogger(logPath);
 

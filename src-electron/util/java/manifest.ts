@@ -1,4 +1,4 @@
-import { GroupProgressor } from 'app/src-electron/core/progress/progress';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { BytesData } from '../bytesData';
 import { isError } from '../error/error';

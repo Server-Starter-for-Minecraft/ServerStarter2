@@ -1,5 +1,5 @@
 import { rootLoggerHierarchy } from '../core/logger';
-import { getSystemSettings, setSystemSettings } from '../core/stores/system';
+import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os';
 import { getLatestRelease } from './fetch';
