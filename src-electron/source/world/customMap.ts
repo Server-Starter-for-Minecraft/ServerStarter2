@@ -1,12 +1,12 @@
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { BytesData } from 'app/src-electron/util/bytesData';
+import { ZipFile } from 'app/src-electron/util/binary/archive/zipFile';
+import { Path } from 'app/src-electron/util/binary/path';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
-import { asyncMap } from 'app/src-electron/util/objmap';
-import { Path } from 'app/src-electron/util/path';
-import { ZipFile } from 'app/src-electron/util/zipFile';
+import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import { datapackFiles } from '../additionalContents/datapack/datapack';
 import { modFiles } from '../additionalContents/mod/mod';
 import { pluginFiles } from '../additionalContents/plugin/plugin';

@@ -1,7 +1,7 @@
 import { rootLoggerHierarchy } from '../core/logger';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { isError } from '../util/error/error';
-import { osPlatform } from '../util/os';
+import { osPlatform } from '../util/os/os';
 import { getLatestRelease } from './fetch';
 import { installMac } from './installer/mac';
 import { installWindows } from './installer/windows';

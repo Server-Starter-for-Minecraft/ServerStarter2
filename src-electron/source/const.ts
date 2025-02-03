@@ -4,7 +4,7 @@
 import { app } from 'electron';
 import { MemorySettings } from '../schema/memory';
 import { Locale } from '../schema/system';
-import { Path } from '../util/path';
+import { Path } from '../util/binary/path';
 
 const userDataPath = (
   process.env.DEBUGGING || !app

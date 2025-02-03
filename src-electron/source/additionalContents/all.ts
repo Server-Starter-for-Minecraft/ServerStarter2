@@ -5,9 +5,9 @@ import {
   WorldAdditionalEdited,
   WorldID,
 } from 'app/src-electron/schema/world';
+import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { Path } from 'app/src-electron/util/path';
 import { ServerAdditionalFiles } from './base';
 import { datapackFiles } from './datapack/datapack';
 import { modFiles } from './mod/mod';

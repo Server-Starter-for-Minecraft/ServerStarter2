@@ -11,7 +11,7 @@ import { Version, VersionType } from '../schema/version';
 import { SystemWorldSettings, World, WorldID } from '../schema/world';
 import { errorMessage } from '../util/error/construct';
 import { Failable } from '../util/error/failable';
-import { sleep } from '../util/sleep';
+import { sleep } from '../util/promise/sleep';
 import {
   dummySystemSettings,
   dummySystemWorldSettings,

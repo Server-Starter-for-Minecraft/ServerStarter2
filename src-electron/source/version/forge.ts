@@ -1,15 +1,15 @@
 import * as cheerio from 'cheerio';
 import { AllForgeVersion, ForgeVersion } from 'src-electron/schema/version';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
-import { BytesData } from '../../util/bytesData';
+import { BytesData } from '../../util/binary/bytesData';
+import { Path } from '../../util/binary/path';
+import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
-import { readyJava } from '../../util/java/java';
-import { osPlatform } from '../../util/os';
-import { Path } from '../../util/path';
-import { interactiveProcess } from '../../util/subprocess';
-import { GroupProgressor } from '../progress/progress';
+import { osPlatform } from '../../util/os/os';
+import { readyJava } from '../runtime/java';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,

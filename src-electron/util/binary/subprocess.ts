@@ -1,11 +1,11 @@
 import * as child_process from 'child_process';
 import { Failable } from 'app/src-electron/util/error/failable';
-import { onQuit } from '../lifecycle/lifecycle';
-import { errorMessage } from './error/construct';
-import { fromRuntimeError } from './error/error';
+import { onQuit } from '../../lifecycle/lifecycle';
+import { errorMessage } from '../error/construct';
+import { fromRuntimeError } from '../error/error';
+import { sleep } from '../promise/sleep';
+import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
-import { sleep } from './sleep';
-import { utilLoggers } from './utilLogger';
 
 const loggers = utilLoggers.subprocess;
 

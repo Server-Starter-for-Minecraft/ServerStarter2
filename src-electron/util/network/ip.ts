@@ -1,7 +1,7 @@
-import { Failable } from '../schema/error';
-import { BytesData } from './bytesData';
-import { errorMessage } from './error/construct';
-import { isValid } from './error/error';
+import { Failable } from '../../schema/error';
+import { BytesData } from '../binary/bytesData';
+import { errorMessage } from '../error/construct';
+import { isValid } from '../error/error';
 
 type IpinfoSchema = {
   ip: string;

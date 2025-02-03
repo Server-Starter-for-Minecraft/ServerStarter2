@@ -1,4 +1,4 @@
-import { BytesData } from '../bytesData';
+import { BytesData } from '../binary/bytesData';
 import { isError } from '../error/error';
 import { Failable } from '../error/failable';
 import { MemeType } from './memetype';

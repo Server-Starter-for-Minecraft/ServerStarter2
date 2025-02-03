@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { OsPlatform } from '../schema/os';
+import { OsPlatform } from '../../schema/os';
 
 function getOsPlatform(): OsPlatform {
   const platform = process.platform;

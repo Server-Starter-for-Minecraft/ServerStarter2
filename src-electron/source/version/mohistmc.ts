@@ -2,12 +2,12 @@ import {
   AllMohistmcVersion,
   MohistmcVersion,
 } from 'src-electron/schema/version';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
-import { BytesData } from '../../util/bytesData';
+import { BytesData } from '../../util/binary/bytesData';
+import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
-import { Path } from '../../util/path';
-import { GroupProgressor } from '../progress/progress';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,

@@ -11,7 +11,7 @@ import {
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { asyncMap } from 'app/src-electron/util/objmap';
+import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import { LEVEL_NAME } from '../../../source/const';
 import {
   WORLD_SETTINGS_PATH,

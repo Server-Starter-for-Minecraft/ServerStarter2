@@ -1,9 +1,9 @@
 import { Version } from 'src-electron/schema/version';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../../common/progress';
-import { BytesData } from '../../../util/bytesData';
+import { Path } from '../../../util/binary/path';
+import { BytesData } from '../../../util/binary/bytesData';
 import { Failable } from '../../../util/error/failable';
-import { Path } from '../../../util/path';
 
 const ver_17_18 = [
   '1.18.1-rc2',

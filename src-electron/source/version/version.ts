@@ -1,7 +1,7 @@
 import { AllVersion, Version, VersionType } from 'src-electron/schema/version';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
-import { Path } from '../../util/path';
-import { GroupProgressor } from '../progress/progress';
+import { Path } from '../../util/binary/path';
 import { VersionLoader } from './base';
 import { fabricVersionLoader } from './fabric';
 import { forgeVersionLoader } from './forge';

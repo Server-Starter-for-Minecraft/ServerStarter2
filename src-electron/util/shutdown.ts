@@ -1,5 +1,5 @@
 import { exec, ExecException } from 'child_process';
-import { osPlatform } from './os';
+import { osPlatform } from './os/os';
 
 // PCをシャットダウン
 export function shutdown() {

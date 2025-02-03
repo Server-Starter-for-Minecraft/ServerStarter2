@@ -12,10 +12,10 @@ import {
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
+import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
-import { Path } from 'app/src-electron/util/path';
+import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
 import {
   LEVEL_NAME,
   PLUGIN_NETHER_LEVEL_NAME,

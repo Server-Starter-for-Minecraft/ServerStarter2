@@ -4,10 +4,10 @@ import {
   RemoteSetting,
   RemoteWorld,
 } from 'src-electron/schema/remote';
-import { Path } from 'src-electron/util/path';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import { Failable, WithError } from 'app/src-electron/schema/error';
-import { GroupProgressor } from '../progress/progress';
+import { Path } from 'app/src-electron/util/binary/path';
 import { RemoteOperator } from './base';
 import { githubRemoteOperator } from './github/git';
 

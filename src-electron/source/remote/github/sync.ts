@@ -1,15 +1,15 @@
 import { simpleGit, SimpleGitProgressEvent } from 'simple-git';
 import { GithubRemoteFolder, Remote } from 'src-electron/schema/remote';
-import { Path } from 'src-electron/util/path';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
+import { Path } from 'app/src-electron/util/binary/path';
 import {
   fromRuntimeError,
   isError,
   isValid,
 } from 'app/src-electron/util/error/error';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
-import { sleep } from 'app/src-electron/util/sleep';
+import { sleep } from 'app/src-electron/util/promise/sleep';
 import { gitTempPath } from '../../../source/const';
 import { getSystemSettings } from '../../../source/stores/system';
 import { getPlayerFromUUID } from '../../player/main';

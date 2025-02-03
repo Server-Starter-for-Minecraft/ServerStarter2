@@ -1,8 +1,8 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
-import { getAllLocalSaveData } from '../source/launcher/localSave';
 import { readyWindow } from '../lifecycle/lifecycle';
+import { getAllLocalSaveData } from '../source/launcher/localSave';
 import { getPlayer } from '../source/player/main';
 import {
   deleteRemoteWorld,
@@ -32,8 +32,8 @@ import {
   runWorld,
   setWorld,
 } from '../source/world/world';
-import { openBrowser, openFolder } from '../tools/shell';
-import { getGlobalIP } from '../util/ip';
+import { getGlobalIP } from '../util/network/ip';
+import { openBrowser, openFolder } from '../util/os/shell';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined

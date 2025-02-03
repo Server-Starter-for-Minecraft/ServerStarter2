@@ -1,10 +1,10 @@
 import { Version } from 'app/src-electron/schema/version';
 import { WorldID } from 'app/src-electron/schema/world';
+import { readyJava } from 'app/src-electron/source/runtime/java';
+import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
-import { readyJava } from 'app/src-electron/util/java/java';
-import { Path } from 'app/src-electron/util/path';
 import { GroupProgressor } from '../../common/progress';
 import { VersionComponent } from '../version/base';
 import { needEulaAgreement, readyVersion } from '../version/version';

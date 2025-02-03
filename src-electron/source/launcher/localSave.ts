@@ -4,10 +4,10 @@ import {
   WithError,
 } from 'app/src-electron/schema/error';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
+import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { asyncMap } from 'app/src-electron/util/objmap';
-import { Path } from 'app/src-electron/util/path';
+import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import { loadCustomMap } from '../world/customMap';
 import { getLocalSaveContainers } from './launcherProfile';
 

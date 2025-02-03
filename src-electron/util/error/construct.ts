@@ -7,7 +7,7 @@ type ErrorMessageConstructor<T extends object> = {
     ? A extends undefined
       ? (level?: ErrorLevel) => ErrorMessage
       : (arg: A, level?: ErrorLevel) => ErrorMessage
-    : ErrorMessageConstructor<T[K]>;
+    : ErrorMessageConstructor<T[K] & object>;
 };
 
 function getErrorMessageConstructor<T extends object>(

@@ -3,8 +3,8 @@ import {
   ServerPropertiesAnnotation,
 } from 'app/src-electron/schema/serverproperty';
 import { isError } from 'app/src-electron/util/error/error';
-import { objValueMap } from 'app/src-electron/util/objmap';
-import * as properties from 'app/src-electron/util/properties';
+import * as properties from 'app/src-electron/util/format/properties';
+import { objValueMap } from 'app/src-electron/util/obj/objmap';
 import { ServerSettingFile } from './base';
 
 /** server.propertiesの中身(string)をパースする */

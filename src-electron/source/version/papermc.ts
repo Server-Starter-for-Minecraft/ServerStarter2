@@ -1,10 +1,14 @@
-import { AllPapermcVersion, PapermcVersion } from 'src-electron/schema/version';
+import {
+  AllPapermcVersion,
+  PapermcVersion,
+  VersionId,
+} from 'src-electron/schema/version';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
-import { BytesData } from '../../util/bytesData';
+import { BytesData } from '../../util/binary/bytesData';
+import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
-import { Path } from '../../util/path';
-import { GroupProgressor } from '../progress/progress';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
@@ -18,7 +22,7 @@ type PapermcVersions = {
   project_id: 'paper';
   project_name: 'Paper';
   version_groups: string[];
-  versions: string[];
+  versions: VersionId[];
 };
 
 export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
@@ -57,7 +61,7 @@ type ApiBuilds = {
 };
 
 async function getPapermcBuilds(
-  version: string
+  version: VersionId
 ): Promise<Failable<AllPapermcVersion[number]>> {
   const url = `https://api.papermc.io/v2/projects/paper/versions/${version}`;
   const data = await BytesData.fromURL(url);

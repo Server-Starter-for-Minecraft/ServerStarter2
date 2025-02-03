@@ -1,9 +1,9 @@
-import { PlayerUUID } from '../schema/brands';
-import { BytesData } from '../util/bytesData';
-import { errorMessage } from '../util/error/construct';
-import { isError } from '../util/error/error';
-import { Failable } from '../util/error/failable';
-import { Png } from '../util/png';
+import { PlayerUUID } from '../../schema/brands';
+import { BytesData } from '../../util/binary/bytesData';
+import { Png } from '../../util/binary/png';
+import { errorMessage } from '../../util/error/construct';
+import { isError } from '../../util/error/error';
+import { Failable } from '../../util/error/failable';
 
 /** mojangのapiからプレイヤーの名前で検索(過去の名前も検索可能) 戻り値のnameは現在の名前 */
 export async function UsernameToUUID(

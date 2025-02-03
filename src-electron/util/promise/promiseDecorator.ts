@@ -1,4 +1,4 @@
-import { objEach } from './objmap';
+import { objEach } from '../obj/objmap';
 
 export function decoratePromise<T, D extends object>(
   promise: Promise<T>,

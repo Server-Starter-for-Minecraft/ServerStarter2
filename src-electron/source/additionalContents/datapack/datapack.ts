@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { DatapackData } from 'app/src-electron/schema/filedata';
 import { DATAPACK_CACHE_PATH, LEVEL_NAME } from 'app/src-electron/source/const';
-import { BytesData } from 'app/src-electron/util/bytesData';
+import { ZipFile } from 'app/src-electron/util/binary/archive/zipFile';
+import { Path } from 'app/src-electron/util/binary/path';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
-import { Path } from 'app/src-electron/util/path';
-import { ZipFile } from 'app/src-electron/util/zipFile';
 import { ServerAdditionalFiles } from '../base';
 
 const Mcmeta = z.object({

@@ -5,8 +5,8 @@ import {
 } from 'app/src-electron/schema/brands';
 import { Failable } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
+import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { Path } from 'app/src-electron/util/path';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import {
   BACKUP_DIRECTORY_NAME,

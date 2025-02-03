@@ -1,10 +1,10 @@
 import { Writable } from 'stream';
 import { c, x } from 'tar';
-import { Failable } from '../schema/error';
-import { BytesData } from './bytesData';
-import { fromRuntimeError } from './error/error';
-import { safeExecAsync } from './error/failable';
-import { Path } from './path';
+import { Failable } from '../../../schema/error';
+import { fromRuntimeError } from '../../error/error';
+import { safeExecAsync } from '../../error/failable';
+import { BytesData } from '../bytesData';
+import { Path } from '../path';
 
 export async function createTar(
   directoryPath: Path,

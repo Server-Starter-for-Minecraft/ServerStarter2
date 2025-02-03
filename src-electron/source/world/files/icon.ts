@@ -1,5 +1,5 @@
 import { ImageURI } from 'app/src-electron/schema/brands';
-import { BytesData } from 'app/src-electron/util/bytesData';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { LEVEL_NAME } from '../../../source/const';

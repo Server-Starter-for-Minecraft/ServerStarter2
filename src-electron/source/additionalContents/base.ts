@@ -11,12 +11,12 @@ import {
   WorldFileData,
 } from 'app/src-electron/schema/filedata';
 import { WorldID } from 'app/src-electron/schema/world';
+import { zip } from 'app/src-electron/util/binary/archive/zip';
+import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
-import { Path } from 'app/src-electron/util/path';
-import { zip } from 'app/src-electron/util/zip';
+import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
 
 export class ServerAdditionalFiles<T extends Record<string, any>> {
   constructor(

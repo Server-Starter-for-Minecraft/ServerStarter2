@@ -1,7 +1,7 @@
 import { shell } from 'electron';
-import { Failable } from '../schema/error';
-import { errorMessage } from '../util/error/construct';
-import { Path } from '../util/path';
+import { Failable } from '../../schema/error';
+import { Path } from '../binary/path';
+import { errorMessage } from '../error/construct';
 
 export function openBrowser(url: string) {
   shell.openExternal(url);

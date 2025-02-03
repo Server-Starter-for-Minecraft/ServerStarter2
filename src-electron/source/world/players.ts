@@ -1,6 +1,6 @@
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { OpLevel, PlayerSetting } from 'app/src-electron/schema/player';
-import { fromEntries } from 'app/src-electron/util/obj';
+import { fromEntries } from 'app/src-electron/util/obj/obj';
 
 /** Opレベルに変更のあるプレイヤーだけを抜き出す */
 export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {

@@ -4,9 +4,9 @@ import { GroupProgressor } from '../../common/progress';
 import { rootLoggerHierarchy } from '../../core/logger';
 import { versionsCachePath } from '../../source/const';
 import { versionConfig } from '../../source/stores/config';
-import { BytesData } from '../../util/bytesData';
+import { Path } from '../../util/binary/path';
+import { BytesData } from '../../util/binary/bytesData';
 import { Failable } from '../../util/error/failable';
-import { Path } from '../../util/path';
 import { eulaUnnecessaryVersionIds } from './const';
 import { JavaComponent } from './vanilla';
 

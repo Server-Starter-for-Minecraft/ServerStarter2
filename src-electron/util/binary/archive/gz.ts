@@ -1,9 +1,9 @@
 // GZIP圧縮に関するutil
 import * as zlib from 'zlib';
-import { Failable } from '../schema/error';
-import { BytesData } from './bytesData';
-import { isError } from './error/error';
-import { Path } from './path';
+import { Failable } from '../../../schema/error';
+import { isError } from '../../error/error';
+import { BytesData } from '../bytesData';
+import { Path } from '../path';
 
 export class gzip {
   // ファイルからgzipを生成

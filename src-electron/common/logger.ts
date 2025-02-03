@@ -1,7 +1,7 @@
 import log4js from 'log4js';
 import { c } from 'tar';
-import { asyncForEach } from '../util/objmap';
-import { Path } from '../util/path';
+import { Path } from '../util/binary/path';
+import { asyncForEach } from '../util/obj/objmap';
 
 const LATEST = 'latest.log';
 

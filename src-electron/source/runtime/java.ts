@@ -1,12 +1,12 @@
 import { GroupProgressor } from 'app/src-electron/common/progress';
-import { runtimePath } from '../../source/const';
-import { versionConfig } from '../../source/stores/config';
-import { BytesData } from '../bytesData';
-import { fromRuntimeError, isError } from '../error/error';
-import { Failable } from '../error/failable';
-import { OsPlatform, osPlatform } from '../os';
-import { Path } from '../path';
-import { installManifest, Manifest } from './manifest';
+import { OsPlatform } from 'app/src-electron/schema/os';
+import { BytesData } from '../../util/binary/bytesData';
+import { Path } from '../../util/binary/path';
+import { fromRuntimeError, isError } from '../../util/error/error';
+import { Failable } from '../../util/error/failable';
+import { osPlatform } from '../../util/os/os';
+import { runtimePath } from '../const';
+import { versionConfig } from '../stores/config';
 
 export type component =
   | 'java-runtime-alpha'
@@ -133,4 +133,103 @@ async function getManifestJson(
   if (isError(json)) return json;
 
   return json;
+}
+
+//
+// # source util/java/manifest.ts
+//
+
+type Manifest = {
+  files: {
+    [key in string]: ManifestFile | ManifestDirectory | ManifestLink;
+  };
+};
+
+type ManifestDownload = {
+  sha1: string;
+  size: number;
+  url: string;
+};
+
+type ManifestFile = {
+  downloads: {
+    lzma?: ManifestDownload;
+    raw: ManifestDownload;
+  };
+  executable: boolean;
+  type: 'file';
+};
+type ManifestDirectory = { type: 'directory' };
+type ManifestLink = { target: string; type: 'link' };
+
+/** manifest.jsonに記載されているデータをローカルに展開する */
+async function installManifest(
+  manifest: Manifest,
+  path: Path,
+  progress?: GroupProgressor
+) {
+  // 展開先の親ディレクトリを生成
+  await path.mkdir(true);
+
+  // manifestの順番でファイル/ディレクトリ/リンクを作る
+  // ディレクトリは同期的に作成し、ファイル/リンクは非同期を並列して処理
+  const promises: Promise<Failable<undefined>>[] = [];
+  const entries = Object.entries(manifest.files);
+  let processed = 0;
+
+  const numeric = progress?.numeric('file', entries.length);
+  const file = progress?.subtitle({
+    key: 'server.readyJava.file',
+    args: {
+      path: '',
+    },
+  });
+
+  for await (const [k, v] of entries) {
+    const p = path.child(k);
+    switch (v.type) {
+      case 'file':
+        const filePromise = async () => {
+          file?.setSubtitle({
+            key: 'server.readyJava.file',
+            args: { path: k },
+          });
+          const result = await BytesData.fromPathOrUrl(
+            p,
+            v.downloads.raw.url,
+            { value: v.downloads.raw.sha1, type: 'sha1' },
+            false,
+            undefined,
+            v.executable
+          );
+          numeric?.setValue(processed++);
+          if (isError(result)) return result;
+        };
+        promises.push(filePromise());
+        break;
+      case 'directory':
+        file?.setSubtitle({
+          key: 'server.readyJava.file',
+          args: { path: k },
+        });
+        await p.mkdir();
+        numeric?.setValue(processed++);
+        break;
+      case 'link':
+        const linkPromise = async () => {
+          file?.setSubtitle({
+            key: 'server.readyJava.file',
+            args: { path: k },
+          });
+          await p.mklink(p.parent().child(v.target));
+          numeric?.setValue(processed++);
+          return undefined;
+        };
+        promises.push(linkPromise());
+        break;
+    }
+  }
+  // ファイル/リンクの並列処理を待機
+  await Promise.all(promises);
+  // TODO: Failureがあった場合の処理
 }

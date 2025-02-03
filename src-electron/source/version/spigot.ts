@@ -9,19 +9,19 @@ import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
 import { versionsCachePath } from '../../source/const';
 import { versionConfig } from '../../source/stores/config';
-import { BytesData } from '../../util/bytesData';
+import { BytesData } from '../../util/binary/bytesData';
+import { Path } from '../../util/binary/path';
+import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
-import { readyJava } from '../../util/java/java';
-import { Path } from '../../util/path';
-import { interactiveProcess } from '../../util/subprocess';
 import { allocateTempDir } from '../../util/tempPath';
+import { readyJava } from '../runtime/java';
+import { getVersionMainfest } from '../runtime/manifest';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
   VersionComponent,
   VersionLoader,
 } from './base';
-import { getVersionMainfest } from './mainfest';
 import { getJavaComponent, JavaComponent } from './vanilla';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');

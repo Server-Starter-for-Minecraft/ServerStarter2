@@ -1,12 +1,13 @@
+import { VersionId } from 'app/src-electron/schema/version';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { versionManifestPath } from '../../source/const';
-import { versionConfig } from '../../source/stores/config';
-import { BytesData } from '../../util/bytesData';
+import { BytesData } from '../../util/binary/bytesData';
 import { Failable } from '../../util/error/failable';
+import { versionManifestPath } from '../const';
+import { versionConfig } from '../stores/config';
 
 export type ManifestRecord = {
-  id: string;
+  id: VersionId;
   type: 'release' | 'snapshot' | 'old_beta' | 'old_alpha';
   url: string;
   time: string;

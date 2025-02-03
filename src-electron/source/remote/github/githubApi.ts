@@ -1,4 +1,4 @@
-import { BytesData } from 'src-electron/util/bytesData';
+import { BytesData } from 'src-electron/util/binary/bytesData';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';

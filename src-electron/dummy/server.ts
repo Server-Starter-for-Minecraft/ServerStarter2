@@ -1,5 +1,5 @@
 import { WorldEdited, WorldID } from '../schema/world';
-import { sleep } from '../util/sleep';
+import { sleep } from '../util/promise/sleep';
 import { api } from './api';
 import { startConsoles, stopConsoles } from './const/server_message';
 

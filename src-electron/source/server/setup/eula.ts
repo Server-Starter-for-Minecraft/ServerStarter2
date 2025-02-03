@@ -2,12 +2,15 @@ import { Version } from 'app/src-electron/schema/version';
 import { WorldID } from 'app/src-electron/schema/world';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
-import { sleep } from 'app/src-electron/util/sleep';
+import { sleep } from 'app/src-electron/util/promise/sleep';
 import { GroupProgressor } from '../../../common/progress';
 import { api } from '../../../core/api';
+import { Path } from '../../../util/binary/path';
+import {
+  execProcess,
+  interactiveProcess,
+} from '../../../util/binary/subprocess';
 import { Failable } from '../../../util/error/failable';
-import { Path } from '../../../util/path';
-import { execProcess, interactiveProcess } from '../../../util/subprocess';
 
 /**
  * Eulaに同意したかどうかを返す

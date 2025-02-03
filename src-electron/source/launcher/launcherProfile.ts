@@ -1,7 +1,7 @@
 import { app } from 'electron';
+import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
-import { osPlatform } from 'app/src-electron/util/os';
-import { Path } from 'app/src-electron/util/path';
+import { osPlatform } from 'app/src-electron/util/os/os';
 
 type LauncherProfile = {
   created: string;

@@ -1,8 +1,8 @@
 import { Failable } from 'app/src-electron/schema/error';
 import { WorldID } from 'app/src-electron/schema/world';
-import { Path } from 'app/src-electron/util/path';
-import { decoratePromise } from 'app/src-electron/util/promiseDecorator';
-import { interactiveProcess } from 'app/src-electron/util/subprocess';
+import { Path } from 'app/src-electron/util/binary/path';
+import { interactiveProcess } from 'app/src-electron/util/binary/subprocess';
+import { decoratePromise } from 'app/src-electron/util/promise/promiseDecorator';
 
 export type ServerProcess = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
