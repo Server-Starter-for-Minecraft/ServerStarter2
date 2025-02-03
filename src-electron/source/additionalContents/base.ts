@@ -17,7 +17,6 @@ import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/objmap';
 import { Path } from 'app/src-electron/util/path';
 import { zip } from 'app/src-electron/util/zip';
-import { WorldHandler } from '../world/handler';
 
 export class ServerAdditionalFiles<T extends Record<string, any>> {
   constructor(
@@ -48,13 +47,14 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   private childPath: string;
   cachePath: Path;
 
-  private getSourcePath(source: AllFileData<T>): Failable<Path> {
+  private async getSourcePath(source: AllFileData<T>): Promise<Failable<Path>> {
     let sourcePath: Path;
     switch (source.type) {
       case 'new':
         sourcePath = new Path(source.path);
         break;
       case 'world':
+        const { WorldHandler } = await import('../world/handler');
         const handler = WorldHandler.get(source.id);
         if (isError(handler)) return handler;
         sourcePath = handler
@@ -171,7 +171,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
 
     // 新しいファイルをコピー
     await asyncForEach(value, async (source) => {
-      const srcPath = this.getSourcePath(source);
+      const srcPath = await this.getSourcePath(source);
 
       if (isError(srcPath)) {
         errors.push(srcPath);

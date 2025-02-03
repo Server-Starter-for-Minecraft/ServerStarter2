@@ -1,3 +1,4 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import {
   PlayerUUID,
   WorldContainer,
@@ -22,7 +23,6 @@ import {
 } from '../../source/const';
 import { errorMessage } from '../../util/error/construct';
 import { serverAllAdditionalFiles } from '../additionalContents/all';
-import { GroupProgressor } from '../progress/progress';
 import { pullRemoteWorld } from '../remote/remote';
 import { importCustomMap } from './customMap';
 import { serverIconFile } from './files/icon';
