@@ -1,8 +1,8 @@
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { ZipFile } from 'app/src-electron/util/binary/archive/zipFile';
-import { Path } from 'app/src-electron/util/binary/path';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
+import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';

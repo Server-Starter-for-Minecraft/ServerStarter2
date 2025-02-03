@@ -1,7 +1,7 @@
 import { BrowserWindow, dialog } from 'electron';
 import { WorldContainer } from 'app/src-electron/schema/brands';
-import { Path } from 'app/src-electron/util/binary/path';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
+import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { DialogOptions } from '../../schema/dialog';
 import {
