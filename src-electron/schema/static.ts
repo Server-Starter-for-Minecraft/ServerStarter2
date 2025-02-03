@@ -32,13 +32,17 @@ export type MinecraftColors = z.infer<typeof MinecraftColors>;
 export const StaticResouce = z.object({
   properties: ServerPropertiesAnnotation,
   minecraftColors: MinecraftColors,
-  paths: z.object({
-    log: z.string().default(logPath.str()),
-    cache: z.object({
-      datapack: z.string().default(DATAPACK_CACHE_PATH.str()),
-      plugin: z.string().default(PLUGIN_CACHE_PATH.str()),
-      mod: z.string().default(MOD_CACHE_PATH.str()),
-    }),
-  }),
+  paths: z
+    .object({
+      log: z.string().default(logPath.str()),
+      cache: z
+        .object({
+          datapack: z.string().default(DATAPACK_CACHE_PATH.str()),
+          plugin: z.string().default(PLUGIN_CACHE_PATH.str()),
+          mod: z.string().default(MOD_CACHE_PATH.str()),
+        })
+        .default({}),
+    })
+    .default({}),
 });
 export type StaticResouce = z.infer<typeof StaticResouce>;
