@@ -1,9 +1,8 @@
+import dayjs from 'dayjs';
 import { Failable } from 'app/src-electron/schema/error';
 import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
 import { gzip } from 'app/src-electron/util/binary/archive/gz';
 import { Path } from 'app/src-electron/util/binary/path';
-// TODO: dayjsに置換
-import { DateFormatter } from 'app/src-electron/util/dateFormatter';
 import { isError } from 'app/src-electron/util/error/error';
 import { genUUID } from 'app/src-electron/util/random/uuid';
 import { allocateTempDir } from 'app/src-electron/util/tempPath';
@@ -42,9 +41,7 @@ export class WorldLogHandler {
   }
 
   private getArchivePath(date: Date) {
-    const base = new DateFormatter((d) => `${d.YYYY}-${d.MM}-${d.DD}`).format(
-      date
-    );
+    const base = dayjs(date).format('YYYY-MM-DD');
     let i = 1;
     let path = this.logsPath.child(`${base}-${i}.log.gz`);
     while (path.exists()) path = this.logsPath.child(`${base}-${++i}.log.gz`);
