@@ -1,3 +1,7 @@
+// 
+// TODO: ファイル削除や書き込み等で`Error: EBUSY: resource busy or locked`のようなファイル操作エラーが発生することがある（エラー発生時はフロントエンドが無限停止する）
+// エラーが起きたときにはFailableを返すようにtry-catchでラップする
+// 
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { isError } from '../error/error';
