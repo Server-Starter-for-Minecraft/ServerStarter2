@@ -12,7 +12,7 @@ const parse = (text: string) => {
   const propertiy: ServerProperties = {};
   const record = properties.parse(text);
   Object.entries(record).forEach(([key, value]) => {
-    const defult = ServerPropertiesAnnotation.parse({})[key];
+    const defult = ServerPropertiesAnnotation.parse(undefined)[key];
 
     let prop: string | number | boolean;
 
@@ -83,3 +83,42 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
     return cwdPath.child(SERVER_PROPERTIES_PATH);
   },
 };
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+
+  test('server_property_parse', () => {
+    // bool test
+    const boolTest = parse('allow-nether=false');
+    const boolKey = Object.keys(boolTest)[0];
+    const boolValue = Object.values(boolTest)[0];
+    expect(boolKey).toBe('allow-nether');
+    expect(boolValue).toBe(false);
+    expect(typeof boolValue).toBe('boolean');
+
+    // enum test
+    const enumTest = parse('gamemode=survival');
+    const enumKey = Object.keys(enumTest)[0];
+    const enumValue = Object.values(enumTest)[0];
+    expect(enumKey).toBe('gamemode');
+    expect(enumValue).toBe('survival');
+    expect(typeof enumValue).toBe('string');
+
+    // number test
+    const numberTest = parse('max-tick-time=60000');
+    const numberKey = Object.keys(numberTest)[0];
+    const numberValue = Object.values(numberTest)[0];
+    expect(numberKey).toBe('max-tick-time');
+    expect(numberValue).toBe(60000);
+    expect(typeof numberValue).toBe('number');
+
+    // number checks test (if it doesn't use Zod, this test is ineffective)
+    const numberCheckTest = parse('function-permission-level=5');  // invalid setting
+    const numberCheckKey = Object.keys(numberCheckTest)[0];
+    const numberCheckValue = Object.values(numberCheckTest)[0];
+    expect(numberCheckKey).toBe('function-permission-level');
+    expect(numberCheckValue).toBe(5);
+    expect(typeof numberCheckValue).toBe('number');
+  });
+}
