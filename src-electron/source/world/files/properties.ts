@@ -114,7 +114,7 @@ if (import.meta.vitest) {
     expect(typeof numberValue).toBe('number');
 
     // number checks test (if it doesn't use Zod, this test is ineffective)
-    const numberCheckTest = parse('function-permission-level=5');  // invalid setting
+    const numberCheckTest = parse('function-permission-level=5'); // invalid setting
     const numberCheckKey = Object.keys(numberCheckTest)[0];
     const numberCheckValue = Object.values(numberCheckTest)[0];
     expect(numberCheckKey).toBe('function-permission-level');
