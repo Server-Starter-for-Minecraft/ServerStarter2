@@ -1,8 +1,8 @@
 import { spawn } from 'child_process';
 import { app } from 'electron';
-import { mainPath } from 'app/src-electron/core/const';
-import { getSystemSettings } from 'app/src-electron/core/stores/system';
-import { BytesData } from 'app/src-electron/util/bytesData';
+import { mainPath } from 'app/src-electron/source/const';
+import { getSystemSettings } from 'app/src-electron/source/stores/system';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { isError } from 'app/src-electron/util/error/error';
 import { getBytesFile } from 'app/src-electron/util/github/rest';
 import { updateMessage } from './message';

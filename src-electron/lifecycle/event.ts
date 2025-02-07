@@ -1,5 +1,5 @@
 import { UUID } from '../schema/brands';
-import { toEntries } from '../util/obj';
+import { toEntries } from '../util/obj/obj';
 import { genUUID } from '../util/random/uuid';
 
 export type AppEventListener = (dispatch: () => void) => void | Promise<void>;
