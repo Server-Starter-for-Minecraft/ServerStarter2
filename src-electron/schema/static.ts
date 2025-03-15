@@ -5,7 +5,10 @@ import {
   MOD_CACHE_PATH,
   PLUGIN_CACHE_PATH,
 } from '../source/const';
-import { ServerPropertiesAnnotation } from './serverproperty';
+import {
+  DefaultServerPropertiesAnnotation,
+  ServerPropertiesAnnotation,
+} from './serverproperty';
 
 export const MinecraftColors = z
   .object({
@@ -30,7 +33,9 @@ export const MinecraftColors = z
 export type MinecraftColors = z.infer<typeof MinecraftColors>;
 
 export const StaticResouce = z.object({
-  properties: ServerPropertiesAnnotation,
+  properties: ServerPropertiesAnnotation.default(
+    DefaultServerPropertiesAnnotation
+  ),
   minecraftColors: MinecraftColors,
   paths: z
     .object({

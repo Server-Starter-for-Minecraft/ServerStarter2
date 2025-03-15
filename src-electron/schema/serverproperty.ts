@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { toEntries } from '../util/obj/obj';
 
 const PORT_MAX = 2 ** 16 - 2;
 
@@ -14,14 +15,43 @@ const numberSetter = (
   max?: number,
   step?: number
 ) => {
-  const numType = z.number();
-  if (min !== undefined) numType.min(min);
-  if (max !== undefined) numType.max(max);
-  if (step !== undefined) numType.step(step);
-  return numType.default(def).catch(def);
+  const checksPattern =
+    2 ** 0 * Number(min !== undefined) +
+    2 ** 1 * Number(max !== undefined) +
+    2 ** 2 * Number(step !== undefined);
+
+  switch (checksPattern) {
+    case 0:
+      return z.coerce.number().default(def).catch(def);
+    case 1:
+      return z.coerce.number().min(min!).default(def).catch(def);
+    case 2:
+      return z.coerce.number().max(max!).default(def).catch(def);
+    case 3:
+      return z.coerce.number().min(min!).max(max!).default(def).catch(def);
+    case 4:
+      return z.coerce.number().step(step!).default(def).catch(def);
+    case 5:
+      return z.coerce.number().min(min!).step(step!).default(def).catch(def);
+    case 6:
+      return z.coerce.number().max(max!).step(step!).default(def).catch(def);
+    case 7:
+      return z.coerce
+        .number()
+        .min(min!)
+        .max(max!)
+        .step(step!)
+        .default(def)
+        .catch(def);
+    default:
+      return z.coerce.number().default(def).catch(def);
+  }
 };
 
-/** 標準登録のサーバープロパティ */
+/**
+ * 標準登録のサーバープロパティ
+ * 登録時には各項目に対応する説明文の追加をi18nへ忘れずに実施する
+ */
 const DefaultServerProperties = z
   .object({
     'accepts-transfers': boolSetter(false),
@@ -97,6 +127,57 @@ const DefaultServerProperties = z
   })
   .catchall(z.string().or(z.number()).or(z.boolean()));
 
+/**
+ * DefaultServerPropertiesで設定した型情報をもとに，フロントエンドに渡すプロパティ情報を生成する
+ */
+function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
+  const anotations: Record<string, ServerPropertyAnnotation> = {};
+  const shape = prop._def.shape();
+
+  for (const [key, schema] of toEntries(shape)) {
+    // catch > default > String | Number | Boolean の順でネストされた型情報を取得する
+    const defaultDef = schema._def.innerType._def;
+
+    if (defaultDef.innerType instanceof z.ZodBoolean) {
+      anotations[key] = {
+        type: 'boolean',
+        default: defaultDef.defaultValue() as boolean,
+      };
+    } else if (defaultDef.innerType instanceof z.ZodString) {
+      anotations[key] = {
+        type: 'string',
+        default: defaultDef.defaultValue() as string,
+      };
+    } else if (defaultDef.innerType instanceof z.ZodNumber) {
+      const tmpObj: NumberServerPropertyAnnotation = {
+        type: 'number',
+        default: defaultDef.defaultValue() as number,
+      };
+      defaultDef.innerType._def.checks.forEach((check) => {
+        if (check.kind === 'min') {
+          tmpObj.min = check.value;
+        } else if (check.kind === 'max') {
+          tmpObj.max = check.value;
+        } else if (check.kind === 'multipleOf') {
+          tmpObj.step = check.value;
+        }
+      });
+      anotations[key] = tmpObj;
+    } else if (defaultDef.innerType instanceof z.ZodEnum) {
+      anotations[key] = {
+        type: 'string',
+        default: defaultDef.defaultValue() as string,
+        enum: defaultDef.innerType.options,
+      };
+    }
+  }
+
+  return anotations;
+}
+
+export const DefaultServerPropertiesAnnotation = extractPropertyAnnotation(
+  DefaultServerProperties
+);
 // export const ServerPropertiesAnnotation = z
 //   .record(ServerPropertyAnnotation)
 //   .default({
@@ -261,7 +342,6 @@ const DefaultServerProperties = z
 //   });
 
 /** サーバープロパティのデータ */
-// export const ServerProperties = DefaultServerProperties.default({});
 export const ServerProperties = DefaultServerProperties.default({});
 export type ServerProperties = z.infer<typeof ServerProperties>;
 
@@ -310,11 +390,3 @@ export const ServerPropertiesAnnotation = z.record(
 export type ServerPropertiesAnnotation = z.infer<
   typeof ServerPropertiesAnnotation
 >;
-
-/** In Source Testing */
-if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  test('serverProperty_anotations', () => {
-    // console.log(DefaultServerProperties);
-  });
-}
