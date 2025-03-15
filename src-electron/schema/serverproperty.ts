@@ -3,7 +3,16 @@ import { toEntries } from '../util/obj/obj';
 
 const PORT_MAX = 2 ** 16 - 2;
 
-const boolSetter = (def: boolean) => z.coerce.boolean().default(def).catch(def);
+// z.coerce.boolean() を使うと，'false' を true に変換してしまうので，自前で実装する
+const boolSetter = (def: boolean) =>
+  z
+    .preprocess(
+      (txt) =>
+        typeof txt === 'string' ? txt.toLowerCase() === 'true' : undefined,
+      z.boolean()
+    )
+    .default(def)
+    .catch(def);
 const stringSetter = (def: string) => z.string().default(def).catch(def);
 const enumSetter = <U extends string, T extends Readonly<[U, ...U[]]>>(
   values: T,
@@ -138,7 +147,7 @@ function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
     // catch > default > String | Number | Boolean の順でネストされた型情報を取得する
     const defaultDef = schema._def.innerType._def;
 
-    if (defaultDef.innerType instanceof z.ZodBoolean) {
+    if (defaultDef.innerType instanceof z.ZodEffects) {
       anotations[key] = {
         type: 'boolean',
         default: defaultDef.defaultValue() as boolean,

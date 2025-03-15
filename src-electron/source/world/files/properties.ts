@@ -86,12 +86,18 @@ if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
 
   test('server_property_parse', () => {
-    // bool test
-    const boolTest = parse('allow-nether=true');
-    expect(Object.hasOwn(boolTest, 'allow-nether')).toBe(true);
-    const boolValue = boolTest['allow-nether'];
-    expect(boolValue).toBe(true);
-    expect(typeof boolValue).toBe('boolean');
+    // bool test (true)
+    const boolTest_true = parse('allow-nether=true');
+    expect(Object.hasOwn(boolTest_true, 'allow-nether')).toBe(true);
+    const boolValue_true = boolTest_true['allow-nether'];
+    expect(boolValue_true).toBe(true);
+    expect(typeof boolValue_true).toBe('boolean');
+    // bool test (false <-- check 'false' > false parse process)
+    const boolTest_false = parse('white-list=false');
+    expect(Object.hasOwn(boolTest_false, 'white-list')).toBe(true);
+    const boolValue_false = boolTest_false['white-list'];
+    expect(boolValue_false).toBe(false);
+    expect(typeof boolValue_false).toBe('boolean');
 
     // enum test
     const enumTest = parse('gamemode=survival');
