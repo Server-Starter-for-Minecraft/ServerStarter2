@@ -93,6 +93,7 @@ const DefaultServerProperties = z
       ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
       'default'
     ),
+    'log-ips': boolSetter(true),
     // legacy?
     'max-build-height': numberSetter(256, undefined, undefined, 8),
     'max-chained-neighbor-updates': numberSetter(1000000),
