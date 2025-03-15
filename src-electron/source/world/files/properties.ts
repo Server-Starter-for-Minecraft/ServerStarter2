@@ -6,32 +6,6 @@ import { ServerSettingFile } from './base';
 
 /** server.propertiesの中身(string)をパースする */
 const parse = (text: string) => {
-  // const propertiy: ServerProperties = ServerProperties.parse({});
-  // const record = properties.parse(text);
-  // Object.entries(record).forEach(([key, value]) => {
-  //   // const defult = ServerPropertiesAnnotation.parse(undefined)[key];
-
-  //   let prop: string | number | boolean;
-
-  //   if (defult !== undefined) {
-  //     // 既知のサーバープロパティの場合
-  //     switch (defult.type) {
-  //       case 'string':
-  //         prop = value;
-  //         break;
-  //       case 'boolean':
-  //         prop = value.toLowerCase() === 'true';
-  //         break;
-  //       case 'number':
-  //         prop = Number.parseInt(value);
-  //         break;
-  //     }
-  //   } else {
-  //     // 未知のサーバープロパティの場合stringとして扱う
-  //     prop = value;
-  //   }
-  //   propertiy[key] = prop;
-  // });
   return ServerProperties.parse(properties.parse(text));
 };
 
