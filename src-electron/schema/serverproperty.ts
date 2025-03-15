@@ -120,7 +120,7 @@ const DefaultServerProperties = z
     'resource-pack-id': stringSetter(''),
     'resource-pack-prompt': stringSetter(''),
     'resource-pack-sha1': stringSetter(''),
-    'reqire-resource-pack': boolSetter(false),
+    'require-resource-pack': boolSetter(false),
     'server-ip': stringSetter(''),
     'server-port': numberSetter(25565, 1, PORT_MAX, 1),
     'simulation-distance': numberSetter(10, 3, 32, 1),
