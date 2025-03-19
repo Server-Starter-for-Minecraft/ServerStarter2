@@ -10,14 +10,12 @@ if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
   test('static_resource', async () => {
     const staticResources = await getStaticResoure();
-    
+
     // colors
     expect(staticResources.minecraftColors.aqua).toBe('#55FFFF');
-    
+
     // properties
-    expect(
-      staticResources.properties['white-list']
-    ).toMatchObject({
+    expect(staticResources.properties['white-list']).toMatchObject({
       default: false,
       type: 'boolean',
     });
@@ -30,9 +28,7 @@ if (import.meta.vitest) {
       step: 1,
       type: 'number',
     });
-    expect(
-      staticResources.properties['difficulty']
-    ).toMatchObject({
+    expect(staticResources.properties['difficulty']).toMatchObject({
       default: 'easy',
       enum: ['peaceful', 'easy', 'normal', 'hard'],
       type: 'string',

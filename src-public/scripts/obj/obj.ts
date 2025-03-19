@@ -10,9 +10,8 @@ export const fromEntries = <T extends Record<PropertyKey, any>>(
   object: Entries<T>
 ): T => Object.fromEntries(object) as T;
 
-export const keys = <K extends string, V>(
-  object: Record<K, V>
-): K[] => Object.keys(object) as K[];
+export const keys = <K extends string, V>(object: Record<K, V>): K[] =>
+  Object.keys(object) as K[];
 
 export const values = <K extends string | number | symbol, V>(
   object: Record<K, V>
