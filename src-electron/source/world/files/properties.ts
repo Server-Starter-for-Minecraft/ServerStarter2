@@ -79,6 +79,12 @@ if (import.meta.vitest) {
     const enumValue = enumTest['gamemode'];
     expect(enumValue).toBe('survival');
     expect(typeof enumValue).toBe('string');
+    // unsupported option in enum test
+    const enumUnsupportedTest = parse('gamemode=unsupported'); // unsupported setting
+    expect(Object.hasOwn(enumUnsupportedTest, 'gamemode')).toBe(true);
+    const enumUnsupportedValue = enumUnsupportedTest['gamemode'];
+    expect(enumUnsupportedValue).toBe('unsupported');
+    expect(typeof enumUnsupportedValue).toBe('string');
 
     // number test
     const numberTest = parse('max-tick-time=60000');

@@ -17,7 +17,7 @@ const stringSetter = (def: string) => z.string().default(def).catch(def);
 const enumSetter = <U extends string, T extends Readonly<[U, ...U[]]>>(
   values: T,
   def: T[number]
-) => z.enum(values).default(def).catch(def);
+) => z.enum(values).or(z.string()).default(def).catch(def);
 const numberSetter = (
   def: number,
   min?: number,
@@ -33,23 +33,23 @@ const numberSetter = (
     case 0:
       return z.coerce.number().default(def).catch(def);
     case 1:
-      return z.coerce.number().min(min!).default(def).catch(def);
+      return z.coerce.number().min(min ?? -Infinity).default(def).catch(def);
     case 2:
-      return z.coerce.number().max(max!).default(def).catch(def);
+      return z.coerce.number().max(max ?? Infinity).default(def).catch(def);
     case 3:
-      return z.coerce.number().min(min!).max(max!).default(def).catch(def);
+      return z.coerce.number().min(min ?? -Infinity).max(max ?? Infinity).default(def).catch(def);
     case 4:
-      return z.coerce.number().step(step!).default(def).catch(def);
+      return z.coerce.number().step(step ?? 1).default(def).catch(def);
     case 5:
-      return z.coerce.number().min(min!).step(step!).default(def).catch(def);
+      return z.coerce.number().min(min ?? -Infinity).step(step ?? 1).default(def).catch(def);
     case 6:
-      return z.coerce.number().max(max!).step(step!).default(def).catch(def);
+      return z.coerce.number().max(max ?? Infinity).step(step ?? 1).default(def).catch(def);
     case 7:
       return z.coerce
         .number()
-        .min(min!)
-        .max(max!)
-        .step(step!)
+        .min(min ?? -Infinity)
+        .max(max ?? Infinity)
+        .step(step ?? 1)
         .default(def)
         .catch(def);
     default:
@@ -173,11 +173,11 @@ function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
         }
       });
       anotations[key] = tmpObj;
-    } else if (defaultDef.innerType instanceof z.ZodEnum) {
+    } else if (defaultDef.innerType instanceof z.ZodUnion) {
       anotations[key] = {
         type: 'string',
         default: defaultDef.defaultValue() as string,
-        enum: defaultDef.innerType.options,
+        enum: defaultDef.innerType._def.options[0].options,
       };
     }
   }
