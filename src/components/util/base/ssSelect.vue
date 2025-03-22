@@ -47,25 +47,27 @@ const editedOptions = prop.enableOther
 </script>
 
 <template>
-  <q-select
-    v-model="computedModel"
-    filled
-    :options="editedOptions"
-    :label="label"
-    :dense="dense"
-    :popup-content-style="{ fontSize: '0.9rem' }"
-    :disable="disable"
-    emit-value
-    map-options
-    :option-label="optionLabel"
-    :option-value="optionValue"
-    style="font-size: 0.9rem"
-  />
-  <SsInput
-    v-if="typeof inputModel === 'string'"
-    v-show="isShowInput()"
-    v-model="inputModel"
-    dense
-    class="q-pt-sm"
-  />
+  <div>
+    <q-select
+      v-model="computedModel"
+      filled
+      :options="editedOptions"
+      :label="label"
+      :dense="dense"
+      :popup-content-style="{ fontSize: '0.9rem' }"
+      :disable="disable"
+      emit-value
+      map-options
+      :option-label="optionLabel"
+      :option-value="optionValue"
+      style="font-size: 0.9rem"
+    />
+    <SsInput
+      v-if="typeof inputModel === 'string'"
+      v-show="isShowInput()"
+      v-model="inputModel"
+      dense
+      class="q-pt-sm"
+    />
+  </div>
 </template>
