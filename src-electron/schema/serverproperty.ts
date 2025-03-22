@@ -33,17 +33,44 @@ const numberSetter = (
     case 0:
       return z.coerce.number().default(def).catch(def);
     case 1:
-      return z.coerce.number().min(min ?? -Infinity).default(def).catch(def);
+      return z.coerce
+        .number()
+        .min(min ?? -Infinity)
+        .default(def)
+        .catch(def);
     case 2:
-      return z.coerce.number().max(max ?? Infinity).default(def).catch(def);
+      return z.coerce
+        .number()
+        .max(max ?? Infinity)
+        .default(def)
+        .catch(def);
     case 3:
-      return z.coerce.number().min(min ?? -Infinity).max(max ?? Infinity).default(def).catch(def);
+      return z.coerce
+        .number()
+        .min(min ?? -Infinity)
+        .max(max ?? Infinity)
+        .default(def)
+        .catch(def);
     case 4:
-      return z.coerce.number().step(step ?? 1).default(def).catch(def);
+      return z.coerce
+        .number()
+        .step(step ?? 1)
+        .default(def)
+        .catch(def);
     case 5:
-      return z.coerce.number().min(min ?? -Infinity).step(step ?? 1).default(def).catch(def);
+      return z.coerce
+        .number()
+        .min(min ?? -Infinity)
+        .step(step ?? 1)
+        .default(def)
+        .catch(def);
     case 6:
-      return z.coerce.number().max(max ?? Infinity).step(step ?? 1).default(def).catch(def);
+      return z.coerce
+        .number()
+        .max(max ?? Infinity)
+        .step(step ?? 1)
+        .default(def)
+        .catch(def);
     case 7:
       return z.coerce
         .number()
