@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import SsInput from './ssInput.vue';
 
 interface Prop {
@@ -16,26 +16,19 @@ const prop = defineProps<Prop>();
 const model = defineModel({ required: true });
 
 // model.valueがOptionsに含まれているかどうかを判定する
-const checkInOptions = () => prop.options?.includes(model.value) ?? true;
-// InputBoxの表示要否
-const isShowInput = () => prop.enableOther && !checkInOptions();
+// Objectが来た時に包含判定が崩れないよう，inを使わずにsomeを使う
+const checkInOptions = () =>
+  prop.options?.some((val) => val === model.value) ?? true;
+// InputBoxにフォーカスが当たっているかどうか
+const isFocusInput = ref(false);
 
 const computedModel = computed({
   get: () => {
     if (!prop.enableOther || (prop.options?.length ?? 0) === 0) {
       return model.value;
     }
-    // Objectが来た時に包含判定が崩れないよう，inを使わずにsomeを使う
-    return prop.options?.some((val) => val === model.value)
-      ? model.value
-      : 'other';
+    return checkInOptions() ? model.value : 'other';
   },
-  set: (newVal) => {
-    model.value = newVal;
-  },
-});
-const inputModel = computed({
-  get: () => model.value,
   set: (newVal) => {
     model.value = newVal;
   },
@@ -62,11 +55,15 @@ const editedOptions = prop.enableOther
       :option-value="optionValue"
       style="font-size: 0.9rem"
     />
+    <!-- 入力途中で偶然Optionsにある内容を入力したとしても，
+         突然InputBoxが消えることがないように`isInputFocus`を考慮する -->
     <SsInput
-      v-if="typeof inputModel === 'string'"
-      v-show="isShowInput()"
-      v-model="inputModel"
+      v-if="typeof model === 'string'"
+      v-show="(prop.enableOther && !checkInOptions()) || isFocusInput"
+      v-model="model"
       dense
+      @focusin="isFocusInput = true"
+      @focusout="isFocusInput = false"
       class="q-pt-sm"
     />
   </div>
