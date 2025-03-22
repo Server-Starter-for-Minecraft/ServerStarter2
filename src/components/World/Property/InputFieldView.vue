@@ -109,9 +109,11 @@ function validationMessage(min?: number, max?: number, step?: number) {
     style="width: 100%"
   />
 
+  <!-- TODO: Optionsにある項目をInputで入力すると，突然InputBoxが消える問題を修正 -->
   <SsSelect
     v-else-if="selectEditer() === 'enum'"
     dense
+    enable-other
     v-model="propertyValue"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
     style="padding-bottom: 18px"
