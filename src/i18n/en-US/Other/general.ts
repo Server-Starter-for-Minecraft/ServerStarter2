@@ -5,8 +5,9 @@ export const enUSGeneral: MessageSchema['general'] = {
   cancel: 'Cancel',
   delete: 'Delete',
   edit: 'Edit',
-  file: 'file',
-  directory: 'directory',
-  skip: 'skip',
-  back: 'back',
+  file: 'File',
+  directory: 'Directory',
+  skip: 'Skip',
+  back: 'Back',
+  other: 'Other',
 };
