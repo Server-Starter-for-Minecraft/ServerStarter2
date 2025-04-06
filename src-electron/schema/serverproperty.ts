@@ -100,6 +100,7 @@ const DefaultServerProperties = z
     'enable-jmx-monitoring': boolSetter(false),
     'enable-query': boolSetter(false),
     'enable-rcon': boolSetter(false),
+    'enforce-secure-profile': boolSetter(true),
     'enforce-whitelist': boolSetter(false),
     'entity-broadcast-range-percentage': numberSetter(100, 0, 500),
     'force-gamemode': boolSetter(false),
@@ -115,7 +116,6 @@ const DefaultServerProperties = z
     // 自動設定のため削除
     // 'level-name': stringSetter('world'),
     'level-seed': stringSetter(''),
-    // TODO: CUROIDのようなMODが任意のLevelType入力を要求するため，「その他」のような入力項目を追加する
     'level-type': enumSetter(
       ['default', 'flat', 'largeBiomes', 'amplified', 'buffet'],
       'default'
