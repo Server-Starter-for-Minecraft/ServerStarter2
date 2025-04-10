@@ -100,6 +100,7 @@ const DefaultServerProperties = z
     'enable-jmx-monitoring': boolSetter(false),
     'enable-query': boolSetter(false),
     'enable-rcon': boolSetter(false),
+    'enable-status': boolSetter(true),
     'enforce-secure-profile': boolSetter(true),
     'enforce-whitelist': boolSetter(false),
     'entity-broadcast-range-percentage': numberSetter(100, 0, 500),
