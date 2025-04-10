@@ -61,22 +61,24 @@ function numberValidate(
  * バリデーションエラー時のメッセージ
  */
 function validationMessage(min?: number, max?: number, step?: number) {
-  let AdditionalMessage = '';
+  const AdditionalMessages = [];
   if (min !== void 0) {
-    AdditionalMessage += t('property.inputField.downerLimit', { n: min });
-  }
-  if (min !== void 0 && max !== void 0) {
-    AdditionalMessage += ', ';
+    AdditionalMessages.push(t('property.inputField.downerLimit', { n: min }));
   }
   if (max !== void 0) {
-    AdditionalMessage += t('property.inputField.upperLimit', { n: max });
+    AdditionalMessages.push(t('property.inputField.upperLimit', { n: max }));
   }
-  if (step !== void 0) {
-    AdditionalMessage += t('property.inputField.multiple', { n: step });
+  if (step !== void 0 && step !== 1) {
+    AdditionalMessages.push(t('property.inputField.multiple', { n: step }));
   }
 
-  if (AdditionalMessage != '') AdditionalMessage = ` (${AdditionalMessage})`;
-  return t('property.inputField.number') + AdditionalMessage;
+  if (AdditionalMessages.length > 0) {
+    return `${t('property.inputField.number')} (${AdditionalMessages.join(
+      ', '
+    )})`;
+  } else {
+    return t('property.inputField.number');
+  }
 }
 </script>
 
@@ -112,6 +114,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
   <SsSelect
     v-else-if="selectEditer() === 'enum'"
     dense
+    enable-other
     v-model="propertyValue"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
     style="padding-bottom: 18px"

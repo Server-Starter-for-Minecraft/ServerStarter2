@@ -7,4 +7,5 @@ export const jaGeneral = {
   directory: 'ディレクトリ',
   skip: 'スキップ',
   back: '戻る',
+  other: 'その他',
 };
