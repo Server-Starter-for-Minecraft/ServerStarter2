@@ -56,7 +56,10 @@ export type DataErrors = {
     invalidContent: PathContentErrors;
 
     // ファイルまたはディレクトリの生成に失敗
-    creationFiled: PathErrorContent;
+    creationFailed: PathErrorContent;
+
+    // ファイルまたはディレクトリの削除に失敗
+    deletionFailed: PathErrorContent;
 
     // ファイル選択ウィンドウがキャンセルされた場合
     dialogCanceled: ErrorMessageContent;

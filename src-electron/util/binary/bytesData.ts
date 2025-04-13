@@ -76,11 +76,11 @@ export class BytesData {
     path: Path,
     hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.fromPath({ path: path.str(), hash });
+    const logger = loggers.fromPath({ path: path.path, hash });
     logger.start();
 
     try {
-      const buffer = await promises.readFile(path.str());
+      const buffer = await promises.readFile(path.path);
       const data = new BytesData(buffer);
       if (hash === undefined) {
         logger.success();
@@ -97,7 +97,7 @@ export class BytesData {
       return errorMessage.data.hashNotMatch({
         hashtype: hash.type,
         type: 'file',
-        path: path.str(),
+        path: path.path,
       });
     } catch (e) {
       logger.fail();
@@ -124,19 +124,22 @@ export class BytesData {
   /**
    * TODO: ファイルに出力
    */
-  async write(path: string, executable?: boolean) {
+  async write(path: string, executable?: boolean): Promise<Failable<void>> {
     const logger = loggers.write({ path });
     logger.start();
     // 実行権限を与えて保存
     const settings = executable ? { mode: 0o755 } : undefined;
     try {
-      await promises.writeFile(path, Buffer.from(this.data), settings);
+      await promises.writeFile(path, new Uint8Array(this.data), settings);
       logger.success();
     } catch (e) {
       logger.fail(e);
+      return errorMessage.data.path.creationFailed({
+        type: 'file',
+        path: path,
+      });
     }
   }
-
   /**
    * 非推奨
    *
@@ -171,7 +174,7 @@ export class BytesData {
     }
 
     await path.parent().mkdir(true);
-    await data.write(path.str(), executable);
+    await data.write(path.path, executable);
     return data;
   }
 
@@ -187,7 +190,7 @@ export class BytesData {
     const data = await BytesData.fromURL(url, remoteHash, headers);
     if (isValid(data)) {
       await path.parent().mkdir(true);
-      await data.write(path.str(), executable);
+      await data.write(path.path, executable);
       return data;
     }
     const result = await BytesData.fromPath(path, hash);

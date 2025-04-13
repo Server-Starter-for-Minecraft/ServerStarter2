@@ -105,9 +105,13 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
           desc: '{path}の中身が不適当です',
         },
       },
-      creationFiled: {
+      creationFailed: {
         title: '{type}の生成に失敗しました',
         desc: '{path}の生成ができませんでした',
+      },
+      deletionFailed: {
+        title: '{type}の削除に失敗しました',
+        desc: '{path}の削除ができませんでした',
       },
       dialogCanceled: {
         title: 'ファイル選択ウィンドウがキャンセルされました',
