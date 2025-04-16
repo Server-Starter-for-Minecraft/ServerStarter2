@@ -71,14 +71,14 @@ export class Path {
     return `"${this._path.replace('\\', '\\\\').replace('"', '\\"')}"`;
   }
 
-  /** @deprecated TODO: .pathへ修正*/
+  /** @deprecated .pathを用いること*/
   str() {
-    return this._path;
+    return this.path;
   }
 
-  /** @deprecated TODO: .quotedPathへ修正 */
+  /** @deprecated .quotedPathを用いること */
   strQuoted() {
-    return `"${this._path.replace('\\', '\\\\').replace('"', '\\"')}"`;
+    return this.quotedPath;
   }
 
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
