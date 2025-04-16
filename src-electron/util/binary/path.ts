@@ -2,6 +2,7 @@
 // TODO: ファイル削除や書き込み等で`Error: EBUSY: resource busy or locked`のようなファイル操作エラーが発生することがある（エラー発生時はフロントエンドが無限停止する）
 // エラーが起きたときにはFailableを返すようにtry-catchでラップする
 //
+import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { errorMessage } from '../error/construct';
@@ -112,13 +113,9 @@ export class Path {
 
   /** ファイルの最終更新時刻を取得 */
   lastUpdateTime = exclusive(this._lastUpdateTime);
-  // TODO: DayJSの実装に置換
-  private async _lastUpdateTime(): Promise<Date> {
-    return (await fs.stat(this.path)).mtime;
+  private async _lastUpdateTime(): Promise<Dayjs> {
+    return dayjs((await fs.stat(this.path)).mtimeMs);
   }
-  // private async _lastUpdateTime(): Promise<Dayjs> {
-  //   return dayjs((await fs.stat(this.path)).mtimeMs);
-  // }
 
   rename = exclusive(this._rename);
   private async _rename(newpath: Path) {
@@ -244,8 +241,7 @@ export class Path {
     return fs.readFileSync(this.path);
   }
 
-  iter = exclusive(this._iter);
-  private async _iter() {
+  async iter() {
     if (this.exists() && (await this.isDirectory()))
       return (await fs.readdir(this._path)).map((p) => this.child(p));
     return [];
@@ -409,6 +405,16 @@ if (import.meta.vitest) {
     expect(b.exists()).toBe(true);
     await a.remove();
     expect(a.exists()).toBe(false);
+
+    // ファイルの一覧表示
+    const file1 = a.child('file1.txt');
+    const file2 = a.child('file2.txt');
+    await file1.writeText('hello');
+    await file2.writeText('world');
+    const fileTxts = await Promise.all(
+      (await a.iter()).map((file) => file.readText())
+    );
+    expect(fileTxts).toEqual(['hello', 'world']);
   });
 
   // TODO: テストを貼り付けただけのため，今回の実装に合うよう換装する -> stream関連は基本的に不要？
@@ -485,6 +491,8 @@ if (import.meta.vitest) {
     ]);
     sleep(1000);
     await Promise.all([p1.test('11'), p2.test('12')]);
+
+    // TODO: 排他制御となっていることを確認するexpectの追加
   });
 
   describe.skip('Path file operations with busy resources', () => {
