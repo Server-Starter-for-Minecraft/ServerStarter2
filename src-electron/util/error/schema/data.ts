@@ -40,6 +40,9 @@ export type DataErrors = {
     // ファイル/ディレクトリの読み込みに失敗したときのエラー
     loadingFailed: PathErrorContent;
 
+    // ファイル/ディレクトリのリネームに失敗したときのエラー
+    renameFailed: PathErrorContent;
+
     // ファイルまたはディレクトリがすでに存在する
     alreadyExists: PathErrorContent;
 

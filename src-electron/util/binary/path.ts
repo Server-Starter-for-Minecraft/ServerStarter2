@@ -1,7 +1,3 @@
-//
-// TODO: ファイル削除や書き込み等で`Error: EBUSY: resource busy or locked`のようなファイル操作エラーが発生することがある（エラー発生時はフロントエンドが無限停止する）
-// エラーが起きたときにはFailableを返すようにtry-catchでラップする
-//
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -102,13 +98,20 @@ export class Path {
   }
 
   stat = exclusive(this._stat);
-  private async _stat() {
-    return await fs.stat(this.absolute().path);
+  private async _stat(): Promise<Failable<fs.Stats>> {
+    return fs.stat(this.absolute().path).catch(async () => {
+      return errorMessage.data.path.loadingFailed({
+        type: 'file', // 存在しないパスはファイルとして扱う
+        path: this.path,
+      });
+    });
   }
 
   isDirectory = exclusive(this._isDirectory);
-  private async _isDirectory() {
-    return (await this._stat()).isDirectory();
+  private async _isDirectory(): Promise<Failable<boolean>> {
+    const stat = await this._stat();
+    if (isError(stat)) return stat;
+    return stat.isDirectory();
   }
 
   /** ファイルの最終更新時刻を取得 */
@@ -118,9 +121,18 @@ export class Path {
   }
 
   rename = exclusive(this._rename);
-  private async _rename(newpath: Path) {
+  private async _rename(newpath: Path): Promise<Failable<void>> {
     await newpath.parent().mkdir(true);
-    await fs.rename(this._path, newpath.absolute().path);
+    const isDir = await this._isDirectory();
+    if (isError(isDir)) return isDir;
+
+    return fs.rename(this._path, newpath.absolute().path).catch(async () => {
+      // TODO: エラーの戻り値を考慮して呼び出し元を修正
+      return errorMessage.data.path.renameFailed({
+        type: isDir ? 'directory' : 'file',
+        path: this.path,
+      });
+    });
   }
 
   mkdir = exclusive(this._mkdir);
@@ -134,7 +146,12 @@ export class Path {
     await fs.ensureDir(this._path, options);
   }
 
-  /** ディレクトリが空の状態を保証する */
+  /**
+   * ディレクトリが空の状態を保証する
+   *
+   * ディレクトリが空でなければ、ディレクトリの内容を削除する。
+   * ディレクトリが存在しない場合は作成する。ディレクトリ自体は削除されない。
+   */
   emptyDir = exclusive(this._emptyDir);
   private async _emptyDir() {
     await fs.emptyDir(this._path);
@@ -148,7 +165,7 @@ export class Path {
   mklink = exclusive(this._mklink);
   private async _mklink(target: Path): Promise<Failable<void>> {
     await this.parent().mkdir();
-    return await new Promise<Failable<void>>((resolve) =>
+    return new Promise<Failable<void>>((resolve) =>
       fs.link(target._path, this._path, (e) => {
         e
           ? resolve(
@@ -166,7 +183,7 @@ export class Path {
   private async _write(content: BytesData) {
     // TODO: エラーの戻り値を考慮して呼び出し元を修正
     await this.parent().mkdir(true);
-    return await content.write(this._path);
+    return content.write(this._path);
   }
 
   /**
@@ -182,7 +199,7 @@ export class Path {
     // TODO: エラーの戻り値を考慮して呼び出し元を修正
     const bytes = await (await loadBytesData()).fromText(content);
     if (isError(bytes)) return bytes;
-    return await this._write(bytes);
+    return this._write(bytes);
   }
 
   /** @deprecated 同期書き込み(非推奨) */
@@ -193,6 +210,7 @@ export class Path {
 
   writeJson = exclusive(this._writeJson);
   private async _writeJson<T>(content: T) {
+    // TODO: エラーの戻り値を考慮して呼び出し元を修正
     return this._writeText(JSON.stringify(content));
   }
 
@@ -241,8 +259,11 @@ export class Path {
     return fs.readFileSync(this.path);
   }
 
-  async iter() {
-    if (this.exists() && (await this.isDirectory()))
+  async iter(): Promise<Failable<Path[]>> {
+    const isDir = await this._isDirectory();
+    if (isError(isDir)) return isDir;
+
+    if (this.exists() && isDir)
       return (await fs.readdir(this._path)).map((p) => this.child(p));
     return [];
   }
@@ -252,12 +273,16 @@ export class Path {
    */
   remove = exclusive(this._remove);
   private async _remove(): Promise<Failable<void>> {
+    if (!this.exists()) return;
+    const isDir = await this._isDirectory();
+    if (isError(isDir)) return isDir;
+
     try {
       await fs.rm(this._path, { recursive: true, force: true });
     } catch {
       // TODO: エラーの戻り値を考慮して呼び出し元を修正
       return errorMessage.data.path.deletionFailed({
-        type: (await this.isDirectory()) ? 'directory' : 'file',
+        type: isDir ? 'directory' : 'file',
         path: this.path,
       });
     }
@@ -275,33 +300,42 @@ export class Path {
   private async _moveTo(target: Path): Promise<Failable<void>> {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
-    const isSuccessRemove = await target.remove();
+    const isSuccessRemove = await target._remove();
     if (isError(isSuccessRemove)) return isSuccessRemove;
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
     async function recursiveMove(path: Path, target: Path) {
-      if (await path.isDirectory()) {
+      const isDir = await path._isDirectory();
+      if (isError(isDir)) return isDir;
+
+      if (isDir) {
         await target.mkdir(true);
-        await asyncForEach(await path.iter(), async (child) => {
+        const allPaths = await path.iter();
+        if (isError(allPaths)) return allPaths;
+
+        await asyncForEach(allPaths, async (child) => {
           await recursiveMove(child, target.child(child.basename()));
         });
       } else {
         await fs.move(path.path, target.path);
       }
-      const isSuccessRecRemove = await path.remove();
-      if (isError(isSuccessRecRemove)) return isSuccessRecRemove;
     }
-    return await recursiveMove(this, target);
+    const res = await recursiveMove(this, target);
+    if (isError(res)) return res;
+
+    // remove source
+    return this._remove();
   }
 
   async changePermission(premission: number) {
     await changePermissionsRecursively(this._path, premission);
   }
 
-  test = exclusive(async function (message: string) {
-    await sleep(300);
-    return 10;
-  });
+  test = exclusive(this._test);
+  private async _test(delay: number) {
+    await sleep(delay);
+    return delay;
+  }
 }
 
 /** 再帰的にファイルの権限を書き換える */
@@ -318,9 +352,16 @@ async function changePermissionsRecursively(basePath: string, mode: number) {
   }
 }
 
+/** パスに関する処理を同期的に処理するために各命令をプールする */
 const spoolers = InfinitMap.primitiveKeyWeakValue(
   (key: string) => new PromiseSpooler()
 );
+/**
+ * 各関数の実行時に当該処理をプールする
+ *
+ * Pathクラスの中でプールが定義された関数を実行するときには`_Hoge()`という本体実装側を呼び出す
+ * （関数A自体と関数Aの中で呼び出す処理で重複してプールすることがないようにする）
+ */
 function exclusive<P extends any[], R>(
   target: (this: Path, ...args: P) => Promise<R>
 ) {
@@ -333,6 +374,15 @@ function exclusive<P extends any[], R>(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const path = await import('path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child(
+    'work',
+    path.basename(__filename, '.ts')
+  );
+  workPath.mkdir();
+
   test('path', () => {
     // パス操作のテスト
     expect(new Path('.').path).toBe('.');
@@ -370,11 +420,11 @@ if (import.meta.vitest) {
     expect(new Path('foo/bar').parent(2).path).toBe(new Path('').path);
   });
 
-  test('file', async () => {
+  test('creation', async () => {
     // ファイル操作のテスト
-    const testdir = new Path('./userData/test');
+    const testdir = workPath.child('creations');
 
-    // testdirの中身をリセット (正直これができてる時点で見たいな話はある)
+    // testdirの中身をリセット (正直これができてる時点でみたいな話はある)
     await testdir.remove();
     await testdir.mkdir();
 
@@ -406,130 +456,204 @@ if (import.meta.vitest) {
     await a.remove();
     expect(a.exists()).toBe(false);
 
+    // ensureDirはディレクトリが存在しない場合のみ作成する
+    await a.ensureDir();
+    expect(a.exists()).toBe(true);
+
+    // emptyDirはディレクトリが空であることを保証する
+    await a.child('sample.txt').writeText('hello');
+    const aPaths1 = await a.iter();
+    expect(isError(aPaths1)).toBe(false);
+    if (!isError(aPaths1)) {
+      const fileCount1 = aPaths1.length;
+      expect(fileCount1).toBe(1);
+    }
+    await a.emptyDir();
+
+    const aPaths2 = await a.iter();
+    expect(isError(aPaths2)).toBe(false);
+    if (!isError(aPaths2)) {
+      const fileCount2 = aPaths2.length;
+      expect(fileCount2).toBe(0);
+    }
+  });
+
+  test('isDirectory', async () => {
+    const testdir = workPath.child('isDirectory');
+    await testdir.remove();
+
+    // 存在しないディレクトリをチェックするとエラー
+    const isDirectoryFailResult = await testdir.isDirectory();
+    expect(isError(isDirectoryFailResult)).toBe(true);
+
+    // ディレクトリを生成
+    await testdir.mkdir();
+
+    // 存在するディレクトリをチェックすると成功
+    const isDirectorySuccessResult = await testdir.isDirectory();
+    expect(isError(isDirectorySuccessResult)).toBe(false);
+    expect(isDirectorySuccessResult).toBe(true);
+  });
+
+  test('rename', async () => {
+    // ファイル操作のテスト
+    const testdir = workPath.child('renames');
+    await testdir.emptyDir();
+
+    // リネーム（ファイル）
+    const renameFile = testdir.child('renameFile.txt');
+    // 存在しないファイルをリネームする場合はエラー
+    const renameFailResult = await renameFile.rename(
+      testdir.child('renameFile2.txt')
+    );
+    expect(isError(renameFailResult)).toBe(true);
+    // 存在するファイルをリネームする場合は成功
+    await renameFile.writeText('hello');
+    const renameSuccessResult = await renameFile.rename(
+      testdir.child('renameFile2.txt')
+    );
+    expect(isError(renameSuccessResult)).toBe(false);
+
+    // リネーム後のファイルが存在することを確認
+    expect(renameFile.exists()).toBe(false);
+    expect(testdir.child('renameFile2.txt').exists()).toBe(true);
+
+    // リネーム（ディレクトリ）
+    const renameDir = testdir.child('renameDir');
+    await renameDir.mkdir();
+    await renameDir.rename(testdir.child('renameDir2'));
+    expect(renameDir.exists()).toBe(false);
+    expect(testdir.child('renameDir2').exists()).toBe(true);
+  });
+
+  test('file operations', async () => {
+    const testdir = workPath.child('operations');
+    await testdir.emptyDir();
+    const sourceDir = testdir.child('source');
+    await sourceDir.child('a.txt').writeText('a');
+    await sourceDir.child('dir', 'b.txt').writeText('b');
+
+    // check copy
+    const copyTargetDir = testdir.child('copyTarget');
+    const copyRes = await sourceDir.copyTo(copyTargetDir);
+    expect(isError(copyRes)).toBe(false);
+    expect(sourceDir.exists()).toBe(true);
+    expect(copyTargetDir.child('a.txt').exists()).toBe(true);
+    expect(copyTargetDir.child('dir', 'b.txt').exists()).toBe(true);
+
+    // check move
+    const moveTargetDir = testdir.child('moveTarget');
+    const moveRes = await sourceDir.moveTo(moveTargetDir);
+    expect(isError(moveRes)).toBe(false);
+    expect(sourceDir.exists()).toBe(false);
+    expect(moveTargetDir.child('a.txt').exists()).toBe(true);
+    expect(moveTargetDir.child('dir', 'b.txt').exists()).toBe(true);
+  });
+
+  test('json files', async () => {
+    const testdir = workPath.child('jsons');
+    await testdir.emptyDir();
+    const jsonFile = testdir.child('target.json');
+    const sampleObj = {
+      a: 1,
+      b: '2',
+      c: [3, 4, 5],
+      d: { e: 6, f: 7 },
+    };
+
+    await jsonFile.writeJson(sampleObj);
+    const readObj = await jsonFile.readJson();
+    expect(readObj).toEqual(sampleObj);
+  });
+
+  test('iterDir', async () => {
+    const testdir = workPath.child('iterDirs');
+
     // ファイルの一覧表示
-    const file1 = a.child('file1.txt');
-    const file2 = a.child('file2.txt');
+    const file1 = testdir.child('file1.txt');
+    const file2 = testdir.child('file2.txt');
     await file1.writeText('hello');
     await file2.writeText('world');
-    const fileTxts = await Promise.all(
-      (await a.iter()).map((file) => file.readText())
-    );
-    expect(fileTxts).toEqual(['hello', 'world']);
+    const allPaths = await testdir.iter();
+    expect(isError(allPaths)).toBe(false);
+
+    if (!isError(allPaths)) {
+      const fileTxts = await Promise.all(
+        allPaths.map((file) => file.readText())
+      );
+      expect(fileTxts).toEqual(['hello', 'world']);
+    }
   });
 
-  // TODO: テストを貼り付けただけのため，今回の実装に合うよう換装する -> stream関連は基本的に不要？
-  // test('stream', async () => {
-  //   // ストリームのテスト
-  //   const testdir = new Path('./userData/test');
+  test('file path', async () => {
+    const testdir = workPath.child('pathChecks');
+    const file1 = testdir.child('file1.txt');
 
-  //   // testdirの中身をリセット
-  //   await testdir.remove();
-  //   await testdir.mkdir();
+    // ファイル名
+    expect(file1.basename()).toBe('file1.txt');
+    expect(file1.stemname()).toBe('file1');
+    expect(file1.extname()).toBe('.txt');
 
-  //   const src = testdir.child('src.txt');
-  //   const tgt = testdir.child('tgt.txt');
-  //   const mis = testdir.child('mis.txt');
+    // 相対パス
+    expect(file1.relativeto(testdir).path).toBe('..');
+  });
 
-  //   // ファイルの中身をコピー
-  //   await src.writeText('hello world');
-  //   expect(await src.readText()).toBe('hello world');
-
-  //   expect(tgt.exists()).toBe(false);
-
-  //   await src.into(tgt);
-
-  //   expect(await tgt.readText()).toBe('hello world');
-  //   await tgt.remove();
-
-  //   const { Bytes } = await import('./bytes');
-
-  //   // ファイルの中身をバイト列に変換
-  //   const bytes = await src.into(Bytes);
-
-  //   expect(bytes.data.toString('utf8')).toBe('hello world');
-
-  //   expect(tgt.exists()).toBe(false);
-
-  //   // バイト列をファイルに書き込み
-  //   await bytes.into(tgt);
-
-  //   expect(await tgt.readText()).toBe('hello world');
-
-  //   await tgt.remove();
-
-  //   expect((await mis.into(Bytes)).error().message).toContain('ENOENT');
-
-  //   // TODO: 失敗するストリームの調査
-  //   // TODO: すでにあるファイルにストリームを書き込めないことを検証
-  //   // TODO: ストリームの書き込みに失敗した場合にファイルが削除されることを確認
-
-  //   // 後片付け
-  //   await testdir.remove();
-
-  //   // await bytes.into(tgt);
-
-  //   // await bytes.convert(fromSHIFTJIS).into(tgt);
-  //   // await bytes.convert(toSHIFTJIS).into(tgt);
-
-  //   // await bytes.convert(fromBase64).into(tgt);
-  //   // await bytes.convert(toBase64).into(tgt);
-
-  //   // await bytes.convert(fromGZ).into(tgt);
-  //   // await bytes.convert(toGZ).into(tgt);
-
-  //   // await bytes.into(SHA256);
-  //   // await bytes.into(SHA128);
-  // });
-
-  test('exclusive', async () => {
+  test('exclusive control', async () => {
+    // 検証対象のファイル
     const p1 = new Path('test1');
-    const p2 = new Path('test2');
-    await Promise.all([
-      p1.test('01'),
-      p1.test('02'),
-      p1.parent().child('test1').test('03'),
-    ]);
-    sleep(1000);
-    await Promise.all([p1.test('11'), p2.test('12')]);
+    // 別オブジェクトから同一のファイル（test1）にアクセスする状況を想定
+    const p2 = new Path('test1');
+    // 完全別ファイル
+    const p3 = new Path('test2');
+    const executionOrder: number[] = [];
 
-    // TODO: 排他制御となっていることを確認するexpectの追加
-  });
+    /** 指定時間`delay`にtest1のロック状態を確認する */
+    const checkLock = async (delay: number) => {
+      await sleep(delay);
+      return p1.isLocked();
+    };
 
-  describe.skip('Path file operations with busy resources', () => {
-    test('write to opened file should handle EBUSY error', async () => {
-      const testPath = new Path('test.txt');
+    // Run two test() calls simultaneously
+    const [result1, isLocked1, result2, isLocked2, result3] = await Promise.all(
+      [
+        // run time is 100ms
+        p1.test(100).then((val) => {
+          executionOrder.push(1);
+          return val;
+        }),
+        checkLock(50), // 50ms経過時点ではtest1が実行中のため，test1がロックされている
+        // run time is 10ms
+        p2.test(10).then((val) => {
+          executionOrder.push(2);
+          return val;
+        }),
+        // --> total run time is 110ms
 
-      // ファイルを開いたままにする
-      const fileHandle = fs.openSync(testPath.path, 'w');
+        checkLock(200), // 200ms経過時点ではtest1が完了しているため，test1がロックされていない
+        // other file
+        p3.test(50).then((val) => {
+          executionOrder.push(3);
+          return val;
+        }),
+      ]
+    );
 
-      // 開いているファイルに書き込みを試みる
-      const writeResult = await testPath.writeText('test content');
+    // Verify:
+    // 1. Both calls return expected value (10)
+    expect(result1).toBe(100);
+    expect(result2).toBe(10);
+    expect(result3).toBe(50);
 
-      // クリーンアップ
-      fs.closeSync(fileHandle);
-      await testPath.remove();
+    // 2. test1 is locked for 50ms, not locked for 200ms
+    expect(isLocked1).toBe(true);
+    expect(isLocked2).toBe(false);
 
-      // エラーがFailableとして適切に返されることを確認
-      // TODO: EBUSY errorをうまく再現できていないため，要検証
-      expect(isError(writeResult)).toBe(true);
-    });
-
-    test('remove opened file should handle EBUSY error', async () => {
-      const testPath = new Path('test2.txt');
-      await testPath.writeText('initial content');
-
-      // ファイルを開いたままにする
-      const fileHandle = fs.openSync(testPath.path, 'r');
-
-      // 開いているファイルの削除を試みる
-      const removeResult = await testPath.remove();
-
-      // クリーンアップ
-      fs.closeSync(fileHandle);
-      await testPath.remove();
-
-      // エラーがFailableとして適切に返されることを確認
-      expect(isError(removeResult)).toBe(true);
-    });
+    // 3. Execution order shows sequential processing (not parallel)
+    // test1とtest2という別リソースに対する処理は並列に実行されるが，
+    // test1同士という同じリソースに対する処理は直列に実行される
+    // test1 |---------->(p1, 100ms) |->(p2, 10ms)
+    // check       ^(50ms, Lock=true)                ^(200ms, Lock=false)
+    // test2 |----->(p3, 50ms)
+    expect(executionOrder).toEqual([3, 1, 2]);
   });
 }

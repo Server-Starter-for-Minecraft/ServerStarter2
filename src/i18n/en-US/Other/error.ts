@@ -46,6 +46,10 @@ export const enUSError: MessageSchema['error'] = {
         title: 'Failed to read the {type}',
         desc: 'failed for {path}',
       },
+      renameFailed: {
+        title: 'Failed to rename the {type}',
+        desc: 'failed for {path}',
+      },
       alreadyExists: {
         title: '{type} already exists',
       },

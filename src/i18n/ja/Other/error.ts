@@ -48,6 +48,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: '{type}の読み込みに失敗しました',
         desc: '{path}を読み込めませんでした',
       },
+      renameFailed: {
+        title: '{type}のリネームに失敗しました',
+        desc: '{path}をリネームできませんでした',
+      },
       alreadyExists: {
         title: '{type}が既に存在しています',
       },
