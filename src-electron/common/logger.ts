@@ -1,9 +1,10 @@
+import dayjs, { Dayjs } from 'dayjs';
 import log4js from 'log4js';
 import { c } from 'tar';
 import { Path } from '../util/binary/path';
-import { asyncForEach } from '../util/obj/objmap';
 
 const LATEST = 'latest.log';
+const ARCHIVE_EXT = '.log.gz';
 
 // ログファイルをtar.gzに圧縮して保存
 async function compressArchive(logDir: Path, latestLog: Path) {
@@ -66,24 +67,11 @@ log4js.addLayout('custom', function () {
   };
 });
 
-/** YYYY-MM-DD-HH */
-function formatDate(date: Date) {
-  function paddedNumber(n: number, digit: number) {
-    return n.toString().padStart(digit, '0');
-  }
-  const YYYY = paddedNumber(date.getFullYear(), 4);
-  const MM = paddedNumber(date.getMonth() + 1, 2);
-  const DD = paddedNumber(date.getDate(), 2);
-  const HH = paddedNumber(date.getHours(), 2);
-
-  return `${YYYY}-${MM}-${DD}-${HH}`;
-}
-
-function getArchivePath(logDir: Path, time: Date) {
+function getArchivePath(logDir: Path, time: Dayjs) {
   let i = 0;
-  const format = formatDate(time);
+  const format = time.format('YYYY-MM-DD-HH');
   while (true) {
-    const path = logDir.child(`${format}-${i}.tar.gz`);
+    const path = logDir.child(`${format}-${i}${ARCHIVE_EXT}`);
     if (!path.exists()) {
       return [`${format}-${i}.log`, path] as const;
     }
@@ -91,27 +79,20 @@ function getArchivePath(logDir: Path, time: Date) {
   }
 }
 
-async function archive(logDir: Path) {
+async function archiveLog(logDir: Path) {
   // .latestを圧縮してアーカイブ
   const latestLog = logDir.child(LATEST);
   if (latestLog.exists()) {
     await compressArchive(logDir, latestLog);
   }
 
-  // 一週間前の日付
-  const thresholdDate = new Date();
-  thresholdDate.setDate(thresholdDate.getDate() - 7);
-
-  await asyncForEach(await logDir.iter(), async (path) => {
-    // 最終更新が一週間以上前のYYY-MM-DD-HH-I.logを削除する
-    const match = path.basename().match(/\d{4}-\d{2}-\d{2}-\d{2}-\d+.tar.gz/);
-    if (match) {
-      const updateDate = await path.lastUpdateTime();
-      if (updateDate < thresholdDate) {
-        await path.remove();
-      }
-    }
-  });
+  // 一週間前のログファイルを削除
+  const thresholdDate = dayjs().subtract(7, 'd');
+  for (const path of await logDir.iter()) {
+    if (!path.path.endsWith(ARCHIVE_EXT)) continue;
+    const updateDate = await path.lastUpdateTime();
+    if (updateDate.isBefore(thresholdDate)) await path.remove();
+  }
 }
 
 export function getRootLogger(logDir: Path): {
@@ -139,7 +120,7 @@ export function getRootLogger(logDir: Path): {
     },
   });
 
-  return { logger: getLoggerHierarchy(), archive: () => archive(logDir) };
+  return { logger: getLoggerHierarchy(), archive: () => archiveLog(logDir) };
 }
 
 // export type loglevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
@@ -207,3 +188,50 @@ const handler: ProxyHandler<LoggerHierarchy> = {
     return getLoggerHierarchy(newCategory);
   },
 };
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  const path = await import('path');
+  const { isError } = await import('../util/error/error');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child(
+    'work',
+    path.basename(__filename, '.ts')
+  );
+  workPath.mkdir();
+
+  // ログオブジェクト
+  const { logger, archive } = getRootLogger(workPath);
+
+  const logpath = workPath.child(LATEST);
+
+  const readLastLogLine = async () => {
+    const logTxt = await logpath.readText();
+    if (isError(logTxt)) return logTxt;
+    const lines = logTxt.trim().split(/\r?\n|\r/);
+    return lines[lines.length - 1];
+  };
+
+  test('base logger test', async () => {
+    const log = logger.test.base({});
+    log.info('test message');
+    expect(await readLastLogLine()).toBe(
+      '{"level":"INFO","state":"info","category":"test.base","args":{},"data":["test message"]}'
+    );
+  });
+
+  test('archive logs', async () => {
+    await archive();
+    const prefix = dayjs().format('YYYY-MM-DD-HH');
+    const targetArchivePath = workPath.child(`${prefix}-0.log.gz`);
+    expect(targetArchivePath.exists()).toBe(true);
+  });
+
+  // アーカイブデータが残っているとarchive logsのテストが意味をなさないため，毎回削除する
+  test('remove work folder', async () => {
+    await workPath.parent().remove();
+    expect(workPath.exists()).toBe(false);
+  });
+}

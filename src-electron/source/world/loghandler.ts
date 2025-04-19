@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { Failable } from 'app/src-electron/schema/error';
 import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
 import { gzip } from 'app/src-electron/util/binary/archive/gz';
@@ -40,8 +40,8 @@ export class WorldLogHandler {
     return this.logsPath.child('latest.log');
   }
 
-  private getArchivePath(date: Date) {
-    const base = dayjs(date).format('YYYY-MM-DD');
+  private getArchivePath(date: Dayjs) {
+    const base = date.format('YYYY-MM-DD');
     let i = 1;
     let path = this.logsPath.child(`${base}-${i}.log.gz`);
     while (path.exists()) path = this.logsPath.child(`${base}-${++i}.log.gz`);
