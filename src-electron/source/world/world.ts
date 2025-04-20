@@ -28,6 +28,8 @@ export async function getWorldAbbrs(
 ): Promise<WithError<WorldAbbr[]>> {
   const dir = worldContainerToPath(worldContainer);
   const subdir = await dir.iter();
+  if (isError(subdir)) return withError([], [subdir]);
+
   const results = await asyncMap(subdir, (x) =>
     getWorldAbbr(x, worldContainer)
   );

@@ -162,7 +162,7 @@ const SPIGOT_BUILDTOOL_URL =
 /** ビルドツールのダウンロード */
 async function readySpigotBuildTool(
   buildDir: Path
-): Promise<Failable<undefined>> {
+): Promise<Failable<void>> {
   // ビルドツールをダウンロード
   const buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 
@@ -174,7 +174,7 @@ async function readySpigotBuildTool(
   // ハッシュ値をコンフィグに保存
   versionConfig.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
 
-  await buildToolPath.write(buildtool);
+  return buildToolPath.write(buildtool);
 }
 
 type SpigotVersionData = {
@@ -280,7 +280,8 @@ async function buildSpigotVersion(
     });
   }
 
-  await jarPath.rename(targetpath);
+  const isSuccessRename = await jarPath.rename(targetpath);
+  if (isError(isSuccessRename)) return isSuccessRename;
 
   m?.delete();
 }

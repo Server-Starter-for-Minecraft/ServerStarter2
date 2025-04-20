@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { AllForgeVersion, ForgeVersion } from 'src-electron/schema/version';
+import { AllForgeVersion, ForgeVersion, VersionId } from 'src-electron/schema/version';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -91,13 +91,17 @@ async function installForgeVersion(version: ForgeVersion, cwdPath: Path) {
   if (isError(serverData)) return serverData;
 
   // インストーラーを保存
-  await installerPath.write(serverData);
+  const failableWriteInstaller = await installerPath.write(serverData);
+  if (isError(failableWriteInstaller)) return failableWriteInstaller;
 
   // インストーラーを実行
   const installResult = await installForge(installerPath);
   if (isError(installResult)) return installResult;
 
-  for (const file of await cwdPath.iter()) {
+  const allPaths = await cwdPath.iter();
+  if (isError(allPaths)) return allPaths;
+
+  for (const file of allPaths) {
     const filename = file.basename();
 
     // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
@@ -122,7 +126,10 @@ async function installForgeVersion(version: ForgeVersion, cwdPath: Path) {
 }
 
 async function uninstallForgeVersion(cwdPath: Path) {
-  for (const file of await cwdPath.iter()) {
+  const allPaths = await cwdPath.iter();
+  if (isError(allPaths)) return allPaths;
+
+  for (const file of allPaths) {
     const filename = file.basename();
     // forge関連の実行系ファイルを削除
     const match = filename.match(/forge-.*\.(jar|bat|sh)/);
@@ -273,7 +280,8 @@ const noInstallerVersionIds = new Set([
 export async function scrapeForgeVersions(
   id: string
 ): Promise<Failable<AllForgeVersion[number]>> {
-  if (noInstallerVersionIds.has(id))
+  const parsedId = VersionId.safeParse(id);
+  if (noInstallerVersionIds.has(id) || !parsedId.success)
     return errorMessage.core.version.forgeInstallerNotProvided({ version: id });
 
   const versionUrl = `https://files.minecraftforge.net/net/minecraftforge/forge/index_${id}.html`;
@@ -329,7 +337,7 @@ export async function scrapeForgeVersions(
   });
 
   return {
-    id,
+    id: parsedId.data,
     forge_versions,
     recommended,
   };

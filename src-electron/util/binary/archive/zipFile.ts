@@ -99,7 +99,7 @@ export class ZipFile {
   }
 
   /** zipを展開 */
-  async extract(path: Path) {
+  async extract(path: Path): Promise<Failable<void>> {
     const files = await this.handler.files;
     if (isError(files)) return files;
     const ents = toEntries(files);

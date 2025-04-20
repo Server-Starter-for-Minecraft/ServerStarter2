@@ -21,8 +21,10 @@ const MCMETA_FILE = 'pack.mcmeta';
 
 async function loader(path: Path): Promise<Failable<DatapackData>> {
   let mcmetaData: Failable<BytesData>;
+  const isPathDir = await path.isDirectory();
+  if (isError(isPathDir)) return isPathDir;
 
-  if (await path.isDirectory()) {
+  if (isPathDir) {
     // ディレクトリの場合
     const metaPath = path.child(MCMETA_FILE);
     // pack.mcmetaが存在しない場合エラー

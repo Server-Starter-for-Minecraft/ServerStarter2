@@ -675,7 +675,8 @@ export class WorldHandler {
     if (isError(tar)) return withError(tar);
 
     // tarファイルを保存
-    await backupPath.write(tar);
+    const failableWrite = await backupPath.write(tar);
+    if (isError(failableWrite)) return withError(failableWrite);
 
     // バックアップデータを返却
     return withError(await parseBackUpPath(backupPath));
@@ -882,7 +883,9 @@ export class WorldHandler {
 
     // 実行時のサーバープロパティ(ポートだけ違う)
     const execServerProperties: ServerProperties = {
-      ...(isError(beforeWorld.properties) ? {} : beforeWorld.properties),
+      ...(isError(beforeWorld.properties)
+        ? sysSettings.world.properties
+        : beforeWorld.properties),
     };
     const beforeServerPort = execServerProperties['server-port'];
     const beforeQueryport = execServerProperties['query.port'];

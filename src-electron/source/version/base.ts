@@ -83,7 +83,8 @@ export const genGetAllVersions = <V extends Version>(
     }
 
     // 結果をローカルに保存
-    await jsonpath.write(data);
+    const failableWrite = await jsonpath.write(data);
+    if (isError(failableWrite)) return failableWrite;
     versionConfig.set(configkey, await data.hash('sha1'));
 
     logger.success('load from remote');

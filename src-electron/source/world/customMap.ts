@@ -58,6 +58,7 @@ export async function loadCustomMap(
   path: Path
 ): Promise<Failable<CustomMapData>> {
   const isDirectory = await path.isDirectory();
+  if (isError(isDirectory)) return isDirectory;
 
   /** level.dat の内容 */
   let dat: Failable<BytesData>;
@@ -197,6 +198,8 @@ async function importCustomMapDir(
 /** ローカルで使われていたであろうMOD一覧をキャッシュにコピー */
 async function cacheLocalMods(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('mods').iter();
+  if (isError(paths)) return;
+  
   const load = async (path: Path) => await modFiles.loadNew(path);
   const mods = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(mods, async (data) => await modFiles.appendCache(data));
@@ -205,6 +208,8 @@ async function cacheLocalMods(sourcePath: Path): Promise<void> {
 /** ローカルで使われていたであろうPlugin一覧をキャッシュにコピー */
 async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('plugins').iter();
+  if (isError(paths)) return;
+  
   const load = async (path: Path) => await pluginFiles.loadNew(path);
   const plugins = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(plugins, async (data) => await pluginFiles.appendCache(data));
@@ -213,6 +218,8 @@ async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
 /** ローカルで使われていたであろうDatapack一覧をキャッシュにコピー */
 async function cacheLocalDatapacks(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.child('datapacks').iter();
+  if (isError(paths)) return;
+  
   const load = async (path: Path) => await datapackFiles.loadNew(path);
   const datapacks = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(datapacks, async (data) => datapackFiles.appendCache(data));

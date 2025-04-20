@@ -24,6 +24,8 @@ export class WorldLogHandler {
 
   /**
    * 現状のlatest.logをアーカイブ化する(存在する場合)
+   * 
+   * Failの可能性があるが，latest.logのアーカイブ成否はユーザーの実行に問題にならないため通知しない
    */
   async archive() {
     const latestPath = this.LatestLogPath;

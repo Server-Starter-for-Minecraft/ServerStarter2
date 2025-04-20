@@ -102,13 +102,16 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const loaded = await this.loader(path, true);
     if (isError(loaded)) return loaded;
 
+    const isPathDir = await path.isDirectory();
+    if (isError(isPathDir)) return isPathDir;
+
     const result: NewFileData<T> = {
       ...loaded,
       type: 'new',
       name: path.stemname(),
       ext: path.extname(),
       path: path.path,
-      isFile: !(await path.isDirectory()),
+      isFile: !isPathDir,
     };
     return result;
   }
@@ -128,6 +131,8 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
 
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
     const paths = await this.cachePath.iter();
+    if (isError(paths)) return withError([], [paths]);
+
     const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
 
     const array = zip(paths, loaded)
@@ -149,6 +154,8 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   ): Promise<WithError<WorldFileData<T>[]>> {
     const dirPath = cwdPath.child(this.childPath);
     const paths = await dirPath.iter();
+    if (isError(paths)) return withError([], [paths]);
+
     const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
 
     const array = zip(paths, loaded)
@@ -218,9 +225,10 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       .filter((file) => value.find((x) => x.name === file.name) === undefined);
 
     // 非同期で削除
-    await asyncForEach(deletFiles, (x) =>
+    const deleteErrs = await asyncMap(deletFiles, (x) =>
       dirPath.child(`${x.name}${x.ext}`).remove()
     );
+    errors.push(...deleteErrs.filter(isError));
 
     return withError(undefined, errors);
   }

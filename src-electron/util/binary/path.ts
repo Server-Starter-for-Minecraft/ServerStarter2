@@ -107,7 +107,6 @@ export class Path {
     });
   }
 
-  // TODO: エラーの戻り値を考慮して呼び出し元を修正
   isDirectory = exclusive(this._isDirectory);
   private async _isDirectory(): Promise<Failable<boolean>> {
     const stat = await this._stat();
@@ -128,7 +127,6 @@ export class Path {
     if (isError(isDir)) return isDir;
 
     return fs.rename(this._path, newpath.absolute().path).catch(async () => {
-      // TODO: エラーの戻り値を考慮して呼び出し元を修正
       return errorMessage.data.path.renameFailed({
         type: isDir ? 'directory' : 'file',
         path: this.path,
@@ -182,7 +180,6 @@ export class Path {
 
   write = exclusive(this._write);
   private async _write(content: BytesData) {
-    // TODO: エラーの戻り値を考慮して呼び出し元を修正
     await this.parent().mkdir(true);
     return content.write(this._path);
   }
