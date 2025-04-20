@@ -41,9 +41,10 @@ export class PromiseSpooler {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
-  const { sleep } = await import('./sleep');
 
-  describe('Promise直列化のテスト', () => {
+  describe('Promise直列化のテスト', async () => {
+    const { sleep } = await import('./sleep');
+
     test('プロミス1つで問題なく動く', async () => {
       const spooler = new PromiseSpooler();
 
