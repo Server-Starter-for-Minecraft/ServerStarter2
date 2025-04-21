@@ -171,10 +171,11 @@ export async function saveLocalFiles(
   // TODO: メソッドを分割すべき
   if (world.custom_map) {
     // ファイル削除待機
-    await asyncForEach(
+    const removeRes = await asyncMap(
       [PLUGIN_NETHER_LEVEL_NAME, PLUGIN_THE_END_LEVEL_NAME],
       (path) => savePath.child(path).remove()
     );
+    errors.push(...removeRes.filter(isError));
 
     // 導入待機
     const importResult = await importCustomMap(
@@ -219,7 +220,7 @@ export async function saveLocalFiles(
     if (isError(pull)) errors.push(pull);
   }
 
-  const promisses: Promise<any>[] = [
+  const promisses: Promise<Failable<any>>[] = [
     serverJsonFile.save(savePath, worldSettings),
     serverIconFile.save(savePath, world.avater_path),
   ];
@@ -247,7 +248,8 @@ export async function saveLocalFiles(
     promisses.push(serverPropertiesFile.save(savePath, world.properties));
   }
 
-  await Promise.all(promisses);
+  const promissesRes = await Promise.all(promisses);
+  errors.push(...promissesRes.filter(isError));
 
   // ローカルのデータを再読み込みして返却
   return constructResult();

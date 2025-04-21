@@ -194,7 +194,6 @@ export class Path {
     content: string,
     encoding: BufferEncoding = 'utf8'
   ): Promise<Failable<void>> {
-    // TODO: エラーの戻り値を考慮して呼び出し元を修正
     const bytes = await (await loadBytesData()).fromText(content);
     if (isError(bytes)) return bytes;
     return this._write(bytes);
@@ -208,7 +207,6 @@ export class Path {
 
   writeJson = exclusive(this._writeJson);
   private async _writeJson<T>(content: T) {
-    // TODO: エラーの戻り値を考慮して呼び出し元を修正
     return this._writeText(JSON.stringify(content));
   }
 
@@ -225,7 +223,6 @@ export class Path {
     try {
       await fs.appendFile(this._path, content, { encoding });
     } catch {
-      // TODO: エラーの戻り値を考慮して呼び出し元を修正
       return errorMessage.data.path.creationFailed({
         type: 'file',
         path: this.path,

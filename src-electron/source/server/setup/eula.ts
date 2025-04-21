@@ -78,7 +78,8 @@ export async function checkEula(
     key: 'server.eula.saving',
   });
   // eulaの内容を書き込む
-  await eulaPath.writeText(txt);
+  const writeEula = await eulaPath.writeText(txt);
+  if (isError(writeEula)) return writeEula;
   saveSub.delete();
 
   return agree;
@@ -117,13 +118,12 @@ async function generateEula(
   programArgunets: string[],
   serverCwdPath: Path,
   version: Version
-): Promise<Failable<undefined>> {
+): Promise<Failable<void>> {
   const eulaPath = serverCwdPath.child('eula.txt');
 
   // mohistmcはeula.txtを生成して終了しないためこちらで生成してしまう
   if (version.type === 'mohistmc') {
-    await eulaPath.writeText('eula=false');
-    return;
+    return await eulaPath.writeText('eula=false');
   }
 
   // サーバーを仮起動

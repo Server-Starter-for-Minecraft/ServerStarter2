@@ -50,7 +50,11 @@ export class WorldLogHandler {
     return path;
   }
 
-  /** 一時記録用のログファイルに追記 */
+  /** 
+   * 一時記録用のログファイルに追記
+   * 
+   * ログへの書き込みに問題が生じてもユーザーには問題がないため，appendTextのエラーは通知しない
+   */
   async append(content: string) {
     const tmp = await this.tempPath.get();
     tmp.appendText(content);

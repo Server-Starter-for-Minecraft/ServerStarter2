@@ -47,8 +47,7 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
   },
   async save(cwdPath, value) {
     const filePath = cwdPath.child(SERVER_PROPERTIES_PATH);
-
-    await filePath.writeText(stringify(value));
+    return await filePath.writeText(stringify(value));
   },
   path(cwdPath) {
     return cwdPath.child(SERVER_PROPERTIES_PATH);

@@ -28,7 +28,7 @@ export const bannedIpsHandler: ServerSettingFile<BannedIps> = {
   save(cwdPath, value) {
     return cwdPath.child(FILENAME).writeText(JSON.stringify(value));
   },
-  remove(cwdPath) {
-    return cwdPath.child(FILENAME).remove();
+  path(cwdPath) {
+    return cwdPath.child(FILENAME);
   },
 };
