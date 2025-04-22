@@ -160,9 +160,7 @@ const SPIGOT_BUILDTOOL_URL =
   'https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar';
 
 /** ビルドツールのダウンロード */
-async function readySpigotBuildTool(
-  buildDir: Path
-): Promise<Failable<void>> {
+async function readySpigotBuildTool(buildDir: Path): Promise<Failable<void>> {
   // ビルドツールをダウンロード
   const buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 

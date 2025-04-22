@@ -6,9 +6,9 @@ import { isError } from 'app/src-electron/util/error/error';
 import { getBytesFile } from 'app/src-electron/util/github/rest';
 import { updateMessage } from './message';
 
-/** 
+/**
  * windowsの最新版をダウンロードしてインストールして再起動
- * 
+ *
  * アップデートに失敗してもエラーで処理を止める必要がないため握りつぶす
  */
 export const installWindows = async (
@@ -31,7 +31,7 @@ echo ${updateMessage[sys.user.language].main}
 msiexec /i updater.msi /qb
 start "" "${app.getPath('exe')}"
 exit`);
-    if (isError(writeBat)) return;
+  if (isError(writeBat)) return;
 
   const sub = spawn('start', ['/min', '""', 'updater.bat'], {
     cwd: mainPath.path,

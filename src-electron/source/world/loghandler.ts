@@ -24,7 +24,7 @@ export class WorldLogHandler {
 
   /**
    * 現状のlatest.logをアーカイブ化する(存在する場合)
-   * 
+   *
    * Failの可能性があるが，latest.logのアーカイブ成否はユーザーの実行に問題にならないため通知しない
    */
   async archive() {
@@ -50,9 +50,9 @@ export class WorldLogHandler {
     return path;
   }
 
-  /** 
+  /**
    * 一時記録用のログファイルに追記
-   * 
+   *
    * ログへの書き込みに問題が生じてもユーザーには問題がないため，appendTextのエラーは通知しない
    */
   async append(content: string) {

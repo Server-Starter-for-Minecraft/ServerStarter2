@@ -77,7 +77,7 @@ export async function pushPlayerCache(player: Player) {
 
 /**
  * プレイヤー情報をキャッシュに登録する
- * 
+ *
  * キャッシュへの登録処理でエラーが出てもユーザーには問題がないため握りつぶす
  */
 async function setPlayerCache(cache: PlayerCache) {

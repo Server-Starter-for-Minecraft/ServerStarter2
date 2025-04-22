@@ -199,7 +199,7 @@ async function importCustomMapDir(
 async function cacheLocalMods(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('mods').iter();
   if (isError(paths)) return;
-  
+
   const load = async (path: Path) => await modFiles.loadNew(path);
   const mods = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(mods, async (data) => await modFiles.appendCache(data));
@@ -209,7 +209,7 @@ async function cacheLocalMods(sourcePath: Path): Promise<void> {
 async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('plugins').iter();
   if (isError(paths)) return;
-  
+
   const load = async (path: Path) => await pluginFiles.loadNew(path);
   const plugins = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(plugins, async (data) => await pluginFiles.appendCache(data));
@@ -219,7 +219,7 @@ async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
 async function cacheLocalDatapacks(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.child('datapacks').iter();
   if (isError(paths)) return;
-  
+
   const load = async (path: Path) => await datapackFiles.loadNew(path);
   const datapacks = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(datapacks, async (data) => datapackFiles.appendCache(data));
