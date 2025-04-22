@@ -11,15 +11,7 @@ export class gzip {
     const content = await path.read();
     if (isError(content)) return content;
 
-    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
-      const bytesData = await BytesData.fromBuffer(content.data);
-      if (isError(bytesData)) return reject(bytesData);
-
-      zlib.gzip(bytesData.arrayBuffer(), (err, binary) => {
-        if (err !== null) reject(err);
-        resolve(BytesData.fromBuffer(binary));
-      });
-    });
+    return this.fromData(content);
   }
 
   // gzipから元のファイルを生成
@@ -27,15 +19,7 @@ export class gzip {
     const content = await path.read();
     if (isError(content)) return content;
 
-    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
-      const bytesData = await BytesData.fromBuffer(content.data);
-      if (isError(bytesData)) return reject(bytesData);
-
-      zlib.gunzip(bytesData.arrayBuffer(), (err, binary) => {
-        if (err !== null) reject(err);
-        resolve(BytesData.fromBuffer(binary));
-      });
-    });
+    return this.unpackData(content);
   }
 
   // BytesDataからgzipを生成
@@ -45,6 +29,19 @@ export class gzip {
       if (isError(bytesData)) return reject(bytesData);
 
       zlib.gzip(bytesData.arrayBuffer(), (err, binary) => {
+        if (err !== null) reject(err);
+        resolve(BytesData.fromBuffer(binary));
+      });
+    });
+  }
+
+  // gzipから元のデータを生成
+  static async unpackData(content: BytesData): Promise<Failable<BytesData>> {
+    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
+      const bytesData = await BytesData.fromBuffer(content.data);
+      if (isError(bytesData)) return reject(bytesData);
+
+      zlib.gunzip(bytesData.arrayBuffer(), (err, binary) => {
         if (err !== null) reject(err);
         resolve(BytesData.fromBuffer(binary));
       });
@@ -95,7 +92,6 @@ if (import.meta.vitest) {
     test('text', async () => {
       // ランダムなバイト列で検証
       const sampleBytes = Buffer.from('test');
-      const sampleCompressed = 'H4sIAAAAAAAACitJLS4BAAx+f9gEAAAA';
       const src = await BytesData.fromBuffer(sampleBytes);
 
       expect(isError(src)).toBe(false);
@@ -107,7 +103,14 @@ if (import.meta.vitest) {
       expect(isError(compressed)).toBe(false);
       if (isError(compressed)) return;
 
-      expect(compressed.data.toString('base64')).toBe(sampleCompressed);
+      // gzip解凍
+      const unCompressed = await gzip.unpackData(compressed);
+
+      expect(isError(unCompressed)).toBe(false);
+      if (isError(unCompressed)) return;
+
+      // 元データと「圧縮->解凍」したデータが一致するか確認
+      expect(await src.text()).toBe(await unCompressed.text());
     });
   });
 }
