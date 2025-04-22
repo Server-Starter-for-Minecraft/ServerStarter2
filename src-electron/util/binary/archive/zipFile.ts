@@ -45,7 +45,9 @@ class ZipHandler {
             innerPath,
           });
         } else {
-          dat = await BytesData.fromBuffer(await v.async('arraybuffer'));
+          dat = await BytesData.fromBuffer(
+            Buffer.from(await v.async('arraybuffer'))
+          );
         }
         return dat;
       };

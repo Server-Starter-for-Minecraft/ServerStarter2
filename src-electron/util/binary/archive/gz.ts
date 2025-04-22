@@ -11,8 +11,11 @@ export class gzip {
     const content = await path.read();
     if (isError(content)) return content;
 
-    return new Promise<Failable<BytesData>>((resolve, reject) => {
-      zlib.gzip(content.data, (err, binary) => {
+    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
+      const bytesData = await BytesData.fromBuffer(content.data);
+      if (isError(bytesData)) return reject(bytesData);
+
+      zlib.gzip(bytesData.arrayBuffer(), (err, binary) => {
         if (err !== null) reject(err);
         resolve(BytesData.fromBuffer(binary));
       });
@@ -21,8 +24,11 @@ export class gzip {
 
   // BytesDataからgzipを生成
   static async fromData(content: BytesData): Promise<Failable<BytesData>> {
-    return new Promise<Failable<BytesData>>((resolve, reject) => {
-      zlib.gzip(content.data, (err, binary) => {
+    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
+      const bytesData = await BytesData.fromBuffer(content.data);
+      if (isError(bytesData)) return reject(bytesData);
+
+      zlib.gzip(bytesData.arrayBuffer(), (err, binary) => {
         if (err !== null) reject(err);
         resolve(BytesData.fromBuffer(binary));
       });

@@ -21,8 +21,8 @@ export type Hash = {
 
 /** BlobやFile等のBytesデータのクラス */
 export class BytesData {
-  data: ArrayBuffer;
-  private constructor(data: ArrayBuffer) {
+  data: Buffer;
+  private constructor(data: Buffer) {
     this.data = data;
   }
 
@@ -46,7 +46,7 @@ export class BytesData {
         });
       }
       const buffer = await res.arrayBuffer();
-      const result = new BytesData(buffer);
+      const result = new BytesData(Buffer.from(buffer));
 
       if (hash === undefined) {
         logger.success();
@@ -108,7 +108,7 @@ export class BytesData {
 
   /** utf-8の形式でByteDataに変換 */
   static async fromText(text: string): Promise<Failable<BytesData>> {
-    return new BytesData(new TextEncoder().encode(text));
+    return new BytesData(Buffer.from(new TextEncoder().encode(text)));
   }
 
   /** base64の形式でByteDataに変換 */
@@ -117,7 +117,7 @@ export class BytesData {
   }
 
   /** base64の形式でByteDataに変換 */
-  static async fromBuffer(buffer: ArrayBuffer): Promise<Failable<BytesData>> {
+  static async fromBuffer(buffer: Buffer): Promise<Failable<BytesData>> {
     return new BytesData(buffer);
   }
 
@@ -231,7 +231,7 @@ export class BytesData {
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
     const sha1 = createHash(algorithm);
-    sha1.update(Buffer.from(this.data));
+    sha1.update(this.data.toString('binary'));
     return sha1.digest('hex');
   }
 
@@ -265,7 +265,7 @@ export class BytesData {
   async nbt<T extends object>(): Promise<Failable<T>> {
     try {
       const nbt = await prismarineNbt;
-      const result = await nbt.parse(Buffer.from(this.data), 'big');
+      const result = await nbt.parse(this.data, 'big');
       return nbt.simplify(result.parsed);
     } catch (e) {
       return fromRuntimeError(e);
@@ -277,9 +277,17 @@ export class BytesData {
    * mimetypeの例 "image/png"
    */
   async encodeURI(mimetype: string): Promise<ImageURI> {
-    // ArrayBufferからbase64に変換
-    const base64uri = Buffer.from(this.data).toString('base64');
-
+    // Bufferからbase64に変換
+    const base64uri = this.data.toString('base64');
     return `data:${mimetype};base64,${base64uri}` as ImageURI;
+  }
+
+  arrayBuffer() {
+    const arrayBuffer = new ArrayBuffer(this.data.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < this.data.length; ++i) {
+      view[i] = this.data[i];
+    }
+    return arrayBuffer;
   }
 }

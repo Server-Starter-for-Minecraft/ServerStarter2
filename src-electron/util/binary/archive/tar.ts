@@ -36,7 +36,9 @@ export async function createTar(
       .on('finish', resolve)
       .on('error', (e) => resolve(fromRuntimeError(e)));
   });
-  return BytesData.fromBuffer(Buffer.concat(buffers));
+  return BytesData.fromBuffer(
+    Buffer.concat(buffers.map((buff) => Uint8Array.from(buff)))
+  );
 }
 
 export async function decompressTar(
