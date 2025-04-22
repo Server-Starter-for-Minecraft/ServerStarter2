@@ -46,6 +46,10 @@ export const enUSError: MessageSchema['error'] = {
         title: 'Failed to read the {type}',
         desc: 'failed for {path}',
       },
+      renameFailed: {
+        title: 'Failed to rename the {type}',
+        desc: 'failed for {path}',
+      },
       alreadyExists: {
         title: '{type} already exists',
       },
@@ -103,9 +107,13 @@ export const enUSError: MessageSchema['error'] = {
           desc: '{path} is inappropriate',
         },
       },
-      creationFiled: {
+      creationFailed: {
         title: 'Failed to create {type}',
-        desc: 'failed to create {path}',
+        desc: 'Failed to create {path}',
+      },
+      deletionFailed: {
+        title: 'Failed to delete {type}',
+        desc: 'Failed to delete {path}',
       },
       dialogCanceled: {
         title: 'Window to select file is cancelled',

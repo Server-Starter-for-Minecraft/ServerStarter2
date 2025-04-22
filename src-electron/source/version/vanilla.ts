@@ -75,11 +75,12 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
     const s = progress?.subtitle({
       key: 'server.readyVersion.vanilla.saving',
     });
-    await jarpath.write(serverData);
+    const failableWriteJar = await jarpath.write(serverData);
+    if (isError(failableWriteJar)) return failableWriteJar;
     s?.delete();
 
     return {
-      programArguments: ['-jar', jarpath.absolute().strQuoted()],
+      programArguments: ['-jar', jarpath.absolute().quotedPath],
       component: json.javaVersion?.component ?? 'jre-legacy',
     };
   },

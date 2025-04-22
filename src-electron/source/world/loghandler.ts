@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { Failable } from 'app/src-electron/schema/error';
 import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
 import { gzip } from 'app/src-electron/util/binary/archive/gz';
@@ -24,6 +24,8 @@ export class WorldLogHandler {
 
   /**
    * 現状のlatest.logをアーカイブ化する(存在する場合)
+   *
+   * Failの可能性があるが，latest.logのアーカイブ成否はユーザーの実行に問題にならないため通知しない
    */
   async archive() {
     const latestPath = this.LatestLogPath;
@@ -40,15 +42,19 @@ export class WorldLogHandler {
     return this.logsPath.child('latest.log');
   }
 
-  private getArchivePath(date: Date) {
-    const base = dayjs(date).format('YYYY-MM-DD');
+  private getArchivePath(date: Dayjs) {
+    const base = date.format('YYYY-MM-DD');
     let i = 1;
     let path = this.logsPath.child(`${base}-${i}.log.gz`);
     while (path.exists()) path = this.logsPath.child(`${base}-${++i}.log.gz`);
     return path;
   }
 
-  /** 一時記録用のログファイルに追記 */
+  /**
+   * 一時記録用のログファイルに追記
+   *
+   * ログへの書き込みに問題が生じてもユーザーには問題がないため，appendTextのエラーは通知しない
+   */
   async append(content: string) {
     const tmp = await this.tempPath.get();
     tmp.appendText(content);

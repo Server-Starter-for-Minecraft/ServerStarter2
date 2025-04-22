@@ -1,7 +1,7 @@
 import { Writable } from 'stream';
 import { c, x } from 'tar';
 import { Failable } from '../../../schema/error';
-import { fromRuntimeError } from '../../error/error';
+import { fromRuntimeError, isError } from '../../error/error';
 import { safeExecAsync } from '../../error/failable';
 import { BytesData } from '../bytesData';
 import { Path } from '../path';
@@ -19,8 +19,10 @@ export async function createTar(
   });
 
   await new Promise<Failable<undefined>>(async (resolve) => {
-    const path = directoryPath.str();
+    const path = directoryPath.path;
     const inner = await directoryPath.iter();
+    if (isError(inner)) return resolve(inner);
+
     c(
       {
         gzip,
@@ -43,8 +45,8 @@ export async function decompressTar(
 ): Promise<Failable<void>> {
   return await safeExecAsync(() =>
     x({
-      file: tarPath.str(),
-      cwd: targetPath.str(),
+      file: tarPath.path,
+      cwd: targetPath.path,
     })
   );
 }

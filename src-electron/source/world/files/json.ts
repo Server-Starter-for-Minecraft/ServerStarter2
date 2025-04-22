@@ -81,7 +81,7 @@ export const serverJsonFile: ServerSettingFile<WorldSettings> = {
   },
   async save(cwdPath, value) {
     const jsonPath = cwdPath.child(WORLD_SETTINGS_PATH);
-    await jsonPath.writeJson(value);
+    return await jsonPath.writeJson(value);
   },
   path(cwdPath) {
     return cwdPath.child(WORLD_SETTINGS_PATH);

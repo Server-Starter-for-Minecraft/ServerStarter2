@@ -171,10 +171,11 @@ export async function saveLocalFiles(
   // TODO: メソッドを分割すべき
   if (world.custom_map) {
     // ファイル削除待機
-    await asyncForEach(
+    const removeRes = await asyncMap(
       [PLUGIN_NETHER_LEVEL_NAME, PLUGIN_THE_END_LEVEL_NAME],
       (path) => savePath.child(path).remove()
     );
+    errors.push(...removeRes.filter(isError));
 
     // 導入待機
     const importResult = await importCustomMap(
@@ -219,7 +220,7 @@ export async function saveLocalFiles(
     if (isError(pull)) errors.push(pull);
   }
 
-  const promisses: Promise<any>[] = [
+  const promisses: Promise<Failable<any>>[] = [
     serverJsonFile.save(savePath, worldSettings),
     serverIconFile.save(savePath, world.avater_path),
   ];
@@ -247,7 +248,8 @@ export async function saveLocalFiles(
     promisses.push(serverPropertiesFile.save(savePath, world.properties));
   }
 
-  await Promise.all(promisses);
+  const promissesRes = await Promise.all(promisses);
+  errors.push(...promissesRes.filter(isError));
 
   // ローカルのデータを再読み込みして返却
   return constructResult();
@@ -313,23 +315,23 @@ export async function formatWorldDirectory(
   progress?.title({ key: 'server.run.before.convertDirectory' });
   switch (true) {
     case current === 'vanilla' && next === 'plugin':
-      await asyncMap(
+      const moveV2P = await asyncMap(
         [
           { from: vanillaNether, to: pluginNether },
           { from: vanillaEnd, to: pluginEnd },
         ],
         ({ from, to }) => from.moveTo(to)
       );
-      return withError(undefined);
+      return withError(undefined, moveV2P.filter(isError));
     case current === 'plugin' && next === 'vanilla':
-      await asyncMap(
+      const moveP2V = await asyncMap(
         [
           { from: pluginNether, to: vanillaNether },
           { from: pluginEnd, to: vanillaEnd },
         ],
         ({ from, to }) => from.moveTo(to)
       );
-      return withError(undefined);
+      return withError(undefined, moveP2V.filter(isError));
     default:
       throw new Error(
         `not implemanted worldDirectoryType conversion: ${current} to ${next}`

@@ -30,7 +30,7 @@ export const bannedPlayersHandler: ServerSettingFile<BannedPlayers> = {
   save(cwdPath, value) {
     return cwdPath.child(FILENAME).writeText(JSON.stringify(value));
   },
-  remove(cwdPath) {
-    return cwdPath.child(FILENAME).remove();
+  path(cwdPath) {
+    return cwdPath.child(FILENAME);
   },
 };

@@ -48,6 +48,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: '{type}の読み込みに失敗しました',
         desc: '{path}を読み込めませんでした',
       },
+      renameFailed: {
+        title: '{type}のリネームに失敗しました',
+        desc: '{path}をリネームできませんでした',
+      },
       alreadyExists: {
         title: '{type}が既に存在しています',
       },
@@ -105,9 +109,13 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
           desc: '{path}の中身が不適当です',
         },
       },
-      creationFiled: {
+      creationFailed: {
         title: '{type}の生成に失敗しました',
         desc: '{path}の生成ができませんでした',
+      },
+      deletionFailed: {
+        title: '{type}の削除に失敗しました',
+        desc: '{path}の削除ができませんでした',
       },
       dialogCanceled: {
         title: 'ファイル選択ウィンドウがキャンセルされました',

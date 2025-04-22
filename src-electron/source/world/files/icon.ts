@@ -29,7 +29,7 @@ export const serverIconFile: ServerSettingFile<ImageURI | undefined> = {
 
     const iconpath = serverIconFile.path(cwdPath);
 
-    await iconpath.write(icondata);
+    return iconpath.write(icondata);
   },
   path(cwdPath) {
     return cwdPath.child(ICON_PATH);

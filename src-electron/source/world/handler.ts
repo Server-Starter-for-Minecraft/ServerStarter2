@@ -231,7 +231,10 @@ export class WorldHandler {
   }
 
   /** セーブデータを移動する*/
-  private async move(name: WorldName, container: WorldContainer) {
+  private async move(
+    name: WorldName,
+    container: WorldContainer
+  ): Promise<Failable<void>> {
     // 現在のワールドの保存場所
     const currentPath = this.getSavePath();
     // 変更される保存先
@@ -241,7 +244,8 @@ export class WorldHandler {
     if (currentPath.path === targetPath.path) return;
 
     // 保存ディレクトリを移動する
-    await currentPath.moveTo(targetPath);
+    const move2SaveDir = await currentPath.moveTo(targetPath);
+    if (isError(move2SaveDir)) return move2SaveDir;
 
     // 保存先を変更
     this.name = name;
@@ -353,7 +357,8 @@ export class WorldHandler {
       );
       if (isValid(newWorldName)) {
         // セーブデータを移動
-        await this.move(world.name, world.container);
+        const moveRes = await this.move(world.name, world.container);
+        if (isError(moveRes)) return withError(moveRes);
       } else {
         // 移動をキャンセル
         world.container = this.container;
@@ -482,17 +487,18 @@ export class WorldHandler {
    * 前回起動時にワールドがusingのまま終了した場合に呼ぶ。
    * usingフラグを折ってPush
    */
-  private async fix() {
+  private async fix(): Promise<WithError<Failable<World>>> {
     const local = await this.loadLocal();
     const world = local.value;
     if (isError(world)) return local;
 
     // フラグを折ってjsonに保存
     world.using = false;
-    await serverJsonFile.save(
+    const saveJson = await serverJsonFile.save(
       this.getSavePath(),
       constructWorldSettings(world)
     );
+    if (isError(saveJson)) return withError(saveJson);
 
     // リモートにpush
     const push = await this.push();
@@ -578,7 +584,8 @@ export class WorldHandler {
     // リモートの設定だけは消しておく(存在しないブランチからPullしないように)
     // 新規作成時にPull元を指定する場合はworld.remote_sourceを指定することで可能
     delete worldSettings.remote;
-    await this.saveLocalServerJson(worldSettings);
+    const savedJson = await this.saveLocalServerJson(worldSettings);
+    if (isError(savedJson)) return withError(savedJson, errors);
 
     // ワールドの最終プレイを現在時刻に
     world.last_date = getCurrentTimestamp();
@@ -643,7 +650,8 @@ export class WorldHandler {
     await this.getSavePath().copyTo(newHandler.getSavePath());
 
     // 設定ファイルを上書き
-    await newHandler.saveLocalServerJson(worldSettings);
+    const savedJson = await newHandler.saveLocalServerJson(worldSettings);
+    if (isError(savedJson)) return withError(savedJson);
 
     return await newHandler.load();
   }
@@ -663,19 +671,21 @@ export class WorldHandler {
     if (isError(localJson)) return withError(localJson);
     const remote = localJson.remote;
     delete localJson.remote;
-    await this.saveLocalServerJson(localJson);
+    const saveTmp4Local = await this.saveLocalServerJson(localJson);
+    if (isError(saveTmp4Local)) return withError(saveTmp4Local);
     localJson.remote = remote;
 
     // tarファイルを生成
     const tar = await createTar(this.getSavePath(), true);
-
-    // リモートのデータを復旧
-    await this.saveLocalServerJson(localJson);
-
     if (isError(tar)) return withError(tar);
 
+    // リモートのデータを復旧
+    const saveRecover = await this.saveLocalServerJson(localJson);
+    if (isError(saveRecover)) return withError(saveRecover);
+
     // tarファイルを保存
-    await backupPath.write(tar);
+    const failableWrite = await backupPath.write(tar);
+    if (isError(failableWrite)) return withError(failableWrite);
 
     // バックアップデータを返却
     return withError(await parseBackUpPath(backupPath));
@@ -728,12 +738,14 @@ export class WorldHandler {
 
     // 一時フォルダの中身をこのパスに移動
     await savePath.remove();
-    await tempDir.moveTo(savePath);
+    const moveSavePath = await tempDir.moveTo(savePath);
+    if (isError(moveSavePath)) return withError(moveSavePath);
     await tempDir.remove();
 
     // remoteをrestore前のデータで上書き
     afterLocalJson.remote = remote;
-    await this.saveLocalServerJson(afterLocalJson);
+    const saveLocal = await this.saveLocalServerJson(afterLocalJson);
+    if (isError(saveLocal)) return withError(saveLocal);
 
     return this.loadExec();
   }
@@ -882,14 +894,20 @@ export class WorldHandler {
 
     // 実行時のサーバープロパティ(ポートだけ違う)
     const execServerProperties: ServerProperties = {
-      ...(isError(beforeWorld.properties) ? {} : beforeWorld.properties),
+      ...(isError(beforeWorld.properties)
+        ? sysSettings.world.properties
+        : beforeWorld.properties),
     };
     const beforeServerPort = execServerProperties['server-port'];
     const beforeQueryport = execServerProperties['query.port'];
 
     execServerProperties['server-port'] = port;
     execServerProperties['query.port'] = port;
-    serverPropertiesFile.save(savePath, execServerProperties);
+    const saveProperties = await serverPropertiesFile.save(
+      savePath,
+      execServerProperties
+    );
+    if (isError(saveProperties)) return withError(saveProperties, errors);
 
     // ポートを登録
     this.port = port;
@@ -904,7 +922,8 @@ export class WorldHandler {
     settings.last_date = getCurrentTimestamp();
     settings.last_id = sysSettings.user.id;
     const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
-    await serverJsonFile.save(savePath, settings);
+    const saveServerJson = await serverJsonFile.save(savePath, settings);
+    // if (isError(saveServerJson)) withError(saveServerJson, errors); // 無理なら諦める
     sub.delete();
 
     // pushを実行 TODO: 失敗時の処理

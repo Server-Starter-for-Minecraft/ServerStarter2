@@ -100,7 +100,7 @@ async function readyCachedSpigotVersion(
   const buildTool = await readySpigotBuildTool(buildDir);
   b?.delete();
   if (isError(buildTool)) {
-    // 一時フォルダの削除
+    // 一時フォルダの削除（削除失敗がユーザーに影響しないため無視）
     await buildDir.remove();
     return buildTool;
   }
@@ -113,7 +113,7 @@ async function readyCachedSpigotVersion(
     component,
     progress
   );
-  // 一時フォルダの削除
+  // 一時フォルダの削除（削除失敗がユーザーに影響しないため無視）
   await buildDir.remove();
   if (isError(buildResult)) return buildResult;
 
@@ -160,9 +160,7 @@ const SPIGOT_BUILDTOOL_URL =
   'https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar';
 
 /** ビルドツールのダウンロード */
-async function readySpigotBuildTool(
-  buildDir: Path
-): Promise<Failable<undefined>> {
+async function readySpigotBuildTool(buildDir: Path): Promise<Failable<void>> {
   // ビルドツールをダウンロード
   const buildtool = await BytesData.fromURL(SPIGOT_BUILDTOOL_URL);
 
@@ -174,7 +172,7 @@ async function readySpigotBuildTool(
   // ハッシュ値をコンフィグに保存
   versionConfig.set('spigot_buildtool_sha1', await buildtool.hash('sha1'));
 
-  await buildToolPath.write(buildtool);
+  return buildToolPath.write(buildtool);
 }
 
 type SpigotVersionData = {
@@ -280,7 +278,8 @@ async function buildSpigotVersion(
     });
   }
 
-  await jarPath.rename(targetpath);
+  const isSuccessRename = await jarPath.rename(targetpath);
+  if (isError(isSuccessRename)) return isSuccessRename;
 
   m?.delete();
 }

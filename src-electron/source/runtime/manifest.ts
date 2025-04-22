@@ -29,14 +29,13 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
   // URLからデータを取得 (内容が変わっている可能性があるのでsha1チェックは行わない)
   const response = await BytesData.fromURL(MANIFEST_URL);
 
-  if (isValid(response)) {
-    // 成功した場合ローカルに保存
-    versionConfig.set('version_manifest_v2_sha1', await response.hash('sha1'));
-    versionManifestPath.write(response);
-  } else {
-    // 失敗した場合ローカルから取得
-    return getLocalVersionMainfest();
-  }
+  // 失敗した場合ローカルから取得
+  if (isError(response)) return getLocalVersionMainfest();
+
+  // 成功した場合ローカルに保存
+  versionConfig.set('version_manifest_v2_sha1', await response.hash('sha1'));
+  const failableWrite = versionManifestPath.write(response);
+  if (isError(failableWrite)) return getLocalVersionMainfest();
 
   const manifest = await response.json<ManifestJson>();
   return manifest;
