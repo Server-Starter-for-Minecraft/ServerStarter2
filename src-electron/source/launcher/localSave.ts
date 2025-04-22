@@ -33,6 +33,9 @@ export async function getAllLocalSaveData(): Promise<
 export async function getLocalSaveData(
   container: Path
 ): Promise<WithError<CustomMapData[]>> {
-  const result = await asyncMap(await container.iter(), loadCustomMap);
+  const containers = await container.iter();
+  if (isError(containers)) return withError([], [containers]);
+
+  const result = await asyncMap(containers, loadCustomMap);
   return withError(result.filter(isValid), result.filter(isError));
 }

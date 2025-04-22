@@ -100,7 +100,7 @@ async function readyCachedSpigotVersion(
   const buildTool = await readySpigotBuildTool(buildDir);
   b?.delete();
   if (isError(buildTool)) {
-    // 一時フォルダの削除
+    // 一時フォルダの削除（削除失敗がユーザーに影響しないため無視）
     await buildDir.remove();
     return buildTool;
   }
@@ -113,7 +113,7 @@ async function readyCachedSpigotVersion(
     component,
     progress
   );
-  // 一時フォルダの削除
+  // 一時フォルダの削除（削除失敗がユーザーに影響しないため無視）
   await buildDir.remove();
   if (isError(buildResult)) return buildResult;
 

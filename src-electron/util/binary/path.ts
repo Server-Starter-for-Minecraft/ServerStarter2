@@ -256,7 +256,6 @@ export class Path {
 
   async iter(): Promise<Failable<Path[]>> {
     const isDir = await this._isDirectory();
-    // TODO: エラーの戻り値を考慮して呼び出し元を修正
     if (isError(isDir)) return isDir;
 
     if (this.exists() && isDir)
@@ -276,7 +275,6 @@ export class Path {
     try {
       await fs.rm(this._path, { recursive: true, force: true });
     } catch {
-      // TODO: エラーの戻り値を考慮して呼び出し元を修正
       return errorMessage.data.path.deletionFailed({
         type: isDir ? 'directory' : 'file',
         path: this.path,
@@ -292,7 +290,6 @@ export class Path {
     await fs.copy(this.path, target.path);
   }
 
-  // TODO: エラーの戻り値を考慮して呼び出し元を修正
   moveTo = exclusive(this._moveTo);
   private async _moveTo(target: Path): Promise<Failable<void>> {
     if (!this.exists()) return;

@@ -2,6 +2,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import log4js from 'log4js';
 import { c } from 'tar';
 import { Path } from '../util/binary/path';
+import { isError } from '../util/error/error';
 
 const LATEST = 'latest.log';
 const ARCHIVE_EXT = '.log.gz';
@@ -88,7 +89,9 @@ async function archiveLog(logDir: Path) {
 
   // 一週間前のログファイルを削除
   const thresholdDate = dayjs().subtract(7, 'd');
-  for (const path of await logDir.iter()) {
+  const paths = await logDir.iter();
+  if (isError(paths)) return;
+  for (const path of paths) {
     if (!path.path.endsWith(ARCHIVE_EXT)) continue;
     const updateDate = await path.lastUpdateTime();
     if (updateDate.isBefore(thresholdDate)) await path.remove();

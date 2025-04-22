@@ -315,23 +315,23 @@ export async function formatWorldDirectory(
   progress?.title({ key: 'server.run.before.convertDirectory' });
   switch (true) {
     case current === 'vanilla' && next === 'plugin':
-      await asyncMap(
+      const moveV2P = await asyncMap(
         [
           { from: vanillaNether, to: pluginNether },
           { from: vanillaEnd, to: pluginEnd },
         ],
         ({ from, to }) => from.moveTo(to)
       );
-      return withError(undefined);
+      return withError(undefined, moveV2P.filter(isError));
     case current === 'plugin' && next === 'vanilla':
-      await asyncMap(
+      const moveP2V = await asyncMap(
         [
           { from: pluginNether, to: vanillaNether },
           { from: pluginEnd, to: vanillaEnd },
         ],
         ({ from, to }) => from.moveTo(to)
       );
-      return withError(undefined);
+      return withError(undefined, moveP2V.filter(isError));
     default:
       throw new Error(
         `not implemanted worldDirectoryType conversion: ${current} to ${next}`

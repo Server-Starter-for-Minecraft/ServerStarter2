@@ -237,7 +237,7 @@ async function importCustomMapZip(
   if (isError(datFile)) return datFile;
   const innerPath = datFile[0];
 
-  // 一時ディレクトリを削除
+  // 一時ディレクトリを削除（削除失敗がユーザーに影響しないため無視）
   await unzipPath.remove();
 
   // zipを一時パスに展開
@@ -257,7 +257,8 @@ async function importCustomMapZip(
   // ワールドデータ内部にserver.propertiesが存在する場合
 
   // ワールドデータを移動
-  await unzipPath.child(innerPath).parent().moveTo(worldPath);
+  const moveWorld = await unzipPath.child(innerPath).parent().moveTo(worldPath);
+  if (isError(moveWorld)) return moveWorld;
 
   // ワールド以外のデータ(readmeとか?)も可能であれば移動
   if (unzipPath.exists()) {
@@ -267,7 +268,7 @@ async function importCustomMapZip(
     }
   }
 
-  // 一時ディレクトリを削除
+  // 一時ディレクトリを削除（削除失敗がユーザーに影響しないため無視）
   await unzipPath.remove();
 
   return props;

@@ -1,5 +1,9 @@
 import * as cheerio from 'cheerio';
-import { AllForgeVersion, ForgeVersion, VersionId } from 'src-electron/schema/version';
+import {
+  AllForgeVersion,
+  ForgeVersion,
+  VersionId,
+} from 'src-electron/schema/version';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -125,15 +129,24 @@ async function installForgeVersion(version: ForgeVersion, cwdPath: Path) {
   }
 }
 
-async function uninstallForgeVersion(cwdPath: Path) {
+async function uninstallForgeVersion(cwdPath: Path): Promise<Failable<void>> {
   const allPaths = await cwdPath.iter();
   if (isError(allPaths)) return allPaths;
 
-  for (const file of allPaths) {
-    const filename = file.basename();
-    // forge関連の実行系ファイルを削除
-    const match = filename.match(/forge-.*\.(jar|bat|sh)/);
-    if (match) await file.remove();
+  const removeRes = await Promise.all(
+    allPaths.map((file) => {
+      const filename = file.basename();
+      // forge関連の実行系ファイルを削除
+      const match = filename.match(/forge-.*\.(jar|bat|sh)/);
+      if (match) return file.remove();
+    })
+  );
+
+  if (removeRes.filter(isError).length > 0) {
+    return errorMessage.data.path.deletionFailed({
+      type: 'file',
+      path: cwdPath.path,
+    });
   }
 }
 

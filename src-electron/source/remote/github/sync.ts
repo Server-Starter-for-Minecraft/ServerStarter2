@@ -1,5 +1,5 @@
 import { simpleGit, SimpleGitProgressEvent } from 'simple-git';
-import { GithubRemoteFolder, Remote } from 'src-electron/schema/remote';
+import { Remote } from 'src-electron/schema/remote';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { Path } from 'app/src-electron/util/binary/path';
@@ -34,13 +34,13 @@ const DEFAULT_REMOTE_NAME = 'serverstarter';
 
 // TODO: ログの追加
 
-function getRemoteUrl(remote: Remote<GithubRemoteFolder>) {
+function getRemoteUrl(remote: Remote) {
   // githubでないホストを使用していた場合エラー
   return `https://github.com/${remote.folder.owner}/${remote.folder.repo}`;
 }
 
 // SimpleGitインスタンスを取得
-async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
+async function setupGit(local: Path, remote: Remote) {
   // プログレス周りの処理
   const [set, invoke] = logger();
 
@@ -101,7 +101,7 @@ async function setupGit(local: Path, remote: Remote<GithubRemoteFolder>) {
 
 export async function pullWorld(
   local: Path,
-  remote: Remote<GithubRemoteFolder>,
+  remote: Remote,
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   progress?.title({ key: 'server.pull.title' });
@@ -136,7 +136,7 @@ export async function pullWorld(
 
 export async function pushWorld(
   local: Path,
-  remote: Remote<GithubRemoteFolder>,
+  remote: Remote,
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   progress?.title({ key: 'server.push.title' });
@@ -182,7 +182,7 @@ export async function pushWorld(
 }
 
 export async function deleteWorld(
-  remote: Remote<GithubRemoteFolder>
+  remote: Remote
 ): Promise<Failable<undefined>> {
   // 一時フォルダ内で実行
   await gitTempPath.mkdir(true);
@@ -204,7 +204,7 @@ export async function deleteWorld(
   // リモートのブランチを削除
   const push = await safeExecAsync(() => git.push(url, `:${remote.name}`));
 
-  // 一時フォルダを削除
+  // 一時フォルダを削除（削除失敗がユーザーに影響しないため無視）
   await gitTempPath.remove();
 
   // pushに失敗した場合

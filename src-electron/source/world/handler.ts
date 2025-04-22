@@ -231,7 +231,10 @@ export class WorldHandler {
   }
 
   /** セーブデータを移動する*/
-  private async move(name: WorldName, container: WorldContainer) {
+  private async move(
+    name: WorldName,
+    container: WorldContainer
+  ): Promise<Failable<void>> {
     // 現在のワールドの保存場所
     const currentPath = this.getSavePath();
     // 変更される保存先
@@ -241,7 +244,8 @@ export class WorldHandler {
     if (currentPath.path === targetPath.path) return;
 
     // 保存ディレクトリを移動する
-    await currentPath.moveTo(targetPath);
+    const move2SaveDir = await currentPath.moveTo(targetPath);
+    if (isError(move2SaveDir)) return move2SaveDir;
 
     // 保存先を変更
     this.name = name;
@@ -353,7 +357,8 @@ export class WorldHandler {
       );
       if (isValid(newWorldName)) {
         // セーブデータを移動
-        await this.move(world.name, world.container);
+        const moveRes = await this.move(world.name, world.container);
+        if (isError(moveRes)) return withError(moveRes);
       } else {
         // 移動をキャンセル
         world.container = this.container;
@@ -733,7 +738,8 @@ export class WorldHandler {
 
     // 一時フォルダの中身をこのパスに移動
     await savePath.remove();
-    await tempDir.moveTo(savePath);
+    const moveSavePath = await tempDir.moveTo(savePath);
+    if (isError(moveSavePath)) return withError(moveSavePath);
     await tempDir.remove();
 
     // remoteをrestore前のデータで上書き
@@ -897,7 +903,10 @@ export class WorldHandler {
 
     execServerProperties['server-port'] = port;
     execServerProperties['query.port'] = port;
-    const saveProperties = await serverPropertiesFile.save(savePath, execServerProperties);
+    const saveProperties = await serverPropertiesFile.save(
+      savePath,
+      execServerProperties
+    );
     if (isError(saveProperties)) return withError(saveProperties, errors);
 
     // ポートを登録
