@@ -393,10 +393,11 @@ if (import.meta.vitest) {
       );
 
       // server.jar (vanilla 1.21.4)
-      const jarUrl = 'https://piston-data.mojang.com/v1/objects/4707d00eb834b446575d89a61a11b5d548d8c001/server.jar'
-      const jarHash = '4707d00eb834b446575d89a61a11b5d548d8c001'
-      
-      const bytes = await BytesData.fromURL(jarUrl)
+      const jarUrl =
+        'https://piston-data.mojang.com/v1/objects/4707d00eb834b446575d89a61a11b5d548d8c001/server.jar';
+      const jarHash = '4707d00eb834b446575d89a61a11b5d548d8c001';
+
+      const bytes = await BytesData.fromURL(jarUrl);
       expect(isError(bytes)).toBe(false);
       if (isError(bytes)) return;
 
