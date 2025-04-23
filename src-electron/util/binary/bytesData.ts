@@ -231,7 +231,7 @@ export class BytesData {
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
     const sha1 = createHash(algorithm);
-    sha1.update(this.data.toString('binary'));
+    sha1.update(Uint8Array.from(this.data));
     return sha1.digest('hex');
   }
 
@@ -391,6 +391,16 @@ if (import.meta.vitest) {
       await expect(data.hash('sha256')).resolves.toBe(
         '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
       );
+
+      // server.jar (vanilla 1.21.4)
+      const jarUrl = 'https://piston-data.mojang.com/v1/objects/4707d00eb834b446575d89a61a11b5d548d8c001/server.jar'
+      const jarHash = '4707d00eb834b446575d89a61a11b5d548d8c001'
+      
+      const bytes = await BytesData.fromURL(jarUrl)
+      expect(isError(bytes)).toBe(false);
+      if (isError(bytes)) return;
+
+      await expect(bytes.hash('sha1')).resolves.toBe(jarHash);
     });
   });
 }
