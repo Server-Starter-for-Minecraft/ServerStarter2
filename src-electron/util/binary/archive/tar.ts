@@ -52,3 +52,48 @@ export async function decompressTar(
     })
   );
 }
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { describe, test, expect } = import.meta.vitest;
+
+  describe('gzip', async () => {
+    const { BytesData } = await import('../bytesData');
+
+    test('file', async () => {
+      const testPath = new Path(__dirname).child('test');
+      const workPath = testPath.parent().child('work', 'tar');
+
+      const txtPath = testPath.child('sample.txt');
+      const compressedPath = workPath.child('sample.tar.gz');
+      await workPath.emptyDir();
+
+      // testフォルダからファイルを読込
+      const txtFile = await BytesData.fromPath(txtPath);
+
+      expect(isError(txtFile)).toBe(false);
+      if (isError(txtFile)) return;
+
+      // tar圧縮
+      const compressed = await createTar(txtPath.parent());
+
+      expect(isError(compressed)).toBe(false);
+      if (isError(compressed)) return;
+
+      // tarを保存
+      await compressed.write(compressedPath.path);
+
+      // tar解凍
+      await decompressTar(compressedPath, workPath);
+      const decompressedFile = await BytesData.fromPath(
+        workPath.child('sample.txt')
+      );
+
+      expect(isError(decompressedFile)).toBe(false);
+      if (isError(decompressedFile)) return;
+
+      // 元ファイルと「圧縮->解凍」したファイルが一致するか確認
+      expect(await txtFile.text()).toBe(await decompressedFile.text());
+    });
+  });
+}

@@ -1,5 +1,6 @@
 import { decode } from 'iconv-lite';
 import * as JSZip from 'jszip';
+import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { errorMessage } from '../../error/construct';
 import { isError } from '../../error/error';
 import { Failable, safeExecAsync } from '../../error/failable';
@@ -41,7 +42,7 @@ class ZipHandler {
         if (dat !== undefined) return dat;
         if (v.dir) {
           dat = errorMessage.data.zip.isDir({
-            path: path.str(),
+            path: path.path,
             innerPath,
           });
         } else {
@@ -111,4 +112,55 @@ export class ZipFile {
       return path.child(k).write(data);
     });
   }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { describe, test, expect } = import.meta.vitest;
+
+  describe('zipFile', async () => {
+    const { Path } = await import('../path');
+
+    test('file', async () => {
+      const testPath = new Path(__dirname).child('test', 'sample.zip');
+      const tgtPath = new Path(__dirname).child('work', 'zip');
+      await tgtPath.emptyDir();
+
+      // 指定したZipを解凍
+      const zip = new ZipFile(testPath);
+      const extractRes = await zip.extract(tgtPath);
+
+      expect(isError(extractRes)).toBe(false);
+      if (isError(extractRes)) return;
+
+      // 解凍結果のファイル数を確認
+      const paths = await tgtPath.iter();
+      if (isError(paths)) return;
+
+      expect(paths.length).toBe(3);
+    });
+
+    test('iterateZip', async () => {
+      const testPath = new Path(__dirname).child('test', 'sample.zip');
+
+      // 指定したZipの中身を確認
+      const zip = new ZipFile(testPath);
+      const isFileExists = await zip.hasFile('sample2.txt');
+      if (isError(isFileExists)) return;
+      expect(isFileExists).toBe(true);
+
+      // Zipの中から特定のファイルの情報を取得
+      const file = await zip.getFile('sample2.txt');
+      if (isError(file)) return;
+      expect(await file.text()).toBe('Hello World!');
+
+      // 正規表現で一覧を絞る
+      const matched = await zip.match(/sample\d\.txt/);
+      if (isError(matched) || values(matched).filter(isError).length > 0)
+        return;
+      expect(new Set(keys(matched))).toEqual(
+        new Set(['sample1.txt', 'sample2.txt', 'sample3.txt'])
+      );
+    });
+  });
 }
