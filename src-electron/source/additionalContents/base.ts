@@ -153,6 +153,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     id: WorldID
   ): Promise<WithError<WorldFileData<T>[]>> {
     const dirPath = cwdPath.child(this.childPath);
+    if (!dirPath.exists()) await dirPath.mkdir();
     const paths = await dirPath.iter();
     if (isError(paths)) return withError([], [paths]);
 
