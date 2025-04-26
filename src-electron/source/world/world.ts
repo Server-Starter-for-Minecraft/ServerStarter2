@@ -43,9 +43,9 @@ async function getWorldAbbr(
   path: Path,
   worldContainer: WorldContainer
 ): Promise<Failable<WorldAbbr>> {
-  const isDir = await path.isDirectory()
-  if (isError(isDir)) return isDir
-  
+  const isDir = await path.isDirectory();
+  if (isError(isDir)) return isDir;
+
   if (!isDir)
     return errorMessage.data.path.invalidContent.mustBeDirectory({
       type: 'file',
