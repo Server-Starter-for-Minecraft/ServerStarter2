@@ -21,8 +21,8 @@ export type Hash = {
 
 /** BlobやFile等のBytesデータのクラス */
 export class BytesData {
-  data: ArrayBuffer;
-  private constructor(data: ArrayBuffer) {
+  data: Buffer;
+  private constructor(data: Buffer) {
     this.data = data;
   }
 
@@ -46,7 +46,7 @@ export class BytesData {
         });
       }
       const buffer = await res.arrayBuffer();
-      const result = new BytesData(buffer);
+      const result = new BytesData(Buffer.from(buffer));
 
       if (hash === undefined) {
         logger.success();
@@ -108,7 +108,7 @@ export class BytesData {
 
   /** utf-8の形式でByteDataに変換 */
   static async fromText(text: string): Promise<Failable<BytesData>> {
-    return new BytesData(new TextEncoder().encode(text));
+    return new BytesData(Buffer.from(new TextEncoder().encode(text)));
   }
 
   /** base64の形式でByteDataに変換 */
@@ -117,7 +117,7 @@ export class BytesData {
   }
 
   /** base64の形式でByteDataに変換 */
-  static async fromBuffer(buffer: ArrayBuffer): Promise<Failable<BytesData>> {
+  static async fromBuffer(buffer: Buffer): Promise<Failable<BytesData>> {
     return new BytesData(buffer);
   }
 
@@ -231,7 +231,7 @@ export class BytesData {
 
   async hash(algorithm: 'sha1' | 'sha256' | 'md5') {
     const sha1 = createHash(algorithm);
-    sha1.update(Buffer.from(this.data));
+    sha1.update(Uint8Array.from(this.data));
     return sha1.digest('hex');
   }
 
@@ -265,7 +265,7 @@ export class BytesData {
   async nbt<T extends object>(): Promise<Failable<T>> {
     try {
       const nbt = await prismarineNbt;
-      const result = await nbt.parse(Buffer.from(this.data), 'big');
+      const result = await nbt.parse(this.data, 'big');
       return nbt.simplify(result.parsed);
     } catch (e) {
       return fromRuntimeError(e);
@@ -277,9 +277,131 @@ export class BytesData {
    * mimetypeの例 "image/png"
    */
   async encodeURI(mimetype: string): Promise<ImageURI> {
-    // ArrayBufferからbase64に変換
-    const base64uri = Buffer.from(this.data).toString('base64');
-
+    // Bufferからbase64に変換
+    const base64uri = this.data.toString('base64');
     return `data:${mimetype};base64,${base64uri}` as ImageURI;
   }
+
+  arrayBuffer() {
+    const arrayBuffer = new ArrayBuffer(this.data.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < this.data.length; ++i) {
+      view[i] = this.data[i];
+    }
+    return arrayBuffer;
+  }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { describe, test, expect } = import.meta.vitest;
+
+  describe('BytesData', async () => {
+    const { Path } = await import('./path');
+    const path = await import('path');
+
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    await workPath.emptyDir();
+    // テストファイルのパス
+    const testPath = new Path(__dirname).child('archive', 'test', 'sample.txt');
+
+    // url(API) mock
+    const url = 'https://jsonplaceholder.typicode.com/todos/1';
+    const returnObj = {
+      userId: 1,
+      id: 1,
+      title: 'delectus aut autem',
+      completed: false,
+    };
+
+    test('from', async () => {
+      // テキスト
+      const text = 'test';
+      const data = await BytesData.fromText(text);
+      expect(isError(data)).toBe(false);
+      if (isError(data)) return;
+      await expect(data.text()).resolves.toBe(text);
+
+      // Base64
+      const base64 = 'dGVzdA==';
+      const data2 = await BytesData.fromBase64(base64);
+      expect(isError(data2)).toBe(false);
+      if (isError(data2)) return;
+      await expect(data2.text()).resolves.toBe(text);
+
+      // Base64(Png)
+      const base64uri =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsTAAALEwEAmpwYAAAARElEQVR4nGNI9rT5jw3vZRAG0wz4JFEUfNgwAYxBkiAaRQG6JAyDFcAkkCVjwv////XrF5iNUwEIgBWgG4uOwSbgUwAA9rumUIV0HXQAAAAASUVORK5CYII=';
+      const data4 = await BytesData.fromBase64URI(base64uri);
+      expect(isError(data4)).toBe(false);
+      if (isError(data4)) return;
+      expect(isError(await data4.png())).toBe(false);
+      expect(
+        isError(await data4.write(workPath.child('sample.png').path))
+      ).toBe(false);
+      await expect(data4.encodeURI('image/png')).resolves.toBe(base64uri);
+
+      // URL
+      const data3 = await BytesData.fromURL(url);
+      expect(isError(data3)).toBe(false);
+      if (isError(data3)) return;
+      await expect(data3.json()).resolves.toMatchObject(returnObj);
+    });
+
+    test('fromPathOrUrl', async () => {
+      const invalidPath = workPath.child('invalid.txt');
+      const invalidPath2 = workPath.child('invalid2.txt');
+
+      // Pathがある場合はURLよりもPathが優先される
+      const data = await BytesData.fromPathOrUrl(testPath, url);
+      expect(isError(data)).toBe(false);
+      if (isError(data)) return;
+      await expect(data.text()).resolves.toBe('Hello World!');
+
+      // Pathがない場合はPathよりもURLが優先され，PathにURLの内容が書き込まれる
+      const data2 = await BytesData.fromPathOrUrl(invalidPath, url);
+      expect(isError(data2)).toBe(false);
+      if (isError(data2)) return;
+      await expect(data2.json()).resolves.toMatchObject(returnObj);
+      await expect(invalidPath.readJson()).resolves.toMatchObject(returnObj);
+
+      // URLから優先して情報を取得し，ない場合はPathから取得する
+      const data3 = await BytesData.fromUrlOrPath(invalidPath2, url);
+      expect(isError(data3)).toBe(false);
+      if (isError(data3)) return;
+      await expect(data3.json()).resolves.toMatchObject(returnObj);
+      await expect(invalidPath2.readJson()).resolves.toMatchObject(returnObj);
+
+      // URLが無効な場合はPathから取得する
+      const data4 = await BytesData.fromUrlOrPath(testPath, 'invalid.url.com');
+      expect(isError(data4)).toBe(false);
+      if (isError(data4)) return;
+      await expect(data4.text()).resolves.toBe('Hello World!');
+    });
+
+    test('hash', async () => {
+      const text = 'test';
+      const data = await BytesData.fromText(text);
+      expect(isError(data)).toBe(false);
+      if (isError(data)) return;
+      await expect(data.hash('sha256')).resolves.toBe(
+        '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
+      );
+
+      // server.jar (vanilla 1.21.4)
+      const jarUrl =
+        'https://piston-data.mojang.com/v1/objects/4707d00eb834b446575d89a61a11b5d548d8c001/server.jar';
+      const jarHash = '4707d00eb834b446575d89a61a11b5d548d8c001';
+
+      const bytes = await BytesData.fromURL(jarUrl);
+      expect(isError(bytes)).toBe(false);
+      if (isError(bytes)) return;
+
+      await expect(bytes.hash('sha1')).resolves.toBe(jarHash);
+    });
+  });
 }
