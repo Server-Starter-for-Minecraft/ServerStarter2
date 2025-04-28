@@ -1,9 +1,9 @@
-import { getRootLogger } from '../common/logger';
+import { getRootLogger, rootLogger } from '../common/logger';
 import { onQuit } from '../lifecycle/lifecycle';
-import { logPath } from '../source/const';
+import { logDir } from '../source/const';
 
-const { logger, archive } = getRootLogger(logPath);
+const { logger, archive } = getRootLogger(logDir);
 
 onQuit(archive, true);
 
-export const rootLoggerHierarchy = logger;
+export const rootLoggerHierarchy = rootLogger;
