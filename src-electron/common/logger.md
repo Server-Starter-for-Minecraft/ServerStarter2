@@ -101,7 +101,7 @@ logger.trace('success');
 
 ```ts
 // 値が /SECRET_TOKEN/ にマッチしたら "***" に置換してログ出力.
-addOmisstionRule((value) => (value.test(/SECRET_TOKEN/) ? ok('***') : err()));
+addOmisstionRule((value) => (value.test(/SECRET_TOKEN/) ? '***' : value));
 ```
 
 path は下記のように渡される
