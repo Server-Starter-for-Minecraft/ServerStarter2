@@ -54,9 +54,7 @@ log4js.configure({
 // #endregion
 
 /** 過去のログをアーカイブ開始 */
-onQuit(() => {
-  if (latestPath) archiveLog(latestPath);
-}, true);
+onQuit(() => archiveLog(latestPath), true);
 
 /** パスにあるログをアーカイブする */
 async function archiveLog(logPath: Path) {
