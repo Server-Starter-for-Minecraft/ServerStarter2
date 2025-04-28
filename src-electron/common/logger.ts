@@ -2,6 +2,7 @@ import { randomInt } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import log4js from 'log4js';
+import { onQuit } from '../lifecycle/lifecycle';
 import { logDir } from '../source/const';
 import { gzip } from '../util/binary/archive/gz';
 import { Path } from '../util/binary/path';
@@ -32,27 +33,30 @@ log4js.addLayout('custom', () => {
 });
 log4js.configure({
   appenders: {
-    _out: {
-      type: 'stdout',
-      layout: { type: 'custom', max: 500 },
-    },
+    // _out: {
+    //   type: 'stdout',
+    //   layout: { type: 'custom', max: 500 },
+    // },
     _file: {
       type: 'file',
       filename: latestPath.path,
       layout: { type: 'custom', max: 500 },
     },
-    out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
+    // out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
     file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
   },
   categories: {
-    default: { appenders: ['out', 'file'], level: 'trace' },
+    // default: { appenders: ['out', 'file'], level: 'trace' },
+    default: { appenders: ['file'], level: 'trace' },
   },
 });
 
 // #endregion
 
 /** 過去のログをアーカイブ開始 */
-if (latestPath) archiveLog(latestPath);
+onQuit(() => {
+  if (latestPath) archiveLog(latestPath);
+}, true);
 
 /** パスにあるログをアーカイブする */
 async function archiveLog(logPath: Path) {
@@ -70,7 +74,7 @@ async function archiveLog(logPath: Path) {
 
   // 一週間前のログファイルを削除
   const thresholdDate = dayjs().subtract(7, 'd');
-  const paths = await logPath.iter();
+  const paths = await logDir.iter();
   if (isError(paths)) return;
   for (const path of paths) {
     if (!path.path.endsWith(ARCHIVE_EXT)) continue;
@@ -285,14 +289,20 @@ if (import.meta.vitest) {
       );
 
       // アーカイブチェック
-      await logDir.emptyDir();
-      await archiveLog(logpath);
-
-      // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
       const logPaths = await logDir.iter();
       expect(isError(logPaths)).toBe(false);
       if (isError(logPaths)) return;
-      expect(logPaths.map((p) => p.basename())).toEqual(
+      for (const path of logPaths) {
+        if (path.path === latestPath.path) continue;
+        await path.remove();
+      }
+      await archiveLog(logpath);
+
+      // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
+      const logPaths2 = await logDir.iter();
+      expect(isError(logPaths2)).toBe(false);
+      if (isError(logPaths2)) return;
+      expect(logPaths2.map((p) => p.basename())).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.gz/),
         ])

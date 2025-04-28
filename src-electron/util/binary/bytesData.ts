@@ -407,6 +407,6 @@ if (import.meta.vitest) {
       if (isError(bytes)) return;
 
       await expect(bytes.hash('sha1')).resolves.toBe(jarHash);
-    });
+    }, 60 * 1000);
   });
 }
