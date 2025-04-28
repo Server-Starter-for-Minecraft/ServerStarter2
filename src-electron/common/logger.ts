@@ -2,7 +2,6 @@ import { randomInt } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import log4js from 'log4js';
-import { Failable } from '../schema/error';
 import { logDir } from '../source/const';
 import { gzip } from '../util/binary/archive/gz';
 import { Path } from '../util/binary/path';
@@ -13,7 +12,7 @@ const LATEST = 'latest.log';
 const ARCHIVE_EXT = '.log.gz';
 
 fs.ensureDirSync(logDir.path);
-const latestPath = logDir.child('latest.log');
+const latestPath = logDir.child(LATEST);
 
 // #region log4jsの設定
 
@@ -21,21 +20,16 @@ log4js.addLayout('custom', () => {
   return (logEvent) => {
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
-    const state = logEvent.data[0];
-    const args = logEvent.data[1];
-
+    const param = logEvent.data[0];
     const json = {
-      level,
-      state,
-      category,
-      args,
-      data: logEvent.data.slice(2),
+      lv: level,
+      on: category,
+      param,
+      msg: logEvent.data[1],
     };
-
     return JSON.stringify(json);
   };
 });
-
 log4js.configure({
   appenders: {
     _out: {
@@ -44,7 +38,7 @@ log4js.configure({
     },
     _file: {
       type: 'file',
-      filename: logDir.child(LATEST).path,
+      filename: latestPath.path,
       layout: { type: 'custom', max: 500 },
     },
     out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
@@ -63,9 +57,8 @@ if (latestPath) archiveLog(latestPath);
 /** パスにあるログをアーカイブする */
 async function archiveLog(logPath: Path) {
   // .latestを圧縮してアーカイブ
-  const latestLog = logDir.child(LATEST);
-  if (latestLog.exists()) {
-    const lastUpdateTime = dayjs(fs.statSync(logDir.path).mtimeMs);
+  if (logPath.exists()) {
+    const lastUpdateTime = await logPath.lastUpdateTime();
     const tmp = logDir.child(`tmp.${randomInt(2 ** 31)}`);
     await logPath.moveTo(tmp, { overwrite: true });
     const compressed = await gzip.fromFile(tmp);
@@ -109,28 +102,12 @@ class LoggerWrapper {
   }
 
   private log =
-    (
-      level:
-        | 'start'
-        | 'success'
-        | 'fail'
-        | 'trace'
-        | 'debug'
-        | 'info'
-        | 'warn'
-        | 'error'
-        | 'fatal'
-    ) =>
+    (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal') =>
     (...message: any[]) =>
       this.logger[level](
         applyOmission(this.arg),
         simplifyArgs(...applyOmission(message))
       ); // 伏字処理を施してログを吐く
-
-  // TODO: start, success, fail を削除
-  start = this.log('start');
-  success = this.log('success');
-  fail = this.log('fail');
 
   trace = this.log('trace');
   debug = this.log('debug');
@@ -138,34 +115,6 @@ class LoggerWrapper {
   warn = this.log('warn');
   error = this.log('error');
   fatal = this.log('fatal');
-
-  // start(...message: any[]) {
-  //   this.logger.trace('start', this.arg, ...message);
-  // }
-  // success(...message: any[]) {
-  //   this.logger.info('success', this.arg, ...message);
-  // }
-  // fail(...message: any[]) {
-  //   this.logger.info('fail', this.arg, ...message);
-  // }
-  // trace(...message: any[]) {
-  //   this.logger.trace('trace', this.arg, ...message);
-  // }
-  // debug(...message: any[]) {
-  //   this.logger.debug('debug', this.arg, ...message);
-  // }
-  // info(...message: any[]) {
-  //   this.logger.info('info', this.arg, ...message);
-  // }
-  // warn(...message: any[]) {
-  //   this.logger.warn('warn', this.arg, ...message);
-  // }
-  // error(...message: any[]) {
-  //   this.logger.error('error', this.arg, ...message);
-  // }
-  // fatal(...message: any[]) {
-  //   this.logger.fatal('fatal', this.arg, ...message);
-  // }
 }
 
 export interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
@@ -197,10 +146,7 @@ function simplifyArgs(...args: any[]): any {
   return params;
 }
 
-type LogOmission = (
-  value: string,
-  path: (string | number)[]
-) => Failable<string>;
+type LogOmission = (value: string, path: (string | number)[]) => string;
 
 const omissions: Set<LogOmission> = new Set();
 
@@ -210,8 +156,7 @@ function applyOmission<T>(value: T, path: (string | number)[] = []): T {
     case 'string':
       let val: string = value;
       for (const omission of omissions) {
-        const omitted = omission(val, path);
-        if (!isError(omitted)) val = omitted;
+        val = omission(val, path);
       }
       return val as T;
     case 'object': {
@@ -264,39 +209,101 @@ if (import.meta.vitest) {
       'work',
       path.basename(__filename, '.ts')
     );
-    workPath.mkdir();
+    await workPath.emptyDir();
 
-    // ログオブジェクト
-    const { logger, archive } = getRootLogger(workPath);
+    const logpath = workPath.child('test.log');
 
-    const logpath = workPath.child(LATEST);
-
-    const readLastLogLine = async () => {
+    const readLogLines = async () => {
       const logTxt = await logpath.readText();
       if (isError(logTxt)) return logTxt;
-      const lines = logTxt.trim().split(/\r?\n|\r/);
-      return lines[lines.length - 1];
+      return logTxt.trim().split(/\r?\n|\r/);
     };
 
-    test('base logger test', async () => {
-      const log = logger.test.base({});
-      log.info('test message');
-      expect(await readLastLogLine()).toBe(
-        '{"level":"INFO","state":"info","category":"test.base","args":{},"data":["test message"]}'
+    // テスト用ログ設定
+    log4js.configure({
+      appenders: {
+        test: {
+          type: 'fileSync',
+          filename: logpath.path,
+          layout: { type: 'custom', max: 500 },
+        },
+      },
+      categories: {
+        default: { appenders: ['test'], level: 'trace' },
+      },
+    });
+
+    test('ログ出力のテスト', async () => {
+      rootLogger('DEFAULT').info('message');
+      expect(await readLogLines()).toContain(
+        '{"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"}'
       );
-    });
 
-    test('archive logs', async () => {
-      await archive();
-      const prefix = dayjs().format('YYYY-MM-DD-HH');
-      const targetArchivePath = workPath.child(`${prefix}-0.log.gz`);
-      expect(targetArchivePath.exists()).toBe(true);
-    });
+      rootLogger.custom('multi', ['value']).warn({ key: 'value' });
+      expect(await readLogLines()).toContain(
+        '{"lv":"WARN","on":"custom","param":["multi",["value"]],"msg":{"key":"value"}}'
+      );
 
-    // アーカイブデータが残っているとarchive logsのテストが意味をなさないため，毎回削除する
-    test('remove work folder', async () => {
-      await workPath.parent().remove();
-      expect(workPath.exists()).toBe(false);
+      rootLogger.nest.more.deeply().trace();
+      expect(await readLogLines()).toContain(
+        '{"lv":"TRACE","on":"nest.more.deeply"}'
+      );
+
+      // 伏字チェック
+
+      const unsetRule = addOmisstionRule((v) => (v === 'invalid' ? '***' : v));
+
+      rootLogger().info('invalid');
+      expect(await readLogLines()).toContain(
+        '{"lv":"INFO","on":"default","msg":"***"}'
+      );
+
+      log4js.recording();
+
+      rootLogger().info({ nest: 'invalid' });
+      expect(await readLogLines()).toContain(
+        '{"lv":"INFO","on":"default","msg":{"nest":"***"}}'
+      );
+
+      rootLogger().info(['pass', 'is', 'invalid']);
+      expect(await readLogLines()).toContain(
+        '{"lv":"INFO","on":"default","msg":["pass","is","***"]}'
+      );
+
+      unsetRule();
+
+      rootLogger().info('invalid');
+      expect(await readLogLines()).toContain(
+        '{"lv":"INFO","on":"default","msg":"invalid"}' // 伏字ルールが消えているはず
+      );
+
+      addOmisstionRule((v, p) => (p[p.length - 1] === 'secret' ? '***' : v));
+
+      rootLogger({ secret: 'XXXXXX' }).info();
+      expect(await readLogLines()).toContain(
+        '{"lv":"INFO","on":"default","param":{"secret":"***"}}'
+      );
+
+      // アーカイブチェック
+      await logDir.emptyDir();
+      await archiveLog(logpath);
+
+      // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
+      const logPaths = await logDir.iter();
+      expect(isError(logPaths)).toBe(false);
+      if (isError(logPaths)) return;
+      expect(logPaths.map((p) => p.basename())).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.gz/),
+        ])
+      );
+      // アーカイブされると元ファイルは削除されるが，
+      // アーカイブをwriteしたログが新たに書き込まれるため，
+      // ログの中に当初書き込んだログがないことを確認する
+      // expect(logpath.exists()).toBe(false);
+      expect(await readLogLines()).not.toContain(
+        '{"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"}'
+      );
     });
   });
 }
