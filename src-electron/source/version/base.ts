@@ -1,7 +1,7 @@
 import { AllVersion, Version } from 'src-electron/schema/version';
+import { rootLogger } from 'app/src-electron/common/logger';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
-import { rootLoggerHierarchy } from '../../core/logger';
 import { versionsCachePath } from '../../source/const';
 import { versionConfig } from '../../source/stores/config';
 import { BytesData } from '../../util/binary/bytesData';
@@ -10,7 +10,7 @@ import { Failable } from '../../util/error/failable';
 import { eulaUnnecessaryVersionIds } from './const';
 import { JavaComponent } from './vanilla';
 
-export const versionLoggers = rootLoggerHierarchy.server.version;
+export const versionLoggers = () => rootLogger.server.version;
 
 export type VersionComponent = {
   programArguments: string[];
@@ -55,8 +55,8 @@ export const genGetAllVersions = <V extends Version>(
     // ローカルのデータが最新版ならローカルのデータを使う
     if (useCache === undefined) useCache = true;
 
-    const logger = versionLoggers.getAllVersions({ type, useCache });
-    logger.start();
+    const logger = versionLoggers().getAllVersions({ type, useCache });
+    logger.info('start');
 
     const jsonpath = versionsCachePath.child(`${type}/${type}-all.json`);
     const configkey = `versions_sha1.${type}`;
@@ -65,20 +65,20 @@ export const genGetAllVersions = <V extends Version>(
       // ローカルから読み込み
       const versions = await getAllLocalVersions<V>(jsonpath, configkey);
       if (versions !== undefined) {
-        logger.success('load from local');
+        logger.info(['success', 'load from local']);
         return versions;
       }
     }
 
     const versions = await getAllVersionsFromRemote();
     if (isError(versions)) {
-      logger.fail(versions);
+      logger.error(versions);
       return versions;
     }
 
     const data = await BytesData.fromText(JSON.stringify(versions));
     if (isError(data)) {
-      logger.fail(data);
+      logger.error(data);
       return data;
     }
 
@@ -87,7 +87,7 @@ export const genGetAllVersions = <V extends Version>(
     if (isError(failableWrite)) return failableWrite;
     versionConfig.set(configkey, await data.hash('sha1'));
 
-    logger.success('load from remote');
+    logger.info(['success', 'load from remote']);
     return versions;
   };
 

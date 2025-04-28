@@ -1,5 +1,5 @@
+import { rootLogger } from 'app/src-electron/common/logger';
 import { MemorySettings } from 'app/src-electron/schema/memory';
-import { rootLoggerHierarchy } from '../../../core/logger';
 import { getSystemSettings } from '../../stores/system';
 
 export async function getMemoryArguments(memory: MemorySettings | undefined) {
@@ -34,7 +34,7 @@ export async function getMemoryArguments(memory: MemorySettings | undefined) {
       memorystr = `${memorySize}T`;
       break;
     default:
-      rootLoggerHierarchy.server
+      rootLogger.server
         .setMamoryAmount(memory)
         .error(`unknown unit ${memory.unit}`);
       return getMemoryArguments(defaultMemory);

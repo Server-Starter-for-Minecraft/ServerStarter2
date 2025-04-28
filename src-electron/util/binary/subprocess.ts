@@ -7,7 +7,7 @@ import { sleep } from '../promise/sleep';
 import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
 
-const loggers = utilLoggers.subprocess;
+const loggers = () => utilLoggers().subprocess;
 
 export type ChildProcessPromise = Promise<Failable<undefined>> & {
   finished(): boolean;
@@ -22,17 +22,17 @@ function promissifyProcess(
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ) {
-  const logger = loggers.promissifyProcess({
-    command: `${processPath.strQuoted()} ${args.join(' ')}`,
+  const logger = loggers().promissifyProcess({
+    command: `${processPath.quotedPath} ${args.join(' ')}`,
   });
-  logger.start();
+  logger.info('start');
 
   let isFinished = false;
 
   function onExit(code: number | null): Failable<undefined> {
     if (code === 0 || code === null) return undefined;
     return errorMessage.system.subprocess({
-      processPath: processPath.strQuoted(),
+      processPath: processPath.quotedPath,
       args,
       exitcode: code,
     });
@@ -44,14 +44,14 @@ function promissifyProcess(
     ) => void
   ) => void = (resolve) => {
     process.on('exit', (code) => {
-      logger.success(code);
+      logger.info(['success', code]);
       isFinished = true;
       // プロセスkillの購読を解除
       dispatch();
       resolve(onExit(code));
     });
     process.on('error', (err) => {
-      logger.fail(err);
+      logger.error(err);
       isFinished = true;
       // プロセスkillの購読を解除
       dispatch();
@@ -101,8 +101,8 @@ export const interactiveProcess = (
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ): ChildProcessPromise => {
-  const child = child_process.spawn(process.strQuoted(), args, {
-    cwd: cwd?.str(),
+  const child = child_process.spawn(process.quotedPath, args, {
+    cwd: cwd?.path,
     shell,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
   });
@@ -134,8 +134,8 @@ export function execProcess(
   cwd: Path | undefined = undefined,
   shell = false
 ) {
-  const child = child_process.spawn(process.strQuoted(), args, {
-    cwd: cwd?.str(),
+  const child = child_process.spawn(process.quotedPath, args, {
+    cwd: cwd?.path,
     shell,
   });
   return promissifyProcess(child, process, args);

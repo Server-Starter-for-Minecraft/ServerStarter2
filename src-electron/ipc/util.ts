@@ -1,24 +1,24 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import { rootLoggerHierarchy } from '../core/logger';
+import { rootLogger } from '../common/logger';
 import { assertComplete } from '../lifecycle/lifecycle';
 
-export const ipcLoggers = rootLoggerHierarchy.ipc;
+export const ipcLoggers = () => rootLogger.ipc;
 
 export const ipcHandle = <C extends string>(
   channel: C,
   listener: (...args: any[]) => Promise<any>
 ) =>
   ipcMain.handle(channel, (_, ...args: any[]) => {
-    const logger = ipcLoggers.handle[channel](args);
-    logger.start();
+    const logger = ipcLoggers().handle[channel](args);
+    logger.info('start');
     const result = listener(...args);
     result.then(
       (x) => {
-        logger.success(x);
+        logger.info(['success', x]);
         return x;
       },
       (x) => {
-        logger.fail(x);
+        logger.error(x);
         return x;
       }
     );
@@ -30,9 +30,9 @@ export const ipcOn = <C extends string>(
   listener: (...args: any[]) => void
 ) =>
   ipcMain.on(channel, (_, ...args: any[]) => {
-    const logger = ipcLoggers.on[channel](args);
+    const logger = ipcLoggers().on[channel](args);
     listener(...args);
-    logger.success();
+    logger.info('success');
   });
 
 export const ipcSend = <C extends string>(
@@ -40,8 +40,8 @@ export const ipcSend = <C extends string>(
   channel: C,
   ...args: any[]
 ) => {
-  const logger = ipcLoggers.send[channel](args);
-  logger.success();
+  const logger = ipcLoggers().send[channel](args);
+  logger.info('success');
   window.webContents.send(channel, ...args);
 };
 
@@ -53,7 +53,7 @@ export function ipcInvoke<C extends string, T>(
   ...args: any[]
 ) {
   return new Promise<T>((resolve) => {
-    const logger = ipcLoggers.invoke[channel](args);
+    const logger = ipcLoggers().invoke[channel](args);
 
     invokeid++;
     const sendId = invokeid.toString();
@@ -65,14 +65,14 @@ export function ipcInvoke<C extends string, T>(
     ) => {
       if (sendId === resultId) {
         ipcMain.removeListener(handleChannel, listener);
-        logger.success(result);
+        logger.info(['success', result]);
         resolve(result);
       }
     };
 
     ipcMain.on(handleChannel, listener);
 
-    logger.start();
+    logger.info('start');
     window.webContents.send(channel, sendId, ...args);
   });
 }

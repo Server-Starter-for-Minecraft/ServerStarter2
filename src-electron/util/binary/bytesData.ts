@@ -12,7 +12,7 @@ import { Path } from './path';
 import { Png } from './png';
 
 const prismarineNbt = require('prismarine-nbt');
-const loggers = utilLoggers.BytesData;
+const loggers = () => utilLoggers().BytesData;
 
 export type Hash = {
   type: 'sha1' | 'md5' | 'sha256';
@@ -32,13 +32,13 @@ export class BytesData {
     hash: Hash | undefined = undefined,
     headers?: { [key in string]: string }
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.fromURL({ url, hash });
-    logger.start();
+    const logger = loggers().fromURL({ url, hash });
+    logger.info('start');
 
     try {
       const res = await fetch(url, { headers });
       if (res.status !== 200) {
-        logger.fail({ status: res.status, statusText: res.statusText });
+        logger.error({ status: res.status, statusText: res.statusText });
         return errorMessage.data.url.fetch({
           url: url,
           status: res.status,
@@ -49,17 +49,17 @@ export class BytesData {
       const result = new BytesData(Buffer.from(buffer));
 
       if (hash === undefined) {
-        logger.success();
+        logger.info('success');
         return result;
       }
       const calcHash = await result.hash(hash.type);
       if (hash.value === calcHash) {
-        logger.success();
+        logger.info('success');
         return result;
       }
 
       const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
-      logger.fail(`${msg}`);
+      logger.error(msg);
       return errorMessage.data.hashNotMatch({
         hashtype: hash.type,
         type: 'url',
@@ -67,7 +67,7 @@ export class BytesData {
       });
     } catch (e) {
       const em = fromRuntimeError(e);
-      logger.fail(em);
+      logger.error(em);
       return fromRuntimeError(e);
     }
   }
@@ -76,31 +76,35 @@ export class BytesData {
     path: Path,
     hash: Hash | undefined = undefined
   ): Promise<Failable<BytesData>> {
-    const logger = loggers.fromPath({ path: path.path, hash });
-    logger.start();
+    const logger = loggers().fromPath({
+      path: path.path,
+      hash,
+    });
+    logger.info('start');
 
     try {
       const buffer = await promises.readFile(path.path);
       const data = new BytesData(buffer);
       if (hash === undefined) {
-        logger.success();
+        logger.info('success');
         return data;
       }
 
       const calcHash = await data.hash(hash.type);
       if (hash.value === calcHash) {
-        logger.success();
+        logger.info('success');
         return data;
       }
       const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
-      logger.fail(msg);
+      logger.error(msg);
       return errorMessage.data.hashNotMatch({
         hashtype: hash.type,
         type: 'file',
         path: path.path,
       });
     } catch (e) {
-      logger.fail();
+      const em = fromRuntimeError(e);
+      logger.error(em);
       // TODO:黒魔術の解消
       return fromRuntimeError(e);
     }
@@ -125,15 +129,16 @@ export class BytesData {
    * TODO: ファイルに出力
    */
   async write(path: string, executable?: boolean): Promise<Failable<void>> {
-    const logger = loggers.write({ path });
-    logger.start();
+    const logger = loggers().write({ path });
+    logger.info('start');
     // 実行権限を与えて保存
     const settings = executable ? { mode: 0o755 } : undefined;
     try {
       await promises.writeFile(path, new Uint8Array(this.data), settings);
-      logger.success();
+      logger.info('success');
     } catch (e) {
-      logger.fail(e);
+      const em = fromRuntimeError(e);
+      logger.error(em);
       return errorMessage.data.path.creationFailed({
         type: 'file',
         path: path,
