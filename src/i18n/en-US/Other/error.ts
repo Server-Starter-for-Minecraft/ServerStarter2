@@ -115,6 +115,10 @@ export const enUSError: MessageSchema['error'] = {
         title: 'Failed to delete {type}',
         desc: 'Failed to delete {path}',
       },
+      moveFailed: {
+        title: 'Failed to move {type}',
+        desc: 'Failed to move {path}',
+      },
       dialogCanceled: {
         title: 'Window to select file is cancelled',
       },

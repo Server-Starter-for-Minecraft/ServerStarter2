@@ -64,6 +64,9 @@ export type DataErrors = {
     // ファイルまたはディレクトリの削除に失敗
     deletionFailed: PathErrorContent;
 
+    // ファイルまたはディレクトリの移動に失敗
+    moveFailed: PathErrorContent;
+
     // ファイル選択ウィンドウがキャンセルされた場合
     dialogCanceled: ErrorMessageContent;
 

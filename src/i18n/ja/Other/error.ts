@@ -117,6 +117,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: '{type}の削除に失敗しました',
         desc: '{path}の削除ができませんでした',
       },
+      moveFailed: {
+        title: '{type}の移動に失敗しました',
+        desc: '{path}の移動ができませんでした',
+      },
       dialogCanceled: {
         title: 'ファイル選択ウィンドウがキャンセルされました',
       },
