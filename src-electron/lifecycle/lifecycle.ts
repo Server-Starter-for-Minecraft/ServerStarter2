@@ -3,7 +3,7 @@ import { createAppEvent } from './event';
 /** electronのwillQuitイベント(すべてのwindowが閉じた後の処理)で発火されるイベント */
 export const onQuit = createAppEvent();
 
-/** electronのwillQuitイベント(すべてのwindowが閉じた後の処理)で発火されるイベント */
+/** フロントエンドからWindowの生成が完了した通知が来た際に発火されるイベント */
 export const onReadyWindow = createAppEvent();
 
 /**

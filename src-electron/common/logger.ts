@@ -10,13 +10,20 @@ import { isError } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
 
 const LATEST = 'latest.log';
+const TMP_LOG = `tmp.${randomInt(2 ** 31)}`;
 const ARCHIVE_EXT = '.log.gz';
 
 fs.ensureDirSync(logDir.path);
 const latestPath = logDir.child(LATEST);
+const beforeArchivePath = latestPath.parent().child(TMP_LOG);
+
+// LATASTの上書き前にアーカイブファイルを作成
+fs.copyFileSync(latestPath.path, beforeArchivePath.path);
+archiveLog(beforeArchivePath);
 
 // #region log4jsの設定
 
+// TODO: Objectの省略表示に対応
 log4js.addLayout('custom', () => {
   return (logEvent) => {
     const level = logEvent.level.levelStr;
@@ -41,6 +48,7 @@ log4js.configure({
       type: 'file',
       filename: latestPath.path,
       layout: { type: 'custom', max: 500 },
+      flags: 'w',
     },
     // out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
     file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
@@ -53,29 +61,31 @@ log4js.configure({
 
 // #endregion
 
-/** 過去のログをアーカイブ開始 */
-onQuit(() => archiveLog(latestPath), true);
+// システム終了時にログの記録終了を明示的に宣言
+onQuit(log4js.shutdown, true);
 
 /** パスにあるログをアーカイブする */
 async function archiveLog(logPath: Path) {
   // .latestを圧縮してアーカイブ
   if (logPath.exists()) {
     const lastUpdateTime = await logPath.lastUpdateTime();
-    const tmp = logDir.child(`tmp.${randomInt(2 ** 31)}`);
-    await logPath.moveTo(tmp, { overwrite: true });
-    const compressed = await gzip.fromFile(tmp);
+    const compressed = await gzip.fromFile(logPath);
     if (!isError(compressed)) {
       await compressed.write(getNextArchivePath(lastUpdateTime).path);
     }
-    await tmp.remove();
+    await logPath.remove();
   }
 
-  // 一週間前のログファイルを削除
+  // 一週間前のログファイルとTMPファイルを削除
   const thresholdDate = dayjs().subtract(7, 'd');
   const paths = await logDir.iter();
   if (isError(paths)) return;
   for (const path of paths) {
     if (!path.path.endsWith(ARCHIVE_EXT)) continue;
+    if (path.basename().startsWith('tmp')) {
+      await path.remove();
+      continue;
+    }
     const updateDate = await path.lastUpdateTime();
     if (updateDate.isBefore(thresholdDate)) await path.remove();
   }
