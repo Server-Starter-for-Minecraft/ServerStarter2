@@ -9,6 +9,7 @@ import { Path } from '../util/binary/path';
 import { isError } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
 
+const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
 const LATEST = 'latest.log';
 const TMP_LOG = `tmp.${randomInt(2 ** 31)}`;
 const ARCHIVE_EXT = '.log.gz';
@@ -73,10 +74,12 @@ function truncateValue(value: any, depth = 0): string {
 
 log4js.addLayout('fullLog', () => {
   return (logEvent) => {
+    const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
     const param = logEvent.data[0];
     const json = {
+      t: time,
       lv: level,
       on: category,
       param,
@@ -89,11 +92,11 @@ log4js.addLayout('truncateLog', () => {
   return (logEvent) => {
     const level = logEvent.level.levelStr.padEnd(5);
     const category = logEvent.categoryName;
-    const time = dayjs(logEvent.startTime).format('HH:mm:ss.SSS');
+    const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
     const param = logEvent.data[0];
     const msg = logEvent.data[1];
 
-    let output = `[${time}] ${level} ${category}`;
+    let output = `[${level} ${time}] ${category}`;
     if (param !== undefined) {
       output += ` (${truncateValue(param)})`;
     }
