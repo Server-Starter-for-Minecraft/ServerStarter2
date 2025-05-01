@@ -23,8 +23,55 @@ archiveLog(beforeArchivePath);
 
 // #region log4jsの設定
 
-// TODO: Objectの省略表示に対応
-log4js.addLayout('custom', () => {
+/**
+ * 与えられたログオブジェクトを省略して，人間が見やすい文字列に出力する
+ * TODO: テストを追加
+ */
+function truncateValue(value: any, depth = 0): string {
+  const MAX_ARRAY_ITEMS = 1;
+  const MAX_OBJECT_ITEMS = 3;
+  const MAX_STRING_LENGTH = 50;
+
+  if (depth > 2) return '...'; // ネストが深すぎる場合は省略
+
+  if (Array.isArray(value)) {
+    if (value.length <= MAX_ARRAY_ITEMS * 2) {
+      // 配列の場合，深さ`depth`は深くなっていないと判断して，`depth + 1`としない
+      return `[${value.map((v) => truncateValue(v, depth)).join(', ')}]`;
+    }
+    const first = value.slice(0, MAX_ARRAY_ITEMS);
+    const last = value.slice(-MAX_ARRAY_ITEMS);
+    return `[${first.map((v) => truncateValue(v, depth)).join(', ')}, ... ${
+      value.length - MAX_ARRAY_ITEMS * 2
+    } more ..., ${last.map((v) => truncateValue(v, depth)).join(', ')}]`;
+  }
+
+  if (typeof value === 'string') {
+    if (value.length > MAX_STRING_LENGTH) {
+      const half = Math.floor(MAX_STRING_LENGTH / 2);
+      return `${value.slice(0, half)}...${value.slice(-half)}`;
+    }
+    return value;
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const entries = Object.entries(value);
+    if (entries.length === 0) return '{}';
+    if (entries.length > MAX_OBJECT_ITEMS) {
+      const important = entries.slice(0, MAX_OBJECT_ITEMS);
+      return `{ ${important
+        .map(([k, v]) => `${k}: ${truncateValue(v, depth + 1)}`)
+        .join(', ')}, ... ${entries.length - MAX_OBJECT_ITEMS} more fields }`;
+    }
+    return `{ ${entries
+      .map(([k, v]) => `${k}: ${truncateValue(v, depth + 1)}`)
+      .join(', ')} }`;
+  }
+
+  return String(value);
+}
+
+log4js.addLayout('fullLog', () => {
   return (logEvent) => {
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
@@ -38,24 +85,43 @@ log4js.addLayout('custom', () => {
     return JSON.stringify(json);
   };
 });
+log4js.addLayout('truncateLog', () => {
+  return (logEvent) => {
+    const level = logEvent.level.levelStr.padEnd(5);
+    const category = logEvent.categoryName;
+    const time = dayjs(logEvent.startTime).format('HH:mm:ss.SSS');
+    const param = logEvent.data[0];
+    const msg = logEvent.data[1];
+
+    let output = `[${time}] ${level} ${category}`;
+    if (param !== undefined) {
+      output += ` (${truncateValue(param)})`;
+    }
+    if (msg !== undefined) {
+      output += `: ${truncateValue(msg)}`;
+    }
+    return output;
+  };
+});
 log4js.configure({
   appenders: {
-    // _out: {
-    //   type: 'stdout',
-    //   layout: { type: 'custom', max: 500 },
-    // },
+    // TODO: ログファイルに出力＆アーカイブ処理を修正
+    _out: {
+      type: 'stdout',
+      layout: { type: 'truncateLog', max: 500 },
+    },
     _file: {
       type: 'file',
       filename: latestPath.path,
-      layout: { type: 'custom', max: 500 },
+      layout: { type: 'fullLog', max: 500 },
       flags: 'w',
     },
-    // out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
+    out: { type: 'logLevelFilter', appender: '_out', level: 'trace' },
     file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
   },
   categories: {
-    // default: { appenders: ['out', 'file'], level: 'trace' },
-    default: { appenders: ['file'], level: 'trace' },
+    default: { appenders: ['out', 'file'], level: 'trace' },
+    // default: { appenders: ['file'], level: 'trace' },
   },
 });
 
@@ -160,6 +226,9 @@ function simplifyArgs(...args: any[]): any {
 
 type LogOmission = (value: string, path: (string | number)[]) => string;
 
+// TODO: 以下の伏字ルールを追加
+// IPアドレス
+// Ngrokのトークン
 const omissions: Set<LogOmission> = new Set();
 
 /** オブジェクトに伏字を適用する */
@@ -237,7 +306,7 @@ if (import.meta.vitest) {
         test: {
           type: 'fileSync',
           filename: logpath.path,
-          layout: { type: 'custom', max: 500 },
+          layout: { type: 'fullLog', max: 500 },
         },
       },
       categories: {
