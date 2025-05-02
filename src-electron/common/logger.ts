@@ -26,7 +26,6 @@ archiveLog(beforeArchivePath);
 
 /**
  * 与えられたログオブジェクトを省略して，人間が見やすい文字列に出力する
- * TODO: テストを追加
  */
 function truncateValue(value: any, depth = 0): string {
   const MAX_ARRAY_ITEMS = 1;
@@ -297,10 +296,11 @@ if (import.meta.vitest) {
 
     const logpath = workPath.child('test.log');
 
-    const readLogLines = async () => {
+    const isMatchLogInLines = async (target: string) => {
       const logTxt = await logpath.readText();
-      if (isError(logTxt)) return logTxt;
-      return logTxt.trim().split(/\r?\n|\r/);
+      if (isError(logTxt)) return null;
+      const lines = logTxt.trim().split(/\r?\n|\r/);
+      return lines.some((line) => line.includes(target));
     };
 
     // テスト用ログ設定
@@ -319,54 +319,66 @@ if (import.meta.vitest) {
 
     test('ログ出力のテスト', async () => {
       rootLogger('DEFAULT').info('message');
-      expect(await readLogLines()).toContain(
-        '{"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"}'
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"'
+        )
+      ).toBe(true);
 
       rootLogger.custom('multi', ['value']).warn({ key: 'value' });
-      expect(await readLogLines()).toContain(
-        '{"lv":"WARN","on":"custom","param":["multi",["value"]],"msg":{"key":"value"}}'
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"WARN","on":"custom","param":["multi",["value"]],"msg":{"key":"value"}'
+        )
+      ).toBe(true);
 
       rootLogger.nest.more.deeply().trace();
-      expect(await readLogLines()).toContain(
-        '{"lv":"TRACE","on":"nest.more.deeply"}'
-      );
+      expect(
+        await isMatchLogInLines('"lv":"TRACE","on":"nest.more.deeply"')
+      ).toBe(true);
 
       // 伏字チェック
 
       const unsetRule = addOmisstionRule((v) => (v === 'invalid' ? '***' : v));
 
       rootLogger().info('invalid');
-      expect(await readLogLines()).toContain(
-        '{"lv":"INFO","on":"default","msg":"***"}'
-      );
+      expect(
+        await isMatchLogInLines('"lv":"INFO","on":"default","msg":"***"')
+      ).toBe(true);
 
       log4js.recording();
 
       rootLogger().info({ nest: 'invalid' });
-      expect(await readLogLines()).toContain(
-        '{"lv":"INFO","on":"default","msg":{"nest":"***"}}'
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":{"nest":"***"}'
+        )
+      ).toBe(true);
 
       rootLogger().info(['pass', 'is', 'invalid']);
-      expect(await readLogLines()).toContain(
-        '{"lv":"INFO","on":"default","msg":["pass","is","***"]}'
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":["pass","is","***"]'
+        )
+      ).toBe(true);
 
       unsetRule();
 
       rootLogger().info('invalid');
-      expect(await readLogLines()).toContain(
-        '{"lv":"INFO","on":"default","msg":"invalid"}' // 伏字ルールが消えているはず
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":"invalid"' // 伏字ルールが消えているはず
+        )
+      ).toBe(true);
 
       addOmisstionRule((v, p) => (p[p.length - 1] === 'secret' ? '***' : v));
 
       rootLogger({ secret: 'XXXXXX' }).info();
-      expect(await readLogLines()).toContain(
-        '{"lv":"INFO","on":"default","param":{"secret":"***"}}'
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","param":{"secret":"***"}'
+        )
+      ).toBe(true);
 
       // アーカイブチェック
       const logPaths = await logDir.iter();
@@ -391,9 +403,79 @@ if (import.meta.vitest) {
       // アーカイブをwriteしたログが新たに書き込まれるため，
       // ログの中に当初書き込んだログがないことを確認する
       // expect(logpath.exists()).toBe(false);
-      expect(await readLogLines()).not.toContain(
-        '{"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"}'
-      );
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"'
+        )
+      ).not.toBe(true);
+    });
+  });
+
+  describe('truncateLog', () => {
+    type Source = any[] | Record<string, any>;
+    const testCases: { sourceParam: Source; expectStr: string }[] = [
+      // 通常の出力
+      {
+        sourceParam: ['spigot', true],
+        expectStr: '[spigot, true]',
+      },
+      // URLのような長い文字列は途中を省略して表示する
+      {
+        sourceParam: {
+          url: 'https://api.github.com/repos/Server-Starter-for-Minecraft/ServerStarter2/releases',
+        },
+        expectStr:
+          '{ url: https://api.github.com/re...t/ServerStarter2/releases }',
+      },
+      // オブジェクトの要素が3つ以上の場合は「．．．」で省略される
+      {
+        sourceParam: {
+          type: 'error',
+          key: 'data.url.fetch',
+          level: 'error',
+          arg: {
+            url: 'https://api.github.com/repos/Server-Starter-for-Minecraft/ServerStarter2/releases',
+            status: 401,
+            statusText: 'Unauthorized',
+          },
+        },
+        expectStr:
+          '{ type: error, key: data.url.fetch, level: error, ... 1 more fields }',
+      },
+      // 配列の要素が3つ以上の場合は「．．．」で省略される
+      {
+        sourceParam: [
+          'success',
+          [
+            { release: false, id: '25w18a' },
+            { release: false, id: '25w17a' },
+            { release: false, id: '25w16a' },
+            { release: false, id: '25w15a' },
+            { release: false, id: '25w14craftmine' },
+            { release: true, id: '1.21.5' },
+          ],
+        ],
+        expectStr:
+          '[success, [{ release: false, id: 25w18a }, ... 4 more ..., { release: true, id: 1.21.5 }]]',
+      },
+      // 3階層以下のオブジェクト要素は「．．．」で省略される
+      {
+        sourceParam: [
+          'success',
+          {
+            container: [
+              { container: 'servers', visible: true, name: 'default' },
+            ],
+            world: { memory: { size: 2, unit: 'GB' } },
+          },
+        ],
+        expectStr:
+          '[success, { container: [{ container: servers, visible: true, name: default }], world: { memory: { size: ..., unit: ... } } }]',
+      },
+    ];
+
+    test.each(testCases)('eachTruncateLog', ({ sourceParam, expectStr }) => {
+      expect(truncateValue(sourceParam)).toBe(expectStr);
     });
   });
 }
