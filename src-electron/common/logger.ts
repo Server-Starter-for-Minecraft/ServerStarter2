@@ -19,8 +19,10 @@ const latestPath = logDir.child(LATEST);
 const beforeArchivePath = latestPath.parent().child(TMP_LOG);
 
 // LATASTの上書き前にアーカイブファイルを作成
-fs.copyFileSync(latestPath.path, beforeArchivePath.path);
-archiveLog(beforeArchivePath);
+if (latestPath.exists()) {
+  fs.copyFileSync(latestPath.path, beforeArchivePath.path);
+  archiveLog(beforeArchivePath);
+}
 
 // #region log4jsの設定
 
@@ -122,8 +124,8 @@ log4js.configure({
     file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
   },
   categories: {
-    default: { appenders: ['out', 'file'], level: 'trace' },
-    // default: { appenders: ['file'], level: 'trace' },
+    // default: { appenders: ['out', 'file'], level: 'trace' },
+    default: { appenders: ['file'], level: 'trace' },
   },
 });
 
