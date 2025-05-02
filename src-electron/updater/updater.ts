@@ -41,11 +41,17 @@ export async function update() {
       : undefined;
 
   const update = await checkUpdate(PAT);
+
+  if (update === false) {
+    logger.error(update);
+    return;
+  }
+
+  if (isError(update)) {
+    logger.error(update);
+    return;
+  }
   logger.info(update);
-
-  if (update === false) return;
-
-  if (isError(update)) return;
 
   // 環境変数DEBUGGING==true(yarn devで起動した場合)実際のアップデート処理は行わない
   if (process.env.DEBUGGING) return;
