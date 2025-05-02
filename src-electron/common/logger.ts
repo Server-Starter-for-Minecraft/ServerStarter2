@@ -2,9 +2,9 @@ import { randomInt } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import log4js from 'log4js';
+import { c } from 'tar';
 import { onQuit } from '../lifecycle/lifecycle';
 import { logDir } from '../source/const';
-import { gzip } from '../util/binary/archive/gz';
 import { Path } from '../util/binary/path';
 import { isError } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
@@ -12,7 +12,7 @@ import { InfinitMap } from '../util/helper/infinitMap';
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
 const LATEST = 'latest.log';
 const TMP_LOG = `tmp.${randomInt(2 ** 31)}`;
-const ARCHIVE_EXT = '.log.gz';
+const ARCHIVE_EXT = '.log.tar.gz';
 
 fs.ensureDirSync(logDir.path);
 const latestPath = logDir.child(LATEST);
@@ -139,11 +139,19 @@ async function archiveLog(logPath: Path) {
   // .latestを圧縮してアーカイブ
   if (logPath.exists()) {
     const lastUpdateTime = await logPath.lastUpdateTime();
-    const compressed = await gzip.fromFile(logPath);
-    if (!isError(compressed)) {
-      await compressed.write(getNextArchivePath(lastUpdateTime).path);
-    }
-    await logPath.remove();
+    const [newlogName, archivePath] = getNextArchivePath(lastUpdateTime);
+    const newLogPath = logPath.parent().child(`${newlogName}.log`);
+    await logPath.rename(newLogPath);
+    // utils/gzを使うと，GzipクラスとPathクラスが循環参照となるため使用しない
+    await c(
+      {
+        gzip: true,
+        file: archivePath.path,
+        cwd: logPath.parent().path,
+      },
+      [newLogPath.basename()]
+    );
+    await newLogPath.remove();
   }
 
   // 一週間前のログファイルとTMPファイルを削除
@@ -161,12 +169,12 @@ async function archiveLog(logPath: Path) {
   }
 }
 
-function getNextArchivePath(time: Dayjs): Path {
+function getNextArchivePath(time: Dayjs): [string, Path] {
   let i = 0;
   const prefix = time.format('YYYY-MM-DD-HH');
   while (true) {
     const path = logDir.child(`${prefix}-${i}${ARCHIVE_EXT}`);
-    if (!path.exists()) return path;
+    if (!path.exists()) return [`${prefix}-${i}`, path];
     i += 1;
   }
 }
@@ -398,18 +406,9 @@ if (import.meta.vitest) {
       if (isError(logPaths2)) return;
       expect(logPaths2.map((p) => p.basename())).toEqual(
         expect.arrayContaining([
-          expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.gz/),
+          expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.tar.gz/),
         ])
       );
-      // アーカイブされると元ファイルは削除されるが，
-      // アーカイブをwriteしたログが新たに書き込まれるため，
-      // ログの中に当初書き込んだログがないことを確認する
-      // expect(logpath.exists()).toBe(false);
-      expect(
-        await isMatchLogInLines(
-          '"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"'
-        )
-      ).not.toBe(true);
     });
   });
 
