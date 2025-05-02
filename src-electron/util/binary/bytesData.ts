@@ -33,7 +33,7 @@ export class BytesData {
     headers?: { [key in string]: string }
   ): Promise<Failable<BytesData>> {
     const logger = loggers().fromURL({ url, hash });
-    logger.info('start');
+    logger.trace('start');
 
     try {
       const res = await fetch(url, { headers });
@@ -49,12 +49,12 @@ export class BytesData {
       const result = new BytesData(Buffer.from(buffer));
 
       if (hash === undefined) {
-        logger.info('success');
+        logger.trace('success');
         return result;
       }
       const calcHash = await result.hash(hash.type);
       if (hash.value === calcHash) {
-        logger.info('success');
+        logger.trace('success');
         return result;
       }
 
@@ -80,19 +80,19 @@ export class BytesData {
       path: path.path,
       hash,
     });
-    logger.info('start');
+    logger.trace('start');
 
     try {
       const buffer = await promises.readFile(path.path);
       const data = new BytesData(buffer);
       if (hash === undefined) {
-        logger.info('success');
+        logger.trace('success');
         return data;
       }
 
       const calcHash = await data.hash(hash.type);
       if (hash.value === calcHash) {
-        logger.info('success');
+        logger.trace('success');
         return data;
       }
       const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;

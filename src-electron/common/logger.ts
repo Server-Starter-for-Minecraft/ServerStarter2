@@ -134,7 +134,7 @@ log4js.configure({
     fileTruncate: {
       type: 'logLevelFilter',
       appender: '_fileTruncate',
-      level: 'trace',
+      level: 'debug',
     },
   },
   categories: {

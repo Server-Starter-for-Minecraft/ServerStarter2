@@ -32,7 +32,7 @@ async function checkUpdate(pat: string | undefined) {
 export async function update() {
   const logger = rootLogger.update({});
   logger.info('start');
-  logger.trace('system version', await getSystemVersion());
+  logger.info('system version', await getSystemVersion());
 
   // 環境変数SERVERSTARTER_MODEが"debug"だった場合は環境変数SERVERSTARTER_TOKENからgitのPATを取得
   const PAT =
