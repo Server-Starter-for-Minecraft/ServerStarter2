@@ -10,18 +10,21 @@ import { isError } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
-const LATEST = 'latest.log';
-const TMP_LOG = `tmp.${randomInt(2 ** 31)}`;
+const LATEST = 'latest';
+const EXTs = ['.log', '.truncate.log'];
+const TMP_LOG = `tmp_${randomInt(2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
 
 fs.ensureDirSync(logDir.path);
-const latestPath = logDir.child(LATEST);
-const beforeArchivePath = latestPath.parent().child(TMP_LOG);
+const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
+const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
 // LATASTの上書き前にアーカイブファイルを作成
-if (latestPath.exists()) {
-  fs.copyFileSync(latestPath.path, beforeArchivePath.path);
-  archiveLog(beforeArchivePath);
+if (logPaths.every((path) => path.exists())) {
+  logPaths.forEach((path, idx) =>
+    fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
+  );
+  archiveLog(...beforeArchivePaths);
 }
 
 // #region log4jsの設定
@@ -109,23 +112,27 @@ log4js.addLayout('truncateLog', () => {
 });
 log4js.configure({
   appenders: {
-    // TODO: ログファイルに出力＆アーカイブ処理を修正
-    _out: {
-      type: 'stdout',
-      layout: { type: 'truncateLog', max: 500 },
-    },
-    _file: {
+    _fileFull: {
       type: 'file',
-      filename: latestPath.path,
+      filename: logPaths[0].path,
       layout: { type: 'fullLog', max: 500 },
       flags: 'w',
     },
-    out: { type: 'logLevelFilter', appender: '_out', level: 'trace' },
-    file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
+    _fileTruncate: {
+      type: 'file',
+      filename: logPaths[1].path,
+      layout: { type: 'truncateLog', max: 500 },
+      flags: 'w',
+    },
+    fileFull: { type: 'logLevelFilter', appender: '_fileFull', level: 'trace' },
+    fileTruncate: {
+      type: 'logLevelFilter',
+      appender: '_fileTruncate',
+      level: 'trace',
+    },
   },
   categories: {
-    // default: { appenders: ['out', 'file'], level: 'trace' },
-    default: { appenders: ['file'], level: 'trace' },
+    default: { appenders: ['fileFull', 'fileTruncate'], level: 'trace' },
   },
 });
 
@@ -135,23 +142,31 @@ log4js.configure({
 onQuit(log4js.shutdown, true);
 
 /** パスにあるログをアーカイブする */
-async function archiveLog(logPath: Path) {
+async function archiveLog(...logPaths: Path[]) {
   // .latestを圧縮してアーカイブ
-  if (logPath.exists()) {
-    const lastUpdateTime = await logPath.lastUpdateTime();
+  if (logPaths.length > 0 && logPaths.every((path) => path.exists())) {
+    const lastUpdateTime = await logPaths[0].lastUpdateTime();
     const [newlogName, archivePath] = getNextArchivePath(lastUpdateTime);
-    const newLogPath = logPath.parent().child(`${newlogName}.log`);
-    await logPath.rename(newLogPath);
+    // アーカイブ時に利用する名前に変更
+    const newPaths = await Promise.all(
+      logPaths.map(async (path) => {
+        const firstColonIndex = path.basename().indexOf('.');
+        const newExt = path.basename().substring(firstColonIndex);
+        const newLogPath = path.parent().child(`${newlogName}${newExt}`);
+        await path.rename(newLogPath);
+        return newLogPath;
+      })
+    );
     // utils/gzを使うと，GzipクラスとPathクラスが循環参照となるため使用しない
     await c(
       {
         gzip: true,
         file: archivePath.path,
-        cwd: logPath.parent().path,
+        cwd: logPaths[0].parent().path,
       },
-      [newLogPath.basename()]
+      newPaths.map((path) => path.basename())
     );
-    await newLogPath.remove();
+    await Promise.all(newPaths.map((path) => path.remove()));
   }
 
   // 一週間前のログファイルとTMPファイルを削除
@@ -395,7 +410,7 @@ if (import.meta.vitest) {
       expect(isError(logPaths)).toBe(false);
       if (isError(logPaths)) return;
       for (const path of logPaths) {
-        if (path.path === latestPath.path) continue;
+        if (logPaths.some((p) => p.basename() === path.basename())) continue;
         await path.remove();
       }
       await archiveLog(logpath);
