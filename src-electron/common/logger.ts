@@ -1,5 +1,6 @@
 import { randomInt } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
+import { app } from 'electron';
 import * as fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
@@ -20,7 +21,8 @@ const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
 const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
 // LATASTの上書き前にアーカイブファイルを作成
-if (logPaths.every((path) => path.exists())) {
+// Testの時には下記のコードは実行しない
+if (app && logPaths.every((path) => path.exists())) {
   logPaths.forEach((path, idx) =>
     fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
   );
@@ -365,6 +367,10 @@ if (import.meta.vitest) {
       // 伏字チェック
 
       const unsetRule = addOmisstionRule((v) => (v === 'invalid' ? '***' : v));
+      addOmisstionRule((v, p) => {
+        console.log(v, p);
+        return v;
+      });
 
       rootLogger().info('invalid');
       expect(
