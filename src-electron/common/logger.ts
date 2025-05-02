@@ -46,23 +46,27 @@ function truncateValue(value: any, depth = 0): string {
   if (depth > 2) return '...'; // ネストが深すぎる場合は省略
 
   if (Array.isArray(value)) {
-    if (value.length <= MAX_ARRAY_ITEMS * 2) {
+    const remainItems = value.length - MAX_ARRAY_ITEMS * 2;
+    // ... N more ... 表示はN=2以上とする
+    if (remainItems <= 1) {
       // 配列の場合，深さ`depth`は深くなっていないと判断して，`depth + 1`としない
       return `[${value.map((v) => truncateValue(v, depth)).join(', ')}]`;
     }
     const first = value.slice(0, MAX_ARRAY_ITEMS);
     const last = value.slice(-MAX_ARRAY_ITEMS);
-    return `[${first.map((v) => truncateValue(v, depth)).join(', ')}, ... ${
-      value.length - MAX_ARRAY_ITEMS * 2
-    } more ..., ${last.map((v) => truncateValue(v, depth)).join(', ')}]`;
+    return `[${first
+      .map((v) => truncateValue(v, depth))
+      .join(', ')}, ... ${remainItems} more ..., ${last
+      .map((v) => truncateValue(v, depth))
+      .join(', ')}]`;
   }
 
   if (typeof value === 'string') {
     if (value.length > MAX_STRING_LENGTH) {
       const half = Math.floor(MAX_STRING_LENGTH / 2);
-      return `${value.slice(0, half)}...${value.slice(-half)}`;
+      return `${value.slice(0, half)}...${value.slice(-half)}`.trim();
     }
-    return value;
+    return value.trim();
   }
 
   if (typeof value === 'object' && value !== null) {
