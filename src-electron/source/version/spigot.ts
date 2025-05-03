@@ -14,8 +14,8 @@ import { Path } from '../../util/binary/path';
 import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { allocateTempDir } from '../../util/tempPath';
-import { readyJava } from '../runtime/java';
 import { getVersionMainfest } from '../runtime/manifest';
+import { readyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,

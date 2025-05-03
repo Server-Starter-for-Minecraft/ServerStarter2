@@ -13,7 +13,7 @@ import { Path } from '../../util/binary/path';
 import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { osPlatform } from '../../util/os/os';
-import { readyJava } from '../runtime/java';
+import { readyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
