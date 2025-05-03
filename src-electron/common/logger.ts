@@ -37,7 +37,7 @@ if (app && logPaths.every((path) => path.exists())) {
  */
 function truncateValue(value: any, depth = 0): string {
   const MAX_ARRAY_ITEMS = 1;
-  const MAX_OBJECT_ITEMS = 3;
+  const MAX_OBJECT_FIELDS = 3;
   const MAX_STRING_LENGTH = 50;
 
   if (depth > 2) return '...'; // ネストが深すぎる場合は省略
@@ -69,15 +69,17 @@ function truncateValue(value: any, depth = 0): string {
   if (typeof value === 'object' && value !== null) {
     const entries = Object.entries(value);
     if (entries.length === 0) return '{}';
-    if (entries.length > MAX_OBJECT_ITEMS) {
-      const important = entries.slice(0, MAX_OBJECT_ITEMS);
-      return `{ ${important
+    const remainFields = entries.length - MAX_OBJECT_FIELDS;
+    // ... N more ... 表示はN=2以上とする
+    if (remainFields <= 1) {
+      return `{ ${entries
         .map(([k, v]) => `${k}: ${truncateValue(v, depth + 1)}`)
-        .join(', ')}, ... ${entries.length - MAX_OBJECT_ITEMS} more fields }`;
+        .join(', ')} }`;
     }
-    return `{ ${entries
+    const important = entries.slice(0, MAX_OBJECT_FIELDS);
+    return `{ ${important
       .map(([k, v]) => `${k}: ${truncateValue(v, depth + 1)}`)
-      .join(', ')} }`;
+      .join(', ')}, ... ${remainFields} more fields }`;
   }
 
   return String(value);
@@ -470,17 +472,15 @@ if (import.meta.vitest) {
       // オブジェクトの要素が3つ以上の場合は「．．．」で省略される
       {
         sourceParam: {
-          type: 'error',
-          key: 'data.url.fetch',
-          level: 'error',
-          arg: {
-            url: 'https://api.github.com/repos/Server-Starter-for-Minecraft/ServerStarter2/releases',
-            status: 401,
-            statusText: 'Unauthorized',
-          },
+          'accepts-transfers': false,
+          'allow-flight': false,
+          'allow-nether': true,
+          'broadcast-console-to-ops': true,
+          'broadcast-rcon-to-ops': true,
+          difficulty: 'easy',
         },
         expectStr:
-          '{ type: error, key: data.url.fetch, level: error, ... 1 more fields }',
+          '{ accepts-transfers: false, allow-flight: false, allow-nether: true, ... 3 more fields }',
       },
       // 配列の要素が3つ以上の場合は「．．．」で省略される
       {
