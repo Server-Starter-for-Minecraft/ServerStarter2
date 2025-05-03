@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {
   DATAPACK_CACHE_PATH,
-  logPath,
+  logDir,
   MOD_CACHE_PATH,
   PLUGIN_CACHE_PATH,
 } from '../source/const';
@@ -39,7 +39,7 @@ export const StaticResouce = z.object({
   minecraftColors: MinecraftColors,
   paths: z
     .object({
-      log: z.string().default(logPath.str()),
+      log: z.string().default(logDir.str()),
       cache: z
         .object({
           datapack: z.string().default(DATAPACK_CACHE_PATH.str()),

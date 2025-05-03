@@ -291,7 +291,10 @@ export class Path {
   }
 
   moveTo = exclusive(this._moveTo);
-  private async _moveTo(target: Path): Promise<Failable<void>> {
+  private async _moveTo(
+    target: Path,
+    options?: fs.MoveOptions
+  ): Promise<Failable<void>> {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
     const isSuccessRemove = await target._remove();
@@ -311,7 +314,14 @@ export class Path {
           await recursiveMove(child, target.child(child.basename()));
         });
       } else {
-        await fs.move(path.path, target.path);
+        try {
+          await fs.move(path.path, target.path, options);
+        } catch {
+          return errorMessage.data.path.moveFailed({
+            type: 'file',
+            path: path.path,
+          });
+        }
       }
     }
     const res = await recursiveMove(this, target);

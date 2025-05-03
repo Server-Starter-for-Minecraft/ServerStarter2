@@ -1,4 +1,4 @@
-import { rootLoggerHierarchy } from '../core/logger';
+import { rootLogger } from '../common/logger';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os/os';
@@ -30,8 +30,9 @@ async function checkUpdate(pat: string | undefined) {
  * リモートのバージョンはgithubのリリース情報のtag_nameを参照
  */
 export async function update() {
-  const logger = rootLoggerHierarchy.update({});
-  logger.start(getSystemVersion());
+  const logger = rootLogger.update({});
+  logger.info('start');
+  logger.info('system version', await getSystemVersion());
 
   // 環境変数SERVERSTARTER_MODEが"debug"だった場合は環境変数SERVERSTARTER_TOKENからgitのPATを取得
   const PAT =
@@ -40,11 +41,17 @@ export async function update() {
       : undefined;
 
   const update = await checkUpdate(PAT);
+
+  if (update === false) {
+    logger.error(update);
+    return;
+  }
+
+  if (isError(update)) {
+    logger.error(update);
+    return;
+  }
   logger.info(update);
-
-  if (update === false) return;
-
-  if (isError(update)) return;
 
   // 環境変数DEBUGGING==true(yarn devで起動した場合)実際のアップデート処理は行わない
   if (process.env.DEBUGGING) return;
@@ -70,5 +77,5 @@ export async function update() {
       break;
   }
 
-  logger.success();
+  logger.info('success');
 }

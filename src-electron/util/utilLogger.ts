@@ -1,3 +1,3 @@
-import { rootLoggerHierarchy } from '../core/logger';
+import { rootLogger } from '../common/logger';
 
-export const utilLoggers = rootLoggerHierarchy.util;
+export const utilLoggers = () => rootLogger.util;

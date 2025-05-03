@@ -1,134 +1,211 @@
+import { randomInt } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
+import { app } from 'electron';
+import * as fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
+import { onQuit } from '../lifecycle/lifecycle';
+import { logDir } from '../source/const';
 import { Path } from '../util/binary/path';
 import { isError } from '../util/error/error';
+import { InfinitMap } from '../util/helper/infinitMap';
+import { isValidIP } from '../util/network/ip';
 
-const LATEST = 'latest.log';
-const ARCHIVE_EXT = '.log.gz';
+const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
+const LATEST = 'latest';
+const EXTs = ['.log', '.truncate.log'];
+const TMP_LOG = `tmp_${randomInt(2 ** 31)}`;
+const ARCHIVE_EXT = '.log.tar.gz';
 
-// ログファイルをtar.gzに圧縮して保存
-async function compressArchive(logDir: Path, latestLog: Path) {
-  const [logName, archivePath] = getArchivePath(
-    logDir,
-    await latestLog.lastUpdateTime()
+fs.ensureDirSync(logDir.path);
+const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
+const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
+
+// LATASTの上書き前にアーカイブファイルを作成
+// Testの時には下記のコードは実行しない
+if (app && logPaths.every((path) => path.exists())) {
+  logPaths.forEach((path, idx) =>
+    fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
   );
-
-  const newlogPath = logDir.child(logName);
-  await newlogPath.remove();
-
-  await latestLog.copyTo(newlogPath);
-
-  await c(
-    {
-      gzip: true,
-      file: archivePath.path,
-      cwd: logDir.path,
-    },
-    [logName]
-  );
-  await newlogPath.remove();
+  archiveLog(...beforeArchivePaths);
 }
 
-function stringify(data: any) {
-  return JSON.stringify(data, (k, v) => (v === undefined ? 'undefined' : v));
+// #region log4jsの設定
+
+/**
+ * 与えられたログオブジェクトを省略して，人間が見やすい文字列に出力する
+ */
+function truncateValue(value: any, depth = 0): string {
+  const MAX_ARRAY_ITEMS = 1;
+  const MAX_OBJECT_FIELDS = 3;
+  const MAX_STRING_LENGTH = 50;
+
+  if (depth > 2) return '...'; // ネストが深すぎる場合は省略
+
+  if (Array.isArray(value)) {
+    const remainItems = value.length - MAX_ARRAY_ITEMS * 2;
+    // ... N more ... 表示はN=2以上とする
+    if (remainItems <= 1) {
+      // 配列の場合，深さ`depth`は深くなっていないと判断して，`depth + 1`としない
+      return `[${value.map((v) => truncateValue(v, depth)).join(', ')}]`;
+    }
+    const first = value.slice(0, MAX_ARRAY_ITEMS);
+    const last = value.slice(-MAX_ARRAY_ITEMS);
+    return `[${first
+      .map((v) => truncateValue(v, depth))
+      .join(', ')}, ... ${remainItems} more ..., ${last
+      .map((v) => truncateValue(v, depth))
+      .join(', ')}]`;
+  }
+
+  if (typeof value === 'string') {
+    if (value.length > MAX_STRING_LENGTH) {
+      const half = Math.floor(MAX_STRING_LENGTH / 2);
+      return `${value.slice(0, half)}...${value.slice(-half)}`.trim();
+    }
+    return value.trim();
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const entries = Object.entries(value);
+    if (entries.length === 0) return '{}';
+    const remainFields = entries.length - MAX_OBJECT_FIELDS;
+    // ... N more ... 表示はN=2以上とする
+    if (remainFields <= 1) {
+      return `{ ${entries
+        .map(([k, v]) => `${k}: ${truncateValue(v, depth + 1)}`)
+        .join(', ')} }`;
+    }
+    const important = entries.slice(0, MAX_OBJECT_FIELDS);
+    return `{ ${important
+      .map(([k, v]) => `${k}: ${truncateValue(v, depth + 1)}`)
+      .join(', ')}, ... ${remainFields} more fields }`;
+  }
+
+  return String(value);
 }
 
-log4js.addLayout('custom', function () {
-  return function (logEvent) {
+log4js.addLayout('fullLog', () => {
+  return (logEvent) => {
+    const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
-    const state = logEvent.data[0];
-    const args = logEvent.data[1];
-
+    const param = logEvent.data[0];
     const json = {
-      level,
-      state,
-      category,
-      args,
-      data: logEvent.data.slice(2),
+      t: time,
+      lv: level,
+      on: category,
+      param,
+      msg: logEvent.data[1],
     };
-
-    return stringify(json);
-
-    // const data = logEvent.data
-    //   .slice(2)
-    //   .map((d) => {
-    //     let text = stringify(d);
-    //     if (config.max && text.length > config.max) {
-    //       text = text.slice(undefined, config.max - 3) + '...';
-    //     }
-    //     return text;
-    //   })
-    //   .join(', ');
-
-    // if (data === '') return `[${level}/${state}] ${category} (${args})`;
-
-    // return `[${level}/${state}] ${category} (${args}): ${data}`;
+    return JSON.stringify(json);
   };
 });
+log4js.addLayout('truncateLog', () => {
+  return (logEvent) => {
+    const level = logEvent.level.levelStr.padEnd(5);
+    const category = logEvent.categoryName;
+    const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
+    const param = logEvent.data[0];
+    const msg = logEvent.data[1];
 
-function getArchivePath(logDir: Path, time: Dayjs) {
-  let i = 0;
-  const format = time.format('YYYY-MM-DD-HH');
-  while (true) {
-    const path = logDir.child(`${format}-${i}${ARCHIVE_EXT}`);
-    if (!path.exists()) {
-      return [`${format}-${i}.log`, path] as const;
+    let output = `[${level} ${time}] ${category}`;
+    if (param !== undefined) {
+      output += ` (${truncateValue(param)})`;
     }
-    i += 1;
-  }
-}
+    if (msg !== undefined) {
+      output += `: ${truncateValue(msg)}`;
+    }
+    return output;
+  };
+});
+log4js.configure({
+  appenders: {
+    _fileFull: {
+      type: 'file',
+      filename: logPaths[0].path,
+      layout: { type: 'fullLog', max: 500 },
+      flags: 'w',
+    },
+    _fileTruncate: {
+      type: 'file',
+      filename: logPaths[1].path,
+      layout: { type: 'truncateLog', max: 500 },
+      flags: 'w',
+    },
+    fileFull: { type: 'logLevelFilter', appender: '_fileFull', level: 'trace' },
+    fileTruncate: {
+      type: 'logLevelFilter',
+      appender: '_fileTruncate',
+      level: 'debug',
+    },
+  },
+  categories: {
+    default: { appenders: ['fileFull', 'fileTruncate'], level: 'trace' },
+  },
+});
 
-async function archiveLog(logDir: Path) {
+// #endregion
+
+// システム終了時にログの記録終了を明示的に宣言
+onQuit(log4js.shutdown, true);
+
+/** パスにあるログをアーカイブする */
+async function archiveLog(...logPaths: Path[]) {
   // .latestを圧縮してアーカイブ
-  const latestLog = logDir.child(LATEST);
-  if (latestLog.exists()) {
-    await compressArchive(logDir, latestLog);
+  if (logPaths.length > 0 && logPaths.every((path) => path.exists())) {
+    const lastUpdateTime = await logPaths[0].lastUpdateTime();
+    const [newlogName, archivePath] = getNextArchivePath(lastUpdateTime);
+    // アーカイブ時に利用する名前に変更
+    const newPaths = await Promise.all(
+      logPaths.map(async (path) => {
+        const firstColonIndex = path.basename().indexOf('.');
+        const newExt = path.basename().substring(firstColonIndex);
+        const newLogPath = path.parent().child(`${newlogName}${newExt}`);
+        await path.rename(newLogPath);
+        return newLogPath;
+      })
+    );
+    // utils/gzを使うと，GzipクラスとPathクラスが循環参照となるため使用しない
+    await c(
+      {
+        gzip: true,
+        file: archivePath.path,
+        cwd: logPaths[0].parent().path,
+      },
+      newPaths.map((path) => path.basename())
+    );
+    await Promise.all(newPaths.map((path) => path.remove()));
   }
 
-  // 一週間前のログファイルを削除
+  // 一週間前のログファイルとTMPファイルを削除
   const thresholdDate = dayjs().subtract(7, 'd');
   const paths = await logDir.iter();
   if (isError(paths)) return;
   for (const path of paths) {
     if (!path.path.endsWith(ARCHIVE_EXT)) continue;
+    if (path.basename().startsWith('tmp')) {
+      await path.remove();
+      continue;
+    }
     const updateDate = await path.lastUpdateTime();
     if (updateDate.isBefore(thresholdDate)) await path.remove();
   }
 }
 
-export function getRootLogger(logDir: Path): {
-  logger: LoggerHierarchy;
-  archive: () => Promise<void>;
-} {
-  logDir.child(LATEST).writeTextSync('');
-
-  log4js.configure({
-    appenders: {
-      _out: {
-        type: 'stdout',
-        layout: { type: 'custom', max: 500 },
-      },
-      _file: {
-        type: 'file',
-        filename: logDir.child(LATEST).str(),
-        layout: { type: 'custom', max: 500 },
-      },
-      out: { type: 'logLevelFilter', appender: '_out', level: 'warn' },
-      file: { type: 'logLevelFilter', appender: '_file', level: 'trace' },
-    },
-    categories: {
-      default: { appenders: ['out', 'file'], level: 'trace' },
-    },
-  });
-
-  return { logger: getLoggerHierarchy(), archive: () => archiveLog(logDir) };
+function getNextArchivePath(time: Dayjs): [string, Path] {
+  let i = 0;
+  const prefix = time.format('YYYY-MM-DD-HH');
+  while (true) {
+    const path = logDir.child(`${prefix}-${i}${ARCHIVE_EXT}`);
+    if (!path.exists()) return [`${prefix}-${i}`, path];
+    i += 1;
+  }
 }
 
 // export type loglevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
 
-const loggerSymbol = Symbol();
+const CATEGORY = Symbol();
 
 class LoggerWrapper {
   private logger: log4js.Logger;
@@ -138,59 +215,104 @@ class LoggerWrapper {
     this.arg = arg;
   }
 
-  start(...message: any[]) {
-    this.logger.trace('start', this.arg, ...message);
-  }
-  success(...message: any[]) {
-    this.logger.info('success', this.arg, ...message);
-  }
-  fail(...message: any[]) {
-    this.logger.info('fail', this.arg, ...message);
-  }
-  trace(...message: any[]) {
-    this.logger.trace('trace', this.arg, ...message);
-  }
-  debug(...message: any[]) {
-    this.logger.debug('debug', this.arg, ...message);
-  }
-  info(...message: any[]) {
-    this.logger.info('info', this.arg, ...message);
-  }
-  warn(...message: any[]) {
-    this.logger.warn('warn', this.arg, ...message);
-  }
-  error(...message: any[]) {
-    this.logger.error('error', this.arg, ...message);
-  }
-  fatal(...message: any[]) {
-    this.logger.fatal('fatal', this.arg, ...message);
-  }
+  private log =
+    (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal') =>
+    (...message: any[]) =>
+      this.logger[level](
+        applyOmission(this.arg),
+        simplifyArgs(...applyOmission(message))
+      ); // 伏字処理を施してログを吐く
+
+  trace = this.log('trace');
+  debug = this.log('debug');
+  info = this.log('info');
+  warn = this.log('warn');
+  error = this.log('error');
+  fatal = this.log('fatal');
 }
 
 export interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
-  [loggerSymbol]: string | undefined;
-  (kwargs: object): LoggerWrapper;
+  [CATEGORY]: string | undefined;
+  /** ワールド名やサーバーid等,実行コンテクストを過不足なく提供するとよい */
+  (...args: any[]): LoggerWrapper;
 }
 
-function getLoggerHierarchy(category?: string | undefined) {
-  const childLogger = log4js.getLogger(category);
+const loggerHierarchies = InfinitMap.primitiveKeyStrongValue(
+  (category: string) => {
+    const logger = log4js.getLogger(category || undefined);
+    const loggerHierarchy: LoggerHierarchy = ((...args: any[]) => {
+      return new LoggerWrapper(logger, simplifyArgs(...args));
+    }) as LoggerHierarchy;
+    loggerHierarchy[CATEGORY] = category;
+    return new Proxy<LoggerHierarchy>(loggerHierarchy, handler);
+  }
+);
 
-  const loggerHierarchy: LoggerHierarchy = ((kwargs: object) =>
-    new LoggerWrapper(childLogger, kwargs)) as LoggerHierarchy;
+/**
+ * argsの個数に応じて戻り値が変わる
+ * - argsが0この場合 - undefined
+ * - argsが1この場合 - args[0]
+ * - argsが2この場合 - args
+ */
+function simplifyArgs(...args: any[]): any {
+  const params =
+    args.length === 0 ? undefined : args.length === 1 ? args[0] : args;
+  return params;
+}
 
-  loggerHierarchy[loggerSymbol] = category;
+type LogOmission = (value: string, path: (string | number)[]) => string;
 
-  return new Proxy<LoggerHierarchy>(loggerHierarchy, handler);
+// 以下の伏字ルールを追加
+const omissions: Set<LogOmission> = new Set([
+  (v) => (isValidIP(v) ? ':IpAddress:' : v),
+  (v, p) => (p[p.length - 1] === 'ngrokToken' ? ':NgrokToken:' : v),
+]);
+
+/** オブジェクトに伏字を適用する */
+function applyOmission<T>(value: T, path: (string | number)[] = []): T {
+  switch (typeof value) {
+    case 'string':
+      let val: string = value;
+      for (const omission of omissions) {
+        val = omission(val, path);
+      }
+      return val as T;
+    case 'object': {
+      if (value === null) return null as T;
+      if (Array.isArray(value)) {
+        return value.map((v, i) => applyOmission(v, [...path, i])) as T;
+      }
+      return Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [
+          k,
+          applyOmission(v, [...path, k]),
+        ])
+      ) as T;
+    }
+    default:
+      return value;
+  }
 }
 
 const handler: ProxyHandler<LoggerHierarchy> = {
   get(target, subCategory: string) {
-    const category = target[loggerSymbol];
-    const newCategory =
-      category === undefined ? subCategory : `${category}.${subCategory}`;
-    return getLoggerHierarchy(newCategory);
+    const category = target[CATEGORY];
+    const newCategory = category ? `${category}.${subCategory}` : subCategory;
+    return loggerHierarchies.get(newCategory);
   },
 };
+
+/**
+ * 伏字ルールを追加
+ * @returns 伏字ルールを解除する
+ */
+export function addOmisstionRule(omisstionRule: LogOmission) {
+  omissions.add(omisstionRule);
+  return () => omissions.delete(omisstionRule);
+}
+
+/** ルート要素のロガー */
+export const rootLogger = loggerHierarchies.get('');
 
 /** In Source Testing */
 if (import.meta.vitest) {
@@ -205,39 +327,195 @@ if (import.meta.vitest) {
       'work',
       path.basename(__filename, '.ts')
     );
-    workPath.mkdir();
+    await workPath.emptyDir();
 
-    // ログオブジェクト
-    const { logger, archive } = getRootLogger(workPath);
+    const logpath = workPath.child('test.log');
 
-    const logpath = workPath.child(LATEST);
-
-    const readLastLogLine = async () => {
+    const isMatchLogInLines = async (target: string) => {
       const logTxt = await logpath.readText();
-      if (isError(logTxt)) return logTxt;
+      if (isError(logTxt)) return null;
       const lines = logTxt.trim().split(/\r?\n|\r/);
-      return lines[lines.length - 1];
+      return lines.some((line) => line.includes(target));
     };
 
-    test('base logger test', async () => {
-      const log = logger.test.base({});
-      log.info('test message');
-      expect(await readLastLogLine()).toBe(
-        '{"level":"INFO","state":"info","category":"test.base","args":{},"data":["test message"]}'
+    // テスト用ログ設定
+    log4js.configure({
+      appenders: {
+        test: {
+          type: 'fileSync',
+          filename: logpath.path,
+          layout: { type: 'fullLog', max: 500 },
+        },
+      },
+      categories: {
+        default: { appenders: ['test'], level: 'trace' },
+      },
+    });
+
+    test('ログ出力のテスト', async () => {
+      rootLogger('DEFAULT').info('message');
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","param":"DEFAULT","msg":"message"'
+        )
+      ).toBe(true);
+
+      rootLogger.custom('multi', ['value']).warn({ key: 'value' });
+      expect(
+        await isMatchLogInLines(
+          '"lv":"WARN","on":"custom","param":["multi",["value"]],"msg":{"key":"value"}'
+        )
+      ).toBe(true);
+
+      rootLogger.nest.more.deeply().trace();
+      expect(
+        await isMatchLogInLines('"lv":"TRACE","on":"nest.more.deeply"')
+      ).toBe(true);
+
+      // 伏字チェック
+
+      const unsetRule = addOmisstionRule((v) => (v === 'invalid' ? '***' : v));
+
+      rootLogger().info('invalid');
+      expect(
+        await isMatchLogInLines('"lv":"INFO","on":"default","msg":"***"')
+      ).toBe(true);
+
+      log4js.recording();
+
+      rootLogger().info({ nest: 'invalid' });
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":{"nest":"***"}'
+        )
+      ).toBe(true);
+
+      rootLogger().info(['pass', 'is', 'invalid']);
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":["pass","is","***"]'
+        )
+      ).toBe(true);
+
+      unsetRule();
+
+      rootLogger().info('invalid');
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":"invalid"' // 伏字ルールが消えているはず
+        )
+      ).toBe(true);
+
+      addOmisstionRule((v, p) => (p[p.length - 1] === 'secret' ? '***' : v));
+
+      rootLogger({ secret: 'XXXXXX' }).info();
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","param":{"secret":"***"}'
+        )
+      ).toBe(true);
+
+      // 規定の省略ルール
+
+      rootLogger().info(['success', '127.0.0.1']);
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":["success",":IpAddress:"]'
+        )
+      ).toBe(true);
+
+      rootLogger().info({ ngrokToken: 'XXXXXX' });
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":{"ngrokToken":":NgrokToken:"}'
+        )
+      ).toBe(true);
+
+      // アーカイブチェック
+      const logPaths = await logDir.iter();
+      expect(isError(logPaths)).toBe(false);
+      if (isError(logPaths)) return;
+      for (const path of logPaths) {
+        if (logPaths.some((p) => p.basename() === path.basename())) continue;
+        await path.remove();
+      }
+      await archiveLog(logpath);
+
+      // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
+      const logPaths2 = await logDir.iter();
+      expect(isError(logPaths2)).toBe(false);
+      if (isError(logPaths2)) return;
+      expect(logPaths2.map((p) => p.basename())).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.tar.gz/),
+        ])
       );
     });
+  });
 
-    test('archive logs', async () => {
-      await archive();
-      const prefix = dayjs().format('YYYY-MM-DD-HH');
-      const targetArchivePath = workPath.child(`${prefix}-0.log.gz`);
-      expect(targetArchivePath.exists()).toBe(true);
-    });
+  describe('truncateLog', () => {
+    type Source = any[] | Record<string, any>;
+    const testCases: { sourceParam: Source; expectStr: string }[] = [
+      // 通常の出力
+      {
+        sourceParam: ['spigot', true],
+        expectStr: '[spigot, true]',
+      },
+      // URLのような長い文字列は途中を省略して表示する
+      {
+        sourceParam: {
+          url: 'https://api.github.com/repos/Server-Starter-for-Minecraft/ServerStarter2/releases',
+        },
+        expectStr:
+          '{ url: https://api.github.com/re...t/ServerStarter2/releases }',
+      },
+      // オブジェクトの要素が3つ以上の場合は「．．．」で省略される
+      {
+        sourceParam: {
+          'accepts-transfers': false,
+          'allow-flight': false,
+          'allow-nether': true,
+          'broadcast-console-to-ops': true,
+          'broadcast-rcon-to-ops': true,
+          difficulty: 'easy',
+        },
+        expectStr:
+          '{ accepts-transfers: false, allow-flight: false, allow-nether: true, ... 3 more fields }',
+      },
+      // 配列の要素が3つ以上の場合は「．．．」で省略される
+      {
+        sourceParam: [
+          'success',
+          [
+            { release: false, id: '25w18a' },
+            { release: false, id: '25w17a' },
+            { release: false, id: '25w16a' },
+            { release: false, id: '25w15a' },
+            { release: false, id: '25w14craftmine' },
+            { release: true, id: '1.21.5' },
+          ],
+        ],
+        expectStr:
+          '[success, [{ release: false, id: 25w18a }, ... 4 more ..., { release: true, id: 1.21.5 }]]',
+      },
+      // 3階層以下のオブジェクト要素は「．．．」で省略される
+      {
+        sourceParam: [
+          'success',
+          {
+            container: [
+              { container: 'servers', visible: true, name: 'default' },
+            ],
+            world: { memory: { size: 2, unit: 'GB' } },
+          },
+        ],
+        expectStr:
+          '[success, { container: [{ container: servers, visible: true, name: default }], world: { memory: { size: ..., unit: ... } } }]',
+      },
+    ];
 
-    // アーカイブデータが残っているとarchive logsのテストが意味をなさないため，毎回削除する
-    test('remove work folder', async () => {
-      await workPath.parent().remove();
-      expect(workPath.exists()).toBe(false);
+    test.each(testCases)('eachTruncateLog', ({ sourceParam, expectStr }) => {
+      expect(truncateValue(sourceParam)).toBe(expectStr);
     });
   });
 }
