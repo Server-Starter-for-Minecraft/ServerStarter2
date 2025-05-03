@@ -9,16 +9,13 @@ import { logDir } from '../source/const';
 import { Path } from '../util/binary/path';
 import { isError } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
+import { isValidIP } from '../util/network/ip';
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
 const LATEST = 'latest';
 const EXTs = ['.log', '.truncate.log'];
 const TMP_LOG = `tmp_${randomInt(2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
-const IPv4_REGEX =
-  /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/;
-const IPv6_REGEX =
-  /((([0-9a-f]{1,4}:){7}([0-9a-f]{1,4}|:))|(([0-9a-f]{1,4}:){6}(:[0-9a-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-f]{1,4}:){5}(((:[0-9a-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-f]{1,4}:){4}(((:[0-9a-f]{1,4}){1,3})|((:[0-9a-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){3}(((:[0-9a-f]{1,4}){1,4})|((:[0-9a-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){2}(((:[0-9a-f]{1,4}){1,5})|((:[0-9a-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){1}(((:[0-9a-f]{1,4}){1,6})|((:[0-9a-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-f]{1,4}){1,7})|((:[0-9a-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/;
 
 fs.ensureDirSync(logDir.path);
 const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
@@ -265,8 +262,7 @@ type LogOmission = (value: string, path: (string | number)[]) => string;
 
 // 以下の伏字ルールを追加
 const omissions: Set<LogOmission> = new Set([
-  (v) => v.replace(IPv4_REGEX, ':IPv4:'),
-  (v) => v.replace(IPv6_REGEX, ':IPv6:'),
+  (v) => (isValidIP(v) ? ':IpAddress:' : v),
   (v, p) => (p[p.length - 1] === 'ngrokToken' ? ':NgrokToken:' : v),
 ]);
 
@@ -417,6 +413,22 @@ if (import.meta.vitest) {
         )
       ).toBe(true);
 
+      // 規定の省略ルール
+
+      rootLogger().info(['success', '127.0.0.1']);
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":["success",":IpAddress:"]'
+        )
+      ).toBe(true);
+
+      rootLogger().info({ ngrokToken: 'XXXXXX' });
+      expect(
+        await isMatchLogInLines(
+          '"lv":"INFO","on":"default","msg":{"ngrokToken":":NgrokToken:"}'
+        )
+      ).toBe(true);
+
       // アーカイブチェック
       const logPaths = await logDir.iter();
       expect(isError(logPaths)).toBe(false);
@@ -505,30 +517,5 @@ if (import.meta.vitest) {
     test.each(testCases)('eachTruncateLog', ({ sourceParam, expectStr }) => {
       expect(truncateValue(sourceParam)).toBe(expectStr);
     });
-  });
-
-  test('ip omission', async () => {
-    const ipv4Samples = [
-      '192.168.1.1',
-      '10.0.0.1',
-      '172.16.254.1',
-      '8.8.8.8',
-      '127.0.0.1',
-    ];
-    const ipv6Samples = [
-      '2001:db8:3333:4444:5555:6666:7777:8888',
-      '2001:db8::',
-      '::1',
-      '2001:db8::1234:56',
-      'fe80::394:a9b4:14d:7993',
-      'fe80::1',
-    ];
-
-    for (const ip4 of ipv4Samples) {
-      expect(applyOmission(ip4)).toBe(':IPv4:');
-    }
-    for (const ip6 of ipv6Samples) {
-      expect(applyOmission(ip6)).toBe(':IPv6:');
-    }
   });
 }
