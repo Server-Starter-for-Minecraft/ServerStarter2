@@ -25,12 +25,4 @@ export type RuntimeInstaller<R extends Runtime> = {
     runtime: R,
     osPlatform: OsPlatform
   ): Promise<Failable<RuntimeMeta>>;
-
-  /** 各ランタイムのインストール先のパスを返す */
-  getInstallPath(
-    /** cache/runtime/bin/[RuntimeType] */
-    installBasePath: Path,
-    runtime: R,
-    osPlatform: OsPlatform
-  ): Path;
 };

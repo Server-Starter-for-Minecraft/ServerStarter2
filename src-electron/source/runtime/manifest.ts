@@ -56,7 +56,6 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
    * このメソッドを呼び出すことで、RuntimeManifestのインスタンスを生成する
    */
   static setRuntimeManifest(
-    validator: z.ZodDefault<z.ZodSchema<any, z.ZodTypeDef, any>>,
     manifestPath: Path,
     manifestUrl: string
   ) {
@@ -64,7 +63,7 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
   }
 
   protected static getCacheableAccessor<_AllManifest>(
-    validator: z.ZodDefault<z.ZodSchema<_AllManifest, z.ZodTypeDef, any>>,
+    validator: z.ZodSchema<_AllManifest, z.ZodTypeDef, any>,
     manifestPath: Path,
     manifestUrl: string
   ) {

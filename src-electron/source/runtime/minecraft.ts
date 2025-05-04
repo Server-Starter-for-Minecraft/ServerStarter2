@@ -6,19 +6,18 @@ import { MinecraftRuntime } from '../../schema/runtime';
 import { Path } from '../../util/binary/path';
 import { RuntimeManifest } from './manifest';
 
+export const minecraftRuntimeManifestUrl =
+  'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
+
 export class MinecraftRuntimeInstaller extends RuntimeManifest<
   AllManifest,
   MinecraftRuntime
 > {
   static readonly manifestName = 'minecraft' as const;
 
-  static setRuntimeManifest(
-    validator: z.ZodDefault<z.ZodSchema<AllManifest, z.ZodTypeDef, any>>,
-    manifestPath: Path,
-    manifestUrl: string
-  ) {
+  static setRuntimeManifest(manifestPath: Path, manifestUrl: string) {
     return new MinecraftRuntimeInstaller(
-      this.getCacheableAccessor(validator, manifestPath, manifestUrl)
+      this.getCacheableAccessor(AllManifest, manifestPath, manifestUrl)
     );
   }
 
@@ -43,10 +42,6 @@ export class MinecraftRuntimeInstaller extends RuntimeManifest<
     throw new Error('Method not implemented.');
   }
 }
-
-// const allManifestUrl = new Url(
-//   'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json'
-// );
 
 // export class MinecraftRuntimeInstaller
 //   implements RuntimeInstaller<MinecraftRuntime>
