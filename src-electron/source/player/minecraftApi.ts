@@ -1,9 +1,16 @@
+import { z } from 'zod';
 import { PlayerUUID } from '../../schema/brands';
 import { BytesData } from '../../util/binary/bytesData';
 import { Png } from '../../util/binary/png';
 import { errorMessage } from '../../util/error/construct';
 import { isError } from '../../util/error/error';
 import { Failable } from '../../util/error/failable';
+
+const ApiRes = z.object({
+  name: z.string(),
+  id: PlayerUUID,
+});
+type ApiRes = z.infer<typeof ApiRes>;
 
 /** mojangのapiからプレイヤーの名前で検索(過去の名前も検索可能) 戻り値のnameは現在の名前 */
 export async function UsernameToUUID(
@@ -21,7 +28,7 @@ export async function UsernameToUUID(
     });
   }
 
-  const jsonData = await res.json<{ name: string; id: PlayerUUID }>();
+  const jsonData = await res.json(ApiRes);
   if (isError(jsonData)) return jsonData;
   return {
     name: jsonData.name,
@@ -29,33 +36,41 @@ export async function UsernameToUUID(
   };
 }
 
-type Profile = {
-  id: PlayerUUID;
-  name: string;
-  properties: [
-    {
-      name: 'textures';
-      value: string;
-    }
-  ];
-};
+const Profile = z.object({
+  id: PlayerUUID,
+  name: z.string(),
+  properties: z.array(
+    z.object({
+      name: z.literal('textures'),
+      value: z.string(),
+    })
+  ),
+});
+type Profile = z.infer<typeof Profile>;
 
-type ProfileTextures = {
-  timestamp: string;
-  profileId: PlayerUUID;
-  profileName: string;
-  textures: {
-    SKIN?: {
-      url: string;
-      metadata?: {
-        model: 'slim';
-      };
-    };
-    CAPE?: {
-      url: string;
-    };
-  };
-};
+const ProfileTextures = z.object({
+  timestamp: z.string(),
+  profileId: PlayerUUID,
+  profileName: z.string(),
+  textures: z.object({
+    SKIN: z
+      .object({
+        url: z.string(),
+        metadata: z
+          .object({
+            model: z.literal('slim'),
+          })
+          .optional(),
+      })
+      .optional(),
+    CAPE: z
+      .object({
+        url: z.string(),
+      })
+      .optional(),
+  }),
+});
+type ProfileTextures = z.infer<typeof ProfileTextures>;
 
 export type PlayerProfile = {
   uuid: PlayerUUID;
@@ -72,13 +87,13 @@ export async function GetProfile(id: string): Promise<Failable<PlayerProfile>> {
   );
   if (isError(res)) return res;
 
-  const profile = await res.json<Profile>();
+  const profile = await res.json(Profile);
   if (isError(profile)) return profile;
 
   const texturesB64 = await BytesData.fromBase64(profile.properties[0].value);
   if (isError(texturesB64)) return texturesB64;
 
-  const textures = await texturesB64.json<ProfileTextures>();
+  const textures = await texturesB64.json(ProfileTextures);
   if (isError(textures)) return textures;
 
   const skin = textures.textures.SKIN;

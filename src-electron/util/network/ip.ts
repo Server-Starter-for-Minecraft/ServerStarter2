@@ -4,18 +4,19 @@ import { BytesData } from '../binary/bytesData';
 import { errorMessage } from '../error/construct';
 import { isValid } from '../error/error';
 
-type IpinfoSchema = {
-  ip: string;
-  hostname: string;
-  city: string;
-  region: string;
-  country: string;
-  loc: string;
-  org: string;
-  postal: string;
-  timezone: string;
-  readme: 'https://ipinfo.io/missingauth';
-};
+const IpinfoSchema = z.object({
+  ip: z.string(),
+  hostname: z.string(),
+  city: z.string(),
+  region: z.string(),
+  country: z.string(),
+  loc: z.string(),
+  org: z.string(),
+  postal: z.string(),
+  timezone: z.string(),
+  readme: z.literal('https://ipinfo.io/missingauth'),
+});
+type IpinfoSchema = z.infer<typeof IpinfoSchema>;
 
 /** globalIPを取得 000.00.00.000 */
 export async function getGlobalIP(): Promise<Failable<string>> {
@@ -29,7 +30,7 @@ export async function getGlobalIP(): Promise<Failable<string>> {
   // https://ipinfo.io/json から取得
   const ipinfo = await BytesData.fromURL('https://ipinfo.io/json');
   if (isValid(ipinfo)) {
-    const ipinfoJson = await ipinfo.json<IpinfoSchema>();
+    const ipinfoJson = await ipinfo.json(IpinfoSchema);
     if (isValid(ipinfoJson)) {
       return ipinfoJson.ip;
     }

@@ -66,7 +66,7 @@ export const serverJsonFile: ServerSettingFile<WorldSettings> = {
   async load(cwdPath) {
     const jsonPath = cwdPath.child(WORLD_SETTINGS_PATH);
 
-    const data = await jsonPath.readJson<WorldSettings>();
+    const data = await jsonPath.readJson(WorldSettings);
     if (isError(data)) return data;
 
     const fixed = WorldSettings.safeParse(data);

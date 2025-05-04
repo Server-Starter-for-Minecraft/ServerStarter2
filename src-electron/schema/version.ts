@@ -161,6 +161,14 @@ export type Version = z.infer<typeof Version>;
 
 export type VersionType = Version['type'];
 
+export const AllVersion = z.union([
+  AllVanillaVersion,
+  AllSpigotVersion,
+  AllPapermcVersion,
+  AllForgeVersion,
+  AllMohistmcVersion,
+  AllFabricVersion,
+]);
 export type AllVersion<T extends VersionType> = T extends 'vanilla'
   ? AllVanillaVersion
   : T extends 'spigot'

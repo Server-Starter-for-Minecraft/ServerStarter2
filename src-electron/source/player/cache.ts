@@ -36,7 +36,7 @@ function expirePlayers(cache: PlayerCache): PlayerCache {
 /** PlayerCacheを取得 */
 export async function getPlayerCache() {
   if (player_cache !== undefined) return player_cache;
-  const player_cache_value = await PLAYER_CACHE_PATH.readJson<PlayerCache>();
+  const player_cache_value = await PLAYER_CACHE_PATH.readJson(PlayerCache);
 
   let result: PlayerCache = {};
   if (isValid(player_cache_value)) {

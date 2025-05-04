@@ -3,6 +3,7 @@ import {
   PapermcVersion,
   VersionId,
 } from 'src-electron/schema/version';
+import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
@@ -18,12 +19,13 @@ import { getJavaComponent } from './vanilla';
 
 const papermcVersionsPath = versionsCachePath.child('papermc');
 
-type PapermcVersions = {
-  project_id: 'paper';
-  project_name: 'Paper';
-  version_groups: string[];
-  versions: VersionId[];
-};
+const PapermcVersions = z.object({
+  project_id: z.literal('paper'),
+  project_name: z.literal('Paper'),
+  version_groups: z.array(z.string()),
+  versions: z.array(VersionId),
+});
+type PapermcVersions = z.infer<typeof PapermcVersions>;
 
 export const papermcVersionLoader: VersionLoader<PapermcVersion> = {
   /** papermcのサーバーデータを必要があればダウンロード */
@@ -43,7 +45,7 @@ async function getPapermcVersions(): Promise<Failable<AllPapermcVersion>> {
   const data = await BytesData.fromURL(VERSION_LIST_URL);
   if (isError(data)) return data;
 
-  const json = await data.json<PapermcVersions>();
+  const json = await data.json(PapermcVersions);
   if (isError(json)) return json;
 
   const promisses = json.versions.reverse().map(getPapermcBuilds);
@@ -53,12 +55,13 @@ async function getPapermcVersions(): Promise<Failable<AllPapermcVersion>> {
   return results.filter(isValid);
 }
 
-type ApiBuilds = {
-  project_id: 'paper';
-  project_name: 'Paper';
-  version: string;
-  builds: number[];
-};
+const ApiBuilds = z.object({
+  project_id: z.literal('paper'),
+  project_name: z.literal('Paper'),
+  version: z.string(),
+  builds: z.array(z.number()),
+});
+type ApiBuilds = z.infer<typeof ApiBuilds>;
 
 async function getPapermcBuilds(
   version: VersionId
@@ -67,27 +70,28 @@ async function getPapermcBuilds(
   const data = await BytesData.fromURL(url);
   if (isError(data)) return data;
 
-  const json = await data.json<ApiBuilds>();
+  const json = await data.json(ApiBuilds);
   if (isError(json)) return json;
 
   return { id: version, builds: json.builds.reverse() };
 }
 
-type ApiBuild = {
-  project_id: 'paper';
-  project_name: 'Paper';
-  version: string;
-  build: number;
-  time: string;
-  channel: 'default';
-  promoted: boolean;
-  downloads: {
-    application: {
-      name: string;
-      sha256: string;
-    };
-  };
-};
+const ApiBuild = z.object({
+  project_id: z.literal('paper'),
+  project_name: z.literal('Paper'),
+  version: z.string(),
+  build: z.number(),
+  time: z.string(),
+  channel: z.literal('default'),
+  promoted: z.boolean(),
+  downloads: z.object({
+    application: z.object({
+      name: z.string(),
+      sha256: z.string(),
+    }),
+  }),
+});
+type ApiBuild = z.infer<typeof ApiBuild>;
 
 async function readyVersion(
   version: PapermcVersion,
@@ -114,7 +118,7 @@ async function readyVersion(
   const jsonResponse = await BytesData.fromUrlOrPath(jsonpath, buildURL);
   if (isError(jsonResponse)) return jsonResponse;
 
-  const json = await jsonResponse.json<ApiBuild>();
+  const json = await jsonResponse.json(ApiBuild);
   if (isError(json)) return json;
   l?.delete();
 

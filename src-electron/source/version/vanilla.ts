@@ -1,4 +1,5 @@
 import { AllVanillaVersion, VanillaVersion } from 'src-electron/schema/version';
+import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
@@ -15,25 +16,30 @@ import {
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
-export type JavaComponent =
-  | 'java-runtime-alpha'
-  | 'java-runtime-beta'
-  | 'java-runtime-gamma'
-  | 'jre-legacy';
+export const JavaComponent = z.enum([
+  'java-runtime-alpha',
+  'java-runtime-beta',
+  'java-runtime-gamma',
+  'jre-legacy',
+]);
+export type JavaComponent = z.infer<typeof JavaComponent>;
 
-export type VanillaVersionJson = {
-  downloads: {
-    server: {
-      sha1: string;
-      size: number;
-      url: string;
-    };
-  };
-  javaVersion?: {
-    component: JavaComponent;
-    majorVersion: number;
-  };
-};
+export const VanillaVersionJson = z.object({
+  downloads: z.object({
+    server: z.object({
+      sha1: z.string(),
+      size: z.number(),
+      url: z.string(),
+    }),
+  }),
+  javaVersion: z
+    .object({
+      component: JavaComponent,
+      majorVersion: z.number(),
+    })
+    .optional(),
+});
+export type VanillaVersionJson = z.infer<typeof VanillaVersionJson>;
 
 export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
   /** vanillaのサーバーデータを必要があればダウンロード */
@@ -143,7 +149,7 @@ export async function getVanillaVersionJson(
   // jsonデータが取得できなかった場合
   if (isError(jsonData)) return jsonData;
 
-  const json = await jsonData.json<VanillaVersionJson>();
+  const json = await jsonData.json(VanillaVersionJson);
 
   return json;
 }

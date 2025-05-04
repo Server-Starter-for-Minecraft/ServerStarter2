@@ -1,4 +1,9 @@
-import { AllFabricVersion, FabricVersion } from 'src-electron/schema/version';
+import {
+  AllFabricVersion,
+  FabricVersion,
+  VersionId,
+} from 'src-electron/schema/version';
+import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { isError } from 'app/src-electron/util/error/error';
@@ -78,13 +83,14 @@ async function getAllVersions(): Promise<Failable<AllFabricVersion>> {
   };
 }
 
-type Loader = {
-  separator: string;
-  build: number;
-  maven: string;
-  version: string;
-  stable: true;
-};
+const Loader = z.object({
+  separator: z.string(),
+  build: z.number(),
+  maven: z.string(),
+  version: z.string(),
+  stable: z.boolean(),
+});
+type Loader = z.infer<typeof Loader>;
 
 async function getLoaders() {
   const URL = 'https://meta.fabricmc.net/v2/versions/loader';
@@ -95,7 +101,7 @@ async function getLoaders() {
   );
   if (isError(data)) return data;
 
-  const loaders = await data.json<Loader[]>();
+  const loaders = await data.json(Loader.array());
   if (isError(loaders)) return loaders;
 
   return loaders
@@ -103,15 +109,18 @@ async function getLoaders() {
       const [, major] = version.split('.');
       return Number.parseInt(major) >= 12;
     })
-    .map(({ version }) => version);
+    .map(({ version, stable }) => {
+      return { version, stable };
+    });
 }
 
-type Installer = {
-  url: string;
-  maven: string;
-  version: string;
-  stable: true;
-};
+const Installer = z.object({
+  url: z.string(),
+  maven: z.string(),
+  version: z.string(),
+  stable: z.boolean(),
+});
+type Installer = z.infer<typeof Installer>;
 
 async function getInstallers() {
   const URL = 'https://meta.fabricmc.net/v2/versions/installer';
@@ -122,7 +131,7 @@ async function getInstallers() {
   );
   if (isError(data)) return data;
 
-  const loaders = await data.json<Installer[]>();
+  const loaders = await data.json(Installer.array());
   if (isError(loaders)) return loaders;
 
   return loaders
@@ -130,13 +139,16 @@ async function getInstallers() {
       const [, major] = version.split('.');
       return Number.parseInt(major) >= 8;
     })
-    .map(({ version }) => version);
+    .map(({ version, stable }) => {
+      return { version, stable };
+    });
 }
 
-type Game = {
-  version: string;
-  stable: boolean;
-};
+const Game = z.object({
+  version: z.string(),
+  stable: z.boolean(),
+});
+type Game = z.infer<typeof Game>;
 
 async function getGames() {
   const URL = 'https://meta.fabricmc.net/v2/versions/game';
@@ -147,7 +159,7 @@ async function getGames() {
   );
   if (isError(data)) return data;
 
-  const games = await data.json<Game[]>();
+  const games = await data.json(Game.array());
   if (isError(games)) return games;
 
   const vanilla = await vanillaVersionLoader.getAllVersions(undefined);
@@ -160,5 +172,5 @@ async function getGames() {
       const { id, release } = vanillaver;
       return { id, release };
     })
-    .filter((v): v is { id: string; release: boolean } => v !== undefined);
+    .filter((v): v is { id: VersionId; release: boolean } => v !== undefined);
 }

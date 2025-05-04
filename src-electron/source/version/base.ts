@@ -94,7 +94,7 @@ export const genGetAllVersions = <V extends Version>(
 export async function getAllLocalVersions<V extends Version>(
   jsonpath: Path,
   configkey: string
-) {
+): Promise<AllVersion<V['type']> | undefined> {
   if (!jsonpath.exists()) return;
 
   const configSha1 = versionConfig.get(configkey);
@@ -105,6 +105,6 @@ export async function getAllLocalVersions<V extends Version>(
 
   if (configSha1 !== dataSha1) return;
 
-  const vers = await data.json<AllVersion<V['type']>>();
-  if (isValid(vers)) return vers;
+  const vers = await data.json(AllVersion);
+  if (isValid(vers)) return vers as AllVersion<V['type']>;
 }
