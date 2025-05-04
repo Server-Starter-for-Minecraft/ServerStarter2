@@ -4,6 +4,7 @@ import {
   SpigotVersion,
   VersionId,
 } from 'src-electron/schema/version';
+import { z } from 'zod';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
@@ -14,15 +15,15 @@ import { Path } from '../../util/binary/path';
 import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { allocateTempDir } from '../../util/tempPath';
-import { readyJava } from '../runtime/java';
 import { getVersionMainfest } from '../runtime/manifest';
+import { JavaComponent, readyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
   VersionComponent,
   VersionLoader,
 } from './base';
-import { getJavaComponent, JavaComponent } from './vanilla';
+import { getJavaComponent } from './vanilla';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 
@@ -175,18 +176,19 @@ async function readySpigotBuildTool(buildDir: Path): Promise<Failable<void>> {
   return buildToolPath.write(buildtool);
 }
 
-type SpigotVersionData = {
-  name: string;
-  description: string;
-  refs: {
-    BuildData: string;
-    Bukkit: string;
-    CraftBukkit: string;
-    Spigot: string;
-  };
-  toolsVersion: number;
-  javaVersions?: [number, number];
-};
+const SpigotVersionData = z.object({
+  name: z.string(),
+  description: z.string(),
+  refs: z.object({
+    BuildData: z.string(),
+    Bukkit: z.string(),
+    CraftBukkit: z.string(),
+    Spigot: z.string(),
+  }),
+  toolsVersion: z.number(),
+  javaVersions: z.array(z.number()).length(2).optional(),
+});
+type SpigotVersionData = z.infer<typeof SpigotVersionData>;
 
 async function buildSpigotVersion(
   buildDir: Path,
@@ -203,7 +205,7 @@ async function buildSpigotVersion(
   });
   const data = await BytesData.fromURL(VERSION_URL);
   if (isError(data)) return data;
-  const json = await data.json<SpigotVersionData>();
+  const json = await data.json(SpigotVersionData);
   l?.delete();
 
   if (isError(json)) return json;

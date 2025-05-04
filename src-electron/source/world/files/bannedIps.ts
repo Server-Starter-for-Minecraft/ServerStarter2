@@ -1,12 +1,14 @@
+import { z } from 'zod';
 import { ServerSettingFile } from '../../world/files/base';
 
-export type BannedIp = {
-  ip: string;
-  created: string;
-  source: string;
-  expires: string;
-  reason: string;
-};
+export const BannedIp = z.object({
+  ip: z.string(),
+  created: z.string(),
+  source: z.string(),
+  expires: z.string(),
+  reason: z.string(),
+});
+export type BannedIp = z.infer<typeof BannedIp>;
 
 // e.g.
 // {
@@ -17,13 +19,14 @@ export type BannedIp = {
 //   reason: 'Banned by an operator.';
 // };
 
-export type BannedIps = BannedIp[];
+export const BannedIps = z.array(BannedIp);
+export type BannedIps = z.infer<typeof BannedIps>;
 
 const FILENAME = 'banned-ips.json';
 
 export const bannedIpsHandler: ServerSettingFile<BannedIps> = {
   load(cwdPath) {
-    return cwdPath.child(FILENAME).readJson<BannedIps>();
+    return cwdPath.child(FILENAME).readJson(BannedIps);
   },
   save(cwdPath, value) {
     return cwdPath.child(FILENAME).writeText(JSON.stringify(value));

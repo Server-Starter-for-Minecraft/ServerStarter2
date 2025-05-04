@@ -1,25 +1,28 @@
+import { z } from 'zod';
 import { VersionId } from 'app/src-electron/schema/version';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { isError, isValid } from 'app/src-electron/util/error/error';
+import { isError } from 'app/src-electron/util/error/error';
 import { BytesData } from '../../util/binary/bytesData';
 import { Failable } from '../../util/error/failable';
 import { versionManifestPath } from '../const';
 import { versionConfig } from '../stores/config';
 
-export type ManifestRecord = {
-  id: VersionId;
-  type: 'release' | 'snapshot' | 'old_beta' | 'old_alpha';
-  url: string;
-  time: string;
-  releaseTime: string;
-  sha1: string;
-  complianceLevel: number;
-};
+export const ManifestRecord = z.object({
+  id: VersionId,
+  type: z.enum(['release', 'snapshot', 'old_beta', 'old_alpha']),
+  url: z.string(),
+  time: z.string(),
+  releaseTime: z.string(),
+  sha1: z.string(),
+  complianceLevel: z.number(),
+});
+export type ManifestRecord = z.infer<typeof ManifestRecord>;
 
-export type ManifestJson = {
-  latest: { release: string; snapshot: string };
-  versions: ManifestRecord[];
-};
+export const ManifestJson = z.object({
+  latest: z.object({ release: z.string(), snapshot: z.string() }),
+  versions: z.array(ManifestRecord),
+});
+export type ManifestJson = z.infer<typeof ManifestJson>;
 
 const MANIFEST_URL =
   'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
@@ -37,8 +40,7 @@ export async function getVersionMainfest(): Promise<Failable<ManifestJson>> {
   const failableWrite = versionManifestPath.write(response);
   if (isError(failableWrite)) return getLocalVersionMainfest();
 
-  const manifest = await response.json<ManifestJson>();
-  return manifest;
+  return response.json(ManifestJson);
 }
 
 /** ローカルから取得 */
@@ -61,5 +63,5 @@ async function getLocalVersionMainfest(): Promise<Failable<ManifestJson>> {
       path: versionManifestPath.path,
     });
 
-  return manifestData.json();
+  return manifestData.json(ManifestJson);
 }

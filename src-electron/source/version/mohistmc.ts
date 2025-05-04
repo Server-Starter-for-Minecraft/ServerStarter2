@@ -1,7 +1,9 @@
 import {
   AllMohistmcVersion,
   MohistmcVersion,
+  VersionId,
 } from 'src-electron/schema/version';
+import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
@@ -90,7 +92,7 @@ async function getMohistmcVersionsJson(
   );
   if (isError(jsondata)) return jsondata;
 
-  const json = await jsondata.json<MohistmcApiVersion>();
+  const json = await jsondata.json(MohistmcApiVersion);
   return json;
 }
 
@@ -101,7 +103,7 @@ async function getAllMohistmcVersions(): Promise<Failable<AllMohistmcVersion>> {
     VERSIONS_URL
   );
   if (isError(data)) return data;
-  const json = await data.json<string[]>();
+  const json = await data.json(VersionId.array());
   if (isError(json)) return json;
 
   // それぞれのバージョンのビルド一覧を取得
@@ -117,7 +119,7 @@ async function getAllMohistmcVersions(): Promise<Failable<AllMohistmcVersion>> {
 }
 
 async function getMohistmcVersions(
-  id: string
+  id: VersionId
 ): Promise<Failable<AllMohistmcVersion[number]>> {
   const json = await getMohistmcVersionsJson(id);
   if (isError(json)) return json;
@@ -125,8 +127,9 @@ async function getMohistmcVersions(
   const builds = Object.values(json)
     .filter((v) => v.status === 'SUCCESS')
     .reverse()
-    .map(({ forge_version, number }) => ({
+    .map(({ forge_version, url, md5, number }) => ({
       number,
+      jar: { url, md5 },
       forge_version: forge_version === 'unknown' ? undefined : forge_version,
     }));
 
@@ -136,29 +139,29 @@ async function getMohistmcVersions(
   };
 }
 
-type MohistmcApiBuild = {
-  status: 'SUCCESS' | 'FAILURE';
-  number: number;
-  version: string;
-  name: string;
-  forge_version: string;
-  tinysha: string;
-  fullsha: string;
-  md5: string;
-  url: string;
-  mirror: string;
-  timeinmillis: number;
-  date: string;
-  decomposeddate: {
-    day: number;
-    month: number;
-    year: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  };
-};
+const MohistmcApiBuild = z.object({
+  status: z.union([z.literal('SUCCESS'), z.literal('FAILURE')]),
+  number: z.number(),
+  version: z.string(),
+  name: z.string(),
+  forge_version: z.string(),
+  tinysha: z.string(),
+  fullsha: z.string(),
+  md5: z.string(),
+  url: z.string(),
+  mirror: z.string(),
+  timeinmillis: z.number(),
+  date: z.string(),
+  decomposeddate: z.object({
+    day: z.number(),
+    month: z.number(),
+    year: z.number(),
+    hours: z.number(),
+    minutes: z.number(),
+    seconds: z.number(),
+  }),
+});
+type MohistmcApiBuild = z.infer<typeof MohistmcApiBuild>;
 
-type MohistmcApiVersion = {
-  [key in string]: MohistmcApiBuild;
-};
+const MohistmcApiVersion = z.record(MohistmcApiBuild);
+type MohistmcApiVersion = z.infer<typeof MohistmcApiVersion>;

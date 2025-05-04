@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { z } from 'zod';
 import { errorMessage } from '../error/construct';
 import { isError } from '../error/error';
 import { Failable } from '../error/failable';
@@ -179,9 +180,9 @@ export class Path {
   }
 
   write = exclusive(this._write);
-  private async _write(content: BytesData) {
+  private async _write(content: BytesData, encoding?: BufferEncoding) {
     await this.parent().mkdir(true);
-    return content.write(this._path);
+    return content.write(this._path, undefined, encoding);
   }
 
   /**
@@ -196,7 +197,7 @@ export class Path {
   ): Promise<Failable<void>> {
     const bytes = await (await loadBytesData()).fromText(content);
     if (isError(bytes)) return bytes;
-    return this._write(bytes);
+    return this._write(bytes, encoding);
   }
 
   /** @deprecated 同期書き込み(非推奨) */
@@ -206,8 +207,8 @@ export class Path {
   }
 
   writeJson = exclusive(this._writeJson);
-  private async _writeJson<T>(content: T) {
-    return this._writeText(JSON.stringify(content));
+  private async _writeJson<T>(content: T, encoding?: BufferEncoding) {
+    return this._writeText(JSON.stringify(content), encoding);
   }
 
   /**
@@ -236,17 +237,22 @@ export class Path {
   }
 
   readJson = exclusive(this._readJson);
-  private async _readJson<T>(): Promise<Failable<T>> {
+  private async _readJson<T>(
+    validator: z.ZodSchema<T, z.ZodTypeDef, any>,
+    encoding?: BufferEncoding
+  ): Promise<Failable<T>> {
     const data = await this._read();
     if (isError(data)) return data;
-    return data.json();
+    return data.json(validator, encoding);
   }
 
   readText = exclusive(this._readText);
-  private async _readText(): Promise<Failable<string>> {
+  private async _readText(
+    encoding?: BufferEncoding
+  ): Promise<Failable<string>> {
     const data = await this._read();
     if (isError(data)) return data;
-    return data.text();
+    return data.text(encoding);
   }
 
   /** @deprecated 非推奨 */
@@ -570,9 +576,15 @@ if (import.meta.vitest) {
         c: [3, 4, 5],
         d: { e: 6, f: 7 },
       };
+      const ObjType = z.object({
+        a: z.number(),
+        b: z.string(),
+        c: z.array(z.number()),
+        d: z.object({ e: z.number(), f: z.number() }),
+      });
 
       await jsonFile.writeJson(sampleObj);
-      const readObj = await jsonFile.readJson();
+      const readObj = await jsonFile.readJson(ObjType);
       expect(readObj).toEqual(sampleObj);
     });
 

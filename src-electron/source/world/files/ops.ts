@@ -25,7 +25,7 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
     // ファイルが存在しない場合空リストを返す
     if (!filePath.exists()) return [];
 
-    const value = await filePath.readJson<Ops>();
+    const value = await filePath.readJson(Ops);
     if (isError(value)) return value;
 
     const fixed = Ops.safeParse(value);

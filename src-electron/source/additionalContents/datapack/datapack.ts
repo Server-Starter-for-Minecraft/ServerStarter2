@@ -48,7 +48,7 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
   }
   if (isError(mcmetaData)) return mcmetaData;
 
-  const mcmeta = await mcmetaData.json<Mcmeta>();
+  const mcmeta = await mcmetaData.json(Mcmeta);
   if (isError(mcmeta)) return mcmeta;
 
   const fixed = Mcmeta.safeParse(mcmeta);

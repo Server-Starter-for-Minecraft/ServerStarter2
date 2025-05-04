@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { BytesData } from '../binary/bytesData';
 import { isError } from '../error/error';
 import { Failable } from '../error/failable';
@@ -10,6 +11,7 @@ type RequestHeader = {
 
 export async function getJsonResponse<T>(
   url: string,
+  validator: z.ZodSchema<T, z.ZodTypeDef, any>,
   pat?: string,
   accept = 'application/vnd.github+json'
 ): Promise<Failable<T>> {
@@ -23,7 +25,7 @@ export async function getJsonResponse<T>(
   if (isError(responce)) return responce;
 
   // jsonを取得
-  const json = await responce.json<T>();
+  const json = await responce.json(validator);
   return json;
 }
 

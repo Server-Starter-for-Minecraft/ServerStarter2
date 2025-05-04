@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { OsPlatform } from 'app/src-electron/schema/os';
 import { BytesData } from '../../util/binary/bytesData';
@@ -8,18 +9,21 @@ import { osPlatform } from '../../util/os/os';
 import { runtimePath } from '../const';
 import { versionConfig } from '../stores/config';
 
-export type component =
-  | 'java-runtime-alpha'
-  | 'java-runtime-beta'
-  | 'java-runtime-gamma'
-  | 'jre-legacy';
+export const JavaComponent = z.enum([
+  'java-runtime-alpha',
+  'java-runtime-beta',
+  'java-runtime-gamma',
+  'java-runtime-delta',
+  'jre-legacy',
+]);
+export type JavaComponent = z.infer<typeof JavaComponent>;
 
 /**
  * 適切なjavaw.exeの実行パスを返す
  * 必要に応じてバイナリをダウンロードする
  */
 export async function readyJava(
-  component: component,
+  component: JavaComponent,
   javaw: boolean,
   progress?: GroupProgressor
 ): Promise<Failable<Path>> {
@@ -62,35 +66,40 @@ export async function readyJava(
   }
 }
 
-type RuntimeManifest = {
-  sha1: string;
-  size: number;
-  url: string;
-};
+const RuntimeManifest = z.object({
+  sha1: z.string(),
+  size: z.number(),
+  url: z.string(),
+});
+type RuntimeManifest = z.infer<typeof RuntimeManifest>;
 
-type Runtime = {
-  availability: { group: number; progress: 100 };
-  manifest: RuntimeManifest;
-  version: { name: string; released: string };
-};
+const Runtime = z.object({
+  availability: z.object({ group: z.number(), progress: z.literal(100) }),
+  manifest: RuntimeManifest,
+  version: z.object({ name: z.string(), released: z.string() }),
+});
+type Runtime = z.infer<typeof Runtime>;
 
-type Runtimes = {
-  'java-runtime-alpha': Runtime[];
-  'java-runtime-beta': Runtime[];
-  'java-runtime-gamma': Runtime[];
-  'jre-legacy': Runtime[];
-  'minecraft-java-exe': Runtime[];
-};
+const Runtimes = z.object({
+  'java-runtime-alpha': Runtime.array(),
+  'java-runtime-beta': Runtime.array(),
+  'java-runtime-gamma': Runtime.array(),
+  'java-runtime-delta': Runtime.array(),
+  'jre-legacy': Runtime.array(),
+  'minecraft-java-exe': Runtime.array(),
+});
+type Runtimes = z.infer<typeof Runtimes>;
 
-type AllJson = {
-  gamecore: Runtimes;
-  linux: Runtimes;
-  'linux-i386': Runtimes;
-  'mac-os': Runtimes;
-  'mac-os-arm64': Runtimes;
-  'windows-x64': Runtimes;
-  'windows-x86': Runtimes;
-};
+const AllJson = z.object({
+  gamecore: Runtimes,
+  linux: Runtimes,
+  'linux-i386': Runtimes,
+  'mac-os': Runtimes,
+  'mac-os-arm64': Runtimes,
+  'windows-x64': Runtimes,
+  'windows-x86': Runtimes,
+});
+type AllJson = z.infer<typeof AllJson>;
 
 async function getAllJson(): Promise<Failable<AllJson>> {
   try {
@@ -106,7 +115,7 @@ async function getAllJson(): Promise<Failable<AllJson>> {
 
     if (isError(data)) return data;
 
-    const json = await data.json<AllJson>();
+    const json = await data.json(AllJson);
     if (isError(json)) return json;
     return json;
   } catch (e) {
@@ -129,7 +138,7 @@ async function getManifestJson(
   );
   if (isError(data)) return data;
 
-  const json = await data.json<Manifest>();
+  const json = await data.json(Manifest);
   if (isError(json)) return json;
 
   return json;
@@ -139,28 +148,45 @@ async function getManifestJson(
 // # source util/java/manifest.ts
 //
 
+const ManifestDownload = z.object({
+  sha1: z.string(),
+  size: z.number(),
+  url: z.string(),
+});
+type ManifestDownload = z.infer<typeof ManifestDownload>;
+
+const ManifestFile = z.object({
+  downloads: z.object({
+    lzma: ManifestDownload.optional(),
+    raw: ManifestDownload,
+  }),
+  executable: z.boolean(),
+  type: z.literal('file'),
+});
+type ManifestFile = z.infer<typeof ManifestFile>;
+
+const ManifestDirectory = z.object({
+  type: z.literal('directory'),
+});
+type ManifestDirectory = z.infer<typeof ManifestDirectory>;
+
+const ManifestLink = z.object({
+  target: z.string(),
+  type: z.literal('link'),
+});
+type ManifestLink = z.infer<typeof ManifestLink>;
+
+const Manifest = z.object({
+  files: z.record(
+    z.string(),
+    z.union([ManifestFile, ManifestDirectory, ManifestLink])
+  ),
+});
 type Manifest = {
   files: {
     [key in string]: ManifestFile | ManifestDirectory | ManifestLink;
   };
 };
-
-type ManifestDownload = {
-  sha1: string;
-  size: number;
-  url: string;
-};
-
-type ManifestFile = {
-  downloads: {
-    lzma?: ManifestDownload;
-    raw: ManifestDownload;
-  };
-  executable: boolean;
-  type: 'file';
-};
-type ManifestDirectory = { type: 'directory' };
-type ManifestLink = { target: string; type: 'link' };
 
 /** manifest.jsonに記載されているデータをローカルに展開する */
 async function installManifest(

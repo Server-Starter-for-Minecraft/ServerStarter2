@@ -1,4 +1,5 @@
 import { BytesData } from 'src-electron/util/binary/bytesData';
+import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
@@ -12,7 +13,11 @@ export async function getGithubBranches(
   pat: string
 ) {
   const commitURL = `https://api.github.com/repos/${owner}/${repo}/branches`;
-  const commitRes = await get<{ name: string }[]>(commitURL, pat);
+  const commitRes = await get(
+    z.object({ name: z.string() }).array(),
+    commitURL,
+    pat
+  );
   if (isError(commitRes)) return commitRes;
   return commitRes.map((x) => x.name);
 }
@@ -33,13 +38,13 @@ export class GithubTree {
     pat: string
   ) {
     const commitURL = `https://api.github.com/repos/${owner}/${repo}/branches/${branch}`;
-    const commitRes = await get<CommitRes>(commitURL, pat);
+    const commitRes = await get(CommitRes, commitURL, pat);
     if (isError(commitRes)) return commitRes;
     return new GithubTree(commitRes.commit.commit.tree.url, pat);
   }
 
   async files() {
-    const treeRes = await get<TreeRes>(this.url, this.pat);
+    const treeRes = await get(TreeRes, this.url, this.pat);
     if (isError(treeRes)) return treeRes;
     if (treeRes.tree === undefined)
       return errorMessage.data.githubAPI.fetchFailed({ url: this.url });
@@ -67,7 +72,7 @@ export class GithubBlob {
   }
 
   async loadBytes() {
-    const blobRes = await get<BlobRes>(this.url, this.pat);
+    const blobRes = await get(BlobRes, this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
     switch (blobRes.encoding) {
@@ -84,7 +89,7 @@ export class GithubBlob {
   }
 
   async loadText() {
-    const blobRes = await get<BlobRes>(this.url, this.pat);
+    const blobRes = await get(BlobRes, this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
     switch (blobRes.encoding) {
@@ -103,7 +108,7 @@ export class GithubBlob {
   }
 
   async loadJson(): Promise<Failable<WorldSettings>> {
-    const blobRes = await get<BlobRes>(this.url, this.pat);
+    const blobRes = await get(BlobRes, this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
     let data: Failable<WorldSettings>;
@@ -114,7 +119,7 @@ export class GithubBlob {
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
         if (isError(b64data)) return b64data;
-        data = await b64data.json<WorldSettings>();
+        data = await b64data.json(WorldSettings);
         break;
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
@@ -132,7 +137,11 @@ export class GithubBlob {
   }
 }
 
-async function get<T>(url: string, pat: string): Promise<Failable<T>> {
+async function get<T>(
+  validator: z.ZodSchema<T, z.ZodTypeDef, any>,
+  url: string,
+  pat: string
+): Promise<Failable<T>> {
   // PATの認証情報をヘッダーに付与してfetch
   const requestHeader = {
     Authorization: `Bearer ${pat}`,
@@ -142,6 +151,6 @@ async function get<T>(url: string, pat: string): Promise<Failable<T>> {
   if (isError(responce)) return responce;
 
   // jsonを取得
-  const json = await responce.json<T>();
+  const json = await responce.json(validator);
   return json;
 }

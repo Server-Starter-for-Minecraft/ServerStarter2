@@ -22,7 +22,7 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
     // ファイルが存在しない場合空リストを返す
     if (!filePath.exists()) return [];
 
-    const value = await filePath.readJson<Whitelist>();
+    const value = await filePath.readJson(Whitelist);
 
     if (isError(value)) return value;
     const fixed = Whitelist.safeParse(value);
