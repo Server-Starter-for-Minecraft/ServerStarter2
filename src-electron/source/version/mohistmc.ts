@@ -3,6 +3,7 @@ import {
   MohistmcVersion,
   VersionId,
 } from 'src-electron/schema/version';
+import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
@@ -16,7 +17,6 @@ import {
   VersionLoader,
 } from './base';
 import { getJavaComponent } from './vanilla';
-import { z } from 'zod';
 
 const papermcVersionsPath = versionsCachePath.child('mohistmc');
 
@@ -160,7 +160,7 @@ const MohistmcApiBuild = z.object({
     minutes: z.number(),
     seconds: z.number(),
   }),
-})
+});
 type MohistmcApiBuild = z.infer<typeof MohistmcApiBuild>;
 
 const MohistmcApiVersion = z.record(MohistmcApiBuild);
