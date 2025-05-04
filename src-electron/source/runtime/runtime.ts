@@ -13,6 +13,7 @@ export const JavaComponent = z.enum([
   'java-runtime-alpha',
   'java-runtime-beta',
   'java-runtime-gamma',
+  'java-runtime-delta',
   'jre-legacy',
 ]);
 export type JavaComponent = z.infer<typeof JavaComponent>;
@@ -83,6 +84,7 @@ const Runtimes = z.object({
   'java-runtime-alpha': Runtime.array(),
   'java-runtime-beta': Runtime.array(),
   'java-runtime-gamma': Runtime.array(),
+  'java-runtime-delta': Runtime.array(),
   'jre-legacy': Runtime.array(),
   'minecraft-java-exe': Runtime.array(),
 });
