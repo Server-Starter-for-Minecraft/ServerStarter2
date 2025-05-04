@@ -14,9 +14,9 @@ export class JsonSourceHandler<T> {
     this.accessor = accessor;
   }
 
-  /** 
+  /**
    * ローカルにあるJSONを扱う
-   * 
+   *
    * `validator`には必ずDefaultを設定した状態のZodSchemaを渡すこと
    */
   static fromPath<T>(
@@ -25,8 +25,11 @@ export class JsonSourceHandler<T> {
     options?: { encoding?: BufferEncoding }
   ) {
     const getter = async (): Promise<Failable<T>> => {
-      let jsonResult = await path.readJson(options?.encoding);
-      if (isError(jsonResult)) jsonResult = {};
+      let jsonResult: Failable<T> = await path.readJson(
+        validator,
+        options?.encoding
+      );
+      if (isError(jsonResult)) jsonResult = {} as T;
 
       const validated = await validator.safeParseAsync(jsonResult);
       if (validated.success) return validated.data;

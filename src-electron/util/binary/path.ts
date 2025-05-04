@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from 'dayjs';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { z } from 'zod';
 import { errorMessage } from '../error/construct';
 import { isError } from '../error/error';
 import { Failable } from '../error/failable';
@@ -236,10 +237,13 @@ export class Path {
   }
 
   readJson = exclusive(this._readJson);
-  private async _readJson<T>(encoding?: BufferEncoding): Promise<Failable<T>> {
+  private async _readJson<T>(
+    validator: z.ZodSchema<T, z.ZodTypeDef, any>,
+    encoding?: BufferEncoding
+  ): Promise<Failable<T>> {
     const data = await this._read();
     if (isError(data)) return data;
-    return data.json(encoding);
+    return data.json(validator, encoding);
   }
 
   readText = exclusive(this._readText);
@@ -572,9 +576,15 @@ if (import.meta.vitest) {
         c: [3, 4, 5],
         d: { e: 6, f: 7 },
       };
+      const ObjType = z.object({
+        a: z.number(),
+        b: z.string(),
+        c: z.array(z.number()),
+        d: z.object({ e: z.number(), f: z.number() }),
+      });
 
       await jsonFile.writeJson(sampleObj);
-      const readObj = await jsonFile.readJson();
+      const readObj = await jsonFile.readJson(ObjType);
       expect(readObj).toEqual(sampleObj);
     });
 

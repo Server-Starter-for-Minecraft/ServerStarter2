@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import fetch from 'electron-fetch';
 import { promises } from 'fs';
 import sharp from 'sharp';
+import { z } from 'zod';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from '../error/construct';
@@ -257,11 +258,15 @@ export class BytesData {
     });
   }
 
-  async json<T>(encoding = 'utf-8'): Promise<Failable<T>> {
+  /** Zod型定義によってパースしたJSONオブジェクトを返す */
+  async json<T>(
+    validator: z.ZodSchema<T, z.ZodTypeDef, any>,
+    encoding = 'utf-8'
+  ): Promise<Failable<T>> {
     try {
       return await new Promise((resolve) => {
         const text = new TextDecoder(encoding).decode(this.data);
-        resolve(JSON.parse(text));
+        resolve(validator.parse(JSON.parse(text)));
       });
     } catch (e) {
       return fromRuntimeError(e);
@@ -332,6 +337,12 @@ if (import.meta.vitest) {
       title: 'delectus aut autem',
       completed: false,
     };
+    const ReturnType = z.object({
+      userId: z.number(),
+      id: z.number(),
+      title: z.string(),
+      completed: z.boolean(),
+    });
 
     test('from', async () => {
       // テキスト
@@ -364,7 +375,7 @@ if (import.meta.vitest) {
       const data3 = await BytesData.fromURL(url);
       expect(isError(data3)).toBe(false);
       if (isError(data3)) return;
-      await expect(data3.json()).resolves.toMatchObject(returnObj);
+      await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
     });
 
     test('fromPathOrUrl', async () => {
@@ -381,15 +392,19 @@ if (import.meta.vitest) {
       const data2 = await BytesData.fromPathOrUrl(invalidPath, url);
       expect(isError(data2)).toBe(false);
       if (isError(data2)) return;
-      await expect(data2.json()).resolves.toMatchObject(returnObj);
-      await expect(invalidPath.readJson()).resolves.toMatchObject(returnObj);
+      await expect(data2.json(ReturnType)).resolves.toMatchObject(returnObj);
+      await expect(invalidPath.readJson(ReturnType)).resolves.toMatchObject(
+        returnObj
+      );
 
       // URLから優先して情報を取得し，ない場合はPathから取得する
       const data3 = await BytesData.fromUrlOrPath(invalidPath2, url);
       expect(isError(data3)).toBe(false);
       if (isError(data3)) return;
-      await expect(data3.json()).resolves.toMatchObject(returnObj);
-      await expect(invalidPath2.readJson()).resolves.toMatchObject(returnObj);
+      await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
+      await expect(invalidPath2.readJson(ReturnType)).resolves.toMatchObject(
+        returnObj
+      );
 
       // URLが無効な場合はPathから取得する
       const data4 = await BytesData.fromUrlOrPath(testPath, 'invalid.url.com');
