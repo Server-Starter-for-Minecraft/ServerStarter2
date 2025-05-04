@@ -49,7 +49,7 @@ const Profile = z.object({
 type Profile = z.infer<typeof Profile>;
 
 const ProfileTextures = z.object({
-  timestamp: z.string(),
+  timestamp: z.number(),
   profileId: PlayerUUID,
   profileName: z.string(),
   textures: z.object({
