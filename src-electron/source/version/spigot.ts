@@ -4,6 +4,7 @@ import {
   SpigotVersion,
   VersionId,
 } from 'src-electron/schema/version';
+import { z } from 'zod';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
@@ -15,15 +16,14 @@ import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { allocateTempDir } from '../../util/tempPath';
 import { getVersionMainfest } from '../runtime/manifest';
-import { readyJava } from '../runtime/runtime';
+import { JavaComponent, readyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
   VersionComponent,
   VersionLoader,
 } from './base';
-import { getJavaComponent, JavaComponent } from './vanilla';
-import { z } from 'zod';
+import { getJavaComponent } from './vanilla';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
 

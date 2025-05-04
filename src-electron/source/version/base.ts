@@ -7,8 +7,8 @@ import { versionConfig } from '../../source/stores/config';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
+import { JavaComponent } from '../runtime/runtime';
 import { eulaUnnecessaryVersionIds } from './const';
-import { JavaComponent } from './vanilla';
 
 export const versionLoggers = () => rootLogger.server.version;
 

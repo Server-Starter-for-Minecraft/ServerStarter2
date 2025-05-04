@@ -9,18 +9,20 @@ import { osPlatform } from '../../util/os/os';
 import { runtimePath } from '../const';
 import { versionConfig } from '../stores/config';
 
-export type component =
-  | 'java-runtime-alpha'
-  | 'java-runtime-beta'
-  | 'java-runtime-gamma'
-  | 'jre-legacy';
+export const JavaComponent = z.enum([
+  'java-runtime-alpha',
+  'java-runtime-beta',
+  'java-runtime-gamma',
+  'jre-legacy',
+]);
+export type JavaComponent = z.infer<typeof JavaComponent>;
 
 /**
  * 適切なjavaw.exeの実行パスを返す
  * 必要に応じてバイナリをダウンロードする
  */
 export async function readyJava(
-  component: component,
+  component: JavaComponent,
   javaw: boolean,
   progress?: GroupProgressor
 ): Promise<Failable<Path>> {

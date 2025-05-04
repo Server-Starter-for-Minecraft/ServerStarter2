@@ -8,6 +8,7 @@ import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
 import { getVersionMainfest } from '../runtime/manifest';
+import { JavaComponent } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
@@ -15,14 +16,6 @@ import {
 } from './base';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
-
-export const JavaComponent = z.enum([
-  'java-runtime-alpha',
-  'java-runtime-beta',
-  'java-runtime-gamma',
-  'jre-legacy',
-]);
-export type JavaComponent = z.infer<typeof JavaComponent>;
 
 export const VanillaVersionJson = z.object({
   downloads: z.object({
