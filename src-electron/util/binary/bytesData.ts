@@ -128,11 +128,21 @@ export class BytesData {
   /**
    * TODO: ファイルに出力
    */
-  async write(path: string, executable?: boolean): Promise<Failable<void>> {
+  async write(
+    path: string,
+    executable?: boolean,
+    encoding?: BufferEncoding
+  ): Promise<Failable<void>> {
     const logger = loggers().write({ path });
     logger.info('start');
+    const settings: { encoding?: BufferEncoding; mode?: number } = {};
     // 実行権限を与えて保存
-    const settings = executable ? { mode: 0o755 } : undefined;
+    if (executable) {
+      settings.mode = 0o755;
+    }
+    if (encoding) {
+      settings.encoding = encoding;
+    }
     try {
       await promises.writeFile(path, new Uint8Array(this.data), settings);
       logger.info('success');
