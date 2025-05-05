@@ -1,6 +1,7 @@
 import { AllVanillaVersion, VanillaVersion } from 'src-electron/schema/version';
 import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
+import { JavaComponent } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
@@ -8,7 +9,6 @@ import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
 import { getVersionMainfest } from '../runtime/manifest';
-import { JavaComponent } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,

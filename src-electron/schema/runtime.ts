@@ -3,6 +3,15 @@ import { z } from 'zod';
 export const JavaMajorVersion = z.number().brand('JavaMajorVersion');
 export type JavaMajorVersion = z.infer<typeof JavaMajorVersion>;
 
+export const JavaComponent = z.enum([
+  'java-runtime-alpha',
+  'java-runtime-beta',
+  'java-runtime-gamma',
+  'java-runtime-delta',
+  'jre-legacy',
+]);
+export type JavaComponent = z.infer<typeof JavaComponent>;
+
 // minecraftのデフォルトのランタイム
 export const MinecraftRuntime = z.object({
   type: z.literal('minecraft'),
@@ -13,7 +22,7 @@ export const MinecraftRuntime = z.object({
    * 'java-runtime-gamma'
    * 'java-runtime-delta';
    */
-  version: z.string(),
+  version: JavaComponent,
 });
 export type MinecraftRuntime = z.infer<typeof MinecraftRuntime>;
 

@@ -5,6 +5,7 @@ import {
   VersionId,
 } from 'src-electron/schema/version';
 import { z } from 'zod';
+import { JavaComponent } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
@@ -16,7 +17,7 @@ import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { allocateTempDir } from '../../util/tempPath';
 import { getVersionMainfest } from '../runtime/manifest';
-import { JavaComponent, readyJava } from '../runtime/runtime';
+import { JavaComponentreadyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,

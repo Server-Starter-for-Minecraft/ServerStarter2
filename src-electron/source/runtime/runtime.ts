@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { OsPlatform } from 'app/src-electron/schema/os';
+import {
+  JavaComponent,
+  JavaMajorVersion,
+  Runtime,
+  UniversalRuntime,
+} from 'app/src-electron/schema/runtime';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { fromRuntimeError, isError } from '../../util/error/error';
@@ -8,15 +14,41 @@ import { Failable } from '../../util/error/failable';
 import { osPlatform } from '../../util/os/os';
 import { runtimePath } from '../const';
 import { versionConfig } from '../stores/config';
+import { RuntimeInstaller } from './base';
+import {
+  MinecraftRuntimeInstaller,
+  minecraftRuntimeManifestUrl,
+} from './minecraft';
 
-export const JavaComponent = z.enum([
-  'java-runtime-alpha',
-  'java-runtime-beta',
-  'java-runtime-gamma',
-  'java-runtime-delta',
-  'jre-legacy',
-]);
-export type JavaComponent = z.infer<typeof JavaComponent>;
+export class RuntimeContainer {
+  private metaDirPath: Path;
+  private binDirPath: Path;
+  private installerMap: {
+    [R in Exclude<Runtime, UniversalRuntime> as R['type']]: RuntimeInstaller<R>;
+  };
+
+  /**
+   * @param getUniversalConfig universalのjavaの実体を返す OuterResourcesから取得する構成
+   */
+  constructor(
+    private cacheDirPath: Path,
+    private getUniversalConfig: (
+      osPlatform: OsPlatform,
+      majorVersion: JavaMajorVersion
+    ) => Promise<Failable<Exclude<Runtime, UniversalRuntime>>>
+  ) {
+    this.metaDirPath = cacheDirPath.child('meta');
+    this.binDirPath = cacheDirPath.child('bin');
+    this.installerMap = {
+      minecraft: MinecraftRuntimeInstaller.setRuntimeManifest(
+        cacheDirPath.child('minecraft', 'manifest.json'),
+        minecraftRuntimeManifestUrl
+      ),
+    };
+  }
+
+  // TODO: 続きのV2/Runtimeを実装
+}
 
 /**
  * 適切なjavaw.exeの実行パスを返す
@@ -66,40 +98,40 @@ export async function readyJava(
   }
 }
 
-const RuntimeManifest = z.object({
-  sha1: z.string(),
-  size: z.number(),
-  url: z.string(),
-});
-type RuntimeManifest = z.infer<typeof RuntimeManifest>;
+// const RuntimeManifest = z.object({
+//   sha1: z.string(),
+//   size: z.number(),
+//   url: z.string(),
+// });
+// type RuntimeManifest = z.infer<typeof RuntimeManifest>;
 
-const Runtime = z.object({
-  availability: z.object({ group: z.number(), progress: z.literal(100) }),
-  manifest: RuntimeManifest,
-  version: z.object({ name: z.string(), released: z.string() }),
-});
-type Runtime = z.infer<typeof Runtime>;
+// const Runtime = z.object({
+//   availability: z.object({ group: z.number(), progress: z.literal(100) }),
+//   manifest: RuntimeManifest,
+//   version: z.object({ name: z.string(), released: z.string() }),
+// });
+// type Runtime = z.infer<typeof Runtime>;
 
-const Runtimes = z.object({
-  'java-runtime-alpha': Runtime.array(),
-  'java-runtime-beta': Runtime.array(),
-  'java-runtime-gamma': Runtime.array(),
-  'java-runtime-delta': Runtime.array(),
-  'jre-legacy': Runtime.array(),
-  'minecraft-java-exe': Runtime.array(),
-});
-type Runtimes = z.infer<typeof Runtimes>;
+// const Runtimes = z.object({
+//   'java-runtime-alpha': Runtime.array(),
+//   'java-runtime-beta': Runtime.array(),
+//   'java-runtime-gamma': Runtime.array(),
+//   'java-runtime-delta': Runtime.array(),
+//   'jre-legacy': Runtime.array(),
+//   'minecraft-java-exe': Runtime.array(),
+// });
+// type Runtimes = z.infer<typeof Runtimes>;
 
-const AllJson = z.object({
-  gamecore: Runtimes,
-  linux: Runtimes,
-  'linux-i386': Runtimes,
-  'mac-os': Runtimes,
-  'mac-os-arm64': Runtimes,
-  'windows-x64': Runtimes,
-  'windows-x86': Runtimes,
-});
-type AllJson = z.infer<typeof AllJson>;
+// const AllJson = z.object({
+//   gamecore: Runtimes,
+//   linux: Runtimes,
+//   'linux-i386': Runtimes,
+//   'mac-os': Runtimes,
+//   'mac-os-arm64': Runtimes,
+//   'windows-x64': Runtimes,
+//   'windows-x86': Runtimes,
+// });
+// type AllJson = z.infer<typeof AllJson>;
 
 async function getAllJson(): Promise<Failable<AllJson>> {
   try {
