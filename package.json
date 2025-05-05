@@ -27,6 +27,7 @@
     "jszip": "^3.10.1",
     "log4js": "^6.9.1",
     "mousetrap": "^1.6.5",
+    "p-queue": "^8.1.0",
     "pinia": "^2.1.4",
     "prismarine-nbt": "^2.2.1",
     "quasar": "^2.12.2",

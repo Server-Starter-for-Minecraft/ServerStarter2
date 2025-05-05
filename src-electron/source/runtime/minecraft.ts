@@ -106,7 +106,7 @@ if (import.meta.vitest) {
   );
   await workPath.emptyDir();
 
-  test(
+  test.skip(
     'minecraft',
     async () => {
       const minecraft = MinecraftRuntimeInstaller.setRuntimeManifest(

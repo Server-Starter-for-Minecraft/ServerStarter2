@@ -236,6 +236,12 @@ export const enUSError: MessageSchema['error'] = {
         title: 'vanilla does not exist in version {version}',
       },
     },
+    runtime: {
+      installFailed: {
+        title: 'Failed to install a Java runtime',
+        desc: 'Wait a few moments and run again. ({version})',
+      }
+    },
     missingPersonalAccessToken: {
       title: 'Personal access token for {owner}/{repo} dose not exist',
     },

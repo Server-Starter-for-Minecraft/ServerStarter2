@@ -84,6 +84,13 @@ export type CoreErrors = {
     }>;
   };
 
+  runtime: {
+    installFailed: ErrorMessageContent<{
+      // インストールに失敗したバージョン
+      version: string;
+    }>
+  }
+
   // gitのPATが存在しない場合
   missingPersonalAccessToken: ErrorMessageContent<{
     // https://github.com/{owner}/{repo}

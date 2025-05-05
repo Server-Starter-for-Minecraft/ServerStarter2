@@ -205,7 +205,10 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
       installPath,
       osManifest
     );
-    if (isError(extractRes)) return extractRes;
+    if (isError(extractRes))
+      return errorMessage.core.runtime.installFailed({
+        version: this.getRuntimeVersion(runtime),
+      });
 
     // 生成したファイル群の中から実行パスを特定する
     const runtimeFileNames = this.getRuntimeFileNames(osPlatform);
@@ -227,6 +230,7 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
 }
 
 // テスト用に実装を分離
+// TODO: progressに対応
 async function _extractFilesFromManifest(
   installPath: Path,
   manifest: ManifestContent
@@ -248,15 +252,21 @@ async function _extractFilesFromManifest(
   if (directory) await Promise.all(directory.map(({ path }) => path.mkdir()));
 
   if (file) {
-    const results = await Promise.all(
-      file.map(async ({ path, entry }) => {
+    const parallelPromise = new PQueue({
+      concurrency: 20,
+      autoStart: true,
+    });
+    const tasks: (() => Promise<Failable<void>>)[] = [];
+    file.forEach(async ({ path, entry }) => {
+      tasks.push(async () => {
         const urlRes = await BytesData.fromURL(entry.downloads.raw.url);
         if (isError(urlRes)) return urlRes;
         const writeRes = await path.write(urlRes);
         if (isError(writeRes)) return writeRes;
-      })
-    );
-    const err = results.find(isError);
+      });
+    });
+    const res = await parallelPromise.addAll(tasks);
+    const err = res.find(isError);
     if (err) return err;
   }
 
