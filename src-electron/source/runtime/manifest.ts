@@ -5,6 +5,7 @@
  */
 import PQueue from 'p-queue';
 import { z } from 'zod';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import {
   ManifestContent,
@@ -125,9 +126,10 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
    */
   protected async extractFilesFromManifest(
     installPath: Path,
-    manifest: ManifestContent
+    manifest: ManifestContent,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
-    return _extractFilesFromManifest(installPath, manifest);
+    return _extractFilesFromManifest(installPath, manifest, progress);
   }
 
   /**
@@ -181,7 +183,8 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
   async install(
     installBasePath: Path,
     runtime: R,
-    osPlatform: OsPlatform
+    osPlatform: OsPlatform,
+    progress?: GroupProgressor
   ): Promise<Failable<RuntimeMeta>> {
     // RuntimeのManifestを取得
     const allManifest = await this.accessor.get();
@@ -203,7 +206,8 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
     );
     const extractRes = await this.extractFilesFromManifest(
       installPath,
-      osManifest
+      osManifest,
+      progress
     );
     if (isError(extractRes))
       return errorMessage.core.runtime.installFailed({
@@ -230,15 +234,16 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
 }
 
 // テスト用に実装を分離
-// TODO: progressに対応
 async function _extractFilesFromManifest(
   installPath: Path,
-  manifest: ManifestContent
+  manifest: ManifestContent,
+  progress?: GroupProgressor
 ): Promise<Failable<void>> {
   await installPath.emptyDir();
 
+  const entries = Object.entries(manifest.files);
   const { directory, link, file } = groupBy(
-    Object.entries(manifest.files).map(([k, v]) => ({
+    entries.map(([k, v]) => ({
       path: installPath.child(k),
       entry: v,
     })),
@@ -249,7 +254,28 @@ async function _extractFilesFromManifest(
     file: { path: Path; entry: ManifestFile }[] | undefined;
   };
 
-  if (directory) await Promise.all(directory.map(({ path }) => path.mkdir()));
+  // progress 対応
+  let processed = 0;
+  const numeric = progress?.numeric('file', entries.length);
+  const subtitle = progress?.subtitle({
+    key: 'server.readyJava.file',
+    args: {
+      path: '',
+    },
+  });
+
+  if (directory) {
+    await Promise.all(
+      directory.map(async ({ path }) => {
+        subtitle?.setSubtitle({
+          key: 'server.readyJava.file',
+          args: { path: path.path },
+        });
+        await path.mkdir();
+        numeric?.setValue(processed++);
+      })
+    );
+  }
 
   if (file) {
     const parallelPromise = new PQueue({
@@ -259,7 +285,12 @@ async function _extractFilesFromManifest(
     const tasks: (() => Promise<Failable<void>>)[] = [];
     file.forEach(async ({ path, entry }) => {
       tasks.push(async () => {
+        subtitle?.setSubtitle({
+          key: 'server.readyJava.file',
+          args: { path: path.path },
+        });
         const urlRes = await BytesData.fromURL(entry.downloads.raw.url);
+        numeric?.setValue(processed++);
         if (isError(urlRes)) return urlRes;
         const writeRes = await path.write(urlRes);
         if (isError(writeRes)) return writeRes;
@@ -272,7 +303,14 @@ async function _extractFilesFromManifest(
 
   if (link) {
     const results = await Promise.all(
-      link.map(async ({ path, entry }) => path.mklink(path.child(entry.target)))
+      link.map(async ({ path, entry }) => {
+        subtitle?.setSubtitle({
+          key: 'server.readyJava.file',
+          args: { path: path.path },
+        });
+        await path.mklink(path.child(entry.target));
+        numeric?.setValue(processed++);
+      })
     );
     const err = results.find(isError);
     if (err) return err;
