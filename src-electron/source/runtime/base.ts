@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { OsPlatform } from 'app/src-electron/schema/os';
 import { Runtime } from 'app/src-electron/schema/runtime';
@@ -23,6 +24,7 @@ export type RuntimeInstaller<R extends Runtime> = {
   install(
     installPath: Path,
     runtime: R,
-    osPlatform: OsPlatform
+    osPlatform: OsPlatform,
+    progress?: GroupProgressor
   ): Promise<Failable<RuntimeMeta>>;
 };

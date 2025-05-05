@@ -1,24 +1,22 @@
-import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { OsPlatform } from 'app/src-electron/schema/os';
 import {
-  JavaComponent,
   JavaMajorVersion,
   Runtime,
   UniversalRuntime,
 } from 'app/src-electron/schema/runtime';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
-import { fromRuntimeError, isError } from '../../util/error/error';
+import { isError, isValid } from '../../util/error/error';
 import { Failable } from '../../util/error/failable';
-import { osPlatform } from '../../util/os/os';
-import { runtimePath } from '../const';
-import { versionConfig } from '../stores/config';
-import { RuntimeInstaller } from './base';
+import { RuntimeInstaller, RuntimeMeta } from './base';
 import {
   MinecraftRuntimeInstaller,
   minecraftRuntimeManifestUrl,
 } from './minecraft';
+
+let metaJson: RuntimeMeta;
 
 export class RuntimeContainer {
   private metaDirPath: Path;
@@ -47,247 +45,255 @@ export class RuntimeContainer {
     };
   }
 
-  // TODO: 続きのV2/Runtimeを実装
-}
-
-/**
- * 適切なjavaw.exeの実行パスを返す
- * 必要に応じてバイナリをダウンロードする
- */
-export async function readyJava(
-  component: JavaComponent,
-  javaw: boolean,
-  progress?: GroupProgressor
-): Promise<Failable<Path>> {
-  progress?.title({
-    key: 'server.readyJava.title',
-  });
-
-  const json = await getAllJson();
-
-  const allJsonKeyOsPlatformMap: Record<OsPlatform, keyof AllJson> = {
-    debian: 'linux',
-    redhat: 'linux',
-    'mac-os': 'mac-os',
-    'mac-os-arm64': 'mac-os-arm64',
-    'windows-x64': 'windows-x64',
-  };
-
-  if (isError(json)) return json;
-
-  const manifest =
-    json[allJsonKeyOsPlatformMap[osPlatform]][component][0].manifest;
-
-  const path = runtimePath.child(`${component}/${osPlatform}`);
-
-  const data = await getManifestJson(manifest, path.child('manifest.json'));
-
-  await installManifest(data, path, progress);
-
-  switch (osPlatform) {
-    case 'windows-x64':
-      return javaw ? path.child('bin/javaw.exe') : path.child('bin/java.exe');
-    case 'debian':
-    case 'redhat':
-      return path.child('bin/java');
-    case 'mac-os':
-    case 'mac-os-arm64':
-      return path.child('jre.bundle/Contents/Home/bin/java');
-    default:
-      throw new Error(`Unknown OS:${osPlatform}`);
+  /**
+   * 指定されたランタイムを導入して実行パスを返す
+   *
+   * キャッシュに存在する場合はそれを使用
+   *
+   * @param useJavaw windowsのみ効果あり javaw.exeのパスを返す
+   */
+  async ready(
+    runtime: Runtime,
+    osPlatform: OsPlatform,
+    useJavaw: boolean,
+    progress?: GroupProgressor
+  ): Promise<Failable<Path>> {
+    progress?.title({ key: 'server.readyJava.title' });
+    return this._ready(runtime, osPlatform, useJavaw, progress);
   }
-}
 
-// const RuntimeManifest = z.object({
-//   sha1: z.string(),
-//   size: z.number(),
-//   url: z.string(),
-// });
-// type RuntimeManifest = z.infer<typeof RuntimeManifest>;
+  private async _ready(
+    runtime: Runtime,
+    osPlatform: OsPlatform,
+    useJavaw: boolean,
+    progress?: GroupProgressor
+  ): Promise<Failable<Path>> {
+    const metaPath = this.metaPath(runtime, osPlatform);
 
-// const Runtime = z.object({
-//   availability: z.object({ group: z.number(), progress: z.literal(100) }),
-//   manifest: RuntimeManifest,
-//   version: z.object({ name: z.string(), released: z.string() }),
-// });
-// type Runtime = z.infer<typeof Runtime>;
+    // すでにインストール済み
+    const current = await this.checkExists(metaPath, useJavaw);
+    if (isValid(current)) return current;
 
-// const Runtimes = z.object({
-//   'java-runtime-alpha': Runtime.array(),
-//   'java-runtime-beta': Runtime.array(),
-//   'java-runtime-gamma': Runtime.array(),
-//   'java-runtime-delta': Runtime.array(),
-//   'jre-legacy': Runtime.array(),
-//   'minecraft-java-exe': Runtime.array(),
-// });
-// type Runtimes = z.infer<typeof Runtimes>;
+    // universalの場合はそれに対応するほかのランタイムをインストール
+    if (runtime['type'] === 'universal')
+      return this.readyUniversal(runtime, osPlatform, useJavaw);
 
-// const AllJson = z.object({
-//   gamecore: Runtimes,
-//   linux: Runtimes,
-//   'linux-i386': Runtimes,
-//   'mac-os': Runtimes,
-//   'mac-os-arm64': Runtimes,
-//   'windows-x64': Runtimes,
-//   'windows-x86': Runtimes,
-// });
-// type AllJson = z.infer<typeof AllJson>;
+    const installer = this.installerMap[runtime['type']];
+    const meta = await installer.install(
+      this.binDirPath,
+      runtime,
+      osPlatform,
+      progress
+    );
+    if (isError(meta)) return meta;
 
-async function getAllJson(): Promise<Failable<AllJson>> {
-  try {
-    const allJsonSha1 = versionConfig.get('sha1')?.runtime;
-    const data = await BytesData.fromUrlOrPath(
-      runtimePath.child('all.json'),
-      'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',
-      allJsonSha1 !== undefined
-        ? { type: 'sha1', value: allJsonSha1 }
-        : allJsonSha1,
-      true
+    const writeRes = await metaPath.writeJson(meta);
+    if (isError(writeRes)) return writeRes;
+
+    return new Path(meta[useJavaw ? 'javaw' : 'java']['path']);
+  }
+
+  /** universalだけ特殊 */
+  private async readyUniversal(
+    runtime: UniversalRuntime,
+    osPlatform: OsPlatform,
+    useJavaw: boolean
+  ) {
+    const refRuntimeOrError = await this.getUniversalConfig(
+      osPlatform,
+      runtime.majorVersion
+    );
+    if (isError(refRuntimeOrError)) return refRuntimeOrError;
+    const refRuntime = refRuntimeOrError;
+
+    const refInstallResult = await this._ready(
+      refRuntime,
+      osPlatform,
+      useJavaw
+    );
+    if (isError(refInstallResult)) return refInstallResult;
+
+    // 参照しているメタファイルの内容をコピー
+    await this.metaPath(refRuntime, osPlatform).copyTo(
+      this.metaPath(runtime, osPlatform)
     );
 
-    if (isError(data)) return data;
-
-    const json = await data.json(AllJson);
-    if (isError(json)) return json;
-    return json;
-  } catch (e) {
-    return fromRuntimeError(e);
+    return refInstallResult;
   }
-}
 
-async function getManifestJson(
-  manifest: RuntimeManifest,
-  path: Path
-): Promise<Failable<any>> {
-  const data = await BytesData.fromUrlOrPath(
-    path,
-    manifest.url,
-    {
-      type: 'sha1',
-      value: manifest.sha1,
-    },
-    true
-  );
-  if (isError(data)) return data;
+  /**
+   * 指定されたランタイムをキャッシュから削除
+   */
+  async remove(
+    runtime: Runtime,
+    osPlatform: OsPlatform
+  ): Promise<Failable<void>> {
+    const metapath = this.metaPath(runtime, osPlatform);
+    if (!metapath.exists()) return;
 
-  const json = await data.json(Manifest);
-  if (isError(json)) return json;
+    const _metaJson = await metapath.readJson(RuntimeMeta);
+    if (isError(_metaJson)) return _metaJson;
+    else metaJson = _metaJson;
 
-  return json;
-}
+    await new Path(metaJson.base.path).remove();
+    await metapath.remove();
+  }
 
-//
-// # source util/java/manifest.ts
-//
+  private async checkExists(
+    metapath: Path,
+    useJavaw: boolean
+  ): Promise<Failable<Path>> {
+    const _metaJson = await metapath.readJson(RuntimeMeta);
+    if (isError(_metaJson)) return _metaJson;
+    else metaJson = _metaJson;
 
-const ManifestDownload = z.object({
-  sha1: z.string(),
-  size: z.number(),
-  url: z.string(),
-});
-type ManifestDownload = z.infer<typeof ManifestDownload>;
+    const info = metaJson[useJavaw ? 'javaw' : 'java'];
+    const { path, sha1 } = info;
+    const binPath = new Path(path);
+    const binData = await BytesData.fromPath(binPath);
+    if (isError(binData)) return binData;
+    const binHash = await binData.hash('sha1');
+    if (isError(binHash)) return binHash;
 
-const ManifestFile = z.object({
-  downloads: z.object({
-    lzma: ManifestDownload.optional(),
-    raw: ManifestDownload,
-  }),
-  executable: z.boolean(),
-  type: z.literal('file'),
-});
-type ManifestFile = z.infer<typeof ManifestFile>;
+    if (binHash !== sha1) {
+      return errorMessage.data.hashNotMatch({
+        hashtype: 'sha1',
+        type: 'url',
+        path,
+      });
+    }
 
-const ManifestDirectory = z.object({
-  type: z.literal('directory'),
-});
-type ManifestDirectory = z.infer<typeof ManifestDirectory>;
+    return binPath;
+  }
 
-const ManifestLink = z.object({
-  target: z.string(),
-  type: z.literal('link'),
-});
-type ManifestLink = z.infer<typeof ManifestLink>;
-
-const Manifest = z.object({
-  files: z.record(
-    z.string(),
-    z.union([ManifestFile, ManifestDirectory, ManifestLink])
-  ),
-});
-type Manifest = {
-  files: {
-    [key in string]: ManifestFile | ManifestDirectory | ManifestLink;
-  };
-};
-
-/** manifest.jsonに記載されているデータをローカルに展開する */
-async function installManifest(
-  manifest: Manifest,
-  path: Path,
-  progress?: GroupProgressor
-) {
-  // 展開先の親ディレクトリを生成
-  await path.mkdir(true);
-
-  // manifestの順番でファイル/ディレクトリ/リンクを作る
-  // ディレクトリは同期的に作成し、ファイル/リンクは非同期を並列して処理
-  const promises: Promise<Failable<undefined>>[] = [];
-  const entries = Object.entries(manifest.files);
-  let processed = 0;
-
-  const numeric = progress?.numeric('file', entries.length);
-  const file = progress?.subtitle({
-    key: 'server.readyJava.file',
-    args: {
-      path: '',
-    },
-  });
-
-  for await (const [k, v] of entries) {
-    const p = path.child(k);
-    switch (v.type) {
-      case 'file':
-        const filePromise = async () => {
-          file?.setSubtitle({
-            key: 'server.readyJava.file',
-            args: { path: k },
-          });
-          const result = await BytesData.fromPathOrUrl(
-            p,
-            v.downloads.raw.url,
-            { value: v.downloads.raw.sha1, type: 'sha1' },
-            false,
-            undefined,
-            v.executable
-          );
-          numeric?.setValue(processed++);
-          if (isError(result)) return result;
-        };
-        promises.push(filePromise());
+  private metaPath(runtime: Runtime, osPlatform: OsPlatform) {
+    const segments: string[] = [];
+    switch (osPlatform) {
+      case 'windows-x64':
+        segments.push('windows', 'x64');
         break;
-      case 'directory':
-        file?.setSubtitle({
-          key: 'server.readyJava.file',
-          args: { path: k },
-        });
-        await p.mkdir();
-        numeric?.setValue(processed++);
+      case 'mac-os':
+        segments.push('mac', 'x64');
         break;
-      case 'link':
-        const linkPromise = async () => {
-          file?.setSubtitle({
-            key: 'server.readyJava.file',
-            args: { path: k },
-          });
-          await p.mklink(p.parent().child(v.target));
-          numeric?.setValue(processed++);
-          return undefined;
-        };
-        promises.push(linkPromise());
+      case 'mac-os-arm64':
+        segments.push('mac', 'arm64');
+        break;
+      case 'debian':
+      case 'redhat':
+        segments.push('linux', 'x64');
         break;
     }
+    switch (runtime.type) {
+      case 'minecraft':
+        segments.push('minecraft', `${runtime.version}.json`);
+        break;
+      case 'universal': {
+        segments.push('universal', `${runtime.majorVersion}.json`);
+        break;
+      }
+    }
+    return this.metaDirPath.child(...segments);
   }
-  // ファイル/リンクの並列処理を待機
-  await Promise.all(promises);
-  // TODO: Failureがあった場合の処理
+}
+
+// src-electron\v2\source\runtime\test\assets\cache\meta
+// こっちにランタイムの情報とパスを格納
+//
+// src-electron\v2\source\runtime\test\assets\cache\meta
+// こっちにランタイム本体のパスを格納
+//
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  const path = await import('path');
+
+  // 一時使用フォルダを初期化
+  const workPath = new Path(__dirname).child(
+    'work',
+    path.basename(__filename, '.ts')
+  );
+  await workPath.mkdir();
+
+  const _getUniversalConfig = async () => {
+    return {
+      type: 'minecraft',
+      version: 'jre-legacy',
+    } as const;
+  };
+  const runtimeContainer = new RuntimeContainer(workPath, _getUniversalConfig);
+
+  const runtimes: (Runtime & { explain: string })[] = [
+    { explain: 'jre-legacy', type: 'minecraft', version: 'jre-legacy' },
+    {
+      explain: 'java-runtime-alpha',
+      type: 'minecraft',
+      version: 'java-runtime-alpha',
+    },
+    {
+      explain: 'java-runtime-beta',
+      type: 'minecraft',
+      version: 'java-runtime-beta',
+    },
+    {
+      explain: 'java-runtime-gamma',
+      type: 'minecraft',
+      version: 'java-runtime-gamma',
+    },
+    {
+      explain: 'java-runtime-delta',
+      type: 'minecraft',
+      version: 'java-runtime-delta',
+    },
+    {
+      explain: 'universal-8',
+      type: 'universal',
+      majorVersion: JavaMajorVersion.parse(21),
+    },
+  ];
+
+  const osPlatforms: OsPlatform[] = [
+    'windows-x64',
+    'mac-os',
+    'mac-os-arm64',
+    'debian',
+  ];
+
+  // 公式がランタイムを提供していない組
+  const missingCases: { os: OsPlatform; explain: string }[] = [
+    { os: 'mac-os-arm64', explain: 'jre-legacy' },
+    { os: 'mac-os-arm64', explain: 'java-runtime-alpha' },
+    { os: 'mac-os-arm64', explain: 'java-runtime-beta' },
+    { os: 'mac-os-arm64', explain: 'universal-8' },
+  ];
+
+  test.skip.each(
+    osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
+  )(
+    '$os $runtime.explain',
+    async (testCase) => {
+      // インストール
+      const readyResult = await runtimeContainer.ready(
+        testCase.runtime,
+        testCase.os,
+        true
+      );
+
+      // ランタイムが提供されている組み合わせかどうかをチェック
+      const isValidPair =
+        missingCases.find(
+          (x) => x.os === testCase.os && x.explain === testCase.runtime.explain
+        ) === undefined;
+
+      expect(isValid(readyResult)).toBe(isValidPair);
+
+      // アンインストール
+      const removeResult = await runtimeContainer.remove(
+        testCase.runtime,
+        testCase.os
+      );
+      expect(isValid(removeResult)).toBe(true);
+    },
+    1000 * 1000
+  );
 }
