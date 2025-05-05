@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { ManifestContent } from 'app/src-electron/schema/manifest';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
 import { OsPlatform } from '../../schema/os';
 import { MinecraftRuntime } from '../../schema/runtime';
 import { Path } from '../../util/binary/path';
@@ -21,125 +24,55 @@ export class MinecraftRuntimeInstaller extends RuntimeManifest<
     );
   }
 
-  protected getInstallPath(
-    installBasePath: Path,
-    runtime: MinecraftRuntime,
-    osPlatform: OsPlatform
-  ): Path {
-    throw new Error('Method not implemented.');
+  protected getRuntimeVersion(runtime: MinecraftRuntime): string {
+    return runtime.version;
   }
-  protected getManifestContent(
+
+  protected async getManifestContent(
     manifest: AllManifest,
     runtime: MinecraftRuntime,
     osPlatForm: OsPlatform
   ): Promise<Failable<ManifestContent>> {
-    throw new Error('Method not implemented.');
+    // OSに対応するManifestのURLを取得
+    const osNameMap = {
+      debian: 'linux',
+      redhat: 'linux',
+      'mac-os': 'mac-os',
+      'mac-os-arm64': 'mac-os-arm64',
+      'windows-x64': 'windows-x64',
+    } as const;
+    const osManifest = manifest[osNameMap[osPlatForm]][runtime.version];
+    if (osManifest === undefined || osManifest.length === 0) {
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: 'MISSING RUNTIME MANIFEST',
+      });
+    }
+
+    // 取得したURLから内容を取得
+    const targetManifestBytes = await BytesData.fromURL(
+      osManifest[0].manifest.url
+    );
+    if (isError(targetManifestBytes)) return targetManifestBytes;
+    return targetManifestBytes.json(ManifestContent);
   }
+
   protected getRuntimeFileNames(osPlatForm: OsPlatform): {
     java: string;
     javaw: string;
   } {
-    throw new Error('Method not implemented.');
+    switch (osPlatForm) {
+      case 'windows-x64':
+        return { java: 'java.exe', javaw: 'javaw.exe' };
+      case 'mac-os':
+      case 'mac-os-arm64':
+        return { java: 'java', javaw: 'java' };
+      case 'debian':
+      case 'redhat':
+        return { java: 'java', javaw: 'java' };
+    }
   }
 }
-
-// export class MinecraftRuntimeInstaller
-//   implements RuntimeInstaller<MinecraftRuntime>
-// {
-//   private manifestPath: Path;
-
-//   constructor(manifestPath: Path) {
-//     this.manifestPath = manifestPath;
-//   }
-
-//   async install(
-//     installPath: Path,
-//     runtime: MinecraftRuntime,
-//     osPlatform: OsPlatform
-//   ): Promise<Failable<RuntimeMeta>> {
-//     const manifestJson = new Json(AllManifest);
-
-//     // allManifestJsonの内容をファイルにキャッシュしつつ取得
-//     let allManifest = await this.manifestPath.into(manifestJson);
-//     if (allManifest.isErr) {
-//       await allManifestUrl.into(this.manifestPath);
-//       allManifest = await this.manifestPath.into(manifestJson);
-//       if (allManifest.isErr) return allManifest;
-//     }
-
-//     // 取得したRuntimeManifestから対象のOSのManifestを取得
-//     const osNameMap = {
-//       debian: 'linux',
-//       redhat: 'linux',
-//       'mac-os': 'mac-os',
-//       'mac-os-arm64': 'mac-os-arm64',
-//       'windows-x64': 'windows-x64',
-//     } as const;
-//     const osManifest =
-//       allManifest.value()[osNameMap[osPlatform]][runtime.version];
-//     if (osManifest === undefined) return err.error('missing manifest');
-//     if (osManifest.length === 0) return err.error('missing manifest');
-//     const targetManifestBytes = await BytesData.fromURL(
-//       osManifest[0].manifest.url
-//     );
-//     if (isError(targetManifestBytes)) return targetManifestBytes;
-//     const manifestFiles = await targetManifestBytes.json();
-//     // const result = await new Url().into(
-//     //   new Json(ManifestContent)
-//     // );
-//     // if (result.isErr) return result;
-//     // const manifestFiles = result.value();
-//     // 取得したManifestから必要なファイル類を生成する
-//     await extractFilesFromManifest(installPath, manifestFiles);
-
-//     const runtimeFileNames = getRuntimeFileNames(osPlatform);
-
-//     const java = Object.entries(manifestFiles.files).find(
-//       ([k, value]) => k.endsWith(runtimeFileNames.java) && value.type === 'file'
-//     ) as [string, ManifestFile];
-//     if (java === undefined) return err.error('MISSING JAVA RUNTIME FILE PATH');
-
-//     const javaw = Object.entries(manifestFiles.files).find(
-//       ([k, value]) =>
-//         k.endsWith(runtimeFileNames.javaw) && value.type === 'file'
-//     ) as [string, ManifestFile];
-//     if (javaw === undefined)
-//       return err.error('MISSING JAVAW RUNTIME FILE PATH');
-
-//     return ok({
-//       base: { path: installPath.path },
-//       javaw: {
-//         path: installPath.child(java[0]).path,
-//         sha1: java[1].downloads.raw.sha1,
-//       },
-//       java: {
-//         path: installPath.child(javaw[0]).path,
-//         sha1: javaw[1].downloads.raw.sha1,
-//       },
-//     });
-//   }
-
-//   getInstallPath(
-//     installBasePath: Path,
-//     runtime: MinecraftRuntime,
-//     osPlatform: OsPlatform
-//   ): Path {
-//     return installBasePath.child('minecraft', runtime.version, osPlatform);
-//   }
-// }
-
-// function getRuntimeFileNames(osPlatform: OsPlatform) {
-//   switch (osPlatform) {
-//     case 'windows-x64':
-//       return { java: 'java.exe', javaw: 'javaw.exe' };
-//     case 'mac-os':
-//     case 'mac-os-arm64':
-//       return { java: 'java', javaw: 'java' };
-//     case 'debian':
-//     case 'redhat':
-//       return { java: 'java', javaw: 'java' };
-//   }
-// }
 
 const Manifest = z.object({
   manifest: z.object({
@@ -171,24 +104,26 @@ if (import.meta.vitest) {
     'work',
     path.basename(__filename, '.ts')
   );
-  workPath.mkdir();
+  await workPath.emptyDir();
 
-  test.skip(
+  test(
     'minecraft',
     async () => {
-      const minecraft = new MinecraftRuntimeInstaller(
-        workPath.child('01', 'cache')
+      const minecraft = MinecraftRuntimeInstaller.setRuntimeManifest(
+        workPath.child('all.json'),
+        minecraftRuntimeManifestUrl
       );
 
       const installResult = await minecraft.install(
-        workPath.child('01', 'java-runtime-alpha'),
+        workPath,
         {
           type: 'minecraft',
-          version: 'java-runtime-alpha',
+          version: 'java-runtime-gamma',
         },
         'windows-x64'
       );
-      expect(installResult.isOk).toBe(true);
+      console.log(installResult);
+      expect(!isError(installResult)).toBe(true);
     },
     1000 * 1000
   );

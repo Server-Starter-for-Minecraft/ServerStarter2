@@ -3,6 +3,7 @@
  *
  * Runtimeに関する情報（＝Manifest）とその処理を各Runtimeごとに実装することを想定
  */
+import PQueue from 'p-queue';
 import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import {
@@ -55,10 +56,7 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
    *
    * このメソッドを呼び出すことで、RuntimeManifestのインスタンスを生成する
    */
-  static setRuntimeManifest(
-    manifestPath: Path,
-    manifestUrl: string
-  ) {
+  static setRuntimeManifest(manifestPath: Path, manifestUrl: string) {
     throw new Error('setRuntimeManifest() not implemented');
   }
 
@@ -103,13 +101,9 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
   }
 
   /**
-   * JavaRuntimeをダウンロードしておく場所
+   * Runtimeのバージョン（`java-runtime-alpha`など）を指定する
    */
-  protected abstract getInstallPath(
-    installBasePath: Path,
-    runtime: R,
-    osPlatform: OsPlatform
-  ): Path;
+  protected abstract getRuntimeVersion(runtime: R): string;
 
   /**
    * Runtime特有のManifestから標準的な表現である`ManifestContent`に整形する
@@ -134,6 +128,21 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
     manifest: ManifestContent
   ): Promise<Failable<void>> {
     return _extractFilesFromManifest(installPath, manifest);
+  }
+
+  /**
+   * JavaRuntimeをダウンロードしておく場所
+   */
+  protected getInstallPath(
+    installBasePath: Path,
+    runtime: R,
+    osPlatform: OsPlatform
+  ): Path {
+    return installBasePath.child(
+      runtime.type,
+      this.getRuntimeVersion(runtime),
+      osPlatform
+    );
   }
 
   /**
