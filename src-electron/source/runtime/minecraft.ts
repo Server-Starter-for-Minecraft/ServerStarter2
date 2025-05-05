@@ -122,7 +122,6 @@ if (import.meta.vitest) {
         },
         'windows-x64'
       );
-      console.log(installResult);
       expect(!isError(installResult)).toBe(true);
     },
     1000 * 1000
