@@ -323,15 +323,14 @@ if (import.meta.vitest) {
   const { Path } = await import('src-electron/util/binary/path');
 
   // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work');
-  workPath.mkdir();
+  const workPath = new Path(__dirname).child('work', 'manifest');
+  await workPath.emptyDir();
 
   // 実際にはUrlにアクセスせず、url文字列を結果として返す
-  // TODO: テスト用にダミーのURLを返すようにする
-  // const urlCreateReadStreamSpy = vi.spyOn(Url.prototype, 'createReadStream');
-  // urlCreateReadStreamSpy.mockImplementation(function (this: Url) {
-  //   return Bytes.fromString(this.url.toString()).createReadStream();
-  // });
+  const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
+  urlCreateReadStreamSpy.mockImplementation(function (url: string) {
+    return BytesData.fromText(url);
+  });
 
   const file = (url: string) => ({
     type: 'file' as const,
