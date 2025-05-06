@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { sourceLoggers } from '../sourceLogger';
 
-export const runtimeLoggers = () => sourceLoggers().runtime
+export const runtimeLoggers = () => sourceLoggers().runtime;
 
 export const RuntimeMeta = z.object({
   /** アンインストール時にこのパスを丸ごと消せばOK */

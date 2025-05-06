@@ -200,7 +200,10 @@ export class RuntimeContainer {
       segments.push('universal', `${runtime.majorVersion}.json`);
     } else {
       const installer = this.installerMap[runtime.type];
-      segments.push(runtime.type, `${installer.getRuntimeVersion(runtime)}.json`);
+      segments.push(
+        runtime.type,
+        `${installer.getRuntimeVersion(runtime)}.json`
+      );
     }
 
     return this.metaDirPath.child(...segments);

@@ -88,8 +88,8 @@ export type CoreErrors = {
     installFailed: ErrorMessageContent<{
       // インストールに失敗したバージョン
       version: string;
-    }>
-  }
+    }>;
+  };
 
   // gitのPATが存在しない場合
   missingPersonalAccessToken: ErrorMessageContent<{
