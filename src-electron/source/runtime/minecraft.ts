@@ -23,7 +23,7 @@ export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
     );
   }
 
-  protected getRuntimeVersion(runtime: MinecraftRuntime): string {
+  getRuntimeVersion(runtime: MinecraftRuntime): string {
     return runtime.version;
   }
 

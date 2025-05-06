@@ -195,15 +195,14 @@ export class RuntimeContainer {
         segments.push('linux', 'x64');
         break;
     }
-    switch (runtime.type) {
-      case 'minecraft':
-        segments.push('minecraft', `${runtime.version}.json`);
-        break;
-      case 'universal': {
-        segments.push('universal', `${runtime.majorVersion}.json`);
-        break;
-      }
+
+    if (runtime['type'] === 'universal') {
+      segments.push('universal', `${runtime.majorVersion}.json`);
+    } else {
+      const installer = this.installerMap[runtime.type];
+      segments.push(runtime.type, installer.getRuntimeVersion(runtime));
     }
+
     return this.metaDirPath.child(...segments);
   }
 }
@@ -297,6 +296,7 @@ if (import.meta.vitest) {
           (x) => x.os === testCase.os && x.explain === testCase.runtime.explain
         ) === undefined;
 
+      console.log(readyResult);
       expect(isValid(readyResult)).toBe(isValidPair);
 
       // アンインストール

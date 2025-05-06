@@ -88,7 +88,7 @@ export abstract class JavaRuntimeInstaller<
       return urlRes.json(validator);
     };
 
-    const setter = async (value: RuntimeManifest): Promise<Failable<void>> => {
+    const setter = async (value: RM): Promise<Failable<void>> => {
       const TxtValue = JSON.stringify(value);
       const bytesValue = await BytesData.fromText(TxtValue);
       if (isError(bytesValue)) return bytesValue;
@@ -107,7 +107,7 @@ export abstract class JavaRuntimeInstaller<
   /**
    * Runtimeのバージョン（`java-runtime-alpha`など）を指定する
    */
-  protected abstract getRuntimeVersion(runtime: R): string;
+  abstract getRuntimeVersion(runtime: R): string;
 
   /**
    * Runtime特有のManifestから標準的な表現である`ManifestContent`に整形する
