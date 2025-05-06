@@ -69,7 +69,7 @@ export class BytesData {
     } catch (e) {
       const em = fromRuntimeError(e);
       logger.error(em);
-      return fromRuntimeError(e);
+      return em;
     }
   }
 
@@ -82,6 +82,13 @@ export class BytesData {
       hash,
     });
     logger.trace('start');
+
+    // ファイルが存在しない場合はエラー
+    if (!path.exists())
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: path.path,
+      });
 
     try {
       const buffer = await promises.readFile(path.path);
