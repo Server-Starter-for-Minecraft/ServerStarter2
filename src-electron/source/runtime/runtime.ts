@@ -217,6 +217,7 @@ export class RuntimeContainer {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  const { sleep } = await import('app/src-electron/util/promise/sleep');
   const path = await import('path');
 
   // 一時使用フォルダを初期化
@@ -278,7 +279,8 @@ if (import.meta.vitest) {
     { os: 'mac-os-arm64', explain: 'universal-8' },
   ];
 
-  test.each(
+  // テスト実行に時間がかかることに加え，APIサーバーからのキックが頻発するため，テストはSkip
+  test.skip.each(
     osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
   )(
     '$os $runtime.explain',
@@ -295,8 +297,6 @@ if (import.meta.vitest) {
         missingCases.find(
           (x) => x.os === testCase.os && x.explain === testCase.runtime.explain
         ) === undefined;
-
-      console.log(readyResult);
       expect(isValid(readyResult)).toBe(isValidPair);
 
       // アンインストール

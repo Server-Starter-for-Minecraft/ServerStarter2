@@ -22,7 +22,7 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { groupBy } from 'app/src-electron/util/object/groupBy';
 import { versionConfig } from '../stores/config';
-import { RuntimeMeta } from './base';
+import { runtimeLoggers, RuntimeMeta } from './base';
 
 type JavaExecName = {
   java: string;
@@ -189,11 +189,16 @@ export abstract class JavaRuntimeInstaller<
     osPlatform: OsPlatform,
     progress?: GroupProgressor
   ): Promise<Failable<RuntimeMeta>> {
+    const logger = runtimeLoggers().install({
+      installBasePath: installBasePath.path,
+      runtime,
+      osPlatform,
+    });
+
     // RuntimeのManifestを取得
     const allManifest = await this.accessor.get();
     if (isError(allManifest)) return allManifest;
-
-    // TODO: metaの書き出しが終わる前にmetaの読み込みが始まっているバグを修正
+    logger.info('Get `all-manifest` successfully');
 
     // 取得したManifestから対象のOSのManifestを取得
     const osManifest = await this.getManifestContent(
@@ -202,6 +207,7 @@ export abstract class JavaRuntimeInstaller<
       osPlatform
     );
     if (isError(osManifest)) return osManifest;
+    logger.info('Get a manifest for target OS successfully');
 
     // 取得したManifestから必要なファイル類を生成する
     const installPath = this.getInstallPath(
@@ -214,15 +220,19 @@ export abstract class JavaRuntimeInstaller<
       osManifest,
       progress
     );
-    if (isError(extractRes))
+    if (isError(extractRes)) {
+      logger.error('Extract files from manifest failed', extractRes);
       return errorMessage.core.runtime.installFailed({
         version: this.getRuntimeVersion(runtime),
       });
+    }
+    logger.info('Extract files from manifest successfully');
 
     // 生成したファイル群の中から実行パスを特定する
     const runtimeFileNames = this.getRuntimeFileNames(osPlatform);
     const javaPaths = this.manifest2JavaPath(osManifest, runtimeFileNames);
     if (isError(javaPaths)) return javaPaths;
+    logger.info(`Get java path successfully And completed installation`);
 
     return {
       base: { path: installPath.path },
