@@ -280,7 +280,7 @@ if (import.meta.vitest) {
   ];
 
   // テスト実行に時間がかかることに加え，APIサーバーからのキックが頻発するため，テストはSkip
-  test.skip.each(
+  test.each(
     osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
   )(
     '$os $runtime.explain',
