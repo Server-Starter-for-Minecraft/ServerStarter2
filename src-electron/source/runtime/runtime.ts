@@ -200,24 +200,16 @@ export class RuntimeContainer {
       segments.push('universal', `${runtime.majorVersion}.json`);
     } else {
       const installer = this.installerMap[runtime.type];
-      segments.push(runtime.type, installer.getRuntimeVersion(runtime));
+      segments.push(runtime.type, `${installer.getRuntimeVersion(runtime)}.json`);
     }
 
     return this.metaDirPath.child(...segments);
   }
 }
 
-// src-electron\v2\source\runtime\test\assets\cache\meta
-// こっちにランタイムの情報とパスを格納
-//
-// src-electron\v2\source\runtime\test\assets\cache\meta
-// こっちにランタイム本体のパスを格納
-//
-
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  const { sleep } = await import('app/src-electron/util/promise/sleep');
   const path = await import('path');
 
   // 一時使用フォルダを初期化
@@ -226,6 +218,31 @@ if (import.meta.vitest) {
     path.basename(__filename, '.ts')
   );
   await workPath.emptyDir();
+
+  // 実際にはUrlにアクセスせず、url文字列を結果として返す
+  // cf) Mockを使わない場合，テストがエラーになることがあるが，これはVitest上でTimeoutがうまく設定できていないことが原因
+  // Electron(Chromium)上で動かす場合はTimeoutが２分程度に緩和されるため，テストではMockで代用
+  // @see https://scrapbox.io/nwtgck/Google_Chrome%E3%81%AEfetch()%E3%81%AE%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88%E3%81%AE%E6%99%82%E9%96%93
+  const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromPathOrUrl');
+  urlCreateReadStreamSpy.mockImplementation(async (path, url) => {
+    // すでにダウンロード済みのデータがある場合は通常通り利用する
+    let data = await BytesData.fromPath(path);
+    if (isValid(data)) return data;
+
+    // 全OSの全Runtime情報が記載されたのManifestのみ実データを使う
+    let resData: Failable<BytesData>;
+    if (url.startsWith('https://launchermeta')) {
+      resData = await BytesData.fromURL(url);
+    } else {
+      resData = await BytesData.fromText(url);
+    }
+    if (isError(resData)) return resData;
+
+    // 本来と同じように取得した（ことになっているデータ）はファイルに書き込む
+    await path.parent().mkdir(true);
+    await resData.write(path.path);
+    return resData;
+  });
 
   const _getUniversalConfig = async () => {
     return {
