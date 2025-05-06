@@ -3,7 +3,6 @@
  *
  * Runtimeに関する情報（＝Manifest）とその処理を各Runtimeごとに実装することを想定
  */
-import PQueue from 'p-queue';
 import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
@@ -293,25 +292,24 @@ async function _extractFilesFromManifest(
   }
 
   if (file) {
-    const parallelPromise = new PQueue({
-      concurrency: 20,
-      autoStart: true,
-    });
-    const tasks: (() => Promise<Failable<void>>)[] = [];
-    file.forEach(async ({ path, entry }) => {
-      tasks.push(async () => {
+    const res = await Promise.all(
+      file.map(async ({ path, entry }) => {
         subtitle?.setSubtitle({
           key: 'server.readyJava.file',
           args: { path: path.path },
         });
-        const urlRes = await BytesData.fromURL(entry.downloads.raw.url);
+        const result = await BytesData.fromPathOrUrl(
+          path,
+          entry.downloads.raw.url,
+          { value: entry.downloads.raw.sha1, type: 'sha1' },
+          false,
+          undefined,
+          entry.executable
+        );
         numeric?.setValue(processed++);
-        if (isError(urlRes)) return urlRes;
-        const writeRes = await path.write(urlRes);
-        if (isError(writeRes)) return writeRes;
-      });
-    });
-    const res = await parallelPromise.addAll(tasks);
+        return result;
+      })
+    );
     const err = res.find(isError);
     if (err) return err;
   }
