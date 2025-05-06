@@ -3,6 +3,9 @@ import { z } from 'zod';
 export const JavaMajorVersion = z.number().brand('JavaMajorVersion');
 export type JavaMajorVersion = z.infer<typeof JavaMajorVersion>;
 
+/**
+ * MinecraftがサポートするJavaのバージョンリスト
+ */
 export const JavaComponent = z.enum([
   'java-runtime-alpha',
   'java-runtime-beta',
@@ -51,3 +54,41 @@ export const RuntimeSettings = z.union([
   z.object({ memory: z.tuple([z.number(), z.enum(['MB', 'GB', 'TB'])]) }),
 ]);
 export type RuntimeSettings = z.infer<typeof RuntimeSettings>;
+
+// Manifest
+const McRuntimeVerManifest = z.object({
+  manifest: z.object({
+    sha1: z.string(),
+    size: z.number(),
+    url: z.string(),
+  }),
+});
+const McOsManifest = z.record(
+  z.string(),
+  z.array(McRuntimeVerManifest).optional()
+);
+export const McRuntimeManifest = z.object({
+  linux: McOsManifest,
+  'mac-os': McOsManifest,
+  'mac-os-arm64': McOsManifest,
+  'windows-x64': McOsManifest,
+  'windows-arm64': McOsManifest,
+});
+export type McRuntimeManifest = z.infer<typeof McRuntimeManifest>;
+
+// Correttoは未実装
+export const CorrettoRuntimeManifest = z.object({});
+export type CorrettoRuntimeManifest = z.infer<typeof CorrettoRuntimeManifest>;
+
+/**
+ * 各Runtimeの取得に使用するManifestの型定義
+ */
+const AllRuntimeManifests = z.object({
+  minecraft: McRuntimeManifest,
+  corretto: CorrettoRuntimeManifest,
+});
+export type AllRuntimeManifests = z.infer<typeof AllRuntimeManifests>;
+
+type Keys<T> = keyof T;
+type Values<T extends Record<string, z.ZodType>> = z.infer<T[Keys<T>]>;
+export type RuntimeManifest = Values<typeof AllRuntimeManifests.shape>;

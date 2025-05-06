@@ -1,9 +1,4 @@
 import { z } from 'zod';
-import { GroupProgressor } from 'app/src-electron/common/progress';
-import { Failable } from 'app/src-electron/schema/error';
-import { OsPlatform } from 'app/src-electron/schema/os';
-import { Runtime } from 'app/src-electron/schema/runtime';
-import { Path } from 'app/src-electron/util/binary/path';
 
 export const RuntimeMeta = z.object({
   /** アンインストール時にこのパスを丸ごと消せばOK */
@@ -19,12 +14,3 @@ export const RuntimeMeta = z.object({
   java: z.object({ path: z.string(), sha1: z.string() }),
 });
 export type RuntimeMeta = z.infer<typeof RuntimeMeta>;
-
-export type RuntimeInstaller<R extends Runtime> = {
-  install(
-    installPath: Path,
-    runtime: R,
-    osPlatform: OsPlatform,
-    progress?: GroupProgressor
-  ): Promise<Failable<RuntimeMeta>>;
-};

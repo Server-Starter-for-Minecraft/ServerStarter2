@@ -1,26 +1,25 @@
-import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { ManifestContent } from 'app/src-electron/schema/manifest';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { OsPlatform } from '../../schema/os';
-import { MinecraftRuntime } from '../../schema/runtime';
+import { McRuntimeManifest, MinecraftRuntime } from '../../schema/runtime';
 import { Path } from '../../util/binary/path';
-import { RuntimeManifest } from './manifest';
+import { JavaRuntimeInstaller } from './manifest';
 
 export const minecraftRuntimeManifestUrl =
   'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
 
-export class MinecraftRuntimeInstaller extends RuntimeManifest<
-  AllManifest,
+export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
+  McRuntimeManifest,
   MinecraftRuntime
 > {
   static readonly manifestName = 'minecraft' as const;
 
   static setRuntimeManifest(manifestPath: Path, manifestUrl: string) {
     return new MinecraftRuntimeInstaller(
-      this.getCacheableAccessor(AllManifest, manifestPath, manifestUrl)
+      this.getCacheableAccessor(McRuntimeManifest, manifestPath, manifestUrl)
     );
   }
 
@@ -29,7 +28,7 @@ export class MinecraftRuntimeInstaller extends RuntimeManifest<
   }
 
   protected async getManifestContent(
-    manifest: AllManifest,
+    manifest: McRuntimeManifest,
     runtime: MinecraftRuntime,
     osPlatForm: OsPlatform
   ): Promise<Failable<ManifestContent>> {
@@ -73,25 +72,6 @@ export class MinecraftRuntimeInstaller extends RuntimeManifest<
     }
   }
 }
-
-const Manifest = z.object({
-  manifest: z.object({
-    sha1: z.string(),
-    size: z.number(),
-    url: z.string(),
-  }),
-});
-
-const OsManifest = z.record(z.string(), z.array(Manifest).optional());
-
-const AllManifest = z.object({
-  linux: OsManifest,
-  'mac-os': OsManifest,
-  'mac-os-arm64': OsManifest,
-  'windows-x64': OsManifest,
-  'windows-arm64': OsManifest,
-});
-type AllManifest = z.infer<typeof AllManifest>;
 
 /** In Source Testing */
 if (import.meta.vitest) {

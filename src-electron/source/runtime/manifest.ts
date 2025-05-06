@@ -14,7 +14,7 @@ import {
   ManifestLink,
 } from 'app/src-electron/schema/manifest';
 import { OsPlatform } from 'app/src-electron/schema/os';
-import { Runtime } from 'app/src-electron/schema/runtime';
+import { Runtime, RuntimeManifest } from 'app/src-electron/schema/runtime';
 import { BytesData, Hash } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { CacheableAccessor } from 'app/src-electron/util/cache';
@@ -29,13 +29,16 @@ type JavaExecName = {
   javaw: string;
 };
 
-export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
+export abstract class JavaRuntimeInstaller<
+  RM extends RuntimeManifest,
+  R extends Runtime
+> {
   /** RuntimeのManifestファイルを操作 */
-  private accessor: CacheableAccessor<AllManifest>;
+  private accessor: CacheableAccessor<RM>;
   /** 設定するRuntimeの名前 */
   static readonly manifestName: Runtime['type'];
 
-  protected constructor(accessor: CacheableAccessor<AllManifest>) {
+  protected constructor(accessor: CacheableAccessor<RM>) {
     this.accessor = accessor;
   }
 
@@ -61,12 +64,12 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
     throw new Error('setRuntimeManifest() not implemented');
   }
 
-  protected static getCacheableAccessor<_AllManifest>(
-    validator: z.ZodSchema<_AllManifest, z.ZodTypeDef, any>,
+  protected static getCacheableAccessor<RM extends RuntimeManifest>(
+    validator: z.ZodSchema<RM, z.ZodTypeDef, any>,
     manifestPath: Path,
     manifestUrl: string
   ) {
-    const getter = async (): Promise<Failable<_AllManifest>> => {
+    const getter = async (): Promise<Failable<RM>> => {
       const manifestHash = versionConfig.get('runtimes_manifest_sha1')?.[
         this.manifestName
       ];
@@ -85,7 +88,7 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
       return urlRes.json(validator);
     };
 
-    const setter = async (value: _AllManifest): Promise<Failable<void>> => {
+    const setter = async (value: RuntimeManifest): Promise<Failable<void>> => {
       const TxtValue = JSON.stringify(value);
       const bytesValue = await BytesData.fromText(TxtValue);
       if (isError(bytesValue)) return bytesValue;
@@ -110,7 +113,7 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
    * Runtime特有のManifestから標準的な表現である`ManifestContent`に整形する
    */
   protected abstract getManifestContent(
-    manifest: AllManifest,
+    manifest: RuntimeManifest,
     runtime: R,
     osPlatForm: OsPlatform
   ): Promise<Failable<ManifestContent>>;
@@ -189,6 +192,8 @@ export abstract class RuntimeManifest<AllManifest, R extends Runtime> {
     // RuntimeのManifestを取得
     const allManifest = await this.accessor.get();
     if (isError(allManifest)) return allManifest;
+
+    // TODO: metaの書き出しが終わる前にmetaの読み込みが始まっているバグを修正
 
     // 取得したManifestから対象のOSのManifestを取得
     const osManifest = await this.getManifestContent(

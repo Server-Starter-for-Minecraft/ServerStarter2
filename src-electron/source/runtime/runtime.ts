@@ -1,6 +1,7 @@
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { OsPlatform } from 'app/src-electron/schema/os';
 import {
+  AllRuntimeManifests,
   JavaMajorVersion,
   Runtime,
   UniversalRuntime,
@@ -10,7 +11,8 @@ import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { isError, isValid } from '../../util/error/error';
 import { Failable } from '../../util/error/failable';
-import { RuntimeInstaller, RuntimeMeta } from './base';
+import { RuntimeMeta } from './base';
+import { JavaRuntimeInstaller } from './manifest';
 import {
   MinecraftRuntimeInstaller,
   minecraftRuntimeManifestUrl,
@@ -22,7 +24,10 @@ export class RuntimeContainer {
   private metaDirPath: Path;
   private binDirPath: Path;
   private installerMap: {
-    [R in Exclude<Runtime, UniversalRuntime> as R['type']]: RuntimeInstaller<R>;
+    [R in Exclude<
+      Runtime,
+      UniversalRuntime
+    > as R['type']]: JavaRuntimeInstaller<AllRuntimeManifests[R['type']], R>;
   };
 
   /**
@@ -143,6 +148,13 @@ export class RuntimeContainer {
     metapath: Path,
     useJavaw: boolean
   ): Promise<Failable<Path>> {
+    if (!metapath.exists()) {
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: metapath.path,
+      });
+    }
+
     const _metaJson = await metapath.readJson(RuntimeMeta);
     if (isError(_metaJson)) return _metaJson;
     else metaJson = _metaJson;
@@ -213,7 +225,7 @@ if (import.meta.vitest) {
     'work',
     path.basename(__filename, '.ts')
   );
-  await workPath.mkdir();
+  await workPath.emptyDir();
 
   const _getUniversalConfig = async () => {
     return {
@@ -267,7 +279,7 @@ if (import.meta.vitest) {
     { os: 'mac-os-arm64', explain: 'universal-8' },
   ];
 
-  test.skip.each(
+  test.each(
     osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
   )(
     '$os $runtime.explain',
