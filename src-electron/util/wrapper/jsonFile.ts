@@ -1,7 +1,7 @@
 import { z, ZodTypeDef } from 'zod';
 import { Path } from '../binary/path';
 import { CacheableAccessor } from '../cache';
-import { fromRuntimeError, isError } from '../error/error';
+import { isError } from '../error/error';
 import { Failable } from '../error/failable';
 
 /**
@@ -16,24 +16,14 @@ export class JsonSourceHandler<T> {
 
   /**
    * ローカルにあるJSONを扱う
-   *
-   * `validator`には必ずDefaultを設定した状態のZodSchemaを渡すこと
    */
   static fromPath<T>(
     path: Path,
-    validator: z.ZodDefault<z.ZodSchema<T, ZodTypeDef, any>>,
+    validator: z.ZodSchema<T, ZodTypeDef, any>,
     options?: { encoding?: BufferEncoding }
   ) {
     const getter = async (): Promise<Failable<T>> => {
-      let jsonResult: Failable<T> = await path.readJson(
-        validator,
-        options?.encoding
-      );
-      if (isError(jsonResult)) jsonResult = {} as T;
-
-      const validated = await validator.safeParseAsync(jsonResult);
-      if (validated.success) return validated.data;
-      return fromRuntimeError(validated.error);
+      return path.readJson(validator, options?.encoding);
     };
 
     const setter = async (value: T): Promise<Failable<void>> => {
