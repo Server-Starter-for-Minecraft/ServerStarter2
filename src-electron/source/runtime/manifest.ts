@@ -14,13 +14,12 @@ import {
 } from 'app/src-electron/schema/manifest';
 import { OsPlatform } from 'app/src-electron/schema/os';
 import { Runtime, RuntimeManifest } from 'app/src-electron/schema/runtime';
-import { BytesData, Hash } from 'app/src-electron/util/binary/bytesData';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { CacheableAccessor } from 'app/src-electron/util/cache';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { groupBy } from 'app/src-electron/util/object/groupBy';
-import { versionConfig } from '../stores/config';
 import { runtimeLoggers, RuntimeMeta } from './base';
 
 type JavaExecName = {
@@ -69,35 +68,13 @@ export abstract class JavaRuntimeInstaller<
     manifestUrl: string
   ) {
     const getter = async (): Promise<Failable<RM>> => {
-      const manifestHash = versionConfig.get('runtimes_manifest_sha1')?.[
-        this.manifestName
-      ];
-      const hash: Hash | undefined = manifestHash
-        ? {
-            type: 'sha1',
-            value: manifestHash,
-          }
-        : undefined;
-      const urlRes = await BytesData.fromPathOrUrl(
-        manifestPath,
-        manifestUrl,
-        hash
-      );
+      const urlRes = await BytesData.fromUrlOrPath(manifestPath, manifestUrl);
       if (isError(urlRes)) return urlRes;
       return urlRes.json(validator);
     };
 
     const setter = async (value: RM): Promise<Failable<void>> => {
-      const TxtValue = JSON.stringify(value);
-      const bytesValue = await BytesData.fromText(TxtValue);
-      if (isError(bytesValue)) return bytesValue;
-
-      const sha1Hash = await bytesValue.hash('sha1');
-      versionConfig.set('runtimes_manifest_sha1', {
-        [this.manifestName]: sha1Hash,
-      });
-
-      return manifestPath.writeText(TxtValue);
+      return manifestPath.writeJson(value);
     };
 
     return new CacheableAccessor(getter, setter);
