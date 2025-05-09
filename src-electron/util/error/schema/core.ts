@@ -1,4 +1,6 @@
+import { OsPlatform } from 'app/src-electron/schema/os';
 import { OpLevel } from 'app/src-electron/schema/player';
+import { Runtime } from 'app/src-electron/schema/runtime';
 import { ErrorMessageContent } from './base';
 
 // ServerStarterの内部的なその他のエラー
@@ -86,6 +88,10 @@ export type CoreErrors = {
 
   runtime: {
     installFailed: ErrorMessageContent<{
+      // Runtimeの種類
+      runtimeType: Runtime['type'];
+      // インストールしようとしたOS
+      targetOs: OsPlatform;
       // インストールに失敗したバージョン
       version: string;
     }>;

@@ -199,6 +199,8 @@ export abstract class JavaRuntimeInstaller<
     if (isError(extractRes)) {
       logger.error('Extract files from manifest failed', extractRes);
       return errorMessage.core.runtime.installFailed({
+        runtimeType: runtime.type,
+        targetOs: osPlatform,
         version: this.getRuntimeVersion(runtime),
       });
     }

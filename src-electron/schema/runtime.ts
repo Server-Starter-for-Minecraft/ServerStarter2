@@ -62,6 +62,10 @@ const McRuntimeVerManifest = z.object({
     size: z.number(),
     url: z.string(),
   }),
+  version: z.object({
+    name: z.string(),
+    released: z.string(),
+  }),
 });
 const McOsManifest = z.record(
   z.string(),
