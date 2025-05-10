@@ -1,9 +1,8 @@
-import { isValid } from 'src/dummy/scripts/error';
 import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isError } from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import { fromEntries } from 'app/src-electron/util/obj/obj';
 import { AllMohistmcVersion, VersionId } from '../../../schema/version';
 import { VersionListLoader } from './base';

@@ -110,6 +110,8 @@ export class VersionContainer {
           useCache,
           new FabricVersionLoader(this.cachePath)
         );
+      case 'unknown':
+        return;
     }
   }
 
