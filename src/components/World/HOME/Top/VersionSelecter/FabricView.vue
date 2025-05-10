@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllFabricVersion } from 'app/src-electron/schema/version';
+import {
+  AllFabricVersion,
+  FabricVersion,
+  VersionId,
+} from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -20,10 +25,10 @@ const isRelease = ref(true);
 const latestReleaseID = prop.versionData.games.find((ops) => ops.release)?.id;
 
 function buildFabricVer(
-  ver: { id: string; release: boolean },
+  ver: { id: VersionId; release: boolean },
   installer: string,
   loader: string
-) {
+): FabricVersion {
   return {
     id: ver.id,
     type: 'fabric' as const,
@@ -36,7 +41,7 @@ function buildFabricVer(
  * ワールドオブジェクトのバージョン情報を書き換える
  */
 function updateWorldVersion(
-  ver: { id: string; release: boolean },
+  ver: { id: VersionId; release: boolean },
   installer: string,
   loader: string
 ) {
@@ -47,10 +52,10 @@ function updateWorldVersion(
 
 const fabricVer = computed({
   get: () => {
+    const ver = mainStore.world?.version;
+    if (!ver || ver.type === 'unknown') return '';
     // 前のバージョンがFabricに存在しないバージョンの時は，最新バージョンを割り当てる
-    const findVer = prop.versionData.games.find(
-      (ops) => ops.id === mainStore.world?.version.id
-    );
+    const findVer = prop.versionData.games.find((ops) => ops.id === ver.id);
     if (!findVer) {
       return (
         prop.versionData.games.find((ops) => ops.release) ??
@@ -60,26 +65,41 @@ const fabricVer = computed({
     return findVer;
   },
   set: (val) => {
+    if (val === '') return;
     const newVer = buildFabricVer(
       val,
       fabricInstaller.value,
       fabricLoader.value
     );
-    openWarningDialog(
-      $q,
-      prop.versionData.games.map((ops) => ops.id),
-      mainStore.worldBack?.version ?? newVer,
-      newVer,
-      'id'
-    );
+    if (mainStore.worldBack?.version?.type !== 'unknown') {
+      openWarningDialog(
+        $q,
+        prop.versionData.games.map((ops) => ops.id),
+        mainStore.worldBack?.version ?? newVer,
+        newVer,
+        'id'
+      );
+    }
   },
 });
 
-const fabricInstaller = ref(prop.versionData.installers[0]);
-const fabricLoader = ref(prop.versionData.loaders[0]);
+const recommendInstallerIdx = prop.versionData.installers.findIndex(
+  (i) => i.stable
+);
+const fabricInstaller = ref(
+  prop.versionData.installers[recommendInstallerIdx].version
+);
+const recommendLoaderIdx = prop.versionData.loaders.findIndex((i) => i.stable);
+const fabricLoader = ref(prop.versionData.loaders[recommendLoaderIdx].version);
 
 // 表示内容と内部データを整合させる
-updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
+if (fabricVer.value !== '') {
+  updateWorldVersion(
+    fabricVer.value,
+    fabricInstaller.value,
+    fabricLoader.value
+  );
+}
 </script>
 
 <template>
@@ -94,14 +114,14 @@ updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
               data: ver,
               label:
                 ver.id === latestReleaseID
-                  ? `${ver.id}【${$t('home.version.latestRelease')}】`
+                  ? `${ver.id}【${$T('home.version.latestRelease')}】`
                   : idx === 0
-                  ? `${ver.id}【${$t('home.version.latestSnapshot')}】`
+                  ? `${ver.id}【${$T('home.version.latestSnapshot')}】`
                   : ver.id,
             };
           })
       "
-      :label="$t('home.version.versionType')"
+      :label="$T('home.version.versionType')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
@@ -112,8 +132,8 @@ updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
       v-model="isRelease"
       :label="
         isRelease
-          ? $t('home.version.onlyReleased')
-          : $t('home.version.allVersions')
+          ? $T('home.version.onlyReleased')
+          : $T('home.version.allVersions')
       "
       left-label
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
@@ -125,20 +145,20 @@ updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
     <SsSelect
       v-model="fabricInstaller"
       @update:modelValue="(newVal: string) => {
-        updateWorldVersion(fabricVer, newVal, fabricLoader)
+        if (fabricVer !== '') updateWorldVersion(fabricVer, newVal, fabricLoader)
       }"
       :options="
         prop.versionData.installers.map((installer, i) => {
           return {
             data: installer,
             label:
-              i === 0
-                ? `${installer} (${$t('home.version.recommend')})`
+              i === recommendInstallerIdx
+                ? `${installer} (${$T('home.version.recommend')})`
                 : installer,
           };
         })
       "
-      :label="$t('home.version.installer')"
+      :label="$T('home.version.installer')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
@@ -148,18 +168,20 @@ updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
     <SsSelect
       v-model="fabricLoader"
       @update:modelValue="(newVal: string) => {
-        updateWorldVersion(fabricVer, fabricInstaller, newVal)
+        if (fabricVer !== '') updateWorldVersion(fabricVer, fabricInstaller, newVal)
       }"
       :options="
         prop.versionData.loaders.map((loader, i) => {
           return {
             data: loader,
             label:
-              i === 0 ? `${loader} (${$t('home.version.recommend')})` : loader,
+              i === recommendLoaderIdx
+                ? `${loader} (${$T('home.version.recommend')})`
+                : loader,
           };
         })
       "
-      :label="$t('home.version.loader')"
+      :label="$T('home.version.loader')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
