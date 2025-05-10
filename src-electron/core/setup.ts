@@ -1,4 +1,6 @@
 // import { datapackSourcePath, serverSourcePath } from '../common/paths';
+import { Failable } from '../schema/error';
+import { AllVersion, VersionType } from '../schema/version';
 import { runtimePath, versionsCachePath } from '../source/const';
 import { getUniversalConfig } from '../source/runtime/getUnivConfig';
 import { RuntimeContainer } from '../source/runtime/runtime';
@@ -18,3 +20,14 @@ export const runtimeContainer = new RuntimeContainer(
   getUniversalConfig
 );
 export const versionContainer = new VersionContainer(versionsCachePath);
+
+/**
+ * API呼び出し用
+ */
+export const getVersions = <V extends VersionType>(
+  type: V,
+  useCache: boolean
+): Promise<Failable<AllVersion<V>>> => {
+  const container = new VersionContainer(versionsCachePath);
+  return container.listVersions(type, useCache);
+};
