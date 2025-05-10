@@ -237,6 +237,12 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: 'バージョン{version}のvanillaは存在しません',
       },
     },
+    runtime: {
+      installFailed: {
+        title: 'Javaランタイムのインストールに失敗しました',
+        desc: '数分時間をあけて再度お試しください．({version})',
+      },
+    },
     missingPersonalAccessToken: {
       title: '{owner}/{repo}のパーソナルアクセストークンが存在しません',
     },

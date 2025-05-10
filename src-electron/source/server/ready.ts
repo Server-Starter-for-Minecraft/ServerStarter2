@@ -1,6 +1,6 @@
+import { runtimeContainer } from 'app/src-electron/core/setup';
 import { Version } from 'app/src-electron/schema/version';
 import { WorldID } from 'app/src-electron/schema/world';
-import { readyJava } from 'app/src-electron/source/runtime/runtime';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
@@ -64,7 +64,13 @@ export async function readyRunServer(
 
     // 実行javaを用意
     const javaSub = progress.subGroup();
-    const javaPath = await readyJava(server.component, true, javaSub);
+    // TODO: 直ちにVersionの実装を入れ替えることを踏まえて，windowsとして暫定的に実装する
+    const javaPath = await runtimeContainer.ready(
+      { type: 'minecraft', version: server.component },
+      'windows-x64',
+      true,
+      javaSub
+    );
     javaSub.delete();
 
     // 実行javaが用意できなかった場合エラー

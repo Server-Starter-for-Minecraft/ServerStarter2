@@ -1,9 +1,12 @@
 import Store from 'electron-store';
 import { VersionType } from 'src-electron/schema/version';
+import { Runtime } from 'app/src-electron/schema/runtime';
 import { versionsCachePath } from '../const';
 
 export type Config = {
-  version_manifest_v2_sha1?: string;
+  runtimes_manifest_sha1?: {
+    [key in Runtime['type']]: string;
+  };
   spigot_buildtool_sha1?: string;
   sha1?: {
     runtime?: string;

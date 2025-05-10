@@ -1,5 +1,6 @@
 import { AllVersion, Version } from 'src-electron/schema/version';
 import { rootLogger } from 'app/src-electron/common/logger';
+import { JavaComponent } from 'app/src-electron/schema/runtime';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
 import { versionsCachePath } from '../../source/const';
@@ -7,7 +8,6 @@ import { versionConfig } from '../../source/stores/config';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
-import { JavaComponent } from '../runtime/runtime';
 import { eulaUnnecessaryVersionIds } from './const';
 
 export const versionLoggers = () => rootLogger.server.version;

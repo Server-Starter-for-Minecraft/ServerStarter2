@@ -69,7 +69,7 @@ export class BytesData {
     } catch (e) {
       const em = fromRuntimeError(e);
       logger.error(em);
-      return fromRuntimeError(e);
+      return em;
     }
   }
 
@@ -82,6 +82,13 @@ export class BytesData {
       hash,
     });
     logger.trace('start');
+
+    // ファイルが存在しない場合はエラー
+    if (!path.exists())
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: path.path,
+      });
 
     try {
       const buffer = await promises.readFile(path.path);
@@ -135,7 +142,7 @@ export class BytesData {
     encoding?: BufferEncoding
   ): Promise<Failable<void>> {
     const logger = loggers().write({ path });
-    logger.info('start');
+    logger.trace('start');
     const settings: { encoding?: BufferEncoding; mode?: number } = {};
     // 実行権限を与えて保存
     if (executable) {
@@ -146,7 +153,7 @@ export class BytesData {
     }
     try {
       await promises.writeFile(path, new Uint8Array(this.data), settings);
-      logger.info('success');
+      logger.trace('success');
     } catch (e) {
       const em = fromRuntimeError(e);
       logger.error(em);

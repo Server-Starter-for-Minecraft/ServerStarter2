@@ -5,6 +5,8 @@ import {
   VersionId,
 } from 'src-electron/schema/version';
 import { z } from 'zod';
+import { runtimeContainer } from 'app/src-electron/core/setup';
+import { JavaComponent } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { GroupProgressor } from '../../common/progress';
@@ -15,14 +17,13 @@ import { Path } from '../../util/binary/path';
 import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { allocateTempDir } from '../../util/tempPath';
-import { getVersionMainfest } from '../runtime/manifest';
-import { JavaComponent, readyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
   VersionComponent,
   VersionLoader,
 } from './base';
+import { getVersionMainfest } from './getVersions/manifest';
 import { getJavaComponent } from './vanilla';
 
 const spigotVersionsPath = versionsCachePath.child('spigot');
@@ -140,8 +141,7 @@ async function getSpigotVersions(): Promise<Failable<AllSpigotVersion>> {
       }
     });
 
-  const manifest = await getVersionMainfest();
-
+  const manifest = await getVersionMainfest(versionsCachePath, false);
   if (isError(manifest)) return manifest;
 
   const entries: [string, number][] = manifest.versions.map(
@@ -227,9 +227,16 @@ async function buildSpigotVersion(
   const j = progress?.subtitle({
     key: 'server.readyVersion.spigot.readyBuildJava',
   });
-  const javapath = await readyJava(javaComponent, false);
+  const javaSub = progress?.subGroup();
+  const javaPath = await runtimeContainer.ready(
+    { type: 'minecraft', version: javaComponent },
+    'windows-x64',
+    true,
+    javaSub
+  );
   j?.delete();
-  if (isError(javapath)) return javapath;
+  javaSub?.delete();
+  if (isError(javaPath)) return javaPath;
 
   const d = progress?.subtitle({
     key: 'server.readyVersion.spigot.building',
@@ -242,7 +249,7 @@ async function buildSpigotVersion(
 
   // ビルドの開始
   const process = interactiveProcess(
-    javapath,
+    javaPath,
     [
       '-Dfile.encoding=UTF-8',
       '-jar',

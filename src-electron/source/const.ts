@@ -25,10 +25,6 @@ export const settingPath = mainPath.child('serverstarter/settings.ssconfig');
 export const runtimePath = cachePath.child('bin/runtime');
 export const versionsCachePath = cachePath.child('versions');
 
-export const versionManifestPath = versionsCachePath.child(
-  'vanilla/version_manifest_v2.json'
-);
-
 export const ADDITIONALS_CACHE_PATH = cachePath.child('additionals');
 export const DATAPACK_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('datapacks');
 export const PLUGIN_CACHE_PATH = ADDITIONALS_CACHE_PATH.child('plugins');

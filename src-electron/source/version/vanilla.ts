@@ -1,19 +1,19 @@
 import { AllVanillaVersion, VanillaVersion } from 'src-electron/schema/version';
 import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
+import { JavaComponent } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { Failable } from '../../util/error/failable';
-import { getVersionMainfest } from '../runtime/manifest';
-import { JavaComponent } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
   VersionLoader,
 } from './base';
+import { getVersionMainfest } from './getVersions/manifest';
 
 const vanillaVersionsPath = versionsCachePath.child('vanilla');
 
@@ -94,7 +94,7 @@ export const vanillaVersionLoader: VersionLoader<VanillaVersion> = {
 };
 
 async function getAllVanillaVersions(): Promise<Failable<AllVanillaVersion>> {
-  const manifest = await getVersionMainfest();
+  const manifest = await getVersionMainfest(versionsCachePath, false);
   if (isError(manifest)) return manifest;
 
   // 1.2.5以前はマルチサーバーが存在しない
@@ -122,7 +122,7 @@ export async function getVanillaVersionJson(
   id: string
 ): Promise<Failable<VanillaVersionJson>> {
   const jsonpath = vanillaVersionsPath.child(`vanilla-${id}.json`);
-  const manifest = await getVersionMainfest();
+  const manifest = await getVersionMainfest(versionsCachePath, false);
 
   // version manifestが取得できなかった場合
   if (isError(manifest)) return manifest;

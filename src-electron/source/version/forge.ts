@@ -5,6 +5,8 @@ import {
   VersionId,
 } from 'src-electron/schema/version';
 import { GroupProgressor } from 'app/src-electron/common/progress';
+import { runtimeContainer } from 'app/src-electron/core/setup';
+import { JavaMajorVersion } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { versionsCachePath } from '../../source/const';
@@ -13,7 +15,6 @@ import { Path } from '../../util/binary/path';
 import { interactiveProcess } from '../../util/binary/subprocess';
 import { Failable } from '../../util/error/failable';
 import { osPlatform } from '../../util/os/os';
-import { readyJava } from '../runtime/runtime';
 import {
   genGetAllVersions,
   needEulaAgreementVanilla,
@@ -221,10 +222,13 @@ async function getProgramArgumentsFromSh(shPath: Path) {
 }
 
 async function installForge(installerPath: Path): Promise<Failable<undefined>> {
-  // TODO: forgeのインストール時に使用するjavaのバージョン17で大丈夫？
-  // jre-legacyだとエラー出たのでとりあえずこれを使っている
-
-  const javaPath = await readyJava('java-runtime-gamma', false);
+  // 最新版のForgeを用いてインストールを行う
+  // TODO: 旧バージョンに対しては当該server.jarで使用するバージョンでインストールを行う
+  const javaPath = await runtimeContainer.ready(
+    { type: 'universal', majorVersion: JavaMajorVersion.parse(0) },
+    'windows-x64',
+    false
+  );
   if (isError(javaPath)) return javaPath;
 
   const args = [
