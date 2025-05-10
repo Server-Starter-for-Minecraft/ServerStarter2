@@ -6,8 +6,8 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { GroupProgressor } from '../../common/progress';
-import { VersionComponent } from '../version/base';
-import { needEulaAgreement, readyVersion } from '../version/version';
+import { VersionComponent } from '../_version/base';
+import { needEulaAgreement, readyVersion } from '../_version/version';
 import { WorldSettings } from '../world/files/json';
 import { checkEula } from './setup/eula';
 import {

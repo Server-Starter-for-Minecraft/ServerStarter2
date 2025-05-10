@@ -16,7 +16,7 @@ import { NEW_WORLD_NAME } from '../../source/const';
 import { getSystemSettings } from '../../source/stores/system';
 import { Path } from '../../util/binary/path';
 import { asyncMap } from '../../util/obj/objmap';
-import { vanillaVersionLoader } from '../version/vanilla';
+import { vanillaVersionLoader } from '../_version/vanilla';
 import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
