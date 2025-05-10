@@ -194,10 +194,10 @@ export interface API extends IAPI {
       ((type: 'mod') => Promise<WithError<CacheFileData<ModData>[]>>);
 
     /** Version一覧を取得 useCache===trueのときローカルのキャッシュを使用する(高速) */
-    GetVersions: (
-      type: VersionType,
+    GetVersions: <V extends VersionType>(
+      type: V,
       useCache: boolean
-    ) => Promise<Failable<AllVersion<VersionType>>>;
+    ) => Promise<Failable<AllVersion<V>>>;
 
     /** ローカルのセーブデータ一覧を取得 */
     GetLocalSaveData: () => Promise<WithError<Failable<CustomMapData[]>>>;

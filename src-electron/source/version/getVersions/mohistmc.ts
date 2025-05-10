@@ -44,7 +44,7 @@ const mohistEachVersionZod = z.object({
 /**
  * Mohist版のVersionLoaderを作成
  */
-export class MohistMCVersionLoader extends VersionListLoader<AllMohistmcVersion> {
+export class MohistMCVersionLoader extends VersionListLoader<'mohistmc'> {
   constructor(cachePath: Path) {
     super(cachePath, 'mohistmc', AllMohistmcVersion);
   }

@@ -12,7 +12,7 @@ const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
 /**
  * Forge版のVersionLoaderを作成
  */
-export class ForgeVersionLoader extends VersionListLoader<AllForgeVersion> {
+export class ForgeVersionLoader extends VersionListLoader<'forge'> {
   constructor(cachePath: Path) {
     super(cachePath, 'forge', AllForgeVersion);
   }

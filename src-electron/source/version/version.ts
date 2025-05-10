@@ -1,16 +1,9 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
 import { Runtime } from '../../schema/runtime';
-import {
-  AllFabricVersion,
-  AllForgeVersion,
-  AllMohistmcVersion,
-  AllPapermcVersion,
-  AllSpigotVersion,
-  AllVanillaVersion,
-  Version,
-} from '../../schema/version';
+import { AllVersion, Version, VersionType } from '../../schema/version';
 import { Path } from '../../util/binary/path';
 import { sourceLoggers } from '../sourceLogger';
 import { getEulaAgreement, setEulaAgreement } from './eula';
@@ -57,45 +50,67 @@ export class VersionContainer {
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listVanillaVersions(
+  async listVersions(
+    type: 'vanilla',
     useCache: boolean
-  ): Promise<Failable<AllVanillaVersion>> {
-    return getVersionlist(useCache, new VanillaVersionLoader(this.cachePath));
-  }
-
-  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listForgeVersions(
+  ): Promise<Failable<AllVersion<'vanilla'>>>;
+  async listVersions(
+    type: 'forge',
     useCache: boolean
-  ): Promise<Failable<AllForgeVersion>> {
-    return getVersionlist(useCache, new ForgeVersionLoader(this.cachePath));
-  }
-
-  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listSpigotVersions(
+  ): Promise<Failable<AllVersion<'forge'>>>;
+  async listVersions(
+    type: 'spigot',
     useCache: boolean
-  ): Promise<Failable<AllSpigotVersion>> {
-    return getVersionlist(useCache, new SpigotVersionLoader(this.cachePath));
-  }
-
-  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listPaperMcVersions(
+  ): Promise<Failable<AllVersion<'spigot'>>>;
+  async listVersions(
+    type: 'papermc',
     useCache: boolean
-  ): Promise<Failable<AllPapermcVersion>> {
-    return getVersionlist(useCache, new PaperVersionLoader(this.cachePath));
-  }
-
-  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listMohistMcVersions(
+  ): Promise<Failable<AllVersion<'papermc'>>>;
+  async listVersions(
+    type: 'mohistmc',
     useCache: boolean
-  ): Promise<Failable<AllMohistmcVersion>> {
-    return getVersionlist(useCache, new MohistMCVersionLoader(this.cachePath));
-  }
-
-  /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listFabricVersions(
+  ): Promise<Failable<AllVersion<'mohistmc'>>>;
+  async listVersions(
+    type: 'fabric',
     useCache: boolean
-  ): Promise<Failable<AllFabricVersion>> {
-    return getVersionlist(useCache, new FabricVersionLoader(this.cachePath));
+  ): Promise<Failable<AllVersion<'fabric'>>>;
+  async listVersions(
+    type: 'undefined',
+    useCache: boolean
+  ): Promise<Failable<never>>;
+  async listVersions<T extends VersionType>(type: T, useCache: boolean) {
+    switch (type) {
+      case 'vanilla':
+        return getVersionlist<'vanilla'>(
+          useCache,
+          new VanillaVersionLoader(this.cachePath)
+        );
+      case 'forge':
+        return getVersionlist<'forge'>(
+          useCache,
+          new ForgeVersionLoader(this.cachePath)
+        );
+      case 'spigot':
+        return getVersionlist<'spigot'>(
+          useCache,
+          new SpigotVersionLoader(this.cachePath)
+        );
+      case 'papermc':
+        return getVersionlist<'papermc'>(
+          useCache,
+          new PaperVersionLoader(this.cachePath)
+        );
+      case 'mohistmc':
+        return getVersionlist<'mohistmc'>(
+          useCache,
+          new MohistMCVersionLoader(this.cachePath)
+        );
+      case 'fabric':
+        return getVersionlist<'fabric'>(
+          useCache,
+          new FabricVersionLoader(this.cachePath)
+        );
+    }
   }
 
   /**
@@ -118,13 +133,15 @@ export class VersionContainer {
     version: Version,
     serverPath: Path,
     execRuntime: ExecRuntime,
-    eulaAgreementAction: () => Promise<Failable<boolean>>
+    eulaAgreementAction: (url: string) => Promise<Failable<boolean>>,
+    progress?: GroupProgressor
   ): Promise<
     Failable<{
       runtime: Runtime;
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
+    // TODO: progress対応
     const getRedeayVersionInstance = (version: Version) => {
       switch (version.type) {
         case 'unknown':
@@ -157,8 +174,8 @@ export class VersionContainer {
     const currentEula = await getEulaAgreement(eulaPath);
     if (isError(currentEula)) return currentEula;
 
-    if ((currentEula ?? false) === false) {
-      const newEula = await eulaAgreementAction();
+    if (!currentEula.eula) {
+      const newEula = await eulaAgreementAction(currentEula.url);
       if (isError(newEula)) return newEula;
       const newEulaValue = newEula;
       await setEulaAgreement(eulaPath, newEulaValue);

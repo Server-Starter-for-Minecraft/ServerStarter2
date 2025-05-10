@@ -42,7 +42,7 @@ const gamesJsonZod = z
 /**
  * Fabric版のVersionLoaderを作成
  */
-export class FabricVersionLoader extends VersionListLoader<AllFabricVersion> {
+export class FabricVersionLoader extends VersionListLoader<'fabric'> {
   constructor(cachePath: Path) {
     super(cachePath, 'fabric', AllFabricVersion);
   }

@@ -27,7 +27,7 @@ const paperEachVersionZod = z.object({
 /**
  * Paper版のVersionLoaderを作成
  */
-export class PaperVersionLoader extends VersionListLoader<AllPapermcVersion> {
+export class PaperVersionLoader extends VersionListLoader<'papermc'> {
   constructor(cachePath: Path) {
     super(cachePath, 'papermc', AllPapermcVersion);
   }

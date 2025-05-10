@@ -7,7 +7,7 @@ import { getVersionMainfest } from './manifest';
 /**
  * バニラ版のVersionLoaderを作成
  */
-export class VanillaVersionLoader extends VersionListLoader<AllVanillaVersion> {
+export class VanillaVersionLoader extends VersionListLoader<'vanilla'> {
   constructor(cachePath: Path) {
     super(cachePath, 'vanilla', AllVanillaVersion);
   }

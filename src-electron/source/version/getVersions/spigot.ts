@@ -18,7 +18,7 @@ const REMOVE_VERSIONS = ['1.20'];
 /**
  * Spigot版のVersionLoaderを作成
  */
-export class SpigotVersionLoader extends VersionListLoader<AllSpigotVersion> {
+export class SpigotVersionLoader extends VersionListLoader<'spigot'> {
   constructor(cachePath: Path) {
     super(cachePath, 'spigot', AllSpigotVersion);
   }

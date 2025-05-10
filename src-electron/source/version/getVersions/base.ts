@@ -3,15 +3,7 @@ import { Failable } from 'app/src-electron/schema/error';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
-import {
-  AllFabricVersion,
-  AllForgeVersion,
-  AllMohistmcVersion,
-  AllPapermcVersion,
-  AllSpigotVersion,
-  AllVanillaVersion,
-  Version,
-} from '../../../schema/version';
+import { AllVersion, Version, VersionType } from '../../../schema/version';
 
 const ALL_VERSION_JSON_NAME = 'all.json';
 export function getVersionCacheFilePath(
@@ -20,16 +12,6 @@ export function getVersionCacheFilePath(
 ) {
   return cachePath.child(`${verType}/${ALL_VERSION_JSON_NAME}`);
 }
-
-const AllVerison = z.union([
-  AllVanillaVersion,
-  AllSpigotVersion,
-  AllPapermcVersion,
-  AllForgeVersion,
-  AllMohistmcVersion,
-  AllFabricVersion,
-]);
-type AllVerison = z.infer<typeof AllVerison>;
 
 /**
  * 各バージョン情報を収集する機能を集約する
@@ -40,13 +22,13 @@ type AllVerison = z.infer<typeof AllVerison>;
  * |`getFromURL()`    | リモートAPI（バニラは`version_manifest_v2.json`）からバージョン一覧を取得|
  * |`write4Cache(obj)`| 取得した一覧情報`obj`を`all.json`に保存し，そのHashデータは`versions/config.json`に保存する|
  */
-export abstract class VersionListLoader<T extends AllVerison> {
+export abstract class VersionListLoader<T extends VersionType> {
   protected cachePath: Path;
-  protected allVersHandler: JsonSourceHandler<T>;
+  protected allVersHandler: JsonSourceHandler<AllVersion<T>>;
   constructor(
     cachePath: Path,
     verType: Version['type'],
-    T: ZodType<T, z.ZodTypeDef, any>
+    T: ZodType<AllVersion<T>, z.ZodTypeDef, any>
   ) {
     this.cachePath = cachePath;
     this.allVersHandler = JsonSourceHandler.fromPath(
@@ -57,17 +39,17 @@ export abstract class VersionListLoader<T extends AllVerison> {
   /**
    * キャッシュデータからバージョン一覧を取得する
    */
-  getFromCache(): Promise<Failable<T>> {
+  getFromCache(): Promise<Failable<AllVersion<T>>> {
     return this.allVersHandler.read();
   }
   /**
    * 外部データからバージョン一覧を取得する
    */
-  abstract getFromURL(): Promise<Failable<T>>;
+  abstract getFromURL(): Promise<Failable<AllVersion<T>>>;
   /**
    * 与えたオブジェクトをキャッシュに記録する
    */
-  write4Cache(obj: T): Promise<Failable<void>> {
+  write4Cache(obj: AllVersion<T>): Promise<Failable<void>> {
     return this.allVersHandler.write(obj);
   }
 }
@@ -77,10 +59,10 @@ export abstract class VersionListLoader<T extends AllVerison> {
  *
  * 各バージョンは専用の`loader`を作成し，それをこの関数に与えることで適切な一覧を返すことができる
  */
-export async function getVersionlist<T extends AllVerison>(
+export async function getVersionlist<T extends VersionType>(
   useCache: boolean,
   loader: VersionListLoader<T>
-): Promise<Failable<T>> {
+): Promise<Failable<AllVersion<T>>> {
   if (useCache) {
     const cacheRes = await loader.getFromCache();
     if (isValid(cacheRes)) return cacheRes;

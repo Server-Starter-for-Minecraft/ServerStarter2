@@ -1,8 +1,8 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
+import { versionContainer } from '../core/setup';
 import { readyWindow } from '../lifecycle/lifecycle';
-import { getVersions } from '../source/_version/version';
 import { getAllLocalSaveData } from '../source/launcher/localSave';
 import { getPlayer } from '../source/player/main';
 import {
@@ -71,7 +71,7 @@ export const getBackListener = (
 
     GetPlayer: getPlayer,
 
-    GetVersions: getVersions,
+    GetVersions: versionContainer.listVersions,
 
     GetCacheContents: getCacheContents,
 
