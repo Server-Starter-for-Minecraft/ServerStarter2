@@ -6,11 +6,11 @@ import {
   ForgeVersion,
   VersionId,
 } from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import { openWarningDialog } from './versionComparator';
-import { $T } from 'src/i18n/utils/tFunc';
 
 interface Prop {
   versionData: AllForgeVersion;
