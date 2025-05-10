@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllVanillaVersion } from 'app/src-electron/schema/version';
+import { AllVanillaVersion, VersionId } from 'app/src-electron/schema/version';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -19,7 +19,7 @@ const consoleStore = useConsoleStore();
 const isRelease = ref(true);
 const latestReleaseID = prop.versionData.find((ops) => ops.release)?.id;
 
-function buildVanillaVer(ver: { id: string; release: boolean }) {
+function buildVanillaVer(ver: { id: VersionId; release: boolean }) {
   return {
     id: ver.id,
     type: 'vanilla' as const,
@@ -29,7 +29,7 @@ function buildVanillaVer(ver: { id: string; release: boolean }) {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(ver: { id: string; release: boolean }) {
+function updateWorldVersion(ver: { id: VersionId; release: boolean }) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildVanillaVer(ver);
   }

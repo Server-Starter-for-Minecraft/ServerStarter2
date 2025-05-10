@@ -73,7 +73,7 @@ const mohistBuilds = (mVer: string) => {
   return (
     prop.versionData.find((ver) => ver.id === mVer)?.builds ?? [
       {
-        number: 0,
+        id: 0,
         forge_version: undefined,
       },
     ]
@@ -86,7 +86,7 @@ const mohistBuild = computed({
       return mohistBuilds(mohistVer.value)[0];
     }
     return {
-      number: mainStore.world.version.number,
+      id: mainStore.world.version.buildId,
       forge_version: mainStore.world.version.forge_version,
     };
   },
