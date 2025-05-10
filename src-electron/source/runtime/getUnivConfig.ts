@@ -90,6 +90,29 @@ export function getUniversalConfig(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
+  test('getUniversalConfig', async () => {
+    const { isError } = await import('../../util/error/error');
+
+    // get Java17
+    const runtime1 = await getUniversalConfig(
+      'windows-x64',
+      JavaMajorVersion.parse(17)
+    );
+    expect(isError(runtime1)).toBeFalsy();
+    expect(runtime1).toEqual({
+      type: 'minecraft',
+      version: 'java-runtime-gamma',
+    });
+
+    // get latest Java
+    const runtime2 = await getUniversalConfig('windows-x64');
+    expect(isError(runtime2)).toBeFalsy();
+    expect(runtime2).toEqual({
+      type: 'minecraft',
+      version: 'java-runtime-delta',
+    });
+  });
+
   test('check runtime universal versions', async () => {
     const { BytesData } = await import('../../util/binary/bytesData');
     const { isError } = await import('../../util/error/error');
