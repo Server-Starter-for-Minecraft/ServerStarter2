@@ -227,7 +227,7 @@ async function installForge(installerPath: Path): Promise<Failable<undefined>> {
   const javaPath = await runtimeContainer.ready(
     { type: 'universal', majorVersion: JavaMajorVersion.parse(0) },
     'windows-x64',
-    false,
+    false
   );
   if (isError(javaPath)) return javaPath;
 

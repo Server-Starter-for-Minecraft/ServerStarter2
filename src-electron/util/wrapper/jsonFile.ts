@@ -34,7 +34,7 @@ export class JsonSourceHandler<T> {
       const defaultVal = validator.safeParse({});
       if (!defaultVal.success) return res;
 
-      await setter(defaultVal.data)
+      await setter(defaultVal.data);
       return defaultVal.data;
     };
 
