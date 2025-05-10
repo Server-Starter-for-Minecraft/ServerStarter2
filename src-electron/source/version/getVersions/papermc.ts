@@ -67,6 +67,6 @@ async function loadEachVersion(
 
   return {
     id: parsedEachVerJson.version,
-    builds: parsedEachVerJson.builds,
+    builds: parsedEachVerJson.builds.reverse(),
   };
 }
