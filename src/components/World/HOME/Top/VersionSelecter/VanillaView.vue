@@ -81,7 +81,7 @@ if (vanillaVer.value !== '') {
       v-model="vanillaVer"
       :options="
         versionData
-          .filter((ver, idx) => !isRelease || idx == 0 || ver['release'])
+          .filter((ver, idx) => !isRelease || idx == 0 || ver.release)
           .map((ver, idx) => {
             return {
               data: ver,

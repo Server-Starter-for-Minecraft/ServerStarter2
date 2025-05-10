@@ -83,13 +83,19 @@ const fabricVer = computed({
   },
 });
 
-const recommendInstallerIdx = prop.versionData.installers.findIndex(
-  (i) => i.stable
+const fixInvalidIdx = (idx: number) => {
+  if (idx < 0) return 0;
+  return idx;
+};
+const recommendInstallerIdx = fixInvalidIdx(
+  prop.versionData.installers.findIndex((i) => i.stable)
 );
 const fabricInstaller = ref(
   prop.versionData.installers[recommendInstallerIdx].version
 );
-const recommendLoaderIdx = prop.versionData.loaders.findIndex((i) => i.stable);
+const recommendLoaderIdx = fixInvalidIdx(
+  prop.versionData.loaders.findIndex((i) => i.stable)
+);
 const fabricLoader = ref(prop.versionData.loaders[recommendLoaderIdx].version);
 
 // 表示内容と内部データを整合させる
@@ -153,8 +159,8 @@ if (fabricVer.value !== '') {
             data: installer,
             label:
               i === recommendInstallerIdx
-                ? `${installer} (${$T('home.version.recommend')})`
-                : installer,
+                ? `${installer.version} (${$T('home.version.recommend')})`
+                : installer.version,
           };
         })
       "
@@ -176,8 +182,8 @@ if (fabricVer.value !== '') {
             data: loader,
             label:
               i === recommendLoaderIdx
-                ? `${loader} (${$T('home.version.recommend')})`
-                : loader,
+                ? `${loader.version} (${$T('home.version.recommend')})`
+                : loader.version,
           };
         })
       "
