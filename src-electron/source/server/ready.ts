@@ -1,15 +1,18 @@
-import { runtimeContainer } from 'app/src-electron/core/setup';
-import { Version } from 'app/src-electron/schema/version';
+import { api } from 'app/src-electron/core/api';
+import {
+  runtimeContainer,
+  versionContainer,
+} from 'app/src-electron/core/setup';
+import { Runtime } from 'app/src-electron/schema/runtime';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
-import { errorMessage } from 'app/src-electron/util/error/construct';
+import { interactiveProcess } from 'app/src-electron/util/binary/subprocess';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
+import { osPlatform } from 'app/src-electron/util/os/os';
 import { GroupProgressor } from '../../common/progress';
-import { VersionComponent } from '../_version/base';
-import { needEulaAgreement, readyVersion } from '../_version/version';
+import { ExecRuntime } from '../version/readyVersions/base';
 import { WorldSettings } from '../world/files/json';
-import { checkEula } from './setup/eula';
 import {
   getAdditionalJavaArgument,
   javaEncodingToUtf8,
@@ -28,6 +31,19 @@ export async function readyRunServer(
 
   // JAVAのstdioのエンコードをutf-8に
   javaArgs.push(...javaEncodingToUtf8());
+
+  async function readyRuntime(runtime: Runtime) {
+    // 実行javaを用意
+    const javaSub = progress.subGroup();
+    const javaPath = await runtimeContainer.ready(
+      runtime,
+      osPlatform,
+      true,
+      javaSub
+    );
+    javaSub.delete();
+    return javaPath;
+  }
 
   async function memoryArg() {
     const sub = progress.subtitle({
@@ -55,28 +71,46 @@ export async function readyRunServer(
   }
 
   async function serverData() {
+    /** フロントエンドにEula同意の伺いを立てる */
+    async function eulaAgreementAction(
+      url: string
+    ): Promise<Failable<boolean>> {
+      const sub = progress.subtitle({
+        key: 'server.eula.asking',
+      });
+      const result = await api.invoke.AgreeEula(id, url);
+      sub.delete();
+      return result;
+    }
+
+    /** Spigotのビルド等に使用するランタイムを準備する */
+    const execRuntime: ExecRuntime = async (args) => {
+      const javaPath = await readyRuntime(args.runtime);
+      if (isError(javaPath)) return javaPath;
+
+      return interactiveProcess(
+        javaPath,
+        args.args,
+        args.onOut,
+        args.onOut,
+        args.currentDir,
+        true,
+        undefined,
+        10000
+      );
+    };
+
     // サーバーデータ準備
     const serverSub = progress.subGroup();
-    const server = await readyVersion(settings.version, cwdPath, serverSub);
-    serverSub.delete();
-    // サーバーデータの用意ができなかった場合エラー
-    if (isError(server)) return server;
-
-    // 実行javaを用意
-    const javaSub = progress.subGroup();
-    // TODO: 直ちにVersionの実装を入れ替えることを踏まえて，windowsとして暫定的に実装する
-    const javaPath = await runtimeContainer.ready(
-      { type: 'minecraft', version: server.component },
-      'windows-x64',
-      true,
-      javaSub
+    const server = await versionContainer.readyVersion(
+      settings.version,
+      cwdPath,
+      execRuntime,
+      eulaAgreementAction,
+      serverSub
     );
-    javaSub.delete();
-
-    // 実行javaが用意できなかった場合エラー
-    if (isError(javaPath)) return javaPath;
-
-    return { server, javaPath };
+    serverSub.delete();
+    return server;
   }
 
   async function log4jArg() {
@@ -89,66 +123,21 @@ export async function readyRunServer(
     return [log4jarg];
   }
 
-  const [memory, user, serverJava, log4j] = await Promise.all([
+  const [memory, user, server, log4j] = await Promise.all([
     memoryArg(),
     userArg(),
     serverData(),
     log4jArg(),
   ]);
-  if (isError(serverJava)) return serverJava;
+  if (isError(server)) return server;
   if (isError(log4j)) return log4j;
 
   javaArgs.push(...memory, ...user, ...log4j);
-
-  const { server, javaPath } = serverJava;
-
-  // Eulaの同意チェック
-  const eulaResult = await assertEula(
-    id,
-    cwdPath,
-    server,
-    settings.version,
-    javaPath,
-    progress
-  );
-  if (isError(eulaResult)) return eulaResult;
-
   // サーバーのjarファイル参照を実行時引数に追加
-  javaArgs.push(...server.programArguments, '--nogui');
+  javaArgs.push(...server.getCommand({ jvmArgs: ['--nogui'] }));
+
+  const javaPath = await readyRuntime(server.runtime);
+  if (isError(javaPath)) return javaPath;
 
   return { javaArgs, javaPath };
-}
-
-/** Eulaチェック(拒否した場合エラーを返す) */
-async function assertEula(
-  id: WorldID,
-  cwdPath: Path,
-  server: VersionComponent,
-  version: Version,
-  javaPath: Path,
-  progress: GroupProgressor
-) {
-  const needEula = needEulaAgreement(version);
-  // Eulaチェックが必要かどうかの検証に失敗した場合エラー
-  if (isError(needEula)) return needEula;
-
-  if (!needEula) return undefined;
-
-  // Eulaチェック
-  const eulaAgreement = await checkEula(
-    id,
-    javaPath,
-    server.programArguments,
-    cwdPath,
-    progress,
-    version
-  );
-
-  // Eulaチェックに失敗した場合エラー
-  if (isError(eulaAgreement)) return eulaAgreement;
-
-  // Eulaに同意しなかった場合エラー
-  if (!eulaAgreement) {
-    return errorMessage.core.minecraftEULANotAccepted();
-  }
 }

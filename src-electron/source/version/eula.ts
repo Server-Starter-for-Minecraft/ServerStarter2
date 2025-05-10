@@ -2,29 +2,47 @@ import { Failable } from 'app/src-electron/schema/error';
 import { isError } from 'app/src-electron/util/error/error';
 import { Path } from '../../util/binary/path';
 import { properties } from '../../util/format/properties';
-import { versionLogger } from './version';
 
-/** Minecraft eula に同意しているか確認 */
+/** Eulaファイルの文字列を解析する */
+function parseEula(txt: string): {
+  eula: boolean;
+  url: string;
+  comments: string[];
+} {
+  const comments: string[] = [];
+  let eula = false;
+  let url = 'https://aka.ms/MinecraftEULA';
+  txt.split('\n').forEach((line) => {
+    if (line[0] === '#') {
+      // eulaのURLを見つけたら更新
+      const match = line.match(/https?:\/\/[^)]+/);
+      if (match) url = match[0];
+      comments.push(line);
+      return;
+    }
+    const match = line.toLowerCase().match(/\s*eula\s*=\s*(\w+)\s*/);
+    if (match) {
+      eula = match[1] === 'true';
+    }
+  });
+  return { eula, url, comments };
+}
+
+/**
+ * Minecraft eula に同意しているか確認
+ *
+ * 戻り値のうち，idx[0]は同意状況，idx[1]はEulaから読み取ったURL
+ *
+ * 無効なEulaの場合はNullを返す
+ */
 export async function getEulaAgreement(
   eulaPath: Path
-): Promise<Failable<boolean | null>> {
-  const logger = versionLogger().getEulaAgreement(eulaPath);
-
+): Promise<Failable<{ eula: boolean; url: string }>> {
   const readRes = await eulaPath.readText();
   if (isError(readRes)) return readRes;
 
-  const parsed = properties.parse(readRes);
-  if (!('eula' in parsed)) {
-    logger.debug('missing eula config in file');
-    return null;
-  }
-
-  const eula = parsed.eula.toLowerCase();
-  if (eula === 'true') return true;
-  if (eula === 'false') return false;
-
-  logger.debug(`"${eula}" in not valid eula config value`);
-  return null;
+  const { eula, url, comments } = parseEula(readRes);
+  return { eula, url };
 }
 
 /** Minecraft eula に同意するかを保存 */

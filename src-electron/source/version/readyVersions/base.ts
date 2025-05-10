@@ -22,7 +22,7 @@ export type ExecRuntime = (options: {
   runtime: Runtime;
   args: string[];
   currentDir: Path;
-  onOut: (line: Failable<string>) => void;
+  onOut: (line: string) => void;
 }) => Promise<Failable<void>>;
 
 /**
