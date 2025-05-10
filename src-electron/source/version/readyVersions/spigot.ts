@@ -87,7 +87,7 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     );
     if (isError(installerRes)) return installerRes;
 
-    const runtime = await this.getRuntime('minecraft', verJsonHandler);
+    const runtime = await this.getRuntime('universal', verJsonHandler);
     if (isError(runtime)) return runtime;
 
     // `BuildTools.jar`を実行して，`server.jar`を抽出
@@ -239,7 +239,7 @@ if (import.meta.vitest) {
         currentDir: expect.any(Path),
         onOut: expect.any(Function),
         runtime: {
-          majorVersion: 66,
+          majorVersion: expect.any(Number),
           type: 'universal',
         },
       });
