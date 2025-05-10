@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllForgeVersion } from 'app/src-electron/schema/version';
+import {
+  AllForgeVersion,
+  ForgeVersion,
+  VersionId,
+} from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -31,7 +36,7 @@ function getRecommendBuildIdx(fVer: string) {
   return idxNumber === -1 ? 0 : idxNumber;
 }
 
-function buildForgeVer(id: string, fVer: forgeVersType) {
+function buildForgeVer(id: VersionId, fVer: forgeVersType): ForgeVersion {
   return {
     id: id,
     type: 'forge' as const,
@@ -42,7 +47,7 @@ function buildForgeVer(id: string, fVer: forgeVersType) {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(id: string, fVer: forgeVersType) {
+function updateWorldVersion(id: VersionId, fVer: forgeVersType) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildForgeVer(id, fVer);
   }
@@ -53,22 +58,27 @@ const forgeVers = () => {
 };
 const forgeVer = computed({
   get: () => {
+    const ver = mainStore.world?.version;
+    if (!ver || ver.type === 'unknown') return '';
     // 前のバージョンがForgeに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (forgeVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
+    if (forgeVers().indexOf(ver.id ?? '') === -1) {
       return forgeVers()[0];
     }
-    return mainStore.world?.version.id ?? '';
+    return ver.id ?? '';
   },
   set: (val) => {
+    if (val === '') return;
     const buildIdx = getRecommendBuildIdx(val);
     const newVer = buildForgeVer(val, forgeBuilds(val)[buildIdx]);
-    openWarningDialog(
-      $q,
-      forgeVers(),
-      mainStore.worldBack?.version ?? newVer,
-      newVer,
-      'id'
-    );
+    if (mainStore.worldBack?.version.type !== 'unknown') {
+      openWarningDialog(
+        $q,
+        forgeVers(),
+        mainStore.worldBack?.version ?? newVer,
+        newVer,
+        'id'
+      );
+    }
   },
 });
 
@@ -95,12 +105,16 @@ const forgeBuild = computed({
     };
   },
   set: (val) => {
-    updateWorldVersion(forgeVer.value, val);
+    const ver = forgeVer.value;
+    if (ver === '') return;
+    updateWorldVersion(ver, val);
   },
 });
 
 // 表示内容と内部データを整合させる
-updateWorldVersion(forgeVer.value, forgeBuild.value);
+if (forgeVer.value !== '') {
+  updateWorldVersion(forgeVer.value, forgeBuild.value);
+}
 </script>
 
 <template>
@@ -112,11 +126,11 @@ updateWorldVersion(forgeVer.value, forgeBuild.value);
           return {
             data: ver,
             label:
-              idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver,
+              idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
           };
         })
       "
-      :label="$t('home.version.versionType')"
+      :label="$T('home.version.versionType')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
@@ -131,12 +145,12 @@ updateWorldVersion(forgeVer.value, forgeBuild.value);
             data: build,
             label:
               getRecommendBuildIdx(forgeVer) === idx
-                ? `${build.version} (${$t('home.version.recommend')})`
+                ? `${build.version} (${$T('home.version.recommend')})`
                 : build.version,
           };
         })
       "
-      :label="$t('home.version.buildNumber')"
+      :label="$T('home.version.buildNumber')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"

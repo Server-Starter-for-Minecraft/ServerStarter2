@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllSpigotVersion } from 'app/src-electron/schema/version';
+import {
+  AllSpigotVersion,
+  SpigotVersion,
+  VersionId,
+} from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -16,7 +21,7 @@ const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-function buildSpigotVer(id: string) {
+function buildSpigotVer(id: VersionId): SpigotVersion {
   return {
     id: id,
     type: 'spigot' as const,
@@ -25,7 +30,7 @@ function buildSpigotVer(id: string) {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(id: string) {
+function updateWorldVersion(id: VersionId) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildSpigotVer(id);
   }
@@ -36,26 +41,33 @@ const spigotVers = () => {
 };
 const spigotVer = computed({
   get: () => {
+    const ver = mainStore.world?.version;
+    if (!ver || ver.type === 'unknown') return '';
     // 前のバージョンがSpigotに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (spigotVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
+    if (spigotVers().indexOf(ver.id ?? '') === -1) {
       return spigotVers()[0];
     }
-    return mainStore.world?.version.id ?? '';
+    return ver.id ?? '';
   },
   set: (val) => {
+    if (val === '') return;
     const newVer = buildSpigotVer(val);
-    openWarningDialog(
-      $q,
-      spigotVers(),
-      mainStore.worldBack?.version ?? newVer,
-      newVer,
-      'id'
-    );
+    if (mainStore.worldBack?.version.type !== 'unknown') {
+      openWarningDialog(
+        $q,
+        spigotVers(),
+        mainStore.worldBack?.version ?? newVer,
+        newVer,
+        'id'
+      );
+    }
   },
 });
 
 // 表示内容と内部データを整合させる
-updateWorldVersion(spigotVer.value);
+if (spigotVer.value !== '') {
+  updateWorldVersion(spigotVer.value);
+}
 </script>
 
 <template>
@@ -66,11 +78,11 @@ updateWorldVersion(spigotVer.value);
         return {
           data: ver,
           label:
-            idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver,
+            idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
         };
       })
     "
-    :label="$t('home.version.versionType')"
+    :label="$T('home.version.versionType')"
     option-label="label"
     option-value="data"
     :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"

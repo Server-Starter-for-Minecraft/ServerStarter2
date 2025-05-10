@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllVanillaVersion } from 'app/src-electron/schema/version';
+import {
+  AllVanillaVersion,
+  VanillaVersion,
+  VersionId,
+} from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -19,7 +24,10 @@ const consoleStore = useConsoleStore();
 const isRelease = ref(true);
 const latestReleaseID = prop.versionData.find((ops) => ops.release)?.id;
 
-function buildVanillaVer(ver: { id: string; release: boolean }) {
+function buildVanillaVer(ver: {
+  id: VersionId;
+  release: boolean;
+}): VanillaVersion {
   return {
     id: ver.id,
     type: 'vanilla' as const,
@@ -29,7 +37,7 @@ function buildVanillaVer(ver: { id: string; release: boolean }) {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(ver: { id: string; release: boolean }) {
+function updateWorldVersion(ver: { id: VersionId; release: boolean }) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildVanillaVer(ver);
   }
@@ -37,29 +45,34 @@ function updateWorldVersion(ver: { id: string; release: boolean }) {
 
 const vanillaVer = computed({
   get: () => {
+    const ver = mainStore.world?.version;
+    if (!ver || ver.type === 'unknown') return '';
     // 前のバージョンがVanillaに存在しないバージョンの時は，最新バージョンを割り当てる
-    const findVer = prop.versionData.find(
-      (ops) => ops.id === mainStore.world?.version.id
-    );
+    const findVer = prop.versionData.find((ops) => ops.id === ver.id);
     if (!findVer) {
       return prop.versionData.find((ops) => ops.release) ?? prop.versionData[0];
     }
     return findVer;
   },
   set: (val) => {
+    if (val === '') return;
     const newVer = buildVanillaVer(val);
-    openWarningDialog(
-      $q,
-      prop.versionData.map((ops) => ops.id),
-      mainStore.worldBack?.version ?? newVer,
-      newVer,
-      'id'
-    );
+    if (mainStore.worldBack?.version.type !== 'unknown') {
+      openWarningDialog(
+        $q,
+        prop.versionData.map((ops) => ops.id),
+        mainStore.worldBack?.version ?? newVer,
+        newVer,
+        'id'
+      );
+    }
   },
 });
 
 // 表示内容と内部データを整合させる
-updateWorldVersion(vanillaVer.value);
+if (vanillaVer.value !== '') {
+  updateWorldVersion(vanillaVer.value);
+}
 </script>
 
 <template>
@@ -68,20 +81,20 @@ updateWorldVersion(vanillaVer.value);
       v-model="vanillaVer"
       :options="
         versionData
-          .filter((ver, idx) => !isRelease || idx == 0 || ver['release'])
+          .filter((ver, idx) => !isRelease || idx == 0 || ver.release)
           .map((ver, idx) => {
             return {
               data: ver,
               label:
                 ver.id === latestReleaseID
-                  ? `${ver.id}【${$t('home.version.latestRelease')}】`
+                  ? `${ver.id}【${$T('home.version.latestRelease')}】`
                   : idx === 0
-                  ? `${ver.id}【${$t('home.version.latestSnapshot')}】`
+                  ? `${ver.id}【${$T('home.version.latestSnapshot')}】`
                   : ver.id,
             };
           })
       "
-      :label="$t('home.version.versionType')"
+      :label="$T('home.version.versionType')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
@@ -92,8 +105,8 @@ updateWorldVersion(vanillaVer.value);
       v-model="isRelease"
       :label="
         isRelease
-          ? $t('home.version.onlyReleased')
-          : $t('home.version.allVersions')
+          ? $T('home.version.onlyReleased')
+          : $T('home.version.allVersions')
       "
       left-label
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
