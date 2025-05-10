@@ -22,12 +22,20 @@ export class JsonSourceHandler<T> {
     validator: z.ZodSchema<T, ZodTypeDef, any>,
     options?: { encoding?: BufferEncoding }
   ) {
-    const getter = async (): Promise<Failable<T>> => {
-      return path.readJson(validator, options?.encoding);
-    };
-
     const setter = async (value: T): Promise<Failable<void>> => {
       return path.writeJson(value, options?.encoding);
+    };
+
+    const getter = async (): Promise<Failable<T>> => {
+      const res = await path.readJson(validator, options?.encoding);
+      if (!isError(res)) return res;
+
+      // Jsonの読み取りに失敗した場合は型定義で示されたDefaultでフォールバック
+      const defaultVal = validator.safeParse({});
+      if (!defaultVal.success) return res;
+
+      await setter(defaultVal.data)
+      return defaultVal.data;
     };
 
     const accessor = new CacheableAccessor<T>(getter, setter);
@@ -50,7 +58,7 @@ export class JsonSourceHandler<T> {
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('', async () => {
+  test('json handler', async () => {
     const { Path } = await import('../binary/path');
     const path = await import('path');
 
