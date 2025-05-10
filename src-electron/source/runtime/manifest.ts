@@ -210,7 +210,7 @@ export abstract class JavaRuntimeInstaller<
     const runtimeFileNames = this.getRuntimeFileNames(osPlatform);
     const javaPaths = this.manifest2JavaPath(osManifest, runtimeFileNames);
     if (isError(javaPaths)) return javaPaths;
-    logger.info(`Get java path successfully And completed installation`);
+    logger.info('Get java path successfully And completed installation');
 
     return {
       base: { path: installPath.path },
@@ -311,90 +311,93 @@ async function _extractFilesFromManifest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect, vi } = import.meta.vitest;
-  const { Path } = await import('src-electron/util/binary/path');
+  const { describe, test, expect, vi } = import.meta.vitest;
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child('work', 'manifest');
-  await workPath.emptyDir();
+  describe('runtime manifest base', async () => {
+    const { Path } = await import('src-electron/util/binary/path');
 
-  // 実際にはUrlにアクセスせず、url文字列を結果として返す
-  const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-  urlCreateReadStreamSpy.mockImplementation(function (url: string) {
-    return BytesData.fromText(url);
-  });
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child('work', 'manifest');
+    await workPath.emptyDir();
 
-  const file = (url: string) => ({
-    type: 'file' as const,
-    executable: false,
-    downloads: {
-      raw: { url, sha1: '', size: 111 },
-    },
-  });
-  const directory = { type: 'directory' as const };
-
-  const testCases: TestCase[] = [
-    {
-      explain: 'file',
-      manifest: { 'foo.txt': file('https://a.com/') },
-      files: [{ path: 'foo.txt', value: 'https://a.com/' }],
-    },
-    {
-      explain: 'subfile',
-      manifest: {
-        foo: directory,
-        'foo/bar.txt': file('https://foo/bar.com/'),
-        'bar.txt': file('https://bar.com/'),
-        buz: directory,
-      },
-      files: [
-        { path: 'foo/bar.txt', value: 'https://foo/bar.com/' },
-        { path: 'bar.txt', value: 'https://bar.com/' },
-      ],
-      dirs: [{ path: 'foo' }, { path: 'buz' }],
-    },
-    {
-      explain: 'link',
-      manifest: {
-        'a.txt': file('https://a.com/'),
-        'foo.lnk': { type: 'link', target: '../a.txt' },
-      },
-      links: [{ path: 'foo.lnk', target: 'hello' }],
-    },
-  ];
-
-  test.each(
-    testCases.map((testCase, index) => ({
-      explain: testCase.explain,
-      testCase,
-      index,
-    }))
-  )('$explain', async ({ testCase, index }) => {
-    const dirPath = workPath.child(`${index}`);
-    await dirPath.remove();
-    const res = await _extractFilesFromManifest(dirPath, {
-      files: testCase.manifest,
+    // 実際にはUrlにアクセスせず、url文字列を結果として返す
+    const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
+    urlCreateReadStreamSpy.mockImplementation(function (url: string) {
+      return BytesData.fromText(url);
     });
-    expect(isError(res)).toBe(false);
 
-    for (const file of testCase.files ?? []) {
-      expect(await dirPath.child(file.path).readText()).toBe(file.value);
-    }
-    for (const link of testCase.links ?? []) {
-      const stat = await dirPath.child(link.path).stat();
-      if (isError(stat)) continue;
-      expect(stat.nlink).greaterThan(1); // symlinkではなく、ハードリンクなのでリンクの数が1以上かどうかで判断
-    }
-    for (const dir of testCase.dirs ?? []) {
-      expect(await dirPath.child(dir.path).isDirectory()).toBe(true);
-    }
+    const file = (url: string) => ({
+      type: 'file' as const,
+      executable: false,
+      downloads: {
+        raw: { url, sha1: '', size: 111 },
+      },
+    });
+    const directory = { type: 'directory' as const };
+
+    const testCases: TestCase[] = [
+      {
+        explain: 'file',
+        manifest: { 'foo.txt': file('https://a.com/') },
+        files: [{ path: 'foo.txt', value: 'https://a.com/' }],
+      },
+      {
+        explain: 'subfile',
+        manifest: {
+          foo: directory,
+          'foo/bar.txt': file('https://foo/bar.com/'),
+          'bar.txt': file('https://bar.com/'),
+          buz: directory,
+        },
+        files: [
+          { path: 'foo/bar.txt', value: 'https://foo/bar.com/' },
+          { path: 'bar.txt', value: 'https://bar.com/' },
+        ],
+        dirs: [{ path: 'foo' }, { path: 'buz' }],
+      },
+      {
+        explain: 'link',
+        manifest: {
+          'a.txt': file('https://a.com/'),
+          'foo.lnk': { type: 'link', target: '../a.txt' },
+        },
+        links: [{ path: 'foo.lnk', target: 'hello' }],
+      },
+    ];
+
+    test.each(
+      testCases.map((testCase, index) => ({
+        explain: testCase.explain,
+        testCase,
+        index,
+      }))
+    )('$explain', async ({ testCase, index }) => {
+      const dirPath = workPath.child(`${index}`);
+      await dirPath.remove();
+      const res = await _extractFilesFromManifest(dirPath, {
+        files: testCase.manifest,
+      });
+      expect(isError(res)).toBe(false);
+
+      for (const file of testCase.files ?? []) {
+        expect(await dirPath.child(file.path).readText()).toBe(file.value);
+      }
+      for (const link of testCase.links ?? []) {
+        const stat = await dirPath.child(link.path).stat();
+        if (isError(stat)) continue;
+        expect(stat.nlink).greaterThan(1); // symlinkではなく、ハードリンクなのでリンクの数が1以上かどうかで判断
+      }
+      for (const dir of testCase.dirs ?? []) {
+        expect(await dirPath.child(dir.path).isDirectory()).toBe(true);
+      }
+    });
+
+    type TestCase = {
+      explain: string;
+      manifest: ManifestContent['files'];
+      files?: { path: string; value: string }[];
+      links?: { path: string; target: string }[];
+      dirs?: { path: string }[];
+    };
   });
-
-  type TestCase = {
-    explain: string;
-    manifest: ManifestContent['files'];
-    files?: { path: string; value: string }[];
-    links?: { path: string; target: string }[];
-    dirs?: { path: string }[];
-  };
 }

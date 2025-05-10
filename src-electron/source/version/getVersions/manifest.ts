@@ -68,18 +68,21 @@ export async function getVersionMainfest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const path = await import('path');
+  const { test, expect, describe } = import.meta.vitest;
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child(
-    'work',
-    path.basename(__filename, '.ts')
-  );
-  await workPath.emptyDir();
+  describe('runtime-manifest', async () => {
+    const path = await import('path');
 
-  test('manifest-handler-check', async () => {
-    const res = await getVersionMainfest(workPath, false);
-    expect(isValid(res)).toBe(true);
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    await workPath.emptyDir();
+
+    test('manifest-handler-check', async () => {
+      const res = await getVersionMainfest(workPath, false);
+      expect(isValid(res)).toBe(true);
+    });
   });
 }

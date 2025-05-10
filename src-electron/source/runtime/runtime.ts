@@ -212,120 +212,127 @@ export class RuntimeContainer {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const path = await import('path');
+  const { describe, test, expect } = import.meta.vitest;
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child(
-    'work',
-    path.basename(__filename, '.ts')
-  );
-  await workPath.emptyDir();
+  describe('runtime installer', async () => {
+    const path = await import('path');
 
-  // 実際にはUrlにアクセスせず、url文字列を結果として返す
-  // cf) Mockを使わない場合，テストがエラーになることがあるが，これはVitest上でTimeoutがうまく設定できていないことが原因
-  // Electron(Chromium)上で動かす場合はTimeoutが２分程度に緩和されるため，テストではMockで代用
-  // @see https://scrapbox.io/nwtgck/Google_Chrome%E3%81%AEfetch()%E3%81%AE%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88%E3%81%AE%E6%99%82%E9%96%93
-  const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromPathOrUrl');
-  urlCreateReadStreamSpy.mockImplementation(async (path, url) => {
-    // すでにダウンロード済みのデータがある場合は通常通り利用する
-    let data = await BytesData.fromPath(path);
-    if (isValid(data)) return data;
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    await workPath.emptyDir();
 
-    // 全OSの全Runtime情報が記載されたのManifestのみ実データを使う
-    let resData: Failable<BytesData>;
-    if (url.startsWith('https://launchermeta')) {
-      resData = await BytesData.fromURL(url);
-    } else {
-      resData = await BytesData.fromText(url);
-    }
-    if (isError(resData)) return resData;
+    // 実際にはUrlにアクセスせず、url文字列を結果として返す
+    // cf) Mockを使わない場合，テストがエラーになることがあるが，これはVitest上でTimeoutがうまく設定できていないことが原因
+    // Electron(Chromium)上で動かす場合はTimeoutが２分程度に緩和されるため，テストではMockで代用
+    // @see https://scrapbox.io/nwtgck/Google_Chrome%E3%81%AEfetch()%E3%81%AE%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88%E3%81%AE%E6%99%82%E9%96%93
+    const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromPathOrUrl');
+    urlCreateReadStreamSpy.mockImplementation(async (path, url) => {
+      // すでにダウンロード済みのデータがある場合は通常通り利用する
+      const data = await BytesData.fromPath(path);
+      if (isValid(data)) return data;
 
-    // 本来と同じように取得した（ことになっているデータ）はファイルに書き込む
-    await path.parent().mkdir(true);
-    await resData.write(path.path);
-    return resData;
+      // 全OSの全Runtime情報が記載されたのManifestのみ実データを使う
+      let resData: Failable<BytesData>;
+      if (url.startsWith('https://launchermeta')) {
+        resData = await BytesData.fromURL(url);
+      } else {
+        resData = await BytesData.fromText(url);
+      }
+      if (isError(resData)) return resData;
+
+      // 本来と同じように取得した（ことになっているデータ）はファイルに書き込む
+      await path.parent().mkdir(true);
+      await resData.write(path.path);
+      return resData;
+    });
+
+    const _getUniversalConfig = async () => {
+      return {
+        type: 'minecraft',
+        version: 'jre-legacy',
+      } as const;
+    };
+    const runtimeContainer = new RuntimeContainer(
+      workPath,
+      _getUniversalConfig
+    );
+
+    const runtimes: (Runtime & { explain: string })[] = [
+      { explain: 'jre-legacy', type: 'minecraft', version: 'jre-legacy' },
+      {
+        explain: 'java-runtime-alpha',
+        type: 'minecraft',
+        version: 'java-runtime-alpha',
+      },
+      {
+        explain: 'java-runtime-beta',
+        type: 'minecraft',
+        version: 'java-runtime-beta',
+      },
+      {
+        explain: 'java-runtime-gamma',
+        type: 'minecraft',
+        version: 'java-runtime-gamma',
+      },
+      {
+        explain: 'java-runtime-delta',
+        type: 'minecraft',
+        version: 'java-runtime-delta',
+      },
+      {
+        explain: 'universal-8',
+        type: 'universal',
+        majorVersion: JavaMajorVersion.parse(21),
+      },
+    ];
+
+    const osPlatforms: OsPlatform[] = [
+      'windows-x64',
+      'mac-os',
+      'mac-os-arm64',
+      'debian',
+    ];
+
+    // 公式がランタイムを提供していない組
+    const missingCases: { os: OsPlatform; explain: string }[] = [
+      { os: 'mac-os-arm64', explain: 'jre-legacy' },
+      { os: 'mac-os-arm64', explain: 'java-runtime-alpha' },
+      { os: 'mac-os-arm64', explain: 'java-runtime-beta' },
+      { os: 'mac-os-arm64', explain: 'universal-8' },
+    ];
+
+    // テスト実行に時間がかかることに加え，APIサーバーからのキックが頻発するため，テストはSkip
+    test.each(
+      osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
+    )(
+      '$os $runtime.explain',
+      async (testCase) => {
+        // インストール
+        const readyResult = await runtimeContainer.ready(
+          testCase.runtime,
+          testCase.os,
+          true
+        );
+
+        // ランタイムが提供されている組み合わせかどうかをチェック
+        const isValidPair =
+          missingCases.find(
+            (x) =>
+              x.os === testCase.os && x.explain === testCase.runtime.explain
+          ) === undefined;
+        expect(isValid(readyResult)).toBe(isValidPair);
+
+        // アンインストール
+        const removeResult = await runtimeContainer.remove(
+          testCase.runtime,
+          testCase.os
+        );
+        expect(isValid(removeResult)).toBe(true);
+      },
+      1000 * 1000
+    );
   });
-
-  const _getUniversalConfig = async () => {
-    return {
-      type: 'minecraft',
-      version: 'jre-legacy',
-    } as const;
-  };
-  const runtimeContainer = new RuntimeContainer(workPath, _getUniversalConfig);
-
-  const runtimes: (Runtime & { explain: string })[] = [
-    { explain: 'jre-legacy', type: 'minecraft', version: 'jre-legacy' },
-    {
-      explain: 'java-runtime-alpha',
-      type: 'minecraft',
-      version: 'java-runtime-alpha',
-    },
-    {
-      explain: 'java-runtime-beta',
-      type: 'minecraft',
-      version: 'java-runtime-beta',
-    },
-    {
-      explain: 'java-runtime-gamma',
-      type: 'minecraft',
-      version: 'java-runtime-gamma',
-    },
-    {
-      explain: 'java-runtime-delta',
-      type: 'minecraft',
-      version: 'java-runtime-delta',
-    },
-    {
-      explain: 'universal-8',
-      type: 'universal',
-      majorVersion: JavaMajorVersion.parse(21),
-    },
-  ];
-
-  const osPlatforms: OsPlatform[] = [
-    'windows-x64',
-    'mac-os',
-    'mac-os-arm64',
-    'debian',
-  ];
-
-  // 公式がランタイムを提供していない組
-  const missingCases: { os: OsPlatform; explain: string }[] = [
-    { os: 'mac-os-arm64', explain: 'jre-legacy' },
-    { os: 'mac-os-arm64', explain: 'java-runtime-alpha' },
-    { os: 'mac-os-arm64', explain: 'java-runtime-beta' },
-    { os: 'mac-os-arm64', explain: 'universal-8' },
-  ];
-
-  // テスト実行に時間がかかることに加え，APIサーバーからのキックが頻発するため，テストはSkip
-  test.each(
-    osPlatforms.flatMap((os) => runtimes.map((runtime) => ({ runtime, os })))
-  )(
-    '$os $runtime.explain',
-    async (testCase) => {
-      // インストール
-      const readyResult = await runtimeContainer.ready(
-        testCase.runtime,
-        testCase.os,
-        true
-      );
-
-      // ランタイムが提供されている組み合わせかどうかをチェック
-      const isValidPair =
-        missingCases.find(
-          (x) => x.os === testCase.os && x.explain === testCase.runtime.explain
-        ) === undefined;
-      expect(isValid(readyResult)).toBe(isValidPair);
-
-      // アンインストール
-      const removeResult = await runtimeContainer.remove(
-        testCase.runtime,
-        testCase.os
-      );
-      expect(isValid(removeResult)).toBe(true);
-    },
-    1000 * 1000
-  );
 }

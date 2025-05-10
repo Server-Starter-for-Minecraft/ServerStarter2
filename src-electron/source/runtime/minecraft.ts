@@ -75,35 +75,38 @@ export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  const { Path } = await import('src-electron/util/binary/path');
-  const path = await import('path');
+  const { describe, test, expect } = import.meta.vitest;
 
-  // 一時使用フォルダを初期化
-  const workPath = new Path(__dirname).child(
-    'work',
-    path.basename(__filename, '.ts')
-  );
-  await workPath.emptyDir();
+  describe('minecraft runtime', async () => {
+    const { Path } = await import('src-electron/util/binary/path');
+    const path = await import('path');
 
-  test.skip(
-    'minecraft',
-    async () => {
-      const minecraft = MinecraftRuntimeInstaller.setRuntimeManifest(
-        workPath.child('all.json'),
-        minecraftRuntimeManifestUrl
-      );
+    // 一時使用フォルダを初期化
+    const workPath = new Path(__dirname).child(
+      'work',
+      path.basename(__filename, '.ts')
+    );
+    await workPath.emptyDir();
 
-      const installResult = await minecraft.install(
-        workPath,
-        {
-          type: 'minecraft',
-          version: 'java-runtime-gamma',
-        },
-        'windows-x64'
-      );
-      expect(!isError(installResult)).toBe(true);
-    },
-    1000 * 1000
-  );
+    test.skip(
+      'minecraft',
+      async () => {
+        const minecraft = MinecraftRuntimeInstaller.setRuntimeManifest(
+          workPath.child('all.json'),
+          minecraftRuntimeManifestUrl
+        );
+
+        const installResult = await minecraft.install(
+          workPath,
+          {
+            type: 'minecraft',
+            version: 'java-runtime-gamma',
+          },
+          'windows-x64'
+        );
+        expect(!isError(installResult)).toBe(true);
+      },
+      1000 * 1000
+    );
+  });
 }
