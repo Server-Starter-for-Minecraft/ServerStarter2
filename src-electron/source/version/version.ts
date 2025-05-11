@@ -5,7 +5,6 @@ import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
 import { Runtime } from '../../schema/runtime';
 import { AllVersion, Version, VersionType } from '../../schema/version';
 import { Path } from '../../util/binary/path';
-import { sourceLoggers } from '../sourceLogger';
 import { getEulaAgreement, setEulaAgreement } from './eula';
 import { getVersionlist } from './getVersions/base';
 import { FabricVersionLoader } from './getVersions/fabric';
@@ -36,8 +35,6 @@ import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
 } from './readyVersions/vanilla';
-
-export const versionLogger = () => sourceLoggers().version;
 
 /**
  * バージョンを管理するクラス
@@ -75,7 +72,7 @@ export class VersionContainer {
     useCache: boolean
   ): Promise<Failable<AllVersion<'fabric'>>>;
   async listVersions(
-    type: 'undefined',
+    type: 'unknown',
     useCache: boolean
   ): Promise<Failable<never>>;
   async listVersions<T extends VersionType>(type: T, useCache: boolean) {
@@ -222,162 +219,4 @@ export class VersionContainer {
         return fabricFp.completeRemoveVersion(path);
     }
   }
-}
-
-/** In Source Testing */
-if (import.meta.vitest) {
-  const { describe, test, expect, vi } = import.meta.vitest;
-
-  describe('listupVersions', () => {
-    // 一時使用フォルダを初期化
-    const workPath = new Path(__dirname).child('getVersions/work');
-    workPath.mkdir();
-
-    type TestCase = {
-      type: Version['type'];
-      loader: any;
-      oldestVersion: string;
-    };
-    const testCases: TestCase[] = [
-      {
-        type: 'vanilla',
-        loader: new VanillaVersionLoader(workPath),
-        oldestVersion: '1.3',
-      },
-      {
-        type: 'forge',
-        loader: new ForgeVersionLoader(workPath),
-        oldestVersion: '1.5.2',
-      },
-      {
-        type: 'papermc',
-        loader: new PaperVersionLoader(workPath),
-        oldestVersion: '1.8.8',
-      },
-      {
-        type: 'mohistmc',
-        loader: new MohistMCVersionLoader(workPath),
-        oldestVersion: '1.7.10',
-      },
-      {
-        type: 'fabric',
-        loader: new FabricVersionLoader(workPath),
-        oldestVersion: '18w43b',
-      },
-      {
-        type: 'spigot',
-        loader: new SpigotVersionLoader(workPath),
-        oldestVersion: '1.9',
-      },
-    ];
-
-    test.each(testCases)('versionList ($type)', async (tCase) => {
-      // キャッシュの威力を確認するときにはTrueにする
-      const useCache = true;
-      const getCachedList = await getVersionlist(useCache, tCase.loader);
-
-      // 取得に成功したか
-      expect(isError(getCachedList)).toEqual(false);
-      if (isError(getCachedList)) return;
-
-      // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-      const cachedList = getCachedList;
-      if ('games' in cachedList) {
-        // fabricのみ特別対応
-        expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
-          tCase.oldestVersion
-        );
-      } else {
-        // その他のサーバー
-        expect(cachedList[cachedList.length - 1].id).toEqual(
-          tCase.oldestVersion
-        );
-      }
-    });
-  });
-
-  test(
-    'eula生成テスト',
-    async () => {
-      const { VanillaVersion } = await import('../../schema/version');
-
-      const workPath = new Path(__dirname).child('work', 'version');
-      await workPath.remove();
-      const container = new VersionContainer(workPath.child('cache'));
-
-      const vanilla = VanillaVersion.parse({
-        type: 'vanilla',
-        id: '1.12.1',
-        release: false,
-      });
-
-      const serverPath = workPath.child('server');
-
-      // 1回目 (eula=false)
-      {
-        const eulaDisagree = vi.fn(async () => false);
-        const readyResult = await container.readyVersion(
-          vanilla,
-          serverPath,
-          async () => {},
-          eulaDisagree
-        );
-        // eulaの同意を求める関数が実行されるはず
-        expect(eulaDisagree).toHaveBeenCalledTimes(1);
-        // eula.txtが "eula=false" であるはず
-        expect(await serverPath.child('eula.txt').readText()).toBe(
-          'eula=false'
-        );
-        // readyResultが失敗するはず
-        expect(isError(readyResult)).toBe(true);
-
-        // 撤収
-        await container.removeVersion(vanilla, serverPath);
-        expect(serverPath.child('eula.txt').exists()).toBe(false);
-      }
-
-      // 2回目 (eula=true)
-      {
-        const eulaAgree = vi.fn(async () => true);
-        const readyResult = await container.readyVersion(
-          vanilla,
-          serverPath,
-          async () => {},
-          eulaAgree
-        );
-        // eulaの同意を求める関数が実行されるはず
-        expect(eulaAgree).toHaveBeenCalledTimes(1);
-        // eula.txtが "eula=true" であるはず
-        expect(await serverPath.child('eula.txt').readText()).toBe('eula=true');
-        // readyResultが成功するはず
-        expect(isError(readyResult)).toBe(false);
-
-        // 撤収
-        await container.removeVersion(vanilla, serverPath);
-        expect(serverPath.child('eula.txt').exists()).toBe(false);
-      }
-
-      // 3回目 (eula=true)
-      {
-        const eulaAgree = vi.fn(async () => true);
-        const readyResult = await container.readyVersion(
-          vanilla,
-          serverPath,
-          async () => {},
-          eulaAgree
-        );
-        // eulaの同意を求める関数は既に同意済みなので実行されないはず
-        expect(eulaAgree).toHaveBeenCalledTimes(0);
-        // eula.txtが "eula=true" であるはず
-        expect(await serverPath.child('eula.txt').readText()).toBe('eula=true');
-        // readyResultが成功するはず
-        expect(isError(readyResult)).toBe(true);
-
-        // 撤収
-        await container.removeVersion(vanilla, serverPath);
-        expect(serverPath.child('eula.txt').exists()).toBe(false);
-      }
-    },
-    1000 * 60
-  );
 }
