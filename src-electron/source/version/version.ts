@@ -171,8 +171,6 @@ export class VersionContainer {
     // Eulaチェック
     const eulaPath = serverPath.child('eula.txt');
     const currentEula = await getEulaAgreement(eulaPath);
-    if (isError(currentEula)) return currentEula;
-
     if (!currentEula.eula) {
       const newEula = await eulaAgreementAction(currentEula.url);
       if (isError(newEula)) return newEula;

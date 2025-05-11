@@ -25,6 +25,11 @@ export type ExecRuntime = (options: {
   onOut: (line: string) => void;
 }) => Promise<Failable<void>>;
 
+export type ReadyReturnInfo = {
+  runtime: Runtime;
+  getCommand: (option: { jvmArgs: string[] }) => string[];
+};
+
 /**
  * 各サーバーバージョンに関連するファイルの操作をするための抽象クラス
  */
@@ -85,7 +90,10 @@ export abstract class ReadyVersion<
   /**
    * バージョン関連のファイル操作を完全に完了する
    */
-  async completeReady4VersionFiles(targetPath: Path, execRuntime: ExecRuntime) {
+  async completeReady4VersionFiles(
+    targetPath: Path,
+    execRuntime: ExecRuntime
+  ): Promise<Failable<ReadyReturnInfo>> {
     // STEP1: `version.json`の生成
     if (!this.handler) {
       // handlerを生成
@@ -207,12 +215,7 @@ export abstract class ReadyVersion<
   protected async generateReadyVersionReturns(
     verJsonHandler: JsonSourceHandler<VersionJson>,
     targetPath: Path
-  ): Promise<
-    Failable<{
-      runtime: Runtime;
-      getCommand: (option: { jvmArgs: string[] }) => string[];
-    }>
-  > {
+  ): Promise<Failable<ReadyReturnInfo>> {
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 

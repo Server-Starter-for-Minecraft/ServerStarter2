@@ -37,11 +37,14 @@ function parseEula(txt: string): {
  */
 export async function getEulaAgreement(
   eulaPath: Path
-): Promise<Failable<{ eula: boolean; url: string }>> {
+): Promise<{ eula: boolean; url: string }> {
   const readRes = await eulaPath.readText();
-  if (isError(readRes)) return readRes;
 
-  const { eula, url, comments } = parseEula(readRes);
+  let readTxt = '';
+  if (isError(readRes)) readTxt = 'eula=false';
+  else readTxt = readRes;
+
+  const { eula, url, comments } = parseEula(readTxt);
   return { eula, url };
 }
 

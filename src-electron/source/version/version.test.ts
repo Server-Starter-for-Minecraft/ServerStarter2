@@ -151,7 +151,7 @@ describe(
       // eula.txtが "eula=true" であるはず
       expect(await serverPath.child('eula.txt').readText()).toBe('eula=true');
       // readyResultが成功するはず
-      expect(isError(readyResult)).toBe(true);
+      expect(isError(readyResult)).toBe(false);
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
