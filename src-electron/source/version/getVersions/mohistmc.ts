@@ -97,7 +97,8 @@ async function loadEachVersion(
           md5: b.fileMd5,
         },
       };
-    });
+    })
+    .reverse();
 
   return {
     id: parsedEachVerJson.projectVersion,
