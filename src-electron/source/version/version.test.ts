@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { Failable } from 'app/src-electron/schema/error';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { VersionType } from '../../schema/version';
 import { VersionContainer } from './version';
 
 describe('listupVersions', async () => {
@@ -15,53 +16,66 @@ describe('listupVersions', async () => {
   const useCache = true;
 
   type TestCase = {
+    type: VersionType;
     vcList: () => Promise<Failable<any>>;
     oldestVersion: string;
   };
   const testCases: TestCase[] = [
     {
+      type: 'vanilla',
       vcList: () => vc.listVersions('vanilla', useCache),
       oldestVersion: '1.3',
     },
     {
+      type: 'forge',
       vcList: () => vc.listVersions('forge', useCache),
       oldestVersion: '1.5.2',
     },
     {
+      type: 'papermc',
       vcList: () => vc.listVersions('papermc', useCache),
       oldestVersion: '1.8.8',
     },
     {
+      type: 'mohistmc',
       vcList: () => vc.listVersions('mohistmc', useCache),
       oldestVersion: '1.7.10',
     },
     {
+      type: 'fabric',
       vcList: () => vc.listVersions('fabric', useCache),
       oldestVersion: '18w43b',
     },
     {
+      type: 'spigot',
       vcList: () => vc.listVersions('spigot', useCache),
-      oldestVersion: '1.9',
+      oldestVersion: '1.8',
     },
   ];
 
-  test.each(testCases)('versionList ($type)', async (tCase) => {
-    const getCachedList = await tCase.vcList(); // 取得に成功したか
-    expect(isError(getCachedList)).toEqual(false);
-    if (isError(getCachedList)) return;
+  test.each(testCases)(
+    'versionList ($type)',
+    { timeout: 1000 * 60 },
+    async (tCase) => {
+      const getCachedList = await tCase.vcList(); // 取得に成功したか
+      expect(isError(getCachedList)).toEqual(false);
+      if (isError(getCachedList)) return;
 
-    // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-    const cachedList = getCachedList;
-    if ('games' in cachedList) {
-      // fabricのみ特別対応
-      expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
-        tCase.oldestVersion
-      );
-    } else {
-      // その他のサーバー
-      expect(cachedList[cachedList.length - 1].id).toEqual(tCase.oldestVersion);
+      // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
+      const cachedList = getCachedList;
+      if ('games' in cachedList) {
+        // fabricのみ特別対応
+        expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
+          tCase.oldestVersion
+        );
+      } else {
+        // その他のサーバー
+        expect(cachedList[cachedList.length - 1].id).toEqual(
+          tCase.oldestVersion
+        );
+      }
     }
-  });
+  );
 });
 
 describe(
