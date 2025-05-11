@@ -95,7 +95,7 @@ if (import.meta.vitest) {
       installer: '1.0.1',
     };
 
-    test('setFabricJar', async () => {
+    test('setFabricJar', { timeout: 1000 * 60 }, async () => {
       const outputPath = serverFolder.child(ver21.id);
       const readyOperator = new ReadyFabricVersion(ver21, cacheFolder);
       const cachePath = readyOperator.cachePath;

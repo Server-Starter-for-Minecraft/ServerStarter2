@@ -125,44 +125,58 @@ if (import.meta.vitest) {
       build: 40,
     };
 
-    test(
-      'setPaperJar',
-      async () => {
-        const outputPath = serverFolder.child(ver21.id);
-        const readyOperator = new ReadyPaperMCVersion(ver21, cacheFolder);
-        const cachePath = readyOperator.cachePath;
-
-        // 条件をそろえるために，ファイル類を削除する
-        await outputPath.remove();
-        // キャッシュの威力を試したいときは以下の行をコメントアウト
-        await cachePath?.remove();
-
-        const res = await readyOperator.completeReady4VersionFiles(
-          outputPath,
-          async (runtime) => {}
+    const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
+    urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
+      const dummyAssets = new Path(__dirname).parent().child('test');
+      const verManifestURL =
+        'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
+      if (url === verManifestURL) {
+        return BytesData.fromPath(
+          dummyAssets.child('version_manifest_v2.json')
         );
-        expect(isError(res)).toBe(false);
-        if (isError(res)) return;
+      } else if (url.endsWith('.xml')) {
+        return BytesData.fromPath(dummyAssets.child('sample.xml'));
+      } else if (url.endsWith('.jar')) {
+        return BytesData.fromPath(dummyAssets.child('sample.jar'));
+      }
 
-        // 戻り値の検証
-        expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe(
-          'replaceArg'
-        );
+      const res = await fetch(url);
+      const buffer = await res.arrayBuffer();
+      return BytesData.fromBuffer(Buffer.from(buffer));
+    });
 
-        // ファイルの設置状況の検証
-        expect(getJarPath(outputPath).exists()).toBe(true);
-        // Jarを実行しないと生成されないため，今回はTestの対象外
-        // expect(outputPath.child('libraries').exists()).toBe(true);
+    test('setPaperJar', { timeout: 1000 * 60 }, async () => {
+      const outputPath = serverFolder.child(ver21.id);
+      const readyOperator = new ReadyPaperMCVersion(ver21, cacheFolder);
+      const cachePath = readyOperator.cachePath;
 
-        // 実行後にファイル削除
-        const remover = new RemovePaperMCVersion(ver21, cacheFolder);
-        await remover.completeRemoveVersion(outputPath);
+      // 条件をそろえるために，ファイル類を削除する
+      await outputPath.remove();
+      // キャッシュの威力を試したいときは以下の行をコメントアウト
+      await cachePath?.remove();
 
-        // 削除後の状態を確認
-        expect(getJarPath(outputPath).exists()).toBe(false);
-        expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
-      },
-      1000 * 100
-    );
+      const res = await readyOperator.completeReady4VersionFiles(
+        outputPath,
+        async (runtime) => {}
+      );
+      expect(isError(res)).toBe(false);
+      if (isError(res)) return;
+
+      // 戻り値の検証
+      expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
+
+      // ファイルの設置状況の検証
+      expect(getJarPath(outputPath).exists()).toBe(true);
+      // Jarを実行しないと生成されないため，今回はTestの対象外
+      // expect(outputPath.child('libraries').exists()).toBe(true);
+
+      // 実行後にファイル削除
+      const remover = new RemovePaperMCVersion(ver21, cacheFolder);
+      await remover.completeRemoveVersion(outputPath);
+
+      // 削除後の状態を確認
+      expect(getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+    });
   });
 }

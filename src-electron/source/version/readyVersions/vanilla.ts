@@ -138,6 +138,26 @@ if (import.meta.vitest) {
       release: true,
     };
 
+    const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
+    urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
+      const dummyAssets = new Path(__dirname).parent().child('test');
+      const verManifestURL =
+        'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
+      if (url === verManifestURL) {
+        return BytesData.fromPath(
+          dummyAssets.child('version_manifest_v2.json')
+        );
+      } else if (url.endsWith('.xml')) {
+        return BytesData.fromPath(dummyAssets.child('sample.xml'));
+      } else if (url.endsWith('.jar')) {
+        return BytesData.fromPath(dummyAssets.child('sample.jar'));
+      }
+
+      const res = await fetch(url);
+      const buffer = await res.arrayBuffer();
+      return BytesData.fromBuffer(Buffer.from(buffer));
+    });
+
     test('metaJsonParser', async () => {
       const res = await getVanillaVersionJson(
         VersionId.parse('1.21'),
@@ -150,7 +170,7 @@ if (import.meta.vitest) {
       expect(res.javaVersion?.component).toEqual('java-runtime-delta');
     });
 
-    test('setVersionJar', async () => {
+    test('setVersionJar', { timeout: 1000 * 60 }, async () => {
       const outputPath = serverFolder.child(ver21.id);
       const readyOperator = new ReadyVanillaVersion(ver21, cacheFolder);
       const cachePath = readyOperator.cachePath;

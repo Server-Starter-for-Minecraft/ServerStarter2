@@ -198,7 +198,7 @@ if (import.meta.vitest) {
       type: 'spigot',
     };
 
-    test('setSpigotJar', async () => {
+    test('setSpigotJar', { timeout: 1000 * 60 }, async () => {
       const outputPath = serverFolder.child(ver21.id);
       const readyOperator = new ReadySpigotVersion(ver21, cacheFolder);
       const cachePath = readyOperator.cachePath;

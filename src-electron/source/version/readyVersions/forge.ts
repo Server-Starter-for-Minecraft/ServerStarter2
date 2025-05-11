@@ -240,7 +240,7 @@ if (import.meta.vitest) {
           '--nogui',
         ],
       },
-    ])('setForgeJar', async ({ genfiles, args }) => {
+    ])('setForgeJar', { timeout: 1000 * 60 }, async ({ genfiles, args }) => {
       const outputPath = serverFolder.child(ver21.id);
       const readyOperator = new ReadyForgeVersion(ver21, cacheFolder);
 

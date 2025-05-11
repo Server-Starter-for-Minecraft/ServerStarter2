@@ -1,9 +1,29 @@
 import { describe, expect, test, vi } from 'vitest';
 import { Failable } from 'app/src-electron/schema/error';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { VersionType } from '../../schema/version';
 import { VersionContainer } from './version';
+
+// 実際にはUrlにアクセスせず、事前に用意されたテスト用ファイルを返す
+const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
+urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
+  const dummyAssets = new Path(__dirname).child('test');
+  const verManifestURL =
+    'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
+  if (url === verManifestURL) {
+    return BytesData.fromPath(dummyAssets.child('version_manifest_v2.json'));
+  } else if (url.endsWith('.xml')) {
+    return BytesData.fromPath(dummyAssets.child('sample.xml'));
+  } else if (url.endsWith('.jar')) {
+    return BytesData.fromPath(dummyAssets.child('sample.jar'));
+  }
+
+  const res = await fetch(url);
+  const buffer = await res.arrayBuffer();
+  return BytesData.fromBuffer(Buffer.from(buffer));
+});
 
 describe('listupVersions', async () => {
   // 一時使用フォルダを初期化
