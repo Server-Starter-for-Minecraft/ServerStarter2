@@ -13,11 +13,7 @@ import { osPlatform } from 'app/src-electron/util/os/os';
 import { GroupProgressor } from '../../common/progress';
 import { ExecRuntime } from '../version/readyVersions/base';
 import { WorldSettings } from '../world/files/json';
-import {
-  getAdditionalJavaArgument,
-  javaEncodingToUtf8,
-} from './setup/javaArgs';
-import { getLog4jArg } from './setup/log4j';
+import { getAdditionalJavaArgument } from './setup/javaArgs';
 import { getMemoryArguments } from './setup/memory';
 
 /** サーバー起動前の準備の内容 戻り値はJava実行時引数 */
@@ -27,11 +23,6 @@ export async function readyRunServer(
   settings: WorldSettings,
   progress: GroupProgressor
 ): Promise<Failable<{ javaArgs: string[]; javaPath: Path }>> {
-  const javaArgs: string[] = [];
-
-  // JAVAのstdioのエンコードをutf-8に
-  javaArgs.push(...javaEncodingToUtf8());
-
   async function readyRuntime(runtime: Runtime) {
     // 実行javaを用意
     const javaSub = progress.subGroup();
@@ -113,31 +104,22 @@ export async function readyRunServer(
     return server;
   }
 
-  async function log4jArg() {
-    // log4jの設定
-    const log4jarg = await getLog4jArg(cwdPath, settings.version, progress);
-    // log4jのファイルがダウンロードできなかった場合エラー
-    if (isError(log4jarg)) return log4jarg;
-    // log4j引数を実行時引数に追加
-    if (log4jarg === null) return [];
-    return [log4jarg];
-  }
-
-  const [memory, user, server, log4j] = await Promise.all([
+  // ユーザーカスタム要素のJVM引数とサーバーJarの情報を取得
+  const [memory, user, server] = await Promise.all([
     memoryArg(),
     userArg(),
     serverData(),
-    log4jArg(),
   ]);
   if (isError(server)) return server;
-  if (isError(log4j)) return log4j;
 
-  javaArgs.push(...memory, ...user, ...log4j);
-  // サーバーのjarファイル参照を実行時引数に追加
-  javaArgs.push(...server.getCommand({ jvmArgs: ['--nogui'] }));
-
+  // サーバーJarを実行するためのRuntimeの準備を行う
   const javaPath = await readyRuntime(server.runtime);
   if (isError(javaPath)) return javaPath;
+
+  // JVM引数のまとめ
+  // （当該サーバー起動時に必ず必要となる引数`server.getCommand()`に，カスタム要素`{jvmArgs: customJvmArgs}`を追加している）
+  const customJvmArgs = [...memory, ...user];
+  const javaArgs = server.getCommand({ jvmArgs: customJvmArgs });
 
   return { javaArgs, javaPath };
 }
