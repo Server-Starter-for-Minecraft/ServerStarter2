@@ -10,12 +10,10 @@ import { VersionListLoader } from './base';
 // Mohistのバージョン一覧を返すURLとその解析パーサー
 const mohistAllVersionsURL = 'https://mohistmc.com/api/v2/projects';
 const mohistAllVersionsZod = z.array(
-  z.discriminatedUnion('project', [
-    z.object({
-      project: z.literal('mohist'),
-      versions: z.string().array(),
-    }),
-  ])
+  z.object({
+    project: z.string(),
+    versions: z.string().array(),
+  })
 );
 
 // 各バージョンのビルド情報一覧を返すURLとその解析パーサー
@@ -67,14 +65,14 @@ export class MohistMCVersionLoader extends VersionListLoader<'mohistmc'> {
 async function loadAllVersion(): Promise<Failable<string[]>> {
   const jsonBytes = await BytesData.fromURL(mohistAllVersionsURL);
   if (isError(jsonBytes)) return jsonBytes;
-  const parsedJson = await jsonBytes.json(
+  const parsedJson: Failable<Record<string, string[]>> = await jsonBytes.json(
     mohistAllVersionsZod.transform((objs) =>
       fromEntries(objs.map((obj) => [obj.project, obj.versions]))
     )
   );
   if (isError(parsedJson)) return parsedJson;
 
-  return parsedJson.mohist;
+  return parsedJson['mohist'];
 }
 
 /**
@@ -105,4 +103,26 @@ async function loadEachVersion(
     id: parsedEachVerJson.projectVersion,
     builds,
   };
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+  test('mohist api type definision', async () => {
+    // https://mohistmc.com/api/v2/projects へのアクセスを想定
+    const apiSample = [
+      {
+        project: 'mohist',
+        versions: ['1.20.6', '1.21.4'],
+      },
+      {
+        project: 'banner',
+        versions: ['1.21.4', '1.21.5'],
+      },
+    ];
+
+    const parsed = mohistAllVersionsZod.safeParse(apiSample);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toMatchObject(apiSample);
+  });
 }
