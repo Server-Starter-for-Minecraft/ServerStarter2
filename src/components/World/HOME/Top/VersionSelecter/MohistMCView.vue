@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRaw } from 'vue';
 import { useQuasar } from 'quasar';
 import {
   AllMohistmcVersion,
@@ -42,7 +42,7 @@ function buildMohistVer(
     id: id,
     type: 'mohistmc' as const,
     buildId: build.id,
-    jar: build.jar,
+    jar: toRaw(build.jar),
     forge_version: build.forge_version,
   };
 }
