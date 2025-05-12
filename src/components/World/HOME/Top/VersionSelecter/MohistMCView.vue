@@ -28,7 +28,7 @@ type MohistBuildType = AllMohistmcVersion[number]['builds'][number];
  */
 function getNumberName(build: MohistBuildType) {
   if (build.forge_version !== void 0) {
-    return `${build.id} (Forge: ${build.forge_version})`;
+    return `${build.id.slice(0, 8)} (Forge: ${build.forge_version})`;
   } else {
     return build.id;
   }
