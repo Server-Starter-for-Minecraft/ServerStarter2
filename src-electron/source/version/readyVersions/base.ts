@@ -121,7 +121,11 @@ export abstract class ReadyVersion<
     }
 
     // STEP2: キャッシュデータを整備
-    const copyFiles = await this.readyCache(this.handler, execRuntime, progress);
+    const copyFiles = await this.readyCache(
+      this.handler,
+      execRuntime,
+      progress
+    );
     if (isError(copyFiles)) return copyFiles;
 
     // STEP3: ファイルをキャッシュから移動
@@ -157,7 +161,8 @@ export abstract class ReadyVersion<
     // Log4J対応
     const log4JPatchPath = await saveLog4JPatch(
       this._version.id,
-      this.cachePath
+      this.cachePath,
+      progress
     )();
     if (isError(log4JPatchPath)) return log4JPatchPath;
     if (log4JPatchPath !== null) paths.push(log4JPatchPath);
@@ -261,7 +266,7 @@ export abstract class RemoveVersion<
     // server.jarを登録
     const paths = [getJarPath(targetPath)];
 
-    // Log4J対応
+    // Log4J対応（対象ファイル名取得のみのため，`saveLog4JPatch()`にprogressは設定しない）
     const log4JPatchPath = await saveLog4JPatch(this._version.id, targetPath)();
     if (isValid(log4JPatchPath) && log4JPatchPath !== null) {
       paths.push(log4JPatchPath);
