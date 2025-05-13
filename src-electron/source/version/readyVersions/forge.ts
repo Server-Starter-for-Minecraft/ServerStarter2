@@ -1,3 +1,4 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { Runtime } from 'app/src-electron/schema/runtime';
 import { ForgeVersion, VersionId } from 'app/src-electron/schema/version';
@@ -41,8 +42,13 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
 
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
+    const p = progress?.subtitle({
+      key: `server.readyVersion.forge.readyServerData`,
+    });
+
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
@@ -60,7 +66,8 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     const installerRunRes = await getServerJarFromInstaller(
       installerPath,
       runtime,
-      execRuntime
+      execRuntime,
+      progress
     );
     if (isError(installerRunRes)) return installerRunRes;
 
@@ -76,6 +83,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     if (isError(newVerJson)) return newVerJson;
 
     // 引数の更新を反映した`version.json`を書き出して終了
+    p?.delete();
     return await verJsonHandler.write(newVerJson);
   }
 
@@ -118,7 +126,8 @@ async function downloadInstaller(
 async function getServerJarFromInstaller(
   installFilePath: Path,
   runtime: Runtime,
-  execRuntime: ExecRuntime
+  execRuntime: ExecRuntime,
+  progress?: GroupProgressor
 ): Promise<Failable<void>> {
   // `installer.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
   const args = [
@@ -127,14 +136,22 @@ async function getServerJarFromInstaller(
     '--installServer',
   ];
 
-  return execRuntime({
+  const sp = progress?.subtitle({
+    key: 'server.readyVersion.forge.installing',
+  });
+  const cp = progress?.console();
+  const res = await execRuntime({
     runtime,
     args,
     currentDir: installFilePath.parent(),
     onOut(line) {
-      /** TODO: プログレスに出力 */
+      cp?.push(line);
     },
   });
+  sp?.delete();
+  cp?.delete();
+
+  return res;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { VanillaVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData, Hash } from 'app/src-electron/util/binary/bytesData';
@@ -52,12 +53,16 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
 
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
     // Jarをダウンロード
+    const p = progress?.subtitle({
+      key: 'server.readyVersion.vanilla.fetching',
+    });
     const hash: Hash | undefined = verJson.download.hash
       ? {
           type: 'sha1',
@@ -68,6 +73,7 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
     if (isError(downloadJar)) return downloadJar;
 
     // Jarをキャッシュ先に書き出して終了
+    p?.delete();
     return getJarPath(this.cachePath).write(downloadJar);
   }
 

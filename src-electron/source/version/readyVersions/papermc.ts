@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { Runtime } from 'app/src-electron/schema/runtime';
 import { PapermcVersion, VersionId } from 'app/src-electron/schema/version';
@@ -39,7 +40,11 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
     super(version, cacheFolder);
   }
 
-  protected async generateVersionJson() {
+  protected async generateVersionJson(progress?: GroupProgressor) {
+    const p = progress?.subtitle({
+      key: `server.readyVersion.papermc.loadBuildData`,
+    });
+
     // バニラの情報をもとにPaperのversionJsonを生成
     const vanillaVerJson = await getVanillaVersionJson(
       this._version.id,
@@ -63,13 +68,19 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
       url: `${buildURL}/downloads/${name}`,
       hash: sha256,
     };
+    p?.delete();
     return returnVerJson;
   }
 
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
+    const p = progress?.subtitle({
+      key: `server.readyVersion.papermc.readyServerData`,
+    });
+
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
@@ -84,6 +95,7 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
     if (isError(downloadJar)) return downloadJar;
 
     // Jarをキャッシュ先に書き出して終了
+    p?.delete();
     return getJarPath(this.cachePath).write(downloadJar);
   }
 

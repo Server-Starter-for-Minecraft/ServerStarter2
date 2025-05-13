@@ -1,10 +1,12 @@
 import { z } from 'zod';
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { Runtime } from 'app/src-electron/schema/runtime';
 import { SpigotVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
@@ -44,7 +46,13 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     super(version, cacheFolder, SUPPORT_SECONDARY_FILES);
   }
 
-  protected async generateVersionJson(): Promise<Failable<VersionJson>> {
+  protected async generateVersionJson(
+    progress?: GroupProgressor
+  ): Promise<Failable<VersionJson>> {
+    const p = progress?.subtitle({
+      key: 'server.readyVersion.spigot.loadBuildJavaVersion',
+    });
+
     // バニラの情報をもとにSpigotのversionJsonを生成
     const vanillaVerJson = await getVanillaVersionJson(
       this._version.id,
@@ -69,23 +77,30 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     returnVerJson.javaVersion = {
       majorVersion: spigotVerInfo.javaVersions[1],
     };
+    p?.delete();
     return returnVerJson;
   }
 
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
     // `BuildTools.jar`をダウンロード
+    const p = progress?.subtitle({
+      key: 'server.readyVersion.spigot.readyBuildtool',
+    });
     const installerPath = this.cachePath.child('build/BuildTools.jar');
     const installerRes = await downloadBuildTools(
       verJson.download.url,
-      installerPath
+      installerPath,
+      progress
     );
     if (isError(installerRes)) return installerRes;
+    p?.delete();
 
     const runtime = await this.getRuntime('universal', verJsonHandler);
     if (isError(runtime)) return runtime;
@@ -96,7 +111,8 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
       installerPath,
       this.cachePath,
       runtime,
-      execRuntime
+      execRuntime,
+      progress
     );
   }
 
@@ -120,8 +136,12 @@ export class RemoveSpigotVersion extends RemoveVersion<SpigotVersion> {
  */
 async function downloadBuildTools(
   downloadURL: string,
-  buildToolsPath: Path
+  buildToolsPath: Path,
+  progress?: GroupProgressor
 ): Promise<Failable<void>> {
+  progress?.subtitle({
+    key: 'server.readyVersion.spigot.loadBuildData',
+  });
   await buildToolsPath.parent().mkdir();
 
   // BuildTools.jarをダウンロード
@@ -141,7 +161,8 @@ async function getServerJarFromBuildTools(
   buildToolsPath: Path,
   serverCachePath: Path,
   runtime: Runtime,
-  execRuntime: ExecRuntime
+  execRuntime: ExecRuntime,
+  progress?: GroupProgressor
 ): Promise<Failable<void>> {
   // `BuildTools.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
   const args = [
@@ -152,20 +173,25 @@ async function getServerJarFromBuildTools(
     versionId,
   ];
 
+  // BuildToolsを実行して，Jarファイルを生成
+  const sp = progress?.subtitle({ key: 'server.readyVersion.spigot.building' });
+  const cp = progress?.console();
   const buildRes = await execRuntime({
     runtime,
     args,
     currentDir: buildToolsPath.parent(),
     onOut(line) {
-      /** TODO: プログレスに出力 */
+      cp?.push(line);
     },
   });
-
+  sp?.delete();
+  cp?.delete();
   if (isError(buildRes)) return buildRes;
 
-  // (インストーラーを実行して，Jarファイルを生成)
-
   // jarをリネーム
+  const p = progress?.subtitle({
+    key: 'server.readyVersion.spigot.moving',
+  });
   const sourceJarPath = buildToolsPath
     .parent()
     .child(`spigot-${versionId}.jar`);
@@ -173,7 +199,14 @@ async function getServerJarFromBuildTools(
   await sourceJarPath.rename(targetJarPath);
 
   // 余計なファイルを削除
-  return buildToolsPath.parent().remove();
+  await buildToolsPath.parent().remove();
+
+  p?.delete();
+  if (!targetJarPath.exists()) {
+    return errorMessage.core.version.failSpigotBuild.missingJar({
+      spigotVersion: versionId,
+    });
+  }
 }
 
 /** In Source Testing */

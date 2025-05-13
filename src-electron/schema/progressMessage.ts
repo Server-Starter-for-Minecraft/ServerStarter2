@@ -26,9 +26,6 @@ type HProgressMessage = {
       /** EULAの同意状況を確認中 */
       title: MessageContent;
 
-      /** eula.txtを生成中 */
-      generating: MessageContent;
-
       /** eula.txtを読み込み中 */
       loading: MessageContent;
 
@@ -114,17 +111,11 @@ type HProgressMessage = {
       vanilla: {
         /** サーバーデータをダウンロード中 */
         fetching: MessageContent;
-
-        /** サーバーデータを保存中 */
-        saving: MessageContent;
       };
 
       spigot: {
         /** ビルド用のJavaのバージョンを確認中 */
         loadBuildJavaVersion: MessageContent;
-
-        /** ビルド用のJavaを準備中 */
-        readyBuildJava: MessageContent;
 
         /** ビルドツールを準備中 */
         readyBuildtool: MessageContent;
@@ -155,6 +146,9 @@ type HProgressMessage = {
       forge: {
         /** サーバーデータを準備中 */
         readyServerData: MessageContent;
+        
+        /** インストール中 */
+        installing: MessageContent;
       };
 
       fabric: {

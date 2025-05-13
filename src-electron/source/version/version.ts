@@ -140,7 +140,6 @@ export class VersionContainer {
       getCommand: (option: { jvmArgs: string[] }) => string[];
     }>
   > {
-    // TODO: progress対応
     const getRedeayVersionInstance = (version: Version) => {
       switch (version.type) {
         case 'unknown':
@@ -161,21 +160,23 @@ export class VersionContainer {
     };
 
     // バージョンを用意する
-    const readyVersion = await getRedeayVersionInstance(version);
+    const readyVersion = getRedeayVersionInstance(version);
     if (isError(readyVersion)) return readyVersion;
     const result = await readyVersion.completeReady4VersionFiles(
       serverPath,
-      execRuntime
+      execRuntime,
+      progress
     );
 
     // Eulaチェック
+    progress?.title({ key: 'server.eula.title' });
     const eulaPath = serverPath.child('eula.txt');
-    const currentEula = await getEulaAgreement(eulaPath);
+    const currentEula = await getEulaAgreement(eulaPath, progress);
     if (!currentEula.eula) {
       const newEula = await eulaAgreementAction(currentEula.url);
       if (isError(newEula)) return newEula;
       const newEulaValue = newEula;
-      await setEulaAgreement(eulaPath, newEulaValue);
+      await setEulaAgreement(eulaPath, newEulaValue, progress);
       if (newEulaValue === false)
         return errorMessage.core.minecraftEULANotAccepted();
     }

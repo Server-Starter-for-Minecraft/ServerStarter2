@@ -1,3 +1,4 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { isError } from 'app/src-electron/util/error/error';
 import { Path } from '../../util/binary/path';
@@ -36,8 +37,10 @@ function parseEula(txt: string): {
  * 無効なEulaの場合はNullを返す
  */
 export async function getEulaAgreement(
-  eulaPath: Path
+  eulaPath: Path,
+  progress?: GroupProgressor
 ): Promise<{ eula: boolean; url: string }> {
+  const p = progress?.subtitle({ key: 'server.eula.loading' });
   const readRes = await eulaPath.readText();
 
   let readTxt = '';
@@ -45,15 +48,20 @@ export async function getEulaAgreement(
   else readTxt = readRes;
 
   const { eula, url, comments } = parseEula(readTxt);
+  p?.delete();
   return { eula, url };
 }
 
 /** Minecraft eula に同意するかを保存 */
 export async function setEulaAgreement(
   eulaPath: Path,
-  value: boolean
+  value: boolean,
+  progress?: GroupProgressor
 ): Promise<Failable<void>> {
-  return await eulaPath.writeText(
+  const p = progress?.subtitle({ key: 'server.eula.saving' });
+  const res = await eulaPath.writeText(
     properties.stringify({ eula: value ? 'true' : 'false' })
   );
+  p?.delete();
+  return res;
 }

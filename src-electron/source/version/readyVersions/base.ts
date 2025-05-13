@@ -1,3 +1,4 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
@@ -92,8 +93,14 @@ export abstract class ReadyVersion<
    */
   async completeReady4VersionFiles(
     targetPath: Path,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<ReadyReturnInfo>> {
+    progress?.title({
+      key: 'server.readyVersion.title',
+      args: { version: this._version },
+    });
+
     // STEP1: `version.json`の生成
     if (!this.handler) {
       // handlerを生成
@@ -105,7 +112,7 @@ export abstract class ReadyVersion<
 
       if (isError(await this.handler.read())) {
         // `version.json`のオブジェクトを生成
-        const verJson = await this.generateVersionJson();
+        const verJson = await this.generateVersionJson(progress);
         if (isError(verJson)) return verJson;
 
         const res = await this.handler.write(verJson);
@@ -114,7 +121,7 @@ export abstract class ReadyVersion<
     }
 
     // STEP2: キャッシュデータを整備
-    const copyFiles = await this.readyCache(this.handler, execRuntime);
+    const copyFiles = await this.readyCache(this.handler, execRuntime, progress);
     if (isError(copyFiles)) return copyFiles;
 
     // STEP3: ファイルをキャッシュから移動
@@ -131,7 +138,8 @@ export abstract class ReadyVersion<
    */
   protected async readyCache(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<Path[]>> {
     // Jarの生成
     const cachedJarPath = getJarPath(this.cachePath);
@@ -139,7 +147,8 @@ export abstract class ReadyVersion<
       // Jarのダウンロードとファイルへの書き出し
       const generateJarRes = await this.generateCachedJar(
         verJsonHandler,
-        execRuntime
+        execRuntime,
+        progress
       );
       if (isError(generateJarRes)) return generateJarRes;
     }
@@ -175,14 +184,17 @@ export abstract class ReadyVersion<
   /**
    * 各バージョンに関するダウンロードURLや起動時引数等の情報を持つ`version.json`を生成する
    */
-  protected abstract generateVersionJson(): Promise<Failable<VersionJson>>;
+  protected abstract generateVersionJson(
+    progress?: GroupProgressor
+  ): Promise<Failable<VersionJson>>;
 
   /**
    * キャッシュされたJarを生成する
    */
   protected abstract generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>>;
 
   /**

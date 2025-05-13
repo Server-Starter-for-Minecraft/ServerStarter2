@@ -1,3 +1,4 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { FabricVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
@@ -42,8 +43,13 @@ export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
 
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
+    const p = progress?.subtitle({
+      key: `server.readyVersion.fabric.readyServerData`,
+    });
+
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
@@ -52,6 +58,7 @@ export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
     if (isError(downloadJar)) return downloadJar;
 
     // Jarをキャッシュ先に書き出して終了
+    p?.delete();
     return getJarPath(this.cachePath).write(downloadJar);
   }
 

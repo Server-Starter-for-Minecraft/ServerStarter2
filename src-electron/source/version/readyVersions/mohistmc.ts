@@ -1,3 +1,4 @@
+import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { MohistmcVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData, Hash } from 'app/src-electron/util/binary/bytesData';
@@ -39,8 +40,13 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
 
   protected async generateCachedJar(
     verJsonHandler: JsonSourceHandler<VersionJson>,
-    execRuntime: ExecRuntime
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
   ): Promise<Failable<void>> {
+    const p = progress?.subtitle({
+      key: `server.readyVersion.mohistmc.readyServerData`,
+    });
+
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
@@ -51,12 +57,11 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
           value: verJson.download.hash,
         }
       : undefined;
-    // 2024/09/08 時点でmohistから提供されるhashに信用が置けないためコメントアウトしている
     const downloadJar = await BytesData.fromURL(verJson.download.url, hash);
-    // const downloadJar = await BytesData.fromURL(verJson.download.url);
     if (isError(downloadJar)) return downloadJar;
 
     // Jarをキャッシュ先に書き出して終了
+    p?.delete();
     return getJarPath(this.cachePath).write(downloadJar);
   }
 
