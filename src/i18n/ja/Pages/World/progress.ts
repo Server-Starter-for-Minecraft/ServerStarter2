@@ -7,7 +7,6 @@ export const jaProgress: ProgressMessageTranslation = {
     getOwner: 'オーナーのデータを取得中です',
     eula: {
       title: 'EULAの同意状況を確認しています',
-      generating: 'eula.txt を生成中です',
       loading: 'eula.txt を読み込み中です',
       saving: 'eula.txt に書き込み中です',
       asking: 'eula.txt に同意するかどうかを問い合わせています',
@@ -40,11 +39,9 @@ export const jaProgress: ProgressMessageTranslation = {
       title: '{version_id}({version_type})を準備中です',
       vanilla: {
         fetching: 'サーバーデータをダウンロード中です',
-        saving: 'サーバーデータを保存中です',
       },
       spigot: {
         loadBuildJavaVersion: 'ビルド用のJavaバージョンを確認中です',
-        readyBuildJava: 'ビルド用Javaの準備中です',
         readyBuildtool: 'ビルドツールを準備中です',
         loadBuildData: 'ビルド情報を取得中です',
         building: 'ビルド中です',
@@ -59,6 +56,7 @@ export const jaProgress: ProgressMessageTranslation = {
       },
       forge: {
         readyServerData: 'サーバーデータを準備中です',
+        installing: 'Forgeをインストール中です',
       },
       fabric: {
         readyServerData: 'サーバーデータを準備中です',

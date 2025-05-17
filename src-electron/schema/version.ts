@@ -50,11 +50,11 @@ export const MohistmcVersion = z.object({
   type: z.literal('mohistmc'),
   id: VersionId,
   forge_version: z.string().optional(),
-  number: z.number(),
-  // jar: z.object({
-  //   url: z.string(),
-  //   md5: z.string(),
-  // }),
+  buildId: z.string(),
+  jar: z.object({
+    url: z.string(),
+    md5: z.string(),
+  }),
 });
 export type MohistmcVersion = z.infer<typeof MohistmcVersion>;
 
@@ -114,7 +114,7 @@ export const AllMohistmcVersion = z
     id: VersionId,
     builds: z
       .object({
-        number: z.number(),
+        id: z.string(),
         forge_version: z.string().optional(),
         jar: z.object({
           url: z.string(),

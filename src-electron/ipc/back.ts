@@ -1,6 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
+import { getVersions } from '../core/setup';
 import { readyWindow } from '../lifecycle/lifecycle';
 import { getAllLocalSaveData } from '../source/launcher/localSave';
 import { getPlayer } from '../source/player/main';
@@ -13,7 +14,6 @@ import {
 import { getCacheContents } from '../source/stores/cache';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { getStaticResoure } from '../source/system/resource';
-import { getVersions } from '../source/version/version';
 import { pickDialog } from '../source/world/dialog';
 import { validateNewWorldName } from '../source/world/name';
 import { getWorldPaths } from '../source/world/paths';

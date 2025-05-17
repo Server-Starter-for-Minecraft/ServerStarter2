@@ -4,7 +4,7 @@ import { $T } from 'src/i18n/utils/tFunc';
 import SsInput from './ssInput.vue';
 
 interface Prop {
-  options?: readonly T[];
+  options?: readonly any[];
   label?: string;
   disable?: boolean;
   dense?: boolean;

@@ -13,8 +13,3 @@ export async function getAdditionalJavaArgument(
   if (isError(result)) return result;
   return result;
 }
-
-/** stdin,stdout,stderrの文字コードをutf-8に */
-export function javaEncodingToUtf8() {
-  return ['"-Dfile.encoding=UTF-8"'];
-}
