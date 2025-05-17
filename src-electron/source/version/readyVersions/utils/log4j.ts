@@ -598,6 +598,8 @@ export function saveLog4JPatch(
   savePath: Path,
   progress?: GroupProgressor
 ): PatchReturnType {
+  // log4jの脆弱性に対応
+  // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
   return processSwitcher<PatchReturnType, PatchReturnType>(
     versionID,
     async () => null,
