@@ -6,7 +6,7 @@ import { Runtime } from '../../schema/runtime';
 import { AllVersion, Version, VersionType } from '../../schema/version';
 import { Path } from '../../util/binary/path';
 import { getEulaAgreement, setEulaAgreement } from './eula';
-import { getVersionlist } from './getVersions/base';
+import { getVersionlist, VersionListLoader } from './getVersions/base';
 import { FabricVersionLoader } from './getVersions/fabric';
 import { ForgeVersionLoader } from './getVersions/forge';
 import { MohistMCVersionLoader } from './getVersions/mohistmc';
@@ -40,76 +40,32 @@ import {
  * バージョンを管理するクラス
  */
 export class VersionContainer {
-  cachePath: Path;
+  readonly cachePath: Path;
+  readonly versionGetters: {
+    [key in Exclude<VersionType, 'unknown'>]: VersionListLoader<key>;
+  };
 
   constructor(cachePath: Path) {
     this.cachePath = cachePath;
+    this.versionGetters = {
+      vanilla: new VanillaVersionLoader(cachePath),
+      forge: new ForgeVersionLoader(cachePath),
+      spigot: new SpigotVersionLoader(cachePath),
+      papermc: new PaperVersionLoader(cachePath),
+      mohistmc: new MohistMCVersionLoader(cachePath),
+      fabric: new FabricVersionLoader(cachePath),
+    } as const;
   }
 
   /** @param useCache trueの時はキャッシュから内容を読み取る / falseの時はURLからフェッチしてキャッシュを更新 */
-  async listVersions(
-    type: 'vanilla',
+  async listVersions<T extends VersionType>(
+    type: T,
     useCache: boolean
-  ): Promise<Failable<AllVersion<'vanilla'>>>;
-  async listVersions(
-    type: 'forge',
-    useCache: boolean
-  ): Promise<Failable<AllVersion<'forge'>>>;
-  async listVersions(
-    type: 'spigot',
-    useCache: boolean
-  ): Promise<Failable<AllVersion<'spigot'>>>;
-  async listVersions(
-    type: 'papermc',
-    useCache: boolean
-  ): Promise<Failable<AllVersion<'papermc'>>>;
-  async listVersions(
-    type: 'mohistmc',
-    useCache: boolean
-  ): Promise<Failable<AllVersion<'mohistmc'>>>;
-  async listVersions(
-    type: 'fabric',
-    useCache: boolean
-  ): Promise<Failable<AllVersion<'fabric'>>>;
-  async listVersions(
-    type: 'unknown',
-    useCache: boolean
-  ): Promise<Failable<never>>;
-  async listVersions<T extends VersionType>(type: T, useCache: boolean) {
-    switch (type) {
-      case 'vanilla':
-        return getVersionlist<'vanilla'>(
-          useCache,
-          new VanillaVersionLoader(this.cachePath)
-        );
-      case 'forge':
-        return getVersionlist<'forge'>(
-          useCache,
-          new ForgeVersionLoader(this.cachePath)
-        );
-      case 'spigot':
-        return getVersionlist<'spigot'>(
-          useCache,
-          new SpigotVersionLoader(this.cachePath)
-        );
-      case 'papermc':
-        return getVersionlist<'papermc'>(
-          useCache,
-          new PaperVersionLoader(this.cachePath)
-        );
-      case 'mohistmc':
-        return getVersionlist<'mohistmc'>(
-          useCache,
-          new MohistMCVersionLoader(this.cachePath)
-        );
-      case 'fabric':
-        return getVersionlist<'fabric'>(
-          useCache,
-          new FabricVersionLoader(this.cachePath)
-        );
-      case 'unknown':
-        return;
-    }
+  ): Promise<Failable<AllVersion<T>>> {
+    if (type === 'unknown')
+      return fromRuntimeError(new Error('VERSION_IS_UNKNOWN'));
+    const loader = this.versionGetters[type as Exclude<T, 'unknown'>];
+    return getVersionlist(useCache, loader);
   }
 
   /**
