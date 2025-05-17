@@ -44,7 +44,7 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
     progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const p = progress?.subtitle({
-      key: `server.readyVersion.mohistmc.readyServerData`,
+      key: 'server.readyVersion.mohistmc.readyServerData',
     });
 
     const verJson = await verJsonHandler.read();

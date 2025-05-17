@@ -42,7 +42,7 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
 
   protected async generateVersionJson(progress?: GroupProgressor) {
     const p = progress?.subtitle({
-      key: `server.readyVersion.papermc.loadBuildData`,
+      key: 'server.readyVersion.papermc.loadBuildData',
     });
 
     // バニラの情報をもとにPaperのversionJsonを生成
@@ -78,7 +78,7 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
     progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const p = progress?.subtitle({
-      key: `server.readyVersion.papermc.readyServerData`,
+      key: 'server.readyVersion.papermc.readyServerData',
     });
 
     const verJson = await verJsonHandler.read();

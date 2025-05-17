@@ -46,7 +46,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const p = progress?.subtitle({
-      key: `server.readyVersion.forge.readyServerData`,
+      key: 'server.readyVersion.forge.readyServerData',
     });
 
     const verJson = await verJsonHandler.read();

@@ -47,7 +47,7 @@ export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
     progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const p = progress?.subtitle({
-      key: `server.readyVersion.fabric.readyServerData`,
+      key: 'server.readyVersion.fabric.readyServerData',
     });
 
     const verJson = await verJsonHandler.read();
