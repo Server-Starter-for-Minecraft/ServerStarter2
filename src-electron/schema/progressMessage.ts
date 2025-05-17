@@ -146,7 +146,7 @@ type HProgressMessage = {
       forge: {
         /** サーバーデータを準備中 */
         readyServerData: MessageContent;
-        
+
         /** インストール中 */
         installing: MessageContent;
       };
