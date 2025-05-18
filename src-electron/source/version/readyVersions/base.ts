@@ -50,7 +50,11 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
    */
   protected _cachedSecondaryFiles: (string | RegExp)[];
 
-  constructor(version: V, cacheFolder: Path, cachedSecondaryFiles?: (string | RegExp)[]) {
+  constructor(
+    version: V,
+    cacheFolder: Path,
+    cachedSecondaryFiles?: (string | RegExp)[]
+  ) {
     this._version = version;
     this._cacheFolder = cacheFolder;
     this._cachedSecondaryFiles = [
