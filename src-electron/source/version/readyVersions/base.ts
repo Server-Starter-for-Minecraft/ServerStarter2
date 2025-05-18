@@ -48,9 +48,9 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
    *
    * 各サーバーでこのほかに必要なファイルがある場合はコンストラクタの引数で指定する
    */
-  protected _cachedSecondaryFiles: string[];
+  protected _cachedSecondaryFiles: (string | RegExp)[];
 
-  constructor(version: V, cacheFolder: Path, cachedSecondaryFiles?: string[]) {
+  constructor(version: V, cacheFolder: Path, cachedSecondaryFiles?: (string | RegExp)[]) {
     this._version = version;
     this._cacheFolder = cacheFolder;
     this._cachedSecondaryFiles = [
@@ -168,11 +168,12 @@ export abstract class ReadyVersion<
     if (log4JPatchPath !== null) paths.push(log4JPatchPath);
 
     // その他のキャッシュファイル
-    paths.push(
-      ...this._cachedSecondaryFiles.map((fileName) =>
-        this.cachePath.child(fileName)
-      )
+    const cachedMatchFiles = await getMatchFiles(
+      this.cachePath,
+      this._cachedSecondaryFiles
     );
+    if (isError(cachedMatchFiles)) return cachedMatchFiles;
+    paths.push(...cachedMatchFiles);
 
     return paths;
   }
@@ -273,11 +274,12 @@ export abstract class RemoveVersion<
     }
 
     // その他のキャッシュファイル
-    paths.push(
-      ...this._cachedSecondaryFiles.map((fileName) =>
-        targetPath.child(fileName)
-      )
+    const cachedMatchFiles = await getMatchFiles(
+      targetPath,
+      this._cachedSecondaryFiles
     );
+    if (isError(cachedMatchFiles)) return cachedMatchFiles;
+    paths.push(...cachedMatchFiles);
 
     // ファイル群を削除してキャッシュに撤退
     await this.removeFiles(paths);
@@ -294,4 +296,25 @@ export abstract class RemoveVersion<
     // 元ファイルを削除
     await Promise.all(paths.map((p) => p.remove()));
   }
+}
+
+/**
+ * 指定したカレントディレクトリに入っているファイルのうち，`patterns`にマッチするものを取得する
+ */
+async function getMatchFiles(
+  cwd: Path,
+  patterns: (string | RegExp)[]
+): Promise<Failable<Path[]>> {
+  const files = await cwd.iter();
+  if (isError(files)) return files;
+
+  return patterns
+    .map((pattern) => {
+      if (typeof pattern === 'string') {
+        return cwd.child(pattern);
+      } else {
+        return files.filter((p) => pattern.test(p.basename()));
+      }
+    })
+    .flat();
 }
