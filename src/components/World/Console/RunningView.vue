@@ -50,7 +50,7 @@ consoleStore.$subscribe((mutation, state) => {
   >
     <p
       :class="item.isError ? 'text-negative' : ''"
-      style="word-break: break-all; user-select: text"
+      style="white-space: pre-wrap; word-break: break-all; user-select: text"
     >
       {{ item.chunk }}
     </p>
@@ -62,6 +62,6 @@ p {
   font-size: 16pt;
   line-height: 1.2;
   margin: 0;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: Consolas, 'Courier New', monospace;
 }
 </style>
