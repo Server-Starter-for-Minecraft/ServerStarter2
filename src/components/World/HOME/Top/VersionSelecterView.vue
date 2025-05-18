@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import {
   AllFabricVersion,
@@ -12,6 +11,7 @@ import {
   versionTypes,
 } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -29,7 +29,6 @@ const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-const { t } = useI18n();
 
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
 // validVersionTypesを通過したバージョンのみ選択できるようにするため，getでは値を必ず取得できる
@@ -58,8 +57,8 @@ const validVersionTypes = versionTypes.filter(
 function createServerMap(serverType: (typeof versionTypes)[number]) {
   return {
     value: serverType,
-    label: t(`home.serverType.${serverType}`),
-    description: t(`home.serverDescription.${serverType}`),
+    label: $T(`home.serverType.${serverType}`),
+    description: $T(`home.serverDescription.${serverType}`),
     icon: assets.png[serverType],
   };
 }
@@ -80,7 +79,7 @@ const selectedVerType = computed({
     v-model="selectedVerType"
     :options="validVersionTypes.map(createServerMap)"
     options-selected-class="text-primary"
-    :label="$t('home.version.serverType')"
+    :label="$T('home.version.serverType')"
     :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
     class="q-pb-md"
   >

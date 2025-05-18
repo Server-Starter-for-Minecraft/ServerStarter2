@@ -1,6 +1,6 @@
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { isError } from 'app/src-electron/util/error/error';
-import * as properties from 'app/src-electron/util/format/properties';
+import { properties } from 'app/src-electron/util/format/properties';
 import { objValueMap } from 'app/src-electron/util/obj/objmap';
 import { ServerSettingFile } from './base';
 

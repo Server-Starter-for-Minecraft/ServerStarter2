@@ -1,9 +1,9 @@
-import { Version } from 'src-electron/schema/version';
+import { GroupProgressor } from 'app/src-electron/common/progress';
+import { Failable } from 'app/src-electron/schema/error';
+import { VersionId } from 'app/src-electron/schema/version';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
+import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
-import { GroupProgressor } from '../../../common/progress';
-import { BytesData } from '../../../util/binary/bytesData';
-import { Path } from '../../../util/binary/path';
-import { Failable } from '../../../util/error/failable';
 
 const ver_17_18 = [
   '1.18.1-rc2',
@@ -506,72 +506,129 @@ const ver_7_11 = [
 ];
 
 const xml_12_16 = 'log4j2_112-116.xml';
-async function download_xml_12_16(serverPath: Path) {
+async function download_xml_12_16(
+  serverPath: Path,
+  progress?: GroupProgressor
+) {
   const xml = serverPath.child(xml_12_16);
+  const url =
+    'https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml';
+
   if (!xml.exists()) {
-    const data = await BytesData.fromURL(
-      'https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml'
-    );
-    if (isError(data)) return data;
-    return await xml.write(data);
+    const p = progress?.subtitle({
+      key: 'server.run.before.getLog4jSettingFile',
+      args: { path: xml_12_16 },
+    });
+    const res = await BytesData.fromPathOrUrl(xml, url);
+    p?.delete();
+    if (isError(res)) return res;
   }
+
+  return xml;
 }
 
 const xml_7_11 = 'log4j2_17-111.xml';
-async function download_xml_7_11(serverPath: Path) {
+async function download_xml_7_11(serverPath: Path, progress?: GroupProgressor) {
   const xml = serverPath.child(xml_7_11);
+  const url =
+    'https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml';
+
   if (!xml.exists()) {
-    const data = await BytesData.fromURL(
-      'https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml'
-    );
-    if (isError(data)) return data;
-    return await xml.write(data);
+    const p = progress?.subtitle({
+      key: 'server.run.before.getLog4jSettingFile',
+      args: { path: xml_7_11 },
+    });
+    const res = await BytesData.fromPathOrUrl(xml, url);
+    p?.delete();
+    if (isError(res)) return res;
   }
+
+  return xml;
 }
 
-/** log4jに対応するファイルを生成し、Javaの実行時引数を返す */
-export async function getLog4jArg(
-  serverPath: Path,
-  version: Version,
-  progress: GroupProgressor
-): Promise<Failable<string | null>> {
-  // log4jの脆弱性に対応
-  // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
-
-  // unknown version
-  if (version.type === 'unknown') return null;
-
+/**
+ * バージョン別で処理内容を変更する
+ */
+function processSwitcher<T, U>(
+  versionID: VersionId,
+  process_17_18: T,
+  process_12_16: T,
+  process_7_11: T,
+  other: U
+) {
   // 1.17-1.18
-  if (version.id in ver_17_18) {
-    return '-Dlog4j2.formatMsgNoLookups=true';
+  if (ver_17_18.some((ver) => ver === versionID)) {
+    return process_17_18;
   }
 
   // 1.12-1.16.5
-  if (version.id in ver_12_16) {
-    const sub = progress.subtitle({
-      key: 'server.run.before.getLog4jSettingFile',
-      args: {
-        path: xml_12_16,
-      },
-    });
-    await download_xml_12_16(serverPath);
-    sub.delete();
-    return '-Dlog4j.configurationFile=log4j2_112-116.xml';
+  else if (ver_12_16.some((ver) => ver === versionID)) {
+    return process_12_16;
   }
 
   // 1.7-1.11.2
-  if (version.id in ver_7_11) {
-    const sub = progress.subtitle({
-      key: 'server.run.before.getLog4jSettingFile',
-      args: {
-        path: xml_7_11,
-      },
-    });
-    await download_xml_7_11(serverPath);
-    sub.delete();
-    return '-Dlog4j.configurationFile=log4j2_17-111.xml';
+  else if (ver_7_11.some((ver) => ver === versionID)) {
+    return process_7_11;
   }
 
-  // それ以降orそれ以外
-  return null;
+  return other;
+}
+
+/**
+ * Log4J対応で必要なJarに渡す引数を取得する
+ */
+export function getLog4jArg(versionID: VersionId): string | null {
+  return processSwitcher(
+    versionID,
+    '-Dlog4j2.formatMsgNoLookups=true',
+    '-Dlog4j.configurationFile=log4j2_112-116.xml',
+    '-Dlog4j.configurationFile=log4j2_17-111.xml',
+    null
+  );
+}
+
+type PatchReturnType = () => Promise<Failable<Path | null>>;
+/**
+ * Log4J対応で必要なファイルを保存する
+ *
+ * @param savePath ファイルを保存するフォルダパス（キャッシュフォルダを想定）
+ */
+export function saveLog4JPatch(
+  versionID: VersionId,
+  savePath: Path,
+  progress?: GroupProgressor
+): PatchReturnType {
+  // log4jの脆弱性に対応
+  // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
+  return processSwitcher<PatchReturnType, PatchReturnType>(
+    versionID,
+    async () => null,
+    () => download_xml_12_16(savePath, progress),
+    () => download_xml_7_11(savePath, progress),
+    async () => null
+  );
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { test, expect } = import.meta.vitest;
+
+  const cases = ['17-18', '12-16', '7-11', 'other'] as const;
+
+  test.each([
+    {
+      ver: '1.21' as VersionId,
+      val: 'other',
+    },
+    {
+      ver: '1.13.1' as VersionId,
+      val: '12-16',
+    },
+    {
+      ver: '1.7' as VersionId,
+      val: '7-11',
+    },
+  ])('processSwitcher', ({ ver, val }) => {
+    expect(processSwitcher(ver, ...cases)).toBe(val);
+  });
 }

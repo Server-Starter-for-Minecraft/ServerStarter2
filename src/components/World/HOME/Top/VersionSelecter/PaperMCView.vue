@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { AllPapermcVersion } from 'app/src-electron/schema/version';
+import {
+  AllPapermcVersion,
+  PapermcVersion,
+  VersionId,
+} from 'app/src-electron/schema/version';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
@@ -16,7 +21,7 @@ const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-function buildPaperVer(id: string, build: number) {
+function buildPaperVer(id: VersionId, build: number): PapermcVersion {
   return {
     id: id,
     type: 'papermc' as const,
@@ -26,7 +31,7 @@ function buildPaperVer(id: string, build: number) {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(id: string, build: number) {
+function updateWorldVersion(id: VersionId, build: number) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildPaperVer(id, build);
   }
@@ -37,21 +42,26 @@ const paperVers = () => {
 };
 const paperVer = computed({
   get: () => {
+    const ver = mainStore.world?.version;
+    if (!ver || ver.type === 'unknown') return '';
     // 前のバージョンがPaperに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (paperVers().indexOf(mainStore.world?.version.id ?? '') === -1) {
+    if (paperVers().indexOf(ver.id ?? '') === -1) {
       return paperVers()[0];
     }
-    return mainStore.world?.version.id ?? '';
+    return ver.id ?? '';
   },
   set: (val) => {
+    if (val === '') return;
     const newVer = buildPaperVer(val, paperBuilds(val)[0]);
-    openWarningDialog(
-      $q,
-      paperVers(),
-      mainStore.worldBack?.version ?? newVer,
-      newVer,
-      'id'
-    );
+    if (mainStore.worldBack?.version.type !== 'unknown') {
+      openWarningDialog(
+        $q,
+        paperVers(),
+        mainStore.worldBack?.version ?? newVer,
+        newVer,
+        'id'
+      );
+    }
   },
 });
 
@@ -67,12 +77,15 @@ const paperBuild = computed({
     return mainStore.world.version.build;
   },
   set: (val) => {
+    if (paperVer.value === '') return;
     updateWorldVersion(paperVer.value, val);
   },
 });
 
 // 表示内容と内部データを整合させる
-updateWorldVersion(paperVer.value, paperBuild.value);
+if (paperVer.value !== '') {
+  updateWorldVersion(paperVer.value, paperBuild.value);
+}
 </script>
 
 <template>
@@ -84,11 +97,11 @@ updateWorldVersion(paperVer.value, paperBuild.value);
           return {
             data: ver,
             label:
-              idx === 0 ? `${ver}【${$t('home.version.latestVersion')}】` : ver,
+              idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
           };
         })
       "
-      :label="$t('home.version.versionType')"
+      :label="$T('home.version.versionType')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
@@ -102,11 +115,11 @@ updateWorldVersion(paperVer.value, paperBuild.value);
           return {
             data: build,
             label:
-              idx === 0 ? `${build} (${$t('home.version.recommend')})` : build,
+              idx === 0 ? `${build} (${$T('home.version.recommend')})` : build,
           };
         })
       "
-      :label="$t('home.version.buildNumber')"
+      :label="$T('home.version.buildNumber')"
       option-label="label"
       option-value="data"
       :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"

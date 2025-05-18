@@ -5,6 +5,7 @@ import {
   WorldEdited,
   WorldID,
 } from 'src-electron/schema/world';
+import { versionContainer } from 'app/src-electron/core/setup';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
@@ -16,7 +17,6 @@ import { NEW_WORLD_NAME } from '../../source/const';
 import { getSystemSettings } from '../../source/stores/system';
 import { Path } from '../../util/binary/path';
 import { asyncMap } from '../../util/obj/objmap';
-import { vanillaVersionLoader } from '../version/vanilla';
 import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
@@ -97,10 +97,9 @@ export async function setWorld(
  * ワールドのidは呼び出すたびに新しくなる
  */
 export async function newWorld(): Promise<WithError<Failable<World>>> {
-  const vanillaVersions = await vanillaVersionLoader.getAllVersions(true);
+  const vanillaVersions = await versionContainer.listVersions('vanilla', true);
   if (isError(vanillaVersions)) return withError(vanillaVersions);
 
-  // TODO: なぜかFailableが消えない
   const latestRelease = vanillaVersions.find((ver) => ver.release);
 
   const systemSettings = await getSystemSettings();

@@ -7,7 +7,6 @@ export const enUSProgress: ProgressMessageTranslation = {
     getOwner: 'Getting owner data',
     eula: {
       title: 'Checking agreement of EULA',
-      generating: 'Making eula.txt',
       loading: 'Loading eula.txt',
       saving: 'Writing eula.txt',
       asking: 'Asking the agreement about eula.txt',
@@ -40,11 +39,9 @@ export const enUSProgress: ProgressMessageTranslation = {
       title: 'Preparing {version_id}({version_type})',
       vanilla: {
         fetching: 'Downloading server data',
-        saving: 'Saving server data',
       },
       spigot: {
         loadBuildJavaVersion: 'Checking Java version for build',
-        readyBuildJava: 'Preparing Java for build',
         readyBuildtool: 'Preparing build tools',
         loadBuildData: 'Getting build infomation',
         building: 'Building',
@@ -59,6 +56,7 @@ export const enUSProgress: ProgressMessageTranslation = {
       },
       forge: {
         readyServerData: 'Preparing server data',
+        installing: 'Installing',
       },
       fabric: {
         readyServerData: 'Preparing server data',
