@@ -26,15 +26,15 @@ const latestReleaseID = prop.versionData.games.find((ops) => ops.release)?.id;
 
 function buildFabricVer(
   ver: { id: VersionId; release: boolean },
-  installer: string,
-  loader: string
+  installer: { version: string; stable: boolean },
+  loader: { version: string; stable: boolean }
 ): FabricVersion {
   return {
     id: ver.id,
     type: 'fabric' as const,
     release: ver.release,
-    installer: installer,
-    loader: loader,
+    installer: installer.version,
+    loader: loader.version,
   };
 }
 /**
@@ -42,8 +42,8 @@ function buildFabricVer(
  */
 function updateWorldVersion(
   ver: { id: VersionId; release: boolean },
-  installer: string,
-  loader: string
+  installer: { version: string; stable: boolean },
+  loader: { version: string; stable: boolean }
 ) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildFabricVer(ver, installer, loader);
@@ -90,13 +90,11 @@ const fixInvalidIdx = (idx: number) => {
 const recommendInstallerIdx = fixInvalidIdx(
   prop.versionData.installers.findIndex((i) => i.stable)
 );
-const fabricInstaller = ref(
-  prop.versionData.installers[recommendInstallerIdx].version
-);
+const fabricInstaller = ref(prop.versionData.installers[recommendInstallerIdx]);
 const recommendLoaderIdx = fixInvalidIdx(
   prop.versionData.loaders.findIndex((i) => i.stable)
 );
-const fabricLoader = ref(prop.versionData.loaders[recommendLoaderIdx].version);
+const fabricLoader = ref(prop.versionData.loaders[recommendLoaderIdx]);
 
 // 表示内容と内部データを整合させる
 if (fabricVer.value !== '') {
@@ -150,9 +148,12 @@ if (fabricVer.value !== '') {
   <div class="row justify-between q-gutter-md">
     <SsSelect
       v-model="fabricInstaller"
-      @update:modelValue="(newVal: string) => {
-        if (fabricVer !== '') updateWorldVersion(fabricVer, newVal, fabricLoader)
-      }"
+      @update:modelValue="
+        (newVal) => {
+          if (fabricVer !== '')
+            updateWorldVersion(fabricVer, newVal, fabricLoader);
+        }
+      "
       :options="
         prop.versionData.installers.map((installer, i) => {
           return {
@@ -173,9 +174,12 @@ if (fabricVer.value !== '') {
     />
     <SsSelect
       v-model="fabricLoader"
-      @update:modelValue="(newVal: string) => {
-        if (fabricVer !== '') updateWorldVersion(fabricVer, fabricInstaller, newVal)
-      }"
+      @update:modelValue="
+        (newVal) => {
+          if (fabricVer !== '')
+            updateWorldVersion(fabricVer, fabricInstaller, newVal);
+        }
+      "
       :options="
         prop.versionData.loaders.map((loader, i) => {
           return {
