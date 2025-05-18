@@ -115,6 +115,10 @@ export const enUSError: MessageSchema['error'] = {
         title: 'Failed to delete {type}',
         desc: 'Failed to delete {path}',
       },
+      copyFailed: {
+        title: 'Failed to copy {type}',
+        desc: 'Failed to copy {path}',
+      },
       moveFailed: {
         title: 'Failed to move {type}',
         desc: 'Failed to move {path}',
