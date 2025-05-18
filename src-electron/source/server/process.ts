@@ -22,8 +22,8 @@ export function serverProcess(
   // javaのサブプロセスを起動
   // TODO: エラー出力先のハンドル
 
-  const stdout = (chunk: string) => console(chunk, false);
-  const stderr = (chunk: string) => console(chunk, true);
+  const stdout = (chunk: string) => splitLine(chunk, false, console);
+  const stderr = (chunk: string) => splitLine(chunk, true, console);
 
   const process = interactiveProcess(
     javaPath,
@@ -59,4 +59,14 @@ export function serverProcess(
   });
 
   return result;
+}
+
+function splitLine(
+  chunk: string,
+  isError: boolean,
+  console: (value: string, isError: boolean) => void
+) {
+  chunk.split(/\n|\r\n/).forEach((line) => {
+    console(line, isError);
+  });
 }
