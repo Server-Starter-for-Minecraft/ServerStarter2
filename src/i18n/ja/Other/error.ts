@@ -50,7 +50,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       },
       renameFailed: {
         title: '{type}のリネームに失敗しました',
-        desc: '{path}をリネームできませんでした',
+        desc: '全てのサーバーを閉じたうえでPCの再起動をお試しください．({path})',
       },
       alreadyExists: {
         title: '{type}が既に存在しています',
@@ -111,15 +111,19 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       },
       creationFailed: {
         title: '{type}の生成に失敗しました',
-        desc: '{path}の生成ができませんでした',
+        desc: 'PCの再起動や書き込み権限をご確認ください．({path})',
       },
       deletionFailed: {
         title: '{type}の削除に失敗しました',
-        desc: '{path}の削除ができませんでした',
+        desc: '全てのサーバーを閉じたうえでPCの再起動をお試しください．({path})',
+      },
+      copyFailed: {
+        title: '{type}のコピーに失敗しました',
+        desc: '全てのサーバーを閉じたうえでPCの再起動をお試しください．({path})',
       },
       moveFailed: {
         title: '{type}の移動に失敗しました',
-        desc: '{path}の移動ができませんでした',
+        desc: '全てのサーバーを閉じたうえでPCの再起動をお試しください．({path})',
       },
       dialogCanceled: {
         title: 'ファイル選択ウィンドウがキャンセルされました',

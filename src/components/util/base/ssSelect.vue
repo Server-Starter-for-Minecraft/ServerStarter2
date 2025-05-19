@@ -36,18 +36,22 @@ function convertStructure(modelVal: T) {
   };
 }
 
-// 選択肢一覧を構造化し，「その他」の多言語表示に対応する
-const editedOptions = (prop.options ?? []).map(convertStructure);
+const getOptions = (ops?: readonly any[]) => {
+  // 選択肢一覧を構造化し，「その他」の多言語表示に対応する
+  const editedOptions = (ops ?? []).map(convertStructure);
 
-// 選択肢一覧に「その他」を追加する
-// （本来はT型しか入れられないところに強引にOtherを入れるため，Modelが文字列型の時のみ対応する）
-// --> Modelの型制限が過剰な場合は適切な検証のもとに制限を緩和しても良い
-if (prop.enableOther && typeof model.value === 'string') {
-  editedOptions.push({
-    [definedOptionLabel]: $T('general.other') as T,
-    [definedOptionValue]: OTHER_DATA,
-  });
-}
+  // 選択肢一覧に「その他」を追加する
+  // （本来はT型しか入れられないところに強引にOtherを入れるため，Modelが文字列型の時のみ対応する）
+  // --> Modelの型制限が過剰な場合は適切な検証のもとに制限を緩和しても良い
+  if (prop.enableOther && typeof model.value === 'string') {
+    editedOptions.push({
+      [definedOptionLabel]: $T('general.other') as T,
+      [definedOptionValue]: OTHER_DATA,
+    });
+  }
+
+  return editedOptions;
+};
 
 // model.valueがOptionsに含まれているかどうかを判定する
 // Objectが来た時に包含判定が崩れないよう，inを使わずにsomeを使う
@@ -75,7 +79,7 @@ const computedModel = computed({
     <q-select
       v-model="computedModel"
       filled
-      :options="editedOptions"
+      :options="getOptions(options)"
       :label="label"
       :dense="dense"
       :popup-content-style="{ fontSize: '0.9rem' }"

@@ -64,6 +64,9 @@ export type DataErrors = {
     // ファイルまたはディレクトリの削除に失敗
     deletionFailed: PathErrorContent;
 
+    // ファイルまたはディレクトリのコピーに失敗
+    copyFailed: PathErrorContent;
+
     // ファイルまたはディレクトリの移動に失敗
     moveFailed: PathErrorContent;
 

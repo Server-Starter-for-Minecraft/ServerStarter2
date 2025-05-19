@@ -293,7 +293,16 @@ export class Path {
     if (!this.exists()) return;
     await target.parent().mkdir(true);
     await target.remove();
-    await fs.copy(this.path, target.path);
+    try {
+      await fs.copy(this.path, target.path);
+    } catch {
+      const isDir = await this._isDirectory();
+      if (isError(isDir)) return isDir;
+      return errorMessage.data.path.copyFailed({
+        type: isDir ? 'directory' : 'file',
+        path: this.path,
+      });
+    }
   }
 
   moveTo = exclusive(this._moveTo);

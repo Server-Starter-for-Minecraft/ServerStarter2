@@ -17,7 +17,12 @@ function getServerID(version: ForgeVersion) {
 }
 
 // ReadyVersionの標準対応以外のキャッシュからコピーすべきファイル群
-const SUPPORT_SECONDARY_FILES = ['version.bat', 'version.sh'];
+// 古いForgeは`version.json`とサーバーの実態Jarが分離しているため，これに対応するために正規表現で実態Jarもコピーする
+const SUPPORT_SECONDARY_FILES = [
+  'version.bat',
+  'version.sh',
+  /^(?!installer\.jar$).*\.jar$/,
+];
 
 export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
   constructor(version: ForgeVersion, cacheFolder: Path) {
@@ -61,7 +66,11 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     if (isError(installerRes)) return installerRes;
 
     // `installer.jar`を実行
-    const runtime = await this.getRuntime('minecraft', verJsonHandler);
+    // installer.jarは常に最新のJavaで実行する
+    const runtime: Runtime = {
+      type: 'minecraft',
+      version: 'java-runtime-delta',
+    };
     if (isError(runtime)) return runtime;
     const installerRunRes = await getServerJarFromInstaller(
       installerPath,
