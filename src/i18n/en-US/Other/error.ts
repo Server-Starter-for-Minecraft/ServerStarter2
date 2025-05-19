@@ -48,7 +48,7 @@ export const enUSError: MessageSchema['error'] = {
       },
       renameFailed: {
         title: 'Failed to rename the {type}',
-        desc: 'failed for {path}',
+        desc: 'Please reboot this PC after closing all servers. ({path})',
       },
       alreadyExists: {
         title: '{type} already exists',
@@ -109,19 +109,19 @@ export const enUSError: MessageSchema['error'] = {
       },
       creationFailed: {
         title: 'Failed to create {type}',
-        desc: 'Failed to create {path}',
+        desc: 'Please try rebooting this PC or check the write permission. ({path})',
       },
       deletionFailed: {
         title: 'Failed to delete {type}',
-        desc: 'Failed to delete {path}',
+        desc: 'Please reboot PC after closing all servers. ({path})',
       },
       copyFailed: {
         title: 'Failed to copy {type}',
-        desc: 'Failed to copy {path}',
+        desc: 'Please reboot PC after closing all servers. ({path})',
       },
       moveFailed: {
         title: 'Failed to move {type}',
-        desc: 'Failed to move {path}',
+        desc: 'Please reboot PC after closing all servers. ({path})',
       },
       dialogCanceled: {
         title: 'Window to select file is cancelled',
