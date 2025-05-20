@@ -11,7 +11,7 @@ const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
 /** コンソールのカスタム表示に将来的に対応 */
 const defaultStyles = {
   'font-size': '14pt',
-  'font-family': "'BizinGothic', Consolas, 'Courier New', Meiryo, monospace",
+  'font-family': "'Pending Mono HWNF', Consolas, 'Courier New', Meiryo, monospace",
   // 行間・行内改行の別なく占有される文字高さ
   'line-height': 1.2,
   // 行間のマージン
