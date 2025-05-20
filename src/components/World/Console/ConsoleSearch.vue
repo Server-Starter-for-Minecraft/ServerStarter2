@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n();
+import { $T } from 'src/i18n/utils/tFunc';
 
 const props = defineProps<{
   isVisible: boolean;
@@ -22,8 +20,8 @@ const searchInputRef = ref<HTMLInputElement | null>(null);
 
 // Computed property to get the current match count display
 const matchCountText = computed(() => {
-  if (searchResults.value.length === 0) return t('console.search.noMatches');
-  return t('console.search.matchCount', {
+  if (searchResults.value.length === 0) return $T('console.search.noMatches');
+  return $T('console.search.matchCount', {
     current: currentMatchIndex.value + 1,
     total: searchResults.value.length,
   });
@@ -141,7 +139,7 @@ onUnmounted(() => {
         dense
         outlined
         class="search-input"
-        :placeholder="t('console.search.placeholder')"
+        :placeholder="$T('console.search.placeholder')"
       >
         <template v-slot:prepend>
           <q-icon name="search" />
