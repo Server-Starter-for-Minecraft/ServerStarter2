@@ -8,6 +8,19 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
 
+/** コンソールのカスタム表示に将来的に対応 */
+const defaultStyles = {
+  'font-size': '14pt',
+  'font-family': "'BizinGothic', Consolas, 'Courier New', Meiryo, monospace",
+  // 行間・行内改行の別なく占有される文字高さ
+  'line-height': 1.2,
+  // 行間のマージン
+  'margin-bottom': '2pt',
+  // 文字色（空文字列はシステム設定に追従）
+  color: '',
+  opacity: 0.85,
+};
+
 /**
  * コンソールの一番下に自動でスクロールする
  */
@@ -48,10 +61,7 @@ consoleStore.$subscribe((mutation, state) => {
     class="q-pa-md fit"
     style="flex: 1 1 0"
   >
-    <p
-      :class="item.isError ? 'text-negative' : ''"
-      style="white-space: pre-wrap; word-break: break-all; user-select: text"
-    >
+    <p :class="item.isError ? 'text-negative' : ''" :style="defaultStyles">
       {{ item.chunk }}
     </p>
   </q-virtual-scroll>
@@ -59,9 +69,9 @@ consoleStore.$subscribe((mutation, state) => {
 
 <style lang="scss" scoped>
 p {
-  font-size: 16pt;
-  line-height: 1.2;
   margin: 0;
-  font-family: Consolas, 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
 }
 </style>
