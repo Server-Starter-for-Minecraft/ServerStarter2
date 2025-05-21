@@ -69,14 +69,6 @@ function scrollToMatch(index: number) {
 }
 
 /**
- * 検索結果を更新する
- */
-function updateSearchResults(results: number[]) {
-  searchResults.value = results;
-  currentMatchIndex.value = results.length > 0 ? 0 : -1;
-}
-
-/**
  * キーボードショートカットのハンドラ
  */
 function handleKeyDown(event: KeyboardEvent) {
@@ -118,7 +110,6 @@ onUnmounted(() => {
       :console-items="consoleStore.console(mainStore.selectedWorldID)"
       @close="closeSearch"
       @scroll-to-match="scrollToMatch"
-      @update-search-results="updateSearchResults"
     />
 
     <q-virtual-scroll
