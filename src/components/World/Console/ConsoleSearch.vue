@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { $T } from 'src/i18n/utils/tFunc';
+import { MatchResult } from './schema';
 
 // TODO: 配色・UIの調整
+// TODO: isMatchQueryがupdateSearch()の実行時と各行のコンソール描画時の２重に実行される問題の修正
 
 const props = defineProps<{
   isVisible: boolean;
@@ -32,7 +34,7 @@ const matchCountText = computed(() => {
  * テキストを分割して検索クエリに一致する部分を特定する
  * @returns 分割されたテキストの配列（一致部分にはisMatchフラグが付く）
  */
-function isMatchQuery(text: string) {
+function isMatchQuery(text: string): MatchResult[] {
   const query = searchInput.value;
   if (!query || !text) return [{ text, isMatch: false }];
   const regex = new RegExp(query, 'gi');
@@ -169,6 +171,7 @@ defineExpose({ isMatchQuery });
         @update:model-value="updateSearch()"
         dense
         outlined
+        autofocus
         class="search-input"
         :placeholder="$T('console.search.placeholder')"
       >
