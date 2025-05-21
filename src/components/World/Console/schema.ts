@@ -1,4 +1,3 @@
-
 /** 入力文字に対するコンソール１行当たりの検索結果 */
 export type MatchResult = { text: string; isMatch: boolean };
 
