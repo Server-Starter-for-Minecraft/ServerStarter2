@@ -7,9 +7,11 @@ import ConsoleSearch from './ConsoleSearch.vue';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
+const consoleSearchRef = ref<InstanceType<typeof ConsoleSearch> | null>(null);
+
 const isSearchVisible = ref(false);
-const searchQuery = ref('');
 const searchResults = ref<number[]>([]);
 const currentMatchIndex = ref(-1);
 
@@ -56,8 +58,6 @@ function showSearch() {
  */
 function closeSearch() {
   isSearchVisible.value = false;
-  searchQuery.value = '';
-  searchResults.value = [];
 }
 
 /**
@@ -71,56 +71,9 @@ function scrollToMatch(index: number) {
 /**
  * 検索結果を更新する
  */
-function updateSearchResults(query: string, results: number[]) {
-  searchQuery.value = query;
+function updateSearchResults(results: number[]) {
   searchResults.value = results;
   currentMatchIndex.value = results.length > 0 ? 0 : -1;
-}
-
-/**
- * テキストを分割して検索クエリに一致する部分を特定する
- * @returns 分割されたテキストの配列（一致部分にはisMatchフラグが付く）
- */
-function splitTextByQuery(text: string, query: string) {
-  if (!query || !text) return [{ text, isMatch: false }];
-  const regex = new RegExp(query, 'gi');
-
-  const parts = [];
-  let lastIndex = 0;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    // Add non-matching text before this match
-    if (match.index > lastIndex) {
-      parts.push({
-        text: text.substring(lastIndex, match.index),
-        isMatch: false,
-      });
-    }
-
-    // Add the matching text
-    parts.push({
-      text: match[0],
-      isMatch: true,
-    });
-
-    lastIndex = match.index + match[0].length;
-
-    // Avoid infinite loops with zero-width matches
-    if (match.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-  }
-
-  // Add remaining text after the last match
-  if (lastIndex < text.length) {
-    parts.push({
-      text: text.substring(lastIndex),
-      isMatch: false,
-    });
-  }
-
-  return parts;
 }
 
 /**
@@ -159,6 +112,8 @@ onUnmounted(() => {
 
     <!-- 検索コンポーネント -->
     <ConsoleSearch
+      ref="consoleSearchRef"
+      v-model="searchResults"
       :is-visible="isSearchVisible"
       :console-items="consoleStore.console(mainStore.selectedWorldID)"
       @close="closeSearch"
@@ -188,14 +143,13 @@ onUnmounted(() => {
         ]"
         :style="defaultStyles"
       >
-        <template v-if="!searchQuery">
+        <template v-if="!isSearchVisible">
           {{ item.chunk }}
         </template>
         <template v-else>
           <template
-            v-for="(part, partIndex) in splitTextByQuery(
-              item.chunk,
-              searchQuery
+            v-for="(part, partIndex) in consoleSearchRef?.isMatchQuery(
+              item.chunk
             )"
             :key="partIndex"
           >

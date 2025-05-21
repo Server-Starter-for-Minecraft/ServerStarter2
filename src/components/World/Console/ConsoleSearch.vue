@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { $T } from 'src/i18n/utils/tFunc';
+
+// TODO: 配色・UIの調整
 
 const props = defineProps<{
   isVisible: boolean;
@@ -10,13 +12,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'scrollToMatch', index: number): void;
-  (e: 'updateSearchResults', query: string, results: number[]): void; // 追加
 }>();
 
+const searchResults = defineModel<number[]>({ required: true });
+
 const searchInput = ref('');
-const searchResults = ref<number[]>([]);
 const currentMatchIndex = ref(-1);
-const searchInputRef = ref<HTMLInputElement | null>(null);
 
 // Computed property to get the current match count display
 const matchCountText = computed(() => {
@@ -27,43 +28,68 @@ const matchCountText = computed(() => {
   });
 });
 
-// Watch for changes in the search input to update search results
-watch(searchInput, () => {
-  performSearch();
-});
+/**
+ * テキストを分割して検索クエリに一致する部分を特定する
+ * @returns 分割されたテキストの配列（一致部分にはisMatchフラグが付く）
+ */
+function isMatchQuery(text: string) {
+  const query = searchInput.value;
+  if (!query || !text) return [{ text, isMatch: false }];
+  const regex = new RegExp(query, 'gi');
 
-// Watch for visibility changes to focus the input when shown
-watch(
-  () => props.isVisible,
-  (newValue) => {
-    if (newValue && searchInputRef.value) {
-      setTimeout(() => {
-        searchInputRef.value?.focus();
-      }, 50);
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Add non-matching text before this match
+    if (match.index > lastIndex) {
+      parts.push({
+        text: text.substring(lastIndex, match.index),
+        isMatch: false,
+      });
+    }
+
+    // Add the matching text
+    parts.push({
+      text: match[0],
+      isMatch: true,
+    });
+
+    lastIndex = match.index + match[0].length;
+
+    // Avoid infinite loops with zero-width matches
+    if (match.index === regex.lastIndex) {
+      regex.lastIndex++;
     }
   }
-);
+
+  // Add remaining text after the last match
+  if (lastIndex < text.length) {
+    parts.push({
+      text: text.substring(lastIndex),
+      isMatch: false,
+    });
+  }
+
+  return parts;
+}
 
 // Perform the search through console items
-function performSearch() {
+function updateSearch() {
   if (!searchInput.value.trim()) {
     searchResults.value = [];
     currentMatchIndex.value = -1;
-    emit('updateSearchResults', '', []); // 検索クエリが空の場合
     return;
   }
 
-  const query = searchInput.value.toLowerCase();
   searchResults.value = props.consoleItems
     .map((item, index) =>
-      item.chunk.toLowerCase().includes(query) ? index : -1
+      isMatchQuery(item.chunk).some((res) => res.isMatch) ? index : -1
     )
     .filter((index) => index !== -1);
 
   currentMatchIndex.value = searchResults.value.length > 0 ? 0 : -1;
-
-  // 検索結果を親コンポーネントに伝える
-  emit('updateSearchResults', searchInput.value, searchResults.value);
 
   if (currentMatchIndex.value >= 0) {
     navigateToMatch(currentMatchIndex.value);
@@ -96,7 +122,9 @@ function navigateToMatch(index: number) {
 
 // Close the search box
 function closeSearch() {
-  emit('updateSearchResults', '', []); // 検索結果をクリア
+  searchInput.value = '';
+  searchResults.value = [];
+  currentMatchIndex.value = -1;
   emit('close');
 }
 
@@ -128,14 +156,17 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
 });
+
+// 公開メソッド
+defineExpose({ isMatchQuery });
 </script>
 
 <template>
   <div v-if="isVisible" class="console-search">
     <div class="search-container">
       <q-input
-        ref="searchInputRef"
         v-model="searchInput"
+        @update:model-value="updateSearch()"
         dense
         outlined
         class="search-input"
