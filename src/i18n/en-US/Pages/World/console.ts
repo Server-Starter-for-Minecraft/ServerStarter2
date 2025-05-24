@@ -25,4 +25,9 @@ export const enUSConsole: MessageSchema['console'] = {
   },
   shutdownServer: 'Shutdowning server',
   command: 'Command',
+  search: {
+    placeholder: 'Search in console',
+    noMatches: 'No matches',
+    matchCount: '{current} of {total}',
+  },
 };

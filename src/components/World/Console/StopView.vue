@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { tError } from 'src/i18n/utils/tFunc';
+import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { checkError } from 'src/components/Error/Error';
@@ -22,14 +22,10 @@ async function showLog() {
 </script>
 
 <template>
-  <div
-    v-if="consoleStore.status(mainStore.selectedWorldID) === 'Stop'"
-    class="column justify-center fit"
-    style="flex: 1 1 0"
-  >
+  <div class="column justify-center fit" style="flex: 1 1 0">
     <RunningBtn :text-font-size="1.5" class="btn" />
     <SsBtn
-      :label="$t('console.showLog')"
+      :label="$T('console.showLog')"
       width="16rem"
       @click="showLog"
       style="font-size: 1rem; margin: 1rem auto"
