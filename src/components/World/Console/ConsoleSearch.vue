@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import {
   ConsoleData,
   MatchedConsoleData,
@@ -10,14 +10,10 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 
 // TODO: 配色・UIの調整
 
+/** 検索結果として表示する最大件数 */
 const LIMIT_SEARCH_RESULTS = 10000;
 
-const props = defineProps<{
-  isVisible: boolean;
-}>();
-
 const emit = defineEmits<{
-  (e: 'close'): void;
   (e: 'scrollToMatch', index: number): void;
 }>();
 
@@ -31,12 +27,15 @@ const currentFocusLineIdx = computed(() => {
     currentMatchIndex.value < 0 ||
     currentMatchIndex.value >= matchedIdx2LineNum.value.length
   ) {
-    return -1;
+    // TODO: マッチしたものがない場合は，一番最後の行を表示する
+    return matchedIdx2LineNum.value[matchedIdx2LineNum.value.length - 1];
   } else {
     return matchedIdx2LineNum.value[currentMatchIndex.value];
   }
 });
+
 const searchInput = ref('');
+const isSearchVisible = ref(false);
 
 // Computed property to get the current match count display
 const matchCountText = () => {
@@ -152,13 +151,20 @@ function navigateToCurrentFocusLine() {
 function closeSearch() {
   searchInput.value = '';
   currentMatchIndex.value = -1;
-  emit('close');
+  isSearchVisible.value = false;
+  // TODO: 検索ボックスを閉じる際に最終行へ移動する
+  // navigateToCurrentFocusLine();
 }
 
 // Handle keyboard shortcuts
 function handleKeyDown(event: KeyboardEvent) {
-  if (!props.isVisible) return;
+  // Ctrl+F で検索を表示
+  if (event.key === 'f' && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    isSearchVisible.value = true;
+  }
 
+  // 検索ボックス内での操作
   if (event.key === 'Escape') {
     closeSearch();
     event.preventDefault();
@@ -175,21 +181,24 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-// Setup keyboard event listeners
-onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
-});
-
 // 公開メソッド
-defineExpose({ getMatchedLines, currentFocusLineIdx });
+defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
 </script>
 
 <template>
-  <div v-if="isVisible" class="console-search">
+  <!-- 検索ボタン -->
+  <q-btn
+    v-if="!isSearchVisible"
+    class="search-button"
+    round
+    flat
+    dense
+    icon="search"
+    @click="isSearchVisible = true"
+  />
+
+  <!-- 検索ボックス -->
+  <div v-else class="console-search">
     <q-card flat class="search-container">
       <SsInput
         v-model="searchInput"

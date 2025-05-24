@@ -12,8 +12,6 @@ const consoleStore = useConsoleStore();
 const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
 const consoleSearchRef = ref<InstanceType<typeof ConsoleSearch> | null>(null);
 
-const isSearchVisible = ref(false);
-
 /** コンソールのカスタム表示に将来的に対応 */
 const defaultStyles = {
   'font-size': '14pt',
@@ -59,21 +57,7 @@ const currentFocusLineIdx = computed(() => {
     return -1;
   }
   return consoleSearchRef.value.currentFocusLineIdx;
-})
-
-/**
- * 検索機能を表示する
- */
-function showSearch() {
-  isSearchVisible.value = true;
-}
-
-/**
- * 検索機能を閉じる
- */
-function closeSearch() {
-  isSearchVisible.value = false;
-}
+});
 
 /**
  * 指定されたインデックスの項目にスクロールする
@@ -82,47 +66,22 @@ function scrollToMatch(index: number) {
   virtualListRef.value?.scrollTo(index, 'center-force');
 }
 
-/**
- * キーボードショートカットのハンドラ
- */
-function handleKeyDown(event: KeyboardEvent) {
-  // Ctrl+F で検索を表示
-  if (event.key === 'f' && (event.ctrlKey || event.metaKey)) {
-    event.preventDefault();
-    showSearch();
-  }
-}
-
-// キーボードイベントのリスナーを設定
+// Setup keyboard event listeners
 onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown);
+  if (!consoleSearchRef.value) return;
+  window.addEventListener('keydown', consoleSearchRef.value?.handleKeyDown);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
+  if (!consoleSearchRef.value) return;
+  window.removeEventListener('keydown', consoleSearchRef.value?.handleKeyDown);
 });
 </script>
 
 <template>
   <div class="console-container">
-    <!-- 検索ボタン -->
-    <q-btn
-      v-if="!isSearchVisible"
-      class="search-button"
-      round
-      flat
-      dense
-      icon="search"
-      @click="showSearch"
-    />
-
     <!-- 検索コンポーネント -->
-    <ConsoleSearch
-      ref="consoleSearchRef"
-      :is-visible="isSearchVisible"
-      @close="closeSearch"
-      @scroll-to-match="scrollToMatch"
-    />
+    <ConsoleSearch ref="consoleSearchRef" @scroll-to-match="scrollToMatch" />
 
     <q-virtual-scroll
       ref="virtualListRef"
