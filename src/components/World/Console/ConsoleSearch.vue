@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { ConsoleData, MatchResult } from 'src/schema/console';
 import { $T } from 'src/i18n/utils/tFunc';
-import { MatchResult } from './schema';
 
 // TODO: 配色・UIの調整
 // TODO: isMatchQueryがupdateSearch()の実行時と各行のコンソール描画時の２重に実行される問題の修正
 
 const props = defineProps<{
   isVisible: boolean;
-  consoleItems: { chunk: string; isError: boolean }[];
+  consoleItems: ConsoleData[];
 }>();
 
 const emit = defineEmits<{
