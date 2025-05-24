@@ -1,6 +1,9 @@
 /** コンソールに表示する各行が持つデータ */
 export type ConsoleData = { chunk: string; isError: boolean };
 
+/** 検索結果を反映した各行のデータ */
+export type MatchedConsoleData = { isError: boolean; matches: MatchResult[] };
+
 /** ワールドの実行状態 */
 export type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog';
 

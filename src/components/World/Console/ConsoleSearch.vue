@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { ConsoleData, MatchResult } from 'src/schema/console';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import {
+  ConsoleData,
+  MatchedConsoleData,
+  MatchResult,
+} from 'src/schema/console';
 import { $T } from 'src/i18n/utils/tFunc';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
@@ -10,7 +14,6 @@ const LIMIT_SEARCH_RESULTS = 10000;
 
 const props = defineProps<{
   isVisible: boolean;
-  consoleItems: ConsoleData[];
 }>();
 
 const emit = defineEmits<{
@@ -18,15 +21,28 @@ const emit = defineEmits<{
   (e: 'scrollToMatch', index: number): void;
 }>();
 
-const searchResults = defineModel<number[]>({ required: true });
-
+/** 検索結果のうち，マッチしたもののLineIdxを保持 */
+const matchedIdx2LineNum = ref<number[]>([]);
+/** `focusLineIdx`がマッチしたもののうち何番目か */
+const currentMatchIndex = ref<number>(-1);
+/** 現在選択中の行 */
+const currentFocusLineIdx = computed(() => {
+  if (
+    currentMatchIndex.value < 0 ||
+    currentMatchIndex.value >= matchedIdx2LineNum.value.length
+  ) {
+    return -1;
+  } else {
+    return matchedIdx2LineNum.value[currentMatchIndex.value];
+  }
+});
 const searchInput = ref('');
-const currentMatchIndex = ref(-1);
 
 // Computed property to get the current match count display
-const matchCountText = computed(() => {
-  if (searchResults.value.length === 0) return $T('console.search.noMatches');
-  if (searchResults.value.length > LIMIT_SEARCH_RESULTS) {
+const matchCountText = () => {
+  if (matchedIdx2LineNum.value.length === 0)
+    return $T('console.search.noMatches');
+  if (matchedIdx2LineNum.value.length > LIMIT_SEARCH_RESULTS) {
     return $T('console.search.matchCount', {
       current: '?',
       total: `${LIMIT_SEARCH_RESULTS}+`,
@@ -34,17 +50,17 @@ const matchCountText = computed(() => {
   }
   return $T('console.search.matchCount', {
     current: currentMatchIndex.value + 1,
-    total: searchResults.value.length,
+    total: matchedIdx2LineNum.value.length,
   });
-});
+};
 
 /**
  * テキストを分割して検索クエリに一致する部分を特定する
  * @returns 分割されたテキストの配列（一致部分にはisMatchフラグが付く）
  */
 function isMatchQuery(text: string): MatchResult[] {
-  const query = searchInput.value;
-  if (!query || !text) return [{ text, isMatch: false }];
+  const query = searchInput.value.trim();
+  if (query === '' || !text) return [{ text, isMatch: false }];
   const regex = new RegExp(query, 'gi');
 
   const parts = [];
@@ -85,55 +101,56 @@ function isMatchQuery(text: string): MatchResult[] {
   return parts;
 }
 
-// Perform the search through console items
-function updateSearch() {
-  if (!searchInput.value.trim()) {
-    searchResults.value = [];
+/** 呼び出しコンポーネントで検索対象とする文字列群を与えると，検索結果を付与した文字列群を返す */
+function getMatchedLines(lines: ConsoleData[]): MatchedConsoleData[] {
+  matchedIdx2LineNum.value = [];
+  const res = lines.map((item, idx) => {
+    const res = isMatchQuery(item.chunk);
+    if (res.some((part) => part.isMatch)) matchedIdx2LineNum.value.push(idx);
+    return { isError: item.isError, matches: res };
+  });
+
+  if (matchedIdx2LineNum.value.length === 0) {
     currentMatchIndex.value = -1;
-    return;
+  } else {
+    currentMatchIndex.value = 0;
   }
 
-  searchResults.value = props.consoleItems
-    .map((item, index) =>
-      isMatchQuery(item.chunk).some((res) => res.isMatch) ? index : -1
-    )
-    .filter((index) => index !== -1);
-
-  currentMatchIndex.value = searchResults.value.length > 0 ? 0 : -1;
-
-  if (currentMatchIndex.value >= 0) {
-    navigateToMatch(currentMatchIndex.value);
-  }
+  return res;
 }
 
 // Navigate to the next match
 function nextMatch() {
-  if (searchResults.value.length === 0) return;
-
-  currentMatchIndex.value =
-    (currentMatchIndex.value + 1) % searchResults.value.length;
-  navigateToMatch(currentMatchIndex.value);
+  if (currentMatchIndex.value === -1) return;
+  if (currentMatchIndex.value === matchedIdx2LineNum.value.length - 1) {
+    currentMatchIndex.value = 0;
+  } else {
+    currentMatchIndex.value = currentMatchIndex.value + 1;
+  }
+  navigateToCurrentFocusLine();
 }
 
 // Navigate to the previous match
 function prevMatch() {
-  if (searchResults.value.length === 0) return;
-
-  currentMatchIndex.value =
-    (currentMatchIndex.value - 1 + searchResults.value.length) %
-    searchResults.value.length;
-  navigateToMatch(currentMatchIndex.value);
+  if (currentMatchIndex.value === -1) return;
+  if (currentMatchIndex.value === 0) {
+    currentMatchIndex.value = matchedIdx2LineNum.value.length - 1;
+  } else {
+    currentMatchIndex.value = currentMatchIndex.value - 1;
+  }
+  navigateToCurrentFocusLine();
 }
 
 // Emit event to scroll to the current match
-function navigateToMatch(index: number) {
-  emit('scrollToMatch', searchResults.value[index]);
+function navigateToCurrentFocusLine() {
+  nextTick(() => {
+    emit('scrollToMatch', currentFocusLineIdx.value);
+  });
 }
 
 // Close the search box
 function closeSearch() {
   searchInput.value = '';
-  searchResults.value = [];
   currentMatchIndex.value = -1;
   emit('close');
 }
@@ -168,7 +185,7 @@ onUnmounted(() => {
 });
 
 // 公開メソッド
-defineExpose({ isMatchQuery });
+defineExpose({ getMatchedLines, currentFocusLineIdx });
 </script>
 
 <template>
@@ -176,7 +193,7 @@ defineExpose({ isMatchQuery });
     <q-card flat class="search-container">
       <SsInput
         v-model="searchInput"
-        @update:model-value="updateSearch()"
+        @update:model-value="navigateToCurrentFocusLine()"
         dense
         autofocus
         class="search-input"
@@ -188,13 +205,13 @@ defineExpose({ isMatchQuery });
       </SsInput>
 
       <div class="search-controls">
-        <span class="gt-sm match-count">{{ matchCountText }}</span>
+        <span class="gt-sm match-count">{{ matchCountText() }}</span>
         <q-btn
           flat
           round
           dense
           icon="keyboard_arrow_up"
-          :disable="searchResults.length === 0"
+          :disable="matchedIdx2LineNum.length === 0"
           @click="prevMatch"
         />
         <q-btn
@@ -202,7 +219,7 @@ defineExpose({ isMatchQuery });
           round
           dense
           icon="keyboard_arrow_down"
-          :disable="searchResults.length === 0"
+          :disable="matchedIdx2LineNum.length === 0"
           @click="nextMatch"
         />
         <q-btn flat round dense icon="close" @click="closeSearch" />

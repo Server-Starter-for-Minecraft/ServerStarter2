@@ -62,8 +62,8 @@ function onClearClick() {
         @click="isPwd = !isPwd"
       />
     </template>
-    <template v-slot:prepend>
-      <slot name="prepend"></slot>
+    <template v-if="$slots.prepend" v-slot:prepend>
+      <slot name="prepend" />
     </template>
   </q-input>
 </template>

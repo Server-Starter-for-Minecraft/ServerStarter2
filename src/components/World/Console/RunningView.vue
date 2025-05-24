@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, Ref, ref } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { QVirtualScroll } from 'quasar';
+import { ConsoleData, MatchedConsoleData } from 'src/schema/console';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import ConsoleSearch from './ConsoleSearch.vue';
@@ -44,6 +45,22 @@ consoleStore.$subscribe((mutation, state) => {
   setTimeout(scroll2End, 0);
 });
 
+const consoleLines = computed(() => {
+  if (!consoleSearchRef.value) {
+    return consoleStore.console(mainStore.selectedWorldID);
+  }
+  return consoleSearchRef.value.getMatchedLines(
+    consoleStore.console(mainStore.selectedWorldID)
+  );
+});
+
+const currentFocusLineIdx = computed(() => {
+  if (!consoleSearchRef.value) {
+    return -1;
+  }
+  return consoleSearchRef.value.currentFocusLineIdx;
+})
+
 /**
  * 検索機能を表示する
  */
@@ -62,7 +79,7 @@ function closeSearch() {
  * 指定されたインデックスの項目にスクロールする
  */
 function scrollToMatch(index: number) {
-  virtualListRef.value?.scrollTo(index, 'start');
+  virtualListRef.value?.scrollTo(index, 'center-force');
 }
 
 /**
@@ -103,39 +120,39 @@ onUnmounted(() => {
     <ConsoleSearch
       ref="consoleSearchRef"
       :is-visible="isSearchVisible"
-      :console-items="consoleStore.console(mainStore.selectedWorldID)"
       @close="closeSearch"
       @scroll-to-match="scrollToMatch"
     />
 
     <q-virtual-scroll
       ref="virtualListRef"
-      :items="consoleStore.console(mainStore.selectedWorldID)"
-      v-slot="{ item, index }"
+      :items="consoleLines"
+      v-slot="{
+        item,
+        index,
+      }: {
+        item: MatchedConsoleData | ConsoleData,
+        index: number,
+      }"
       class="q-pa-md fit"
       style="flex: 1 1 0"
     >
       <p
         :class="[
           item.isError ? 'text-negative' : '',
-          consoleSearchRef?.currentMatchIndex === index ? 'current-match' : '',
+          currentFocusLineIdx === index ? 'current-match' : '',
         ]"
         :style="defaultStyles"
       >
-        <template v-if="!isSearchVisible">
-          {{ item.chunk }}
-        </template>
-        <template v-else>
-          <template
-            v-for="(part, partIndex) in consoleSearchRef?.searchResults[index]"
-            :key="partIndex"
-          >
+        <template v-if="'matches' in item">
+          <template v-for="(part, partIndex) in item.matches" :key="partIndex">
             <span v-if="part.isMatch" class="highlight-match">
               {{ part.text }}
             </span>
             <template v-else>{{ part.text }}</template>
           </template>
         </template>
+        <template v-else>{{ item.chunk }}</template>
       </p>
     </q-virtual-scroll>
   </div>
