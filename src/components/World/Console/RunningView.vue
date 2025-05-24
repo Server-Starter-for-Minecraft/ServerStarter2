@@ -12,8 +12,6 @@ const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
 const consoleSearchRef = ref<InstanceType<typeof ConsoleSearch> | null>(null);
 
 const isSearchVisible = ref(false);
-const searchResults = ref<number[]>([]);
-const currentMatchIndex = ref(-1);
 
 /** コンソールのカスタム表示に将来的に対応 */
 const defaultStyles = {
@@ -65,7 +63,6 @@ function closeSearch() {
  */
 function scrollToMatch(index: number) {
   virtualListRef.value?.scrollTo(index, 'start');
-  currentMatchIndex.value = searchResults.value.indexOf(index);
 }
 
 /**
@@ -105,7 +102,6 @@ onUnmounted(() => {
     <!-- 検索コンポーネント -->
     <ConsoleSearch
       ref="consoleSearchRef"
-      v-model="searchResults"
       :is-visible="isSearchVisible"
       :console-items="consoleStore.console(mainStore.selectedWorldID)"
       @close="closeSearch"
@@ -122,10 +118,7 @@ onUnmounted(() => {
       <p
         :class="[
           item.isError ? 'text-negative' : '',
-          searchResults.includes(index) &&
-          searchResults[currentMatchIndex] === index
-            ? 'current-match'
-            : '',
+          consoleSearchRef?.currentMatchIndex === index ? 'current-match' : '',
         ]"
         :style="defaultStyles"
       >
@@ -134,9 +127,7 @@ onUnmounted(() => {
         </template>
         <template v-else>
           <template
-            v-for="(part, partIndex) in consoleSearchRef?.isMatchQuery(
-              item.chunk
-            )"
+            v-for="(part, partIndex) in consoleSearchRef?.searchResults[index]"
             :key="partIndex"
           >
             <span v-if="part.isMatch" class="highlight-match">

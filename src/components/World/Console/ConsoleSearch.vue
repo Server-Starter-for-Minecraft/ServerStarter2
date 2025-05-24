@@ -2,9 +2,11 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { ConsoleData, MatchResult } from 'src/schema/console';
 import { $T } from 'src/i18n/utils/tFunc';
+import SsInput from 'src/components/util/base/ssInput.vue';
 
 // TODO: 配色・UIの調整
-// TODO: isMatchQueryがupdateSearch()の実行時と各行のコンソール描画時の２重に実行される問題の修正
+
+const LIMIT_SEARCH_RESULTS = 10000;
 
 const props = defineProps<{
   isVisible: boolean;
@@ -24,6 +26,12 @@ const currentMatchIndex = ref(-1);
 // Computed property to get the current match count display
 const matchCountText = computed(() => {
   if (searchResults.value.length === 0) return $T('console.search.noMatches');
+  if (searchResults.value.length > LIMIT_SEARCH_RESULTS) {
+    return $T('console.search.matchCount', {
+      current: '?',
+      total: `${LIMIT_SEARCH_RESULTS}+`,
+    });
+  }
   return $T('console.search.matchCount', {
     current: currentMatchIndex.value + 1,
     total: searchResults.value.length,
@@ -165,12 +173,11 @@ defineExpose({ isMatchQuery });
 
 <template>
   <div v-if="isVisible" class="console-search">
-    <div class="search-container">
-      <q-input
+    <q-card flat class="search-container">
+      <SsInput
         v-model="searchInput"
         @update:model-value="updateSearch()"
         dense
-        outlined
         autofocus
         class="search-input"
         :placeholder="$T('console.search.placeholder')"
@@ -178,10 +185,10 @@ defineExpose({ isMatchQuery });
         <template v-slot:prepend>
           <q-icon name="search" />
         </template>
-      </q-input>
+      </SsInput>
 
       <div class="search-controls">
-        <span class="match-count">{{ matchCountText }}</span>
+        <span class="gt-sm match-count">{{ matchCountText }}</span>
         <q-btn
           flat
           round
@@ -200,7 +207,7 @@ defineExpose({ isMatchQuery });
         />
         <q-btn flat round dense icon="close" @click="closeSearch" />
       </div>
-    </div>
+    </q-card>
   </div>
 </template>
 
@@ -232,7 +239,6 @@ defineExpose({ isMatchQuery });
 }
 
 .match-count {
-  font-size: 12px;
-  margin-right: 8px;
+  width: 5rem;
 }
 </style>

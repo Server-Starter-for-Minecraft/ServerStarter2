@@ -62,6 +62,9 @@ function onClearClick() {
         @click="isPwd = !isPwd"
       />
     </template>
+    <template v-slot:prepend>
+      <slot name="prepend"></slot>
+    </template>
   </q-input>
 </template>
 

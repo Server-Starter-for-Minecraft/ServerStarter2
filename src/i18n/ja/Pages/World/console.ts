@@ -26,6 +26,6 @@ export const jaConsole = {
   search: {
     placeholder: 'コンソールを検索',
     noMatches: '一致なし',
-    matchCount: '{total}件中{current}件目',
+    matchCount: '{current} / {total}',
   },
 };
