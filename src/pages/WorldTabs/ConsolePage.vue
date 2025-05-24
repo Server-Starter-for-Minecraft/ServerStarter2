@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { WorldStatus } from 'src/schema/console';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import OperationView from 'src/components/World/Console/OperationView.vue';
@@ -10,14 +11,18 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 // ワールドタブを選択せずにこの画面に到達した場合にStatusなどをセットする
 consoleStore.initTab(mainStore.selectedWorldID);
+
+const isStatus = (status: WorldStatus[]) => {
+  return status.includes(consoleStore.status(mainStore.selectedWorldID));
+};
 </script>
 
 <template>
   <div class="wrap-column fit">
     <div class="column" style="flex: 1 1 0">
-      <StopView />
-      <ReadyView />
-      <RunningView />
+      <StopView v-if="isStatus(['Stop'])" />
+      <ReadyView v-else-if="isStatus(['Ready'])" />
+      <RunningView v-else-if="isStatus(['Running', 'CheckLog'])" />
     </div>
 
     <q-separator inset />

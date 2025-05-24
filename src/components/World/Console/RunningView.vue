@@ -113,11 +113,6 @@ onUnmounted(() => {
     />
 
     <q-virtual-scroll
-      v-if="
-        ['Running', 'CheckLog'].includes(
-          consoleStore.status(mainStore.selectedWorldID)
-        )
-      "
       ref="virtualListRef"
       :items="consoleStore.console(mainStore.selectedWorldID)"
       v-slot="{ item, index }"
