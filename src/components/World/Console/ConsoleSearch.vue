@@ -17,6 +17,8 @@ const emit = defineEmits<{
   (e: 'scrollToMatch', index: number): void;
 }>();
 
+/** 最終行のインデックス */
+const lastLineIdx = ref<number>(-1);
 /** 検索結果のうち，マッチしたもののLineIdxを保持 */
 const matchedIdx2LineNum = ref<number[]>([]);
 /** `focusLineIdx`がマッチしたもののうち何番目か */
@@ -27,8 +29,7 @@ const currentFocusLineIdx = computed(() => {
     currentMatchIndex.value < 0 ||
     currentMatchIndex.value >= matchedIdx2LineNum.value.length
   ) {
-    // TODO: マッチしたものがない場合は，一番最後の行を表示する
-    return matchedIdx2LineNum.value[matchedIdx2LineNum.value.length - 1];
+    return -1;
   } else {
     return matchedIdx2LineNum.value[currentMatchIndex.value];
   }
@@ -103,6 +104,7 @@ function isMatchQuery(text: string): MatchResult[] {
 /** 呼び出しコンポーネントで検索対象とする文字列群を与えると，検索結果を付与した文字列群を返す */
 function getMatchedLines(lines: ConsoleData[]): MatchedConsoleData[] {
   matchedIdx2LineNum.value = [];
+  lastLineIdx.value = lines.length - 1;
   const res = lines.map((item, idx) => {
     const res = isMatchQuery(item.chunk);
     if (res.some((part) => part.isMatch)) matchedIdx2LineNum.value.push(idx);
@@ -126,7 +128,7 @@ function nextMatch() {
   } else {
     currentMatchIndex.value = currentMatchIndex.value + 1;
   }
-  navigateToCurrentFocusLine();
+  navigateToCurrentFocusLine(currentFocusLineIdx.value);
 }
 
 // Navigate to the previous match
@@ -137,13 +139,13 @@ function prevMatch() {
   } else {
     currentMatchIndex.value = currentMatchIndex.value - 1;
   }
-  navigateToCurrentFocusLine();
+  navigateToCurrentFocusLine(currentFocusLineIdx.value);
 }
 
 // Emit event to scroll to the current match
-function navigateToCurrentFocusLine() {
+function navigateToCurrentFocusLine(lineIdx: number) {
   nextTick(() => {
-    emit('scrollToMatch', currentFocusLineIdx.value);
+    emit('scrollToMatch', lineIdx);
   });
 }
 
@@ -152,8 +154,9 @@ function closeSearch() {
   searchInput.value = '';
   currentMatchIndex.value = -1;
   isSearchVisible.value = false;
-  // TODO: 検索ボックスを閉じる際に最終行へ移動する
-  // navigateToCurrentFocusLine();
+  // 検索ボックスを閉じる際に最終行へ移動する
+  navigateToCurrentFocusLine(lastLineIdx.value);
+  lastLineIdx.value = -1;
 }
 
 // Handle keyboard shortcuts
@@ -202,7 +205,7 @@ defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
     <q-card flat class="search-container">
       <SsInput
         v-model="searchInput"
-        @update:model-value="navigateToCurrentFocusLine()"
+        @update:model-value="navigateToCurrentFocusLine(currentFocusLineIdx)"
         dense
         autofocus
         class="search-input"
