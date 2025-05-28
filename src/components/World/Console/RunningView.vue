@@ -132,14 +132,6 @@ p {
   user-select: text;
 }
 
-.search-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 5;
-  background-color: rgba(255, 255, 255, 0.7);
-}
-
 :deep(.highlight-match) {
   background-color: rgba(255, 255, 0, 0.5);
   border-radius: 2px;

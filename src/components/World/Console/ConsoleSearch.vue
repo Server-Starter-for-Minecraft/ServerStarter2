@@ -6,6 +6,7 @@ import {
   MatchResult,
 } from 'src/schema/console';
 import { $T } from 'src/i18n/utils/tFunc';
+import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
 // TODO: 配色・UIの調整
@@ -16,6 +17,9 @@ const LIMIT_SEARCH_RESULTS = 10000;
 const emit = defineEmits<{
   (e: 'scrollToMatch', index: number): void;
 }>();
+
+const consoleOpeStore = useConsoleOpeStore();
+const searchInput = ref('');
 
 /** 最終行のインデックス */
 const lastLineIdx = ref<number>(-1);
@@ -34,9 +38,6 @@ const currentFocusLineIdx = computed(() => {
     return matchedIdx2LineNum.value[currentMatchIndex.value];
   }
 });
-
-const searchInput = ref('');
-const isSearchVisible = ref(false);
 
 // Computed property to get the current match count display
 const matchCountText = () => {
@@ -153,9 +154,9 @@ function navigateToCurrentFocusLine(lineIdx: number) {
 function closeSearch() {
   searchInput.value = '';
   currentMatchIndex.value = -1;
-  isSearchVisible.value = false;
-  // 検索ボックスを閉じる際に最終行へ移動する
-  navigateToCurrentFocusLine(lastLineIdx.value);
+  consoleOpeStore.isSearchVisible = false;
+  // 検索ボックスを閉じる際に最終行へ移動する（仕様として不自然なため取りやめ）
+  // navigateToCurrentFocusLine(lastLineIdx.value);
   lastLineIdx.value = -1;
 }
 
@@ -164,7 +165,7 @@ function handleKeyDown(event: KeyboardEvent) {
   // Ctrl+F で検索を表示
   if (event.key === 'f' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
-    isSearchVisible.value = true;
+    consoleOpeStore.isSearchVisible = true;
   }
 
   // 検索ボックス内での操作
@@ -189,20 +190,9 @@ defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
 </script>
 
 <template>
-  <!-- 検索ボタン -->
-  <q-btn
-    v-if="!isSearchVisible"
-    class="search-button"
-    round
-    flat
-    dense
-    icon="search"
-    @click="isSearchVisible = true"
-  />
-
   <!-- 検索ボックス -->
-  <div v-else class="console-search">
-    <q-card flat class="search-container">
+  <div v-if="consoleOpeStore.isSearchVisible" class="console-search">
+    <q-card flat bordered class="search-container q-pa-xs">
       <SsInput
         v-model="searchInput"
         @update:model-value="navigateToCurrentFocusLine(currentFocusLineIdx)"
@@ -217,7 +207,7 @@ defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
       </SsInput>
 
       <div class="search-controls">
-        <span class="gt-sm match-count">{{ matchCountText() }}</span>
+        <span class="gt-xs match-count">{{ matchCountText() }}</span>
         <q-btn
           flat
           round
@@ -246,15 +236,12 @@ defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
   top: 10px;
   right: 10px;
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .search-container {
   display: flex;
   align-items: center;
-  padding: 4px;
+  border-width: 2px;
 }
 
 .search-input {

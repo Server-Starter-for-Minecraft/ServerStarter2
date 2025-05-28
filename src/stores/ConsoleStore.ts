@@ -158,14 +158,16 @@ export async function runServer() {
   }
 
   // プログレスのステータスをセット
-  consoleStore.initProgress(
-    runWorld.world.id,
-    $T('console.booting', {
-      id: `${runWorld.world.version.id}`,
-      type: `${$T(`home.serverType.${runWorld.world.version.type}`)}`,
-      name: `${runWorld.world.name}`,
-    })
-  );
+  if (runWorld.world.version.type !== 'unknown') {
+    consoleStore.initProgress(
+      runWorld.world.id,
+      $T('console.booting', {
+        id: `${runWorld.world.version.id}`,
+        type: `${$T(`home.serverType.${runWorld.world.version.type}`)}`,
+        name: `${runWorld.world.name}`,
+      })
+    );
+  }
 
   // サーバーを起動
   updateBackWorld(runWorld.world.id);
