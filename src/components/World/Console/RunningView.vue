@@ -20,7 +20,7 @@ const defaultStyles = {
   // 行間・行内改行の別なく占有される文字高さ
   'line-height': 1.2,
   // 行間のマージン
-  'margin-bottom': '2pt',
+  'margin-bottom': '5pt',
   // 文字色（空文字列はシステム設定に追従）
   color: '',
   opacity: 0.85,

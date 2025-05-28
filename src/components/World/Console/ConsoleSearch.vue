@@ -234,7 +234,7 @@ defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
 .console-search {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 7px;
   z-index: 10;
 }
 

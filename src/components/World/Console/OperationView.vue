@@ -91,16 +91,17 @@ function isRunning() {
       @click="stop"
     />
 
-    <SsBtn
+    <q-btn-dropdown
+      outline
       dense
-      is-capital
+      auto-close
       icon="construction"
       label="Tools"
       width="100px"
       :disable="!isViewConsole()"
       class="q-mx-sm"
     >
-      <q-menu auto-close>
+      <q-list dense bordered>
         <q-item
           v-for="btn in menuBtns"
           clickable
@@ -113,8 +114,8 @@ function isRunning() {
           </q-item-section>
           <q-item-section>{{ btn.label }}</q-item-section>
         </q-item>
-      </q-menu>
-    </SsBtn>
+      </q-list>
+    </q-btn-dropdown>
 
     <q-input
       v-if="!isCheckingLog()"
