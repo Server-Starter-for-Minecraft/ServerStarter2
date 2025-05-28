@@ -14,6 +14,31 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const consoleOpeStore = useConsoleOpeStore();
 
+type BtnType = {
+  icon: string;
+  label: string;
+  disable?: () => boolean;
+  click: () => void;
+};
+const menuBtns: BtnType[] = [
+  {
+    icon: 'restart_alt',
+    label: $T('console.reboot.btn'),
+    disable: () => !isRunning(),
+    click: reboot,
+  },
+  {
+    icon: 'search',
+    label: $T('console.search.btn'),
+    click: () => (consoleOpeStore.isSearchVisible = true),
+  },
+  // {
+  //   icon: 'palette',
+  //   label: $T('console.appearance'),
+  //   click: () => {},
+  // },
+];
+
 function stop() {
   consoleStore.clickedStopBtn(mainStore.selectedWorldID);
   window.API.sendCommand(mainStore.selectedWorldID, 'stop');
@@ -75,26 +100,18 @@ function isRunning() {
       :disable="!isViewConsole()"
       class="q-mx-sm"
     >
-      <q-menu auto-close class="q-gutter-y-sm q-pb-sm">
-        <q-item dense clickable :disable="!isRunning()" @click="reboot">
+      <q-menu auto-close>
+        <q-item
+          v-for="btn in menuBtns"
+          clickable
+          :disable="btn.disable?.()"
+          @click="btn.click"
+          :key="btn.icon"
+        >
           <q-item-section avatar>
-            <q-icon name="restart_alt" />
+            <q-icon :name="btn.icon" />
           </q-item-section>
-          <q-item-section>{{ $T('console.reboot.btn') }}</q-item-section>
-        </q-item>
-
-        <q-item dense clickable @click="consoleOpeStore.isSearchVisible = true">
-          <q-item-section avatar>
-            <q-icon name="search" />
-          </q-item-section>
-          <q-item-section>{{ $T('console.search.btn') }}</q-item-section>
-        </q-item>
-
-        <q-item dense clickable>
-          <q-item-section avatar>
-            <q-icon name="palette" />
-          </q-item-section>
-          <q-item-section>{{ $T('console.appearance') }}</q-item-section>
+          <q-item-section>{{ btn.label }}</q-item-section>
         </q-item>
       </q-menu>
     </SsBtn>
