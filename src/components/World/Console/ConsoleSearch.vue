@@ -9,8 +9,6 @@ import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
-// TODO: 配色・UIの調整
-
 /** 検索結果として表示する最大件数 */
 const LIMIT_SEARCH_RESULTS = 10000;
 
@@ -19,7 +17,11 @@ const emit = defineEmits<{
 }>();
 
 const consoleOpeStore = useConsoleOpeStore();
+
+/** 検索ボックスのテキスト */
 const searchInput = ref('');
+/** 検索ボックスのテキストが更新されたか（getMatchedLines()で利用） */
+const isSearchInputUpdated = ref(false);
 
 /** 最終行のインデックス */
 const lastLineIdx = ref<number>(-1);
@@ -104,6 +106,7 @@ function isMatchQuery(text: string): MatchResult[] {
 
 /** 呼び出しコンポーネントで検索対象とする文字列群を与えると，検索結果を付与した文字列群を返す */
 function getMatchedLines(lines: ConsoleData[]): MatchedConsoleData[] {
+  // TODO: virtual-scrollの表示位置が更新される度に実行され，処理効率が悪いためキャッシュシステムを新設する
   matchedIdx2LineNum.value = [];
   lastLineIdx.value = lines.length - 1;
   const res = lines.map((item, idx) => {
@@ -114,8 +117,16 @@ function getMatchedLines(lines: ConsoleData[]): MatchedConsoleData[] {
 
   if (matchedIdx2LineNum.value.length === 0) {
     currentMatchIndex.value = -1;
-  } else {
+  } else if (
+    matchedIdx2LineNum.value.length <= currentMatchIndex.value ||
+    currentMatchIndex.value === -1
+  ) {
     currentMatchIndex.value = 0;
+  }
+
+  if (isSearchInputUpdated.value) {
+    navigateToCurrentFocusLine(currentFocusLineIdx.value);
+    isSearchInputUpdated.value = false;
   }
 
   return res;
@@ -195,7 +206,7 @@ defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
     <q-card flat bordered class="search-container q-pa-xs">
       <SsInput
         v-model="searchInput"
-        @update:model-value="navigateToCurrentFocusLine(currentFocusLineIdx)"
+        @update:model-value="isSearchInputUpdated = true"
         dense
         autofocus
         class="search-input"
