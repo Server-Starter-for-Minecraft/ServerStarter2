@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
-import { QVirtualScroll } from 'quasar';
-import { ConsoleData, MatchedConsoleData } from 'src/schema/console';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import ConsoleSearch from './ConsoleSearch.vue';
@@ -9,7 +7,6 @@ import ConsoleSearch from './ConsoleSearch.vue';
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
 const consoleSearchRef = ref<InstanceType<typeof ConsoleSearch> | null>(null);
 
 /** コンソールのカスタム表示に将来的に対応 */
@@ -25,23 +22,6 @@ const defaultStyles = {
   color: '',
   opacity: 0.85,
 };
-
-/**
- * コンソールの一番下に自動でスクロールする
- */
-function scroll2End() {
-  virtualListRef.value?.scrollTo(
-    consoleStore.console(mainStore.selectedWorldID).length,
-    'start-force'
-  );
-}
-setTimeout(scroll2End, 0);
-
-// コンソール表示
-consoleStore.$subscribe((mutation, state) => {
-  // TODO: センスのある記法求む
-  setTimeout(scroll2End, 0);
-});
 
 const consoleLines = computed(() => {
   if (!consoleSearchRef.value) {
@@ -63,11 +43,33 @@ const currentFocusLineIdx = computed(() => {
  * 指定されたインデックスの項目にスクロールする
  */
 function scrollToMatch(index: number) {
-  virtualListRef.value?.scrollTo(index, 'center-force');
+  const anchorId = `console-line-${index}`;
+  const element = document.getElementById(anchorId);
+
+  element?.scrollIntoView({
+    behavior: 'instant',
+    block: 'center',
+  });
 }
 
-// Setup keyboard event listeners
+/**
+ * コンソールの一番下に自動でスクロールする
+ */
+function scroll2End() {
+  const lastIdx = consoleLines.value.length - 1;
+  scrollToMatch(lastIdx);
+}
+
+/** コンソールの内容が更新されたら，一番下にスクロールする */
+consoleStore.$subscribe((mutation, state) => {
+  nextTick(() => scroll2End());
+});
+
 onMounted(() => {
+  // 最終行を最初に表示する
+  scroll2End();
+
+  // Setup keyboard event listeners
   if (!consoleSearchRef.value) return;
   window.addEventListener('keydown', consoleSearchRef.value?.handleKeyDown);
 });
@@ -83,20 +85,11 @@ onUnmounted(() => {
     <!-- 検索コンポーネント -->
     <ConsoleSearch ref="consoleSearchRef" @scroll-to-match="scrollToMatch" />
 
-    <q-virtual-scroll
-      ref="virtualListRef"
-      :items="consoleLines"
-      v-slot="{
-        item,
-        index,
-      }: {
-        item: MatchedConsoleData | ConsoleData,
-        index: number,
-      }"
-      class="q-pa-md fit"
-      style="flex: 1 1 0"
-    >
+    <q-scroll-area class="q-px-md fit">
       <p
+        v-for="(item, index) in consoleLines"
+        :key="index"
+        :id="`console-line-${index}`"
         :class="[
           item.isError ? 'text-negative' : '',
           currentFocusLineIdx === index ? 'current-match' : '',
@@ -113,7 +106,7 @@ onUnmounted(() => {
         </template>
         <template v-else>{{ item.chunk }}</template>
       </p>
-    </q-virtual-scroll>
+    </q-scroll-area>
   </div>
 </template>
 

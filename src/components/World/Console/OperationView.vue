@@ -52,6 +52,7 @@ async function reboot() {
 }
 
 function closeLog() {
+  consoleOpeStore.isSearchVisible = false;
   consoleStore.initTab(mainStore.selectedWorldID, true);
 }
 
