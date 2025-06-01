@@ -103,14 +103,14 @@ function isRunning() {
       :disable="!isViewConsole()"
       class="q-mx-sm"
     >
-      <q-list dense bordered>
+      <q-list bordered>
         <q-item
           v-for="btn in menuBtns"
           clickable
           :disable="btn.disable?.()"
           @click="btn.click"
           :key="btn.icon"
-          class="q-my-xs"
+          style="min-height: 2rem"
         >
           <q-item-section avatar style="min-width: 0">
             <q-icon :name="btn.icon" />
