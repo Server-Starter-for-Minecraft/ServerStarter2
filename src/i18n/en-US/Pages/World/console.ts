@@ -31,5 +31,6 @@ export const enUSConsole: MessageSchema['console'] = {
     noMatches: 'No matches',
     matchCount: '{current} of {total}',
   },
+  toolBtn: 'Tools',
   appearance: 'Appearance',
 };

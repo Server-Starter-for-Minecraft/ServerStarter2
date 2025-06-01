@@ -32,6 +32,7 @@ const menuBtns: BtnType[] = [
     label: $T('console.search.btn'),
     click: () => (consoleOpeStore.isSearchVisible = true),
   },
+  // TODO: 描画設定画面を作成して以下をコメントイン
   // {
   //   icon: 'palette',
   //   label: $T('console.appearance'),
@@ -97,7 +98,7 @@ function isRunning() {
       dense
       auto-close
       icon="construction"
-      label="Tools"
+      :label="$T('console.toolBtn')"
       width="100px"
       :disable="!isViewConsole()"
       class="q-mx-sm"
@@ -109,8 +110,9 @@ function isRunning() {
           :disable="btn.disable?.()"
           @click="btn.click"
           :key="btn.icon"
+          class="q-my-xs"
         >
-          <q-item-section avatar>
+          <q-item-section avatar style="min-width: 0;">
             <q-icon :name="btn.icon" />
           </q-item-section>
           <q-item-section>{{ btn.label }}</q-item-section>

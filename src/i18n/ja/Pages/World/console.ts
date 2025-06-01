@@ -29,5 +29,6 @@ export const jaConsole = {
     noMatches: '一致なし',
     matchCount: '{current} / {total}',
   },
+  toolBtn: '道具箱',
   appearance: '描画設定',
 };
