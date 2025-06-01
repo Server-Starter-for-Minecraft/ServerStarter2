@@ -112,7 +112,7 @@ function isRunning() {
           :key="btn.icon"
           class="q-my-xs"
         >
-          <q-item-section avatar style="min-width: 0;">
+          <q-item-section avatar style="min-width: 0">
             <q-icon :name="btn.icon" />
           </q-item-section>
           <q-item-section>{{ btn.label }}</q-item-section>
