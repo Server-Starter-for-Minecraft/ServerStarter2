@@ -62,15 +62,24 @@ const matchCountText = () => {
  * @returns 分割されたテキストの配列（一致部分にはisMatchフラグが付く）
  */
 function isMatchQuery(text: string): MatchResult[] {
+  /** 動的に定義される正規表現において，不正な値を指定されたときにNULLを返す */
+  const setDynamicRegex = (query: string) => {
+    try {
+      return new RegExp(query, 'gi');
+    } catch (e) {
+      return null;
+    }
+  };
+
   const query = searchInput.value.trim();
   if (query === '' || !text) return [{ text, isMatch: false }];
-  const regex = new RegExp(query, 'gi');
+  const regex = setDynamicRegex(query);
 
   const parts = [];
   let lastIndex = 0;
   let match;
 
-  while ((match = regex.exec(text)) !== null) {
+  while (regex !== null && (match = regex.exec(text)) !== null) {
     // Add non-matching text before this match
     if (match.index > lastIndex) {
       parts.push({
@@ -106,7 +115,6 @@ function isMatchQuery(text: string): MatchResult[] {
 
 /** 呼び出しコンポーネントで検索対象とする文字列群を与えると，検索結果を付与した文字列群を返す */
 function getMatchedLines(lines: ConsoleData[]): MatchedConsoleData[] {
-  // TODO: virtual-scrollの表示位置が更新される度に実行され，処理効率が悪いためキャッシュシステムを新設する
   matchedIdx2LineNum.value = [];
   lastLineIdx.value = lines.length - 1;
   const res = lines.map((item, idx) => {
