@@ -89,10 +89,12 @@ function isMatchQuery(text: string): MatchResult[] {
     }
 
     // Add the matching text
-    parts.push({
-      text: match[0],
-      isMatch: true,
-    });
+    if (match[0] !== '') {
+      parts.push({
+        text: match[0],
+        isMatch: true,
+      });
+    }
 
     lastIndex = match.index + match[0].length;
 
