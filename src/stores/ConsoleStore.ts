@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { ConsoleData, WorldStatus } from 'src/schema/console';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { WorldID } from 'app/src-electron/schema/world';
@@ -9,14 +10,12 @@ import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
 import { updateBackWorld, updateWorld } from './WorldStore';
 
-type consoleData = { chunk: string; isError: boolean };
-type WorldStatus = 'Stop' | 'Ready' | 'Running' | 'CheckLog';
 interface WorldConsole {
   [id: WorldID]: {
     status: WorldStatus;
     clickedStop: boolean;
     clickedReboot: boolean;
-    console: consoleData[];
+    console: ConsoleData[];
   };
 }
 
@@ -40,7 +39,7 @@ export const useConsoleStore = defineStore('consoleStore', {
           status: 'Stop',
           clickedStop: false,
           clickedReboot: false,
-          console: new Array<consoleData>(),
+          console: new Array<ConsoleData>(),
         };
       }
     },
@@ -159,14 +158,16 @@ export async function runServer() {
   }
 
   // プログレスのステータスをセット
-  consoleStore.initProgress(
-    runWorld.world.id,
-    $T('console.booting', {
-      id: `${runWorld.world.version.id}`,
-      type: `${$T(`home.serverType.${runWorld.world.version.type}`)}`,
-      name: `${runWorld.world.name}`,
-    })
-  );
+  if (runWorld.world.version.type !== 'unknown') {
+    consoleStore.initProgress(
+      runWorld.world.id,
+      $T('console.booting', {
+        id: `${runWorld.world.version.id}`,
+        type: `${$T(`home.serverType.${runWorld.world.version.type}`)}`,
+        name: `${runWorld.world.name}`,
+      })
+    );
+  }
 
   // サーバーを起動
   updateBackWorld(runWorld.world.id);

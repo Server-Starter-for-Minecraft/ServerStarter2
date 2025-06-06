@@ -4,6 +4,7 @@ import { useMainStore } from '../MainStore';
 export const useConsoleOpeStore = defineStore('consoleOperationStore', {
   state: () => {
     return {
+      isSearchVisible: false,
       showIdx: 0,
       inputCommands: [] as string[],
       command: '',

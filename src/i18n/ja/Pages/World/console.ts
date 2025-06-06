@@ -23,4 +23,12 @@ export const jaConsole = {
   },
   shutdownServer: 'サーバーをシャットダウン中',
   command: 'コマンドを入力',
+  search: {
+    btn: 'コンソールを検索',
+    placeholder: 'コンソールを検索',
+    noMatches: '一致なし',
+    matchCount: '{current} / {total}',
+  },
+  toolBtn: '道具箱',
+  appearance: '描画設定',
 };

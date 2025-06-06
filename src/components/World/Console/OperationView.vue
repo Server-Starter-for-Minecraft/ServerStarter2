@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
@@ -13,6 +14,32 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const consoleOpeStore = useConsoleOpeStore();
 
+type BtnType = {
+  icon: string;
+  label: string;
+  disable?: () => boolean;
+  click: () => void;
+};
+const menuBtns: BtnType[] = [
+  {
+    icon: 'restart_alt',
+    label: $T('console.reboot.btn'),
+    disable: () => !isRunning(),
+    click: reboot,
+  },
+  {
+    icon: 'search',
+    label: $T('console.search.btn'),
+    click: () => (consoleOpeStore.isSearchVisible = true),
+  },
+  // TODO: 描画設定画面を作成して以下をコメントイン
+  // {
+  //   icon: 'palette',
+  //   label: $T('console.appearance'),
+  //   click: () => {},
+  // },
+];
+
 function stop() {
   consoleStore.clickedStopBtn(mainStore.selectedWorldID);
   window.API.sendCommand(mainStore.selectedWorldID, 'stop');
@@ -26,22 +53,31 @@ async function reboot() {
 }
 
 function closeLog() {
+  consoleOpeStore.isSearchVisible = false;
   consoleStore.initTab(mainStore.selectedWorldID, true);
+}
+
+function isViewConsole() {
+  return isCheckingLog() || isRunning();
+}
+function isCheckingLog() {
+  return consoleStore.status(mainStore.selectedWorldID) === 'CheckLog';
+}
+function isRunning() {
+  return consoleStore.status(mainStore.selectedWorldID) === 'Running';
 }
 </script>
 
 <template>
-  <div
-    v-if="consoleStore.status(mainStore.selectedWorldID) !== 'CheckLog'"
-    class="row q-mx-md"
-    style="padding-top: 14px; padding-bottom: 14px"
-  >
+  <div class="row q-mx-md" style="padding-top: 14px; padding-bottom: 14px">
+    <q-space />
     <SsBtn
+      v-if="!isCheckingLog()"
       dense
       is-capital
       icon="stop"
       :label="
-        $t(
+        $T(
           consoleStore.isClickedStop(mainStore.selectedWorldID)
             ? 'console.stop.progress'
             : 'console.stop.btn'
@@ -56,27 +92,36 @@ function closeLog() {
       :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
       @click="stop"
     />
-    <SsBtn
+
+    <q-btn-dropdown
+      outline
       dense
-      is-capital
-      icon="restart_alt"
-      :label="
-        $t(
-          consoleStore.isClickedReboot(mainStore.selectedWorldID)
-            ? 'console.reboot.progress'
-            : 'console.reboot.btn'
-        )
-      "
-      :width="
-        consoleStore.isClickedReboot(mainStore.selectedWorldID)
-          ? '150px'
-          : '100px'
-      "
-      :disable="disable || consoleStore.isClickedBtn(mainStore.selectedWorldID)"
-      @click="reboot"
+      auto-close
+      icon="construction"
+      :label="$T('console.toolBtn')"
+      width="100px"
+      :disable="!isViewConsole()"
       class="q-mx-sm"
-    />
+    >
+      <q-list bordered>
+        <q-item
+          v-for="btn in menuBtns"
+          clickable
+          :disable="btn.disable?.()"
+          @click="btn.click"
+          :key="btn.icon"
+          style="min-height: 2rem"
+        >
+          <q-item-section avatar style="min-width: 0">
+            <q-icon :name="btn.icon" />
+          </q-item-section>
+          <q-item-section>{{ btn.label }}</q-item-section>
+        </q-item>
+      </q-list>
+    </q-btn-dropdown>
+
     <q-input
+      v-if="!isCheckingLog()"
       dense
       filled
       clearable
@@ -85,7 +130,7 @@ function closeLog() {
       v-on:keydown.enter="() => consoleOpeStore.sendCommand()"
       v-on:keydown.up="consoleOpeStore.upKey()"
       v-on:keydown.down="consoleOpeStore.downKey()"
-      :placeholder="$t('console.command')"
+      :placeholder="$T('console.command')"
       class="col"
     >
       <template #append>
@@ -99,19 +144,13 @@ function closeLog() {
         />
       </template>
     </q-input>
-  </div>
 
-  <div
-    v-else
-    class="row q-mx-md"
-    style="padding-top: 14px; padding-bottom: 14px"
-  >
-    <q-space />
     <SsBtn
+      v-if="isCheckingLog()"
       dense
       is-capital
       icon="close"
-      :label="$t('general.close')"
+      :label="$T('general.close')"
       @click="closeLog"
       class="q-py-sm"
     />

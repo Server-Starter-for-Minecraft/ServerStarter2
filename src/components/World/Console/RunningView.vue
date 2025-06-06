@@ -1,67 +1,142 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
-import { QVirtualScroll } from 'quasar';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
+import ConsoleSearch from './ConsoleSearch.vue';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-const virtualListRef: Ref<null | QVirtualScroll> = ref(null);
+
+const consoleSearchRef = ref<InstanceType<typeof ConsoleSearch> | null>(null);
+
+/** コンソールのカスタム表示に将来的に対応 */
+const defaultStyles = {
+  'font-size': '14pt',
+  'font-family':
+    "'Pending Mono HWNF', Consolas, 'Courier New', Meiryo, monospace",
+  // 行間・行内改行の別なく占有される文字高さ
+  'line-height': 1.2,
+  // 行間のマージン
+  'margin-bottom': '5pt',
+  // 文字色（空文字列はシステム設定に追従）
+  color: '',
+  opacity: 0.85,
+};
+
+const consoleLines = computed(() => {
+  if (!consoleSearchRef.value) {
+    return consoleStore.console(mainStore.selectedWorldID);
+  }
+  return consoleSearchRef.value.getMatchedLines(
+    consoleStore.console(mainStore.selectedWorldID)
+  );
+});
+
+const currentFocusLineIdx = computed(() => {
+  if (!consoleSearchRef.value) {
+    return -1;
+  }
+  return consoleSearchRef.value.currentFocusLineIdx;
+});
+
+/**
+ * 指定されたインデックスの項目にスクロールする
+ */
+function scrollToMatch(index: number) {
+  const anchorId = `console-line-${index}`;
+  const element = document.getElementById(anchorId);
+
+  element?.scrollIntoView({
+    behavior: 'instant',
+    block: 'center',
+  });
+}
 
 /**
  * コンソールの一番下に自動でスクロールする
  */
 function scroll2End() {
-  virtualListRef.value?.scrollTo(
-    consoleStore.console(mainStore.selectedWorldID).length,
-    'start-force'
-  );
+  const lastIdx = consoleLines.value.length - 1;
+  scrollToMatch(lastIdx);
 }
-setTimeout(scroll2End, 0);
 
-// コンソール表示
+/** コンソールの内容が更新されたら，一番下にスクロールする */
 consoleStore.$subscribe((mutation, state) => {
-  // TODO: センスのある記法求む
-  setTimeout(scroll2End, 0);
+  nextTick(() => scroll2End());
+});
+
+onMounted(() => {
+  // 最終行を最初に表示する
+  scroll2End();
+
+  // Setup keyboard event listeners
+  if (!consoleSearchRef.value) return;
+  window.addEventListener('keydown', consoleSearchRef.value?.handleKeyDown);
+});
+
+onUnmounted(() => {
+  if (!consoleSearchRef.value) return;
+  window.removeEventListener('keydown', consoleSearchRef.value?.handleKeyDown);
 });
 </script>
 
 <template>
-  <!-- TODO: 一番下でないときにボタンを表示 -->
-  <!-- <q-btn
-    class="q-ml-sm"
-    label="Go"
-    no-caps
-    color="primary"
-    @click="scroll2End"
-  /> -->
+  <div class="console-container">
+    <!-- 検索コンポーネント -->
+    <ConsoleSearch ref="consoleSearchRef" @scroll-to-match="scrollToMatch" />
 
-  <q-virtual-scroll
-    v-if="
-      ['Running', 'CheckLog'].includes(
-        consoleStore.status(mainStore.selectedWorldID)
-      )
-    "
-    ref="virtualListRef"
-    :items="consoleStore.console(mainStore.selectedWorldID)"
-    v-slot="{ item }"
-    class="q-pa-md fit"
-    style="flex: 1 1 0"
-  >
-    <p
-      :class="item.isError ? 'text-negative' : ''"
-      style="word-break: break-all; user-select: text"
-    >
-      {{ item.chunk }}
-    </p>
-  </q-virtual-scroll>
+    <q-scroll-area class="q-px-md fit">
+      <p
+        v-for="(item, index) in consoleLines"
+        :key="index"
+        :id="`console-line-${index}`"
+        :class="[
+          item.isError ? 'text-negative' : '',
+          currentFocusLineIdx === index ? 'current-match' : '',
+        ]"
+        :style="defaultStyles"
+      >
+        <template v-if="'matches' in item">
+          <template v-for="(part, partIndex) in item.matches" :key="partIndex">
+            <span v-if="part.isMatch" class="highlight-match">
+              {{ part.text }}
+            </span>
+            <template v-else>{{ part.text }}</template>
+          </template>
+        </template>
+        <template v-else>{{ item.chunk }}</template>
+      </p>
+    </q-scroll-area>
+  </div>
 </template>
 
 <style lang="scss" scoped>
+.console-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 p {
-  font-size: 16pt;
-  line-height: 1.2;
   margin: 0;
-  font-family: 'Courier New', Courier, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+}
+
+:deep(.highlight-match) {
+  background-color: rgba(255, 255, 0, 0.5);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.current-match {
+  background-color: rgba(255, 165, 0, 0.2);
+
+  :deep(.highlight-match) {
+    background-color: rgba(255, 165, 0, 0.6);
+    font-weight: bold;
+  }
 }
 </style>
