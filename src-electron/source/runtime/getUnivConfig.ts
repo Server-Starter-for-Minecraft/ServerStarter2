@@ -15,7 +15,10 @@ import { runtimeLoggers } from './base';
 const logger = runtimeLoggers().univConfig();
 
 // betaとgammaはメジャーバージョンが共に17のため，より新しいgammaを優先する
-const EXCLUDE_COMPONENTS = ['java-runtime-beta', 'java-runtime-gamma-snapshot'] as const;
+const EXCLUDE_COMPONENTS = [
+  'java-runtime-beta',
+  'java-runtime-gamma-snapshot',
+] as const;
 const McTargetComponent = z.string();
 type McTargetComponent = z.infer<typeof McTargetComponent>;
 
