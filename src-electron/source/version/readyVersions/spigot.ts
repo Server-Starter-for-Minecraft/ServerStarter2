@@ -75,7 +75,8 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
       url: SPIGOT_BUILDTOOL_URL,
     };
     returnVerJson.javaVersion = {
-      majorVersion: spigotVerInfo.javaVersions[1],
+      // Class File Version -> JDK major version
+      majorVersion: spigotVerInfo.javaVersions[1] - 44,
     };
     p?.delete();
     return returnVerJson;

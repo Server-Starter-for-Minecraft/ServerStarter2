@@ -4,50 +4,85 @@ import { OsPlatform } from 'app/src-electron/schema/os';
 import {
   JavaComponent,
   JavaMajorVersion,
+  McRuntimeManifest,
   Runtime,
   UniversalRuntime,
 } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { fromEntries, toEntries } from '../../util/obj/obj';
 
 // betaとgammaはメジャーバージョンが共に17のため，より新しいgammaを優先する
-const McTargetComponent = JavaComponent.exclude(['java-runtime-beta']);
+const EXCLUDE_COMPONENTS = ['java-runtime-beta'] as const;
+const McTargetComponent = JavaComponent.exclude(EXCLUDE_COMPONENTS);
 type McTargetComponent = z.infer<typeof McTargetComponent>;
 
 // minecraft のランタイムに基づいてコンポーネント名を返却する
-const McConfig = z.record(OsPlatform, z.record(z.number(), McTargetComponent));
-type McConfig = z.infer<typeof McConfig>;
+const McRuntimeComponent = z.record(z.number(), McTargetComponent);
+type McRuntimeComponent = z.infer<typeof McRuntimeComponent>;
+const McRuntimeComponents = z.record(OsPlatform, McRuntimeComponent);
+type McRuntimeComponents = z.infer<typeof McRuntimeComponents>;
 
-// debian, redhatはlinuxから取得
-const mcConfig: McConfig = {
-  debian: {
-    16: 'java-runtime-alpha',
-    21: 'java-runtime-delta',
-    17: 'java-runtime-gamma',
-    8: 'jre-legacy',
-  },
-  redhat: {
-    16: 'java-runtime-alpha',
-    21: 'java-runtime-delta',
-    17: 'java-runtime-gamma',
-    8: 'jre-legacy',
-  },
-  'mac-os': {
-    16: 'java-runtime-alpha',
-    17: 'java-runtime-gamma',
-    21: 'java-runtime-delta',
-    8: 'jre-legacy',
-  },
-  'mac-os-arm64': {
-    21: 'java-runtime-delta',
-    17: 'java-runtime-gamma',
-  },
-  'windows-x64': {
-    16: 'java-runtime-alpha',
-    17: 'java-runtime-gamma',
-    21: 'java-runtime-delta',
-    8: 'jre-legacy',
-  },
-};
+/**
+ * 対応している全OSに対して，一般的なバージョン番号からコンポーネント名の対応関係を生成
+ */
+function getConvertersJdk2Component(
+  mcRuntimeManifest: McRuntimeManifest
+): McRuntimeComponents {
+  // URLから取得した生データであるMcRuntimeManifestを
+  // JDKバージョンとコンポーネント名を紐づけたオブジェクトに変換
+  const configEntries: [string, McRuntimeComponent][] = toEntries(
+    mcRuntimeManifest
+  ).map(([os, config]) => {
+    const vers = toEntries(config)
+      .map(([componentName, obj]): [number, McTargetComponent] | undefined => {
+        if (!obj || obj.length === 0) return undefined;
+        if (EXCLUDE_COMPONENTS.some((c) => c === componentName))
+          return undefined;
+        const majorVersion = parseInt(obj[0].version.name.split('.')[0]);
+        const targetComponent = McTargetComponent.safeParse(componentName);
+        if (!targetComponent.success) return undefined;
+        return [majorVersion, targetComponent.data];
+      })
+      .filter((o) => o !== undefined);
+    return [os, fromEntries(vers)];
+  });
+  const tmpResult = fromEntries(configEntries);
+
+  // linuxはすべて同じ
+  tmpResult['redhat'] = tmpResult['linux'];
+  tmpResult['debian'] = tmpResult['linux'];
+  delete tmpResult['linux'];
+
+  // TODO: 下記を削除してWindows-arm64に対応する & OsPlatformの型定義を変更
+  delete tmpResult['windows-arm64'];
+
+  return tmpResult;
+}
+
+/**
+ * 指定されたバージョンが存在しない場合に、利用可能な最も近い（小さい側の）バージョンを取得する
+ */
+function findNearestLowerVersion(
+  availableVersions: McRuntimeComponent | undefined,
+  targetVersion: number
+): McTargetComponent | undefined {
+  if (!availableVersions) return undefined;
+
+  // 降順でソート
+  const sortedVersions = toEntries(availableVersions).sort(
+    (a, b) => b[0] - a[0]
+  );
+
+  // 指定されたバージョン以下で最も大きいバージョンを探す
+  for (const version of sortedVersions) {
+    if (version[0] <= targetVersion) {
+      return version[1];
+    }
+  }
+
+  // 指定されたバージョンより小さいものがない場合は undefined を返す
+  return undefined;
+}
 
 /**
  * Java17のような一般バージョン番号から「'java-runtime-gamma'」のようなコンポーネント名を返す
@@ -59,18 +94,16 @@ const mcConfig: McConfig = {
  */
 export function getUniversalConfig(
   osPlatform: OsPlatform,
-  majorVersion?: JavaMajorVersion
+  mcRuntimeManifest: McRuntimeManifest,
+  majorVersion: JavaMajorVersion
 ): Promise<Failable<Exclude<Runtime, UniversalRuntime>>> {
-  let version;
-  if (majorVersion) {
-    version = majorVersion;
-  } else {
-    version = Math.max(
-      ...Object.keys(mcConfig[osPlatform] ?? { 0: 'undefined' }).map(Number)
-    );
-  }
+  const converters = getConvertersJdk2Component(mcRuntimeManifest);
 
-  const runtimeComponentName = mcConfig[osPlatform]?.[version];
+  // versionがconvertersに存在しない場合は小さい側の直近のバージョンを表示する
+  const runtimeComponentName = findNearestLowerVersion(
+    converters[osPlatform],
+    majorVersion
+  );
   if (runtimeComponentName) {
     return Promise.resolve({
       type: 'minecraft',
@@ -81,7 +114,7 @@ export function getUniversalConfig(
       errorMessage.core.runtime.installFailed({
         runtimeType: 'universal',
         targetOs: osPlatform,
-        version: version.toString(),
+        version: majorVersion.toString(),
       })
     );
   }
@@ -89,73 +122,72 @@ export function getUniversalConfig(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  test('getUniversalConfig', async () => {
-    const { isError } = await import('../../util/error/error');
+  const { describe, test, expect } = import.meta.vitest;
 
-    // get Java17
-    const runtime1 = await getUniversalConfig(
-      'windows-x64',
-      JavaMajorVersion.parse(17)
-    );
-    expect(isError(runtime1)).toBeFalsy();
-    expect(runtime1).toEqual({
-      type: 'minecraft',
-      version: 'java-runtime-gamma',
-    });
-
-    // get latest Java
-    const runtime2 = await getUniversalConfig('windows-x64');
-    expect(isError(runtime2)).toBeFalsy();
-    expect(runtime2).toEqual({
-      type: 'minecraft',
-      version: 'java-runtime-delta',
-    });
-  });
-
-  test('check runtime universal versions', async () => {
+  describe('getUniversalConfig', async () => {
     const { BytesData } = await import('../../util/binary/bytesData');
     const { isError } = await import('../../util/error/error');
-    const { fromEntries } = await import('../../util/obj/obj');
-    const { McRuntimeManifest } = await import('../../schema/runtime');
+    const { minecraftRuntimeManifestUrl } = await import('./minecraft');
 
-    const targetUrl =
-      'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
+    const bytesManifest = await BytesData.fromURL(minecraftRuntimeManifestUrl);
+    if (isError(bytesManifest)) return;
+    const mcRuntimeManifest = await bytesManifest.json(McRuntimeManifest);
+    if (isError(mcRuntimeManifest)) return;
 
-    // URLの内容を取得
-    const targetManifestBytes = await BytesData.fromURL(targetUrl);
-    expect(isError(targetManifestBytes)).toBeFalsy();
-    if (isError(targetManifestBytes)) return targetManifestBytes;
-    const manifestJson = await targetManifestBytes.json(McRuntimeManifest);
-    expect(isError(manifestJson)).toBeFalsy();
-    if (isError(manifestJson)) return manifestJson;
-
-    // 検証用データに整形
-    const cleanConfig = (obj: Record<string, any>) => {
-      const runtimeComponentName = Object.keys(obj).filter(
-        (k) =>
-          McTargetComponent.safeParse(k).success && (obj[k]?.length ?? 0 > 0)
+    test('getUniversalConfig', async () => {
+      // get Java17
+      const runtime1 = await getUniversalConfig(
+        'windows-x64',
+        mcRuntimeManifest,
+        JavaMajorVersion.parse(17)
       );
-      return fromEntries(
-        runtimeComponentName.map((n) => [
-          obj[n]?.[0].version.name?.match(/^(\d+)/)?.[1] ?? 'undefined',
-          n,
-        ])
+      expect(isError(runtime1)).toBeFalsy();
+      expect(runtime1).toEqual({
+        type: 'minecraft',
+        version: 'java-runtime-gamma',
+      });
+      // get Java21 (Converted from Java23)
+      const runtime2 = await getUniversalConfig(
+        'windows-x64',
+        mcRuntimeManifest,
+        JavaMajorVersion.parse(23)
       );
-    };
-    const linuxConfig = cleanConfig(manifestJson.linux);
-    const macConfig = cleanConfig(manifestJson['mac-os']);
-    const mac64Config = cleanConfig(manifestJson['mac-os-arm64']);
-    const winConfig = cleanConfig(manifestJson['windows-x64']);
+      expect(isError(runtime2)).toBeFalsy();
+      expect(runtime2).toEqual({
+        type: 'minecraft',
+        version: 'java-runtime-delta',
+      });
+    });
 
-    // システム内で利用しているデータが最新か確認する
-    // 最新でない場合はここのテストで失敗するため，失敗内容に合わせて上記ハードコードを修正
-    expect({
-      debian: linuxConfig,
-      redhat: linuxConfig,
-      'mac-os': macConfig,
-      'mac-os-arm64': mac64Config,
-      'windows-x64': winConfig,
-    }).toEqual(mcConfig);
+    test('check runtime universal versions', async () => {
+      const { fromEntries } = await import('../../util/obj/obj');
+
+      // 検証用データに整形
+      const cleanConfig = (obj: Record<string, any>) => {
+        const runtimeComponentName = Object.keys(obj).filter(
+          (k) =>
+            McTargetComponent.safeParse(k).success && (obj[k]?.length ?? 0 > 0)
+        );
+        return fromEntries(
+          runtimeComponentName.map((n) => [
+            obj[n]?.[0].version.name?.match(/^(\d+)/)?.[1] ?? 'undefined',
+            n,
+          ])
+        );
+      };
+      const linuxConfig = cleanConfig(mcRuntimeManifest.linux);
+      const macConfig = cleanConfig(mcRuntimeManifest['mac-os']);
+      const mac64Config = cleanConfig(mcRuntimeManifest['mac-os-arm64']);
+      const winConfig = cleanConfig(mcRuntimeManifest['windows-x64']);
+
+      // Manifestデータが正常に必要なObjectに変換されることを確認
+      expect(getConvertersJdk2Component(mcRuntimeManifest)).toEqual({
+        debian: linuxConfig,
+        redhat: linuxConfig,
+        'mac-os': macConfig,
+        'mac-os-arm64': mac64Config,
+        'windows-x64': winConfig,
+      });
+    });
   });
 }
