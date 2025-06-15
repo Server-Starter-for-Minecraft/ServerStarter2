@@ -223,14 +223,14 @@ if (import.meta.vitest) {
     const cacheFolder = workPath.child('cache');
     const serverFolder = workPath.child('servers');
 
-    const ver21: SpigotVersion = {
-      id: VersionId.parse('1.21'),
+    const ver19: SpigotVersion = {
+      id: VersionId.parse('1.19'),
       type: 'spigot',
     };
 
     test('setSpigotJar', { timeout: 1000 * 60 }, async () => {
-      const outputPath = serverFolder.child(ver21.id);
-      const readyOperator = new ReadySpigotVersion(ver21, cacheFolder);
+      const outputPath = serverFolder.child(ver19.id);
+      const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
       const cachePath = readyOperator.cachePath;
 
       // 条件をそろえるために，ファイル類を削除する
@@ -255,8 +255,13 @@ if (import.meta.vitest) {
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
+      expect(res.runtime).toMatchObject({
+        type: 'universal',
+        majorVersion: 18,
+      })
 
       // execRuntime が正しい引数で呼ばれている
+      // BuildTools実行時のRuntimeは常に最新版を利用するため，呼び出し時はundefinedとなる
       expect(execRuntime).toHaveBeenCalledTimes(1);
       expect(execRuntime).toHaveBeenNthCalledWith(1, {
         args: [
@@ -264,14 +269,11 @@ if (import.meta.vitest) {
           '-jar',
           expect.any(String),
           '--rev',
-          '1.21',
+          '1.19',
         ],
         currentDir: expect.any(Path),
         onOut: expect.any(Function),
-        runtime: {
-          majorVersion: expect.any(Number),
-          type: 'universal',
-        },
+        runtime: undefined,
       });
 
       // ファイルの設置状況の検証
@@ -280,7 +282,7 @@ if (import.meta.vitest) {
       // expect(outputPath.child('libraries').exists()).toBe(true);
 
       // 実行後にファイル削除
-      const remover = new RemoveSpigotVersion(ver21, cacheFolder);
+      const remover = new RemoveSpigotVersion(ver19, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認

@@ -210,24 +210,28 @@ export abstract class ReadyVersion<
   /**
    * 当該サーバーにおけるRuntimeオブジェクトを生成する
    */
-  protected async getRuntime<R extends Runtime>(
-    runtimeType: R['type'],
+  protected async getRuntime(
     verJsonHandler: JsonSourceHandler<VersionJson>
-  ): Promise<Failable<R>> {
+  ): Promise<Failable<Runtime>> {
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
-    switch (runtimeType) {
-      case 'minecraft':
-        return {
-          type: runtimeType,
-          version: verJson.javaVersion?.component ?? 'jre-legacy',
-        } as R;
-      case 'universal':
-        return {
-          type: 'universal',
-          majorVersion: verJson.javaVersion?.majorVersion ?? 8,
-        } as R;
+    if (verJson.javaVersion?.component) {
+      return {
+        type: 'minecraft',
+        version: verJson.javaVersion?.component,
+      } as Runtime;
+    } else if (verJson.javaVersion?.majorVersion) {
+      return {
+        type: 'universal',
+        majorVersion: verJson.javaVersion.majorVersion,
+      } as Runtime;
+    }
+
+    // fall back
+    return {
+      type: 'minecraft',
+      version: 'jre-legacy',
     }
   }
 
@@ -241,7 +245,7 @@ export abstract class ReadyVersion<
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
-    const runtime = await this.getRuntime('minecraft', verJsonHandler);
+    const runtime = await this.getRuntime(verJsonHandler);
     if (isError(runtime)) return runtime;
 
     return {
