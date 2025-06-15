@@ -39,7 +39,7 @@ export class RuntimeContainer {
     private getUniversalConfig: (
       osPlatform: OsPlatform,
       mcRuntimeManifest: McRuntimeManifest,
-      majorVersion: JavaMajorVersion
+      majorVersion: JavaMajorVersion | undefined
     ) => Promise<Failable<Exclude<Runtime, UniversalRuntime>>>
   ) {
     this.metaDirPath = cacheDirPath.child('meta');
@@ -50,6 +50,15 @@ export class RuntimeContainer {
         minecraftRuntimeManifestUrl
       ),
     };
+  }
+
+  /**
+   * 指定したOS，RuntimeTypeにおける最新版のRuntime情報を返す
+   */
+  async getLatestRuntime(osPlatform: OsPlatform): Promise<Failable<Runtime>> {
+    const mcRuntimeManifest = await this.installerMap.minecraft.getCache();
+    if (isError(mcRuntimeManifest)) return mcRuntimeManifest;
+    return this.getUniversalConfig(osPlatform, mcRuntimeManifest, undefined);
   }
 
   /**
@@ -117,7 +126,7 @@ export class RuntimeContainer {
     const refRuntimeOrError = await this.getUniversalConfig(
       osPlatform,
       mcRuntimeManifest,
-      runtime.majorVersion
+      runtime.majorVersion,
     );
     if (isError(refRuntimeOrError)) return refRuntimeOrError;
     const refRuntime = refRuntimeOrError;

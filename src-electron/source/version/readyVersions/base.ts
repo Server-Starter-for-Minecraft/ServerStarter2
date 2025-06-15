@@ -20,7 +20,7 @@ export function getJarPath(cwdPath: Path) {
 }
 
 export type ExecRuntime = (options: {
-  runtime: Runtime;
+  runtime?: Runtime;
   args: string[];
   currentDir: Path;
   onOut: (line: string) => void;

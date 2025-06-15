@@ -95,14 +95,15 @@ function findNearestLowerVersion(
 export function getUniversalConfig(
   osPlatform: OsPlatform,
   mcRuntimeManifest: McRuntimeManifest,
-  majorVersion: JavaMajorVersion
+  majorVersion: JavaMajorVersion | undefined
 ): Promise<Failable<Exclude<Runtime, UniversalRuntime>>> {
   const converters = getConvertersJdk2Component(mcRuntimeManifest);
 
   // versionがconvertersに存在しない場合は小さい側の直近のバージョンを表示する
+  // majorVersionが指定されていない場合は最新のバージョンを表示する
   const runtimeComponentName = findNearestLowerVersion(
     converters[osPlatform],
-    majorVersion
+    majorVersion ?? 10 ** 3
   );
   if (runtimeComponentName) {
     return Promise.resolve({
@@ -110,11 +111,12 @@ export function getUniversalConfig(
       version: runtimeComponentName,
     });
   } else {
+    // TODO: 「/path/to/install にインストールしてください」というエラーメッセージに変更
     return Promise.resolve(
       errorMessage.core.runtime.installFailed({
         runtimeType: 'universal',
         targetOs: osPlatform,
-        version: majorVersion.toString(),
+        version: majorVersion?.toString() ?? 'LATEST RUNTIME VERSION',
       })
     );
   }

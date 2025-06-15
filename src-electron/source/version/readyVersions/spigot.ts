@@ -103,15 +103,11 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     if (isError(installerRes)) return installerRes;
     p?.delete();
 
-    const runtime = await this.getRuntime('universal', verJsonHandler);
-    if (isError(runtime)) return runtime;
-
     // `BuildTools.jar`を実行して，`server.jar`を抽出
     return getServerJarFromBuildTools(
       this._version.id,
       installerPath,
       this.cachePath,
-      runtime,
       execRuntime,
       progress
     );
@@ -161,7 +157,6 @@ async function getServerJarFromBuildTools(
   versionId: VersionId,
   buildToolsPath: Path,
   serverCachePath: Path,
-  runtime: Runtime,
   execRuntime: ExecRuntime,
   progress?: GroupProgressor
 ): Promise<Failable<void>> {
@@ -175,10 +170,11 @@ async function getServerJarFromBuildTools(
   ];
 
   // BuildToolsを実行して，Jarファイルを生成
+  // BuildToolsの実行に用いるRuntimeは常に最新版を使用する
   const sp = progress?.subtitle({ key: 'server.readyVersion.spigot.building' });
   const cp = progress?.console();
   const buildRes = await execRuntime({
-    runtime,
+    runtime: undefined,
     args,
     currentDir: buildToolsPath.parent(),
     onOut(line) {
