@@ -10,10 +10,13 @@ import {
 } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { fromEntries, toEntries } from '../../util/obj/obj';
+import { runtimeLoggers } from './base';
+
+const logger = runtimeLoggers().univConfig();
 
 // betaとgammaはメジャーバージョンが共に17のため，より新しいgammaを優先する
 const EXCLUDE_COMPONENTS = ['java-runtime-beta'] as const;
-const McTargetComponent = JavaComponent.exclude(EXCLUDE_COMPONENTS);
+const McTargetComponent = z.string();
 type McTargetComponent = z.infer<typeof McTargetComponent>;
 
 // minecraft のランタイムに基づいてコンポーネント名を返却する
@@ -39,9 +42,7 @@ function getConvertersJdk2Component(
         if (EXCLUDE_COMPONENTS.some((c) => c === componentName))
           return undefined;
         const majorVersion = parseInt(obj[0].version.name.split('.')[0]);
-        const targetComponent = McTargetComponent.safeParse(componentName);
-        if (!targetComponent.success) return undefined;
-        return [majorVersion, targetComponent.data];
+        return [majorVersion, componentName];
       })
       .filter((o) => o !== undefined);
     return [os, fromEntries(vers)];
@@ -106,10 +107,20 @@ export function getUniversalConfig(
     majorVersion ?? 10 ** 3
   );
   if (runtimeComponentName) {
-    return Promise.resolve({
-      type: 'minecraft',
-      version: runtimeComponentName,
-    });
+    const parsedComponentName = JavaComponent.safeParse(runtimeComponentName);
+    if (parsedComponentName.success) {
+      return Promise.resolve({
+        type: 'minecraft',
+        version: parsedComponentName.data,
+      });
+    } else {
+      // サポート外のコンポーネント（最新版等）が出現した際には，警告を出して続行する
+      logger.warn(`Unsupported Java component name: ${runtimeComponentName}`);
+      return Promise.resolve({
+        type: 'minecraft',
+        version: runtimeComponentName as JavaComponent,
+      });
+    }
   } else {
     // TODO: 「/path/to/install にインストールしてください」というエラーメッセージに変更
     return Promise.resolve(
