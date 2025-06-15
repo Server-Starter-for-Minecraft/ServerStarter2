@@ -103,11 +103,15 @@ export class ReadySpigotVersion extends ReadyVersion<SpigotVersion> {
     if (isError(installerRes)) return installerRes;
     p?.delete();
 
+    const runtime = await this.getRuntime(verJsonHandler);
+    if (isError(runtime)) return runtime;
+
     // `BuildTools.jar`を実行して，`server.jar`を抽出
     return getServerJarFromBuildTools(
       this._version.id,
       installerPath,
       this.cachePath,
+      runtime,
       execRuntime,
       progress
     );
@@ -157,6 +161,7 @@ async function getServerJarFromBuildTools(
   versionId: VersionId,
   buildToolsPath: Path,
   serverCachePath: Path,
+  runtime: Runtime,
   execRuntime: ExecRuntime,
   progress?: GroupProgressor
 ): Promise<Failable<void>> {
@@ -174,7 +179,7 @@ async function getServerJarFromBuildTools(
   const sp = progress?.subtitle({ key: 'server.readyVersion.spigot.building' });
   const cp = progress?.console();
   const buildRes = await execRuntime({
-    runtime: undefined,
+    runtime,
     args,
     currentDir: buildToolsPath.parent(),
     onOut(line) {
@@ -258,7 +263,7 @@ if (import.meta.vitest) {
       expect(res.runtime).toMatchObject({
         type: 'universal',
         majorVersion: 18,
-      })
+      });
 
       // execRuntime が正しい引数で呼ばれている
       // BuildTools実行時のRuntimeは常に最新版を利用するため，呼び出し時はundefinedとなる
