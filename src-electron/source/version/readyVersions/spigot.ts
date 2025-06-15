@@ -266,7 +266,6 @@ if (import.meta.vitest) {
       });
 
       // execRuntime が正しい引数で呼ばれている
-      // BuildTools実行時のRuntimeは常に最新版を利用するため，呼び出し時はundefinedとなる
       expect(execRuntime).toHaveBeenCalledTimes(1);
       expect(execRuntime).toHaveBeenNthCalledWith(1, {
         args: [
@@ -278,7 +277,10 @@ if (import.meta.vitest) {
         ],
         currentDir: expect.any(Path),
         onOut: expect.any(Function),
-        runtime: undefined,
+        runtime: {
+          type: 'universal',
+          majorVersion: 18,
+        },
       });
 
       // ファイルの設置状況の検証
