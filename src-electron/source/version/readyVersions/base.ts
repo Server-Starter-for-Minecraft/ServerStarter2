@@ -232,7 +232,7 @@ export abstract class ReadyVersion<
     return {
       type: 'minecraft',
       version: 'jre-legacy',
-    }
+    };
   }
 
   /**

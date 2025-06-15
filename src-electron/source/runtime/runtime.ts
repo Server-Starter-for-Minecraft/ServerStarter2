@@ -126,7 +126,7 @@ export class RuntimeContainer {
     const refRuntimeOrError = await this.getUniversalConfig(
       osPlatform,
       mcRuntimeManifest,
-      runtime.majorVersion,
+      runtime.majorVersion
     );
     if (isError(refRuntimeOrError)) return refRuntimeOrError;
     const refRuntime = refRuntimeOrError;
