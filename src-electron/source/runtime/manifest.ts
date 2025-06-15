@@ -62,6 +62,13 @@ export abstract class JavaRuntimeInstaller<
     throw new Error('setRuntimeManifest() not implemented');
   }
 
+  /**
+   * キャッシュに指定したデータを取得する
+   */
+  getCache(): Promise<Failable<RM>> {
+    return this.accessor.get();
+  }
+
   protected static getCacheableAccessor<RM extends RuntimeManifest>(
     validator: z.ZodSchema<RM, z.ZodTypeDef, any>,
     manifestPath: Path,
@@ -172,7 +179,7 @@ export abstract class JavaRuntimeInstaller<
     });
 
     // RuntimeのManifestを取得
-    const allManifest = await this.accessor.get();
+    const allManifest = await this.getCache();
     if (isError(allManifest)) return allManifest;
     logger.info('Get `all-manifest` successfully');
 

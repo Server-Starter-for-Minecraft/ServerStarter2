@@ -76,7 +76,17 @@ export async function readyRunServer(
 
     /** Spigotのビルド等に使用するランタイムを準備する */
     const execRuntime: ExecRuntime = async (args) => {
-      const javaPath = await readyRuntime(args.runtime);
+      // runtimeが指定されていない場合は最新版を適用
+      let targetRuntime = args.runtime;
+      if (!targetRuntime) {
+        const tmpTargetRuntime = await runtimeContainer.getLatestRuntime(
+          osPlatform
+        );
+        if (isError(tmpTargetRuntime)) return tmpTargetRuntime;
+        targetRuntime = tmpTargetRuntime;
+      }
+
+      const javaPath = await readyRuntime(targetRuntime);
       if (isError(javaPath)) return javaPath;
 
       return interactiveProcess(

@@ -3,6 +3,7 @@ import { OsPlatform } from 'app/src-electron/schema/os';
 import {
   AllRuntimeManifests,
   JavaMajorVersion,
+  McRuntimeManifest,
   Runtime,
   UniversalRuntime,
 } from 'app/src-electron/schema/runtime';
@@ -37,7 +38,8 @@ export class RuntimeContainer {
     private cacheDirPath: Path,
     private getUniversalConfig: (
       osPlatform: OsPlatform,
-      majorVersion: JavaMajorVersion
+      mcRuntimeManifest: McRuntimeManifest,
+      majorVersion: JavaMajorVersion | undefined
     ) => Promise<Failable<Exclude<Runtime, UniversalRuntime>>>
   ) {
     this.metaDirPath = cacheDirPath.child('meta');
@@ -48,6 +50,15 @@ export class RuntimeContainer {
         minecraftRuntimeManifestUrl
       ),
     };
+  }
+
+  /**
+   * 指定したOS，RuntimeTypeにおける最新版のRuntime情報を返す
+   */
+  async getLatestRuntime(osPlatform: OsPlatform): Promise<Failable<Runtime>> {
+    const mcRuntimeManifest = await this.installerMap.minecraft.getCache();
+    if (isError(mcRuntimeManifest)) return mcRuntimeManifest;
+    return this.getUniversalConfig(osPlatform, mcRuntimeManifest, undefined);
   }
 
   /**
@@ -80,8 +91,15 @@ export class RuntimeContainer {
     if (isValid(current)) return current;
 
     // universalの場合はそれに対応するほかのランタイムをインストール
+    const mcRuntimeManifest = await this.installerMap.minecraft.getCache();
+    if (isError(mcRuntimeManifest)) return mcRuntimeManifest;
     if (runtime['type'] === 'universal')
-      return this.readyUniversal(runtime, osPlatform, useJavaw);
+      return this.readyUniversal(
+        mcRuntimeManifest,
+        runtime,
+        osPlatform,
+        useJavaw
+      );
 
     const installer = this.installerMap[runtime['type']];
     const meta = await installer.install(
@@ -100,12 +118,14 @@ export class RuntimeContainer {
 
   /** universalだけ特殊 */
   private async readyUniversal(
+    mcRuntimeManifest: McRuntimeManifest,
     runtime: UniversalRuntime,
     osPlatform: OsPlatform,
     useJavaw: boolean
   ) {
     const refRuntimeOrError = await this.getUniversalConfig(
       osPlatform,
+      mcRuntimeManifest,
       runtime.majorVersion
     );
     if (isError(refRuntimeOrError)) return refRuntimeOrError;
