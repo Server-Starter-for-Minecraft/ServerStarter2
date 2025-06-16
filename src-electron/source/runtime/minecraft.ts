@@ -17,7 +17,10 @@ export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
 > {
   static readonly manifestName = 'minecraft' as const;
 
-  static setRuntimeManifest(manifestPath: Path, manifestUrl: string) {
+  static setRuntimeManifest(
+    manifestPath: Path,
+    manifestUrl: string
+  ): MinecraftRuntimeInstaller {
     return new MinecraftRuntimeInstaller(
       this.getCacheableAccessor(McRuntimeManifest, manifestPath, manifestUrl)
     );
