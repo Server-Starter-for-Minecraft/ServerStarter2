@@ -48,7 +48,7 @@ export class MohistMCVersionLoader extends VersionListLoader<'mohistmc'> {
 
   async getFromURL() {
     // 全バージョンのメタ情報を読み込み
-    const allVerMeta = await loadAllVersion();
+    const allVerMeta = await this.loadAllVersion();
     if (isError(allVerMeta)) return allVerMeta;
 
     // メタ情報を各バージョンオブジェクトに変換
@@ -57,18 +57,22 @@ export class MohistMCVersionLoader extends VersionListLoader<'mohistmc'> {
     );
     return results.filter(isValid);
   }
-}
 
-/**
- * 全てのバージョンのメタ情報を収集
- */
-async function loadAllVersion(): Promise<Failable<string[]>> {
-  const jsonBytes = await BytesData.fromURL(mohistAllVersionsURL);
-  if (isError(jsonBytes)) return jsonBytes;
-  const parsedJson = await jsonBytes.json(mohistAllVersionsZod);
-  if (isError(parsedJson)) return parsedJson;
+  /**
+   * 全てのバージョンのメタ情報を収集
+   */
+  private async loadAllVersion(): Promise<Failable<string[]>> {
+    const jsonBytes = await BytesData.fromURL(mohistAllVersionsURL);
+    if (isError(jsonBytes)) return jsonBytes;
+    const parsedJson = await jsonBytes.json(mohistAllVersionsZod);
+    if (isError(parsedJson)) return parsedJson;
 
-  return parsedJson.map((v) => v.name);
+    const versions = parsedJson.map((v) => v.name);
+
+    // idsをバージョン順に並び替え
+    await this.sortIds(versions);
+    return versions.reverse();
+  }
 }
 
 /**

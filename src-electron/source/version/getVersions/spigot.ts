@@ -4,7 +4,6 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { AllSpigotVersion, VersionId } from '../../../schema/version';
 import { VersionListLoader } from './base';
-import { getVersionMainfest } from './manifest';
 
 const SPIGOT_VERSIONS_URL = 'https://hub.spigotmc.org/versions/';
 
@@ -47,22 +46,5 @@ export class SpigotVersionLoader extends VersionListLoader<'spigot'> {
       .map((id) => ({
         id: id as VersionId,
       }));
-  }
-
-  /**
-   * HTMLから取得したID一覧をManifestに掲載の順番で並び替える
-   */
-  private async sortIds(ids: string[]) {
-    const manifest = await getVersionMainfest(this.cachePath, true);
-    if (isError(manifest)) return;
-
-    // Manifest掲載のバージョン順を取得
-    const entries: [string, number][] = manifest.versions.map(
-      (version, index) => [version.id, index]
-    );
-    const versionIndexMap = Object.fromEntries(entries);
-
-    // 取得したバージョン順で`ids`を並び替え
-    ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
   }
 }
