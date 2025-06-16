@@ -104,7 +104,8 @@ if (import.meta.vitest) {
       buildName: '2c49e69c7d50fa5ba8210c8648cc8d0f9135fe22',
       jar: {
         url: 'https://api.mohistmc.com/project/mohist/1.20.1/builds/157/download',
-        sha256: '922f21008d63230033e85565fbff959f2a5158e23021ef4c5343c51d096757d0',
+        sha256:
+          '922f21008d63230033e85565fbff959f2a5158e23021ef4c5343c51d096757d0',
       },
     };
 
