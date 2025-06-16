@@ -33,7 +33,7 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
     const returnVerJson = deepcopy(vanillaVerJson);
     returnVerJson.download = {
       url: this._version.jar.url,
-      hash: this._version.jar.md5,
+      hash: this._version.jar.sha256,
     };
     return returnVerJson;
   }
@@ -53,7 +53,7 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
     // Jarをダウンロード
     const hash: Hash | undefined = verJson.download.hash
       ? {
-          type: 'md5',
+          type: 'sha256',
           value: verJson.download.hash,
         }
       : undefined;
@@ -98,12 +98,13 @@ if (import.meta.vitest) {
     const serverFolder = workPath.child('servers');
 
     const ver20: MohistmcVersion = {
-      id: '1.20.1' as VersionId,
       type: 'mohistmc',
-      buildId: '5b34f54e5abee608fa6035b12e9fda85b414e9e0',
+      id: '1.20.1' as VersionId,
+      buildId: 157,
+      buildName: '2c49e69c7d50fa5ba8210c8648cc8d0f9135fe22',
       jar: {
-        url: 'https://mohistmc.com/api/v2/projects/mohist/1.20.1/builds/5b34f54e5abee608fa6035b12e9fda85b414e9e0/download',
-        md5: '8923b0e1bf3ac9eae61ae41714918547',
+        url: 'https://api.mohistmc.com/project/mohist/1.20.1/builds/157/download',
+        sha256: '922f21008d63230033e85565fbff959f2a5158e23021ef4c5343c51d096757d0',
       },
     };
 

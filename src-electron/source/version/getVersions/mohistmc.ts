@@ -3,40 +3,40 @@ import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { fromEntries } from 'app/src-electron/util/obj/obj';
 import { AllMohistmcVersion, VersionId } from '../../../schema/version';
 import { VersionListLoader } from './base';
 
 // Mohistのバージョン一覧を返すURLとその解析パーサー
-const mohistAllVersionsURL = 'https://mohistmc.com/api/v2/projects';
-const mohistAllVersionsZod = z.array(
-  z.object({
-    project: z.string(),
-    versions: z.string().array(),
-  })
-);
+const mohistAllVersionsURL = 'https://api.mohistmc.com/project/mohist/versions';
+const mohistAllVersionsZod = z.object({ name: z.string() }).array();
 
 // 各バージョンのビルド情報一覧を返すURLとその解析パーサー
 const mohistEachVersionURL = (versionName: string) =>
-  `https://mohistmc.com/api/v2/projects/mohist/${versionName}/builds`;
-const mohistEachVersionZod = z.object({
-  projectName: z.string(),
-  projectVersion: VersionId,
-  builds: z
-    .object({
-      id: z.string().optional(),
-      number: z.number().optional(),
-      gitSha: z.string(),
-      forgeVersion: z.string().optional(),
-      neoForgeVersion: z.string().optional(),
-      fileMd5: z.string(),
-      originUrl: z.string(),
-      url: z.string(),
-      createdAt: z.number(),
-    })
-    .array()
-    .min(1),
-});
+  `https://api.mohistmc.com/project/mohist/${versionName}/builds`;
+const mohistEachVersionZod = z
+  .object({
+    id: z.number(),
+    file_sha256: z.string().optional(),
+    build_date: z.string().optional(),
+    commit: z.object({
+      hash: z.string(),
+      changelog: z.string(),
+      author: z.string(),
+      commit_date: z.string(),
+    }),
+    loader: z
+      .object({
+        forge_version: z.string().optional(),
+        neoforge_version: z.string().optional(),
+      })
+      .optional(),
+  })
+  .array()
+  .min(1);
+
+// Jarのダウンロードリンク
+const mohistJarURL = (versionName: string, buildId: number) =>
+  `https://api.mohistmc.com/project/mohist/${versionName}/builds/${buildId}/download`;
 
 /**
  * Mohist版のVersionLoaderを作成
@@ -65,14 +65,10 @@ export class MohistMCVersionLoader extends VersionListLoader<'mohistmc'> {
 async function loadAllVersion(): Promise<Failable<string[]>> {
   const jsonBytes = await BytesData.fromURL(mohistAllVersionsURL);
   if (isError(jsonBytes)) return jsonBytes;
-  const parsedJson: Failable<Record<string, string[]>> = await jsonBytes.json(
-    mohistAllVersionsZod.transform((objs) =>
-      fromEntries(objs.map((obj) => [obj.project, obj.versions]))
-    )
-  );
+  const parsedJson = await jsonBytes.json(mohistAllVersionsZod);
   if (isError(parsedJson)) return parsedJson;
 
-  return parsedJson['mohist'];
+  return parsedJson.map((v) => v.name);
 }
 
 /**
@@ -86,22 +82,23 @@ async function loadEachVersion(
   const parsedEachVerJson = await jsonBytes.json(mohistEachVersionZod);
   if (isError(parsedEachVerJson)) return parsedEachVerJson;
 
-  const builds = parsedEachVerJson.builds
-    .filter((b) => b.number || b.id)
+  const builds = parsedEachVerJson
+    .filter((b) => b.id)
     .map((b) => {
       return {
-        id: (b.number?.toString() || b.id) ?? 'undefined',
-        forge_version: b.forgeVersion,
+        id: b.id,
+        name: b.commit.hash,
+        forge_version: b.loader?.forge_version,
         jar: {
-          url: b.url,
-          md5: b.fileMd5,
+          sha256: b.file_sha256,
+          url: mohistJarURL(versionName, b.id),
         },
       };
     })
     .reverse();
 
   return {
-    id: parsedEachVerJson.projectVersion,
+    id: VersionId.parse(versionName),
     builds,
   };
 }
@@ -109,21 +106,25 @@ async function loadEachVersion(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('mohist api type definision', async () => {
-    // https://mohistmc.com/api/v2/projects へのアクセスを想定
-    const apiSample = [
-      {
-        project: 'mohist',
-        versions: ['1.20.6', '1.21.4'],
-      },
-      {
-        project: 'banner',
-        versions: ['1.21.4', '1.21.5'],
-      },
-    ];
+  test('mohist correct jar download', { timeout: 60 * 10 ** 3 }, async () => {
+    const ver = '1.20.1';
+    const build = 157;
 
-    const parsed = mohistAllVersionsZod.safeParse(apiSample);
-    expect(parsed.success).toBe(true);
-    expect(parsed.data).toMatchObject(apiSample);
+    // バージョンの中のビルド一覧を取得
+    const allVers = await loadEachVersion(ver);
+    expect(isError(allVers)).toBe(false);
+    if (isError(allVers)) return;
+
+    // ビルド一覧から対象のビルドを取得
+    const targetVer = allVers.builds.find((b) => b.id === build);
+    expect(targetVer).toBeDefined();
+    if (!targetVer) return;
+
+    // ビルドのjarをダウンロード（テスト対象は必ずHashを有しているため，Undefinedを握りつぶす）
+    const hash = { type: 'sha256' as const, value: targetVer.jar.sha256 ?? '' };
+    const jar = await BytesData.fromURL(targetVer.jar.url, hash);
+
+    // Hashの検証まで含めて正常にデータがダウンロードできたことを確認
+    expect(isError(jar)).toBe(false);
   });
 }

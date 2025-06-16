@@ -27,10 +27,11 @@ type MohistBuildType = AllMohistmcVersion[number]['builds'][number];
  * 描画する際にForgeの対応番号を記載する
  */
 function getNumberName(build: MohistBuildType) {
+  const showingName = build.name.slice(0, 8);
   if (build.forge_version !== void 0) {
-    return `${build.id.slice(0, 8)} (Forge: ${build.forge_version})`;
+    return `${showingName} (Forge: ${build.forge_version})`;
   } else {
-    return build.id;
+    return showingName;
   }
 }
 
@@ -42,6 +43,7 @@ function buildMohistVer(
     id: id,
     type: 'mohistmc' as const,
     buildId: build.id,
+    buildName: build.name,
     jar: toRaw(build.jar),
     forge_version: build.forge_version,
   };
@@ -87,12 +89,9 @@ const mohistBuilds = (mVer: string): MohistBuildType[] => {
   return (
     prop.versionData.find((ver) => ver.id === mVer)?.builds ?? [
       {
-        id: 'invalidId',
-        jar: {
-          url: '',
-          md5: '',
-        },
-        forge_version: undefined,
+        id: -1,
+        name: 'invalidBuild',
+        jar: { url: '' },
       },
     ]
   );
@@ -105,10 +104,11 @@ const mohistBuild = computed({
     }
     return {
       id: mainStore.world.version.buildId,
+      name: mainStore.world.version.buildName,
       forge_version: mainStore.world.version.forge_version,
       jar: {
         url: mainStore.world.version.jar.url,
-        md5: mainStore.world.version.jar.md5,
+        sha256: mainStore.world.version.jar.sha256,
       },
     };
   },
