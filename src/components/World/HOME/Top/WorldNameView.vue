@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import { isError } from 'app/src-public/scripts/error';
 import { WorldName } from 'app/src-electron/schema/brands';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useErrorWorldStore } from 'src/stores/ErrorWorldStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -10,7 +10,6 @@ import SsInput from 'src/components/util/base/ssInput.vue';
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const errorWorldStore = useErrorWorldStore();
-const { t } = useI18n();
 
 const VALIDATION_ERROR = 'world_name_is_invalid';
 const EMPTY_ERROR = 'world_name_is_empty';
@@ -23,7 +22,7 @@ async function validateWorldName(name: WorldName) {
 
   if (name === '') {
     errorWorldStore.lock(mainStore.selectedWorldID, EMPTY_ERROR);
-    return t(`error.${EMPTY_ERROR}.desc`);
+    return $T('home.worldName.emptyError');
   } else {
     errorWorldStore.unlock(mainStore.selectedWorldID, EMPTY_ERROR);
   }
@@ -35,7 +34,7 @@ async function validateWorldName(name: WorldName) {
 
   if (isError(res) && mainStore.world.name !== name) {
     errorWorldStore.lock(mainStore.selectedWorldID, VALIDATION_ERROR);
-    return t(`error.${res.key}.desc`);
+    return $T(`error.${res.key}.desc`);
   } else {
     errorWorldStore.unlock(mainStore.selectedWorldID, VALIDATION_ERROR);
     mainStore.world.name = name;

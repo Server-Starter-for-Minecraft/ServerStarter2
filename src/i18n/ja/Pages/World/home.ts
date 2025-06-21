@@ -2,6 +2,7 @@ export const jaHome = {
   worldName: {
     title: 'ワールド名',
     enterName: '半角英数字でワールド名を入力',
+    emptyError: 'ワールド名を入力してください',
   },
   version: {
     title: 'バージョン',

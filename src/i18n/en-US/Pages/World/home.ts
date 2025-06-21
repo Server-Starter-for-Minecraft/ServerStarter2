@@ -4,6 +4,7 @@ export const enUSHome: MessageSchema['home'] = {
   worldName: {
     title: 'World Name',
     enterName: 'Enter your world name',
+    emptyError: 'Please enter your world name',
   },
   version: {
     title: 'Versions',
