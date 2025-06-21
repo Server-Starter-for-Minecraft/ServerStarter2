@@ -8,6 +8,7 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
+  Version,
   versionTypes,
 } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
@@ -63,6 +64,16 @@ function createServerMap(serverType: (typeof versionTypes)[number]) {
   };
 }
 
+/**
+ * 選択されたバージョン設定がUnknownでない場合は，エラー一覧からワールドを除外する
+ */
+function clearErrWrold(versionType: Version['type']) {
+  const worldId = mainStore.selectedWorldID;
+  console.log(versionType)
+  if (versionType === 'unknown') mainStore.errorWorlds.add(worldId);
+  else mainStore.errorWorlds.delete(worldId);
+}
+
 const selectedVerType = computed({
   get: () => {
     return mainStore.selectedVersionType;
@@ -74,9 +85,11 @@ const selectedVerType = computed({
 </script>
 
 <template>
+  {{ mainStore.errorWorlds }}
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelectScope
     v-model="selectedVerType"
+    @update:model-value="clearErrWrold(selectedVerType)"
     :options="validVersionTypes.map(createServerMap)"
     options-selected-class="text-primary"
     :label="$T('home.version.serverType')"

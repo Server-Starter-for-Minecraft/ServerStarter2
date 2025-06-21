@@ -89,7 +89,10 @@ export async function getWorlds(wIds: WorldID[]) {
   worlds.forEach((wFailable, idx) => {
     checkError(
       wFailable.value,
-      (w) => updateWorld(w),
+      (w) => {
+        if (w.version.type === 'unknown') mainStore.errorWorlds.add(w.id);
+        updateWorld(w);
+      },
       (e) => {
         const errObj = tError(e);
         const wId = wIds[idx];
