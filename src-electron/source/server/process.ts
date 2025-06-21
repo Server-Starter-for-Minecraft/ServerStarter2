@@ -66,7 +66,10 @@ function splitLine(
   isError: boolean,
   console: (value: string, isError: boolean) => void
 ) {
-  chunk.split(/\n|\r\n/).forEach((line) => {
-    console(line, isError);
-  });
+  // PR（#241）にて，改行を含むコンソール出力は分割してフロントエンドに送信していたが，
+  // 同一の通信から受け取ったコンソールは意味のあるまとまりと考えて，この分割処理をせずに送信する仕様に戻した
+  console(chunk, isError);
+  // chunk.split(/\n|\r\n/).forEach((line) => {
+  //   console(line, isError);
+  // });
 }

@@ -4,6 +4,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 import { AllVersion, Version, VersionType } from '../../../schema/version';
+import { getVersionMainfest } from './manifest';
 
 const ALL_VERSION_JSON_NAME = 'all.json';
 export function getVersionCacheFilePath(
@@ -51,6 +52,24 @@ export abstract class VersionListLoader<T extends VersionType> {
    */
   write4Cache(obj: AllVersion<T>): Promise<Failable<void>> {
     return this.allVersHandler.write(obj);
+  }
+  /**
+   * HTMLから取得したID一覧をManifestに掲載の順番で並び替える
+   *
+   * cf) 処理工数がかかるため，不必要に実行しない
+   */
+  protected async sortIds(ids: string[]) {
+    const manifest = await getVersionMainfest(this.cachePath, true);
+    if (isError(manifest)) return;
+
+    // Manifest掲載のバージョン順を取得
+    const entries: [string, number][] = manifest.versions.map(
+      (version, index) => [version.id, index]
+    );
+    const versionIndexMap = Object.fromEntries(entries);
+
+    // 取得したバージョン順で`ids`を並び替え
+    ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
   }
 }
 

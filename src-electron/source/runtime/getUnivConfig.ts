@@ -182,7 +182,8 @@ if (import.meta.vitest) {
       const cleanConfig = (obj: Record<string, any>) => {
         const runtimeComponentName = Object.keys(obj).filter(
           (k) =>
-            McTargetComponent.safeParse(k).success && (obj[k]?.length ?? 0 > 0)
+            !EXCLUDE_COMPONENTS.some((c) => c === k) &&
+            (obj[k]?.length ?? 0) > 0
         );
         return fromEntries(
           runtimeComponentName.map((n) => [
