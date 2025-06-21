@@ -5,6 +5,7 @@ import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useErrorWorldStore } from 'src/stores/ErrorWorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { updateWorld } from 'src/stores/WorldStore';
@@ -17,6 +18,7 @@ import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialo
 const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
+const errorWorldStore = useErrorWorldStore();
 const consoleStore = useConsoleStore();
 
 const selecterOptions = () =>
@@ -33,12 +35,11 @@ const isWorldContainerLoading = ref(false);
  * ワールドコンテナをセットする際に、データの移動を待機する
  */
 async function setWorldContainer(container: WorldContainer) {
-  if (!mainStore.world) {
-    return;
-  }
+  if (!mainStore.world) return;
+  const ERROR_REASON = 'continuing_world_container_moving';
 
   // エラーの起きているワールドということにしてワールドの起動を阻止する
-  mainStore.errorWorlds.add(mainStore.selectedWorldID);
+  errorWorldStore.lock(mainStore.selectedWorldID, ERROR_REASON);
   isWorldContainerLoading.value = true;
 
   const world = deepcopy(mainStore.world);
@@ -53,7 +54,7 @@ async function setWorldContainer(container: WorldContainer) {
   );
 
   // エラー状態の解除
-  mainStore.errorWorlds.delete(world.id);
+  errorWorldStore.unlock(world.id, ERROR_REASON);
   isWorldContainerLoading.value = false;
 }
 
