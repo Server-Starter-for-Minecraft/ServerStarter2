@@ -7,6 +7,7 @@ interface Prop {
   optionLabel?: string;
   optionValue?: string;
   loading?: boolean;
+  rules?: ((val: any) => boolean | string)[];
 }
 
 const prop = defineProps<Prop>();
@@ -21,6 +22,7 @@ const model = defineModel();
     :label="label"
     :dense="dense"
     :loading="loading"
+    :rules="rules"
     :popup-content-style="{ fontSize: '0.9rem' }"
     :disable="disable"
     emit-value

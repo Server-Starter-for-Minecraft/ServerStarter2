@@ -20,6 +20,7 @@ export const enUSHome: MessageSchema['home'] = {
     latestSnapshot: 'Latest snapshot',
     latestRelease: 'Latest release',
     latestVersion: 'Latest version',
+    unknownError: 'This version is unknown. Please specify the version.',
   },
   versionChange: {
     title: 'Checking change the server type',

@@ -18,6 +18,7 @@ export const jaHome = {
     latestSnapshot: '最新のスナップショット',
     latestRelease: '最新のリリース',
     latestVersion: '最新のバージョン',
+    unknownError: 'バージョン情報が不明です。バージョンを指定してください。',
   },
   versionChange: {
     title: 'サーバーの種類を変更',

@@ -82,6 +82,16 @@ function clearErrWrold(versionType: Version['type']) {
   }
 }
 
+/**
+ * unknownバージョンはバリデーション違反として表示する
+ */
+function validateVersion(versionType: Version['type']) {
+  if (versionType === 'unknown') {
+    return $T('home.version.unknownError');
+  }
+  return true;
+}
+
 const selectedVerType = computed({
   get: () => {
     return mainStore.selectedVersionType;
@@ -101,6 +111,7 @@ const selectedVerType = computed({
     options-selected-class="text-primary"
     :label="$T('home.version.serverType')"
     :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
+    :rules="[(val) => validateVersion(val)]"
     class="q-pb-md"
   >
     <template v-slot:option="scope">
