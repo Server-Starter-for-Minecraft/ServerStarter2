@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { QSelect } from 'quasar';
 import { onMounted, ref } from 'vue';
+import { QSelect } from 'quasar';
 
 interface Prop {
   options?: readonly any[];
@@ -18,7 +18,7 @@ const model = defineModel();
 const selectRef = ref<InstanceType<typeof QSelect> | null>(null);
 
 onMounted(() => {
-  selectRef.value?.validate()
+  selectRef.value?.validate();
 });
 </script>
 
