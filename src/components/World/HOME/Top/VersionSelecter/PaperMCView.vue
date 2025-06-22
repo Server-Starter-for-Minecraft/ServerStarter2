@@ -37,26 +37,30 @@ function updateWorldVersion(id: VersionId, build: number) {
   }
 }
 
-const paperVers = () => {
-  return prop.versionData.map((ver) => ver.id);
-};
+/**
+ * デフォルトバージョン（最新リリース版または最新のバージョン）を取得する
+ */
+function getDefaultVersion() {
+  return prop.versionData[0];
+}
+
 const paperVer = computed({
   get: () => {
     const ver = mainStore.world?.version;
-    if (!ver || ver.type === 'unknown') return '';
+    if (!ver || ver.type === 'unknown') return getDefaultVersion();
+
     // 前のバージョンがPaperに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (paperVers().indexOf(ver.id ?? '') === -1) {
-      return paperVers()[0];
-    }
-    return ver.id ?? '';
+    const findVer = prop.versionData.find((ops) => ops.id === ver.id);
+    if (!findVer) return getDefaultVersion();
+
+    return findVer;
   },
-  set: (val) => {
-    if (val === '') return;
-    const newVer = buildPaperVer(val, paperBuilds(val)[0]);
+  set: (ver) => {
+    const newVer = buildPaperVer(ver.id, ver.builds[0]);
     if (mainStore.worldBack?.version.type !== 'unknown') {
       openWarningDialog(
         $q,
-        paperVers(),
+        prop.versionData.map((ver) => ver.id),
         mainStore.worldBack?.version ?? newVer,
         newVer,
         'id'
@@ -65,27 +69,21 @@ const paperVer = computed({
   },
 });
 
-const paperBuilds = (pVer: string) => {
-  return prop.versionData.find((ver) => ver.id === pVer)?.builds ?? [0];
-};
 const paperBuild = computed({
   get: () => {
     // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
     if (mainStore.world?.version.type !== 'papermc') {
-      return paperBuilds(paperVer.value)[0];
+      return getDefaultVersion().builds[0];
     }
     return mainStore.world.version.build;
   },
-  set: (val) => {
-    if (paperVer.value === '') return;
-    updateWorldVersion(paperVer.value, val);
+  set: (build) => {
+    updateWorldVersion(paperVer.value.id, build);
   },
 });
 
 // 表示内容と内部データを整合させる
-if (paperVer.value !== '') {
-  updateWorldVersion(paperVer.value, paperBuild.value);
-}
+updateWorldVersion(paperVer.value.id, paperBuild.value);
 </script>
 
 <template>
@@ -93,11 +91,13 @@ if (paperVer.value !== '') {
     <SsSelect
       v-model="paperVer"
       :options="
-        paperVers().map((ver, idx) => {
+        versionData.map((ver, idx) => {
           return {
             data: ver,
             label:
-              idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
+              idx === 0
+                ? `${ver.id}【${$T('home.version.latestVersion')}】`
+                : ver.id,
           };
         })
       "
@@ -111,7 +111,7 @@ if (paperVer.value !== '') {
     <SsSelect
       v-model="paperBuild"
       :options="
-        paperBuilds(paperVer).map((build, idx) => {
+        paperVer.builds.map((build, idx) => {
           return {
             data: build,
             label:

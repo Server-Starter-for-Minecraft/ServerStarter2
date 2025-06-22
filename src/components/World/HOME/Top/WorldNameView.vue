@@ -1,32 +1,42 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import { isError } from 'app/src-public/scripts/error';
 import { WorldName } from 'app/src-electron/schema/brands';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import { useErrorWorldStore } from 'src/stores/ErrorWorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-const { t } = useI18n();
+const errorWorldStore = useErrorWorldStore();
+
+const VALIDATION_ERROR = 'world_name_is_invalid';
+const EMPTY_ERROR = 'world_name_is_empty';
 
 /**
  * ワールド名のバリデーションを行う
  */
 async function validateWorldName(name: WorldName) {
-  if (!mainStore.world) {
-    return true;
+  if (!mainStore.world) return true;
+
+  if (name === '') {
+    errorWorldStore.lock(mainStore.selectedWorldID, EMPTY_ERROR);
+    return $T('home.worldName.emptyError');
+  } else {
+    errorWorldStore.unlock(mainStore.selectedWorldID, EMPTY_ERROR);
   }
 
   const res = await window.API.invokeValidateNewWorldName(
     mainStore.world.container,
     name
   );
+
   if (isError(res) && mainStore.world.name !== name) {
-    mainStore.errorWorlds.add(mainStore.selectedWorldID);
-    return t(`error.${res.key}.desc`);
+    errorWorldStore.lock(mainStore.selectedWorldID, VALIDATION_ERROR);
+    return $T(`error.${res.key}.desc`);
   } else {
-    mainStore.errorWorlds.delete(mainStore.selectedWorldID);
+    errorWorldStore.unlock(mainStore.selectedWorldID, VALIDATION_ERROR);
     mainStore.world.name = name;
     return true;
   }
@@ -37,7 +47,7 @@ async function validateWorldName(name: WorldName) {
  */
 function clearNewName() {
   // 空文字列のワールドは起動できないため、エラー扱い
-  mainStore.errorWorlds.add(mainStore.selectedWorldID);
+  errorWorldStore.lock(mainStore.selectedWorldID, EMPTY_ERROR);
 }
 </script>
 

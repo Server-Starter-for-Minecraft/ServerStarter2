@@ -30,20 +30,26 @@ export function getHashs<T>(ops: T[]) {
   return Promise.all(ops.map((v) => getHashData(v)));
 }
 
+/**
+ * 変更前後のサーバー種別を比較して，サーバー種別の変更が入る際には警告を表示する
+ */
 export function openVerTypeWarningDialog<T extends Version['type']>(
   $q: QVueGlobals,
   currentType: T,
   newType: T
 ) {
   const mainStore = useMainStore();
+  const successFunc = () => (mainStore.selectedVersionType = newType);
+
+  // サーバー種別が不明な場合は，特に警告を出さない
+  if (currentType === 'unknown') return successFunc();
+
   __openWarningDialog(
     $q,
     [currentType, newType],
     currentType,
     newType,
-    () => {
-      mainStore.selectedVersionType = newType;
-    },
+    successFunc,
     'versionChange'
   );
 }
