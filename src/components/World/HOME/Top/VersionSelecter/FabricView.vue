@@ -50,24 +50,30 @@ function updateWorldVersion(
   }
 }
 
+/**
+ * デフォルトバージョン（最新リリース版または最新のバージョン）を取得する
+ */
+function getDefaultVersion() {
+  return (
+    prop.versionData.games.find((ops) => ops.release) ??
+    prop.versionData.games[0]
+  );
+}
+
 const fabricVer = computed({
   get: () => {
     const ver = mainStore.world?.version;
-    if (!ver || ver.type === 'unknown') return '';
+    if (!ver || ver.type === 'unknown') return getDefaultVersion();
+
     // 前のバージョンがFabricに存在しないバージョンの時は，最新バージョンを割り当てる
     const findVer = prop.versionData.games.find((ops) => ops.id === ver.id);
-    if (!findVer) {
-      return (
-        prop.versionData.games.find((ops) => ops.release) ??
-        prop.versionData.games[0]
-      );
-    }
+    if (!findVer) return getDefaultVersion();
+
     return findVer;
   },
-  set: (val) => {
-    if (val === '') return;
+  set: (ver) => {
     const newVer = buildFabricVer(
-      val,
+      ver,
       fabricInstaller.value,
       fabricLoader.value
     );
@@ -97,13 +103,7 @@ const recommendLoaderIdx = fixInvalidIdx(
 const fabricLoader = ref(prop.versionData.loaders[recommendLoaderIdx]);
 
 // 表示内容と内部データを整合させる
-if (fabricVer.value !== '') {
-  updateWorldVersion(
-    fabricVer.value,
-    fabricInstaller.value,
-    fabricLoader.value
-  );
-}
+updateWorldVersion(fabricVer.value, fabricInstaller.value, fabricLoader.value);
 </script>
 
 <template>
@@ -149,10 +149,7 @@ if (fabricVer.value !== '') {
     <SsSelect
       v-model="fabricInstaller"
       @update:modelValue="
-        (newVal) => {
-          if (fabricVer !== '')
-            updateWorldVersion(fabricVer, newVal, fabricLoader);
-        }
+        (newVal) => updateWorldVersion(fabricVer, newVal, fabricLoader)
       "
       :options="
         prop.versionData.installers.map((installer, i) => {
@@ -175,10 +172,7 @@ if (fabricVer.value !== '') {
     <SsSelect
       v-model="fabricLoader"
       @update:modelValue="
-        (newVal) => {
-          if (fabricVer !== '')
-            updateWorldVersion(fabricVer, fabricInstaller, newVal);
-        }
+        (newVal) => updateWorldVersion(fabricVer, fabricInstaller, newVal)
       "
       :options="
         prop.versionData.loaders.map((loader, i) => {

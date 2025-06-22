@@ -21,22 +21,9 @@ const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-type forgeVersType = { version: string; url: string };
+type ForgeVersType = AllForgeVersion[number]['forge_versions'][number];
 
-/**
- * 推奨ビルド番号 or ビルド一覧の先頭を「(推奨)」として提示する
- */
-function getRecommendBuildIdx(fVer: string) {
-  const recommendBuild =
-    prop.versionData.find((v) => v.id === fVer)?.recommended?.version ?? '';
-
-  const idxNumber = forgeBuilds(fVer).findIndex(
-    (b) => recommendBuild === b.version
-  );
-  return idxNumber === -1 ? 0 : idxNumber;
-}
-
-function buildForgeVer(id: VersionId, fVer: forgeVersType): ForgeVersion {
+function buildForgeVer(id: VersionId, fVer: ForgeVersType): ForgeVersion {
   return {
     id: id,
     type: 'forge' as const,
@@ -47,33 +34,37 @@ function buildForgeVer(id: VersionId, fVer: forgeVersType): ForgeVersion {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(id: VersionId, fVer: forgeVersType) {
+function updateWorldVersion(id: VersionId, fVer: ForgeVersType) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildForgeVer(id, fVer);
   }
 }
 
-const forgeVers = () => {
-  return prop.versionData.map((ver) => ver.id);
-};
+/**
+ * デフォルトバージョン（最新のバージョン）を取得する
+ */
+function getDefaultVersion() {
+  return prop.versionData[0];
+}
+
 const forgeVer = computed({
   get: () => {
     const ver = mainStore.world?.version;
-    if (!ver || ver.type === 'unknown') return '';
+    if (!ver || ver.type === 'unknown') return getDefaultVersion();
+
     // 前のバージョンがForgeに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (forgeVers().indexOf(ver.id ?? '') === -1) {
-      return forgeVers()[0];
-    }
-    return ver.id ?? '';
+    const findVer = prop.versionData.find((ops) => ops.id === ver.id);
+    if (!findVer) return getDefaultVersion();
+
+    return findVer;
   },
-  set: (val) => {
-    if (val === '') return;
-    const buildIdx = getRecommendBuildIdx(val);
-    const newVer = buildForgeVer(val, forgeBuilds(val)[buildIdx]);
+  set: (ver) => {
+    const build = ver.recommended ?? ver.forge_versions[0];
+    const newVer = buildForgeVer(ver.id, build);
     if (mainStore.worldBack?.version.type !== 'unknown') {
       openWarningDialog(
         $q,
-        forgeVers(),
+        prop.versionData.map((ops) => ops.id),
         mainStore.worldBack?.version ?? newVer,
         newVer,
         'id'
@@ -82,39 +73,24 @@ const forgeVer = computed({
   },
 });
 
-const forgeBuilds = (fVer: string) => {
-  return (
-    prop.versionData.find((ver) => ver.id === fVer)?.forge_versions ?? [
-      {
-        version: '',
-        url: '',
-      },
-    ]
-  );
-};
 const forgeBuild = computed({
   get: () => {
     // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
     if (mainStore.world?.version.type !== 'forge') {
-      const buildIdx = getRecommendBuildIdx(forgeVer.value);
-      return forgeBuilds(forgeVer.value)[buildIdx];
+      return forgeVer.value.recommended ?? forgeVer.value.forge_versions[0];
     }
     return {
       version: mainStore.world.version.forge_version,
       url: mainStore.world.version.download_url,
     };
   },
-  set: (val) => {
-    const ver = forgeVer.value;
-    if (ver === '') return;
-    updateWorldVersion(ver, val);
+  set: (build) => {
+    updateWorldVersion(forgeVer.value.id, build);
   },
 });
 
 // 表示内容と内部データを整合させる
-if (forgeVer.value !== '') {
-  updateWorldVersion(forgeVer.value, forgeBuild.value);
-}
+updateWorldVersion(forgeVer.value.id, forgeBuild.value);
 </script>
 
 <template>
@@ -122,11 +98,13 @@ if (forgeVer.value !== '') {
     <SsSelect
       v-model="forgeVer"
       :options="
-        forgeVers().map((ver, idx) => {
+        versionData.map((ver, idx) => {
           return {
             data: ver,
             label:
-              idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
+              idx === 0
+                ? `${ver.id}【${$T('home.version.latestVersion')}】`
+                : ver.id,
           };
         })
       "
@@ -140,11 +118,11 @@ if (forgeVer.value !== '') {
     <SsSelect
       v-model="forgeBuild"
       :options="
-        forgeBuilds(forgeVer).map((build, idx) => {
+        forgeVer.forge_versions.map((build) => {
           return {
             data: build,
             label:
-              getRecommendBuildIdx(forgeVer) === idx
+              forgeVer.recommended?.version === build.version
                 ? `${build.version} (${$T('home.version.recommend')})`
                 : build.version,
           };

@@ -4,7 +4,6 @@ import { useQuasar } from 'quasar';
 import {
   AllSpigotVersion,
   SpigotVersion,
-  VersionId,
 } from 'app/src-electron/schema/version';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -21,41 +20,45 @@ const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-function buildSpigotVer(id: VersionId): SpigotVersion {
+function buildSpigotVer(ver: AllSpigotVersion[number]): SpigotVersion {
   return {
-    id: id,
+    id: ver.id,
     type: 'spigot' as const,
   };
 }
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(id: VersionId) {
+function updateWorldVersion(ver: AllSpigotVersion[number]) {
   if (mainStore.world?.version) {
-    mainStore.world.version = buildSpigotVer(id);
+    mainStore.world.version = buildSpigotVer(ver);
   }
 }
 
-const spigotVers = () => {
-  return prop.versionData.map((ver) => ver.id);
-};
+/**
+ * デフォルトバージョン（最新のバージョン）を取得する
+ */
+function getDefaultVersion() {
+  return prop.versionData[0];
+}
+
 const spigotVer = computed({
   get: () => {
     const ver = mainStore.world?.version;
-    if (!ver || ver.type === 'unknown') return '';
+    if (!ver || ver.type === 'unknown') return getDefaultVersion();
+
     // 前のバージョンがSpigotに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (spigotVers().indexOf(ver.id ?? '') === -1) {
-      return spigotVers()[0];
-    }
-    return ver.id ?? '';
+    const findVer = prop.versionData.find((ops) => ops.id === ver.id);
+    if (!findVer) return getDefaultVersion();
+
+    return findVer;
   },
   set: (val) => {
-    if (val === '') return;
     const newVer = buildSpigotVer(val);
     if (mainStore.worldBack?.version.type !== 'unknown') {
       openWarningDialog(
         $q,
-        spigotVers(),
+        prop.versionData.map((ops) => ops.id),
         mainStore.worldBack?.version ?? newVer,
         newVer,
         'id'
@@ -65,20 +68,20 @@ const spigotVer = computed({
 });
 
 // 表示内容と内部データを整合させる
-if (spigotVer.value !== '') {
-  updateWorldVersion(spigotVer.value);
-}
+updateWorldVersion(spigotVer.value);
 </script>
 
 <template>
   <SsSelect
     v-model="spigotVer"
     :options="
-      spigotVers().map((ver, idx) => {
+      versionData.map((ver, idx) => {
         return {
           data: ver,
           label:
-            idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
+            idx === 0
+              ? `${ver.id}【${$T('home.version.latestVersion')}】`
+              : ver.id,
         };
       })
     "
