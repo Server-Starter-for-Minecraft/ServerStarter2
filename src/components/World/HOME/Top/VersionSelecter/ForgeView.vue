@@ -73,12 +73,17 @@ const forgeVer = computed({
   },
 });
 
+/**
+ * デフォルトのビルド（最新ビルドまたは推奨バージョン）を取得する
+ */
+function getDefaultBuild() {
+  return forgeVer.value.recommended ?? forgeVer.value.forge_versions[0];
+}
+
 const forgeBuild = computed({
   get: () => {
     // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
-    if (mainStore.world?.version.type !== 'forge') {
-      return forgeVer.value.recommended ?? forgeVer.value.forge_versions[0];
-    }
+    if (mainStore.world?.version.type !== 'forge') return getDefaultBuild();
     return {
       version: mainStore.world.version.forge_version,
       url: mainStore.world.version.download_url,
@@ -122,7 +127,7 @@ updateWorldVersion(forgeVer.value.id, forgeBuild.value);
           return {
             data: build,
             label:
-              forgeVer.recommended?.version === build.version
+              getDefaultBuild().version === build.version
                 ? `${build.version} (${$T('home.version.recommend')})`
                 : build.version,
           };
