@@ -47,40 +47,39 @@ function onRemoveClicked() {
 <template>
   <q-item
     clickable
+    dense
     @click="onItemClicked"
     :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
-    class="items-center q-py-xs"
+    class="q-pa-xs"
   >
     <q-item-section avatar>
-      <PlayerHeadAvatar :player="player" size="1.5rem" />
+      <PlayerHeadAvatar :player="player" size="1.2rem" />
     </q-item-section>
-
     <q-item-section>
-      <q-item-label class="name">
+      <q-item-label class="q-px-sm name text-omit">
         {{ player.name }}
       </q-item-label>
     </q-item-section>
-
     <q-item-section side>
-      <div class="row q-gutter-x-md">
-        <OpPanel :uuid="uuid" :player-op-level="opLevel" />
-        <q-separator vertical />
-        <q-btn
-          flat
-          dense
-          size="1rem"
-          icon="close"
-          color="negative"
-          @click="onRemoveClicked"
-        />
-      </div>
+      <!-- TODO: 高さを抑えられる画面構成に変更 -->
+      <OpPanel :uuid="uuid" :player-op-level="opLevel"/>
+    </q-item-section>
+    <q-item-section side>
+      <q-btn
+        flat
+        dense
+        size=".6rem"
+        icon="close"
+        color="negative"
+        @click="onRemoveClicked"
+      />
     </q-item-section>
   </q-item>
 </template>
 
 <style scoped lang="scss">
 .name {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
 }
 
 .selected {

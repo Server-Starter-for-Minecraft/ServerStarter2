@@ -42,16 +42,15 @@ const splitPos = ref(50);
     <q-splitter
       v-model="splitPos"
       :limits="[5, 95]"
-      horizontal
       emit-immediately
-      separator-style="height: 3px; margin-bottom: 12px"
+      separator-style="margin-left: 10px; margin-right: 10px"
       class="q-py-md fit col"
     >
       <template #before>
-        <PlayerItemsView v-model="validPlayers" />
+        <GroupItemsView />
       </template>
       <template #after>
-        <GroupItemsView />
+        <PlayerItemsView v-model="validPlayers" />
       </template>
     </q-splitter>
   </div>

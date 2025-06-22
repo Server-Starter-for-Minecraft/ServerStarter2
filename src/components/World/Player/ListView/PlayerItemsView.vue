@@ -29,14 +29,14 @@ function playerSortFunc(
 <template>
   <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>
   <q-list v-if="validPlayers.length !== 0">
-    <template
+    <PlayerItem
       v-for="player in deepcopy(playerStore.searchPlayers(validPlayers)).sort(
         playerSortFunc(playerOrder)
       )"
       :key="player.uuid"
-    >
-      <PlayerItem :uuid="player.uuid" :op-level="player.op?.level" />
-    </template>
+      :uuid="player.uuid"
+      :op-level="player.op?.level"
+    />
   </q-list>
   <div
     v-else
