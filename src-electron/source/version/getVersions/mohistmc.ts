@@ -98,8 +98,10 @@ async function loadEachVersion(
           url: mohistJarURL(versionName, b.id),
         },
       };
-    })
-    .reverse();
+    });
+
+  // 掲載順がめちゃくちゃのため，ビルドIDの降順に並び替える
+  builds.sort((a, b) => b.id - a.id);
 
   return {
     id: VersionId.parse(versionName),
