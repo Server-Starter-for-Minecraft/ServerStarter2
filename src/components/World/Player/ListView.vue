@@ -13,7 +13,8 @@ const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 
-const splitPos = ref(50);
+const DEFAULT_POS = 25
+const splitPos = ref(DEFAULT_POS);
 </script>
 
 <template>
@@ -41,6 +42,7 @@ const splitPos = ref(50);
 
     <q-splitter
       v-model="splitPos"
+      @dblclick="splitPos = DEFAULT_POS"
       :limits="[5, 95]"
       emit-immediately
       separator-style="margin-left: 10px; margin-right: 10px"

@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { assets } from 'src/assets/assets';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import {
-  isValidBtn,
-  removePlayer,
-  setOP,
-} from 'src/components/World/utils/playerOp';
 import OpLevelBtn from 'src/components/World/Player/utils/OpLevelBtn.vue';
+import { isValidBtn, removePlayer, setOp } from '../../utils/playerOp';
 
 const playerStore = usePlayerStore();
 </script>
@@ -29,7 +25,7 @@ const playerStore = usePlayerStore();
             opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
           "
           :disable="!isValidBtn(opLevel)"
-          @click="() => setOP(opLevel)"
+          @click="() => setOp(opLevel)"
         />
       </template>
       <q-separator inset class="q-mt-xs" />

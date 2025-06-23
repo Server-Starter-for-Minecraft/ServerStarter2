@@ -26,7 +26,7 @@ export const isValidBtn = (opLevel: 0 | OpLevel) => {
   return false;
 };
 
-export function setOP(setVal: 0 | OpLevel) {
+export function setOp(setVal: 0 | OpLevel) {
   function setter(setVal?: OpSetting) {
     if (mainStore.world && isValid(mainStore.world.players)) {
       mainStore.world.players

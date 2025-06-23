@@ -5,6 +5,7 @@ import { OpLevel } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
+import { removePlayer } from '../../utils/playerOp';
 import OpPanel from './OpPanel.vue';
 
 interface Prop {
@@ -37,11 +38,6 @@ function onItemClicked() {
     playerStore.addFocus(prop.uuid);
   }
 }
-
-function onRemoveClicked() {
-  playerStore.addFocus(prop.uuid);
-  playerStore.removePlayer();
-}
 </script>
 
 <template>
@@ -60,18 +56,23 @@ function onRemoveClicked() {
         {{ player.name }}
       </q-item-label>
     </q-item-section>
+    <!-- <q-item-section class="text-right text-caption" style="opacity: .6;">
+      <q-item-label class="q-px-sm name text-omit">
+        00000000-0000-0000-0000-000000000000
+      </q-item-label>
+    </q-item-section> -->
     <q-item-section side>
-      <!-- TODO: 高さを抑えられる画面構成に変更 -->
-      <OpPanel :uuid="uuid" :player-op-level="opLevel"/>
+      <OpPanel :uuid="uuid" :player-op-level="opLevel" />
     </q-item-section>
     <q-item-section side>
+      <!-- TODO: 画面サイズに応じて「削除」のテキストを表示 -->
       <q-btn
         flat
         dense
         size=".6rem"
         icon="close"
         color="negative"
-        @click="onRemoveClicked"
+        @click="removePlayer"
       />
     </q-item-section>
   </q-item>
