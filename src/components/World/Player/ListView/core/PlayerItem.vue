@@ -5,8 +5,8 @@ import { OpLevel } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
-import { removePlayer } from '../../utils/playerOp';
 import OpPanel from './OpPanel.vue';
+import RemovePlayerBtn from './parts/RemovePlayerBtn.vue';
 
 interface Prop {
   uuid: PlayerUUID;
@@ -48,7 +48,7 @@ function onItemClicked() {
     :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
     class="q-pa-xs"
   >
-    <q-item-section avatar>
+    <q-item-section avatar style="min-width: 0;">
       <PlayerHeadAvatar :player="player" size="1.2rem" />
     </q-item-section>
     <q-item-section>
@@ -65,15 +65,7 @@ function onItemClicked() {
       <OpPanel :uuid="uuid" :player-op-level="opLevel" />
     </q-item-section>
     <q-item-section side>
-      <!-- TODO: 画面サイズに応じて「削除」のテキストを表示 -->
-      <q-btn
-        flat
-        dense
-        size=".6rem"
-        icon="close"
-        color="negative"
-        @click="removePlayer"
-      />
+      <RemovePlayerBtn :uuid="uuid" />
     </q-item-section>
   </q-item>
 </template>
