@@ -134,7 +134,7 @@ function validateMessage(name: string) {
           :key="pId"
           class="player-icon-wrapper"
         >
-          <PlayerIcon :uuid="pId" />
+          <PlayerIcon :uuid="pId" head-size="1.2rem" />
         </div>
       </div>
     </q-item-section>

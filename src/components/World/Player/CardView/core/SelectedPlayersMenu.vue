@@ -31,21 +31,20 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
       />
     </q-card-actions>
 
-    <q-scroll-area style="flex: 1 1 0">
-      <div class="row">
-        <div v-if="playerStore.focusCards.size === 0" class="fit">
-          <p class="col text-caption text-grey text-center">
-            {{ $t('player.selectPlayerFromLeft') }}
-          </p>
-        </div>
+    <q-scroll-area class="q-px-sm" style="flex: 1 1 0">
+      <div v-if="playerStore.focusCards.size === 0" class="fit">
+        <p class="col text-caption text-grey text-center">
+          {{ $t('player.selectPlayerFromLeft') }}
+        </p>
+      </div>
+      <div v-else class="row q-gutter-md" style="padding-left: 0.5rem">
         <div
-          v-else
           v-for="uuid in getOrderedFocusCards(playerStore.focusCards)"
           :key="uuid"
-          class="col-3"
         >
           <PlayerIcon
             hover-btn
+            enable-tooltip
             :uuid="uuid"
             :negative-btn-clicked="playerStore.unFocus"
           />

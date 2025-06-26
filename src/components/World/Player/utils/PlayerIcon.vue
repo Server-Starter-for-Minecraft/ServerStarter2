@@ -12,6 +12,11 @@ interface Prop {
   showName?: boolean;
   // ホバー時のみボタンが表示されるようになる
   hoverBtn?: boolean;
+  // ボタンのサイズ
+  headSize?: string;
+  iconSize?: string;
+  // tooltipにプレイヤー名を表示するか
+  enableTooltip?: boolean;
 }
 const prop = defineProps<Prop>();
 
@@ -40,7 +45,7 @@ onMounted(async () => {
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     class="q-px-none"
-    style="width: 2rem; margin: 0 auto"
+    style="margin: 0 auto"
   >
     <q-item-section>
       <q-btn
@@ -51,12 +56,12 @@ onMounted(async () => {
         :style="negativeBtnClicked ? '' : { 'pointer-events': 'none' }"
         style="max-width: fit-content"
       >
-        <PlayerHeadAvatar :player="player" size="1.5rem" />
+        <PlayerHeadAvatar :player="player" :size="headSize ?? '1.5rem'" />
         <q-icon
           v-show="hoverBtn && hovered"
           name="cancel"
           class="absolute-center"
-          size="2rem"
+          :size="iconSize ?? '2rem'"
           color="negative"
         />
       </q-btn>
@@ -66,6 +71,7 @@ onMounted(async () => {
       </q-item-label>
     </q-item-section>
     <SsTooltip
+      v-if="enableTooltip"
       :name="player.name"
       anchor="bottom middle"
       self="center middle"
