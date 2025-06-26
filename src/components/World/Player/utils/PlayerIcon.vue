@@ -8,7 +8,7 @@ import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {
   uuid: PlayerUUID;
-  negativeBtnClicked: (uuid: PlayerUUID) => void;
+  negativeBtnClicked?: (uuid: PlayerUUID) => void;
   showName?: boolean;
   // ホバー時のみボタンが表示されるようになる
   hoverBtn?: boolean;
@@ -36,16 +36,24 @@ onMounted(async () => {
 
 <template>
   <q-item
+    dense
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     class="q-px-none"
     style="width: 2rem; margin: 0 auto"
   >
     <q-item-section>
-      <q-btn flat dense @click.stop="negativeBtnClicked(uuid)">
+      <q-btn
+        flat
+        dense
+        @click.stop="negativeBtnClicked?.(uuid)"
+        class="q-pa-none"
+        :style="negativeBtnClicked ? '' : { 'pointer-events': 'none' }"
+        style="max-width: fit-content"
+      >
         <PlayerHeadAvatar :player="player" size="1.5rem" />
         <q-icon
-          v-show="!hoverBtn || hovered"
+          v-show="hoverBtn && hovered"
           name="cancel"
           class="absolute-center"
           size="2rem"

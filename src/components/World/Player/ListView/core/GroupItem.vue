@@ -4,11 +4,13 @@ import { useI18n } from 'vue-i18n';
 import { toEntries } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
+import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
+import EditableText from './parts/EditableText.vue';
 import GroupColorPicker from './parts/GroupColorPicker.vue';
 
 const autoFocus = defineModel<boolean>({ required: true });
@@ -84,41 +86,60 @@ function validateMessage(name: string) {
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     @click="selectGroupMembers"
+    class="q-px-none"
   >
-    <q-item-section>
-      <div class="row q-gutter-md items-start">
-        <!-- 背景要素である`q-item`にクリックイベントが伝播しないように@click.stopでラップ -->
-        <div @click.stop class="q-ml-none">
-          <GroupColorPicker
-            :group-color="group.color"
-            :change-color="changeColor"
-          />
-        </div>
+    <div class="cropped-image-container">
+      <q-img
+        :src="assets.png['white_wool']"
+        class="avaterImg cropped-image absolute-left"
+      />
+    </div>
 
-        <div @click.stop>
-          <q-input
-            v-model="groupName"
-            :autofocus="autoFocus"
-            flat
-            dense
-            :rules="[(val) => validateGroupName(val) || validateMessage(val)]"
-            style="font-size: 1.2rem"
+    <q-item-section class="q-px-sm">
+      <div class="row">
+        <EditableText
+          v-model="groupName"
+          :validater="(val) => validateGroupName(val) || validateMessage(val)"
+          :auto-focus="autoFocus"
+          class="col"
+        />
+        <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
+          <q-menu auto-close>
+            <q-list>
+              <q-item clickable>
+                <q-item-section>New tab</q-item-section>
+              </q-item>
+              <q-item clickable>
+                <q-item-section>New incognito tab</q-item-section>
+              </q-item>
+              <!-- TODO: 以下の機能を追加 -->
+              <!-- １．メンバーの追加 -->
+              <!-- ２．グループ名の変更 -->
+              <!-- ３．グループカラーの変更 -->
+              <!-- ４．グループの削除 -->
+            </q-list>
+          </q-menu>
+          <!-- TODO: 翻訳を追加 -->
+          <SsTooltip
+            name="グループ設定"
+            self="center middle"
+            anchor="top middle"
           />
-        </div>
+        </q-btn>
       </div>
 
-      <div class="q-pl-md row q-gutter-sm">
-        <div v-for="pId in group.players" :key="pId">
-          <PlayerIcon
-            hover-btn
-            :uuid="pId"
-            :negative-btn-clicked="removeMember"
-          />
+      <div class="row q-gutter-x-sm player-icons-container" style="width: 100%">
+        <div
+          v-for="pId in group.players"
+          :key="pId"
+          class="player-icon-wrapper"
+        >
+          <PlayerIcon :uuid="pId" />
         </div>
       </div>
     </q-item-section>
 
-    <q-item-section avatar class="q-gutter-y-sm">
+    <!-- <q-item-section side class="q-gutter-y-sm">
       <SsBtn
         free-width
         flat
@@ -151,13 +172,50 @@ function validateMessage(name: string) {
           anchor="center start"
         />
       </q-btn>
-    </q-item-section>
+    </q-item-section> -->
   </q-item>
 </template>
 
 <style scoped lang="scss">
-.avaterImg {
+// 羊毛の画像を指定した幅分のみ表示する
+.cropped-image-container {
+  position: relative;
+  width: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cropped-image {
   position: absolute;
+  left: 0;
+  top: 0;
+  max-height: 100%;
+  image-rendering: pixelated;
+
+  // 画像が正方形でない場合に備えて、アスペクト比を維持
+  object-fit: cover;
+  object-position: left center;
+}
+
+// グループメンバーのアイコンを横１行に並べる
+.player-icons-container {
+  overflow: hidden;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+
+  // マスクを使用して右端を透過させる
+  mask: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - 5rem),
+    transparent 100%
+  );
+}
+.player-icon-wrapper {
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.avaterImg {
   image-rendering: pixelated;
 }
 </style>
