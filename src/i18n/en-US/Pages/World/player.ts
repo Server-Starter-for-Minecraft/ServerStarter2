@@ -53,6 +53,9 @@ export const enUSPlayer: MessageSchema['player'] = {
   makeNewGroup: 'Make the new Group',
   updateGroup: 'Update this group',
   deleteGroup: 'Delete this group',
+  renameGroup: 'Rename this group',
+  changeGroupColor: 'Change this group color',
+  editGroupMember: 'Add / Remove group members',
   groupNameDuplicate: '{group} already exists',
   makeNewGroupDecide:
     'Make new group  with selected {n} player | Make new group  with selected {n} players',

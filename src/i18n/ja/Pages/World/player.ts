@@ -51,6 +51,9 @@ export const jaPlayer = {
   makeNewGroup: 'グループを作成',
   updateGroup: 'グループを更新',
   deleteGroup: 'グループを削除',
+  renameGroup: 'グループ名を変更',
+  changeGroupColor: 'グループカラーを変更',
+  editGroupMember: 'グループメンバーを編集',
   groupNameDuplicate: '{group}はすでに存在します',
   makeNewGroupDecide:
     '選択中の{n}人をメンバーとするグループを作成します|選択中の{n}人をメンバーとするグループを作成します',
