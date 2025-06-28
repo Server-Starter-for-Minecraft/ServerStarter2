@@ -13,7 +13,7 @@ const validPlayers = defineModel<PlayerSetting[]>({ required: true });
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 
-const DEFAULT_POS = 25
+const DEFAULT_POS = 25;
 const splitPos = ref(DEFAULT_POS);
 </script>
 

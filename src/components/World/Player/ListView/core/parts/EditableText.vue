@@ -12,7 +12,11 @@ const isEdit = ref(false);
 </script>
 
 <template>
-  <p v-if="!isEdit" @dblclick.stop="isEdit = true" class="text text-omit q-ma-none">
+  <p
+    v-if="!isEdit"
+    @dblclick.stop="isEdit = true"
+    class="text text-omit q-ma-none"
+  >
     {{ text }}
   </p>
   <q-input

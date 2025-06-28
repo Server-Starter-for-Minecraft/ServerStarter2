@@ -48,7 +48,7 @@ function onItemClicked() {
     :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
     class="q-pa-xs"
   >
-    <q-item-section avatar style="min-width: 0;">
+    <q-item-section avatar style="min-width: 0">
       <PlayerHeadAvatar :player="player" size="1.2rem" />
     </q-item-section>
     <q-item-section>
