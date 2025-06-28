@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-
 interface Prop {
   autoFocus: boolean;
   validater: (text: any) => boolean | string;
 }
 const prop = defineProps<Prop>();
 
-const text = defineModel<string>({ required: true });
-const isEdit = ref(false);
+const text = defineModel<string>('name', { required: true });
+let oldName = text.value;
+
+const isEdit = defineModel<boolean>('isEdit', {
+  required: true,
+  get(value) {
+    return value;
+  },
+  set(value) {
+    // 編集モードを解除する際に，バリデーションがエラーの場合は元の名称を入れて戻す
+    if (!value && prop.validater(text.value) !== true) {
+      text.value = oldName;
+    } else {
+      oldName = text.value;
+    }
+    return value;
+  },
+});
 </script>
 
 <template>
