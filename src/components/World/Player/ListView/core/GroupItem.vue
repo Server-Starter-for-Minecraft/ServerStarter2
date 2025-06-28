@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { toEntries } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
+import { assets } from 'src/assets/assets';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { getColorLabel } from '../../utils/groupColor';
+import GroupColorPicker from '../../utils/GroupColorPicker.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
-import GroupColorPicker from './parts/GroupColorPicker.vue';
+import EditableText from './parts/EditableText.vue';
 
 const autoFocus = defineModel<boolean>({ required: true });
 
@@ -19,11 +21,47 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
-const { t } = useI18n();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 const hovered = ref(false);
+const editableName = ref(false);
+const colorPickerOpened = ref(false);
 const groupName = ref(sysStore.systemSettings.player.groups[prop.groupId].name);
+
+const label2code = sysStore.staticResouces.minecraftColors;
+
+type MenuBtn = {
+  label: string;
+  icon: string;
+  color?: string;
+  onClick: () => void;
+};
+const menuBtns: MenuBtn[] = [
+  {
+    label: $T('player.editGroupMember'),
+    icon: 'group',
+    onClick: () => {}, // TODO: メンバー編集用ダイアログを表示
+  },
+  {
+    label: $T('player.renameGroup'),
+    icon: 'edit',
+    onClick: () => {
+      // TODO: editableNameがTrueになっても編集モードにならない問題を修正
+      editableName.value = true;
+    },
+  },
+  {
+    label: $T('player.changeGroupColor'),
+    icon: 'palette',
+    onClick: () => (colorPickerOpened.value = true),
+  },
+  {
+    label: $T('player.deleteGroup'),
+    icon: 'close',
+    color: 'negative',
+    onClick: () => playerStore.removeGroup(prop.groupId),
+  },
+];
 
 function addMember(uuid: PlayerUUID) {
   playerStore.updateGroup(prop.groupId, (g) => {
@@ -37,13 +75,6 @@ function addMember(uuid: PlayerUUID) {
 
 function selectGroupMembers() {
   playerStore.selectGroup(prop.group.name);
-}
-
-function changeColor(colorCode: string) {
-  playerStore.updateGroup(prop.groupId, (g) => {
-    g.color = colorCode;
-    return g;
-  });
 }
 
 function removeMember(uuid: PlayerUUID) {
@@ -73,8 +104,8 @@ function validateGroupName(groupName: string) {
 }
 function validateMessage(name: string) {
   return name !== ''
-    ? t('player.groupNameDuplicate', { group: name })
-    : t('player.insertGroupName');
+    ? $T('player.groupNameDuplicate', { group: name })
+    : $T('player.insertGroupName');
 }
 </script>
 
@@ -84,41 +115,74 @@ function validateMessage(name: string) {
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     @click="selectGroupMembers"
+    class="q-px-none"
   >
-    <q-item-section>
-      <div class="row q-gutter-md items-start">
-        <!-- 背景要素である`q-item`にクリックイベントが伝播しないように@click.stopでラップ -->
-        <div @click.stop class="q-ml-none">
-          <GroupColorPicker
-            :group-color="group.color"
-            :change-color="changeColor"
-          />
-        </div>
+    <div class="cropped-image-container">
+      <q-img
+        :src="assets.png[`${getColorLabel(label2code, group.color)}_wool`]"
+        class="avaterImg cropped-image absolute-left"
+      />
+    </div>
 
-        <div @click.stop>
-          <q-input
-            v-model="groupName"
-            :autofocus="autoFocus"
-            flat
-            dense
-            :rules="[(val) => validateGroupName(val) || validateMessage(val)]"
-            style="font-size: 1.2rem"
+    <q-item-section class="q-px-sm">
+      <div class="row">
+        {{ editableName }}
+        <EditableText
+          v-model:name="groupName"
+          v-model:is-edit="editableName"
+          :validater="(val) => validateGroupName(val) || validateMessage(val)"
+          :auto-focus="autoFocus"
+          class="col"
+        />
+        <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
+          <q-menu auto-close>
+            <q-list>
+              <q-item
+                v-for="item of menuBtns"
+                :key="item.icon"
+                clickable
+                @click="item.onClick"
+              >
+                <q-item-section avatar>
+                  <q-icon :color="item.color" :name="item.icon" />
+                </q-item-section>
+                <q-item-section :class="`text-${item.color}`">
+                  {{ item.label }}
+                </q-item-section>
+
+                <q-item-section side v-if="item.icon === 'palette'">
+                  <q-icon name="arrow_right" />
+                </q-item-section>
+                <!-- <QMenu
+                  v-if="item.icon === 'palette'"
+                  v-model="colorPickerOpened"
+                >
+                  <GroupColorPicker :group-id="groupId" :group="group" />
+                </QMenu> -->
+              </q-item>
+            </q-list>
+          </q-menu>
+          <!-- TODO: 翻訳を追加 -->
+          <SsTooltip
+            name="グループ設定"
+            self="center middle"
+            anchor="top middle"
           />
-        </div>
+        </q-btn>
       </div>
 
-      <div class="q-pl-md row q-gutter-sm">
-        <div v-for="pId in group.players" :key="pId">
-          <PlayerIcon
-            hover-btn
-            :uuid="pId"
-            :negative-btn-clicked="removeMember"
-          />
+      <div class="row q-gutter-x-sm player-icons-container" style="width: 100%">
+        <div
+          v-for="pId in group.players"
+          :key="pId"
+          class="player-icon-wrapper"
+        >
+          <PlayerIcon :uuid="pId" head-size="1.2rem" />
         </div>
       </div>
     </q-item-section>
 
-    <q-item-section avatar class="q-gutter-y-sm">
+    <!-- <q-item-section side class="q-gutter-y-sm">
       <SsBtn
         free-width
         flat
@@ -151,13 +215,50 @@ function validateMessage(name: string) {
           anchor="center start"
         />
       </q-btn>
-    </q-item-section>
+    </q-item-section> -->
   </q-item>
 </template>
 
 <style scoped lang="scss">
-.avaterImg {
+// 羊毛の画像を指定した幅分のみ表示する
+.cropped-image-container {
+  position: relative;
+  width: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cropped-image {
   position: absolute;
+  left: 0;
+  top: 0;
+  max-height: 100%;
+  image-rendering: pixelated;
+
+  // 画像が正方形でない場合に備えて、アスペクト比を維持
+  object-fit: cover;
+  object-position: left center;
+}
+
+// グループメンバーのアイコンを横１行に並べる
+.player-icons-container {
+  overflow: hidden;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+
+  // マスクを使用して右端を透過させる
+  mask: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - 5rem),
+    transparent 100%
+  );
+}
+.player-icon-wrapper {
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.avaterImg {
   image-rendering: pixelated;
 }
 </style>

@@ -6,6 +6,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 import OpPanel from './OpPanel.vue';
+import RemovePlayerBtn from './parts/RemovePlayerBtn.vue';
 
 interface Prop {
   uuid: PlayerUUID;
@@ -37,50 +38,41 @@ function onItemClicked() {
     playerStore.addFocus(prop.uuid);
   }
 }
-
-function onRemoveClicked() {
-  playerStore.addFocus(prop.uuid);
-  playerStore.removePlayer();
-}
 </script>
 
 <template>
   <q-item
     clickable
+    dense
     @click="onItemClicked"
     :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
-    class="items-center q-py-xs"
+    class="q-pa-xs"
   >
-    <q-item-section avatar>
-      <PlayerHeadAvatar :player="player" size="1.5rem" />
+    <q-item-section avatar style="min-width: 0">
+      <PlayerHeadAvatar :player="player" size="1.2rem" />
     </q-item-section>
-
     <q-item-section>
-      <q-item-label class="name">
+      <q-item-label class="q-px-sm name text-omit">
         {{ player.name }}
       </q-item-label>
     </q-item-section>
-
+    <!-- <q-item-section class="text-right text-caption" style="opacity: .6;">
+      <q-item-label class="q-px-sm name text-omit">
+        00000000-0000-0000-0000-000000000000
+      </q-item-label>
+    </q-item-section> -->
     <q-item-section side>
-      <div class="row q-gutter-x-md">
-        <OpPanel :uuid="uuid" :player-op-level="opLevel" />
-        <q-separator vertical />
-        <q-btn
-          flat
-          dense
-          size="1rem"
-          icon="close"
-          color="negative"
-          @click="onRemoveClicked"
-        />
-      </div>
+      <OpPanel :uuid="uuid" :player-op-level="opLevel" />
+    </q-item-section>
+    <q-item-section side>
+      <RemovePlayerBtn :uuid="uuid" />
     </q-item-section>
   </q-item>
 </template>
 
 <style scoped lang="scss">
 .name {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
 }
 
 .selected {
