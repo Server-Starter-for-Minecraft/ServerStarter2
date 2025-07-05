@@ -13,7 +13,7 @@ export const jaPlayer = {
   registeredPlayer: '追加済みプレイヤー',
   notRegistered: 'プレイヤーが登録されていません',
   notFound: '検索結果無し',
-  groupList: 'グループによる一括追加',
+  groupList: 'グループ一覧',
   join: '登録済みのプレイヤーのみ参加可能',
   changeOP: 'OPレベルの変更',
   makeGroup: 'グループを作成',

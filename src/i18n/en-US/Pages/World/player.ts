@@ -15,7 +15,7 @@ export const enUSPlayer: MessageSchema['player'] = {
   registeredPlayer: 'Registered player',
   notRegistered: 'No players registered',
   notFound: 'No player found',
-  groupList: 'Bulk registration by group ',
+  groupList: 'Groups',
   join: 'Only registered player',
   changeOP: 'Change OP level',
   makeGroup: 'Make group',
