@@ -126,7 +126,6 @@ function validateMessage(name: string) {
 
     <q-item-section class="q-px-sm">
       <div class="row">
-        {{ editableName }}
         <EditableText
           v-model:name="groupName"
           v-model:is-edit="editableName"
@@ -162,9 +161,8 @@ function validateMessage(name: string) {
               </q-item>
             </q-list>
           </q-menu>
-          <!-- TODO: 翻訳を追加 -->
           <SsTooltip
-            name="グループ設定"
+            :name="$T('player.groupSettings')"
             self="center middle"
             anchor="top middle"
           />

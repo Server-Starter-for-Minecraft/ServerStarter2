@@ -50,6 +50,7 @@ export const enUSPlayer: MessageSchema['player'] = {
   groupMember: 'Group member',
   existGroup: '{group} already exists',
   insertGroupName: 'Insert group name',
+  groupSettings: 'Group settings',
   makeNewGroup: 'Make the new Group',
   updateGroup: 'Update this group',
   deleteGroup: 'Delete this group',

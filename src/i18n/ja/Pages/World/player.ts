@@ -48,6 +48,7 @@ export const jaPlayer = {
   groupMember: 'グループメンバー',
   existGroup: '{group}はすでに存在します',
   insertGroupName: 'グループ名を入力してください',
+  groupSettings: 'グループ設定',
   makeNewGroup: 'グループを作成',
   updateGroup: 'グループを更新',
   deleteGroup: 'グループを削除',
