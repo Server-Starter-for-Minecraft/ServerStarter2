@@ -13,7 +13,7 @@ onMounted(() => (autoFocus.value = true));
 
 <template>
   <span class="text-caption">{{ $t('player.groupList') }}</span>
-  <q-list separator>
+  <q-list>
     <GroupItem
       v-for="(group, gid) in sortValue(
         playerStore.searchGroups(),

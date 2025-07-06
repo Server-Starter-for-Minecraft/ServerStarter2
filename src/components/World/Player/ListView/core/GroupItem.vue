@@ -46,7 +46,6 @@ const menuBtns: MenuBtn[] = [
     label: $T('player.renameGroup'),
     icon: 'edit',
     onClick: () => {
-      // TODO: editableNameがTrueになっても編集モードにならない問題を修正
       editableName.value = true;
     },
   },
@@ -115,7 +114,7 @@ function validateMessage(name: string) {
     @mouseover="hovered = true"
     @mouseleave="hovered = false"
     @click="selectGroupMembers"
-    class="q-px-none"
+    class="q-px-none q-py-xs"
   >
     <div class="cropped-image-container">
       <q-img
@@ -125,22 +124,33 @@ function validateMessage(name: string) {
     </div>
 
     <q-item-section class="q-px-sm">
+      <EditableText
+        v-model:name="groupName"
+        v-model:is-edit="editableName"
+        :validater="(val) => validateGroupName(val) || validateMessage(val)"
+        :auto-focus="autoFocus"
+        class="col"
+      />
+
       <div class="row">
-        <EditableText
-          v-model:name="groupName"
-          v-model:is-edit="editableName"
-          :validater="(val) => validateGroupName(val) || validateMessage(val)"
-          :auto-focus="autoFocus"
-          class="col"
-        />
+        <div class="row q-gutter-x-sm player-icons-container col">
+          <div
+            v-for="pId in group.players"
+            :key="pId"
+            class="player-icon-wrapper"
+          >
+            <PlayerIcon :uuid="pId" head-size="1.2rem" />
+          </div>
+        </div>
         <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
-          <q-menu auto-close>
+          <q-menu self="top left" anchor="top right" :offset="[5, 0]">
             <q-list>
               <q-item
                 v-for="item of menuBtns"
                 :key="item.icon"
                 clickable
-                @click="item.onClick"
+                v-close-popup
+                @click.stop="item.onClick"
               >
                 <q-item-section avatar>
                   <q-icon :color="item.color" :name="item.icon" />
@@ -152,31 +162,16 @@ function validateMessage(name: string) {
                 <q-item-section side v-if="item.icon === 'palette'">
                   <q-icon name="arrow_right" />
                 </q-item-section>
-                <!-- <QMenu
-                  v-if="item.icon === 'palette'"
-                  v-model="colorPickerOpened"
-                >
-                  <GroupColorPicker :group-id="groupId" :group="group" />
-                </QMenu> -->
               </q-item>
             </q-list>
           </q-menu>
           <SsTooltip
             :name="$T('player.groupSettings')"
-            self="center middle"
-            anchor="top middle"
+            self="top middle"
+            anchor="bottom middle"
+            :offset="[0, 0]"
           />
         </q-btn>
-      </div>
-
-      <div class="row q-gutter-x-sm player-icons-container" style="width: 100%">
-        <div
-          v-for="pId in group.players"
-          :key="pId"
-          class="player-icon-wrapper"
-        >
-          <PlayerIcon :uuid="pId" head-size="1.2rem" />
-        </div>
       </div>
     </q-item-section>
 
@@ -247,7 +242,7 @@ function validateMessage(name: string) {
   mask: linear-gradient(
     to right,
     black 0%,
-    black calc(100% - 5rem),
+    black calc(100% - 2rem),
     transparent 100%
   );
 }

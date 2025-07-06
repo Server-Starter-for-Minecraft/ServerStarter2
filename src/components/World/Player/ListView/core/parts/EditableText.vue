@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { $T } from 'src/i18n/utils/tFunc';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+
 interface Prop {
   autoFocus: boolean;
   validater: (text: any) => boolean | string;
@@ -40,9 +43,45 @@ const isEdit = defineModel<boolean>('isEdit', {
     dense
     filled
     :rules="[validater]"
-    @focusout="isEdit = false"
     class="text q-pa-none"
-  />
+    :class="validater(text) !== true ? 'q-pb-md' : 'q-pb-xs'"
+    @click.stop
+  >
+    <template #append>
+      <q-btn
+        v-if="validater(text) !== true"
+        icon="close"
+        color="negative"
+        dense
+        flat
+        @click.stop="isEdit = false"
+        style="margin-right: -12px"
+      >
+        <SsTooltip
+          :name="$T('general.cancel')"
+          self="center left"
+          anchor="center right"
+          :offset="[0, 5]"
+        />
+      </q-btn>
+      <q-btn
+        v-else
+        icon="check"
+        color="primary"
+        dense
+        flat
+        @click.stop="isEdit = false"
+        style="margin-right: -12px"
+      >
+        <SsTooltip
+          :name="$T('player.decideGroupName')"
+          self="center left"
+          anchor="center right"
+          :offset="[0, 5]"
+        />
+      </q-btn>
+    </template>
+  </q-input>
 </template>
 
 <style lang="scss" scoped>
