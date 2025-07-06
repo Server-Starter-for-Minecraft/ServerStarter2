@@ -43,7 +43,7 @@ const splitPos = ref(DEFAULT_POS);
     <q-splitter
       v-model="splitPos"
       @dblclick="splitPos = DEFAULT_POS"
-      :limits="[15, 80]"
+      :limits="[15, 65]"
       emit-immediately
       separator-style="margin-left: 10px; margin-right: 10px"
       class="q-py-md fit col"
