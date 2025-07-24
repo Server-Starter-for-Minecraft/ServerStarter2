@@ -1,90 +1,57 @@
 <script setup lang="ts">
-import { keys, values } from 'app/src-public/scripts/obj/obj';
+import { QMenuProps } from 'quasar';
+import { keys } from 'app/src-public/scripts/obj/obj';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { getColorLabel, old2newKey } from './groupColor';
 
 interface Prop {
   groupColor: string;
   changeColor: (colorCode: string) => void;
+  self?: QMenuProps['self'];
+  anchor?: QMenuProps['anchor'];
+  offset?: QMenuProps['offset'];
 }
 defineProps<Prop>();
 
 const sysStore = useSystemStore();
-
-// TODO: 変換コードをバックエンドに移築
-const old2newKey = {
-  dark_red: 'red',
-  red: 'pink',
-  gold: 'orange',
-  yellow: 'yellow',
-  dark_green: 'green',
-  green: 'lime',
-  aqua: 'light_blue',
-  dark_aqua: 'cyan',
-  dark_blue: 'blue',
-  blue: 'brown',
-  light_purple: 'magenta',
-  dark_purple: 'purple',
-  white: 'white',
-  gray: 'light_gray',
-  dark_gray: 'gray',
-  black: 'black',
-} as const;
-
 const label2code = sysStore.staticResouces.minecraftColors;
-const getColorLabel = (color: string) => {
-  const oldKey = keys(label2code)[values(label2code).indexOf(color)];
-  return old2newKey[oldKey];
-};
 </script>
 
 <template>
-  <q-btn flat dense @click.stop class="q-pa-none">
-    <!-- <q-avatar square style="height: 2rem;">
-      <q-img
-        :src="assets.png[`${getColorLabel(groupColor)}_wool`]"
-        class="avaterImg"
-      />
-    </q-avatar> -->
-    <div class="fit" style="min-width: 1rem;">
-      <q-img
-        :src="assets.png[`${getColorLabel(groupColor)}_wool`]"
-        class="avaterImg fit"
-      />
-    </div>
-
-    <q-menu :offset="[0, 5]">
-      <div class="grid-layout">
-        <template v-for="colorLabel in keys(label2code)" :key="colorLabel">
-          <q-btn
-            v-close-popup
-            dense
-            :flat="groupColor !== label2code[colorLabel]"
-            outline
-            color="primary"
-            class="q-ma-none"
-            style="width: 3rem"
-            @click="changeColor(label2code[colorLabel])"
-          >
-            <q-avatar square size="2rem">
-              <q-img
-                :src="
-                  assets.png[`${getColorLabel(label2code[colorLabel])}_dye`]
-                "
-                class="avaterImg"
-              />
-            </q-avatar>
-            <SsTooltip
-              :name="old2newKey[colorLabel]"
-              anchor="bottom middle"
-              self="center middle"
+  <q-menu :self="self" :anchor="anchor" :offset="offset">
+    <div class="grid-layout">
+      <template v-for="colorLabel in keys(label2code)" :key="colorLabel">
+        <q-btn
+          v-close-popup
+          dense
+          :flat="groupColor !== label2code[colorLabel]"
+          outline
+          color="primary"
+          class="q-ma-none"
+          style="width: 3rem"
+          @click="changeColor(label2code[colorLabel])"
+        >
+          <q-avatar square size="2rem">
+            <q-img
+              :src="
+                assets.png[
+                  `${getColorLabel(label2code, label2code[colorLabel])}_dye`
+                ]
+              "
+              class="avaterImg"
             />
-          </q-btn>
-        </template>
-      </div>
-    </q-menu>
-  </q-btn>
+          </q-avatar>
+          <SsTooltip
+            :name="old2newKey[colorLabel]"
+            anchor="bottom middle"
+            self="center middle"
+          />
+        </q-btn>
+      </template>
+    </div>
+  </q-menu>
 </template>
 
 <style scoped lang="scss">

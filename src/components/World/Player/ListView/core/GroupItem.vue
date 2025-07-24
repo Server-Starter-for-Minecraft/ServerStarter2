@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { type Component, ref } from 'vue';
 import { toEntries } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
+import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { getColorLabel } from '../../utils/groupColor';
 import GroupColorPicker from '../../utils/GroupColorPicker.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
 import EditableText from './parts/EditableText.vue';
@@ -25,11 +27,14 @@ const hovered = ref(false);
 const editableName = ref(false);
 const colorPickerOpened = ref(false);
 const groupName = ref(sysStore.systemSettings.player.groups[prop.groupId].name);
+const label2code = sysStore.staticResouces.minecraftColors;
 
 type MenuBtn = {
   label: string;
   icon: string;
   color?: string;
+  nestedItem?: Component;
+  nestedProps?: Record<string, any>;
   onClick: () => void;
 };
 const menuBtns: MenuBtn[] = [
@@ -49,6 +54,14 @@ const menuBtns: MenuBtn[] = [
     label: $T('player.changeGroupColor'),
     icon: 'palette',
     onClick: () => (colorPickerOpened.value = true),
+    nestedItem: GroupColorPicker,
+    nestedProps: {
+      groupColor: prop.group.color,
+      changeColor: changeColor,
+      self: 'top left',
+      anchor: 'top right',
+      offset: [5, 0],
+    },
   },
   {
     label: $T('player.deleteGroup'),
@@ -120,11 +133,24 @@ function validateMessage(name: string) {
     class="q-px-none q-py-xs"
   >
     <div class="cropped-image-container">
-      <GroupColorPicker
-        :group-color="group.color"
-        :change-color="changeColor"
+      <q-btn
+        flat
+        dense
+        @click.stop
         class="avaterImg cropped-image absolute-left"
-      />
+      >
+        <div class="fit" style="min-width: 1rem">
+          <q-img
+            :src="assets.png[`${getColorLabel(label2code, group.color)}_wool`]"
+            class="avaterImg fit"
+          />
+        </div>
+        <GroupColorPicker
+          :group-color="group.color"
+          :change-color="changeColor"
+          :offset="[0, 5]"
+        />
+      </q-btn>
     </div>
 
     <q-item-section class="q-px-sm">
@@ -153,7 +179,7 @@ function validateMessage(name: string) {
                 v-for="item of menuBtns"
                 :key="item.icon"
                 clickable
-                v-close-popup
+                v-close-popup="item.nestedItem === void 0"
                 @click.stop="item.onClick"
               >
                 <q-item-section avatar>
@@ -163,9 +189,15 @@ function validateMessage(name: string) {
                   {{ item.label }}
                 </q-item-section>
 
-                <q-item-section side v-if="item.icon === 'palette'">
-                  <q-icon name="arrow_right" />
+                <q-item-section v-if="item.nestedItem" side>
+                  <q-icon name="keyboard_arrow_right" />
                 </q-item-section>
+
+                <component
+                  v-if="item.nestedItem"
+                  :is="item.nestedItem"
+                  v-bind="item.nestedProps"
+                />
               </q-item>
             </q-list>
           </q-menu>
@@ -228,6 +260,7 @@ function validateMessage(name: string) {
   position: absolute;
   left: 0;
   top: 0;
+  padding: 0;
   max-height: 100%;
   image-rendering: pixelated;
 
