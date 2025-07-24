@@ -3,12 +3,10 @@ import { ref } from 'vue';
 import { toEntries } from 'app/src-public/scripts/obj/obj';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
-import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import { getColorLabel } from '../../utils/groupColor';
 import GroupColorPicker from '../../utils/GroupColorPicker.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
 import EditableText from './parts/EditableText.vue';
@@ -27,8 +25,6 @@ const hovered = ref(false);
 const editableName = ref(false);
 const colorPickerOpened = ref(false);
 const groupName = ref(sysStore.systemSettings.player.groups[prop.groupId].name);
-
-const label2code = sysStore.staticResouces.minecraftColors;
 
 type MenuBtn = {
   label: string;
@@ -61,6 +57,13 @@ const menuBtns: MenuBtn[] = [
     onClick: () => playerStore.removeGroup(prop.groupId),
   },
 ];
+
+function changeColor(colorCode: string) {
+  playerStore.updateGroup(prop.groupId, (g) => {
+    g.color = colorCode;
+    return g;
+  });
+}
 
 function addMember(uuid: PlayerUUID) {
   playerStore.updateGroup(prop.groupId, (g) => {
@@ -117,8 +120,9 @@ function validateMessage(name: string) {
     class="q-px-none q-py-xs"
   >
     <div class="cropped-image-container">
-      <q-img
-        :src="assets.png[`${getColorLabel(label2code, group.color)}_wool`]"
+      <GroupColorPicker
+        :group-color="group.color"
+        :change-color="changeColor"
         class="avaterImg cropped-image absolute-left"
       />
     </div>
