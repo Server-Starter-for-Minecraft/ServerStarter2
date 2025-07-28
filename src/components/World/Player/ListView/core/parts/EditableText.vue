@@ -46,6 +46,7 @@ const isEdit = defineModel<boolean>('isEdit', {
     class="text q-pa-none"
     :class="validater(text) !== true ? 'q-pb-md' : 'q-pb-xs'"
     @click.stop
+    @keyup.enter.stop="isEdit = false"
   >
     <template #append>
       <q-btn
