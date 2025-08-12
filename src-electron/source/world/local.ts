@@ -299,6 +299,7 @@ export async function formatWorldDirectory(
     spigot: 'plugin',
     papermc: 'plugin',
     forge: 'vanilla',
+    neoforge: 'vanilla',
     mohistmc: 'plugin',
     fabric: 'vanilla',
   };
