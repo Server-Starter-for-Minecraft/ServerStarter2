@@ -58,8 +58,9 @@ export const jaProgress: ProgressMessageTranslation = {
         readyServerData: 'サーバーデータを準備中です',
         installing: 'Forgeをインストール中です',
       },
-      neoForge: {
+      neoforge: {
         readyServerData: 'サーバーデータを準備中です',
+        installing: 'NeoForgeをインストール中です',
       },
       fabric: {
         readyServerData: 'サーバーデータを準備中です',

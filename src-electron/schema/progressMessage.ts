@@ -151,9 +151,12 @@ type HProgressMessage = {
         installing: MessageContent;
       };
 
-      neoForge: {
+      neoforge: {
         /** サーバーデータを準備中 */
         readyServerData: MessageContent;
+
+        /** インストール中 */
+        installing: MessageContent;
       };
 
       fabric: {

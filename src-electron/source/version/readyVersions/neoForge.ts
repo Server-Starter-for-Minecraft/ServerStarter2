@@ -7,6 +7,12 @@ import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
+import { getNewForgeArgs } from './utils/forgeArgAnalyzer';
+import {
+  downloadInstaller,
+  getServerJarFromInstaller,
+  renameFilesFromInstaller,
+} from './utils/forgeInstaller';
 import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
 
@@ -44,19 +50,48 @@ export class ReadyNeoForgeVersion extends ReadyVersion<NeoForgeVersion> {
     progress?: GroupProgressor
   ): Promise<Failable<void>> {
     const p = progress?.subtitle({
-      key: 'server.readyVersion.neoForge.readyServerData',
+      key: 'server.readyVersion.neoforge.readyServerData',
     });
 
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
-    // Jarをダウンロード
-    const downloadJar = await BytesData.fromURL(verJson.download.url);
-    if (isError(downloadJar)) return downloadJar;
+    // `installer.jar`をダウンロード
+    const installerPath = this.cachePath.child('installer.jar');
+    const installerRes = await downloadInstaller(
+      verJson.download.url,
+      installerPath
+    );
+    if (isError(installerRes)) return installerRes;
 
-    // Jarをキャッシュ先に書き出して終了
+    // `installer.jar`用のRuntimeを取得
+    const runtime = await this.getRuntime(verJsonHandler);
+    if (isError(runtime)) return runtime;
+
+    // `installer.jar`を実行
+    const installerRunRes = await getServerJarFromInstaller(
+      'neoforge',
+      installerPath,
+      runtime,
+      execRuntime,
+      progress
+    );
+    if (isError(installerRunRes)) return installerRunRes;
+
+    // 生成したファイル群をリネーム
+    await renameFilesFromInstaller(this.cachePath, this._version);
+
+    // 生成されたファイルを解析して，引数を更新
+    const newVerJson = await getNewForgeArgs(
+      this.cachePath,
+      this._version,
+      verJson
+    );
+    if (isError(newVerJson)) return newVerJson;
+
+    // 引数の更新を反映した`version.json`を書き出して終了
     p?.delete();
-    return getJarPath(this.cachePath).write(downloadJar);
+    return await verJsonHandler.write(newVerJson);
   }
 
   get serverID(): string {
