@@ -10,6 +10,7 @@ import { getVersionlist, VersionListLoader } from './getVersions/base';
 import { FabricVersionLoader } from './getVersions/fabric';
 import { ForgeVersionLoader } from './getVersions/forge';
 import { MohistMCVersionLoader } from './getVersions/mohistmc';
+import { NeoForgeVersionLoader } from './getVersions/neoForge';
 import { PaperVersionLoader } from './getVersions/papermc';
 import { SpigotVersionLoader } from './getVersions/spigot';
 import { VanillaVersionLoader } from './getVersions/vanilla';
@@ -50,6 +51,7 @@ export class VersionContainer {
     this.versionGetters = {
       vanilla: new VanillaVersionLoader(cachePath),
       forge: new ForgeVersionLoader(cachePath),
+      neoforge: new NeoForgeVersionLoader(cachePath),
       spigot: new SpigotVersionLoader(cachePath),
       papermc: new PaperVersionLoader(cachePath),
       mohistmc: new MohistMCVersionLoader(cachePath),
