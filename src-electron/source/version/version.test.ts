@@ -52,9 +52,14 @@ describe('listupVersions', async () => {
       oldestVersion: '1.5.2',
     },
     {
+      type: 'neoforge',
+      vcList: () => vc.listVersions('neoforge', useCache),
+      oldestVersion: '25w14craftmine',
+    },
+    {
       type: 'papermc',
       vcList: () => vc.listVersions('papermc', useCache),
-      oldestVersion: '1.8.8',
+      oldestVersion: '1.7.10',
     },
     {
       type: 'mohistmc',

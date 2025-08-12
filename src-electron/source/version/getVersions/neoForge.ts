@@ -29,7 +29,7 @@ export class NeoForgeVersionLoader extends VersionListLoader<'neoforge'> {
     if (isError(allVers)) return allVers;
 
     // 全バージョンをMCバージョンでグルーピング
-    const ver2neoVer = groupBy(allVers.versions, getSpecificMCver);
+    const ver2neoVer = groupBy(allVers.versions.reverse(), getSpecificMCver);
 
     // 要求形式に成形
     return toEntries(ver2neoVer).map(([k, vs]) => {

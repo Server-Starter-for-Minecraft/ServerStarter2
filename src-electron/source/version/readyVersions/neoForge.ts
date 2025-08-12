@@ -91,10 +91,10 @@ if (import.meta.vitest) {
     const cacheFolder = workPath.child('cache');
     const serverFolder = workPath.child('servers');
 
-    const ver21: NeoForgeVersion = {
+    const ver20: NeoForgeVersion = {
       type: 'neoforge',
-      id: '1.21.8' as VersionId,
-      neoforge_version: '21.8.31',
+      id: '1.20.2' as VersionId,
+      neoforge_version: '20.2.86',
     };
 
     const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
@@ -116,8 +116,8 @@ if (import.meta.vitest) {
     });
 
     test('setMohistJar', { timeout: 1000 * 60 }, async () => {
-      const outputPath = serverFolder.child(ver21.id);
-      const readyOperator = new ReadyNeoForgeVersion(ver21, cacheFolder);
+      const outputPath = serverFolder.child(ver20.id);
+      const readyOperator = new ReadyNeoForgeVersion(ver20, cacheFolder);
       const cachePath = readyOperator.cachePath;
 
       // 条件をそろえるために，ファイル類を削除する
@@ -141,7 +141,7 @@ if (import.meta.vitest) {
       // expect(outputPath.child('libraries').exists()).toBe(true);
 
       // 実行後にファイル削除
-      const remover = new RemoveNeoForgeVersion(ver21, cacheFolder);
+      const remover = new RemoveNeoForgeVersion(ver20, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
