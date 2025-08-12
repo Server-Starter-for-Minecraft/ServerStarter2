@@ -58,6 +58,9 @@ export const enUSProgress: ProgressMessageTranslation = {
         readyServerData: 'Preparing server data',
         installing: 'Installing',
       },
+      neoForge: {
+        readyServerData: 'Preparing server data',
+      },
       fabric: {
         readyServerData: 'Preparing server data',
       },
