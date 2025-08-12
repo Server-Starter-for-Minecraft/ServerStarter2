@@ -5,6 +5,7 @@ import {
   AllFabricVersion,
   AllForgeVersion,
   AllMohistmcVersion,
+  AllNeoForgeVersion,
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
@@ -19,6 +20,7 @@ import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
 import Fabric from './VersionSelecter/FabricView.vue';
 import Forge from './VersionSelecter/ForgeView.vue';
 import MohistMC from './VersionSelecter/MohistMCView.vue';
+import NeoForge from './VersionSelecter/NeoForgeView.vue';
 import PaperMC from './VersionSelecter/PaperMCView.vue';
 import ServerTypeItem from './VersionSelecter/ServerTypeItem.vue';
 import Spigot from './VersionSelecter/SpigotView.vue';
@@ -43,6 +45,9 @@ const papermcs = () => {
 };
 const forges = () => {
   return sysStore.serverVersions.get('forge') as AllForgeVersion;
+};
+const neoforges = () => {
+  return sysStore.serverVersions.get('neoforge') as AllNeoForgeVersion;
 };
 const mohistmcs = () => {
   return sysStore.serverVersions.get('mohistmc') as AllMohistmcVersion;
@@ -109,6 +114,10 @@ const selectedVerType = computed({
   <Forge
     v-else-if="mainStore.selectedVersionType === 'forge'"
     :version-data="forges()"
+  />
+  <NeoForge
+    v-else-if="mainStore.selectedVersionType === 'neoforge'"
+    :version-data="neoforges()"
   />
   <MohistMC
     v-else-if="mainStore.selectedVersionType === 'mohistmc'"
