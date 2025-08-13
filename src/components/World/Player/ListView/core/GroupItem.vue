@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { type Component, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { toEntries } from 'app/src-public/scripts/obj/obj';
-import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
+import { UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
@@ -11,6 +12,8 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { getColorLabel } from '../../utils/groupColor';
 import GroupColorPicker from '../../utils/GroupColorPicker.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
+import GroupMemberDialog from './GroupMemberDialog.vue';
+import { GroupMemberReturns, GroupMembersProp } from './iGroupMember';
 import EditableText from './parts/EditableText.vue';
 
 const autoFocus = defineModel<boolean>({ required: true });
@@ -21,6 +24,7 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
+const $q = useQuasar();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 const hovered = ref(false);
@@ -41,7 +45,30 @@ const menuBtns: MenuBtn[] = [
   {
     label: $T('player.editGroupMember'),
     icon: 'group',
-    onClick: () => {}, // TODO: メンバー編集用ダイアログを表示
+    onClick: () => {
+      $q.dialog({
+        component: GroupMemberDialog,
+        componentProps: {
+          players: prop.group.players,
+        } as GroupMembersProp,
+      }).onOk((p: GroupMemberReturns) => {
+        // グループメンバーの更新
+        playerStore.updateGroup(prop.groupId, (g) => {
+          p.addPlayers.forEach((pId) => {
+            if (!g.players.includes(pId)) {
+              g.players.push(pId);
+            }
+          });
+          p.delPlayers.forEach((pId) => {
+            const index = g.players.indexOf(pId);
+            if (index !== -1) {
+              g.players.splice(index, 1);
+            }
+          });
+          return g;
+        });
+      });
+    },
   },
   {
     label: $T('player.renameGroup'),
@@ -78,25 +105,8 @@ function changeColor(colorCode: string) {
   });
 }
 
-function addMember(uuid: PlayerUUID) {
-  playerStore.updateGroup(prop.groupId, (g) => {
-    if (g.players.indexOf(uuid) === -1) {
-      g.players.push(uuid);
-    }
-    return g;
-  });
-  playerStore.unFocus();
-}
-
 function selectGroupMembers() {
   playerStore.selectGroup(prop.group.name);
-}
-
-function removeMember(uuid: PlayerUUID) {
-  playerStore.updateGroup(prop.groupId, (g) => {
-    g.players.splice(g.players.indexOf(uuid), 1);
-    return g;
-  });
 }
 
 /**
@@ -210,41 +220,6 @@ function validateMessage(name: string) {
         </q-btn>
       </div>
     </q-item-section>
-
-    <!-- <q-item-section side class="q-gutter-y-sm">
-      <SsBtn
-        free-width
-        flat
-        dense
-        :disable="playerStore.focusCards.size === 0"
-        icon="person_add"
-        color="primary"
-        size="1rem"
-        @click.stop="playerStore.focusCards.forEach(addMember)"
-      >
-        <SsTooltip
-          v-if="playerStore.focusCards.size !== 0"
-          :name="$t('player.groupingBtn')"
-          self="center middle"
-          anchor="center start"
-        />
-      </SsBtn>
-      <q-btn
-        free-width
-        flat
-        dense
-        icon="close"
-        color="negative"
-        size="1rem"
-        @click.stop="playerStore.removeGroup(groupId)"
-      >
-        <SsTooltip
-          :name="$t('player.deleteGroup')"
-          self="center middle"
-          anchor="center start"
-        />
-      </q-btn>
-    </q-item-section> -->
   </q-item>
 </template>
 

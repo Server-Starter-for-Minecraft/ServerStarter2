@@ -72,4 +72,10 @@ export const jaPlayer = {
   editPlayer: '{n} 人の設定を編集|{n} 人の設定を編集',
   sort: '並べ替え',
   resetPlayerSettings: 'プレイヤー設定をリセット',
+  groupMemberDialog: {
+    title: 'グループメンバーの編集',
+    okBtn: 'メンバーを更新',
+    searchTitle: '追加したいメンバーを検索',
+    memberTitle: 'グループメンバー一覧',
+  }
 };

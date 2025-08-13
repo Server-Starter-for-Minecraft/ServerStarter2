@@ -75,4 +75,10 @@ export const enUSPlayer: MessageSchema['player'] = {
     'Editing OP level for {n} player|Editing OP level for {n} players',
   sort: 'sort',
   resetPlayerSettings: 'Reset Player settings',
+  groupMemberDialog: {
+    title: 'Group member settings',
+    okBtn: 'Update members',
+    searchTitle: 'Search members to add',
+    memberTitle: 'Group members list',
+  }
 };
