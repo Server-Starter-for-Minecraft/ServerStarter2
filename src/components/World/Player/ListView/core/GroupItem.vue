@@ -8,7 +8,9 @@ import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import { getColorLabel } from '../../utils/groupColor';
 import GroupColorPicker from '../../utils/GroupColorPicker.vue';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
@@ -91,10 +93,21 @@ const menuBtns: MenuBtn[] = [
     },
   },
   {
-    label: $T('player.deleteGroup'),
+    label: $T('player.deleteGroup.title'),
     icon: 'close',
     color: 'negative',
-    onClick: () => playerStore.removeGroup(prop.groupId),
+    onClick: () => {
+      $q.dialog({
+        component: DangerDialog,
+        componentProps: {
+          dialogTitle: $T('player.deleteGroup.title'),
+          dialogDesc: $T('player.deleteGroup.desc', {
+            groupname: prop.group.name,
+          }),
+          okBtnTxt: $T('player.deleteGroup.okBtn'),
+        } as dangerDialogProp,
+      }).onOk(() => playerStore.removeGroup(prop.groupId));
+    },
   },
 ];
 

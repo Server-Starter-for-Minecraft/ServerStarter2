@@ -51,7 +51,13 @@ export const jaPlayer = {
   groupSettings: 'グループ設定',
   makeNewGroup: 'グループを作成',
   updateGroup: 'グループを更新',
-  deleteGroup: 'グループを削除',
+  deleteGroup: {
+    title: 'グループを削除',
+    desc: '\
+      {groupname}を削除します。削除したグループは復元できません。\n\
+      グループに登録されていたメンバーがワールドから削除されることはありません。',
+    okBtn: 'グループ削除'
+  },
   renameGroup: 'グループ名を変更',
   decideGroupName: 'グループ名を決定',
   changeGroupColor: 'グループカラーを変更',
@@ -77,5 +83,5 @@ export const jaPlayer = {
     okBtn: 'メンバーを更新',
     searchTitle: '追加したいメンバーを検索',
     memberTitle: 'グループメンバー一覧',
-  }
+  },
 };

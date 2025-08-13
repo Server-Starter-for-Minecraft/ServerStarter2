@@ -53,7 +53,13 @@ export const enUSPlayer: MessageSchema['player'] = {
   groupSettings: 'Group settings',
   makeNewGroup: 'Make the new Group',
   updateGroup: 'Update this group',
-  deleteGroup: 'Delete this group',
+  deleteGroup: {
+    title: 'Delete this group',
+    desc:
+      '{groupname} will be deleted. Deleted group cannot be restored.\n' +
+      'Members registered in the group will not be deleted from the world.',
+    okBtn: 'Delete',
+  },
   renameGroup: 'Rename this group',
   decideGroupName: 'Decide group name',
   changeGroupColor: 'Change this group color',
