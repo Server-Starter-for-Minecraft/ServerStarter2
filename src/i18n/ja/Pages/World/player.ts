@@ -83,5 +83,6 @@ export const jaPlayer = {
     okBtn: 'メンバーを更新',
     searchTitle: '追加したいメンバーを検索',
     memberTitle: 'グループメンバー一覧',
+    loadingMembers: 'グループメンバーを読み込み中',
   },
 };

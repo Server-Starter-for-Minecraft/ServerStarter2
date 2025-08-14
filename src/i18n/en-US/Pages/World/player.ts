@@ -86,5 +86,6 @@ export const enUSPlayer: MessageSchema['player'] = {
     okBtn: 'Update members',
     searchTitle: 'Search members to add',
     memberTitle: 'Group members list',
+    loadingMembers: 'Loading group members',
   }
 };

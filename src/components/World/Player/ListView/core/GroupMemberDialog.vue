@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, watchEffect } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -19,15 +20,30 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 // 操作を記録することで，playerStore.updateGroup()の呼び出しを一度にまとめて行う
 const addPlayers = ref(new Set<PlayerUUID>());
 const delPlayers = ref(new Set<PlayerUUID>());
+const loadedPlayers = ref<Player[]>([]);
+const loadingPlayers = ref(false);
 
 const playerStore = usePlayerStore();
-const getPlayers = () => {
+const getPlayers = async () => {
+  // 追加・削除の操作をUUID一覧に反映
   const targetPlayerUUIDs = new Set(prop.players);
   addPlayers.value.forEach((p) => targetPlayerUUIDs.add(p));
   delPlayers.value.forEach((p) => targetPlayerUUIDs.delete(p));
-  return Array.from(targetPlayerUUIDs).map(
-    (uuid) => playerStore.cachePlayers[uuid]
+
+  // UUIDからプレイヤー情報を取得
+  const allPlayers = await Promise.all(
+    Array.from(targetPlayerUUIDs).map((uuid) => {
+      const playerInfo = playerStore.cachePlayers[uuid];
+      if (playerInfo != void 0) return playerInfo;
+
+      // プレイヤー情報がキャッシュにない場合はAPIから取得
+      // TODO: playerStore.cachePlayerとSystemSettingsへの追加方法
+      // UUIDからプレイヤー情報を取得する標準処理を定義する？
+      return window.API.invokeGetPlayer(uuid, 'uuid');
+    })
   );
+
+  return allPlayers.filter(isValid);
 };
 
 /**
@@ -73,6 +89,14 @@ function registerPlayer(player: Player) {
 function filterPlayer(pId?: PlayerUUID) {
   return !pId || !prop.players.includes(pId);
 }
+
+// イベント類
+onMounted(async () => (loadedPlayers.value = await getPlayers()));
+watchEffect(async () => {
+  loadingPlayers.value = true;
+  loadedPlayers.value = await getPlayers();
+  loadingPlayers.value = false;
+});
 </script>
 
 <template>
@@ -110,7 +134,11 @@ function filterPlayer(pId?: PlayerUUID) {
         {{ $t('player.groupMemberDialog.memberTitle') }}
       </span>
       <q-list class="q-gutter-y-sm q-py-sm scroll-area">
-        <q-item v-for="player in getPlayers()" :key="player.uuid" dense>
+        <div v-if="loadingPlayers">
+          <q-spinner color="primary" size="2em" />
+          <span class="q-ml-sm">{{ $t('player.groupMemberDialog.loadingMembers') }}</span>
+        </div>
+        <q-item v-else v-for="player in loadedPlayers" :key="player.uuid" dense>
           <q-item-section avatar style="min-width: 0">
             <PlayerHeadAvatar :player="player" size="1.5rem" />
           </q-item-section>
