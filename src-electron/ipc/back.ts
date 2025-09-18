@@ -4,7 +4,7 @@ import { BackListener } from 'src-electron/ipc/link';
 import { getVersions } from '../core/setup';
 import { readyWindow } from '../lifecycle/lifecycle';
 import { getAllLocalSaveData } from '../source/launcher/localSave';
-import { getPlayer } from '../source/player/main';
+import { getPlayer, researchPlayer } from '../source/player/main';
 import {
   deleteRemoteWorld,
   getRemoteWorlds,
@@ -70,6 +70,7 @@ export const getBackListener = (
     GetWorldPaths: getWorldPaths,
 
     GetPlayer: getPlayer,
+    ResearchPlayer: researchPlayer,
 
     GetVersions: getVersions,
 
