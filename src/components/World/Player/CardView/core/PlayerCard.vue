@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, Ref, ref } from 'vue';
 import { getCssVar } from 'quasar';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { Player } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { FrontPlayerGroup } from 'src/stores/SystemStore/converters/playerGroup';
@@ -22,24 +23,10 @@ const prop = defineProps<Prop>();
 
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
-const player = ref(playerStore.cachePlayers[prop.uuid]);
 const isBelongingGroups = computed(
   () => getGroups(sysStore.systemSettings.player.groups).length > 0
 );
-
-// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
-onBeforeMount(async () => {
-  if (player.value === void 0) {
-    checkError(
-      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
-      (p) => {
-        player.value = p;
-        playerStore.addPlayer(p);
-      },
-      undefined
-    );
-  }
-});
+const player: Ref<undefined | Player> = ref(undefined);
 
 function onCardClicked() {
   if (playerStore.focusCards.has(prop.uuid)) {
@@ -61,6 +48,19 @@ function getGroups(groups: FrontPlayerGroup) {
     .filter((g) => g.players.includes(prop.uuid))
     .sort((a, b) => strSort(a.name, b.name));
 }
+
+// プレイヤーデータをAPIから取得
+onBeforeMount(async () => {
+  if (player.value === void 0) {
+    checkError(
+      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
+      (p) => {
+        player.value = p;
+      },
+      undefined
+    );
+  }
+});
 </script>
 
 <template>

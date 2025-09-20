@@ -4,7 +4,6 @@ import { useDialogPluginComponent } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
@@ -23,7 +22,9 @@ const delPlayers = ref(new Set<PlayerUUID>());
 const loadedPlayers = ref<Player[]>([]);
 const loadingPlayers = ref(false);
 
-const playerStore = usePlayerStore();
+// プレイヤーの検索名称
+const inputResearchName = ref('');
+
 const getPlayers = async () => {
   // 追加・削除の操作をUUID一覧に反映
   const targetPlayerUUIDs = new Set(prop.players);
@@ -32,15 +33,9 @@ const getPlayers = async () => {
 
   // UUIDからプレイヤー情報を取得
   const allPlayers = await Promise.all(
-    Array.from(targetPlayerUUIDs).map((uuid) => {
-      const playerInfo = playerStore.cachePlayers[uuid];
-      if (playerInfo != void 0) return playerInfo;
-
-      // プレイヤー情報がキャッシュにない場合はAPIから取得
-      // TODO: playerStore.cachePlayerとSystemSettingsへの追加方法
-      // UUIDからプレイヤー情報を取得する標準処理を定義する？
-      return window.API.invokeGetPlayer(uuid, 'uuid');
-    })
+    Array.from(targetPlayerUUIDs).map((uuid) =>
+      window.API.invokeGetPlayer(uuid, 'uuid')
+    )
   );
 
   return allPlayers.filter(isValid);
@@ -78,7 +73,7 @@ function onRemovedPlayer(uuid: PlayerUUID) {
 function registerPlayer(player: Player) {
   onAddedPlayer(player.uuid);
   // 検索欄をリセット
-  playerStore.searchName = '';
+  inputResearchName.value = '';
 }
 
 /**
@@ -112,18 +107,19 @@ watchEffect(async () => {
         {{ $t('player.groupMemberDialog.searchTitle') }}
       </span>
       <SsInput
-        v-model="playerStore.searchName"
+        v-model="inputResearchName"
         dense
         :placeholder="$t('player.search')"
         :debounce="200"
         class="q-pb-md q-pt-xs col"
       />
 
-      <div v-show="playerStore.searchName !== ''" class="q-pb-md">
+      <div v-show="inputResearchName !== ''" class="q-pb-md">
         <span class="text-caption">
           {{ $t('owner.searchResult') }}
         </span>
         <SearchResultCard
+          v-model="inputResearchName"
           :register-btn-text="$t('owner.registerPlayer')"
           :register-process="registerPlayer"
           :player-filter="filterPlayer"
@@ -136,7 +132,9 @@ watchEffect(async () => {
       <q-list class="q-gutter-y-sm q-py-sm scroll-area">
         <div v-if="loadingPlayers">
           <q-spinner color="primary" size="2em" />
-          <span class="q-ml-sm">{{ $t('player.groupMemberDialog.loadingMembers') }}</span>
+          <span class="q-ml-sm">{{
+            $t('player.groupMemberDialog.loadingMembers')
+          }}</span>
         </div>
         <q-item v-else v-for="player in loadedPlayers" :key="player.uuid" dense>
           <q-item-section avatar style="min-width: 0">

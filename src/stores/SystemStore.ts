@@ -54,7 +54,6 @@ const useSystemSettingsStore = defineStore('systemSettingsStore', {
         remote: state.backSystemSettings.remote,
         player: {
           groups: state.playerGroups,
-          players: state.backSystemSettings.player.players,
         },
         user: state.backSystemSettings.user,
         system: state.backSystemSettings.system,

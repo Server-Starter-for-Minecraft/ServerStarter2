@@ -38,6 +38,9 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
         </p>
       </div>
       <div v-else class="row q-gutter-md" style="padding-left: 0.5rem">
+        <!-- TODO: loadedPlayersを新設し，LoadedPlayers.uuid != focusCards.uuid の時にはLoadingの表示とする？ -->
+        <!-- PlayerIconはあくまでアイコン表示のラッパーのはずなのに，情報の取得までやるのはおかしい -->
+        <!-- Iconを使用する際には上記のようにLoadedListを設けて対応する方針で各呼び出し箇所を修正する -->
         <div
           v-for="uuid in getOrderedFocusCards(playerStore.focusCards)"
           :key="uuid"

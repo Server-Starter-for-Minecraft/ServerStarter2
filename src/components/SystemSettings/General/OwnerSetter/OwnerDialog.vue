@@ -3,7 +3,6 @@ import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import SearchResultCard from 'src/components/util/SearchResultCard.vue';
@@ -16,13 +15,13 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 const prop = defineProps<OwnerDialogProp>();
 
-const playerStore = usePlayerStore();
 const ownerCandidate: Ref<Player | undefined> = ref(prop.ownerPlayer);
+const inputResearchText = ref('');
 
 function ownerRegister(player: Player) {
   ownerCandidate.value = player;
   // 検索欄をリセット
-  playerStore.searchName = '';
+  inputResearchText.value = '';
 }
 
 function registOwner() {
@@ -54,11 +53,12 @@ function filterOwner(pId?: PlayerUUID) {
           {{ $t('owner.dialogDesc') }}
         </p>
 
-        <InputFieldView class="q-my-md" />
+        <InputFieldView v-model="inputResearchText" class="q-my-md" />
 
-        <div v-show="playerStore.searchName !== ''" class="q-pb-md">
+        <div v-show="inputResearchText !== ''" class="q-pb-md">
           <span class="text-caption">{{ $t('owner.searchResult') }}</span>
           <SearchResultCard
+            v-model="inputResearchText"
             :register-btn-text="$t('owner.registerPlayer')"
             :register-process="ownerRegister"
             :player-filter="filterOwner"

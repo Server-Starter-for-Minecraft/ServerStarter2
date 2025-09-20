@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, Ref, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { OpLevel } from 'app/src-electron/schema/player';
+import { OpLevel, Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
@@ -15,21 +15,7 @@ interface Prop {
 const prop = defineProps<Prop>();
 
 const playerStore = usePlayerStore();
-const player = ref(playerStore.cachePlayers[prop.uuid]);
-
-// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
-onBeforeMount(async () => {
-  if (player.value === void 0) {
-    checkError(
-      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
-      (p) => {
-        player.value = p;
-        playerStore.addPlayer(p);
-      },
-      undefined
-    );
-  }
-});
+const player: Ref<undefined | Player> = ref(undefined);
 
 function onItemClicked() {
   if (playerStore.focusCards.has(prop.uuid)) {
@@ -38,6 +24,19 @@ function onItemClicked() {
     playerStore.addFocus(prop.uuid);
   }
 }
+
+// プレイヤーデータをAPIから取得
+onBeforeMount(async () => {
+  if (player.value === void 0) {
+    checkError(
+      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
+      (p) => {
+        player.value = p;
+      },
+      undefined
+    );
+  }
+});
 </script>
 
 <template>
@@ -49,12 +48,14 @@ function onItemClicked() {
     class="q-pa-xs"
   >
     <q-item-section avatar style="min-width: 0">
-      <PlayerHeadAvatar :player="player" size="1.2rem" />
+      <PlayerHeadAvatar v-if="player !== void 0" :player="player" size="1.2rem" />
+      <q-skeleton v-else type="circle" />
     </q-item-section>
     <q-item-section>
-      <q-item-label class="q-px-sm name text-omit">
+      <q-item-label v-if="player !== void 0" class="q-px-sm name text-omit">
         {{ player.name }}
       </q-item-label>
+      <q-skeleton v-else type="text" style="width: 6rem" />
     </q-item-section>
     <!-- <q-item-section class="text-right text-caption" style="opacity: .6;">
       <q-item-label class="q-px-sm name text-omit">

@@ -1,57 +1,32 @@
-import { watch } from 'vue';
 import { defineStore } from 'pinia';
 import { createNewName } from 'app/src-public/scripts/createNewName';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries, values } from 'app/src-public/scripts/obj/obj';
 import { genUUID } from 'app/src-public/scripts/uuid';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
-import {
-  OpLevel,
-  Player,
-  PlayerGroup,
-  PlayerSetting,
-} from 'app/src-electron/schema/player';
+import { OpLevel, Player, PlayerGroup } from 'app/src-electron/schema/player';
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
 
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
-      searchName: '',
-      cachePlayers: {} as Record<PlayerUUID, Player>,
       focusCards: new Set<PlayerUUID>(),
-      newPlayerCandidate: undefined as Player | undefined,
       selectedGroupId: '' as UUID,
       openGroupEditor: false,
     };
   },
   actions: {
     /**
-     * プレイヤーの検索
-     */
-    searchPlayers<P extends PlayerSetting | Player>(players: P[]) {
-      let returnPlayers = players;
-
-      if (this.searchName !== '') {
-        returnPlayers = players.filter((p) =>
-          p.name.toLowerCase().match(this.searchName)
-        );
-      }
-
-      return returnPlayers;
-    },
-    /**
      * プレイヤーグループの検索
      */
-    searchGroups() {
+    searchGroups(searchName: string) {
       const sysStore = useSystemStore();
       const groupsData = sysStore.systemSettings.player.groups;
 
-      if (this.searchName !== '') {
+      if (searchName !== '') {
         fromEntries(
-          toEntries(groupsData).filter(([k, v]) =>
-            v.name.match(this.searchName)
-          )
+          toEntries(groupsData).filter(([k, v]) => v.name.match(searchName))
         );
       }
 
@@ -61,7 +36,7 @@ export const usePlayerStore = defineStore('playerStore', {
      * グループを名前から探す
      */
     findGroupfromName(name: string) {
-      return toEntries(this.searchGroups())
+      return toEntries(this.searchGroups(name))
         .map(([id, g]) => g)
         .find((g) => g.name === name);
     },
@@ -92,21 +67,22 @@ export const usePlayerStore = defineStore('playerStore', {
      * グループを選択した際の処理
      * グループメンバーの追加とフォーカスの調整
      */
-    selectGroup(groupName: string) {
+    async selectGroup(groupName: string) {
       const mainStore = useMainStore();
       const groupObj = this.findGroupfromName(groupName);
       if (groupObj === void 0) return;
       const groupMembers = groupObj.players;
 
+      // グループメンバーがワールドに登録されていなければ登録する
       if (mainStore.world && isValid(mainStore.world.players)) {
         const worldPlayers = mainStore.world.players;
         const notRegisteredMembers = groupMembers.filter(
           (mUUID) => !worldPlayers.some((p) => p.uuid === mUUID)
         );
-
-        mainStore.world.players.push(
-          ...notRegisteredMembers.map((uuid) => {
-            return { uuid: uuid, name: this.cachePlayers[uuid].name };
+        await Promise.all(
+          notRegisteredMembers.map(async (mId) => {
+            const p = await window.API.invokeGetPlayer(mId, 'uuid');
+            if (isValid(p)) this.addPlayer(p);
           })
         );
       }
@@ -115,31 +91,18 @@ export const usePlayerStore = defineStore('playerStore', {
       groupMembers.forEach((uuid) => this.focusCards.add(uuid));
     },
     /**
-     * プレイヤーをワールドのプレイヤー一覧へ追加＆プレイヤーの新規登録を行う
+     * プレイヤーをワールドのプレイヤー一覧へ追加
      */
     addPlayer(player: Player) {
-      const sysStore = useSystemStore();
       const mainStore = useMainStore();
 
       // プレイヤーをワールドに追加
       // TODO: 実装の最適化（PlayersをSet型にする？）
       if (mainStore.world && isValid(mainStore.world.players)) {
         if (!mainStore.world.players.find((p) => p.uuid === player.uuid)) {
-          mainStore.world.players.push(player);
+          mainStore.world?.players.push(player);
         }
       }
-
-      // 新規プレイヤー特有の処理
-      if (!(player.uuid in this.cachePlayers)) {
-        // 未登録の新規プレイヤーをシステムに登録
-        sysStore.systemSettings.player.players.push(player.uuid);
-
-        // プレイヤーのキャッシュデータに新規プレイヤーを追加
-        this.cachePlayers[player.uuid] = player;
-      }
-
-      // 検索欄をリセット
-      this.searchName = '';
     },
     /**
      * フォーカスされているプレイヤーを選択中のワールドから削除する
@@ -220,15 +183,3 @@ export const usePlayerStore = defineStore('playerStore', {
     },
   },
 });
-
-export function setPlayerSearchSubscriber(
-  store: ReturnType<typeof usePlayerStore>
-) {
-  watch(
-    () => store.searchName,
-    async (newVal, oldVal) => {
-      const player = await window.API.invokeGetPlayer(newVal, 'name');
-      store.newPlayerCandidate = isValid(player) ? player : undefined;
-    }
-  );
-}

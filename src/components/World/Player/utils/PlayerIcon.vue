@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onBeforeMount, Ref, ref } from 'vue';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { Player } from 'app/src-electron/schema/player';
 import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
@@ -21,17 +21,15 @@ interface Prop {
 const prop = defineProps<Prop>();
 
 const hovered = ref(false);
-const playerStore = usePlayerStore();
-const player = ref(playerStore.cachePlayers[prop.uuid]);
+const player: Ref<undefined | Player> = ref(undefined);
 
-// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
-onMounted(async () => {
+// プレイヤーデータをAPIから取得
+onBeforeMount(async () => {
   if (player.value === void 0) {
     checkError(
       await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
       (p) => {
         player.value = p;
-        playerStore.addPlayer(p);
       },
       undefined
     );
@@ -41,6 +39,7 @@ onMounted(async () => {
 
 <template>
   <q-item
+    v-if="player !== void 0"
     dense
     @mouseover="hovered = true"
     @mouseleave="hovered = false"

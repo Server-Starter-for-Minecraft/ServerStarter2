@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useMainStore } from 'src/stores/MainStore';
@@ -10,9 +11,7 @@ import ViewToggleBtn from './core/ViewToggleBtn.vue';
 
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
-
-// ページを読み込んだ時に検索欄をリセット
-playerStore.searchName = '';
+const inputResarchName = ref('');
 
 /**
  * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す
@@ -34,7 +33,7 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
 
     <div class="row q-gutter-x-md items-center">
       <SsInput
-        v-model="playerStore.searchName"
+        v-model="inputResarchName"
         dense
         :placeholder="$t('player.search')"
         :debounce="200"
@@ -55,9 +54,10 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
       <slot name="toggleLine" />
     </div>
 
-    <div v-show="playerStore.searchName !== ''">
+    <div v-show="inputResarchName !== ''">
       <span class="text-caption">{{ $t('player.newPlayer') }}</span>
       <SearchResultCard
+        v-model="inputResarchName"
         is-check-player-in-world
         :register-btn-text="$t('player.addPlayer')"
         :register-process="playerStore.addPlayer"

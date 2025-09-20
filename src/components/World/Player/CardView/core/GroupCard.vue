@@ -4,8 +4,8 @@ import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
+import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 interface Prop {
   name: string;
@@ -18,8 +18,6 @@ const prop = defineProps<Prop>();
 const playerStore = usePlayerStore();
 const showMenuBtn = ref(false);
 const menuOpened = ref(false);
-
-const cachePlayers = ref(playerStore.cachePlayers);
 
 function onCardClicked() {
   playerStore.selectGroup(prop.name);
@@ -63,7 +61,7 @@ function onEditClicked() {
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
         <div class="row q-gutter-md q-pt-sm">
           <template v-for="uuid in players" :key="uuid">
-            <PlayerHeadAvatar :player="cachePlayers[uuid]" size="1.5rem" />
+            <PlayerIcon :uuid="uuid" head-size="1.5rem" />
           </template>
         </div>
       </q-card-section>

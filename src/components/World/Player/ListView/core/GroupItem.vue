@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type Component, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { toEntries } from 'app/src-public/scripts/obj/obj';
+import { toEntries, values } from 'app/src-public/scripts/obj/obj';
 import { UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
@@ -126,12 +126,13 @@ function selectGroupMembers() {
  * 入力グループ名のバリデーション
  */
 function validateGroupName(groupName: string) {
-  // 自分以外のグループ名一覧を取得
-  const groupNames = toEntries(playerStore.searchGroups())
-    .filter(([gId, g]) => gId !== prop.groupId)
-    .map(([gId, g]) => g.name);
-  const isError =
-    groupName === '' || groupNames.some((name) => name === groupName);
+  // 登録されたすべてのグループ名一覧を取得
+  const groupNames = new Set(
+    values(sysStore.systemSettings.player.groups).map((g) => g.name)
+  );
+  // 自分以外のグループ名一覧に更新
+  groupNames.delete(prop.group.name);
+  const isError = groupName === '' || groupNames.has(groupName);
 
   // エラーでなければグループ名を更新
   if (!isError) {

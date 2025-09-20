@@ -12,6 +12,7 @@ interface Prop {
   playerFilter?: (pId?: PlayerUUID) => boolean;
 }
 const prop = defineProps<Prop>();
+const searchNameModel = defineModel<string>({ required: true });
 
 const playerStore = usePlayerStore();
 const pFilter = (pId?: PlayerUUID) => {
@@ -31,7 +32,7 @@ const pFilter = (pId?: PlayerUUID) => {
  */
 function filterRegisteredPlayer(players: Player[]) {
   return players.filter(
-    (p) => pFilter(p.uuid) && p.name !== playerStore.searchName
+    (p) => pFilter(p.uuid) && p.name !== searchNameModel.value
   );
 }
 </script>
