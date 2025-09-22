@@ -47,7 +47,7 @@ const inputResarchName = ref('');
       class="q-py-md fit col"
     >
       <template #before>
-        <GroupItemsView />
+        <GroupItemsView v-model="inputResarchName" />
       </template>
       <template #after>
         <PlayerItemsView v-model="inputResarchName" />

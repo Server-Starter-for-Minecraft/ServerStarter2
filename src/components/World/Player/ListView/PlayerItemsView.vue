@@ -5,14 +5,11 @@ import { isValid } from 'app/src-public/scripts/error';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import { useMainStore } from 'src/stores/MainStore';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerItem from './core/PlayerItem.vue';
 
 const inputResarchName = defineModel<string>({ required: true });
 
 const loadedPlayerSettings = ref<PlayerSetting[]>([]);
-
-const playerStore = usePlayerStore();
 
 const orderTypes = ['name', 'op'] as const;
 const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
