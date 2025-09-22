@@ -45,7 +45,7 @@ onBeforeMount(async () => {
     clickable
     dense
     @click="onItemClicked"
-    :class="((!player) || !playerStore.focusCards.has(player)) ? '' : 'selected'"
+    :class="!player || !playerStore.focusCards.has(player) ? '' : 'selected'"
     class="q-pa-xs"
   >
     <q-item-section avatar style="min-width: 0">

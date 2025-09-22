@@ -1,4 +1,4 @@
-import { PlayerUUID } from "app/src-electron/schema/brands";
+import { PlayerUUID } from 'app/src-electron/schema/brands';
 
 export interface GroupMembersProp {
   players: PlayerUUID[];

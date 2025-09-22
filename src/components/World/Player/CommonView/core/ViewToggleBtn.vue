@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
@@ -9,7 +9,7 @@ const tooltipOffset = [0, 0] as [number, number];
 
 /**
  * View形式が変更された際に発火
- * 
+ *
  * - Card Viewにおけるグループ編集モードを常にOFFに変更する
  */
 function onChangedView() {

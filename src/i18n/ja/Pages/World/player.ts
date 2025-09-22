@@ -56,7 +56,7 @@ export const jaPlayer = {
     desc: '\
       {groupname}を削除します。削除したグループは復元できません。\n\
       グループに登録されていたメンバーがワールドから削除されることはありません。',
-    okBtn: 'グループ削除'
+    okBtn: 'グループ削除',
   },
   renameGroup: 'グループ名を変更',
   decideGroupName: 'グループ名を決定',

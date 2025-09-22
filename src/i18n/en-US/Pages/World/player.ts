@@ -87,5 +87,5 @@ export const enUSPlayer: MessageSchema['player'] = {
     searchTitle: 'Search members to add',
     memberTitle: 'Group members list',
     loadingMembers: 'Loading group members',
-  }
+  },
 };
