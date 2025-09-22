@@ -15,7 +15,7 @@ const inputResarchName = ref('');
     <div class="q-py-md fit">
       <PlayerCardsView v-model="inputResarchName" />
       <q-separator class="q-my-md" />
-      <GroupCardsView />
+      <GroupCardsView v-model="inputResarchName" />
     </div>
   </q-scroll-area>
 
