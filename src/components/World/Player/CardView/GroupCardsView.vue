@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { sortValue, strSort } from 'app/src-public/scripts/obj/objSort';
 import { UUID } from 'app/src-electron/schema/brands';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import GroupCard from './core/GroupCard.vue';
 
+const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 
 function addGroup() {
@@ -32,7 +34,7 @@ function openGroupEditor(groupID: UUID) {
       </div>
       <div
         v-for="(group, gid) in sortValue(
-          playerStore.searchGroups(),
+          sysStore.systemSettings.player.groups,
           (gObj1, gObj2) => strSort(gObj1.name, gObj2.name)
         )"
         :key="gid"

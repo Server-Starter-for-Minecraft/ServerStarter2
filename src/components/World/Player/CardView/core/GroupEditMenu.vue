@@ -31,7 +31,7 @@ const groupColor = computed({
  */
 function validateGroupName(groupName: string) {
   // 自分以外のグループ名一覧を取得
-  const groupNames = toEntries(playerStore.searchGroups())
+  const groupNames = toEntries(sysStore.systemSettings.player.groups)
     .filter(([gId, g]) => gId !== playerStore.selectedGroupId)
     .map(([gId, g]) => g.name);
   const isError =

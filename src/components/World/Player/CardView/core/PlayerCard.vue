@@ -29,15 +29,17 @@ const isBelongingGroups = computed(
 const player: Ref<undefined | Player> = ref(undefined);
 
 function onCardClicked() {
-  if (playerStore.focusCards.has(prop.uuid)) {
-    playerStore.unFocus(prop.uuid);
+  if (player.value === void 0) return;
+  if (playerStore.focusCards.has(player.value)) {
+    playerStore.unFocus(player.value);
   } else {
-    playerStore.addFocus(prop.uuid);
+    playerStore.addFocus(player.value);
   }
 
   if (playerStore.openGroupEditor) {
+    const focuedIds = Array.from(playerStore.focusCards).map((p) => p.uuid);
     playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
-      g.players = [...playerStore.focusCards];
+      g.players = focuedIds;
       return g;
     });
   }
@@ -68,7 +70,7 @@ onBeforeMount(async () => {
     v-if="player !== void 0"
     @click="onCardClicked"
     :style="
-      playerStore.focusCards.has(prop.uuid)
+      Array.from(playerStore.focusCards).some((p) => p.uuid === prop.uuid)
         ? { 'border-color': getCssVar('primary') }
         : ''
     "

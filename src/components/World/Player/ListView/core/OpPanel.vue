@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { OpLevel } from 'app/src-electron/schema/player';
+import { OpLevel, Player } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import OpLevelBtn from '../../utils/OpLevelBtn.vue';
-import { isValidBtn, setOp } from '../../utils/playerOp';
+import { isValidBtn } from '../../utils/playerOp';
 
 interface Prop {
-  uuid: PlayerUUID;
+  player: Player;
   playerOpLevel?: OpLevel;
 }
 const prop = defineProps<Prop>();
@@ -22,8 +21,8 @@ const showingLevel = (level?: OpLevel) =>
   level !== void 0 ? $T('player.opLevel') + level : $T('player.noOp');
 
 function onClick() {
-  if (!playerStore.focusCards.has(prop.uuid)) {
-    playerStore.addFocus(prop.uuid);
+  if (!playerStore.focusCards.has(prop.player)) {
+    playerStore.addFocus(prop.player);
   }
   showMenu.value = true;
 }
@@ -58,7 +57,7 @@ function onClick() {
           opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
         "
         :disable="!isValidBtn(opLevel)"
-        @click="() => setOp(opLevel)"
+        @click="() => playerStore.setOp(opLevel)"
       />
     </q-list>
   </q-menu>

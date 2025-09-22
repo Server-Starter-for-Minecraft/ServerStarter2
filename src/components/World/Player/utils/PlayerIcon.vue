@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { onBeforeMount, Ref, ref } from 'vue';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { ref } from 'vue';
 import { Player } from 'app/src-electron/schema/player';
-import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {
-  uuid: PlayerUUID;
-  negativeBtnClicked?: (uuid: PlayerUUID) => void;
+  player: Player;
+  negativeBtnClicked?: (uuid: Player) => void;
   showName?: boolean;
   // ホバー時のみボタンが表示されるようになる
   hoverBtn?: boolean;
@@ -18,23 +16,9 @@ interface Prop {
   // tooltipにプレイヤー名を表示するか
   enableTooltip?: boolean;
 }
-const prop = defineProps<Prop>();
+defineProps<Prop>();
 
 const hovered = ref(false);
-const player: Ref<undefined | Player> = ref(undefined);
-
-// プレイヤーデータをAPIから取得
-onBeforeMount(async () => {
-  if (player.value === void 0) {
-    checkError(
-      await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
-      (p) => {
-        player.value = p;
-      },
-      undefined
-    );
-  }
-});
 </script>
 
 <template>
@@ -50,7 +34,7 @@ onBeforeMount(async () => {
       <q-btn
         flat
         dense
-        @click.stop="negativeBtnClicked?.(uuid)"
+        @click.stop="negativeBtnClicked?.(player)"
         class="q-pa-none"
         :style="negativeBtnClicked ? '' : { 'pointer-events': 'none' }"
         style="max-width: fit-content"

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { type Component, ref } from 'vue';
+import { type Component, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { toEntries, values } from 'app/src-public/scripts/obj/obj';
+import { isValid } from 'app/src-public/scripts/error';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { UUID } from 'app/src-electron/schema/brands';
-import { PlayerGroup } from 'app/src-electron/schema/player';
+import { Player, PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -32,8 +33,9 @@ const playerStore = usePlayerStore();
 const hovered = ref(false);
 const editableName = ref(false);
 const colorPickerOpened = ref(false);
-const groupName = ref(sysStore.systemSettings.player.groups[prop.groupId].name);
+const groupName = ref(prop.group.name);
 const label2code = sysStore.staticResouces.minecraftColors;
+const loadedGroupPlayers = ref<Player[] | undefined>(undefined);
 
 type MenuBtn = {
   label: string;
@@ -146,6 +148,14 @@ function validateMessage(name: string) {
     ? $T('player.groupNameDuplicate', { group: name })
     : $T('player.insertGroupName');
 }
+
+onMounted(async () => {
+  // プレイヤーデータをAPIから取得
+  const tmpPlayers = await Promise.all(
+    prop.group.players.map((uuid) => window.API.invokeGetPlayer(uuid, 'uuid'))
+  );
+  loadedGroupPlayers.value = tmpPlayers.filter(isValid);
+});
 </script>
 
 <template>
@@ -189,12 +199,14 @@ function validateMessage(name: string) {
       <div class="row">
         <div class="row q-gutter-x-sm player-icons-container col">
           <div
-            v-for="pId in group.players"
-            :key="pId"
+            v-if="loadedGroupPlayers"
+            v-for="p in loadedGroupPlayers"
+            :key="p.uuid"
             class="player-icon-wrapper"
           >
-            <PlayerIcon :uuid="pId" head-size="1.2rem" />
+            <PlayerIcon :player="p" head-size="1.2rem" />
           </div>
+          <q-skeleton v-else v-for="n in 3" type="circle" />
         </div>
         <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
           <q-menu self="top left" anchor="top right" :offset="[5, 0]">

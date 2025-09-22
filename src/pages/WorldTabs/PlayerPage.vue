@@ -15,14 +15,12 @@ const playerStore = usePlayerStore();
 
 onMounted(() => {
   Mousetrap.bind('backspace', () => playerStore.removePlayer());
-  Mousetrap.bind('ctrl+a', () => playerStore.addFocus());
   Mousetrap.bind('del', () => playerStore.removePlayer());
   Mousetrap.bind('esc', () => playerStore.unFocus());
 });
 
 onUnmounted(() => {
   Mousetrap.unbind('backspace');
-  Mousetrap.unbind('ctrl+a');
   Mousetrap.unbind('del');
   Mousetrap.unbind('esc');
 });

@@ -18,10 +18,11 @@ const playerStore = usePlayerStore();
 const player: Ref<undefined | Player> = ref(undefined);
 
 function onItemClicked() {
-  if (playerStore.focusCards.has(prop.uuid)) {
-    playerStore.unFocus(prop.uuid);
+  if (player.value === void 0) return;
+  if (playerStore.focusCards.has(player.value)) {
+    playerStore.unFocus(player.value);
   } else {
-    playerStore.addFocus(prop.uuid);
+    playerStore.addFocus(player.value);
   }
 }
 
@@ -44,11 +45,15 @@ onBeforeMount(async () => {
     clickable
     dense
     @click="onItemClicked"
-    :class="playerStore.focusCards.has(uuid) ? 'selected' : ''"
+    :class="((!player) || !playerStore.focusCards.has(player)) ? '' : 'selected'"
     class="q-pa-xs"
   >
     <q-item-section avatar style="min-width: 0">
-      <PlayerHeadAvatar v-if="player !== void 0" :player="player" size="1.2rem" />
+      <PlayerHeadAvatar
+        v-if="player !== void 0"
+        :player="player"
+        size="1.2rem"
+      />
       <q-skeleton v-else type="circle" />
     </q-item-section>
     <q-item-section>
@@ -63,10 +68,12 @@ onBeforeMount(async () => {
       </q-item-label>
     </q-item-section> -->
     <q-item-section side>
-      <OpPanel :uuid="uuid" :player-op-level="opLevel" />
+      <OpPanel v-if="player" :player="player" :player-op-level="opLevel" />
+      <q-skeleton v-else type="rect" style="width: 6rem" />
     </q-item-section>
     <q-item-section side>
-      <RemovePlayerBtn :uuid="uuid" />
+      <RemovePlayerBtn v-if="player" :player="player" />
+      <q-skeleton v-else type="QBtn" style="width: 6rem" />
     </q-item-section>
   </q-item>
 </template>

@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { strSort } from 'app/src-public/scripts/obj/objSort';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 const playerStore = usePlayerStore();
 
-function getOrderedFocusCards(cards: Set<PlayerUUID>) {
-  return Array.from(cards).sort((a, b) => {
-    const aName = playerStore.cachePlayers[a].name;
-    const bName = playerStore.cachePlayers[b].name;
-    return strSort(aName, bName);
-  });
+function getOrderedFocusCards(cards: Set<Player>) {
+  return Array.from(cards).sort((a, b) => strSort(a.name, b.name));
 }
 </script>
 
@@ -42,13 +38,13 @@ function getOrderedFocusCards(cards: Set<PlayerUUID>) {
         <!-- PlayerIconはあくまでアイコン表示のラッパーのはずなのに，情報の取得までやるのはおかしい -->
         <!-- Iconを使用する際には上記のようにLoadedListを設けて対応する方針で各呼び出し箇所を修正する -->
         <div
-          v-for="uuid in getOrderedFocusCards(playerStore.focusCards)"
-          :key="uuid"
+          v-for="p in getOrderedFocusCards(playerStore.focusCards)"
+          :key="p.uuid"
         >
           <PlayerIcon
             hover-btn
             enable-tooltip
-            :uuid="uuid"
+            :player="p"
             :negative-btn-clicked="playerStore.unFocus"
           />
         </div>

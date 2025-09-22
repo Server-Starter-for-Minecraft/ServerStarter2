@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { useMainStore } from 'src/stores/MainStore';
@@ -9,9 +8,10 @@ import SearchResultCard from 'src/components/util/SearchResultCard.vue';
 import PlayerJoinToggle from './core/PlayerJoinToggle.vue';
 import ViewToggleBtn from './core/ViewToggleBtn.vue';
 
+const inputResarchName = defineModel<string>({ required: true });
+
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
-const inputResarchName = ref('');
 
 /**
  * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す

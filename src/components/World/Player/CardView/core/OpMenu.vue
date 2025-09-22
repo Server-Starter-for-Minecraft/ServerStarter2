@@ -2,7 +2,7 @@
 import { assets } from 'src/assets/assets';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import OpLevelBtn from 'src/components/World/Player/utils/OpLevelBtn.vue';
-import { isValidBtn, removePlayer, setOp } from '../../utils/playerOp';
+import { isValidBtn } from '../../utils/playerOp';
 
 const playerStore = usePlayerStore();
 </script>
@@ -25,7 +25,7 @@ const playerStore = usePlayerStore();
             opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
           "
           :disable="!isValidBtn(opLevel)"
-          @click="() => setOp(opLevel)"
+          @click="() => playerStore.setOp(opLevel)"
         />
       </template>
       <q-separator inset class="q-mt-xs" />
@@ -33,7 +33,7 @@ const playerStore = usePlayerStore();
         icon="close"
         :label="$t('player.deletePlayer')"
         color="negative"
-        @click="removePlayer"
+        @click="playerStore.removePlayer"
       />
     </q-scroll-area>
   </q-card>

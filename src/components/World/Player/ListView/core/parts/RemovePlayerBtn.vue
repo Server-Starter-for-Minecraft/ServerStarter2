@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { Player } from 'app/src-electron/schema/player';
 import { $T } from 'src/i18n/utils/tFunc';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import { removePlayer } from '../../../utils/playerOp';
 
 interface Prop {
-  uuid: PlayerUUID;
+  player: Player;
 }
 const prop = defineProps<Prop>();
 
 const playerStore = usePlayerStore();
 
 function onClick() {
-  if (!playerStore.focusCards.has(prop.uuid)) {
-    playerStore.addFocus(prop.uuid);
+  if (!playerStore.focusCards.has(prop.player)) {
+    playerStore.addFocus(prop.player);
   }
-  removePlayer();
+  playerStore.removePlayer();
 }
 </script>
 
