@@ -72,11 +72,11 @@ onMounted(async () => {
         </div>
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
         <div v-if="loadedPlayers !== void 0" class="row q-gutter-md q-pt-sm">
-          <template v-for="p in loadedPlayers" :key="uuid">
+          <template v-for="p in loadedPlayers" :key="p.uuid">
             <PlayerIcon :player="p" head-size="1.5rem" />
           </template>
         </div>
-        <q-skeleton v-else v-for="n in 3" type="circle" />
+        <q-skeleton v-else v-for="n in 3" :key="n" type="circle" />
       </q-card-section>
     </template>
 

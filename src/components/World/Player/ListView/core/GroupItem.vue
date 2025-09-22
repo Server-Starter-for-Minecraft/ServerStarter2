@@ -198,15 +198,16 @@ onMounted(async () => {
 
       <div class="row">
         <div class="row q-gutter-x-sm player-icons-container col">
-          <div
-            v-if="loadedGroupPlayers"
-            v-for="p in loadedGroupPlayers"
-            :key="p.uuid"
-            class="player-icon-wrapper"
-          >
-            <PlayerIcon :player="p" head-size="1.2rem" />
-          </div>
-          <q-skeleton v-else v-for="n in 3" type="circle" />
+          <template v-if="loadedGroupPlayers">
+            <div
+              v-for="p in loadedGroupPlayers"
+              :key="p.uuid"
+              class="player-icon-wrapper"
+            >
+              <PlayerIcon :player="p" head-size="1.2rem" />
+            </div>
+          </template>
+          <q-skeleton v-else v-for="n in 3" :key="n" type="circle" />
         </div>
         <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
           <q-menu self="top left" anchor="top right" :offset="[5, 0]">
