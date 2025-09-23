@@ -25,6 +25,7 @@ const playerStore = usePlayerStore();
             opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
           "
           :disable="!isValidBtn(opLevel)"
+          size="2rem"
           @click="() => playerStore.setOp(opLevel)"
         />
       </template>
@@ -33,6 +34,7 @@ const playerStore = usePlayerStore();
         icon="close"
         :label="$t('player.deletePlayer')"
         color="negative"
+        size="2rem"
         @click="playerStore.removePlayer"
       />
     </q-scroll-area>

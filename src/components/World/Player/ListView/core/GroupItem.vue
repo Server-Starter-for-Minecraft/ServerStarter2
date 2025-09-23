@@ -207,7 +207,13 @@ onMounted(async () => {
               <PlayerIcon :player="p" head-size="1.2rem" />
             </div>
           </template>
-          <q-skeleton v-else v-for="n in 3" :key="n" type="circle" />
+          <q-skeleton
+            v-else
+            v-for="n in group.players.length"
+            :key="n"
+            type="rect"
+            style="height: 1.6rem; width: 1.6rem"
+          />
         </div>
         <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
           <q-menu self="top left" anchor="top right" :offset="[5, 0]">

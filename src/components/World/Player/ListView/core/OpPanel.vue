@@ -29,7 +29,7 @@ function onClick() {
 </script>
 
 <template>
-  <q-btn dense flat @click.stop="onClick()">
+  <q-btn dense flat @click.stop="onClick()" class="q-py-none">
     <div class="row items-center q-gutter-x-sm">
       <q-icon
         size="1.3rem"
@@ -57,6 +57,7 @@ function onClick() {
           opLevel !== 0 ? $t('player.opLevel') + opLevel : $t('player.noOp')
         "
         :disable="!isValidBtn(opLevel)"
+        size="1.5rem"
         @click="() => playerStore.setOp(opLevel)"
       />
     </q-list>

@@ -54,7 +54,7 @@ onBeforeMount(async () => {
         :player="player"
         size="1.2rem"
       />
-      <q-skeleton v-else type="circle" />
+      <q-skeleton v-else type="rect" style="height: 1.2rem; width: 1.2rem" />
     </q-item-section>
     <q-item-section>
       <q-item-label v-if="player !== void 0" class="q-px-sm name text-omit">
@@ -73,7 +73,7 @@ onBeforeMount(async () => {
     </q-item-section>
     <q-item-section side>
       <RemovePlayerBtn v-if="player" :player="player" />
-      <q-skeleton v-else type="QBtn" style="width: 6rem" />
+      <q-skeleton v-else type="rect" style="width: 4rem" />
     </q-item-section>
   </q-item>
 </template>

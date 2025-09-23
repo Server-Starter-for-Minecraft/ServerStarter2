@@ -6,8 +6,8 @@ import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
-import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 interface Prop {
   name: string;
@@ -71,12 +71,20 @@ onMounted(async () => {
           </div>
         </div>
         <!-- TODO: 大量のプレイヤーが存在する（カードの高さが一定以上になる？）場合には折り畳みにすることを検討？ -->
-        <div v-if="loadedPlayers !== void 0" class="row q-gutter-md q-pt-sm">
-          <template v-for="p in loadedPlayers" :key="p.uuid">
-            <PlayerIcon :player="p" head-size="1.5rem" />
+        <div class="row q-gutter-md q-pt-sm">
+          <template v-if="loadedPlayers !== void 0">
+            <template v-for="p in loadedPlayers" :key="p.uuid">
+              <PlayerHeadAvatar :player="p" size="1.5rem" />
+            </template>
           </template>
+          <q-skeleton
+            v-else
+            v-for="n in players.length"
+            :key="n"
+            type="rect"
+            style="height: 1.5rem; width: 1.5rem"
+          />
         </div>
-        <q-skeleton v-else v-for="n in 3" :key="n" type="circle" />
       </q-card-section>
     </template>
 

@@ -6,6 +6,7 @@ interface Prop {
   src?: string;
   icon?: string;
   label: string;
+  size: string;
   color?: string;
   onClick: () => void;
 }
@@ -24,10 +25,10 @@ const playerStore = usePlayerStore();
     class="q-py-xs"
   >
     <q-item-section avatar>
-      <q-avatar v-if="icon === void 0" size="2rem">
-        <q-icon size="1.8rem" :name="src" />
+      <q-avatar v-if="icon === void 0" :size=size>
+        <q-icon size="180%" :name="src" />
       </q-avatar>
-      <q-icon v-else :name="icon" :color="color" size="2rem" />
+      <q-icon v-else :name="icon" :color="color" :size=size />
     </q-item-section>
     <q-item-section>
       <span :class="`text-${color}`">{{ label }}</span>
