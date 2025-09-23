@@ -25,10 +25,10 @@ const playerStore = usePlayerStore();
     class="q-py-xs"
   >
     <q-item-section avatar>
-      <q-avatar v-if="icon === void 0" :size=size>
+      <q-avatar v-if="icon === void 0" :size="size">
         <q-icon size="180%" :name="src" />
       </q-avatar>
-      <q-icon v-else :name="icon" :color="color" :size=size />
+      <q-icon v-else :name="icon" :color="color" :size="size" />
     </q-item-section>
     <q-item-section>
       <span :class="`text-${color}`">{{ label }}</span>
