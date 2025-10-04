@@ -24,6 +24,15 @@ const pFilter = (pId?: PlayerUUID) => {
 };
 
 /**
+ * 登録ボタンが押された際の処理
+ * Propで渡されたregisterProcessを呼び出し、検索ワードをクリアすることで検索一覧を非表示にする
+ */
+function onRegisterClicked(player: Player) {
+  prop.registerProcess(player);
+  searchNameModel.value = '';
+}
+
+/**
  * 与えられたPlayerリストに対して、
  *
  * - Worldに登録済みのプレイヤー
@@ -76,7 +85,7 @@ watch(
           <SearchResultItem
             :player="p"
             :register-btn-text="registerBtnText"
-            :register-process="registerProcess"
+            :register-process="onRegisterClicked"
           />
         </template>
       </q-list>

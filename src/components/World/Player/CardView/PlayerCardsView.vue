@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, Ref, ref } from 'vue';
+import { computed, Ref, ref } from 'vue';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isValid } from 'app/src-public/scripts/error';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
@@ -9,7 +9,13 @@ import PlayerCard from './core/PlayerCard.vue';
 
 const inputResarchName = defineModel<string>({ required: true });
 
-const loadedPlayerSettings = ref<PlayerSetting[]>([]);
+const loadedPlayerSettings = computed(() => {
+  const mainStore = useMainStore();
+  if (mainStore.world && isValid(mainStore.world.players)) {
+    return deepcopy(mainStore.world.players);
+  }
+  return [];
+});
 
 const orderTypes = ['name', 'op'] as const;
 const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
@@ -38,13 +44,6 @@ function filteredPlayers() {
     );
   }
 }
-
-onBeforeMount(async () => {
-  const mainStore = useMainStore();
-  if (mainStore.world && isValid(mainStore.world.players)) {
-    loadedPlayerSettings.value = deepcopy(mainStore.world.players);
-  }
-});
 </script>
 
 <template>

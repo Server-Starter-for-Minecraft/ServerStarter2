@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, Ref, ref } from 'vue';
+import { computed, Ref, ref } from 'vue';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isValid } from 'app/src-public/scripts/error';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
@@ -9,8 +9,13 @@ import PlayerItem from './core/PlayerItem.vue';
 
 const inputResarchName = defineModel<string>({ required: true });
 
-const loadedPlayerSettings = ref<PlayerSetting[]>([]);
-
+const loadedPlayerSettings = computed(() => {
+  const mainStore = useMainStore();
+  if (mainStore.world && isValid(mainStore.world.players)) {
+    return deepcopy(mainStore.world.players);
+  }
+  return [];
+});
 const orderTypes = ['name', 'op'] as const;
 const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
 function playerSortFunc(
@@ -38,18 +43,13 @@ function filteredPlayers() {
     );
   }
 }
-
-onBeforeMount(async () => {
-  const mainStore = useMainStore();
-  if (mainStore.world && isValid(mainStore.world.players)) {
-    loadedPlayerSettings.value = deepcopy(mainStore.world.players);
-  }
-});
 </script>
 
 <template>
   <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>
   <q-list v-if="loadedPlayerSettings.length !== 0">
+    <!-- TODO: プレイヤー一覧を {uuid: Data} の形式で保持し，Dataには読み込み前後のデータが共存するデータ形式を採用する -->
+    <!-- これにより，先に読み込まれたものからSkelton表示が解除されたり，プレイヤー追加の際に当該プレイヤーのみSkelton表示とする，などの制御が可能 -->
     <PlayerItem
       v-for="player in filteredPlayers().sort(playerSortFunc(playerOrder))"
       :key="player.uuid"
