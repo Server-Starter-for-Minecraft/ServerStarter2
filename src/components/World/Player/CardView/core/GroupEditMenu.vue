@@ -136,7 +136,7 @@ onMounted(async () => {
     <q-card-section>
       <q-btn
         outline
-        :label="$t('player.deleteGroup')"
+        :label="$t('player.deleteGroup.title')"
         color="negative"
         @click="removeGroup()"
         class="full-width"
