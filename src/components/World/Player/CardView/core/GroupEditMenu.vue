@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { isValid } from 'app/src-public/scripts/error';
 import { keys, toEntries } from 'app/src-public/scripts/obj/obj';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
@@ -11,18 +12,19 @@ const { t } = useI18n();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 
-const colorOps = keys(sysStore.staticResouces.minecraftColors).map((k) => {
-  return { label: k, code: sysStore.staticResouces.minecraftColors[k] };
+const mcColors = sysStore.staticResouces.minecraftColors;
+const targetGroup = computed(() => {
+  return sysStore.systemSettings.player.groups[playerStore.selectedGroupId];
 });
-const groupName = ref(
-  sysStore.systemSettings.player.groups[playerStore.selectedGroupId].name
-);
+
+const colorOps = keys(mcColors).map((k) => {
+  return { label: k, code: mcColors[k] };
+});
+const groupName = ref(targetGroup.value.name);
 const groupColor = computed({
-  get: () =>
-    sysStore.systemSettings.player.groups[playerStore.selectedGroupId].color,
+  get: () => targetGroup.value.color,
   set: (newVal) => {
-    sysStore.systemSettings.player.groups[playerStore.selectedGroupId].color =
-      newVal;
+    targetGroup.value.color = newVal;
   },
 });
 
@@ -39,8 +41,7 @@ function validateGroupName(groupName: string) {
 
   // エラーでなければグループ名を更新
   if (!isError) {
-    sysStore.systemSettings.player.groups[playerStore.selectedGroupId].name =
-      groupName;
+    targetGroup.value.name = groupName;
   }
 
   return !isError;
@@ -55,6 +56,17 @@ function removeGroup() {
   playerStore.openGroupEditor = false;
   playerStore.removeGroup(playerStore.selectedGroupId);
 }
+
+onMounted(async () => {
+  // グループメンバーにフォーカスをあてる
+  const players = await Promise.all(
+    targetGroup.value.players.map((pId) =>
+      window.API.invokeGetPlayer(pId, 'uuid')
+    )
+  );
+  const filteredPlayers = players.filter(isValid);
+  filteredPlayers.forEach(playerStore.addFocus);
+});
 </script>
 
 <template>

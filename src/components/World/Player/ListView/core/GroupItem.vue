@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { type Component, onMounted, ref } from 'vue';
+import { type Component, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { isValid } from 'app/src-public/scripts/error';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { UUID } from 'app/src-electron/schema/brands';
-import { Player, PlayerGroup } from 'app/src-electron/schema/player';
+import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -14,7 +13,7 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import { getColorLabel } from '../../utils/groupColor';
 import GroupColorPicker from '../../utils/GroupColorPicker.vue';
-import PlayerIcon from '../../utils/PlayerIcon.vue';
+import LoadPlayerHead from '../../utils/LoadPlayerHead.vue';
 import GroupMemberDialog from './GroupMemberDialog.vue';
 import { GroupMemberReturns, GroupMembersProp } from './iGroupMember';
 import EditableText from './parts/EditableText.vue';
@@ -35,7 +34,6 @@ const editableName = ref(false);
 const colorPickerOpened = ref(false);
 const groupName = ref(prop.group.name);
 const label2code = sysStore.staticResouces.minecraftColors;
-const loadedGroupPlayers = ref<Player[] | undefined>(undefined);
 
 type MenuBtn = {
   label: string;
@@ -148,14 +146,6 @@ function validateMessage(name: string) {
     ? $T('player.groupNameDuplicate', { group: name })
     : $T('player.insertGroupName');
 }
-
-onMounted(async () => {
-  // プレイヤーデータをAPIから取得
-  const tmpPlayers = await Promise.all(
-    prop.group.players.map((uuid) => window.API.invokeGetPlayer(uuid, 'uuid'))
-  );
-  loadedGroupPlayers.value = tmpPlayers.filter(isValid);
-});
 </script>
 
 <template>
@@ -198,22 +188,13 @@ onMounted(async () => {
 
       <div class="row">
         <div class="row q-gutter-x-sm player-icons-container col">
-          <template v-if="loadedGroupPlayers">
-            <div
-              v-for="p in loadedGroupPlayers"
-              :key="p.uuid"
-              class="player-icon-wrapper"
-            >
-              <PlayerIcon :player="p" head-size="1.2rem" />
-            </div>
-          </template>
-          <q-skeleton
-            v-else
-            v-for="n in group.players.length"
-            :key="n"
-            type="rect"
-            style="height: 1.6rem; width: 1.6rem"
-          />
+          <div
+            v-for="pId in group.players"
+            :key="pId"
+            class="player-icon-wrapper"
+          >
+            <LoadPlayerHead :pid="pId" size="1.2rem" />
+          </div>
         </div>
         <q-btn outline dense icon="more_horiz" class="q-py-none" @click.stop>
           <q-menu self="top left" anchor="top right" :offset="[5, 0]">

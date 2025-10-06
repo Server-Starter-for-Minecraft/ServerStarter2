@@ -2,7 +2,7 @@
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import PlayerIcon from '../../utils/PlayerIcon.vue';
+import PlayerIcon from './parts/PlayerIcon.vue';
 
 const playerStore = usePlayerStore();
 
