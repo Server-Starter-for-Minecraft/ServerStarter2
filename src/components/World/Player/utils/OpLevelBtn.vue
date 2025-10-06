@@ -20,7 +20,7 @@ const playerStore = usePlayerStore();
     clickable
     v-ripple
     dense
-    :disable="playerStore.focusCards.size === 0 || disable"
+    :disable="playerStore.focusPlayerIds.size === 0 || disable"
     @click="onClick"
     class="q-py-xs"
   >

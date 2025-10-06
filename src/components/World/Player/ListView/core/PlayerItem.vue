@@ -19,7 +19,7 @@ const player: Ref<undefined | Player> = ref(undefined);
 
 function onItemClicked() {
   if (player.value === void 0) return;
-  if (playerStore.focusCards.has(player.value)) {
+  if (playerStore.focusPlayerIds.has(player.value.uuid)) {
     playerStore.unFocus(player.value);
   } else {
     playerStore.addFocus(player.value);
@@ -45,7 +45,9 @@ onBeforeMount(async () => {
     clickable
     dense
     @click="onItemClicked"
-    :class="!player || !playerStore.focusCards.has(player) ? '' : 'selected'"
+    :class="
+      !player || !playerStore.focusPlayerIds.has(player.uuid) ? '' : 'selected'
+    "
     class="q-pa-xs"
   >
     <q-item-section avatar style="min-width: 0">

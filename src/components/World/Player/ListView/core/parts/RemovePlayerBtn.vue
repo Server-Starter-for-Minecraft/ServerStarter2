@@ -12,7 +12,7 @@ const prop = defineProps<Prop>();
 const playerStore = usePlayerStore();
 
 function onClick() {
-  if (!playerStore.focusCards.has(prop.player)) {
+  if (!playerStore.focusPlayerIds.has(prop.player.uuid)) {
     playerStore.addFocus(prop.player);
   }
   playerStore.removePlayer();

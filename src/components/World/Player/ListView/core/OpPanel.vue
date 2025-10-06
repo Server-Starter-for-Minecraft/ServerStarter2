@@ -21,7 +21,7 @@ const showingLevel = (level?: OpLevel) =>
   level !== void 0 ? $T('player.opLevel') + level : $T('player.noOp');
 
 function onClick() {
-  if (!playerStore.focusCards.has(prop.player)) {
+  if (!playerStore.focusPlayerIds.has(prop.player.uuid)) {
     playerStore.addFocus(prop.player);
   }
   showMenu.value = true;

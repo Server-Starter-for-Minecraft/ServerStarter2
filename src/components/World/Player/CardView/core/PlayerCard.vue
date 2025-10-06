@@ -30,14 +30,14 @@ const player: Ref<undefined | Player> = ref(undefined);
 
 function onCardClicked() {
   if (player.value === void 0) return;
-  if (playerStore.focusCards.has(player.value)) {
+  if (playerStore.focusPlayerIds.has(player.value.uuid)) {
     playerStore.unFocus(player.value);
   } else {
     playerStore.addFocus(player.value);
   }
 
   if (playerStore.openGroupEditor) {
-    const focuedIds = Array.from(playerStore.focusCards).map((p) => p.uuid);
+    const focuedIds = Array.from(playerStore.focusPlayerIds);
     playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
       g.players = focuedIds;
       return g;
@@ -70,7 +70,7 @@ onBeforeMount(async () => {
     v-if="player !== void 0"
     @click="onCardClicked"
     :style="
-      Array.from(playerStore.focusCards).some((p) => p.uuid === prop.uuid)
+      Array.from(playerStore.focusPlayerIds).some((uuid) => uuid === prop.uuid)
         ? { 'border-color': getCssVar('primary') }
         : ''
     "

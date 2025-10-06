@@ -14,7 +14,7 @@ const playerStore = usePlayerStore();
     style="width: 13rem; height: 325px; max-height: 45vh"
   >
     <p class="q-pa-sm q-ma-none text-body2">
-      {{ $t('player.editPlayer', { n: playerStore.focusCards.size }) }}
+      {{ $t('player.editPlayer', { n: playerStore.focusPlayerIds.size }) }}
     </p>
 
     <q-scroll-area style="flex: 1 1 0">

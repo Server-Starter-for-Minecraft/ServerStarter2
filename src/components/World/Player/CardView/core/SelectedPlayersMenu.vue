@@ -6,29 +6,29 @@ import PlayerIcon from '../../utils/PlayerIcon.vue';
 
 const playerStore = usePlayerStore();
 
-function getOrderedFocusCards(cards: Set<Player>) {
-  return Array.from(cards).sort((a, b) => strSort(a.name, b.name));
+function getOrderedFocusCards(cards: Player[]) {
+  return cards.sort((a, b) => strSort(a.name, b.name));
 }
 </script>
 
 <template>
   <q-card flat class="column" style="width: 13rem; flex: 1 1 0">
     <p class="q-pt-sm q-pl-sm q-pa-none q-ma-none text-body2">
-      {{ $t('player.select', playerStore.focusCards.size) }}
+      {{ $t('player.select', playerStore.focusPlayerIds.size) }}
     </p>
 
     <q-card-actions class="q-mx-sm">
       <q-btn
         outline
-        :label="$t('player.deselect', playerStore.focusCards.size)"
-        :disable="playerStore.focusCards.size === 0"
+        :label="$t('player.deselect', playerStore.focusPlayerIds.size)"
+        :disable="playerStore.focusPlayerIds.size === 0"
         class="full-width q-my-xs"
         @click="playerStore.unFocus()"
       />
     </q-card-actions>
 
     <q-scroll-area class="q-px-sm" style="flex: 1 1 0">
-      <div v-if="playerStore.focusCards.size === 0" class="fit">
+      <div v-if="playerStore.focusPlayerIds.size === 0" class="fit">
         <p class="col text-caption text-grey text-center">
           {{ $t('player.selectPlayerFromLeft') }}
         </p>
@@ -38,7 +38,7 @@ function getOrderedFocusCards(cards: Set<Player>) {
         <!-- PlayerIconはあくまでアイコン表示のラッパーのはずなのに，情報の取得までやるのはおかしい -->
         <!-- Iconを使用する際には上記のようにLoadedListを設けて対応する方針で各呼び出し箇所を修正する -->
         <div
-          v-for="p in getOrderedFocusCards(playerStore.focusCards)"
+          v-for="p in getOrderedFocusCards(playerStore.focusPlayers)"
           :key="p.uuid"
         >
           <PlayerIcon

@@ -23,7 +23,7 @@ const inputResarchName = ref('');
           outline
           :label="$t('player.grouping')"
           color="primary"
-          :disable="playerStore.focusCards.size === 0"
+          :disable="playerStore.focusPlayerIds.size === 0"
           @click="playerStore.addGroup()"
         />
       </template>
@@ -31,7 +31,7 @@ const inputResarchName = ref('');
         <SsBtn
           v-show="sysStore.systemSettings.user.viewStyle.player === 'list'"
           free-width
-          :disable="playerStore.focusCards.size === 0"
+          :disable="playerStore.focusPlayerIds.size === 0"
           :label="$t('player.deselectAll')"
           @click="() => playerStore.unFocus()"
         />

@@ -3,7 +3,7 @@ import { createNewName } from 'app/src-public/scripts/createNewName';
 import { isValid } from 'app/src-public/scripts/error';
 import { toEntries, values } from 'app/src-public/scripts/obj/obj';
 import { genUUID } from 'app/src-public/scripts/uuid';
-import { UUID } from 'app/src-electron/schema/brands';
+import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import {
   OpLevel,
   OpSetting,
@@ -13,13 +13,30 @@ import {
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
 
+// フォーカスされているプレイヤーのUUID一覧とUUIDからPlayerオブジェクトへのマッピング
+// (storeに直接持たせると責任分担が不明確となり，任意の箇所から値の変更をかけられてしまうため，外部に切り出す)
+const __focusPlayerIds: Set<PlayerUUID> = new Set();
+const __playerFromId: Record<PlayerUUID, Player> = {};
+
+const setFocusPlayer = (player: Player) => {
+  __playerFromId[player.uuid] = player;
+  __focusPlayerIds.add(player.uuid);
+};
+
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
-      focusCards: new Set<Player>(),
       selectedGroupId: '' as UUID,
       openGroupEditor: false,
     };
+  },
+  getters: {
+    focusPlayerIds(): Set<PlayerUUID> {
+      return __focusPlayerIds;
+    },
+    focusPlayers(): Player[] {
+      return Array.from(this.focusPlayerIds).map((id) => __playerFromId[id]);
+    },
   },
   actions: {
     /**
@@ -36,9 +53,9 @@ export const usePlayerStore = defineStore('playerStore', {
      */
     unFocus(player?: Player) {
       if (player !== void 0) {
-        this.focusCards.delete(player);
+        __focusPlayerIds.delete(player.uuid);
       } else {
-        this.focusCards = new Set<Player>();
+        __focusPlayerIds.clear();
       }
     },
     /**
@@ -47,7 +64,7 @@ export const usePlayerStore = defineStore('playerStore', {
      * TODO: Ctrl + a で表示中のプレイヤーをすべてFocusCardsに追加する処理に対応できる構造を検討
      */
     addFocus(player: Player) {
-      this.focusCards.add(player);
+      setFocusPlayer(player);
     },
     /**
      * グループを選択した際の処理
@@ -69,7 +86,7 @@ export const usePlayerStore = defineStore('playerStore', {
       }
 
       // グループプレイヤー全員にFocusを当てる
-      groupMembers.forEach((uuid) => this.focusCards.add(uuid));
+      groupMembers.forEach(this.addFocus);
     },
     /**
      * プレイヤーをワールドのプレイヤー一覧へ追加
@@ -94,10 +111,10 @@ export const usePlayerStore = defineStore('playerStore', {
       const mainStore = useMainStore();
 
       // フォーカスされているプレイヤーを削除
-      this.focusCards.forEach((p) => {
+      this.focusPlayerIds.forEach((uuid) => {
         if (mainStore.world && isValid(mainStore.world.players)) {
           mainStore.world.players.splice(
-            mainStore.world.players.map((p) => p.uuid).indexOf(p.uuid),
+            mainStore.world.players.map((p) => p.uuid).indexOf(uuid),
             1
           );
         }
@@ -122,7 +139,7 @@ export const usePlayerStore = defineStore('playerStore', {
       sysStore.systemSettings.player.groups[gid] = {
         name: groupName,
         color: colorCode,
-        players: Array.from(this.focusCards).map((p) => p.uuid),
+        players: Array.from(this.focusPlayerIds),
       };
       return gid;
     },
@@ -144,7 +161,7 @@ export const usePlayerStore = defineStore('playerStore', {
      * フォーカスされているプレイヤーに対してOPの設定を行う
      */
     setOp(setVal: 0 | OpLevel) {
-      const focusIds = new Set(Array.from(this.focusCards).map((p) => p.uuid));
+      const focusIds = this.focusPlayerIds;
       function setter(setVal?: OpSetting) {
         const mainStore = useMainStore();
         if (mainStore.world && isValid(mainStore.world.players)) {
