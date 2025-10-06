@@ -14,26 +14,18 @@ import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
 
 // フォーカスされているプレイヤーのUUID一覧とUUIDからPlayerオブジェクトへのマッピング
-// (storeに直接持たせると責任分担が不明確となり，任意の箇所から値の変更をかけられてしまうため，外部に切り出す)
-const __focusPlayerIds: Set<PlayerUUID> = new Set();
+// Setに直接オブジェクトデータを持たせると集合内検索ができないため，UUIDで管理する
 const __playerFromId: Record<PlayerUUID, Player> = {};
-
-const setFocusPlayer = (player: Player) => {
-  __playerFromId[player.uuid] = player;
-  __focusPlayerIds.add(player.uuid);
-};
 
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
+      focusPlayerIds: new Set<PlayerUUID>(),
       selectedGroupId: '' as UUID,
       openGroupEditor: false,
     };
   },
   getters: {
-    focusPlayerIds(): Set<PlayerUUID> {
-      return __focusPlayerIds;
-    },
     focusPlayers(): Player[] {
       return Array.from(this.focusPlayerIds).map((id) => __playerFromId[id]);
     },
@@ -53,9 +45,9 @@ export const usePlayerStore = defineStore('playerStore', {
      */
     unFocus(player?: Player) {
       if (player !== void 0) {
-        __focusPlayerIds.delete(player.uuid);
+        this.focusPlayerIds.delete(player.uuid);
       } else {
-        __focusPlayerIds.clear();
+        this.focusPlayerIds.clear();
       }
     },
     /**
@@ -64,7 +56,8 @@ export const usePlayerStore = defineStore('playerStore', {
      * TODO: Ctrl + a で表示中のプレイヤーをすべてFocusCardsに追加する処理に対応できる構造を検討
      */
     addFocus(player: Player) {
-      setFocusPlayer(player);
+      this.focusPlayerIds.add(player.uuid);
+      __playerFromId[player.uuid] = player;
     },
     /**
      * グループを選択した際の処理
