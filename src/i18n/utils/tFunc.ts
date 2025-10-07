@@ -29,7 +29,10 @@ const translationArgs: Record<string, FullKeys<MessageSchema>> = {
   mod: 'additionalContents.mod',
 };
 
-type tFunc = (key: string, args?: Record<string, unknown> | string) => string;
+type tFunc = (
+  key: string,
+  args?: Record<string, unknown> | string | number
+) => string;
 type teFunc = (key: string) => boolean;
 let _t: tFunc;
 let _te: teFunc;
@@ -52,17 +55,18 @@ export function $T(
   key: FullKeys<MessageSchema>,
   defaultMessage: string
 ): string;
+export function $T(key: FullKeys<MessageSchema>, plural: number): string;
 /**
  * 翻訳で利用する変数部分にさらに翻訳が必要な値がわたってきた際に、
  * 翻訳済みの値を変数部分に再格納するためのラッパー
  */
 export function $T(
   key: FullKeys<MessageSchema> | string,
-  args?: Record<string, unknown> | string
+  args?: Record<string, unknown> | string | number
 ) {
   if (args === void 0) {
     return _t(key);
-  } else if (typeof args === 'string') {
+  } else if (typeof args === 'string' || typeof args === 'number') {
     return _t(key, args);
   } else {
     return _t(
