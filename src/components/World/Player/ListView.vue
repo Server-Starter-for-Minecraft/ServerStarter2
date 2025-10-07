@@ -25,7 +25,7 @@ const inputResarchName = ref('');
           color="primary"
           :disable="playerStore.focusPlayerIds.size === 0"
           @click="playerStore.addGroup()"
-          style="width: 13rem;"
+          style="width: 13rem"
         />
       </template>
       <template #toggleLine>
