@@ -1,66 +1,96 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
+import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isValid } from 'app/src-public/scripts/error';
-import { keys, toEntries } from 'app/src-public/scripts/obj/obj';
+import { toEntries } from 'app/src-public/scripts/obj/obj';
+import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 
-const { t } = useI18n();
+const $q = useQuasar();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 
 const mcColors = sysStore.staticResouces.minecraftColors;
-const targetGroup = computed(() => {
-  return sysStore.systemSettings.player.groups[playerStore.selectedGroupId];
-});
+const tmpGroupSettings = deepcopy(
+  sysStore.systemSettings.player.groups[playerStore.selectedGroupId]
+);
 
-const colorOps = keys(mcColors).map((k) => {
-  return { label: k, code: mcColors[k] };
+const colorOps = toEntries(mcColors).map(([k, v]) => {
+  return { label: k, code: v };
 });
-const groupName = ref(targetGroup.value.name);
-const groupColor = computed({
-  get: () => targetGroup.value.color,
-  set: (newVal) => {
-    targetGroup.value.color = newVal;
-  },
-});
+const groupName = ref(tmpGroupSettings.name);
+const groupColor = ref(tmpGroupSettings.color);
+
+const isValidName = ref(true);
+const isValidGroup = computed(
+  () => isValidName.value && playerStore.focusPlayerIds.size > 0
+);
 
 /**
  * 入力グループ名のバリデーション
  */
-function validateGroupName(groupName: string) {
+function validateGroupName(gName: string) {
   // 自分以外のグループ名一覧を取得
   const groupNames = toEntries(sysStore.systemSettings.player.groups)
     .filter(([gId, g]) => gId !== playerStore.selectedGroupId)
     .map(([gId, g]) => g.name);
-  const isError =
-    groupName === '' || groupNames.some((name) => name === groupName);
+  isValidName.value =
+    gName !== '' && !groupNames.some((name) => name === gName);
 
   // エラーでなければグループ名を更新
-  if (!isError) {
-    targetGroup.value.name = groupName;
+  if (isValidName.value) {
+    groupName.value = gName;
   }
 
-  return !isError;
+  return isValidName.value;
 }
 function validateMessage(name: string) {
   return name !== ''
-    ? t('player.groupNameDuplicate', { group: name })
-    : t('player.insertGroupName');
+    ? $T('player.groupNameDuplicate', { group: name })
+    : $T('player.insertGroupName');
+}
+
+function closeMenu() {
+  playerStore.openGroupEditor = false;
+  playerStore.unFocus();
+}
+
+function updateGroup() {
+  playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
+    g.name = groupName.value;
+    g.color = groupColor.value;
+    g.players = Array.from(playerStore.focusPlayerIds);
+    return g;
+  });
+  closeMenu();
 }
 
 function removeGroup() {
-  playerStore.openGroupEditor = false;
-  playerStore.removeGroup(playerStore.selectedGroupId);
+  $q.dialog({
+    component: DangerDialog,
+    componentProps: {
+      dialogTitle: $T('player.deleteGroup.title'),
+      dialogDesc: $T('player.deleteGroup.desc', {
+        groupname: tmpGroupSettings.name,
+      }),
+      okBtnTxt: $T('player.deleteGroup.okBtn'),
+    } as dangerDialogProp,
+  }).onOk(() => {
+    playerStore.removeGroup(playerStore.selectedGroupId);
+    closeMenu();
+  });
 }
 
 onMounted(async () => {
   // グループメンバーにフォーカスをあてる
   const players = await Promise.all(
-    targetGroup.value.players.map((pId) =>
+    tmpGroupSettings.players.map((pId) =>
       window.API.invokeGetPlayer(pId, 'uuid')
     )
   );
@@ -76,12 +106,7 @@ onMounted(async () => {
     </p>
 
     <div class="absolute-top-right">
-      <q-btn
-        dense
-        icon="close"
-        class="q-pa-sm"
-        @click="playerStore.openGroupEditor = false"
-      />
+      <q-btn dense icon="close" class="q-pa-sm" @click="closeMenu()" />
     </div>
 
     <q-card-section class="q-pt-xs q-pb-none">
@@ -133,7 +158,15 @@ onMounted(async () => {
 
     <q-separator inset />
 
-    <q-card-section>
+    <q-card-section class="q-gutter-y-md">
+      <q-btn
+        outline
+        :disable="!isValidGroup"
+        :label="$t('player.updateGroup')"
+        color="primary"
+        @click="updateGroup()"
+        class="full-width"
+      />
       <q-btn
         outline
         :label="$t('player.deleteGroup.title')"

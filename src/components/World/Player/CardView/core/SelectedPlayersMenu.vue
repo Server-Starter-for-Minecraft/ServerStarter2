@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { Player } from 'app/src-electron/schema/player';
+import { $T } from 'src/i18n/utils/tFunc';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import PlayerIcon from './parts/PlayerIcon.vue';
 
 const playerStore = usePlayerStore();
+
+function getTitle() {
+  // 特定の条件の場合のみ変更する場合はここに記載
+  if (playerStore.openGroupEditor) return $T('player.groupMember');
+
+  // デフォルト値
+  return $T('player.select', playerStore.focusPlayerIds.size);
+}
 
 function getOrderedFocusCards(cards: Player[]) {
   return cards.sort((a, b) => strSort(a.name, b.name));
@@ -14,7 +23,7 @@ function getOrderedFocusCards(cards: Player[]) {
 <template>
   <q-card flat class="column" style="width: 13rem; flex: 1 1 0">
     <p class="q-pt-sm q-pl-sm q-pa-none q-ma-none text-body2">
-      {{ $t('player.select', playerStore.focusPlayerIds.size) }}
+      {{ getTitle() }}
     </p>
 
     <q-card-actions class="q-mx-sm">
@@ -34,9 +43,6 @@ function getOrderedFocusCards(cards: Player[]) {
         </p>
       </div>
       <div v-else class="row q-gutter-md" style="padding-left: 0.5rem">
-        <!-- TODO: loadedPlayersを新設し，LoadedPlayers.uuid != focusCards.uuid の時にはLoadingの表示とする？ -->
-        <!-- PlayerIconはあくまでアイコン表示のラッパーのはずなのに，情報の取得までやるのはおかしい -->
-        <!-- Iconを使用する際には上記のようにLoadedListを設けて対応する方針で各呼び出し箇所を修正する -->
         <div
           v-for="p in getOrderedFocusCards(playerStore.focusPlayers)"
           :key="p.uuid"

@@ -35,14 +35,6 @@ function onCardClicked() {
   } else {
     playerStore.addFocus(player.value);
   }
-
-  if (playerStore.openGroupEditor) {
-    const focuedIds = Array.from(playerStore.focusPlayerIds);
-    playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
-      g.players = focuedIds;
-      return g;
-    });
-  }
 }
 
 function getGroups(groups: FrontPlayerGroup) {
