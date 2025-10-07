@@ -19,7 +19,7 @@ export const enUSPlayer: MessageSchema['player'] = {
   join: 'Only registered player',
   changeOP: 'Change OP level',
   makeGroup: 'Make group',
-  grouping: 'Group',
+  grouping: 'Create a group',
   groupingBtn: 'Add selected players to this group',
   deletePlayer: 'Delete player',
   selectPlayerFromLeft: ' Select player from left',
