@@ -80,7 +80,9 @@ watch(
 <template>
   <q-card flat bordered class="card q-ma-sm">
     <q-card-section v-if="loadedSearchedPlayers.length > 0" class="q-pa-sm">
-      <q-list separator>
+      <q-list separator class="scroll">
+        <!-- TODO: ヒットするプレイヤーは「完全一致」「選択履歴のあるプレイヤー」一覧とする -->
+        <!-- 「選択履歴のあるプレイヤー」はSystemSettingsからの引継ぎ処理が必要？ -->
         <template v-for="p in loadedSearchedPlayers" :key="p">
           <SearchResultItem
             :player="p"
@@ -107,6 +109,11 @@ watch(
   .card {
     border-color: white;
   }
+}
+
+.scroll {
+  max-height: 25vh;
+  overflow-y: auto;
 }
 
 .card {
