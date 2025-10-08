@@ -32,12 +32,14 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
     </span>
 
     <div class="row q-gutter-x-md items-center">
+      <!-- 検索時に表示が絞られているにもかかわらず，非表示中のプレイヤー設定が書き換わらないように検索前にフォーカスを外しておく -->
       <SsInput
         v-model="inputResarchName"
         dense
         :placeholder="$t('player.search')"
         :debounce="200"
         class="col"
+        @focus="playerStore.unFocus()"
       />
 
       <ViewToggleBtn />
