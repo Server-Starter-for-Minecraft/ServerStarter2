@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import Mousetrap from 'mousetrap';
 import { isValid } from 'app/src-public/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
@@ -12,6 +12,10 @@ import ListView from 'src/components/World/Player/ListView.vue';
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
+
+const viewMode = computed(() => {
+  return sysStore.systemSettings.user.viewStyle.player;
+});
 
 onMounted(() => {
   Mousetrap.bind('backspace', () => playerStore.removePlayer());
@@ -32,14 +36,8 @@ onUnmounted(() => {
     class="column fit"
   >
     <div class="row full-height q-gutter-x-md">
-      <CardView
-        v-if="sysStore.systemSettings.user.viewStyle.player === 'card'"
-        v-model="mainStore.world.players"
-      />
-      <ListView
-        v-if="sysStore.systemSettings.user.viewStyle.player === 'list'"
-        v-model="mainStore.world.players"
-      />
+      <CardView v-if="viewMode === 'card'" />
+      <ListView v-if="viewMode === 'list'" />
     </div>
   </div>
 

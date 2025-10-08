@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from 'vue';
-import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isValid } from 'app/src-public/scripts/error';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerSetting } from 'app/src-electron/schema/player';
@@ -12,7 +11,7 @@ const inputResarchName = defineModel<string>({ required: true });
 const loadedPlayerSettings = computed(() => {
   const mainStore = useMainStore();
   if (mainStore.world && isValid(mainStore.world.players)) {
-    return deepcopy(mainStore.world.players);
+    return mainStore.world.players;
   }
   return [];
 });
