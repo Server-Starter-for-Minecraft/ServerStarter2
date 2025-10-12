@@ -54,7 +54,7 @@ describe('listupVersions', async () => {
     {
       type: 'papermc',
       vcList: () => vc.listVersions('papermc', useCache),
-      oldestVersion: '1.8.8',
+      oldestVersion: '1.7.10',
     },
     {
       type: 'mohistmc',
