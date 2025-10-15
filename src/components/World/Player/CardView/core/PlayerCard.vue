@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeMount, Ref, ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { values } from 'app/src-public/scripts/obj/obj';
-import { strSort } from 'app/src-public/scripts/obj/objSort';
+import { keys, toEntries } from 'app/src-public/scripts/obj/obj';
+import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
+import { sortValue, strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
@@ -24,7 +25,7 @@ const prop = defineProps<Prop>();
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
 const isBelongingGroups = computed(
-  () => getGroups(sysStore.systemSettings.player.groups).length > 0
+  () => keys(getGroups(sysStore.systemSettings.player.groups)).length > 0
 );
 const player: Ref<undefined | Player> = ref(undefined);
 
@@ -38,9 +39,11 @@ function onCardClicked() {
 }
 
 function getGroups(groups: FrontPlayerGroup) {
-  return values(groups)
-    .filter((g) => g.players.includes(prop.uuid))
-    .sort((a, b) => strSort(a.name, b.name));
+  const filtered = recordValueFilter(groups, (g) =>
+    g.players.includes(prop.uuid)
+  );
+  const sorted = sortValue(filtered, (a, b) => strSort(a.name, b.name));
+  return sorted;
 }
 
 // プレイヤーデータをAPIから取得
@@ -101,10 +104,16 @@ onBeforeMount(async () => {
       <q-card-section v-show="isBelongingGroups" class="q-py-none">
         <div class="q-gutter-xs q-pb-sm" style="width: 12.5rem">
           <template
-            v-for="g in getGroups(sysStore.systemSettings.player.groups)"
+            v-for="[gId, g] in toEntries(
+              getGroups(sysStore.systemSettings.player.groups)
+            )"
             :key="g"
           >
-            <GroupBadgeView :group-name="g.name" :color="g.color" />
+            <GroupBadgeView
+              :group-id="gId"
+              :group-name="g.name"
+              :color="g.color"
+            />
           </template>
         </div>
       </q-card-section>

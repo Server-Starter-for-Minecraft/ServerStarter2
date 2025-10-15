@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
-import { isValid } from 'app/src-public/scripts/error';
 import { toEntries } from 'app/src-public/scripts/obj/obj';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
@@ -87,16 +86,7 @@ function removeGroup() {
   });
 }
 
-onMounted(async () => {
-  // グループメンバーにフォーカスをあてる
-  const players = await Promise.all(
-    tmpGroupSettings.players.map((pId) =>
-      window.API.invokeGetPlayer(pId, 'uuid')
-    )
-  );
-  const filteredPlayers = players.filter(isValid);
-  filteredPlayers.forEach(playerStore.addFocus);
-});
+onMounted(playerStore.selectGroup(playerStore.selectedGroupId, false));
 </script>
 
 <template>

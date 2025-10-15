@@ -119,7 +119,7 @@ function changeColor(colorCode: string) {
 }
 
 function selectGroupMembers() {
-  playerStore.selectGroup(prop.group.name);
+  playerStore.selectGroup(prop.groupId);
 }
 
 /**

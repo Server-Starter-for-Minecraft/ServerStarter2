@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -8,6 +8,7 @@ import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
 import LoadPlayerHead from '../../utils/LoadPlayerHead.vue';
 
 interface Prop {
+  groupId: UUID;
   name: string;
   color: string;
   players: PlayerUUID[];
@@ -20,7 +21,7 @@ const showMenuBtn = ref(false);
 const menuOpened = ref(false);
 
 function onCardClicked() {
-  playerStore.selectGroup(prop.name);
+  playerStore.selectGroup(prop.groupId);
 }
 </script>
 

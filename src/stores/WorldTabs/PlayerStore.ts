@@ -32,15 +32,6 @@ export const usePlayerStore = defineStore('playerStore', {
   },
   actions: {
     /**
-     * グループを名前から探す
-     */
-    findGroupfromName(name: string) {
-      const sysStore = useSystemStore();
-      return toEntries(sysStore.systemSettings.player.groups)
-        .map(([id, g]) => g)
-        .find((g) => g.name === name);
-    },
-    /**
      * プレイヤーに対するフォーカスを解除
      */
     unFocus(player?: Player) {
@@ -63,18 +54,23 @@ export const usePlayerStore = defineStore('playerStore', {
      * グループを選択した際の処理
      * グループメンバーの追加とフォーカスの調整
      */
-    async selectGroup(groupName: string) {
+    async selectGroup(gId: UUID, regist4World = true) {
+      const sysStore = useSystemStore();
       const mainStore = useMainStore();
-      const groupObj = this.findGroupfromName(groupName);
+      const groupObj = sysStore.systemSettings.player.groups[gId];
       if (groupObj === void 0) return;
 
       // グループメンバーのUUIDからPlayerオブジェクトを取得
       const groupMembers = await Promise.all(
-        groupObj.players.map((pId) => window.API.invokeGetPlayer(pId, 'uuid'))
+        groupObj.players.map((pId) => {
+          const player = __playerFromId[pId];
+          if (player !== void 0) return Promise.resolve(player);
+          return window.API.invokeGetPlayer(pId, 'uuid');
+        })
       ).then((ps) => ps.filter(isValid));
 
       // グループメンバーを全員ワールドに登録する
-      if (mainStore.world && isValid(mainStore.world.players)) {
+      if (regist4World && mainStore.world && isValid(mainStore.world.players)) {
         groupMembers.forEach((p) => this.addPlayer(p));
       }
 

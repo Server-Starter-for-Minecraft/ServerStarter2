@@ -56,6 +56,7 @@ function filteredGroups() {
         :key="gid"
       >
         <GroupCard
+          :group-id="gid"
           :name="group.name"
           :color="group.color"
           :players="group.players"
