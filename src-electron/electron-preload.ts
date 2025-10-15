@@ -129,6 +129,7 @@ const api: FrontAPI = {
   invokeGetWorldPaths: invoke('GetWorldPaths'),
 
   invokeGetPlayer: invoke('GetPlayer'),
+  invokeResearchPlayer: invoke('ResearchPlayer'),
 
   invokeGetVersions: invoke('GetVersions'),
 

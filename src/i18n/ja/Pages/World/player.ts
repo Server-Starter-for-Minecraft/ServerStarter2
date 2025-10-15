@@ -13,7 +13,7 @@ export const jaPlayer = {
   registeredPlayer: '追加済みプレイヤー',
   notRegistered: 'プレイヤーが登録されていません',
   notFound: '検索結果無し',
-  groupList: 'グループによる一括追加',
+  groupList: 'グループ一覧',
   join: '登録済みのプレイヤーのみ参加可能',
   changeOP: 'OPレベルの変更',
   makeGroup: 'グループを作成',
@@ -48,9 +48,20 @@ export const jaPlayer = {
   groupMember: 'グループメンバー',
   existGroup: '{group}はすでに存在します',
   insertGroupName: 'グループ名を入力してください',
+  groupSettings: 'グループ設定',
   makeNewGroup: 'グループを作成',
   updateGroup: 'グループを更新',
-  deleteGroup: 'グループを削除',
+  deleteGroup: {
+    title: 'グループを削除',
+    desc: '\
+      {groupname}を削除します。削除したグループは復元できません。\n\
+      グループに登録されていたメンバーがワールドから削除されることはありません。',
+    okBtn: 'グループ削除',
+  },
+  renameGroup: 'グループ名を変更',
+  decideGroupName: 'グループ名を決定',
+  changeGroupColor: 'グループカラーを変更',
+  editGroupMember: 'グループメンバーを編集',
   groupNameDuplicate: '{group}はすでに存在します',
   makeNewGroupDecide:
     '選択中の{n}人をメンバーとするグループを作成します|選択中の{n}人をメンバーとするグループを作成します',
@@ -67,4 +78,11 @@ export const jaPlayer = {
   editPlayer: '{n} 人の設定を編集|{n} 人の設定を編集',
   sort: '並べ替え',
   resetPlayerSettings: 'プレイヤー設定をリセット',
+  groupMemberDialog: {
+    title: 'グループメンバーの編集',
+    okBtn: 'メンバーを更新',
+    searchTitle: '追加したいメンバーを検索',
+    memberTitle: 'グループメンバー一覧',
+    loadingMembers: 'グループメンバーを読み込み中',
+  },
 };

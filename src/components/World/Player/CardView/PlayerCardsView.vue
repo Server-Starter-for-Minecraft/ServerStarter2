@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
-import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { computed, Ref, ref } from 'vue';
+import { isValid } from 'app/src-public/scripts/error';
 import { strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerSetting } from 'app/src-electron/schema/player';
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { useMainStore } from 'src/stores/MainStore';
 import PlayerCard from './core/PlayerCard.vue';
 
-const validPlayers = defineModel<PlayerSetting[]>({ required: true });
+const inputResearchName = defineModel<string>({ required: true });
 
-const playerStore = usePlayerStore();
+const loadedPlayerSettings = computed(() => {
+  const mainStore = useMainStore();
+  if (mainStore.world && isValid(mainStore.world.players)) {
+    return mainStore.world.players;
+  }
+  return [];
+});
 
 const orderTypes = ['name', 'op'] as const;
 const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
@@ -24,15 +30,26 @@ function playerSortFunc(
       };
   }
 }
+
+/**
+ * 読み込み済みプレイヤー一覧から、検索ワードにマッチするプレイヤーのみを返す
+ */
+function filteredPlayers() {
+  if (inputResearchName.value === '') {
+    return loadedPlayerSettings.value;
+  } else {
+    return loadedPlayerSettings.value.filter((p) =>
+      p.name.toLowerCase().match(inputResearchName.value.toLowerCase())
+    );
+  }
+}
 </script>
 
 <template>
   <span class="text-caption">{{ $t('player.registeredPlayer') }}</span>
-  <div v-if="validPlayers.length !== 0" class="row q-gutter-sm q-pa-sm">
+  <div v-if="loadedPlayerSettings.length !== 0" class="row q-gutter-sm q-pa-sm">
     <div
-      v-for="player in deepcopy(playerStore.searchPlayers(validPlayers)).sort(
-        playerSortFunc(playerOrder)
-      )"
+      v-for="player in filteredPlayers().sort(playerSortFunc(playerOrder))"
       :key="player.uuid"
       class="col-"
     >

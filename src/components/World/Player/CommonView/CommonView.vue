@@ -1,40 +1,17 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
-import { ViewStyleSetting } from 'app/src-electron/schema/system';
 import { useMainStore } from 'src/stores/MainStore';
-import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
-import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
 import SearchResultCard from 'src/components/util/SearchResultCard.vue';
 import PlayerJoinToggle from './core/PlayerJoinToggle.vue';
+import ViewToggleBtn from './core/ViewToggleBtn.vue';
 
-const sysStore = useSystemStore();
+const inputResearchName = defineModel<string>({ required: true });
+
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
-const { t } = useI18n();
-
-// ページを読み込んだ時に検索欄をリセット
-playerStore.searchName = '';
-
-function createViewMap(viewType: ViewStyleSetting['player']) {
-  switch (viewType) {
-    case 'card':
-      return {
-        value: 'card',
-        label: t('player.view.card'),
-        icon: 'grid_view',
-      };
-    case 'list':
-      return {
-        value: 'list',
-        label: t('player.view.list'),
-        icon: 'list',
-      };
-  }
-}
 
 /**
  * uuidを渡したプレイヤーがすでにWorldに登録済みであるか否かを返す
@@ -46,13 +23,6 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
     return false;
   }
 }
-
-/**
- * View形式が変更された際に発火
- */
-function onChangedView() {
-  playerStore.openGroupEditor = false;
-}
 </script>
 
 <template>
@@ -62,32 +32,17 @@ function onChangedView() {
     </span>
 
     <div class="row q-gutter-x-md items-center">
+      <!-- 検索時に表示が絞られているにもかかわらず，非表示中のプレイヤー設定が書き換わらないように検索前にフォーカスを外しておく -->
       <SsInput
-        v-model="playerStore.searchName"
+        v-model="inputResearchName"
         dense
         :placeholder="$t('player.search')"
         :debounce="200"
         class="col"
+        @focus="playerStore.unFocus()"
       />
 
-      <SsSelectScope
-        dense
-        v-model="sysStore.systemSettings.user.viewStyle.player"
-        @update:model-value="onChangedView"
-        :options="(['list', 'card'] as const).map(createViewMap)"
-        options-selected-class="text-primary"
-      >
-        <template v-slot:option="scope">
-          <q-item dense v-bind="scope.itemProps">
-            <q-item-section avatar>
-              <q-icon :name="scope.opt.icon" />
-            </q-item-section>
-            <q-item-section>
-              {{ scope.opt.label }}
-            </q-item-section>
-          </q-item>
-        </template>
-      </SsSelectScope>
+      <ViewToggleBtn />
 
       <slot name="btnLine" />
     </div>
@@ -101,9 +56,10 @@ function onChangedView() {
       <slot name="toggleLine" />
     </div>
 
-    <div v-show="playerStore.searchName !== ''">
+    <div v-show="inputResearchName !== ''">
       <span class="text-caption">{{ $t('player.newPlayer') }}</span>
       <SearchResultCard
+        v-model="inputResearchName"
         is-check-player-in-world
         :register-btn-text="$t('player.addPlayer')"
         :register-process="playerStore.addPlayer"

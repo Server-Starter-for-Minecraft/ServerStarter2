@@ -1,145 +1,97 @@
-import { watch } from 'vue';
 import { defineStore } from 'pinia';
 import { createNewName } from 'app/src-public/scripts/createNewName';
 import { isValid } from 'app/src-public/scripts/error';
-import { fromEntries, toEntries, values } from 'app/src-public/scripts/obj/obj';
+import { toEntries, values } from 'app/src-public/scripts/obj/obj';
 import { genUUID } from 'app/src-public/scripts/uuid';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import {
   OpLevel,
+  OpSetting,
   Player,
   PlayerGroup,
-  PlayerSetting,
 } from 'app/src-electron/schema/player';
 import { useMainStore } from '../MainStore';
 import { useSystemStore } from '../SystemStore';
 
+// フォーカスされているプレイヤーのUUID一覧とUUIDからPlayerオブジェクトへのマッピング
+// Setに直接オブジェクトデータを持たせると集合内検索ができないため，UUIDで管理する
+const __playerFromId: Record<PlayerUUID, Player> = {};
+
 export const usePlayerStore = defineStore('playerStore', {
   state: () => {
     return {
-      searchName: '',
-      cachePlayers: {} as Record<PlayerUUID, Player>,
-      focusCards: new Set<PlayerUUID>(),
-      newPlayerCandidate: undefined as Player | undefined,
+      focusPlayerIds: new Set<PlayerUUID>(),
       selectedGroupId: '' as UUID,
       openGroupEditor: false,
     };
   },
+  getters: {
+    focusPlayers(): Player[] {
+      return Array.from(this.focusPlayerIds).map((id) => __playerFromId[id]);
+    },
+  },
   actions: {
-    /**
-     * プレイヤーの検索
-     */
-    searchPlayers<P extends PlayerSetting | Player>(players: P[]) {
-      let returnPlayers = players;
-
-      if (this.searchName !== '') {
-        returnPlayers = players.filter((p) =>
-          p.name.toLowerCase().match(this.searchName)
-        );
-      }
-
-      return returnPlayers;
-    },
-    /**
-     * プレイヤーグループの検索
-     */
-    searchGroups() {
-      const sysStore = useSystemStore();
-      const groupsData = sysStore.systemSettings.player.groups;
-
-      if (this.searchName !== '') {
-        fromEntries(
-          toEntries(groupsData).filter(([k, v]) =>
-            v.name.match(this.searchName)
-          )
-        );
-      }
-
-      return groupsData;
-    },
-    /**
-     * グループを名前から探す
-     */
-    findGroupfromName(name: string) {
-      return toEntries(this.searchGroups())
-        .map(([id, g]) => g)
-        .find((g) => g.name === name);
-    },
     /**
      * プレイヤーに対するフォーカスを解除
      */
-    unFocus(uuid?: PlayerUUID) {
-      if (uuid !== void 0) {
-        this.focusCards.delete(uuid);
+    unFocus(player?: Player) {
+      if (player !== void 0) {
+        this.focusPlayerIds.delete(player.uuid);
       } else {
-        this.focusCards = new Set<PlayerUUID>();
+        this.focusPlayerIds.clear();
       }
     },
     /**
      * プレイヤーに対するフォーカスを追加
+     *
+     * TODO: Ctrl + a で表示中のプレイヤーをすべてFocusCardsに追加する処理に対応できる構造を検討
      */
-    addFocus(uuid?: PlayerUUID) {
-      if (uuid !== void 0) {
-        this.focusCards.add(uuid);
-      } else {
-        const mainStore = useMainStore();
-        if (mainStore.world && isValid(mainStore.world.players)) {
-          mainStore.world.players.forEach((p) => this.focusCards.add(p.uuid));
-        }
-      }
+    addFocus(player: Player) {
+      this.focusPlayerIds.add(player.uuid);
+      __playerFromId[player.uuid] = player;
     },
     /**
      * グループを選択した際の処理
      * グループメンバーの追加とフォーカスの調整
      */
-    selectGroup(groupName: string) {
+    async selectGroup(gId: UUID, regist4World = true) {
+      const sysStore = useSystemStore();
       const mainStore = useMainStore();
-      const groupObj = this.findGroupfromName(groupName);
+      const groupObj = sysStore.systemSettings.player.groups[gId];
       if (groupObj === void 0) return;
-      const groupMembers = groupObj.players;
 
-      if (mainStore.world && isValid(mainStore.world.players)) {
-        const worldPlayers = mainStore.world.players;
-        const notRegisteredMembers = groupMembers.filter(
-          (mUUID) => !worldPlayers.some((p) => p.uuid === mUUID)
-        );
+      // グループメンバーのUUIDからPlayerオブジェクトを取得
+      const groupMembers = await Promise.all(
+        groupObj.players.map((pId) => {
+          const player = __playerFromId[pId];
+          if (player !== void 0) return Promise.resolve(player);
+          return window.API.invokeGetPlayer(pId, 'uuid');
+        })
+      ).then((ps) => ps.filter(isValid));
 
-        mainStore.world.players.push(
-          ...notRegisteredMembers.map((uuid) => {
-            return { uuid: uuid, name: this.cachePlayers[uuid].name };
-          })
-        );
+      // グループメンバーを全員ワールドに登録する
+      if (regist4World && mainStore.world && isValid(mainStore.world.players)) {
+        groupMembers.forEach((p) => this.addPlayer(p));
       }
 
       // グループプレイヤー全員にFocusを当てる
-      groupMembers.forEach((uuid) => this.focusCards.add(uuid));
+      groupMembers.forEach(this.addFocus);
     },
     /**
-     * プレイヤーをワールドのプレイヤー一覧へ追加＆プレイヤーの新規登録を行う
+     * プレイヤーをワールドのプレイヤー一覧へ追加
      */
     addPlayer(player: Player) {
-      const sysStore = useSystemStore();
       const mainStore = useMainStore();
 
       // プレイヤーをワールドに追加
-      // TODO: 実装の最適化（PlayersをSet型にする？）
       if (mainStore.world && isValid(mainStore.world.players)) {
-        if (!mainStore.world.players.find((p) => p.uuid === player.uuid)) {
-          mainStore.world.players.push(player);
+        const worldPlayerIds = new Set(
+          mainStore.world.players.map((p) => p.uuid)
+        );
+        if (!worldPlayerIds.has(player.uuid)) {
+          mainStore.world?.players.push(player);
         }
       }
-
-      // 新規プレイヤー特有の処理
-      if (!(player.uuid in this.cachePlayers)) {
-        // 未登録の新規プレイヤーをシステムに登録
-        sysStore.systemSettings.player.players.push(player.uuid);
-
-        // プレイヤーのキャッシュデータに新規プレイヤーを追加
-        this.cachePlayers[player.uuid] = player;
-      }
-
-      // 検索欄をリセット
-      this.searchName = '';
     },
     /**
      * フォーカスされているプレイヤーを選択中のワールドから削除する
@@ -148,12 +100,10 @@ export const usePlayerStore = defineStore('playerStore', {
       const mainStore = useMainStore();
 
       // フォーカスされているプレイヤーを削除
-      this.focusCards.forEach((selectedPlayerUUID) => {
+      this.focusPlayerIds.forEach((uuid) => {
         if (mainStore.world && isValid(mainStore.world.players)) {
           mainStore.world.players.splice(
-            mainStore.world.players
-              .map((p) => p.uuid)
-              .indexOf(selectedPlayerUUID),
+            mainStore.world.players.map((p) => p.uuid).indexOf(uuid),
             1
           );
         }
@@ -178,7 +128,7 @@ export const usePlayerStore = defineStore('playerStore', {
       sysStore.systemSettings.player.groups[gid] = {
         name: groupName,
         color: colorCode,
-        players: [...this.focusCards],
+        players: Array.from(this.focusPlayerIds),
       };
       return gid;
     },
@@ -199,20 +149,24 @@ export const usePlayerStore = defineStore('playerStore', {
     /**
      * フォーカスされているプレイヤーに対してOPの設定を行う
      */
-    setOP(setVal: 0 | OpLevel) {
-      const mainStore = useMainStore();
+    setOp(setVal: 0 | OpLevel) {
+      const focusIds = this.focusPlayerIds;
+      function setter(setVal?: OpSetting) {
+        const mainStore = useMainStore();
+        if (mainStore.world && isValid(mainStore.world.players)) {
+          mainStore.world.players
+            .filter((p) => focusIds.has(p.uuid))
+            .forEach((p) => {
+              p.op = setVal;
+            });
+        }
+      }
 
-      if (mainStore.world && isValid(mainStore.world.players)) {
-        const val =
-          setVal !== 0
-            ? { level: setVal, bypassesPlayerLimit: false }
-            : undefined;
-
-        mainStore.world.players
-          .filter((p) => this.focusCards.has(p.uuid))
-          .forEach((p) => {
-            p.op = val;
-          });
+      // 設定するOPレベルに応じて適切な値を設定
+      if (setVal === 0) {
+        setter();
+      } else {
+        setter({ level: setVal, bypassesPlayerLimit: false });
       }
 
       // フォーカスのリセット
@@ -220,15 +174,3 @@ export const usePlayerStore = defineStore('playerStore', {
     },
   },
 });
-
-export function setPlayerSearchSubscriber(
-  store: ReturnType<typeof usePlayerStore>
-) {
-  watch(
-    () => store.searchName,
-    async (newVal, oldVal) => {
-      const player = await window.API.invokeGetPlayer(newVal, 'name');
-      store.newPlayerCandidate = isValid(player) ? player : undefined;
-    }
-  );
-}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import Mousetrap from 'mousetrap';
 import { isValid } from 'app/src-public/scripts/error';
 import { useMainStore } from 'src/stores/MainStore';
@@ -13,16 +13,18 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
+const viewMode = computed(() => {
+  return sysStore.systemSettings.user.viewStyle.player;
+});
+
 onMounted(() => {
   Mousetrap.bind('backspace', () => playerStore.removePlayer());
-  Mousetrap.bind('ctrl+a', () => playerStore.addFocus());
   Mousetrap.bind('del', () => playerStore.removePlayer());
   Mousetrap.bind('esc', () => playerStore.unFocus());
 });
 
 onUnmounted(() => {
   Mousetrap.unbind('backspace');
-  Mousetrap.unbind('ctrl+a');
   Mousetrap.unbind('del');
   Mousetrap.unbind('esc');
 });
@@ -34,14 +36,8 @@ onUnmounted(() => {
     class="column fit"
   >
     <div class="row full-height q-gutter-x-md">
-      <CardView
-        v-if="sysStore.systemSettings.user.viewStyle.player === 'card'"
-        v-model="mainStore.world.players"
-      />
-      <ListView
-        v-if="sysStore.systemSettings.user.viewStyle.player === 'list'"
-        v-model="mainStore.world.players"
-      />
+      <CardView v-if="viewMode === 'card'" />
+      <ListView v-if="viewMode === 'list'" />
     </div>
   </div>
 
