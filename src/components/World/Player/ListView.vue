@@ -12,12 +12,12 @@ const playerStore = usePlayerStore();
 
 const DEFAULT_POS = 25;
 const splitPos = ref(DEFAULT_POS);
-const inputResarchName = ref('');
+const inputResearchName = ref('');
 </script>
 
 <template>
   <div class="column fit q-px-md">
-    <CommonView v-model="inputResarchName">
+    <CommonView v-model="inputResearchName">
       <template #btnLine>
         <q-btn
           outline
@@ -48,10 +48,10 @@ const inputResarchName = ref('');
       class="q-py-md fit col"
     >
       <template #before>
-        <GroupItemsView v-model="inputResarchName" />
+        <GroupItemsView v-model="inputResearchName" />
       </template>
       <template #after>
-        <PlayerItemsView v-model="inputResarchName" />
+        <PlayerItemsView v-model="inputResearchName" />
       </template>
     </q-splitter>
   </div>

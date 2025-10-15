@@ -7,7 +7,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import GroupCard from './core/GroupCard.vue';
 
-const inputResarchName = defineModel<string>({ required: true });
+const inputResearchName = defineModel<string>({ required: true });
 
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
@@ -28,11 +28,11 @@ function openGroupEditor(groupID: UUID) {
  */
 function filteredGroups() {
   const groups = sysStore.systemSettings.player.groups;
-  if (inputResarchName.value === '') {
+  if (inputResearchName.value === '') {
     return groups;
   } else {
     return recordValueFilter(groups, (g) =>
-      g.name.toLowerCase().includes(inputResarchName.value.toLowerCase())
+      g.name.toLowerCase().includes(inputResearchName.value.toLowerCase())
     );
   }
 }

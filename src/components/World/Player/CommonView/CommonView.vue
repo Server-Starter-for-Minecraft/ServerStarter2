@@ -8,7 +8,7 @@ import SearchResultCard from 'src/components/util/SearchResultCard.vue';
 import PlayerJoinToggle from './core/PlayerJoinToggle.vue';
 import ViewToggleBtn from './core/ViewToggleBtn.vue';
 
-const inputResarchName = defineModel<string>({ required: true });
+const inputResearchName = defineModel<string>({ required: true });
 
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
@@ -34,7 +34,7 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
     <div class="row q-gutter-x-md items-center">
       <!-- 検索時に表示が絞られているにもかかわらず，非表示中のプレイヤー設定が書き換わらないように検索前にフォーカスを外しておく -->
       <SsInput
-        v-model="inputResarchName"
+        v-model="inputResearchName"
         dense
         :placeholder="$t('player.search')"
         :debounce="200"
@@ -56,10 +56,10 @@ function hasPlayerInWorld(playerUUID?: PlayerUUID) {
       <slot name="toggleLine" />
     </div>
 
-    <div v-show="inputResarchName !== ''">
+    <div v-show="inputResearchName !== ''">
       <span class="text-caption">{{ $t('player.newPlayer') }}</span>
       <SearchResultCard
-        v-model="inputResarchName"
+        v-model="inputResearchName"
         is-check-player-in-world
         :register-btn-text="$t('player.addPlayer')"
         :register-process="playerStore.addPlayer"

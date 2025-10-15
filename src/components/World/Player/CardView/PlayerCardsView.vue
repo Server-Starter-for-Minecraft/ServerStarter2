@@ -6,7 +6,7 @@ import { PlayerSetting } from 'app/src-electron/schema/player';
 import { useMainStore } from 'src/stores/MainStore';
 import PlayerCard from './core/PlayerCard.vue';
 
-const inputResarchName = defineModel<string>({ required: true });
+const inputResearchName = defineModel<string>({ required: true });
 
 const loadedPlayerSettings = computed(() => {
   const mainStore = useMainStore();
@@ -35,11 +35,11 @@ function playerSortFunc(
  * 読み込み済みプレイヤー一覧から、検索ワードにマッチするプレイヤーのみを返す
  */
 function filteredPlayers() {
-  if (inputResarchName.value === '') {
+  if (inputResearchName.value === '') {
     return loadedPlayerSettings.value;
   } else {
     return loadedPlayerSettings.value.filter((p) =>
-      p.name.toLowerCase().match(inputResarchName.value.toLowerCase())
+      p.name.toLowerCase().match(inputResearchName.value.toLowerCase())
     );
   }
 }

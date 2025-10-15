@@ -5,7 +5,7 @@ import { sortValue, strSort } from 'app/src-public/scripts/obj/objSort';
 import { useSystemStore } from 'src/stores/SystemStore';
 import GroupItem from './core/GroupItem.vue';
 
-const inputResarchName = defineModel<string>({ required: true });
+const inputResearchName = defineModel<string>({ required: true });
 
 const sysStore = useSystemStore();
 const autoFocus = ref(false);
@@ -15,11 +15,11 @@ const autoFocus = ref(false);
  */
 function filteredGroups() {
   const groups = sysStore.systemSettings.player.groups;
-  if (inputResarchName.value === '') {
+  if (inputResearchName.value === '') {
     return groups;
   } else {
     return recordValueFilter(groups, (g) =>
-      g.name.toLowerCase().includes(inputResarchName.value.toLowerCase())
+      g.name.toLowerCase().includes(inputResearchName.value.toLowerCase())
     );
   }
 }
