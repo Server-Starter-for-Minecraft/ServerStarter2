@@ -150,15 +150,17 @@ export const AllFabricVersion = z.object({
 });
 export type AllFabricVersion = z.infer<typeof AllFabricVersion>;
 
-export const Version = z.discriminatedUnion('type', [
-  UnknownVersion,
-  VanillaVersion,
-  SpigotVersion,
-  PapermcVersion,
-  ForgeVersion,
-  MohistmcVersion,
-  FabricVersion,
-]);
+export const Version = z
+  .discriminatedUnion('type', [
+    UnknownVersion,
+    VanillaVersion,
+    SpigotVersion,
+    PapermcVersion,
+    ForgeVersion,
+    MohistmcVersion,
+    FabricVersion,
+  ])
+  .catch({ type: 'unknown' });
 export type Version = z.infer<typeof Version>;
 
 export type VersionType = Version['type'];

@@ -2,6 +2,10 @@ import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { WorldID } from 'app/src-electron/schema/world';
 import { tError } from './i18n/utils/tFunc';
+import {
+  UNKNOWN_VERSION_ERROR_REASON,
+  useErrorWorldStore,
+} from './stores/ErrorWorldStore';
 import { useMainStore } from './stores/MainStore';
 import { useSystemStore } from './stores/SystemStore';
 import {
@@ -78,7 +82,7 @@ export async function afterWindow() {
  * ワールドの詳細情報を取得する
  */
 export async function getWorlds(wIds: WorldID[]) {
-  const mainStore = useMainStore();
+  const errorWorldStore = useErrorWorldStore();
 
   // Worldの詳細情報
   const worlds = await Promise.all(
@@ -89,12 +93,17 @@ export async function getWorlds(wIds: WorldID[]) {
   worlds.forEach((wFailable, idx) => {
     checkError(
       wFailable.value,
-      (w) => updateWorld(w),
+      (w) => {
+        if (w.version.type === 'unknown')
+          errorWorldStore.lock(w.id, UNKNOWN_VERSION_ERROR_REASON);
+        updateWorld(w);
+      },
       (e) => {
+        const ERROR_REASON = 'init_world_is_invalid';
         const errObj = tError(e);
         const wId = wIds[idx];
         // 正常に取得できなかったワールドを登録
-        mainStore.errorWorlds.add(wId);
+        errorWorldStore.lock(wId, ERROR_REASON);
         // エラー理由を登録
         registWorldError(wId, errObj);
         return errObj;

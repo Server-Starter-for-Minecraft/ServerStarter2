@@ -2,6 +2,7 @@
 import { getCssVar } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
+import { useErrorWorldStore } from 'src/stores/ErrorWorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsI18nT from 'src/components/util/base/ssI18nT.vue';
@@ -13,6 +14,7 @@ interface Prop {
 defineProps<Prop>();
 
 const mainStore = useMainStore();
+const errorWorldStore = useErrorWorldStore();
 const consoleStore = useConsoleStore();
 
 function stopServer() {
@@ -33,7 +35,7 @@ function stopButtonState() {
     free-width
     color="primary"
     :disable="
-      mainStore.errorWorlds.has(mainStore.selectedWorldID) ||
+      errorWorldStore.isError(mainStore.selectedWorldID) ||
       consoleStore.status(mainStore.selectedWorldID) !== 'Stop'
     "
     :to="to"

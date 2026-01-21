@@ -8,11 +8,16 @@ import {
   AllPapermcVersion,
   AllSpigotVersion,
   AllVanillaVersion,
+  Version,
   versionTypes,
 } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
+import {
+  UNKNOWN_VERSION_ERROR_REASON,
+  useErrorWorldStore,
+} from 'src/stores/ErrorWorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
@@ -28,6 +33,7 @@ import { openVerTypeWarningDialog } from './VersionSelecter/versionComparator';
 const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
+const errorWorldStore = useErrorWorldStore();
 const consoleStore = useConsoleStore();
 
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
@@ -63,6 +69,29 @@ function createServerMap(serverType: (typeof versionTypes)[number]) {
   };
 }
 
+/**
+ * 選択されたバージョン設定がUnknownでない場合は，エラー一覧からワールドを除外する
+ */
+function clearErrWrold(versionType: Version['type']) {
+  const worldId = mainStore.selectedWorldID;
+
+  if (versionType === 'unknown') {
+    errorWorldStore.lock(worldId, UNKNOWN_VERSION_ERROR_REASON);
+  } else {
+    errorWorldStore.unlock(worldId, UNKNOWN_VERSION_ERROR_REASON);
+  }
+}
+
+/**
+ * unknownバージョンはバリデーション違反として表示する
+ */
+function validateVersion(versionType: Version['type']) {
+  if (versionType === 'unknown') {
+    return $T('home.version.unknownError');
+  }
+  return true;
+}
+
 const selectedVerType = computed({
   get: () => {
     return mainStore.selectedVersionType;
@@ -77,10 +106,12 @@ const selectedVerType = computed({
   <!-- その際に、すでに存在しているバージョンのタイプのみは選択できるようにする -->
   <SsSelectScope
     v-model="selectedVerType"
+    @update:model-value="clearErrWrold(selectedVerType)"
     :options="validVersionTypes.map(createServerMap)"
     options-selected-class="text-primary"
     :label="$T('home.version.serverType')"
     :disable="consoleStore.status(mainStore.selectedWorldID) !== 'Stop'"
+    :rules="[(val) => validateVersion(val)]"
     class="q-pb-md"
   >
     <template v-slot:option="scope">

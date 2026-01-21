@@ -6,7 +6,10 @@ import { Remote } from 'app/src-electron/schema/remote';
 import { Version } from 'app/src-electron/schema/version';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { worldLoggers } from '../base';
 import { ServerSettingFile } from './base';
+
+const logger = worldLoggers().json;
 
 /**
  * ワールドのディレクトリ構成
@@ -67,17 +70,15 @@ export const serverJsonFile: ServerSettingFile<WorldSettings> = {
     const jsonPath = cwdPath.child(WORLD_SETTINGS_PATH);
 
     const data = await jsonPath.readJson(WorldSettings);
-    if (isError(data)) return data;
-
-    const fixed = WorldSettings.safeParse(data);
-
-    if (!fixed.success)
+    if (isError(data)) {
+      logger.load(cwdPath.path).error(data);
       return errorMessage.data.path.invalidContent.invalidWorldSettingJson({
         type: 'file',
         path: jsonPath.path,
       });
+    }
 
-    return fixed.data;
+    return data;
   },
   async save(cwdPath, value) {
     const jsonPath = cwdPath.child(WORLD_SETTINGS_PATH);
