@@ -13,6 +13,7 @@ export const isContentsExists: contentExists = {
   spigot: { datapack: true, plugin: true, mod: false },
   papermc: { datapack: true, plugin: true, mod: false },
   forge: { datapack: true, plugin: false, mod: true },
+  neoforge: { datapack: true, plugin: false, mod: true },
   mohistmc: { datapack: true, plugin: true, mod: true },
   fabric: { datapack: true, plugin: false, mod: true },
 };

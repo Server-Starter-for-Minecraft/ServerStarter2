@@ -1,5 +1,5 @@
 import { Failable } from 'app/src-electron/schema/error';
-import { ForgeVersion } from 'app/src-electron/schema/version';
+import { ForgeVersion, NeoForgeVersion } from 'app/src-electron/schema/version';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
@@ -14,7 +14,7 @@ import { getVersionJsonObj, VersionJson } from './versionJson';
  */
 export function constructExecPath(
   cwdPath: Path,
-  version: ForgeVersion,
+  version: ForgeVersion | NeoForgeVersion,
   ext: '.sh' | '.bat'
 ) {
   return cwdPath.child(`version${ext}`);
@@ -22,7 +22,7 @@ export function constructExecPath(
 
 export async function getNewForgeArgs(
   serverCwdPath: Path,
-  version: ForgeVersion,
+  version: ForgeVersion | NeoForgeVersion,
   oldVerJson: VersionJson
 ): Promise<Failable<VersionJson>> {
   // 1.17以降はrun.batが生成されるようになるのでその内容を解析して実行時引数を構成
@@ -35,7 +35,7 @@ export async function getNewForgeArgs(
       // 1.17.1以降
       return await getProgramArgumentsFromBat(
         runPath,
-        version.download_url,
+        oldVerJson.download.url,
         oldVerJson.javaVersion
       );
     }
@@ -46,7 +46,7 @@ export async function getNewForgeArgs(
       // 1.17.1以降
       return await getProgramArgumentsFromSh(
         runPath,
-        version.download_url,
+        oldVerJson.download.url,
         oldVerJson.javaVersion
       );
     }

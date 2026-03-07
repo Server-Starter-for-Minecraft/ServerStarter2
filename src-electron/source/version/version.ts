@@ -10,6 +10,7 @@ import { getVersionlist, VersionListLoader } from './getVersions/base';
 import { FabricVersionLoader } from './getVersions/fabric';
 import { ForgeVersionLoader } from './getVersions/forge';
 import { MohistMCVersionLoader } from './getVersions/mohistmc';
+import { NeoForgeVersionLoader } from './getVersions/neoForge';
 import { PaperVersionLoader } from './getVersions/papermc';
 import { SpigotVersionLoader } from './getVersions/spigot';
 import { VanillaVersionLoader } from './getVersions/vanilla';
@@ -23,6 +24,10 @@ import {
   ReadyMohistMCVersion,
   RemoveMohistMCVersion,
 } from './readyVersions/mohistmc';
+import {
+  ReadyNeoForgeVersion,
+  RemoveNeoForgeVersion,
+} from './readyVersions/neoForge';
 import {
   ReadyPaperMCVersion,
   RemovePaperMCVersion,
@@ -50,6 +55,7 @@ export class VersionContainer {
     this.versionGetters = {
       vanilla: new VanillaVersionLoader(cachePath),
       forge: new ForgeVersionLoader(cachePath),
+      neoforge: new NeoForgeVersionLoader(cachePath),
       spigot: new SpigotVersionLoader(cachePath),
       papermc: new PaperVersionLoader(cachePath),
       mohistmc: new MohistMCVersionLoader(cachePath),
@@ -108,6 +114,8 @@ export class VersionContainer {
           return new ReadyPaperMCVersion(version, this.cachePath);
         case 'forge':
           return new ReadyForgeVersion(version, this.cachePath);
+        case 'neoforge':
+          return new ReadyNeoForgeVersion(version, this.cachePath);
         case 'mohistmc':
           return new ReadyMohistMCVersion(version, this.cachePath);
         case 'fabric':
@@ -166,6 +174,9 @@ export class VersionContainer {
       case 'forge':
         const forgeFp = new RemoveForgeVersion(version, this.cachePath);
         return forgeFp.completeRemoveVersion(path);
+      case 'neoforge':
+        const neoForgeFp = new RemoveNeoForgeVersion(version, this.cachePath);
+        return neoForgeFp.completeRemoveVersion(path);
       case 'mohistmc':
         const mohistmcFp = new RemoveMohistMCVersion(version, this.cachePath);
         return mohistmcFp.completeRemoveVersion(path);
