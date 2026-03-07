@@ -25,6 +25,10 @@ import {
   RemoveMohistMCVersion,
 } from './readyVersions/mohistmc';
 import {
+  ReadyNeoForgeVersion,
+  RemoveNeoForgeVersion,
+} from './readyVersions/neoForge';
+import {
   ReadyPaperMCVersion,
   RemovePaperMCVersion,
 } from './readyVersions/papermc';
@@ -36,7 +40,6 @@ import {
   ReadyVanillaVersion,
   RemoveVanillaVersion,
 } from './readyVersions/vanilla';
-import { ReadyNeoForgeVersion, RemoveNeoForgeVersion } from './readyVersions/neoForge';
 
 /**
  * バージョンを管理するクラス
