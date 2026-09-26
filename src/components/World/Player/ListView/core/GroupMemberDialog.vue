@@ -29,9 +29,7 @@ const players = computed<(Player | PlayerUUID)[]>(() => {
   const uuids = new Set(prop.players);
   addPlayers.value.forEach((p) => uuids.add(p));
   delPlayers.value.forEach((p) => uuids.delete(p));
-  return Array.from(uuids).map(
-    (uuid) => loadedPlayers.value.get(uuid) ?? uuid
-  );
+  return Array.from(uuids).map((uuid) => loadedPlayers.value.get(uuid) ?? uuid);
 });
 
 // プレイヤーの検索名称
