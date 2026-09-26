@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { toRaw, watch } from 'vue';
+import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
-import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
+import { $T, setI18nFunc } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
   initSystemSettings,
@@ -15,14 +15,10 @@ import { setWorldSubscriber } from './stores/WorldStore';
 import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
-import {
-  setPlayerSearchSubscriber,
-  usePlayerStore,
-} from 'src/stores/WorldTabs/PlayerStore';
 import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
-import { checkError, setOpenDialogFunc } from 'src/components/Error/Error';
+import { setOpenDialogFunc } from 'src/components/Error/Error';
 import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
@@ -31,7 +27,6 @@ import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const propertyStore = usePropertyStore();
-const playerStore = usePlayerStore();
 const consoleStore = useConsoleStore();
 const progressStore = useProgressStore();
 
@@ -160,8 +155,6 @@ function setSubscribe() {
   setWorldSubscriber();
 
   setSysSettingsSubscriber();
-
-  setPlayerSearchSubscriber(playerStore);
 }
 
 // App.vueでの初期化処理がすべて終わったことを通知

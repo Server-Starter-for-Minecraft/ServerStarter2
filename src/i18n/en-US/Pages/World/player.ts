@@ -15,11 +15,11 @@ export const enUSPlayer: MessageSchema['player'] = {
   registeredPlayer: 'Registered player',
   notRegistered: 'No players registered',
   notFound: 'No player found',
-  groupList: 'Bulk registration by group ',
+  groupList: 'Groups',
   join: 'Only registered player',
   changeOP: 'Change OP level',
   makeGroup: 'Make group',
-  grouping: 'Group',
+  grouping: 'Create a group',
   groupingBtn: 'Add selected players to this group',
   deletePlayer: 'Delete player',
   selectPlayerFromLeft: ' Select player from left',
@@ -50,9 +50,20 @@ export const enUSPlayer: MessageSchema['player'] = {
   groupMember: 'Group member',
   existGroup: '{group} already exists',
   insertGroupName: 'Insert group name',
+  groupSettings: 'Group settings',
   makeNewGroup: 'Make the new Group',
   updateGroup: 'Update this group',
-  deleteGroup: 'Delete this group',
+  deleteGroup: {
+    title: 'Delete this group',
+    desc:
+      '{groupname} will be deleted. Deleted group cannot be restored.\n' +
+      'Members registered in the group will not be deleted from the world.',
+    okBtn: 'Delete',
+  },
+  renameGroup: 'Rename this group',
+  decideGroupName: 'Decide group name',
+  changeGroupColor: 'Change this group color',
+  editGroupMember: 'Add / Remove group members',
   groupNameDuplicate: '{group} already exists',
   makeNewGroupDecide:
     'Make new group  with selected {n} player | Make new group  with selected {n} players',
@@ -70,4 +81,11 @@ export const enUSPlayer: MessageSchema['player'] = {
     'Editing OP level for {n} player|Editing OP level for {n} players',
   sort: 'sort',
   resetPlayerSettings: 'Reset Player settings',
+  groupMemberDialog: {
+    title: 'Group member settings',
+    okBtn: 'Update members',
+    searchTitle: 'Search members to add',
+    memberTitle: 'Group members list',
+    loadingMembers: 'Loading group members',
+  },
 };

@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { UUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
+  groupId: UUID;
   groupName: string;
   color: string;
 }
@@ -11,7 +13,7 @@ const prop = defineProps<Prop>();
 const playerStore = usePlayerStore();
 
 async function onCardClicked() {
-  playerStore.selectGroup(prop.groupName);
+  playerStore.selectGroup(prop.groupId);
 }
 </script>
 

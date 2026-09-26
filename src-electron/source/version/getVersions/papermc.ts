@@ -7,20 +7,21 @@ import { AllPapermcVersion, VersionId } from '../../../schema/version';
 import { VersionListLoader } from './base';
 
 // Paperのバージョン一覧を返すURLとその解析パーサー
-const paperAllVersionsURL = 'https://api.papermc.io/v2/projects/paper';
+// v2 APIは廃止されたため，Fill v3 APIを利用する
+const paperAllVersionsURL = 'https://fill.papermc.io/v3/projects/paper';
 const paperAllVersionsZod = z.object({
-  project_id: z.enum(['paper']),
-  project_name: z.enum(['Paper']),
-  version_groups: z.string().array(),
-  versions: z.string().array(),
+  project: z.object({ id: z.string(), name: z.string() }),
+  // バージョングループ名 -> グループ内のバージョン一覧（いずれも新しい順）
+  versions: z.record(z.string().array()),
 });
 // 各バージョンのビルド情報一覧を返すURLとその解析パーサー
 const paperEachVersionURL = (versionName: string) =>
-  `https://api.papermc.io/v2/projects/paper/versions/${versionName}`;
+  `https://fill.papermc.io/v3/projects/paper/versions/${versionName}`;
 const paperEachVersionZod = z.object({
-  project_id: z.enum(['paper']),
-  project_name: z.enum(['Paper']),
-  version: z.string().transform((val) => val as VersionId),
+  version: z.object({
+    id: z.string().transform((val) => val as VersionId),
+  }),
+  // 新しい順
   builds: z.number().array(),
 });
 
@@ -39,7 +40,7 @@ export class PaperVersionLoader extends VersionListLoader<'papermc'> {
 
     // メタ情報を各バージョンオブジェクトに変換
     const results = await Promise.all(
-      allVerMeta.versions.reverse().map(loadEachVersion)
+      Object.values(allVerMeta.versions).flat().map(loadEachVersion)
     );
     return results.filter(isValid);
   }
@@ -66,7 +67,7 @@ async function loadEachVersion(
   if (isError(parsedEachVerJson)) return parsedEachVerJson;
 
   return {
-    id: parsedEachVerJson.version,
-    builds: parsedEachVerJson.builds.reverse(),
+    id: parsedEachVerJson.version.id,
+    builds: parsedEachVerJson.builds,
   };
 }

@@ -185,6 +185,12 @@ export interface API extends IAPI {
       nameOrUuid: string,
       mode: 'uuid' | 'name' | 'auto'
     ) => Promise<Failable<Player>>;
+    /**
+     * 過去に検索履歴のある中で名前が部分一致する全てのプレイヤーを返す
+     * キャッシュに存在しないプレイヤーは返さない
+     * （必要な場合はGetPlayerを別途呼び出す）
+     */
+    ResearchPlayer: (searchText: string) => Promise<Failable<Player[]>>;
 
     /** キャッシュされたデータを取得する */
     GetCacheContents: ((

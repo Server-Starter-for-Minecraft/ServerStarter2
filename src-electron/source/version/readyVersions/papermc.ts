@@ -13,19 +13,16 @@ import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
 
 const paperBuildApiURL = (v: PapermcVersion) =>
-  `https://api.papermc.io/v2/projects/paper/versions/${v.id}/builds/${v.build}`;
+  `https://fill.papermc.io/v3/projects/paper/versions/${v.id}/builds/${v.build}`;
 const paperBuildApiZod = z.object({
-  project_id: z.enum(['paper']),
-  project_name: z.enum(['Paper']),
-  version: z.string(),
-  build: z.number(),
+  id: z.number(),
   time: z.string(),
   channel: z.string(),
-  promoted: z.boolean(),
   downloads: z.object({
-    application: z.object({
+    'server:default': z.object({
       name: z.string(),
-      sha256: z.string(),
+      checksums: z.object({ sha256: z.string() }),
+      url: z.string(),
     }),
   }),
 });
@@ -63,10 +60,10 @@ export class ReadyPaperMCVersion extends ReadyVersion<PapermcVersion> {
 
     // ダウンロードURLを更新
     const returnVerJson = deepcopy(vanillaVerJson);
-    const { name, sha256 } = paperVerInfo.downloads.application;
+    const { url, checksums } = paperVerInfo.downloads['server:default'];
     returnVerJson.download = {
-      url: `${buildURL}/downloads/${name}`,
-      hash: sha256,
+      url,
+      hash: checksums.sha256,
     };
     p?.delete();
     return returnVerJson;
