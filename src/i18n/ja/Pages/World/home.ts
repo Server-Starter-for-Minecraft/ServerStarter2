@@ -2,6 +2,7 @@ export const jaHome = {
   worldName: {
     title: 'ワールド名',
     enterName: '半角英数字でワールド名を入力',
+    emptyError: 'ワールド名を入力してください',
   },
   version: {
     title: 'バージョン',
@@ -17,6 +18,7 @@ export const jaHome = {
     latestSnapshot: '最新のスナップショット',
     latestRelease: '最新のリリース',
     latestVersion: '最新のバージョン',
+    unknownError: 'バージョン情報が不明です。バージョンを指定してください。',
   },
   versionChange: {
     title: 'サーバーの種類を変更',

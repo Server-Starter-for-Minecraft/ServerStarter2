@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { QSelect } from 'quasar';
+
 interface Prop {
   options?: readonly any[];
   label?: string;
@@ -7,20 +10,28 @@ interface Prop {
   optionLabel?: string;
   optionValue?: string;
   loading?: boolean;
+  rules?: ((val: any) => boolean | string)[];
 }
 
 const prop = defineProps<Prop>();
 const model = defineModel();
+const selectRef = ref<InstanceType<typeof QSelect> | null>(null);
+
+onMounted(() => {
+  selectRef.value?.validate();
+});
 </script>
 
 <template>
   <q-select
+    ref="selectRef"
     v-model="model"
     filled
     :options="options"
     :label="label"
     :dense="dense"
     :loading="loading"
+    :rules="rules"
     :popup-content-style="{ fontSize: '0.9rem' }"
     :disable="disable"
     emit-value

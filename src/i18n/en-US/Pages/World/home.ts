@@ -4,6 +4,7 @@ export const enUSHome: MessageSchema['home'] = {
   worldName: {
     title: 'World Name',
     enterName: 'Enter your world name',
+    emptyError: 'Please enter your world name',
   },
   version: {
     title: 'Versions',
@@ -19,6 +20,7 @@ export const enUSHome: MessageSchema['home'] = {
     latestSnapshot: 'Latest snapshot',
     latestRelease: 'Latest release',
     latestVersion: 'Latest version',
+    unknownError: 'This version is unknown. Please specify the version.',
   },
   versionChange: {
     title: 'Checking change the server type',

@@ -27,7 +27,7 @@ type MohistBuildType = AllMohistmcVersion[number]['builds'][number];
  * 描画する際にForgeの対応番号を記載する
  */
 function getNumberName(build: MohistBuildType) {
-  const showingName = build.name.slice(0, 8);
+  const showingName = build.id;
   if (build.forge_version !== void 0) {
     return `${showingName} (Forge: ${build.forge_version})`;
   } else {
@@ -57,26 +57,30 @@ function updateWorldVersion(id: VersionId, build: MohistBuildType) {
   }
 }
 
-const mohistVers = () => {
-  return prop.versionData.map((ver) => ver.id);
-};
+/**
+ * デフォルトバージョン（最新のバージョン）を取得する
+ */
+function getDefaultVersion() {
+  return prop.versionData[0];
+}
+
 const mohistVer = computed({
   get: () => {
     const ver = mainStore.world?.version;
-    if (!ver || ver.type === 'unknown') return '';
+    if (!ver || ver.type === 'unknown') return getDefaultVersion();
+
     // 前のバージョンがMohistに存在しないバージョンの時は，最新バージョンを割り当てる
-    if (mohistVers().indexOf(ver.id ?? '') === -1) {
-      return mohistVers()[0];
-    }
-    return ver.id ?? '';
+    const findVer = prop.versionData.find((ops) => ops.id === ver.id);
+    if (!findVer) return getDefaultVersion();
+
+    return findVer;
   },
-  set: (val) => {
-    if (val === '') return;
-    const newVer = buildMohistVer(val, mohistBuilds(val)[0]);
+  set: (ver) => {
+    const newVer = buildMohistVer(ver.id, ver.builds[0]);
     if (mainStore.worldBack?.version.type !== 'unknown') {
       openWarningDialog(
         $q,
-        mohistVers(),
+        prop.versionData.map((ops) => ops.id),
         mainStore.worldBack?.version ?? newVer,
         newVer,
         'id'
@@ -85,22 +89,11 @@ const mohistVer = computed({
   },
 });
 
-const mohistBuilds = (mVer: string): MohistBuildType[] => {
-  return (
-    prop.versionData.find((ver) => ver.id === mVer)?.builds ?? [
-      {
-        id: -1,
-        name: 'invalidBuild',
-        jar: { url: '' },
-      },
-    ]
-  );
-};
 const mohistBuild = computed({
   get: (): MohistBuildType => {
     // 前のバージョンがMohistMCでない時は，最新のビルド番号を割り当てる
     if (mainStore.world?.version.type !== 'mohistmc') {
-      return mohistBuilds(mohistVer.value)[0];
+      return mohistVer.value.builds[0];
     }
     return {
       id: mainStore.world.version.buildId,
@@ -112,30 +105,27 @@ const mohistBuild = computed({
       },
     };
   },
-  set: (val) => {
-    const ver = mohistVer.value;
-    if (ver === '') return;
-    updateWorldVersion(ver, val);
+  set: (build) => {
+    updateWorldVersion(mohistVer.value.id, build);
   },
 });
 
 // 表示内容と内部データを整合させる
-if (mohistVer.value !== '') {
-  updateWorldVersion(mohistVer.value, mohistBuild.value);
-}
+updateWorldVersion(mohistVer.value.id, mohistBuild.value);
 </script>
 
 <template>
   <div class="row justify-between q-gutter-md">
     <SsSelect
-      v-if="mohistVer !== ''"
       v-model="mohistVer"
       :options="
-        mohistVers().map((ver, idx) => {
+        versionData.map((ver, idx) => {
           return {
             data: ver,
             label:
-              idx === 0 ? `${ver}【${$T('home.version.latestVersion')}】` : ver,
+              idx === 0
+                ? `${ver.id}【${$T('home.version.latestVersion')}】`
+                : ver.id,
           };
         })
       "
@@ -149,13 +139,13 @@ if (mohistVer.value !== '') {
     <SsSelect
       v-model="mohistBuild"
       :options="
-        mohistBuilds(mohistVer).map((val, idx) => {
+        mohistVer.builds.map((build, idx) => {
           return {
-            data: val,
+            data: build,
             label:
               idx === 0
-                ? `${getNumberName(val)} (${$T('home.version.recommend')})`
-                : getNumberName(val),
+                ? `${getNumberName(build)} (${$T('home.version.recommend')})`
+                : getNumberName(build),
           };
         })
       "

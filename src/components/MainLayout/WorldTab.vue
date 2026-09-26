@@ -1,46 +1,43 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
+import { Version } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
+import { useErrorWorldStore } from 'src/stores/ErrorWorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { WorldItem } from 'src/stores/WorldStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Props {
-  world_item: WorldItem;
+  worldItem: WorldItem;
 }
 const prop = defineProps<Props>();
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
+const errorWorldStore = useErrorWorldStore();
 const consoleStore = useConsoleStore();
 
 const router = useRouter();
 async function startServer(
-  mStore: typeof mainStore,
+  eStore: typeof errorWorldStore,
   cStore: typeof consoleStore
 ) {
   // エラーを含むワールドの場合は実行しない
-  if (mStore.errorWorlds.has(prop.world_item.world.id)) {
-    return;
-  }
+  if (eStore.isError(prop.worldItem.world.id)) return;
 
   // Abbrは実行できない
-  if (prop.world_item.type === 'abbr') {
-    return;
-  }
+  if (prop.worldItem.type === 'abbr') return;
 
   // 選択されているワールドを更新
   selectWorldIdx();
 
   // Stop状態でない時にはサーバーを起動できないようにする
-  if (cStore.status(prop.world_item.world.id) !== 'Stop') {
-    return;
-  }
+  if (cStore.status(prop.worldItem.world.id) !== 'Stop') return;
 
   // サーバーの起動を開始
   await router.push('/console');
@@ -55,23 +52,24 @@ const runBtnHovered = ref(false);
  * ワールドを選択した際に行うワールド関連の初期化
  */
 function selectWorldIdx() {
-  mainStore.showWorld(prop.world_item.world);
-  consoleStore.initTab(prop.world_item.world.id);
+  mainStore.showWorld(prop.worldItem.world);
+  consoleStore.initTab(prop.worldItem.world.id);
 }
 
-const tooltipText = () => {
-  switch (prop.world_item.type) {
+/** バージョンの表示名を定義 */
+const showingVersion = (v: Version) => {
+  if (v.type === 'unknown') return '';
+  else if (v.type === 'vanilla') return v.id;
+  else return `${v.id} (${$T(`home.serverType.${v.type}`)})`;
+};
+
+/** Tooltipの表示方法を定義 */
+const tooltipText = (w: WorldItem) => {
+  switch (w.type) {
     case 'abbr':
-      return prop.world_item.world.name;
+      return w.world.name;
     case 'edited':
-      return `${prop.world_item.world.name}
-              ${
-                prop.world_item.world.version.type === 'vanilla'
-                  ? prop.world_item.world.version.id
-                  : `${prop.world_item.world.version.id} (${$T(
-                      `home.serverType.${prop.world_item.world.version.type}`
-                    )})`
-              }`;
+      return `${w.world.name}\n${showingVersion(w.world.version)}`;
   }
 };
 </script>
@@ -81,23 +79,23 @@ const tooltipText = () => {
     clickable
     :active="
       (clicked =
-        mainStore.selectedWorldID === world_item.world.id &&
+        mainStore.selectedWorldID === worldItem.world.id &&
         $route.path.slice(0, 7) !== '/system')
     "
     :focused="
       (clicked =
-        mainStore.selectedWorldID === world_item.world.id &&
+        mainStore.selectedWorldID === worldItem.world.id &&
         $route.path.slice(0, 7) !== '/system')
     "
     @click="selectWorldIdx"
-    v-on:dblclick="() => startServer(mainStore, consoleStore)"
+    v-on:dblclick="() => startServer(errorWorldStore, consoleStore)"
     :to="$route.path.slice(0, 7) === '/system' ? '/' : $route"
     @mouseover="itemHovered = true"
     @mouseleave="itemHovered = false"
     class="worldBlock"
     :style="{
       'border-left':
-        mainStore.selectedWorldID === world_item.world.id &&
+        mainStore.selectedWorldID === worldItem.world.id &&
         $route.path.slice(0, 7) !== '/system'
           ? `.3rem solid ${getCssVar('primary')}`
           : '.3rem solid transparent',
@@ -112,14 +110,14 @@ const tooltipText = () => {
       <q-avatar square size="4.5rem">
         <!-- 正常に読み込めた場合はワールドアイコンを表示 -->
         <q-img
-          v-if="world_item.type === 'edited'"
-          :src="world_item.world.avater_path ?? assets.png.unset"
+          v-if="worldItem.type === 'edited'"
+          :src="worldItem.world.avater_path ?? assets.png.unset"
           :ratio="1"
           style="image-rendering: pixelated"
         />
         <!-- 読込中 -->
         <q-spinner
-          v-else-if="!mainStore.errorWorlds.has(world_item.world.id)"
+          v-else-if="!errorWorldStore.isError(worldItem.world.id)"
           color="primary"
         />
         <!-- 読込失敗 -->
@@ -134,13 +132,13 @@ const tooltipText = () => {
         <!-- 正常に読み込めた && 停止中 && ホバー中 の時にのみ実行ボタンを表示 -->
         <q-btn
           v-show="
-            !mainStore.errorWorlds.has(world_item.world.id) &&
-            consoleStore.status(world_item.world.id) === 'Stop' &&
-            world_item.type === 'edited' &&
+            !errorWorldStore.isError(worldItem.world.id) &&
+            consoleStore.status(worldItem.world.id) === 'Stop' &&
+            worldItem.type === 'edited' &&
             runBtnHovered &&
             sysStore.systemSettings.user.drawerWidth > 200
           "
-          @click="() => startServer(mainStore, consoleStore)"
+          @click="() => startServer(errorWorldStore, consoleStore)"
           flat
           dense
           size="2rem"
@@ -150,7 +148,7 @@ const tooltipText = () => {
           style="opacity: 0.7"
         />
         <div
-          v-show="consoleStore.status(world_item.world.id) !== 'Stop'"
+          v-show="consoleStore.status(worldItem.world.id) !== 'Stop'"
           class="absolute-top-right badge"
         >
           <q-badge
@@ -159,7 +157,7 @@ const tooltipText = () => {
             style="background-color: #262626; aspect-ratio: 1"
           >
             <q-icon
-              v-if="consoleStore.status(world_item.world.id) === 'CheckLog'"
+              v-if="consoleStore.status(worldItem.world.id) === 'CheckLog'"
               name="notes"
               size="1rem"
             />
@@ -177,30 +175,28 @@ const tooltipText = () => {
       </q-avatar>
     </q-item-section>
     <q-item-section>
-      <q-item-label class="worldName text-omit">{{
-        world_item.world.name
-      }}</q-item-label>
-      <q-item-label v-if="world_item.type === 'edited'" class="versionName">
-        {{
-          world_item.world.version.type === 'vanilla'
-            ? world_item.world.version.id
-            : `${world_item.world.version.id} (${$t(
-                `home.serverType.${world_item.world.version.type}`
-              )})`
-        }}
+      <q-item-label class="worldName text-omit">
+        {{ worldItem.world.name }}
+      </q-item-label>
+      <q-item-label v-if="worldItem.type === 'edited'" class="versionName">
+        {{ showingVersion(worldItem.world.version) }}
       </q-item-label>
       <q-item-label
-        v-if="world_item.type === 'edited' && world_item.world.last_date"
+        v-if="worldItem.type === 'edited' && worldItem.world.last_date"
         class="date text-omit"
       >
         {{
           $t('mainLayout.customMapImporter.lastPlayed', {
-            datetime: $d(world_item.world.last_date, 'dateTime'),
+            datetime: $d(worldItem.world.last_date, 'dateTime'),
           })
         }}
       </q-item-label>
     </q-item-section>
-    <SsTooltip :name="tooltipText()" anchor="center end" self="center start" />
+    <SsTooltip
+      :name="tooltipText(worldItem)"
+      anchor="center end"
+      self="center start"
+    />
   </q-item>
 </template>
 

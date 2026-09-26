@@ -24,7 +24,6 @@ export const useMainStore = defineStore('mainStore', {
       selectedWorldID: '' as WorldID,
       inputWorldName: '' as WorldName,
       worldSearchText: '',
-      errorWorlds: new Set<WorldID>(),
       selectedVersionType: 'vanilla' as Version['type'],
       worldIPs: {} as Record<WorldID, string>,
     };

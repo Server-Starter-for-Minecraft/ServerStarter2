@@ -4,7 +4,6 @@ import { useQuasar } from 'quasar';
 import {
   AllVanillaVersion,
   VanillaVersion,
-  VersionId,
 } from 'app/src-electron/schema/version';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -24,10 +23,7 @@ const consoleStore = useConsoleStore();
 const isRelease = ref(true);
 const latestReleaseID = prop.versionData.find((ops) => ops.release)?.id;
 
-function buildVanillaVer(ver: {
-  id: VersionId;
-  release: boolean;
-}): VanillaVersion {
+function buildVanillaVer(ver: AllVanillaVersion[number]): VanillaVersion {
   return {
     id: ver.id,
     type: 'vanilla' as const,
@@ -37,25 +33,31 @@ function buildVanillaVer(ver: {
 /**
  * ワールドオブジェクトのバージョン情報を書き換える
  */
-function updateWorldVersion(ver: { id: VersionId; release: boolean }) {
+function updateWorldVersion(ver: AllVanillaVersion[number]) {
   if (mainStore.world?.version) {
     mainStore.world.version = buildVanillaVer(ver);
   }
 }
 
+/**
+ * デフォルトバージョン（最新リリース版または最新のバージョン）を取得する
+ */
+function getDefaultVersion() {
+  return prop.versionData.find((ops) => ops.release) ?? prop.versionData[0];
+}
+
 const vanillaVer = computed({
   get: () => {
     const ver = mainStore.world?.version;
-    if (!ver || ver.type === 'unknown') return '';
+    if (!ver || ver.type === 'unknown') return getDefaultVersion();
+
     // 前のバージョンがVanillaに存在しないバージョンの時は，最新バージョンを割り当てる
     const findVer = prop.versionData.find((ops) => ops.id === ver.id);
-    if (!findVer) {
-      return prop.versionData.find((ops) => ops.release) ?? prop.versionData[0];
-    }
+    if (!findVer) return getDefaultVersion();
+
     return findVer;
   },
   set: (val) => {
-    if (val === '') return;
     const newVer = buildVanillaVer(val);
     if (mainStore.worldBack?.version.type !== 'unknown') {
       openWarningDialog(
@@ -70,9 +72,7 @@ const vanillaVer = computed({
 });
 
 // 表示内容と内部データを整合させる
-if (vanillaVer.value !== '') {
-  updateWorldVersion(vanillaVer.value);
-}
+updateWorldVersion(vanillaVer.value);
 </script>
 
 <template>
