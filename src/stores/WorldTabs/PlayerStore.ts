@@ -75,7 +75,13 @@ export const usePlayerStore = defineStore('playerStore', {
       }
 
       // グループプレイヤー全員にFocusを当てる
-      groupMembers.forEach(this.addFocus);
+      // エディター用の呼び出しは，取得中にエディターが閉じられた／別グループに切り替わった場合は適用しない
+      if (
+        regist4World ||
+        (this.openGroupEditor && this.selectedGroupId === gId)
+      ) {
+        groupMembers.forEach(this.addFocus);
+      }
     },
     /**
      * プレイヤーをワールドのプレイヤー一覧へ追加

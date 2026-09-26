@@ -69,7 +69,9 @@ export abstract class VersionListLoader<T extends VersionType> {
     const versionIndexMap = Object.fromEntries(entries);
 
     // 取得したバージョン順で`ids`を並び替え
-    ids.sort((a, b) => versionIndexMap[a] - versionIndexMap[b]);
+    // Manifestに掲載のないバージョンは最新扱いとして先頭に置く
+    const indexOf = (id: string) => versionIndexMap[id] ?? -1;
+    ids.sort((a, b) => indexOf(a) - indexOf(b));
   }
 }
 

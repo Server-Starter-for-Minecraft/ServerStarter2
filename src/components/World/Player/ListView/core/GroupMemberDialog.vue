@@ -151,6 +151,17 @@ function onOkClick() {
             <q-item-section>
               <q-skeleton type="text" />
             </q-item-section>
+            <!-- 取得に失敗したメンバーも UUID から削除できるようにする -->
+            <q-item-section side>
+              <q-btn
+                outline
+                dense
+                icon="close"
+                :label="$t('general.delete')"
+                color="negative"
+                @click="onRemovedPlayer(player)"
+              />
+            </q-item-section>
           </q-item>
           <q-item v-else dense>
             <q-item-section avatar style="min-width: 0">
