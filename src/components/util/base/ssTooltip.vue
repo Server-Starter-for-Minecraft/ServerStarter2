@@ -39,6 +39,7 @@ interface Prop {
   name: string;
   anchor?: Anchor;
   self?: Self;
+  offset?: [number, number];
   fontSize?: string;
   maxWidth?: string;
 }
@@ -46,7 +47,13 @@ defineProps<Prop>();
 </script>
 
 <template>
-  <q-tooltip :anchor="anchor" :self="self" :delay="500" class="bg-transparent">
+  <q-tooltip
+    :anchor="anchor"
+    :self="self"
+    :delay="500"
+    :offset="offset"
+    class="bg-transparent"
+  >
     <div
       class="q-pa-xs"
       :style="{

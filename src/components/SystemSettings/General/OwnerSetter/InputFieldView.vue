@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
-const playerStore = usePlayerStore();
-
-// ページを読み込んだ時に検索欄をリセット
-playerStore.searchName = '';
+const model = defineModel<string>({ required: false });
 </script>
 
 <template>
   <div>
     <span class="text-caption">{{ $t('owner.searchPlayer') }}</span>
     <SsInput
-      v-model="playerStore.searchName"
+      v-model="model"
       dense
       :placeholder="$t('player.search')"
       :debounce="200"

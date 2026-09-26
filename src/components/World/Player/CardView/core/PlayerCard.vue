@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, Ref, ref } from 'vue';
 import { getCssVar } from 'quasar';
-import { values } from 'app/src-public/scripts/obj/obj';
-import { strSort } from 'app/src-public/scripts/obj/objSort';
+import { keys, toEntries } from 'app/src-public/scripts/obj/obj';
+import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
+import { sortValue, strSort } from 'app/src-public/scripts/obj/objSort';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
+import { Player } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { FrontPlayerGroup } from 'src/stores/SystemStore/converters/playerGroup';
@@ -22,45 +24,40 @@ const prop = defineProps<Prop>();
 
 const sysStore = useSystemStore();
 const playerStore = usePlayerStore();
-const player = ref(playerStore.cachePlayers[prop.uuid]);
 const isBelongingGroups = computed(
-  () => getGroups(sysStore.systemSettings.player.groups).length > 0
+  () => keys(getGroups(sysStore.systemSettings.player.groups)).length > 0
 );
+const player: Ref<undefined | Player> = ref(undefined);
 
-// キャッシュデータに存在しないプレイヤーが指定された場合はデータの取得を行う
+function onCardClicked() {
+  if (player.value === void 0) return;
+  if (playerStore.focusPlayerIds.has(player.value.uuid)) {
+    playerStore.unFocus(player.value);
+  } else {
+    playerStore.addFocus(player.value);
+  }
+}
+
+function getGroups(groups: FrontPlayerGroup) {
+  const filtered = recordValueFilter(groups, (g) =>
+    g.players.includes(prop.uuid)
+  );
+  const sorted = sortValue(filtered, (a, b) => strSort(a.name, b.name));
+  return sorted;
+}
+
+// プレイヤーデータをAPIから取得
 onBeforeMount(async () => {
   if (player.value === void 0) {
     checkError(
       await window.API.invokeGetPlayer(prop.uuid, 'uuid'),
       (p) => {
         player.value = p;
-        playerStore.addPlayer(p);
       },
       undefined
     );
   }
 });
-
-function onCardClicked() {
-  if (playerStore.focusCards.has(prop.uuid)) {
-    playerStore.unFocus(prop.uuid);
-  } else {
-    playerStore.addFocus(prop.uuid);
-  }
-
-  if (playerStore.openGroupEditor) {
-    playerStore.updateGroup(playerStore.selectedGroupId, (g) => {
-      g.players = [...playerStore.focusCards];
-      return g;
-    });
-  }
-}
-
-function getGroups(groups: FrontPlayerGroup) {
-  return values(groups)
-    .filter((g) => g.players.includes(prop.uuid))
-    .sort((a, b) => strSort(a.name, b.name));
-}
 </script>
 
 <template>
@@ -68,7 +65,7 @@ function getGroups(groups: FrontPlayerGroup) {
     v-if="player !== void 0"
     @click="onCardClicked"
     :style="
-      playerStore.focusCards.has(prop.uuid)
+      Array.from(playerStore.focusPlayerIds).some((uuid) => uuid === prop.uuid)
         ? { 'border-color': getCssVar('primary') }
         : ''
     "
@@ -107,10 +104,16 @@ function getGroups(groups: FrontPlayerGroup) {
       <q-card-section v-show="isBelongingGroups" class="q-py-none">
         <div class="q-gutter-xs q-pb-sm" style="width: 12.5rem">
           <template
-            v-for="g in getGroups(sysStore.systemSettings.player.groups)"
+            v-for="[gId, g] in toEntries(
+              getGroups(sysStore.systemSettings.player.groups)
+            )"
             :key="g"
           >
-            <GroupBadgeView :group-name="g.name" :color="g.color" />
+            <GroupBadgeView
+              :group-id="gId"
+              :group-name="g.name"
+              :color="g.color"
+            />
           </template>
         </div>
       </q-card-section>

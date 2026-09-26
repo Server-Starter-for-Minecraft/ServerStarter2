@@ -67,9 +67,6 @@ export async function afterWindow() {
   // バージョンの読み込み
   getAllVersion(false);
 
-  // システムに登録済みのプレイヤーデータを取得しておく
-  getCachePlayers();
-
   // datapackなどのCacheコンテンツの取得
   getCacheContents();
 }
@@ -129,25 +126,6 @@ async function getAllVersion(useCache: boolean) {
       );
     }
   });
-}
-
-/**
- * プレイヤーデータの取得を行っておき、キャッシュデータの作成を行う
- */
-async function getCachePlayers() {
-  const sysStore = useSystemStore();
-  const playerStore = usePlayerStore();
-  const playerUUIDs = sysStore.systemSettings.player.players;
-  const failablePlayers = await Promise.all(
-    playerUUIDs.map((uuid) => window.API.invokeGetPlayer(uuid, 'uuid'))
-  );
-  failablePlayers.forEach((fp) =>
-    checkError(
-      fp,
-      (p) => (playerStore.cachePlayers[p.uuid] = p),
-      (e) => tError(e)
-    )
-  );
 }
 
 /**

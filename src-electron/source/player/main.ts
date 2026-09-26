@@ -42,6 +42,22 @@ export async function getPlayer(
   }
 }
 
+/** 特定の名前から検索履歴のあるプレイヤーを返す */
+export async function researchPlayer(
+  searchText: string
+): Promise<Failable<Player[]>> {
+  if (!isName(searchText)) {
+    return errorMessage.value.playerName({
+      value: searchText,
+    });
+  }
+  const cache = await getPlayerCache();
+  const result = Object.values(cache).filter((x) =>
+    x.name.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
+  );
+  return result;
+}
+
 function isName(name: string): boolean {
   return name.match(/^[a-zA-Z0-9_]{2,16}$/gm) !== null;
 }
