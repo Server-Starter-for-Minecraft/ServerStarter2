@@ -86,18 +86,25 @@ export async function renameFilesFromInstaller(
         : '';
     const match = filename.match(matchRgx);
     if (match) {
-      await file.rename(getJarPath(cachePath));
-      return;
+      const renameJarRes = await file.rename(getJarPath(cachePath));
+      if (isError(renameJarRes)) return renameJarRes;
+      continue;
     }
 
     // 生成されたbatのファイル名を変更 (batを生成するバージョンだった場合)
     if (filename === 'run.bat') {
-      await file.rename(constructExecPath(cachePath, version, '.bat'));
+      const renameBatRes = await file.rename(
+        constructExecPath(cachePath, version, '.bat')
+      );
+      if (isError(renameBatRes)) return renameBatRes;
     }
 
     // 生成されたshのファイル名を変更 (shを生成するバージョンだった場合)
     if (filename === 'run.sh') {
-      await file.rename(constructExecPath(cachePath, version, '.sh'));
+      const renameShRes = await file.rename(
+        constructExecPath(cachePath, version, '.sh')
+      );
+      if (isError(renameShRes)) return renameShRes;
     }
   }
 }

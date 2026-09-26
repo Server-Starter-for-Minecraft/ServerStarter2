@@ -45,7 +45,7 @@ export const enUSHome: MessageSchema['home'] = {
     papermc: 'A server that makes Spigot run more lightly.',
     forge: 'Most common servers that the base for mods.',
     neoforge:
-      'A new mod server that is not compatible with Forge, the successor to Forge.',
+      'A successor to Forge that is not compatible with it. A new mod server.',
     mohistmc:
       'Server based on Forge, but allows both mods and plugins to be installed.',
     fabric:

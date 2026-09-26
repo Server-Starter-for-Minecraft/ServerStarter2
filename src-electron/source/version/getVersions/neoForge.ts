@@ -57,6 +57,8 @@ async function loadAllVersion() {
  *
  * - 20.2.8-beta -> `1.20.2`
  * - 0.25w14craftmine.4-beta -> `25w14craftmine`
+ * - 26.1.0.5-beta -> `26.1` (年ベースの新形式，patchが0の場合は省略)
+ * - 26.1.1.5-beta -> `26.1.1`
  */
 function getSpecificMCver(neoVer: string): VersionId {
   const [major, minor, patch] = neoVer.split('.', 3);
@@ -65,6 +67,9 @@ function getSpecificMCver(neoVer: string): VersionId {
   if (major === '0') {
     // 0.25w14craftmine.4-beta -> 25w14craftmine
     tmpVer = minor;
+  } else if (Number(major) >= 26) {
+    // 26.1.0.5-beta -> 26.1 / 26.1.1.5-beta -> 26.1.1
+    tmpVer = patch === '0' ? `${major}.${minor}` : `${major}.${minor}.${patch}`;
   } else {
     // 20.2.8-beta -> 1.20.2
     tmpVer = `1.${major}.${minor}`;

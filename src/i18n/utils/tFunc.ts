@@ -20,6 +20,7 @@ const translationArgs: Record<string, FullKeys<MessageSchema>> = {
   spigot: 'home.serverType.spigot',
   papermc: 'home.serverType.papermc',
   forge: 'home.serverType.forge',
+  neoforge: 'home.serverType.neoforge',
   mohistmc: 'home.serverType.mohistmc',
   fabric: 'home.serverType.fabric',
   file: 'general.file',

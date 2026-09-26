@@ -113,7 +113,7 @@ export class RemoveNeoForgeVersion extends RemoveVersion<NeoForgeVersion> {
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
 
-  describe('mohistmc version', async () => {
+  describe('neoforge version', async () => {
     const path = await import('path');
 
     // 一時使用フォルダを初期化
@@ -150,7 +150,7 @@ if (import.meta.vitest) {
       return BytesData.fromBuffer(Buffer.from(buffer));
     });
 
-    test('setMohistJar', { timeout: 1000 * 60 }, async () => {
+    test('setNeoForgeJar', { timeout: 1000 * 60 }, async () => {
       const outputPath = serverFolder.child(ver20.id);
       const readyOperator = new ReadyNeoForgeVersion(ver20, cacheFolder);
       const cachePath = readyOperator.cachePath;

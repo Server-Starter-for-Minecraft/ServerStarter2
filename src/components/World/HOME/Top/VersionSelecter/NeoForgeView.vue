@@ -74,7 +74,7 @@ const neoforgeBuilds = (fVer: string) => {
 };
 const neoforgeBuild = computed({
   get: () => {
-    // 前のバージョンがPaperでない時は，最新のビルド番号を割り当てる
+    // 前のバージョンがNeoForgeでない時は，最新のビルド番号を割り当てる
     if (mainStore.world?.version.type !== 'neoforge') {
       return neoforgeBuilds(neoforgeVer.value)[0].version;
     }

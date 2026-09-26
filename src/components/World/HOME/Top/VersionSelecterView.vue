@@ -116,7 +116,7 @@ const selectedVerType = computed({
     :version-data="forges()"
   />
   <NeoForge
-    v-else-if="mainStore.selectedVersionType === 'neoforge'"
+    v-else-if="mainStore.selectedVersionType === 'neoforge' && neoforges()"
     :version-data="neoforges()"
   />
   <MohistMC
