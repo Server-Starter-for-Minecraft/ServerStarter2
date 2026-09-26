@@ -12,7 +12,9 @@ const prop = defineProps<Prop>();
 const playerStore = usePlayerStore();
 
 function onClick() {
+  // フォーカス外のプレイヤーの場合は，当該プレイヤーのみを削除対象とする
   if (!playerStore.focusPlayerIds.has(prop.player.uuid)) {
+    playerStore.unFocus();
     playerStore.addFocus(prop.player);
   }
   playerStore.removePlayer();

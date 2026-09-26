@@ -102,10 +102,12 @@ export const usePlayerStore = defineStore('playerStore', {
       // フォーカスされているプレイヤーを削除
       this.focusPlayerIds.forEach((uuid) => {
         if (mainStore.world && isValid(mainStore.world.players)) {
-          mainStore.world.players.splice(
-            mainStore.world.players.map((p) => p.uuid).indexOf(uuid),
-            1
+          const index = mainStore.world.players.findIndex(
+            (p) => p.uuid === uuid
           );
+          if (index !== -1) {
+            mainStore.world.players.splice(index, 1);
+          }
         }
       });
 

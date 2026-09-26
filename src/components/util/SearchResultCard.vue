@@ -57,6 +57,8 @@ watch(
         window.API.invokeResearchPlayer(newVal),
         window.API.invokeGetPlayer(newVal, 'name'),
       ]);
+      // 応答待ちの間に検索ワードが変更された場合は，古い結果を破棄
+      if (newVal !== searchNameModel.value) return;
       // 検索履歴のあるプレイヤー一覧
       if (isValid(results)) {
         // 除外プレイヤーをフィルタリングして格納

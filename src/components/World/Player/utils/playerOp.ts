@@ -3,10 +3,10 @@ import { OpLevel } from 'app/src-electron/schema/player';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 
-const mainStore = useMainStore();
-const consoleStore = useConsoleStore();
-
 export const isValidBtn = (opLevel: 0 | OpLevel) => {
+  const mainStore = useMainStore();
+  const consoleStore = useConsoleStore();
+
   // 権限無し or サーバー起動前なら設定可能
   if (
     opLevel === 0 ||

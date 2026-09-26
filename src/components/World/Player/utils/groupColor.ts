@@ -22,6 +22,8 @@ export const old2newKey = {
 } as const;
 
 export const getColorLabel = (label2code: MinecraftColors, color: string) => {
-  const oldKey = keys(label2code)[values(label2code).indexOf(color)];
+  const index = values(label2code).indexOf(color);
+  // 未定義の色コードの場合は白にフォールバック
+  const oldKey = index === -1 ? 'white' : keys(label2code)[index];
   return old2newKey[oldKey];
 };

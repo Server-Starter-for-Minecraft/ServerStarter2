@@ -38,8 +38,9 @@ function filteredPlayers() {
   if (inputResearchName.value === '') {
     return loadedPlayerSettings.value;
   } else {
+    const q = inputResearchName.value.toLowerCase();
     return loadedPlayerSettings.value.filter((p) =>
-      p.name.toLowerCase().match(inputResearchName.value.toLowerCase())
+      p.name.toLowerCase().includes(q)
     );
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
@@ -19,27 +19,33 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 // 操作を記録することで，playerStore.updateGroup()の呼び出しを一度にまとめて行う
 const addPlayers = ref(new Set<PlayerUUID>());
 const delPlayers = ref(new Set<PlayerUUID>());
-const loadedPlayers = ref<Player[]>([]);
-const loadingPlayers = ref(false);
+
+// 取得済みのプレイヤー情報（UUID -> Player）
+const loadedPlayers = ref(new Map<PlayerUUID, Player>());
+
+// 追加・削除の操作を反映した現在のメンバー一覧
+// 取得済みならPlayer，取得中ならUUIDのみを保持する
+const players = computed<(Player | PlayerUUID)[]>(() => {
+  const uuids = new Set(prop.players);
+  addPlayers.value.forEach((p) => uuids.add(p));
+  delPlayers.value.forEach((p) => uuids.delete(p));
+  return Array.from(uuids).map(
+    (uuid) => loadedPlayers.value.get(uuid) ?? uuid
+  );
+});
 
 // プレイヤーの検索名称
 const inputResearchName = ref('');
 
-const getPlayers = async () => {
-  // 追加・削除の操作をUUID一覧に反映
-  const targetPlayerUUIDs = new Set(prop.players);
-  addPlayers.value.forEach((p) => targetPlayerUUIDs.add(p));
-  delPlayers.value.forEach((p) => targetPlayerUUIDs.delete(p));
-
-  // UUIDからプレイヤー情報を取得
-  const allPlayers = await Promise.all(
-    Array.from(targetPlayerUUIDs).map((uuid) =>
-      window.API.invokeGetPlayer(uuid, 'uuid')
-    )
-  );
-
-  return allPlayers.filter(isValid);
-};
+/**
+ * UUIDからプレイヤー情報を取得し，取得済み一覧に反映する
+ */
+async function loadPlayer(uuid: PlayerUUID) {
+  const player = await window.API.invokeGetPlayer(uuid, 'uuid');
+  if (isValid(player)) {
+    loadedPlayers.value.set(uuid, player);
+  }
+}
 
 /**
  * グループメンバーの追加
@@ -69,8 +75,12 @@ function onRemovedPlayer(uuid: PlayerUUID) {
 
 /**
  * 検索結果に対するプレイヤーの登録処理
+ *
+ * TODO: 本当はPlayerデータを親が管理して，親からデータを子に渡すようにすることで，API呼び出しをまとめる
+ * Group内のPlayerデータはGroupCard / List が管理して，編集画面や子要素は親要素からデータを受けるようにしたい
  */
 function registerPlayer(player: Player) {
+  loadedPlayers.value.set(player.uuid, player);
   onAddedPlayer(player.uuid);
   // 検索欄をリセット
   inputResearchName.value = '';
@@ -86,12 +96,14 @@ function filterPlayer(pId?: PlayerUUID) {
 }
 
 // イベント類
-onMounted(async () => (loadedPlayers.value = await getPlayers()));
-watchEffect(async () => {
-  loadingPlayers.value = true;
-  loadedPlayers.value = await getPlayers();
-  loadingPlayers.value = false;
-});
+onMounted(() => prop.players.forEach(loadPlayer));
+
+function onOkClick() {
+  onDialogOK({
+    addPlayers: new Set(addPlayers.value),
+    delPlayers: new Set(delPlayers.value),
+  } as GroupMemberReturns);
+}
 </script>
 
 <template>
@@ -100,7 +112,7 @@ watchEffect(async () => {
       :title="$t('player.groupMemberDialog.title')"
       :ok-btn-txt="$t('player.groupMemberDialog.okBtn')"
       @close="onDialogCancel"
-      @ok-click="() => onDialogOK({ addPlayers, delPlayers } as GroupMemberReturns)"
+      @ok-click="onOkClick"
       style="width: 25rem; max-width: 100%"
     >
       <span class="text-caption">
@@ -130,32 +142,39 @@ watchEffect(async () => {
         {{ $t('player.groupMemberDialog.memberTitle') }}
       </span>
       <q-list class="q-gutter-y-sm q-py-sm scroll-area">
-        <div v-if="loadingPlayers">
-          <q-spinner color="primary" size="2em" />
-          <span class="q-ml-sm">{{
-            $t('player.groupMemberDialog.loadingMembers')
-          }}</span>
-        </div>
-        <q-item v-else v-for="player in loadedPlayers" :key="player.uuid" dense>
-          <q-item-section avatar style="min-width: 0">
-            <PlayerHeadAvatar :player="player" size="1.5rem" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="name text-omit">
-              {{ player.name }}
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              outline
-              dense
-              icon="close"
-              :label="$t('general.delete')"
-              color="negative"
-              @click="onRemovedPlayer(player.uuid)"
-            />
-          </q-item-section>
-        </q-item>
+        <template
+          v-for="player in players"
+          :key="typeof player === 'string' ? player : player.uuid"
+        >
+          <q-item v-if="typeof player === 'string'" dense>
+            <q-item-section avatar style="min-width: 0">
+              <q-skeleton type="QAvatar" size="1.5rem" />
+            </q-item-section>
+            <q-item-section>
+              <q-skeleton type="text" />
+            </q-item-section>
+          </q-item>
+          <q-item v-else dense>
+            <q-item-section avatar style="min-width: 0">
+              <PlayerHeadAvatar :player="player" size="1.5rem" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="name text-omit">
+                {{ player.name }}
+              </q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                outline
+                dense
+                icon="close"
+                :label="$t('general.delete')"
+                color="negative"
+                @click="onRemovedPlayer(player.uuid)"
+              />
+            </q-item-section>
+          </q-item>
+        </template>
       </q-list>
     </BaseDialogCard>
   </q-dialog>
