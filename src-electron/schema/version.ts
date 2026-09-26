@@ -5,6 +5,7 @@ export const versionTypes = [
   'spigot',
   'papermc',
   'forge',
+  'neoforge',
   'mohistmc',
   'fabric',
 ] as const;
@@ -45,6 +46,13 @@ export const ForgeVersion = z.object({
   download_url: z.string(),
 });
 export type ForgeVersion = z.infer<typeof ForgeVersion>;
+
+export const NeoForgeVersion = z.object({
+  type: z.literal('neoforge'),
+  id: VersionId,
+  neoforge_version: z.string(),
+});
+export type NeoForgeVersion = z.infer<typeof NeoForgeVersion>;
 
 export const MohistmcVersion = z.object({
   type: z.literal('mohistmc'),
@@ -110,6 +118,18 @@ export const AllForgeVersion = z
   .array();
 export type AllForgeVersion = z.infer<typeof AllForgeVersion>;
 
+export const AllNeoForgeVersion = z
+  .object({
+    id: VersionId,
+    neoforge_versions: z
+      .object({
+        version: z.string(),
+      })
+      .array(),
+  })
+  .array();
+export type AllNeoForgeVersion = z.infer<typeof AllNeoForgeVersion>;
+
 export const AllMohistmcVersion = z
   .object({
     id: VersionId,
@@ -156,6 +176,7 @@ export const Version = z.discriminatedUnion('type', [
   SpigotVersion,
   PapermcVersion,
   ForgeVersion,
+  NeoForgeVersion,
   MohistmcVersion,
   FabricVersion,
 ]);
@@ -168,6 +189,7 @@ export const AllVersion = z.union([
   AllSpigotVersion,
   AllPapermcVersion,
   AllForgeVersion,
+  AllNeoForgeVersion,
   AllMohistmcVersion,
   AllFabricVersion,
 ]);
@@ -179,6 +201,8 @@ export type AllVersion<T extends VersionType> = T extends 'vanilla'
   ? AllPapermcVersion
   : T extends 'forge'
   ? AllForgeVersion
+  : T extends 'neoforge'
+  ? AllNeoForgeVersion
   : T extends 'mohistmc'
   ? AllMohistmcVersion
   : T extends 'fabric'
