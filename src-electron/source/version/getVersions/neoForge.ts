@@ -60,7 +60,7 @@ async function loadAllVersion() {
  * - 26.1.0.5-beta -> `26.1` (年ベースの新形式，patchが0の場合は省略)
  * - 26.1.1.5-beta -> `26.1.1`
  */
-function getSpecificMCver(neoVer: string): VersionId {
+export function getSpecificMCver(neoVer: string): VersionId {
   const [major, minor, patch] = neoVer.split('.', 3);
 
   let tmpVer = '';
@@ -76,4 +76,25 @@ function getSpecificMCver(neoVer: string): VersionId {
   }
 
   return VersionId.parse(tmpVer);
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  const { describe, test, expect } = import.meta.vitest;
+
+  describe('getSpecificMCver', () => {
+    test.each([
+      // 旧形式
+      ['20.2.8-beta', '1.20.2'],
+      ['21.1.100', '1.21.1'],
+      // スナップショット
+      ['0.25w14craftmine.4-beta', '25w14craftmine'],
+      // 年ベースの新形式（patchが0のときは省略）
+      ['26.1.0.5-beta', '26.1'],
+      ['26.1.1.5-beta', '26.1.1'],
+      ['26.3.0.22-beta', '26.3'],
+    ])('%s -> %s', (neoVer, mcVer) => {
+      expect(getSpecificMCver(neoVer)).toBe(mcVer);
+    });
+  });
 }
