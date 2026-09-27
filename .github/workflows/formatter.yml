@@ -14,14 +14,13 @@ jobs:
         with:
           PATTERNS: |
             **/*.{ts,tsx,js,jsx,json,vue}
-      - uses: actions/setup-node@v3 #nodeをインストール & キャッシュを取得
+      - uses: oven-sh/setup-bun@v2 #bunをインストール
         with:
-          node-version: 18
-          cache: 'yarn'
+          bun-version-file: package.json
       - name: Run Prettier # prettier自体を実行
         run: |
-          yarn
-          yarn prettier --write ${{ env.GIT_DIFF_FILTERED }} --ignore-path .gitignore # 環境変数GIT_DIFF_FILTEREDに差分のあるファイルが列挙されている
+          bun install
+          bunx prettier --write ${{ env.GIT_DIFF_FILTERED }} --ignore-path .gitignore # 環境変数GIT_DIFF_FILTEREDに差分のあるファイルが列挙されている
         if: env.GIT_DIFF
       - uses: stefanzweifel/git-auto-commit-action@v4 # フォーマットしたファイルをコミット
         with:
