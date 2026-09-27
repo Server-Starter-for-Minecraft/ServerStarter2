@@ -84,10 +84,10 @@ export const jaProperty = {
       'ワールド生成時に自動的に有効にしないデータパック',
     'initial-enabled-packs': 'ワールド生成時に有効にするデータパック',
     'max-tick-time':
-      'サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定',
+      'サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定（-1で強制終了を無効化）',
     'enable-command-block': 'コマンドブロックの実行を許可',
     'function-permission-level': 'コマンドの利用レベル（1~4で指定）',
-    'op-permission-level': 'OP権限のレベル(4が最大)',
+    'op-permission-level': 'OP権限のレベル（0~4で指定）',
     'resource-pack': 'サーバーリソースパックのURL',
     'resource-pack-prompt': 'サーバーリソースパックのプロンプト',
     'resource-pack-sha1': 'サーバーリソースパックのハッシュ値',

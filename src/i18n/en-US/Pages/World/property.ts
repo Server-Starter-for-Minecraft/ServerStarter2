@@ -89,11 +89,11 @@ export const enUSproperty: MessageSchema['property'] = {
     'initial-enabled-packs':
       'List of datapacks to be enabled on world creation',
     'max-tick-time':
-      'Time in milliseconds between server inoperability and forced shutdown',
+      'Time in milliseconds between server inoperability and forced shutdown (-1 to disable forced shutdown)',
     'enable-command-block': 'Allow command block execution',
     'function-permission-level':
       'Function permission level (set between 1 to 4)',
-    'op-permission-level': 'Function permission level (set between 1 to 4)',
+    'op-permission-level': 'OP permission level (set between 0 to 4)',
     'resource-pack': 'URL of the server resource pack',
     'resource-pack-prompt': 'Prompt of server resource pack',
     'resource-pack-sha1': 'Hash value of the server resource pack',

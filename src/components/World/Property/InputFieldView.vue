@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  isValidNumberProperty,
   NumberServerPropertyAnnotation,
   ServerProperties,
   StringServerPropertyAnnotation,
@@ -41,22 +42,6 @@ function selectEditer() {
   return defaultProperty.type;
 }
 
-/**
- * 数字入力のバリデーションを定義
- */
-function numberValidate(
-  val: number,
-  min?: number,
-  max?: number,
-  step?: number
-) {
-  const re = !isNaN(val); // 半角数字チェック
-  const minVal = min === void 0 || val >= min;
-  const maxVal = max === void 0 || val <= max;
-  const stepVal = step === void 0 || val % step == 0;
-
-  return re && minVal && maxVal && stepVal;
-}
 /**
  * バリデーションエラー時のメッセージ
  */
@@ -99,11 +84,9 @@ function validationMessage(min?: number, max?: number, step?: number) {
     :autofocus="autofocus"
     :rules="[
       (val) =>
-        numberValidate(
+        isValidNumberProperty(
           val,
-          (defaultProperty as NumberServerPropertyAnnotation)?.min,
-          (defaultProperty as NumberServerPropertyAnnotation)?.max,
-          (defaultProperty as NumberServerPropertyAnnotation)?.step
+          defaultProperty as NumberServerPropertyAnnotation
         ) ||
         validationMessage(
           (defaultProperty as NumberServerPropertyAnnotation)?.min,

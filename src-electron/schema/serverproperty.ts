@@ -87,6 +87,8 @@ const numberSetter = (
 /**
  * 標準登録のサーバープロパティ
  * 登録時には各項目に対応する説明文の追加をi18nへ忘れずに実施する
+ *
+ * 数値の範囲は Minecraft Wiki（https://minecraft.wiki/w/Server.properties）の許容値に合わせる
  */
 const DefaultServerProperties = z
   .object({
@@ -103,7 +105,7 @@ const DefaultServerProperties = z
     'enable-status': boolSetter(true),
     'enforce-secure-profile': boolSetter(true),
     'enforce-whitelist': boolSetter(false),
-    'entity-broadcast-range-percentage': numberSetter(100, 0, 500),
+    'entity-broadcast-range-percentage': numberSetter(100, 10, 1000),
     'force-gamemode': boolSetter(false),
     'function-permission-level': numberSetter(2, 1, 4, 1),
     gamemode: enumSetter(
@@ -126,12 +128,14 @@ const DefaultServerProperties = z
     'max-build-height': numberSetter(256, undefined, undefined, 8),
     'max-chained-neighbor-updates': numberSetter(1000000),
     'max-players': numberSetter(20, 0, 2 ** 31 - 1),
-    'max-tick-time': numberSetter(60000, 0, 2 ** 63 - 1),
+    // -1でウォッチドッグを無効化できる
+    // 上限はJavaのlong型の最大値(2^63-1)だが，JSのnumberで正確に扱える最大値に制限する
+    'max-tick-time': numberSetter(60000, -1, Number.MAX_SAFE_INTEGER),
     'max-world-size': numberSetter(29999984, 1, 29999984),
     motd: stringSetter('A Minecraft Server'),
     'network-compression-threshold': numberSetter(256, -1),
     'online-mode': boolSetter(true),
-    'op-permission-level': numberSetter(4, 1, 4, 1),
+    'op-permission-level': numberSetter(4, 0, 4, 1),
     'player-idle-timeout': numberSetter(0, 0),
     'prevent-proxy-connections': boolSetter(false),
     'previews-chat': boolSetter(false),
@@ -259,6 +263,28 @@ export const NumberServerPropertyAnnotation = z.object({
 export type NumberServerPropertyAnnotation = z.infer<
   typeof NumberServerPropertyAnnotation
 >;
+
+/**
+ * 数値型のサーバープロパティの値がアノテーションで定義された範囲（min / max / step）を満たすか判定する
+ *
+ * プロパティ画面の入力チェックに使用する
+ *
+ * @param value 判定する値
+ * @param annotation 対象プロパティのアノテーション
+ * @returns 値が許容される場合は`true`
+ */
+export function isValidNumberProperty(
+  value: number,
+  annotation: Pick<NumberServerPropertyAnnotation, 'min' | 'max' | 'step'>
+): boolean {
+  const { min, max, step } = annotation;
+  return (
+    !isNaN(value) &&
+    (min === undefined || value >= min) &&
+    (max === undefined || value <= max) &&
+    (step === undefined || value % step === 0)
+  );
+}
 
 export const ServerPropertyAnnotation = StringServerPropertyAnnotation.or(
   BooleanServerPropertyAnnotation
