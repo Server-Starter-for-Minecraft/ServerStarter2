@@ -19,7 +19,7 @@ export const SystemSystemSetting = z
     // 最終アップデート時刻
     lastUpdatedTime: z.number().optional(),
   })
-  .default({});
+  .prefault({});
 export type SystemSystemSetting = z.infer<typeof SystemSystemSetting>;
 
 export const ViewStyleSetting = z
@@ -29,7 +29,7 @@ export const ViewStyleSetting = z
     /** 追加コンテンツタブ */
     contents: z.enum(['list', 'card']).default('list'),
   })
-  .default({});
+  .prefault({});
 export type ViewStyleSetting = z.infer<typeof ViewStyleSetting>;
 
 export const SystemUserSetting = z
@@ -45,7 +45,7 @@ export const SystemUserSetting = z
     /** 実行者情報 */
     owner: PlayerUUID.optional(),
     /** 実行環境ID(特に変更の必要なし) */
-    id: UUID.default(genUUID()),
+    id: UUID.default(genUUID() as UUID),
     /** 自動シャットダウン */
     autoShutDown: z.boolean().default(false),
     /** ワールドリストの幅 */
@@ -55,16 +55,16 @@ export const SystemUserSetting = z
     /** 画面の表示形式を list or card で選択 */
     viewStyle: ViewStyleSetting,
   })
-  .default({});
+  .prefault({});
 export type SystemUserSetting = z.infer<typeof SystemUserSetting>;
 
 export const WorldContainerSetting = z
   .object({
-    container: WorldContainer.default('servers'),
+    container: WorldContainer.default('servers' as WorldContainer),
     visible: z.boolean().default(true),
     name: z.string().default('default'),
   })
-  .default({});
+  .prefault({});
 export type WorldContainerSetting = z.infer<typeof WorldContainerSetting>;
 
 /**
@@ -78,10 +78,10 @@ export type WorldContainers = z.infer<typeof WorldContainers>;
 
 export const SystemPlayerSetting = z
   .object({
-    groups: z.record(PlayerGroup).default({}),
+    groups: z.record(z.string(), PlayerGroup).prefault({}),
     players: z.array(PlayerUUID).default([]),
   })
-  .default({});
+  .prefault({});
 export type SystemPlayerSetting = z.infer<typeof SystemPlayerSetting>;
 
 export const SystemRemoteSetting = z.array(RemoteSetting).default([]);

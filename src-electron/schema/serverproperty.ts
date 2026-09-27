@@ -170,42 +170,49 @@ const DefaultServerProperties = z
  */
 function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
   const anotations: Record<string, ServerPropertyAnnotation> = {};
-  const shape = prop._def.shape();
 
-  for (const [key, schema] of toEntries(shape)) {
+  for (const [key, schema] of toEntries(prop.shape)) {
     // catch > default > String | Number | Boolean の順でネストされた型情報を取得する
-    const defaultDef = schema._def.innerType._def;
+    const defaultSchema = schema.unwrap();
+    const innerType = defaultSchema.unwrap();
+    const defaultValue = defaultSchema.def.defaultValue;
 
-    if (defaultDef.innerType instanceof z.ZodEffects) {
+    if (innerType instanceof z.ZodPipe) {
       anotations[key] = {
         type: 'boolean',
-        default: defaultDef.defaultValue() as boolean,
+        default: defaultValue as boolean,
       };
-    } else if (defaultDef.innerType instanceof z.ZodString) {
+    } else if (innerType instanceof z.ZodString) {
       anotations[key] = {
         type: 'string',
-        default: defaultDef.defaultValue() as string,
+        default: defaultValue as string,
       };
-    } else if (defaultDef.innerType instanceof z.ZodNumber) {
+    } else if (innerType instanceof z.ZodNumber) {
       const tmpObj: NumberServerPropertyAnnotation = {
         type: 'number',
-        default: defaultDef.defaultValue() as number,
+        default: defaultValue as number,
       };
-      defaultDef.innerType._def.checks.forEach((check) => {
-        if (check.kind === 'min') {
-          tmpObj.min = check.value;
-        } else if (check.kind === 'max') {
-          tmpObj.max = check.value;
-        } else if (check.kind === 'multipleOf') {
-          tmpObj.step = check.value;
+      if (innerType.minValue !== null && innerType.minValue !== -Infinity) {
+        tmpObj.min = innerType.minValue;
+      }
+      if (innerType.maxValue !== null && innerType.maxValue !== Infinity) {
+        tmpObj.max = innerType.maxValue;
+      }
+      innerType.def.checks?.forEach((check) => {
+        const checkDef = check._zod.def;
+        if (checkDef.check === 'multiple_of') {
+          tmpObj.step = Number(
+            (checkDef as z.core.$ZodCheckMultipleOfDef).value
+          );
         }
       });
       anotations[key] = tmpObj;
-    } else if (defaultDef.innerType instanceof z.ZodUnion) {
+    } else if (innerType instanceof z.ZodUnion) {
+      const enumType = innerType.options[0];
       anotations[key] = {
         type: 'string',
-        default: defaultDef.defaultValue() as string,
-        enum: defaultDef.innerType._def.options[0].options,
+        default: defaultValue as string,
+        enum: enumType instanceof z.ZodEnum ? enumType.options : undefined,
       };
     }
   }
@@ -218,7 +225,7 @@ export const DefaultServerPropertiesAnnotation = extractPropertyAnnotation(
 );
 
 /** サーバープロパティのデータ */
-export const ServerProperties = DefaultServerProperties.default({});
+export const ServerProperties = DefaultServerProperties.prefault({});
 export type ServerProperties = z.infer<typeof ServerProperties>;
 
 export const StringServerPropertyAnnotation = z.object({

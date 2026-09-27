@@ -1,5 +1,5 @@
-import dayjs, { Dayjs } from 'dayjs';
-import * as fs from 'fs-extra';
+import dayjs, { type Dayjs } from 'dayjs';
+import fs from 'fs-extra';
 import * as path from 'path';
 import { z } from 'zod';
 import { errorMessage } from '../error/construct';
@@ -238,7 +238,7 @@ export class Path {
 
   readJson = exclusive(this._readJson);
   private async _readJson<T>(
-    validator: z.ZodSchema<T, z.ZodTypeDef, any>,
+    validator: z.ZodType<T, any>,
     encoding?: BufferEncoding
   ): Promise<Failable<T>> {
     const data = await this._read();

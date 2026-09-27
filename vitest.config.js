@@ -1,10 +1,9 @@
-/// <reference types="vitest" />
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     include: ['**/*.test.ts'],
-    includeSource: ['**/*.ts'],
+    includeSource: ['{src,src-electron,src-public,test}/**/*.ts'],
     globals: true,
     coverage: {
       // you can include other reporters, but 'json-summary' is required, json is recommended
@@ -12,10 +11,11 @@ export default defineConfig({
       // If you want a coverage reports even if your tests are failing, include the reportOnFailure option
       reportOnFailure: true,
       // target is only backend files
-      include: ['**/src-electron/**'],
+      include: ['src-electron/**'],
       // removed no test files
       exclude: [
         'src-electron/*.ts',
+        '**/node_modules/**',
         '**/schema/**',
         '**/api/**',
         '**/dummy/**',
@@ -31,8 +31,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'app/': __dirname + '/',
-      'src-electron/': __dirname + '/src-electron/',
+      'app/': `${import.meta.dirname}/`,
+      'src-electron/': `${import.meta.dirname}/src-electron/`,
     },
   },
 });

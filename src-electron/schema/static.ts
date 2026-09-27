@@ -29,7 +29,7 @@ export const MinecraftColors = z
     dark_gray: z.string().default('#555555'),
     black: z.string().default('#000000'),
   })
-  .default({});
+  .prefault({});
 export type MinecraftColors = z.infer<typeof MinecraftColors>;
 
 export const StaticResouce = z.object({
@@ -46,8 +46,8 @@ export const StaticResouce = z.object({
           plugin: z.string().default(PLUGIN_CACHE_PATH.str()),
           mod: z.string().default(MOD_CACHE_PATH.str()),
         })
-        .default({}),
+        .prefault({}),
     })
-    .default({}),
+    .prefault({}),
 });
 export type StaticResouce = z.infer<typeof StaticResouce>;

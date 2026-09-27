@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { Failable } from 'app/src-electron/schema/error';
 import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
 import { gzip } from 'app/src-electron/util/binary/archive/gz';

@@ -6,5 +6,5 @@ export const NgrokSetting = z
     use_ngrok: z.boolean().default(false),
     remote_addr: z.string().optional(),
   })
-  .default({});
+  .prefault({});
 export type NgrokSetting = z.infer<typeof NgrokSetting>;

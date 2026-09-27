@@ -25,7 +25,7 @@ type McTargetComponent = z.infer<typeof McTargetComponent>;
 // minecraft のランタイムに基づいてコンポーネント名を返却する
 const McRuntimeComponent = z.record(z.number(), McTargetComponent);
 type McRuntimeComponent = z.infer<typeof McRuntimeComponent>;
-const McRuntimeComponents = z.record(OsPlatform, McRuntimeComponent);
+const McRuntimeComponents = z.partialRecord(OsPlatform, McRuntimeComponent);
 type McRuntimeComponents = z.infer<typeof McRuntimeComponents>;
 
 /**

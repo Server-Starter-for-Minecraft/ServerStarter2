@@ -1,5 +1,5 @@
 import { safeStorage } from 'electron';
-import { readFileSync, writeFileSync } from 'fs-extra';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { SystemSettings } from 'src-electron/schema/system';
 import { settingPath } from '../const';
 

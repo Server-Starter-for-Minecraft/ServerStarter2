@@ -19,5 +19,5 @@ export const MemorySettings = z
     size: z.number().default(2),
     unit: MemoryUnit.default('GB'),
   })
-  .default({});
+  .prefault({});
 export type MemorySettings = z.infer<typeof MemorySettings>;

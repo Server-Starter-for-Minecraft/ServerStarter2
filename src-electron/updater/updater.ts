@@ -54,7 +54,7 @@ export async function update() {
   logger.info(update);
 
   // 環境変数DEBUGGING==true(yarn devで起動した場合)実際のアップデート処理は行わない
-  if (process.env.DEBUGGING) return;
+  if (import.meta.env.QUASAR_DEBUG) return;
 
   // lastUpdatedTimeをundefinedに
   const sys = await getSystemSettings();

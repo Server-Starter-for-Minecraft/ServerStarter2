@@ -1,7 +1,7 @@
 import { randomInt } from 'crypto';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { app } from 'electron';
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
 import { onQuit } from '../lifecycle/lifecycle';
