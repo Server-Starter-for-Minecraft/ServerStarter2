@@ -29,7 +29,7 @@ export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
     if (cur === nxt) return;
 
     // 権限が下がる場合は一度deopする
-    if (cur ?? 0 > nxt ?? 0) opPlayers[0].push(item.name);
+    if ((cur ?? 0) > nxt) opPlayers[0].push(item.name);
 
     opPlayers[nxt].push(item.name);
   });

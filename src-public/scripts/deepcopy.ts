@@ -1,13 +1,7 @@
 import { objValueMap } from './obj/objmap';
 
 type Copyable =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | CopyableArray
-  | CopyableObject;
+  string | number | boolean | null | undefined | CopyableArray | CopyableObject;
 
 interface CopyableArray extends Array<Copyable> {}
 interface CopyableObject extends Record<string, Copyable> {}

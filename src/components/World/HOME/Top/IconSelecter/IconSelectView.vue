@@ -145,9 +145,11 @@ function isErrorSize() {
             <SelectorBtn
               icon="check"
               :label="$t('icon.reg')"
-              :disable="isErrorSize()"
+              :disable="isErrorSize() || iconImg.processing"
               color="primary"
-              @click="() => onDialogOK({ img: iconImg.data } as IconSelectReturn)"
+              @click="
+                () => onDialogOK({ img: iconImg.data } as IconSelectReturn)
+              "
             />
           </q-item-section>
         </q-item>

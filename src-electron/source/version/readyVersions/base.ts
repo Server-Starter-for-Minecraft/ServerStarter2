@@ -85,7 +85,7 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
  * このクラスは各サーバーごとに１つのみ生成する
  */
 export abstract class ReadyVersion<
-  V extends Exclude<Version, UnknownVersion>
+  V extends Exclude<Version, UnknownVersion>,
 > extends BaseVersionProcess<V> {
   /**
    * VersionJsonを扱うJsonHandlerを格納する
@@ -266,7 +266,7 @@ export abstract class ReadyVersion<
  * `server.jar`やその関連するサーバーファイルを削除する
  */
 export abstract class RemoveVersion<
-  V extends Exclude<Version, UnknownVersion>
+  V extends Exclude<Version, UnknownVersion>,
 > extends BaseVersionProcess<V> {
   /**
    * サーバーファイル群をキャッシュに撤退させる

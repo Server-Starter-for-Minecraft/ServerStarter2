@@ -98,16 +98,19 @@ function validationMessage(min?: number, max?: number, step?: number) {
     type="number"
     :autofocus="autofocus"
     :rules="[
-      val => numberValidate(
-        val,
-        (defaultProperty as NumberServerPropertyAnnotation)?.min,
-        (defaultProperty as NumberServerPropertyAnnotation)?.max,
-        (defaultProperty as NumberServerPropertyAnnotation)?.step
-      ) || validationMessage(
-        (defaultProperty as NumberServerPropertyAnnotation)?.min,
-        (defaultProperty as NumberServerPropertyAnnotation)?.max,
-        (defaultProperty as NumberServerPropertyAnnotation)?.step
-      )]"
+      (val) =>
+        numberValidate(
+          val,
+          (defaultProperty as NumberServerPropertyAnnotation)?.min,
+          (defaultProperty as NumberServerPropertyAnnotation)?.max,
+          (defaultProperty as NumberServerPropertyAnnotation)?.step
+        ) ||
+        validationMessage(
+          (defaultProperty as NumberServerPropertyAnnotation)?.min,
+          (defaultProperty as NumberServerPropertyAnnotation)?.max,
+          (defaultProperty as NumberServerPropertyAnnotation)?.step
+        ),
+    ]"
     style="width: 100%"
   />
 

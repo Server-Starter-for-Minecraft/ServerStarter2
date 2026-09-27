@@ -12,7 +12,7 @@ https://vitest.dev
 
 # テストの実行
 
-`yarn test`ですべてのテストを実行できます。
+`bun run test`ですべてのテストを実行できます。
 
 # テストの配置
 

@@ -1,5 +1,5 @@
-import { decode } from 'iconv-lite';
-import * as JSZip from 'jszip';
+import iconv from 'iconv-lite';
+import JSZip from 'jszip';
 import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { errorMessage } from '../../error/construct';
 import { isError } from '../../error/error';
@@ -31,7 +31,7 @@ class ZipHandler {
       JSZip.loadAsync(new Uint8Array(data.data), {
         // TODO:shift-jis 固定で大丈夫？
         decodeFileName: (name) =>
-          decode(Buffer.from(name as Uint8Array), 'shift-jis'),
+          iconv.decode(Buffer.from(name as Uint8Array), 'shift-jis'),
       })
     );
     if (isError(zipData))

@@ -12,7 +12,7 @@ const paperAllVersionsURL = 'https://fill.papermc.io/v3/projects/paper';
 const paperAllVersionsZod = z.object({
   project: z.object({ id: z.string(), name: z.string() }),
   // バージョングループ名 -> グループ内のバージョン一覧（いずれも新しい順）
-  versions: z.record(z.string().array()),
+  versions: z.record(z.string(), z.string().array()),
 });
 // 各バージョンのビルド情報一覧を返すURLとその解析パーサー
 const paperEachVersionURL = (versionName: string) =>

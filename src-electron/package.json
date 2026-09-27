@@ -1,0 +1,27 @@
+{
+  "name": "quasar-electron-app",
+  "version": "1.0.0",
+  "description": "Quasar Electron Folder",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ngrok/ngrok": "^1.7.0",
+    "cheerio": "^1.2.0",
+    "dayjs": "^1.11.23",
+    "electron-store": "^11.0.2",
+    "fs-extra": "^11.4.1",
+    "iconv-lite": "^0.7.3",
+    "jszip": "^3.10.2",
+    "log4js": "^6.9.1",
+    "prismarine-nbt": "^2.8.0",
+    "sharp": "^0.35.4",
+    "simple-git": "^4.0.2",
+    "tar": "^7.5.22",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
+  }
+}

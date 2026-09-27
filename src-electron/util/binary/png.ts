@@ -1,9 +1,9 @@
-import sharp from 'sharp';
+import type { Sharp } from 'sharp';
 import { BytesData } from './bytesData';
 
 export class Png {
-  data: sharp.Sharp;
-  constructor(data: sharp.Sharp) {
+  data: Sharp;
+  constructor(data: Sharp) {
     this.data = data;
   }
 

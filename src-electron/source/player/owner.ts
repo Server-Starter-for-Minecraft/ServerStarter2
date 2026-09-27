@@ -3,8 +3,8 @@ import { getSystemSettings } from '../stores/system';
 import { getPlayerFromUUID } from './main';
 
 let ownerCache:
-  | { uuid: string | undefined; name: string | undefined }
-  | undefined = undefined;
+  { uuid: string | undefined; name: string | undefined } | undefined =
+  undefined;
 
 /** システム設定の user.owner に対する名前を取得 */
 export async function getSystemOwnerName(): Promise<string | undefined> {

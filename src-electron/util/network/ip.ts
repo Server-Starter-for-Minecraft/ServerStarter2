@@ -48,7 +48,7 @@ export async function getGlobalIP(): Promise<Failable<string>> {
 
 /** 指定したIPアドレスが有効かどうか */
 export function isValidIP(ip: string): boolean {
-  const parser = z.string().ip();
+  const parser = z.union([z.ipv4(), z.ipv6()]);
   const result = parser.safeParse(ip);
   return result.success;
 }

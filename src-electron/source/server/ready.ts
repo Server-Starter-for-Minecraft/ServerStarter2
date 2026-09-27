@@ -79,9 +79,8 @@ export async function readyRunServer(
       // runtimeが指定されていない場合は最新版を適用
       let targetRuntime = args.runtime;
       if (!targetRuntime) {
-        const tmpTargetRuntime = await runtimeContainer.getLatestRuntime(
-          osPlatform
-        );
+        const tmpTargetRuntime =
+          await runtimeContainer.getLatestRuntime(osPlatform);
         if (isError(tmpTargetRuntime)) return tmpTargetRuntime;
         targetRuntime = tmpTargetRuntime;
       }

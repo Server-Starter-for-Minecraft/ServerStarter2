@@ -29,7 +29,7 @@ type JavaExecName = {
 
 export abstract class JavaRuntimeInstaller<
   RM extends RuntimeManifest,
-  R extends Runtime
+  R extends Runtime,
 > {
   /** RuntimeのManifestファイルを操作 */
   private accessor: CacheableAccessor<RM>;
@@ -46,7 +46,7 @@ export abstract class JavaRuntimeInstaller<
    * 以下のプログラムを継承先で実装すること
    * ```ts
    * static setRuntimeManifest(
-   *   validator: z.ZodDefault<z.ZodSchema<AllManifest, z.ZodTypeDef, any>>,
+   *   validator: z.ZodDefault<z.ZodType<AllManifest, any>>,
    *   manifestPath: Path,
    *   manifestUrl: string
    * ) {
@@ -70,7 +70,7 @@ export abstract class JavaRuntimeInstaller<
   }
 
   protected static getCacheableAccessor<RM extends RuntimeManifest>(
-    validator: z.ZodSchema<RM, z.ZodTypeDef, any>,
+    validator: z.ZodType<RM, any>,
     manifestPath: Path,
     manifestUrl: string
   ) {

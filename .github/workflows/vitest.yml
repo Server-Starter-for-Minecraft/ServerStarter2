@@ -13,14 +13,14 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-      - name: 'Install Node'
-        uses: actions/setup-node@v4
+      - name: 'Install Bun'
+        uses: oven-sh/setup-bun@v2
         with:
-            node-version: '20.x'
+            bun-version-file: package.json
       - name: 'Install Deps'
-        run: npm install
+        run: bun install
       - name: 'Execute Test'
-        run: npx vitest run --coverage --passWithNoTests
+        run: bun run test --run --coverage --passWithNoTests
       - name: Coverage Report
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2.5.0

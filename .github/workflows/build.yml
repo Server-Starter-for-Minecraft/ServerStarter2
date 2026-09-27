@@ -124,12 +124,11 @@ jobs:
           git fetch origin ${{ needs.create-commit.outputs.brench-name }}
           git checkout ${{ needs.create-commit.outputs.brench-name }}
 
-      # Nodejsを使用
-      - name: Setup NodeJS Environment 18
-        uses: actions/setup-node@v2
+      # Bunを使用
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'yarn'
+          bun-version-file: package.json
 
       # create-commitで行った更新をpullし、ビルドを実行
       - name: Pull and Build
@@ -137,13 +136,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git pull
-          yarn install
-          yarn build
+          bun install
+          bun run build
 
       # WindowsのビルドデータをArtifactとして一時保存
       - name: Upload Artifact Win
         if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.new-ver}}.msi
           path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.msi"
@@ -152,7 +151,7 @@ jobs:
       # MacのビルドデータをArtifactとして一時保存
       - name: Upload Artifact Mac
         if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.new-ver}}.pkg
           path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.pkg"
@@ -161,7 +160,7 @@ jobs:
       # Debianのビルドデータを指定のパスに移動
       - name: Upload Artifact Debian
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.new-ver}}.deb
           path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.deb"
@@ -170,7 +169,7 @@ jobs:
       # Redhatのビルドデータを指定のパスに移動
       - name: Upload Artifact Redhat
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.new-ver}}.rpm
           path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.rpm"
@@ -216,7 +215,7 @@ jobs:
     steps:
       # 一時保存したアーティファクトをダウンロード
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: true.${{ matrix.ext }}
           path: true/
@@ -235,7 +234,7 @@ jobs:
 
       # 一時保存したアーティファクトをダウンロード(現行バージョン)
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: false.${{ matrix.ext }}
           path: false/

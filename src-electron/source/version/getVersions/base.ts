@@ -29,7 +29,7 @@ export abstract class VersionListLoader<T extends VersionType> {
   constructor(
     cachePath: Path,
     verType: Version['type'],
-    T: ZodType<AllVersion<T>, z.ZodTypeDef, any>
+    T: ZodType<AllVersion<T>, any>
   ) {
     this.cachePath = cachePath;
     this.allVersHandler = JsonSourceHandler.fromPath(

@@ -1,4 +1,4 @@
-import { z, ZodTypeDef } from 'zod';
+import { z } from 'zod';
 import { Path } from '../binary/path';
 import { CacheableAccessor } from '../cache';
 import { isError } from '../error/error';
@@ -19,7 +19,7 @@ export class JsonSourceHandler<T> {
    */
   static fromPath<T>(
     path: Path,
-    validator: z.ZodSchema<T, ZodTypeDef, any>,
+    validator: z.ZodType<T, any>,
     options?: { encoding?: BufferEncoding }
   ) {
     const setter = async (value: T): Promise<Failable<void>> => {
@@ -76,7 +76,7 @@ if (import.meta.vitest) {
         a: z.number().default(1),
         b: z.string().default('hello'),
       })
-      .default({});
+      .prefault({});
 
     const jsonHandler = JsonSourceHandler.fromPath(jsonPath, A);
 

@@ -7,7 +7,7 @@ const preLoad = (module: any) => () => module;
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('src/layouts/MainLayout.vue'),
     children: [
       {
         path: '',
@@ -38,7 +38,7 @@ const routes: RouteRecordRaw[] = [
 
       {
         path: 'system/',
-        component: preLoad(import('pages/SystemPage.vue')),
+        component: preLoad(import('src/pages/SystemPage.vue')),
         children: [
           {
             path: '',
@@ -74,18 +74,18 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/init',
-    component: () => import('pages/InitPage.vue'),
+    component: () => import('src/pages/InitPage.vue'),
   },
   {
     path: '/error',
-    component: () => import('pages/ErrorPage.vue'),
+    component: () => import('src/pages/ErrorPage.vue'),
   },
 
   // Always leave this as last one,
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('src/pages/ErrorNotFound.vue'),
   },
 ];
 

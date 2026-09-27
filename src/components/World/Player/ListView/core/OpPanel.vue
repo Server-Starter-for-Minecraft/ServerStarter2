@@ -50,7 +50,7 @@ function onClick() {
   <q-menu v-model="showMenu" auto-close>
     <q-list class="q-py-sm" style="width: max-content">
       <OpLevelBtn
-        v-for="opLevel in ([4, 3, 2, 1, 0] as const)"
+        v-for="opLevel in [4, 3, 2, 1, 0] as const"
         :key="opLevel"
         :src="assets.svg[`level${opLevel}`]()"
         :label="

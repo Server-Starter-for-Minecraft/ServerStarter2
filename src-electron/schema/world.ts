@@ -23,7 +23,7 @@ import { Remote } from './remote';
 import { ServerProperties } from './serverproperty';
 import { Version } from './version';
 
-export const WorldID = z.string().uuid().brand('WorldID');
+export const WorldID = z.guid().brand('WorldID');
 export type WorldID = z.infer<typeof WorldID>;
 
 /** 取得が速い代わりに情報が少ないワールド */
@@ -139,7 +139,7 @@ export const SystemWorldSettings = z
     memory: MemorySettings,
     properties: ServerProperties,
   })
-  .default({});
+  .prefault({});
 export type SystemWorldSettings = z.infer<typeof SystemWorldSettings>;
 
 /** サーバーCWD直下の設定系ファイルの情報 */

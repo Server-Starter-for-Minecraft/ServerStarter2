@@ -18,7 +18,7 @@ export const PlayerCacheRecord = z.object({
 });
 export type PlayerCacheRecord = z.infer<typeof PlayerCacheRecord>;
 
-export const PlayerCache = z.record(PlayerCacheRecord);
+export const PlayerCache = z.record(z.string(), PlayerCacheRecord);
 export type PlayerCache = z.infer<typeof PlayerCache>;
 
 const PLAYER_CACHE_PATH = cachePath.child('player.json');

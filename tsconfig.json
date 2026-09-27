@@ -1,20 +1,23 @@
 {
-  "extends": "@quasar/app-vite/tsconfig-preset",
+  "extends": "./.quasar/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "strict": true,
     "types": ["vitest/globals", "vitest/importMeta"]
   },
   "include": [
-    "src/**/*.ts",
-    "src-electron/**/*.ts",
-    "src-public/**/*.ts",
-    "src/**/*.vue",
-    "test/**/*.ts"
+    "./.quasar/*.d.ts",
+    "./env.d.ts",
+    "./quasar.config.ts",
+    "./src/**/*",
+    "./src-electron/**/*",
+    "./src-public/**/*",
+    "./test/**/*",
+    "./scripts/**/*"
   ],
-  "ts-node": {
-    "compilerOptions": {
-      "strictNullChecks": true,
-      "module": "ESNext"
-    }
-  }
+  "exclude": [
+    "./dist",
+    "./node_modules",
+    "./src-electron/node_modules",
+    "**/work/**"
+  ]
 }

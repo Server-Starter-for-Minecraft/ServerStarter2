@@ -2,7 +2,7 @@ export const errorMessageContentSyembol = Symbol();
 export type ErrorMessageContentSyembol = typeof errorMessageContentSyembol;
 
 export type MessageContent<
-  T extends Record<string, any> | any[] | undefined = undefined
+  T extends Record<string, any> | any[] | undefined = undefined,
 > = () => T;
 
 type WithIndex<T extends any[]> = T extends [...infer U, infer V]
@@ -23,10 +23,10 @@ export type MessageTranslationContent<T extends object | any[] | undefined> =
   T extends undefined
     ? () => string
     : T extends any[]
-    ? (ctx: { list: UnionToIntersection<WithIndexedFunction<T>> }) => string
-    : T extends Record<string, any>
-    ? (ctx: { named: UnionToIntersection<WithNamedFunction<T>> }) => string
-    : never;
+      ? (ctx: { list: UnionToIntersection<WithIndexedFunction<T>> }) => string
+      : T extends Record<string, any>
+        ? (ctx: { named: UnionToIntersection<WithNamedFunction<T>> }) => string
+        : never;
 
 export interface HierarchicalMessage {
   [K: string]: HierarchicalMessage | (() => object | any[] | undefined);
@@ -40,13 +40,13 @@ type AddSuffix<T, P extends string> = T extends [infer U, infer V]
 
 type FlattenMessageKV<
   T extends Record<string, unknown>,
-  Key = keyof T
+  Key = keyof T,
 > = Key extends string
   ? T[Key] extends Record<string, unknown>
     ? AddSuffix<FlattenMessageKV<T[Key]>, Key>
     : T[Key] extends () => infer R
-    ? [`${Key}`, R]
-    : never
+      ? [`${Key}`, R]
+      : never
   : never;
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
@@ -71,8 +71,8 @@ export type MessageTranslation<T extends HierarchicalMessage> = {
   [K in keyof T]: T[K] extends MessageContent<infer U>
     ? string | MessageTranslationContent<U>
     : T[K] extends HierarchicalMessage
-    ? MessageTranslation<T[K]>
-    : never;
+      ? MessageTranslation<T[K]>
+      : never;
 };
 
 export type MessageDescTitleTranslation<T extends HierarchicalMessage> = {
@@ -82,6 +82,6 @@ export type MessageDescTitleTranslation<T extends HierarchicalMessage> = {
         desc?: string | MessageTranslationContent<U>;
       }
     : T[K] extends HierarchicalMessage
-    ? MessageDescTitleTranslation<T[K]>
-    : never;
+      ? MessageDescTitleTranslation<T[K]>
+      : never;
 };

@@ -1,7 +1,7 @@
 import { keys } from './obj';
 
 export function flattenObj<
-  V extends Record<string, V> | string | number | string[]
+  V extends Record<string, V> | string | number | string[],
 >(obj: Record<string, V>) {
   const flat = {} as Record<string, string | number | string[]>;
 

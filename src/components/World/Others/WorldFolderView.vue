@@ -92,7 +92,9 @@ function openFolderEditor() {
   <div class="row q-gutter-x-md">
     <SsSelectScope
       v-model="mainStore.readonlyWorld.world.container"
-      @update:model-value="(newVal: WorldContainer) => setWorldContainer(newVal)"
+      @update:model-value="
+        (newVal: WorldContainer) => setWorldContainer(newVal)
+      "
       :options="selecterOptions()"
       option-label="label"
       option-value="value"

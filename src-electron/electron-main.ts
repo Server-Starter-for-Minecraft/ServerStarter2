@@ -1,7 +1,12 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
+import {
+  registerQuasarRuntime,
+  resolveElectronAssetsPath,
+} from '#q-app/electron/main';
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import * as os from 'os';
-import * as path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { setupIPC } from './ipc/setup';
 import { setServerStarterApp } from './lifecycle/exit';
 import { onQuit } from './lifecycle/lifecycle';
@@ -17,9 +22,7 @@ const platform = process.platform || os.platform();
 
 try {
   if (platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
-    require('fs').unlinkSync(
-      path.join(app.getPath('userData'), 'DevTools Extensions')
-    );
+    fs.unlinkSync(path.join(app.getPath('userData'), 'DevTools Extensions'));
   }
 } catch (_) {}
 
@@ -43,21 +46,25 @@ async function createWindow() {
   }
 
   mainWindow = new BrowserWindow({
-    icon: path.resolve(__dirname, 'icons/icon.png'), // tray icon
+    icon: resolveElectronAssetsPath('icons/icon.png'), // tray icon
     minWidth: 650,
     minHeight: 650,
     useContentSize: true,
     webPreferences: {
       contextIsolation: true,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
-      preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
+      preload: path.join(import.meta.dirname, 'electron-preload.cjs'),
     },
   });
 
-  mainWindow.loadURL(process.env.APP_URL);
+  if (import.meta.env.QUASAR_DEV) {
+    await mainWindow.loadURL(import.meta.env.QUASAR_APP_URL);
+  } else {
+    await mainWindow.loadFile('index.html');
+  }
   mainWindow.maximize();
 
-  if (process.env.DEBUGGING) {
+  if (import.meta.env.QUASAR_DEBUG) {
     // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools();
   } else {
@@ -78,7 +85,10 @@ async function createWindow() {
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  registerQuasarRuntime();
+  createWindow();
+});
 
 app.on('window-all-closed', async () => {
   await onQuit.invoke();

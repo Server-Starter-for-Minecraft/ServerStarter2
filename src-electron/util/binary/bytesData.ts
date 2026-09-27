@@ -1,6 +1,8 @@
 import { createHash } from 'crypto';
-import fetch from 'electron-fetch';
+// Electron外(テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
+import * as electron from 'electron';
 import { promises } from 'fs';
+import prismarineNbt from 'prismarine-nbt';
 import sharp from 'sharp';
 import { z } from 'zod';
 import { ImageURI } from 'app/src-electron/schema/brands';
@@ -12,8 +14,15 @@ import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
 import { Png } from './png';
 
-const prismarineNbt = require('prismarine-nbt');
 const loggers = () => utilLoggers().BytesData;
+
+/**
+ * Electron上ではChromiumのネットワークスタック(net.fetch)を使用する
+ * (ホストごとの同時接続数制限やシステムのプロキシ設定が適用される)
+ * テスト環境などElectron外で実行される場合は標準のfetchを使用する
+ */
+const fetchURL = (url: string, init?: RequestInit) =>
+  electron.net?.fetch ? electron.net.fetch(url, init) : fetch(url, init);
 
 export type Hash = {
   type: 'sha1' | 'md5' | 'sha256';
@@ -37,7 +46,7 @@ export class BytesData {
     logger.trace('start');
 
     try {
-      const res = await fetch(url, { headers });
+      const res = await fetchURL(url, { headers });
       if (res.status !== 200) {
         logger.error({ status: res.status, statusText: res.statusText });
         return errorMessage.data.url.fetch({
@@ -267,7 +276,7 @@ export class BytesData {
 
   /** Zod型定義によってパースしたJSONオブジェクトを返す */
   async json<T>(
-    validator: z.ZodSchema<T, z.ZodTypeDef, any>,
+    validator: z.ZodType<T, any>,
     encoding = 'utf-8'
   ): Promise<Failable<T>> {
     try {
@@ -291,7 +300,7 @@ export class BytesData {
   /** バイト列をjava NBTに変換 */
   async nbt<T extends object>(): Promise<Failable<T>> {
     try {
-      const nbt = await prismarineNbt;
+      const nbt = prismarineNbt;
       const result = await nbt.parse(this.data, 'big');
       return nbt.simplify(result.parsed);
     } catch (e) {

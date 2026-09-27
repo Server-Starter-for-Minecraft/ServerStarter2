@@ -7,7 +7,7 @@ import { Locale } from '../schema/system';
 import { Path } from '../util/binary/path';
 
 const userDataPath = (
-  process.env.DEBUGGING || !app
+  import.meta.env.QUASAR_DEBUG || !app
     ? new Path('userData')
     : new Path(app?.getPath('userData'))
 ).absolute();
@@ -48,7 +48,7 @@ export const DEFAULT_MEMORY: MemorySettings = {
 
 // システムの言語設定がjaだった場合ja、それ以外の場合en-USに
 export const getDefaultLocale = (): Locale => {
-  if (import.meta.env?.DEV) return 'ja';
+  if (import.meta.env?.QUASAR_DEV) return 'ja';
   return app.getLocale() === 'ja' ? 'ja' : 'en-US';
 };
 

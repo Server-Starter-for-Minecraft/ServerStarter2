@@ -8,7 +8,7 @@ const UUID_BASE = z.preprocess((val) => {
   } else {
     return val;
   }
-}, z.string().uuid());
+}, z.guid());
 export const UUID = UUID_BASE.brand('UUID');
 export type UUID = z.infer<typeof UUID>;
 

@@ -25,10 +25,9 @@ export class RuntimeContainer {
   private metaDirPath: Path;
   private binDirPath: Path;
   private installerMap: {
-    [R in Exclude<
-      Runtime,
-      UniversalRuntime
-    > as R['type']]: JavaRuntimeInstaller<AllRuntimeManifests[R['type']], R>;
+    [
+      R in Exclude<Runtime, UniversalRuntime> as R['type']
+    ]: JavaRuntimeInstaller<AllRuntimeManifests[R['type']], R>;
   };
 
   /**
