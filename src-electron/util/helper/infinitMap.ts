@@ -48,7 +48,7 @@ export class InfinitMap<K, V> {
 
   static objectKeyPrimitiveValue<
     K extends object,
-    V extends number | string | boolean
+    V extends number | string | boolean,
   >(init: (key: K) => V): InfinitMap<K, V> {
     const map = new WeakMap<K, V>();
     const getter = (k: K) => map.get(k);
@@ -81,7 +81,7 @@ export class InfinitMap<K, V> {
 
   static primitiveKeyPrimitiveValue<
     K extends number | string,
-    V extends number | string | boolean
+    V extends number | string | boolean,
   >(init: (key: K) => V): InfinitMap<K, V> {
     const map = {} as Record<K, V>;
     const getter = (k: K) => map[k];

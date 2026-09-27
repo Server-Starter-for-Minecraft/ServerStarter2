@@ -18,7 +18,7 @@ const playerStore = usePlayerStore();
     </p>
 
     <q-scroll-area style="flex: 1 1 0">
-      <template v-for="opLevel in ([4, 3, 2, 1, 0] as const)" :key="opLevel">
+      <template v-for="opLevel in [4, 3, 2, 1, 0] as const" :key="opLevel">
         <OpLevelBtn
           :src="assets.svg[`level${opLevel}`]()"
           :label="

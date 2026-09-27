@@ -6,7 +6,9 @@ export type BackCaller<A extends IAPI> = {
     [key in keyof A['sendMainToWindow']]: A['sendMainToWindow'][key];
   };
   invoke: {
-    [key in keyof A['invokeMainToWindow']]: A['invokeMainToWindow'][key] extends (
+    [
+      key in keyof A['invokeMainToWindow']
+    ]: A['invokeMainToWindow'][key] extends (
       ...args: infer P
     ) => Promise<infer R>
       ? (...args: P) => Promise<Failable<R>>
@@ -37,7 +39,9 @@ export type FrontListener<A extends IAPI> = {
     [key in keyof A['sendMainToWindow']]: A['sendMainToWindow'][key];
   };
   handle: {
-    [key in keyof A['invokeMainToWindow']]: A['invokeMainToWindow'][key] extends (
+    [
+      key in keyof A['invokeMainToWindow']
+    ]: A['invokeMainToWindow'][key] extends (
       ...args: infer P
     ) => Promise<infer R>
       ? (...args: P) => Promise<Failable<R>>

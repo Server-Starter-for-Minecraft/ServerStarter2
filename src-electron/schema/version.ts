@@ -196,15 +196,15 @@ export const AllVersion = z.union([
 export type AllVersion<T extends VersionType> = T extends 'vanilla'
   ? AllVanillaVersion
   : T extends 'spigot'
-  ? AllSpigotVersion
-  : T extends 'papermc'
-  ? AllPapermcVersion
-  : T extends 'forge'
-  ? AllForgeVersion
-  : T extends 'neoforge'
-  ? AllNeoForgeVersion
-  : T extends 'mohistmc'
-  ? AllMohistmcVersion
-  : T extends 'fabric'
-  ? AllFabricVersion
-  : never;
+    ? AllSpigotVersion
+    : T extends 'papermc'
+      ? AllPapermcVersion
+      : T extends 'forge'
+        ? AllForgeVersion
+        : T extends 'neoforge'
+          ? AllNeoForgeVersion
+          : T extends 'mohistmc'
+            ? AllMohistmcVersion
+            : T extends 'fabric'
+              ? AllFabricVersion
+              : never;

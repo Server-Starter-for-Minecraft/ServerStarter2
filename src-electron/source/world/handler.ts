@@ -53,7 +53,7 @@ class PromiseSpooler {
   spoolingQueue: [
     () => Promise<any>,
     (value: any | PromiseLike<any>) => void,
-    undefined | string
+    undefined | string,
   ][];
   running: boolean;
 
@@ -66,7 +66,7 @@ class PromiseSpooler {
     spoolingQueue: [
       () => Promise<any>,
       (value: any) => void,
-      string | undefined
+      string | undefined,
     ][],
     process: () => Promise<T>,
     resolve: (value: T | PromiseLike<T>) => void,

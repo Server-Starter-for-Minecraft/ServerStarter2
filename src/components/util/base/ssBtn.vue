@@ -27,7 +27,7 @@ defineProps<Prop>();
     :no-caps="!isCapital"
     :to="to"
     @click="onClick"
-    :style="{ width: freeWidth ? '' : width ?? '13rem' }"
+    :style="{ width: freeWidth ? '' : (width ?? '13rem') }"
   >
     <slot />
   </q-btn>

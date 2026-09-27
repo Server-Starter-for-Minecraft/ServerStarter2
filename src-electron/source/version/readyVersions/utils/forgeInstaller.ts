@@ -40,8 +40,8 @@ export async function getServerJarFromInstaller(
     type === 'forge'
       ? '--installServer'
       : type === 'neoforge'
-      ? '-installServer'
-      : '';
+        ? '-installServer'
+        : '';
 
   // `installer.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
   const args = ['-jar', installFilePath.absolute().quotedPath, installerTag];
@@ -82,8 +82,8 @@ export async function renameFilesFromInstaller(
       version.type === 'forge'
         ? /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal|-shim)?.jar/
         : version.type === 'neoforge'
-        ? /neoforge?-[0-9\.-]+?(-universal)?.jar/
-        : '';
+          ? /neoforge?-[0-9\.-]+?(-universal)?.jar/
+          : '';
     const match = filename.match(matchRgx);
     if (match) {
       const renameJarRes = await file.rename(getJarPath(cachePath));

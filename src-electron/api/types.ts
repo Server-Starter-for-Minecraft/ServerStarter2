@@ -22,7 +22,7 @@ export type FrontSend<C extends string, F extends Func<any, void>> = F & {
 
 export type FrontInvoke<
   C extends string,
-  F extends Func<any, Promise<any>>
+  F extends Func<any, Promise<any>>,
 > = F & {
   __channel__: C;
 };
@@ -72,7 +72,7 @@ export type BackSend<C extends string, F extends Func<any, void>> = F & {
 
 export type BackInvoke<
   C extends string,
-  F extends Func<any, Promise<any>>
+  F extends Func<any, Promise<any>>,
 > = F & {
   __channel__: C;
 };

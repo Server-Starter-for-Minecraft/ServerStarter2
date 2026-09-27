@@ -46,7 +46,7 @@ if (!isRegisteredNgrok) {
           >
             <Step1View
               v-model="isSkipRegister"
-              :next="(stepName: number) => step = stepName"
+              :next="(stepName: number) => (step = stepName)"
             />
           </q-step>
 

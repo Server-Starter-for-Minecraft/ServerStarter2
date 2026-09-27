@@ -3,10 +3,7 @@ type ColorSetting = {
 };
 
 export type ColorThemes =
-  | 'light'
-  | 'dark'
-  | 'light-diversity'
-  | 'dark-diversity';
+  'light' | 'dark' | 'light-diversity' | 'dark-diversity';
 
 type ColorSettings = {
   [key in ColorThemes]: ColorSetting;

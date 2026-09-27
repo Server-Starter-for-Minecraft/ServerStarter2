@@ -36,9 +36,7 @@ export type CacheFileData<T extends Record<string, any>> = T & {
 };
 
 export type AllFileData<T extends Record<string, any>> =
-  | WorldFileData<T>
-  | NewFileData<T>
-  | CacheFileData<T>;
+  WorldFileData<T> | NewFileData<T> | CacheFileData<T>;
 
 /** Datapackのデータ */
 export const DatapackData = z.object({

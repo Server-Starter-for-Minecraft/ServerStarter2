@@ -2,7 +2,7 @@ export const errorMessageContentSyembol = Symbol();
 export type ErrorMessageContentSyembol = typeof errorMessageContentSyembol;
 
 export type ErrorMessageContent<
-  T extends object | any[] | undefined = undefined
+  T extends object | any[] | undefined = undefined,
 > = () => T;
 
 export interface Errors {
@@ -17,13 +17,13 @@ type AddSuffix<T, P extends string> = T extends [infer U, infer V]
 
 type FlattenErrorKV<
   T extends Record<string, unknown>,
-  Key = keyof T
+  Key = keyof T,
 > = Key extends string
   ? T[Key] extends Record<string, unknown>
     ? AddSuffix<FlattenErrorKV<T[Key]>, Key>
     : T[Key] extends () => infer R
-    ? [`${Key}`, R]
-    : never
+      ? [`${Key}`, R]
+      : never
   : never;
 
 type TupleToObject<T> = T extends [infer K, infer V]

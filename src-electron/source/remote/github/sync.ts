@@ -18,7 +18,7 @@ import { getGitPat } from './pat';
 
 function logger(): [
   (func: (arg: SimpleGitProgressEvent) => void) => void,
-  (arg: SimpleGitProgressEvent) => void
+  (arg: SimpleGitProgressEvent) => void,
 ] {
   let _func: (arg: SimpleGitProgressEvent) => void;
   function set(func: (arg: SimpleGitProgressEvent) => void) {

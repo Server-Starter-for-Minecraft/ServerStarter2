@@ -55,20 +55,20 @@ export type Validator =
 type Varlidant<T extends Validator> = T['type'] extends StringValidator
   ? string
   : T['type'] extends NumberValidator
-  ? number
-  : T['type'] extends BooleanValidator
-  ? boolean
-  : T['type'] extends NullValidator
-  ? null
-  : T extends ArrayValidator<any>
-  ? Varlidant<T['array']>[]
-  : T extends TupleValidator<any>
-  ? TupleVarlidant<T['tuple']>
-  : T extends RecordValidator<any>
-  ? Record<string, T['record']>
-  : T extends ObjectValidator
-  ? ObjectVarlidant<T['object']>
-  : never;
+    ? number
+    : T['type'] extends BooleanValidator
+      ? boolean
+      : T['type'] extends NullValidator
+        ? null
+        : T extends ArrayValidator<any>
+          ? Varlidant<T['array']>[]
+          : T extends TupleValidator<any>
+            ? TupleVarlidant<T['tuple']>
+            : T extends RecordValidator<any>
+              ? Record<string, T['record']>
+              : T extends ObjectValidator
+                ? ObjectVarlidant<T['object']>
+                : never;
 
 type TupleVarlidant<T extends Validator[]> = {
   [K in keyof T]: Varlidant<T[K]>;

@@ -89,8 +89,8 @@ if (vanillaVer.value !== '') {
                 ver.id === latestReleaseID
                   ? `${ver.id}【${$T('home.version.latestRelease')}】`
                   : idx === 0
-                  ? `${ver.id}【${$T('home.version.latestSnapshot')}】`
-                  : ver.id,
+                    ? `${ver.id}【${$T('home.version.latestSnapshot')}】`
+                    : ver.id,
             };
           })
       "

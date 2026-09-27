@@ -147,7 +147,9 @@ function isErrorSize() {
               :label="$t('icon.reg')"
               :disable="isErrorSize()"
               color="primary"
-              @click="() => onDialogOK({ img: iconImg.data } as IconSelectReturn)"
+              @click="
+                () => onDialogOK({ img: iconImg.data } as IconSelectReturn)
+              "
             />
           </q-item-section>
         </q-item>

@@ -80,14 +80,14 @@ const tooltipText = () => {
   <q-item
     clickable
     :active="
-      (clicked =
+      clicked =
         mainStore.selectedWorldID === world_item.world.id &&
-        $route.path.slice(0, 7) !== '/system')
+        $route.path.slice(0, 7) !== '/system'
     "
     :focused="
-      (clicked =
+      clicked =
         mainStore.selectedWorldID === world_item.world.id &&
-        $route.path.slice(0, 7) !== '/system')
+        $route.path.slice(0, 7) !== '/system'
     "
     @click="selectWorldIdx"
     v-on:dblclick="() => startServer(mainStore, consoleStore)"
