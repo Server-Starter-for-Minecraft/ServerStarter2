@@ -1,11 +1,22 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
+import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { serverPropertiesFile } from './files/properties';
 import { WorldHandler } from './handler';
@@ -20,31 +31,43 @@ const servers: FakeServer[] = [];
  * 読み込むタイミング（boot）と終了するタイミング（stop）をテストから制御できる疑似サーバー
  */
 type FakeServer = {
+  /** 起動時にフロントエンドへ通知されるポート番号等の情報 */
+  notification: ServerStartNotification;
   /** サーバーがserver.propertiesを読み込んで起動する */
   boot: () => Promise<ServerProperties>;
-  /** サーバーを終了する */
-  stop: () => void;
+  /** サーバーを終了する（引数を指定した場合は異常終了） */
+  stop: (result?: Failable<undefined>) => void;
 };
 
 vi.mock('../server/server', () => ({
-  runRebootableServer: vi.fn((cwdPath: Path) => {
-    let stop: () => void = () => {};
-    const promise = new Promise<undefined>((resolve) => {
-      stop = () => resolve(undefined);
-    });
-    servers.push({
-      boot: async () => {
-        const props = await serverPropertiesFile.load(cwdPath);
-        if (isError(props)) throw new Error('failed to load server.properties');
-        return props;
-      },
-      stop,
-    });
-    return Object.assign(promise, {
-      runCommand: vi.fn(async () => {}),
-      reboot: vi.fn(async () => {}),
-    });
-  }),
+  runRebootableServer: vi.fn(
+    (
+      cwdPath: Path,
+      _id: unknown,
+      _settings: unknown,
+      _progress: unknown,
+      notification: ServerStartNotification
+    ) => {
+      let stop: FakeServer['stop'] = () => {};
+      const promise = new Promise<Failable<undefined>>((resolve) => {
+        stop = (result) => resolve(result);
+      });
+      servers.push({
+        notification,
+        boot: async () => {
+          const props = await serverPropertiesFile.load(cwdPath);
+          if (isError(props))
+            throw new Error('failed to load server.properties');
+          return props;
+        },
+        stop,
+      });
+      return Object.assign(promise, {
+        runCommand: vi.fn(async () => {}),
+        reboot: vi.fn(async () => {}),
+      });
+    }
+  ),
 }));
 
 vi.mock('../server/setup/ngrok', () => ({
@@ -82,7 +105,11 @@ async function createWorld(useNgrok: boolean) {
     name,
     container,
     id,
-    version: { type: 'vanilla', id: '1.20.4', release: true } as WorldEdited['version'],
+    version: {
+      type: 'vanilla',
+      id: '1.20.4',
+      release: true,
+    } as WorldEdited['version'],
     using: false,
     remote: undefined,
     last_date: getCurrentTimestamp(true),
@@ -109,6 +136,13 @@ async function waitServerLaunched(count: number) {
     timeout: 5000,
   });
   return servers[count - 1];
+}
+
+/** ワールドのserver.propertiesを読み込む */
+async function loadProperties(handler: WorldHandler) {
+  const props = await serverPropertiesFile.load(handler.getSavePath());
+  if (isError(props)) throw new Error('failed to load server.properties');
+  return props;
 }
 
 /** server.propertiesのポート番号をユーザーの設定値として変更したワールドを返す */
@@ -158,9 +192,14 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
     const server = await waitServerLaunched(1);
     await saving;
 
+    // Ngrokが転送するポート番号（フロントエンドに通知されるポート番号）で起動している
     const booted = await server.boot();
-    const ngrokPort = vi.mocked(runNgrok).mock.calls[0][1];
-    expect(booted['server-port']).toBe(ngrokPort);
+    expect(runNgrok).toHaveBeenCalledWith(
+      NGROK_TOKEN,
+      server.notification.port,
+      undefined
+    );
+    expect(booted['server-port']).toBe(server.notification.port);
 
     server.stop();
     await running;
@@ -174,9 +213,14 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
     const server = await waitServerLaunched(1);
     await handler.save(world);
 
+    // Ngrokが転送するポート番号（フロントエンドに通知されるポート番号）で起動している
     const booted = await server.boot();
-    const ngrokPort = vi.mocked(runNgrok).mock.calls[0][1];
-    expect(booted['server-port']).toBe(ngrokPort);
+    expect(runNgrok).toHaveBeenCalledWith(
+      NGROK_TOKEN,
+      server.notification.port,
+      undefined
+    );
+    expect(booted['server-port']).toBe(server.notification.port);
 
     server.stop();
     await running;
@@ -192,23 +236,61 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
     const CHANGED_PORT = 25580;
     const saved = await handler.save(changeUserPort(world, CHANGED_PORT));
     // フロントエンドにはユーザーが設定した値を返す
-    expect(isError(saved.value)).toBe(false);
-    if (!isError(saved.value) && !isError(saved.value.properties)) {
-      expect(saved.value.properties['server-port']).toBe(CHANGED_PORT);
-    }
+    expect(saved.value).toMatchObject({
+      properties: { 'server-port': CHANGED_PORT },
+    });
+    // 実行中に再読み込みした場合もユーザーが設定した値を返す
+    const loaded = await handler.load();
+    expect(loaded.value).toMatchObject({
+      properties: { 'server-port': CHANGED_PORT },
+    });
 
     server.stop();
     const result = await running;
 
     // 戻り値のワールドとserver.propertiesの両方がユーザーの設定値になっている
+    expect(result.value).toMatchObject({
+      properties: { 'server-port': CHANGED_PORT },
+    });
+    expect((await loadProperties(handler))['server-port']).toBe(CHANGED_PORT);
+  });
+
+  test('サーバーが異常終了した場合もユーザーが設定したポート番号に戻る', async () => {
+    const { handler } = await createWorld(true);
+
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+
+    server.stop(
+      errorMessage.system.subprocess({
+        processPath: 'java',
+        args: [],
+        exitcode: 1,
+      })
+    );
+    const result = await running;
+
+    expect(isError(result.value)).toBe(true);
+    expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+  });
+
+  test('Ngrokの起動に失敗した場合はサーバーを起動せず，再度起動できる', async () => {
+    const { handler } = await createWorld(true);
+
+    vi.mocked(runNgrok).mockResolvedValueOnce(
+      errorMessage.lib.ngrok.unknown({ message: 'failed' })
+    );
+    const failed = await handler.run(new GroupProgressor());
+
+    expect(isError(failed.value)).toBe(true);
+    expect(servers.length).toBe(0);
+    expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+
+    // 失敗後に改めて起動できる
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.stop();
+    const result = await running;
     expect(isError(result.value)).toBe(false);
-    if (!isError(result.value) && !isError(result.value.properties)) {
-      expect(result.value.properties['server-port']).toBe(CHANGED_PORT);
-    }
-    const props = await serverPropertiesFile.load(handler.getSavePath());
-    expect(isError(props)).toBe(false);
-    if (!isError(props)) {
-      expect(props['server-port']).toBe(CHANGED_PORT);
-    }
   });
 });

@@ -114,8 +114,12 @@ class PromiseSpooler {
       const item = this.spoolingQueue.shift();
       if (item === undefined) break;
       const [process, resolve] = item;
-      const result = await process();
-      resolve(result);
+      try {
+        resolve(await process());
+      } catch (e) {
+        // 例外は呼び出し元に伝え，後続の処理は止めずに続行する
+        resolve(Promise.reject(e));
+      }
     }
     this.running = false;
   }
@@ -175,6 +179,24 @@ function pickServerPorts(properties: ServerProperties): ServerPorts {
     'server-port': properties['server-port'],
     'query.port': properties['query.port'],
   };
+}
+
+/**
+ * server.propertiesのポート番号を差し替える
+ *
+ * @param properties 元のserver.properties（変更しない）
+ * @param ports 差し替えるポート番号（数値の場合はすべてのポートをその番号にする）
+ * @returns ポート番号を差し替えたserver.properties
+ */
+function withServerPorts(
+  properties: ServerProperties,
+  ports: ServerPorts | number
+): ServerProperties {
+  const replace: ServerPorts =
+    typeof ports === 'number'
+      ? { 'server-port': ports, 'query.port': ports }
+      : ports;
+  return { ...properties, ...replace };
 }
 
 /** サーバー起動処理の準備が完了した時点の情報 */
@@ -353,10 +375,10 @@ export class WorldHandler {
     progress?: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
     if (this.runner === undefined) {
-      // 起動中に設定を反映
+      // 非起動中に設定を反映
       return this.saveExecNonRunning(world, progress);
     } else {
-      // 非起動中に設定を反映
+      // 起動中に設定を反映
       return this.saveExecRunning(world);
     }
   }
@@ -463,6 +485,10 @@ export class WorldHandler {
     // (server.propertiesのポート番号は実行中のものを維持し，ユーザーが設定した値はサーバー終了後に反映する)
     const result = await saveLocalFiles(savePath, this.pinRunningPorts(world));
     result.errors.push(...errors);
+    if (isValid(result.value) && isValid(world.properties)) {
+      // 保存したポート番号はユーザーの設定値としてサーバー終了後に復元する
+      this.userPorts = pickServerPorts(world.properties);
+    }
     this.replaceWithUserPorts(result.value);
 
     // リロード
@@ -509,22 +535,14 @@ export class WorldHandler {
   /**
    * 実行中のサーバーに保存するワールドのserver.propertiesのポート番号を，実行中のポート番号に置き換える
    *
-   * 保存しようとしているポート番号はユーザーの設定値としてサーバー終了後に復元できるよう記録する
-   *
    * @param world 保存するワールド
    * @returns ポート番号を置き換えたワールド（引数のワールドは変更しない）
    */
   private pinRunningPorts(world: WorldEdited): WorldEdited {
     if (this.port === undefined || isError(world.properties)) return world;
-
-    this.userPorts = pickServerPorts(world.properties);
     return {
       ...world,
-      properties: {
-        ...world.properties,
-        'server-port': this.port,
-        'query.port': this.port,
-      },
+      properties: withServerPorts(world.properties, this.port),
     };
   }
 
@@ -566,7 +584,12 @@ export class WorldHandler {
   }
 
   async load(): Promise<WithError<Failable<World>>> {
-    const func = () => this.loadExec();
+    const func = async () => {
+      const result = await this.loadExec();
+      // 実行中のポート番号がユーザーの設定値としてフロントエンドに渡らないようにする
+      this.replaceWithUserPorts(result.value);
+      return result;
+    };
     const r = await this.promiseSpooler.spool(func);
     return r;
   }
@@ -984,11 +1007,10 @@ export class WorldHandler {
     const userProperties = isError(beforeWorld.properties)
       ? sysSettings.world.properties
       : beforeWorld.properties;
-    const saveProperties = await serverPropertiesFile.save(savePath, {
-      ...userProperties,
-      'server-port': port,
-      'query.port': port,
-    });
+    const saveProperties = await serverPropertiesFile.save(
+      savePath,
+      withServerPorts(userProperties, port)
+    );
     if (isError(saveProperties)) return withError(saveProperties, errors);
 
     // ngrokが必要な場合は起動
@@ -1008,7 +1030,6 @@ export class WorldHandler {
     this.userPorts = pickServerPorts(userProperties);
 
     // 使用中フラグを立てて保存
-    // 使用中フラグを折って保存を試みる (無理なら諦める)
     settings.using = true;
     settings.last_user = sysSettings.user.owner;
     settings.last_date = getCurrentTimestamp();
@@ -1053,6 +1074,7 @@ export class WorldHandler {
   /**
    * サーバー終了後に設定を元に戻してデータを同期する
    *
+   * @param progress 進捗の表示先
    * @param context 起動時の情報
    * @param serverResult サーバーの実行結果
    * @returns 終了後のワールド情報
@@ -1078,6 +1100,18 @@ export class WorldHandler {
       key: 'server.run.after.title',
     });
 
+    // server.propertiesのポート番号をユーザーの設定値に戻す
+    // (サーバーが異常終了した場合も含め，リモートへのpushより前に戻しておく)
+    if (userPorts !== undefined) {
+      const properties = await serverPropertiesFile.load(savePath);
+      if (isValid(properties)) {
+        await serverPropertiesFile.save(
+          savePath,
+          withServerPorts(properties, userPorts)
+        );
+      }
+    }
+
     // 使用中フラグを折り，ワールドの最終プレイを現在時刻にして保存を試みる (無理なら諦める)
     settings.last_date = getCurrentTimestamp();
     settings.using = false;
@@ -1092,20 +1126,7 @@ export class WorldHandler {
     if (isError(serverResult)) return withError(serverResult);
 
     // ワールド情報を再取得
-    const afterWorld = await this.loadExec(progress);
-
-    // ポート番号をユーザーの設定値に復元
-    if (
-      userPorts !== undefined &&
-      isValid(afterWorld.value) &&
-      isValid(afterWorld.value.properties)
-    ) {
-      Object.assign(afterWorld.value.properties, userPorts);
-      // プロパティを保存
-      await serverPropertiesFile.save(savePath, afterWorld.value.properties);
-    }
-
-    return afterWorld;
+    return await this.loadExec(progress);
   }
 
   /** コマンドを実行 */
