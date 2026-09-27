@@ -40,6 +40,7 @@ function readAsDataURL(blob: Blob) {
 async function updateImg() {
   const current = ++generation;
   const isLatest = () => current === generation;
+  let succeeded = false;
   iconImg.value.processing = true;
 
   try {
@@ -77,8 +78,16 @@ async function updateImg() {
     iconImg.value.width = canvas.width;
     iconImg.value.height = canvas.height;
     iconImg.value.data = data;
+    succeeded = true;
   } finally {
-    if (isLatest()) iconImg.value.processing = false;
+    if (isLatest()) {
+      // 切り抜きに失敗した場合は，切り抜き前の画像を登録させないためにサイズを無効化する
+      if (!succeeded) {
+        iconImg.value.width = 0;
+        iconImg.value.height = 0;
+      }
+      iconImg.value.processing = false;
+    }
   }
 }
 

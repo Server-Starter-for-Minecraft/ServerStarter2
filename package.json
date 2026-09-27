@@ -35,7 +35,7 @@
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/mousetrap": "^1.6.15",
     "@types/node": "^24.0.0",
-    "@vitest/coverage-v8": "^5.0.2",
+    "@vitest/coverage-istanbul": "5.0.2",
     "@vue/compiler-sfc": "^3.5.43",
     "autoprefixer": "^10.6.1",
     "eslint": "^10.11.0",
