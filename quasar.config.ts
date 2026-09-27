@@ -40,6 +40,21 @@ export default defineConfig((ctx) => {
         'src-electron': ctx.appPaths.electronDir,
       },
 
+      extendViteConf(viteConf) {
+        // 起動時に全ページを先読みする(routes.tsのpreLoad)ため，devサーバーの起動直後から
+        // 画面のソースを先行して変換しておき，ウィンドウ表示後の待ち時間を短くする
+        viteConf.server ??= {};
+        viteConf.server.warmup = {
+          clientFiles: [
+            `./${srcDir}/App.vue`,
+            `./${srcDir}/router/*.ts`,
+            './src/layouts/**/*.vue',
+            './src/pages/**/*.vue',
+            './src/components/**/*.vue',
+          ],
+        };
+      },
+
       define: {
         'import.meta.vitest': 'undefined',
         __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false',
@@ -62,7 +77,19 @@ export default defineConfig((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
-      config: {},
+      config: {
+        // ブランドカラーはSASS変数ではなくCSS変数として実行時に適用する
+        // (quasar.variables.scssを置くとQuasar本体のSASSを毎回コンパイルするため，起動が遅くなる)
+        brand: {
+          primary: '#7cbb00',
+          secondary: '#26a69a',
+          accent: '#9c27b0',
+          positive: '#21ba45',
+          negative: '#ff3434',
+          info: '#31ccec',
+          warning: '#f2c037',
+        },
+      },
 
       // Quasar plugins
       plugins: ['Dialog'],

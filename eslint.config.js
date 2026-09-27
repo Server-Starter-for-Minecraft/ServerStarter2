@@ -19,7 +19,6 @@ export default tseslint.config(
       'src/assets/assets.ts',
       '*.config.js',
       '*.config.ts',
-      '.cdp-*',
     ],
   },
 
@@ -44,6 +43,13 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+    rules: {
+      // Require switch-case statements to be exhaustive (requires type information)
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: true },
+      ],
     },
   },
 
@@ -101,12 +107,6 @@ export default tseslint.config(
 
       // allow debugger during development only
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-
-      // Require switch-case statements to be exhaustive
-      '@typescript-eslint/switch-exhaustiveness-check': [
-        'error',
-        { considerDefaultExhaustiveForUnions: true },
-      ],
 
       '@typescript-eslint/no-unused-expressions': [
         'error',

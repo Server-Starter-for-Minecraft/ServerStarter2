@@ -12,8 +12,8 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,json}\" --ignore-path .gitignore",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest",
-    "dev": "quasar dev -m electron",
-    "dummy": "SRC_DIR=src/dummy quasar dev -m electron",
+    "dev": "bun scripts/quasar.ts dev -m electron",
+    "dummy": "SRC_DIR=src/dummy bun scripts/quasar.ts dev -m electron",
     "build": "quasar build -m electron"
   },
   "dependencies": {

@@ -86,6 +86,7 @@ onBeforeMount(async () => {
 }
 
 .selected {
-  background-color: rgba($color: $primary, $alpha: 0.3);
+  // 旧 quasar.variables.scss の $primary (#7cbb00) を透過させた色
+  background-color: rgba(124, 187, 0, 0.3);
 }
 </style>

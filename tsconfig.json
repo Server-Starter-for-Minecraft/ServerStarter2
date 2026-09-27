@@ -11,7 +11,8 @@
     "./src/**/*",
     "./src-electron/**/*",
     "./src-public/**/*",
-    "./test/**/*"
+    "./test/**/*",
+    "./scripts/**/*"
   ],
   "exclude": [
     "./dist",
