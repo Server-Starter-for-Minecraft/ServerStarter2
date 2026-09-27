@@ -3,7 +3,12 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { afterWindow, initWindow } from 'app/src/init';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { OwnerDialogProp } from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
+import { runFirstLaunch } from 'src/components/App/firstLaunch';
+import {
+  OwnerDialogProp,
+  ReturnOwnerDialog,
+} from 'src/components/SystemSettings/General/OwnerSetter/iOwnerDialog';
+import { waitDialogClosed } from 'src/components/util/dialog';
 import WelcomeDialog from 'src/components/App/WelcomeDialog.vue';
 import OwnerDialog from 'src/components/SystemSettings/General/OwnerSetter/OwnerDialog.vue';
 
@@ -11,23 +16,23 @@ const $q = useQuasar();
 const router = useRouter();
 const sysStore = useSystemStore();
 
-// 利用規約へ同意
 if (!sysStore.systemSettings.user.eula) {
-  $q.dialog({
-    component: WelcomeDialog,
-  }).onOk(() => {
-    sysStore.systemSettings.user.eula = true;
-
-    // オーナープレイヤーの登録催促
-    $q.dialog({
-      component: OwnerDialog,
-      componentProps: {
-        persistent: true,
-      } as OwnerDialogProp,
-    }).onOk(() => {
-      // 起動時処理
-      asyncProcess();
-    });
+  // 利用規約への同意とオーナープレイヤーの登録催促（スキップされても起動処理は続行する）
+  runFirstLaunch(sysStore.systemSettings.user, {
+    showWelcome: () =>
+      waitDialogClosed($q.dialog({ component: WelcomeDialog })),
+    showOwnerRegister: () =>
+      waitDialogClosed<ReturnOwnerDialog>(
+        $q.dialog({
+          component: OwnerDialog,
+          componentProps: {
+            persistent: true,
+          } as OwnerDialogProp,
+        })
+      ),
+  }).then(() => {
+    // 起動時処理
+    asyncProcess();
   });
 } else {
   // 起動時処理
