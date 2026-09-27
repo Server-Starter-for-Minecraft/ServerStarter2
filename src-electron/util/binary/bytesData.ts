@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
-import { net } from 'electron';
+// Electron外(テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
+import * as electron from 'electron';
 import { promises } from 'fs';
 import prismarineNbt from 'prismarine-nbt';
 import sharp from 'sharp';
@@ -21,7 +22,7 @@ const loggers = () => utilLoggers().BytesData;
  * テスト環境などElectron外で実行される場合は標準のfetchを使用する
  */
 const fetchURL = (url: string, init?: RequestInit) =>
-  net?.fetch ? net.fetch(url, init) : fetch(url, init);
+  electron.net?.fetch ? electron.net.fetch(url, init) : fetch(url, init);
 
 export type Hash = {
   type: 'sha1' | 'md5' | 'sha256';

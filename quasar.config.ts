@@ -102,6 +102,7 @@ export default defineConfig((ctx) => {
     sourceFiles: {
       rootComponent: `${srcDir}/App.vue`,
       router: `${srcDir}/router/index`,
+      store: `${srcDir}/stores/index`,
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
