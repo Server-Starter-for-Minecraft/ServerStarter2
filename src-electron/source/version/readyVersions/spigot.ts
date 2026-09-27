@@ -296,5 +296,66 @@ if (import.meta.vitest) {
       expect(getJarPath(outputPath).exists()).toBe(false);
       expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
     });
+
+    // Issue #196: 1.20.6以降はJava21/22が必要となり，以前は対応するJavaを用意できずに起動できなかった
+    test.each(['1.20.6', '1.21'])(
+      'Spigot %s のビルドと実行に使うJavaが入手可能なランタイムに解決される',
+      { timeout: 1000 * 60 },
+      async (id) => {
+        const { getUniversalConfig } =
+          await import('../../runtime/getUnivConfig');
+        const { minecraftRuntimeManifestUrl } =
+          await import('../../runtime/minecraft');
+        const { McRuntimeManifest } =
+          await import('app/src-electron/schema/runtime');
+
+        const version: SpigotVersion = {
+          id: VersionId.parse(id),
+          type: 'spigot',
+        };
+        const outputPath = serverFolder.child(version.id);
+        const readyOperator = new ReadySpigotVersion(version, cacheFolder);
+        await outputPath.remove();
+        await readyOperator.cachePath?.remove();
+
+        // `BuildTools.jar`の実行によってJarが生成された体を再現する
+        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+          const versionId = options.args[4];
+          options.currentDir
+            .child(`spigot-${versionId}.jar`)
+            .writeText(`spigot-${versionId}.jar`);
+        });
+
+        const res = await readyOperator.completeReady4VersionFiles(
+          outputPath,
+          execRuntime
+        );
+        expect(isError(res)).toBe(false);
+        if (isError(res)) return;
+
+        const manifestBytes = await BytesData.fromURL(
+          minecraftRuntimeManifestUrl
+        );
+        if (isError(manifestBytes)) throw new Error('failed to get manifest');
+        const manifest = await manifestBytes.json(McRuntimeManifest);
+        if (isError(manifest)) throw new Error('failed to parse manifest');
+
+        // BuildToolsの実行とサーバーの実行に使うランタイムが，各OSで入手可能なJavaに解決される
+        const buildRuntime = vi.mocked(execRuntime).mock.calls[0][0].runtime;
+        for (const runtime of [buildRuntime, res.runtime]) {
+          if (runtime?.type !== 'universal') continue;
+          for (const os of ['windows-x64', 'mac-os-arm64', 'debian'] as const) {
+            const resolved = await getUniversalConfig(
+              os,
+              manifest,
+              runtime.majorVersion
+            );
+            expect(isError(resolved), `${os} java${runtime.majorVersion}`).toBe(
+              false
+            );
+          }
+        }
+      }
+    );
   });
 }
