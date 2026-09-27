@@ -52,10 +52,19 @@ export const useConsoleStore = defineStore('consoleStore', {
       this._world[worldID].status = 'Ready';
     },
     /**
+     * サーバーの起動を登録し，実行中（コンソール表示）の状態にする
+     *
+     * @param worldID 起動したワールドのID
+     */
+    startServer(worldID: WorldID) {
+      this._world[worldID].status = 'Running';
+    },
+    /**
      * コンソールに行を追加する
+     *
+     * サーバーの終了通知の後に最後の出力が届くことがあるため，ここでは実行状態を変更しない
      */
     setConsole(worldID: WorldID, consoleLine: string, isError: boolean) {
-      this._world[worldID].status = 'Running';
       if (consoleLine !== void 0) {
         this._world[worldID].console.push({
           chunk: consoleLine,
@@ -171,16 +180,19 @@ export async function runServer() {
 
   // サーバーを起動
   updateBackWorld(runWorld.world.id);
-  const res = await window.API.invokeRunWorld(runWorld.world.id);
+  try {
+    const res = await window.API.invokeRunWorld(runWorld.world.id);
 
-  // サーバー終了時のエラー確認
-  checkError(
-    res.value,
-    (w) => updateWorld(w),
-    (e) => tError(e)
-  );
-
-  // サーバータブをリセット
-  consoleStore.initTab(runWorld.world.id, true);
-  mainStore.removeWorldIP(runWorld.world.id);
+    // サーバー終了時のエラー確認
+    checkError(
+      res.value,
+      (w) => updateWorld(w),
+      (e) => tError(e)
+    );
+  } finally {
+    // サーバータブをリセット
+    // (バックエンドの処理が例外で終了した場合も停止状態に戻し，画面が固まらないようにする)
+    consoleStore.initTab(runWorld.world.id, true);
+    mainStore.removeWorldIP(runWorld.world.id);
+  }
 }
