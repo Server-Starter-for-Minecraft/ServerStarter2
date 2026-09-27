@@ -297,65 +297,87 @@ if (import.meta.vitest) {
       expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
     });
 
-    // Issue #196: 1.20.6以降はJava21/22が必要となり，以前は対応するJavaを用意できずに起動できなかった
-    test.each(['1.20.6', '1.21'])(
-      'Spigot %s のビルドと実行に使うJavaが入手可能なランタイムに解決される',
-      { timeout: 1000 * 60 },
-      async (id) => {
-        const { getUniversalConfig } =
-          await import('../../runtime/getUnivConfig');
-        const { minecraftRuntimeManifestUrl } =
-          await import('../../runtime/minecraft');
-        const { McRuntimeManifest } =
-          await import('app/src-electron/schema/runtime');
+    // Issue #196: 1.20.6以降のビルドと実行にはJava21以上が必要で，以前は対応するJavaを用意できずに起動できなかった
+    describe('Spigotのビルドと実行に使うJava', async () => {
+      const { getUniversalConfig } =
+        await import('../../runtime/getUnivConfig');
+      const { minecraftRuntimeManifestUrl } =
+        await import('../../runtime/minecraft');
+      const { McRuntimeManifest } =
+        await import('app/src-electron/schema/runtime');
+      const { OsPlatform } = await import('app/src-electron/schema/os');
 
-        const version: SpigotVersion = {
-          id: VersionId.parse(id),
-          type: 'spigot',
-        };
-        const outputPath = serverFolder.child(version.id);
-        const readyOperator = new ReadySpigotVersion(version, cacheFolder);
-        await outputPath.remove();
-        await readyOperator.cachePath?.remove();
+      const manifestBytes = await BytesData.fromURL(
+        minecraftRuntimeManifestUrl
+      );
+      if (isError(manifestBytes)) throw new Error('failed to get manifest');
+      const parsedManifest = await manifestBytes.json(McRuntimeManifest);
+      if (isError(parsedManifest)) throw new Error('failed to parse manifest');
+      const manifest = parsedManifest;
 
-        // `BuildTools.jar`の実行によってJarが生成された体を再現する
-        const execRuntime: ExecRuntime = vi.fn(async (options) => {
-          const versionId = options.args[4];
-          options.currentDir
-            .child(`spigot-${versionId}.jar`)
-            .writeText(`spigot-${versionId}.jar`);
-        });
+      /** ランタイムが各OSで実際に使用するJavaのメジャーバージョンを返す */
+      async function resolveJavaMajor(
+        runtime: Runtime,
+        os: (typeof OsPlatform.options)[number]
+      ) {
+        const concrete =
+          runtime.type === 'universal'
+            ? await getUniversalConfig(os, manifest, runtime.majorVersion)
+            : runtime;
+        if (isError(concrete)) return concrete;
+        const osKey = os === 'debian' || os === 'redhat' ? 'linux' : os;
+        const name = manifest[osKey][concrete.version]?.[0]?.version.name;
+        return parseInt(name ?? '0');
+      }
 
-        const res = await readyOperator.completeReady4VersionFiles(
-          outputPath,
-          execRuntime
-        );
-        expect(isError(res)).toBe(false);
-        if (isError(res)) return;
+      test.each([
+        ['1.20.6', 21],
+        ['1.21', 21],
+      ])(
+        'Spigot %s ではJava%d以上が各OSで用意される',
+        { timeout: 1000 * 60 },
+        async (id, minJavaVersion) => {
+          const version: SpigotVersion = {
+            id: VersionId.parse(id),
+            type: 'spigot',
+          };
+          const outputPath = serverFolder.child(version.id);
+          const readyOperator = new ReadySpigotVersion(version, cacheFolder);
+          await outputPath.remove();
+          await readyOperator.cachePath?.remove();
 
-        const manifestBytes = await BytesData.fromURL(
-          minecraftRuntimeManifestUrl
-        );
-        if (isError(manifestBytes)) throw new Error('failed to get manifest');
-        const manifest = await manifestBytes.json(McRuntimeManifest);
-        if (isError(manifest)) throw new Error('failed to parse manifest');
+          // `BuildTools.jar`の実行によってJarが生成された体を再現する
+          const execRuntime: ExecRuntime = vi.fn(async (options) => {
+            const versionId = options.args[4];
+            options.currentDir
+              .child(`spigot-${versionId}.jar`)
+              .writeText(`spigot-${versionId}.jar`);
+          });
 
-        // BuildToolsの実行とサーバーの実行に使うランタイムが，各OSで入手可能なJavaに解決される
-        const buildRuntime = vi.mocked(execRuntime).mock.calls[0][0].runtime;
-        for (const runtime of [buildRuntime, res.runtime]) {
-          if (runtime?.type !== 'universal') continue;
-          for (const os of ['windows-x64', 'mac-os-arm64', 'debian'] as const) {
-            const resolved = await getUniversalConfig(
-              os,
-              manifest,
-              runtime.majorVersion
-            );
-            expect(isError(resolved), `${os} java${runtime.majorVersion}`).toBe(
-              false
-            );
+          const res = await readyOperator.completeReady4VersionFiles(
+            outputPath,
+            execRuntime
+          );
+          expect(isError(res)).toBe(false);
+          if (isError(res)) return;
+
+          // BuildToolsの実行とサーバーの実行に使うランタイム
+          expect(execRuntime).toHaveBeenCalled();
+          const runtimes = [
+            ...vi.mocked(execRuntime).mock.calls.map((c) => c[0].runtime),
+            res.runtime,
+          ];
+          for (const runtime of runtimes) {
+            expect(runtime).toBeDefined();
+            if (runtime === undefined) continue;
+            for (const os of OsPlatform.options) {
+              const javaMajor = await resolveJavaMajor(runtime, os);
+              expect(isError(javaMajor), os).toBe(false);
+              expect(javaMajor, os).toBeGreaterThanOrEqual(minJavaVersion);
+            }
           }
         }
-      }
-    );
+      );
+    });
   });
 }
