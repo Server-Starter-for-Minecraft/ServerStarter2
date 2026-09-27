@@ -20,7 +20,11 @@ import {
 } from 'app/src-electron/util/binary/archive/tar';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { isError, isValid } from 'app/src-electron/util/error/error';
+import {
+  fromRuntimeError,
+  isError,
+  isValid,
+} from 'app/src-electron/util/error/error';
 import { failabilify } from 'app/src-electron/util/error/failable';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { portInUse } from 'app/src-electron/util/network/port';
@@ -936,7 +940,15 @@ export class WorldHandler {
     if (isError(context)) return withError(context, ready.errors);
 
     // サーバーの終了を待機
-    const serverResult = await context.runner;
+    // (実行処理が例外で終了した場合も，終了後の処理を行って状態を元に戻す)
+    let serverResult: Failable<undefined>;
+    try {
+      serverResult = await context.runner;
+    } catch (e) {
+      serverResult = fromRuntimeError(
+        e instanceof Error ? e : new Error(String(e))
+      );
+    }
 
     const after = await this.promiseSpooler.spool(() =>
       this.afterRunExec(progress, context, serverResult)
@@ -1087,13 +1099,11 @@ export class WorldHandler {
     const { ngrokListener, settings } = context;
     const savePath = this.getSavePath();
     const userPorts = this.userPorts;
+    const errors: ErrorMessage[] = [];
 
     // ポートを削除
     this.port = undefined;
     this.userPorts = undefined;
-    // Ngrokを閉じる
-    if (ngrokListener) await closeNgrok(ngrokListener);
-
     this.runner = undefined;
 
     progress.title({
@@ -1103,13 +1113,14 @@ export class WorldHandler {
     // server.propertiesのポート番号をユーザーの設定値に戻す
     // (サーバーが異常終了した場合も含め，リモートへのpushより前に戻しておく)
     if (userPorts !== undefined) {
-      const properties = await serverPropertiesFile.load(savePath);
-      if (isValid(properties)) {
-        await serverPropertiesFile.save(
-          savePath,
-          withServerPorts(properties, userPorts)
-        );
-      }
+      const restored = await this.restoreUserPorts(savePath, userPorts);
+      if (isError(restored)) errors.push(restored);
+    }
+
+    // Ngrokを閉じる (失敗しても終了後の処理は続行する)
+    if (ngrokListener) {
+      const closed = await failabilify(closeNgrok)(ngrokListener);
+      if (isError(closed)) errors.push(closed);
     }
 
     // 使用中フラグを折り，ワールドの最終プレイを現在時刻にして保存を試みる (無理なら諦める)
@@ -1123,10 +1134,30 @@ export class WorldHandler {
     await this.push(progress);
 
     // サーバーの実行が失敗していたらエラー
-    if (isError(serverResult)) return withError(serverResult);
+    if (isError(serverResult)) return withError(serverResult, errors);
 
     // ワールド情報を再取得
-    return await this.loadExec(progress);
+    const afterWorld = await this.loadExec(progress);
+    afterWorld.errors.unshift(...errors);
+    return afterWorld;
+  }
+
+  /**
+   * server.propertiesのポート番号をユーザーの設定値に戻す
+   *
+   * @param savePath ワールドの保存先
+   * @param userPorts ユーザーが設定しているポート番号
+   */
+  private async restoreUserPorts(
+    savePath: Path,
+    userPorts: ServerPorts
+  ): Promise<Failable<void>> {
+    const properties = await serverPropertiesFile.load(savePath);
+    if (isError(properties)) return properties;
+    return await serverPropertiesFile.save(
+      savePath,
+      withServerPorts(properties, userPorts)
+    );
   }
 
   /** コマンドを実行 */

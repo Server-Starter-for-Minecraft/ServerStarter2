@@ -37,6 +37,8 @@ type FakeServer = {
   boot: () => Promise<ServerProperties>;
   /** サーバーを終了する（引数を指定した場合は異常終了） */
   stop: (result?: Failable<undefined>) => void;
+  /** サーバーの実行処理が例外で終了する */
+  crash: (error: Error) => void;
 };
 
 vi.mock('../server/server', () => ({
@@ -49,8 +51,10 @@ vi.mock('../server/server', () => ({
       notification: ServerStartNotification
     ) => {
       let stop: FakeServer['stop'] = () => {};
-      const promise = new Promise<Failable<undefined>>((resolve) => {
+      let crash: FakeServer['crash'] = () => {};
+      const promise = new Promise<Failable<undefined>>((resolve, reject) => {
         stop = (result) => resolve(result);
+        crash = (error) => reject(error);
       });
       servers.push({
         notification,
@@ -61,6 +65,7 @@ vi.mock('../server/server', () => ({
           return props;
         },
         stop,
+        crash,
       });
       return Object.assign(promise, {
         runCommand: vi.fn(async () => {}),
@@ -85,7 +90,7 @@ vi.mock('../stores/system', () => ({
   }),
 }));
 
-const { runNgrok } = await import('../server/setup/ngrok');
+const { runNgrok, closeNgrok } = await import('../server/setup/ngrok');
 
 const workPath = new Path(__dirname).child('work', 'handler');
 const container = WorldContainer.parse(workPath.absolute().path);
@@ -292,5 +297,36 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
     server.stop();
     const result = await running;
     expect(isError(result.value)).toBe(false);
+  });
+
+  test('サーバーの実行処理が例外で終了した場合も，ポート番号を戻して再度起動できる', async () => {
+    const { handler } = await createWorld(true);
+
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.crash(new Error('unexpected error'));
+
+    const result = await running;
+    expect(isError(result.value)).toBe(true);
+    expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+
+    // 実行中のまま残らず，改めて起動できる
+    const rerun = handler.run(new GroupProgressor());
+    const server2 = await waitServerLaunched(2);
+    server2.stop();
+    expect(isError((await rerun).value)).toBe(false);
+  });
+
+  test('Ngrokの終了に失敗しても，ポート番号を戻して終了する', async () => {
+    const { handler } = await createWorld(true);
+    vi.mocked(closeNgrok).mockRejectedValueOnce(new Error('failed to close'));
+
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.stop();
+    const result = await running;
+
+    expect(isError(result.value)).toBe(false);
+    expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
   });
 });
