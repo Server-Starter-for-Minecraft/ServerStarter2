@@ -84,10 +84,10 @@ export const jaProperty = {
       'ワールド生成時に自動的に有効にしないデータパック',
     'initial-enabled-packs': 'ワールド生成時に有効にするデータパック',
     'max-tick-time':
-      'サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定',
+      'サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定（-1で強制終了を無効化）',
     'enable-command-block': 'コマンドブロックの実行を許可',
     'function-permission-level': 'コマンドの利用レベル（1~4で指定）',
-    'op-permission-level': 'OP権限のレベル(4が最大)',
+    'op-permission-level': 'OP権限のレベル（0~4で指定）',
     'resource-pack': 'サーバーリソースパックのURL',
     'resource-pack-prompt': 'サーバーリソースパックのプロンプト',
     'resource-pack-sha1': 'サーバーリソースパックのハッシュ値',
@@ -111,6 +111,34 @@ export const jaProperty = {
       'チャンクデータを圧縮する際に使用するアルゴリズム',
     'accepts-transfers':
       'プレイヤーが転送されたパケットを用いてサーバーにアクセスすることを許可する',
+    'bug-report-link':
+      'プレイヤーに「バグを報告」の案内先として提示するURL（空欄の場合は案内しない）',
+    'chat-spam-threshold-seconds':
+      'チャットを短時間に送りすぎたプレイヤーを自動でキックする際の判定基準（0でキックしない）',
+    'command-spam-threshold-seconds':
+      'コマンドを短時間に実行しすぎたプレイヤーを自動でキックする際の判定基準（0でキックしない）',
+    'enable-code-of-conduct':
+      'サーバーの行動規範をプレイヤーに表示する（codeofconductフォルダに「言語コード.txt」の形式で配置した文章を使用）',
+    'pause-when-empty-seconds':
+      'オンラインのプレイヤーがいない状態が指定した秒数続いたら，サーバーの処理を一時停止する（0以下で無効化）',
+    'text-filtering-version':
+      'text-filtering-configに記述する設定の書式バージョン（0または1）',
+    'management-server-enabled':
+      '外部ツールからサーバーを管理・監視するための管理用プロトコル（Management Protocol）を有効化する',
+    'management-server-host': '管理用プロトコルが待ち受けるホスト名',
+    'management-server-port':
+      '管理用プロトコルが待ち受けるポート番号（0の場合は起動時にランダムなポートを割り当てる）',
+    'management-server-allowed-origins':
+      '管理用プロトコルへの接続を許可するオリジンの一覧をカンマ区切りで指定（空欄の場合はどこからも接続できない）',
+    'management-server-secret':
+      '管理用プロトコルに接続する際の認証に使う40文字の英数字（空欄の場合は自動生成）',
+    'management-server-tls-enabled': '管理用プロトコルの通信をTLSで暗号化する',
+    'management-server-tls-keystore':
+      'TLSで使用するキーストアファイルのパス（TLSを有効にしたまま未指定にするとサーバーが起動しない）',
+    'management-server-tls-keystore-password':
+      'TLSで使用するキーストアファイルのパスワード',
+    'status-heartbeat-interval':
+      '管理用プロトコルの接続先へ稼働状況の通知（ハートビート）を送る間隔を秒単位で指定（0で送信しない）',
   },
   resetProperty:
     '\
