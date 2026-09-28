@@ -90,7 +90,17 @@ vi.mock('../stores/system', () => ({
   }),
 }));
 
+// 起動準備の途中で例外が発生する状況を再現できるように，実装はそのままでモック化する
+vi.mock('./local', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./local')>();
+  return {
+    ...actual,
+    formatWorldDirectory: vi.fn(actual.formatWorldDirectory),
+  };
+});
+
 const { runNgrok, closeNgrok } = await import('../server/setup/ngrok');
+const { formatWorldDirectory } = await import('./local');
 
 const workPath = new Path(__dirname).child('work', 'handler');
 const container = WorldContainer.parse(workPath.absolute().path);
@@ -297,6 +307,58 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
     server.stop();
     const result = await running;
     expect(isError(result.value)).toBe(false);
+  });
+
+  test('Ngrokの起動に失敗し，ポート番号を戻せなかった場合はその失敗も返す', async () => {
+    const { handler } = await createWorld(true);
+
+    const ngrokError = errorMessage.lib.ngrok.unknown({ message: 'failed' });
+    vi.mocked(runNgrok).mockResolvedValueOnce(ngrokError);
+    // ユーザーが設定したポート番号の書き戻しだけが失敗する状況
+    const restoreError = errorMessage.system.subprocess({
+      processPath: 'restore',
+      args: [],
+      exitcode: 1,
+    });
+    const originalSave = serverPropertiesFile.save;
+    const saveSpy = vi
+      .spyOn(serverPropertiesFile, 'save')
+      .mockImplementation(async (path, props) =>
+        props['server-port'] === USER_PORT
+          ? restoreError
+          : originalSave(path, props)
+      );
+
+    try {
+      const failed = await handler.run(new GroupProgressor());
+      // 起動に失敗した原因（Ngrokのエラー）を返しつつ，書き戻しの失敗も伝える
+      expect(failed.value).toEqual(ngrokError);
+      expect(failed.errors).toContainEqual(restoreError);
+    } finally {
+      saveSpy.mockRestore();
+    }
+  });
+
+  test('起動準備の途中で例外が発生した場合も，Ngrokを終了しポート番号を戻して再度起動できる', async () => {
+    const { handler } = await createWorld(true);
+    vi.mocked(closeNgrok).mockClear();
+    // Ngrokの起動後に行われる準備処理のいずれかで例外が発生した状況
+    vi.mocked(formatWorldDirectory).mockRejectedValueOnce(
+      new Error('unexpected error')
+    );
+
+    const failed = await handler.run(new GroupProgressor());
+
+    expect(isError(failed.value)).toBe(true);
+    expect(servers.length).toBe(0);
+    expect(closeNgrok).toHaveBeenCalledTimes(1);
+    expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+
+    // 実行中のまま残らず，改めて起動できる
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.stop();
+    expect(isError((await running).value)).toBe(false);
   });
 
   test('サーバーの実行処理が例外で終了した場合も，ポート番号を戻して再度起動できる', async () => {

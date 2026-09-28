@@ -207,6 +207,11 @@ function withServerPorts(
   return { ...properties, ...replace };
 }
 
+/** 捕捉した例外をエラーメッセージに変換する */
+function toRuntimeError(e: unknown) {
+  return fromRuntimeError(e instanceof Error ? e : new Error(String(e)));
+}
+
 /** サーバー起動処理の準備が完了した時点の情報 */
 type ReadyRunContext = {
   /** 実行中のサーバー */
@@ -949,9 +954,7 @@ export class WorldHandler {
     try {
       serverResult = await context.runner;
     } catch (e) {
-      serverResult = fromRuntimeError(
-        e instanceof Error ? e : new Error(String(e))
-      );
+      serverResult = toRuntimeError(e);
     }
 
     const after = await this.promiseSpooler.spool(() =>
@@ -1037,7 +1040,11 @@ export class WorldHandler {
     );
     if (isError(ngrokListener)) {
       // 起動しないため，server.propertiesをユーザーの設定値に戻す
-      await serverPropertiesFile.save(savePath, userProperties);
+      const restored = await serverPropertiesFile.save(
+        savePath,
+        userProperties
+      );
+      if (isError(restored)) errors.push(restored);
       return withError(ngrokListener, errors);
     }
 
@@ -1045,50 +1052,71 @@ export class WorldHandler {
     this.port = port;
     this.userPorts = pickServerPorts(userProperties);
 
-    // 使用中フラグを立てて保存
-    settings.using = true;
-    settings.last_user = sysSettings.user.owner;
-    settings.last_date = getCurrentTimestamp();
-    settings.last_id = sysSettings.user.id;
-    const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
-    await serverJsonFile.save(savePath, settings);
-    // if (isError(saveServerJson)) withError(saveServerJson, errors); // 無理なら諦める
-    sub.delete();
+    try {
+      // 使用中フラグを立てて保存
+      settings.using = true;
+      settings.last_user = sysSettings.user.owner;
+      settings.last_date = getCurrentTimestamp();
+      settings.last_id = sysSettings.user.id;
+      const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
+      await serverJsonFile.save(savePath, settings);
+      // if (isError(saveServerJson)) withError(saveServerJson, errors); // 無理なら諦める
+      sub.delete();
 
-    // pushを実行 TODO: 失敗時の処理
-    await this.push(progress);
+      // pushを実行 TODO: 失敗時の処理
+      await this.push(progress);
 
-    // pluginとvanillaでファイル構造を切り替える
-    const directoryFormatResult = await formatWorldDirectory(
-      savePath,
-      settings.version,
-      progress
-    );
-    errors.push(...directoryFormatResult.errors);
+      // pluginとvanillaでファイル構造を切り替える
+      const directoryFormatResult = await formatWorldDirectory(
+        savePath,
+        settings.version,
+        progress
+      );
+      errors.push(...directoryFormatResult.errors);
 
-    const notification: ServerStartNotification = { port };
+      const notification: ServerStartNotification = { port };
 
-    const ngrokURL = ngrokListener?.url();
-    if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6);
+      const ngrokURL = ngrokListener?.url();
+      if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6);
 
-    // サーバーの実行を開始
-    const runner = runRebootableServer(
-      savePath,
-      this.id,
-      settings,
-      progress,
-      notification
-    );
+      // サーバーの実行を開始
+      const runner = runRebootableServer(
+        savePath,
+        this.id,
+        settings,
+        progress,
+        notification
+      );
 
-    this.runner = runner;
+      this.runner = runner;
 
-    beforeTitle.delete();
+      beforeTitle.delete();
 
-    return withError({ runner, ngrokListener, settings }, errors);
+      return withError({ runner, ngrokListener, settings }, errors);
+    } catch (e) {
+      // 起動準備の途中で例外が発生した場合は，サーバー終了後と同様に
+      // ポート番号・Ngrok・使用中フラグを元に戻してからエラーを返す
+      beforeTitle.delete();
+      const error = toRuntimeError(e);
+      try {
+        const after = await this.afterRunExec(
+          progress,
+          { ngrokListener, settings },
+          error
+        );
+        errors.push(...after.errors);
+      } catch (cleanupError) {
+        // 後処理（リモートへのpushなど）でも例外が発生した場合は，元のエラーを優先して返す
+        errors.push(toRuntimeError(cleanupError));
+      }
+      return withError(error, errors);
+    }
   }
 
   /**
    * サーバー終了後に設定を元に戻してデータを同期する
+   *
+   * 起動準備の途中で失敗した場合の後処理にも利用する
    *
    * @param progress 進捗の表示先
    * @param context 起動時の情報
@@ -1097,7 +1125,7 @@ export class WorldHandler {
    */
   private async afterRunExec(
     progress: GroupProgressor,
-    context: ReadyRunContext,
+    context: Pick<ReadyRunContext, 'ngrokListener' | 'settings'>,
     serverResult: Failable<undefined>
   ): Promise<WithError<Failable<World>>> {
     const { ngrokListener, settings } = context;
