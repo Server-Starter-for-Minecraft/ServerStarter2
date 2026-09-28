@@ -97,7 +97,12 @@ const DefaultServerProperties = z
     'allow-nether': boolSetter(true),
     'broadcast-console-to-ops': boolSetter(true),
     'broadcast-rcon-to-ops': boolSetter(true),
+    'bug-report-link': stringSetter(''),
+    // chat / command ともに，0でスパムによるキックを無効化できる
+    'chat-spam-threshold-seconds': numberSetter(10, 0, undefined, 1),
+    'command-spam-threshold-seconds': numberSetter(10, 0, undefined, 1),
     difficulty: enumSetter(['peaceful', 'easy', 'normal', 'hard'], 'easy'),
+    'enable-code-of-conduct': boolSetter(false),
     'enable-command-block': boolSetter(false),
     'enable-jmx-monitoring': boolSetter(false),
     'enable-query': boolSetter(false),
@@ -124,6 +129,16 @@ const DefaultServerProperties = z
       'default'
     ),
     'log-ips': boolSetter(true),
+    'management-server-allowed-origins': stringSetter(''),
+    'management-server-enabled': boolSetter(false),
+    'management-server-host': stringSetter('localhost'),
+    // 0で起動時にランダムなポートが割り当てられる（上限はTCPポート番号の最大値）
+    'management-server-port': numberSetter(0, 0, 2 ** 16 - 1, 1),
+    // 空欄の場合はサーバー起動時に自動生成されるため，固定の既定値は持たせない
+    'management-server-secret': stringSetter(''),
+    'management-server-tls-enabled': boolSetter(true),
+    'management-server-tls-keystore': stringSetter(''),
+    'management-server-tls-keystore-password': stringSetter(''),
     // legacy?
     'max-build-height': numberSetter(256, undefined, undefined, 8),
     'max-chained-neighbor-updates': numberSetter(1000000),
@@ -136,6 +151,8 @@ const DefaultServerProperties = z
     'network-compression-threshold': numberSetter(256, -1),
     'online-mode': boolSetter(true),
     'op-permission-level': numberSetter(4, 0, 4, 1),
+    // 0以下で一時停止を無効化できるため，下限は設けない
+    'pause-when-empty-seconds': numberSetter(60, undefined, undefined, 1),
     'player-idle-timeout': numberSetter(0, 0),
     'prevent-proxy-connections': boolSetter(false),
     'previews-chat': boolSetter(false),
@@ -161,8 +178,11 @@ const DefaultServerProperties = z
     'spawn-monsters': boolSetter(true),
     'spawn-npcs': boolSetter(true),
     'spawn-protection': numberSetter(16, 0, undefined, 1),
+    // 0でハートビートの送信を無効化できる
+    'status-heartbeat-interval': numberSetter(0, 0, undefined, 1),
     'sync-chunk-writes': boolSetter(true),
     'text-filtering-config': stringSetter(''),
+    'text-filtering-version': numberSetter(0, 0, 1, 1),
     'use-native-transport': boolSetter(true),
     'view-distance': numberSetter(10, 2, 32, 1),
     'white-list': boolSetter(false),
