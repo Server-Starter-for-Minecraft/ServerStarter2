@@ -110,7 +110,7 @@ const DefaultServerProperties = z
     'enable-status': boolSetter(true),
     'enforce-secure-profile': boolSetter(true),
     'enforce-whitelist': boolSetter(false),
-    'entity-broadcast-range-percentage': numberSetter(100, 10, 1000),
+    'entity-broadcast-range-percentage': numberSetter(100, 10, 1000, 1),
     'force-gamemode': boolSetter(false),
     'function-permission-level': numberSetter(2, 1, 4, 1),
     gamemode: enumSetter(
@@ -141,24 +141,29 @@ const DefaultServerProperties = z
     'management-server-tls-keystore-password': stringSetter(''),
     // legacy?
     'max-build-height': numberSetter(256, undefined, undefined, 8),
-    'max-chained-neighbor-updates': numberSetter(1000000),
-    'max-players': numberSetter(20, 0, 2 ** 31 - 1),
+    'max-chained-neighbor-updates': numberSetter(
+      1000000,
+      undefined,
+      undefined,
+      1
+    ),
+    'max-players': numberSetter(20, 0, 2 ** 31 - 1, 1),
     // -1でウォッチドッグを無効化できる
     // 上限はJavaのlong型の最大値(2^63-1)だが，JSのnumberで正確に扱える最大値に制限する
-    'max-tick-time': numberSetter(60000, -1, Number.MAX_SAFE_INTEGER),
-    'max-world-size': numberSetter(29999984, 1, 29999984),
+    'max-tick-time': numberSetter(60000, -1, Number.MAX_SAFE_INTEGER, 1),
+    'max-world-size': numberSetter(29999984, 1, 29999984, 1),
     motd: stringSetter('A Minecraft Server'),
-    'network-compression-threshold': numberSetter(256, -1),
+    'network-compression-threshold': numberSetter(256, -1, undefined, 1),
     'online-mode': boolSetter(true),
     'op-permission-level': numberSetter(4, 0, 4, 1),
     // 0以下で一時停止を無効化できるため，下限は設けない
     'pause-when-empty-seconds': numberSetter(60, undefined, undefined, 1),
-    'player-idle-timeout': numberSetter(0, 0),
+    'player-idle-timeout': numberSetter(0, 0, undefined, 1),
     'prevent-proxy-connections': boolSetter(false),
     'previews-chat': boolSetter(false),
     pvp: boolSetter(true),
     'query.port': numberSetter(25565, 1, PORT_MAX, 1),
-    'rate-limit': numberSetter(0, 0),
+    'rate-limit': numberSetter(0, 0, undefined, 1),
     'rcon.password': stringSetter(''),
     'rcon.port': numberSetter(25575, 1, PORT_MAX, 1),
     'region-file-compression': enumSetter(

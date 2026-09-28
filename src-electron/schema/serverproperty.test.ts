@@ -87,6 +87,29 @@ describe('サーバープロパティの許容値', () => {
     }
   );
 
+  // server.properties の数値項目はすべて整数として読み込まれるため，小数は許容しない
+  const numberKeys = Object.entries(DefaultServerPropertiesAnnotation)
+    .filter(([, annotation]) => annotation.type === 'number')
+    .map(([key]) => key);
+
+  test.each(numberKeys)(
+    '%s に小数を指定すると既定値に戻され，プロパティ画面でも入力できない',
+    (key) => {
+      const annotation = DefaultServerPropertiesAnnotation[key];
+      if (annotation?.type !== 'number')
+        throw new Error(`${key} is not number`);
+      // 範囲外として弾かれないよう，範囲内に収まる小数を選ぶ
+      const fractional =
+        annotation.max !== undefined &&
+        annotation.default + 0.5 > annotation.max
+          ? annotation.default - 0.5
+          : annotation.default + 0.5;
+      const props = ServerProperties.parse({ [key]: fractional.toString() });
+      expect(props[key]).toBe(annotation.default);
+      expect(isAcceptedInEditor(key, fractional)).toBe(false);
+    }
+  );
+
   test('プロパティ画面で入力できる最大値はJavaのlong型に収まり，正確に保存できる', () => {
     const annotation = DefaultServerPropertiesAnnotation['max-tick-time'];
     if (annotation?.type !== 'number' || annotation.max === undefined) {
