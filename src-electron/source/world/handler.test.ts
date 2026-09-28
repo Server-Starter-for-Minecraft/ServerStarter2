@@ -7,7 +7,10 @@ import {
   test,
   vi,
 } from 'vitest';
-import { GroupProgressor } from 'app/src-electron/common/progress';
+import {
+  GroupProgressor,
+  TitleProgressor,
+} from 'app/src-electron/common/progress';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
@@ -355,6 +358,32 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
     expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
 
     // 実行中のまま残らず，改めて起動できる
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.stop();
+    expect(isError((await running).value)).toBe(false);
+  });
+
+  test('起動準備中の進捗表示で例外が発生しても，サーバーが管理できない状態で起動したまま残らない', async () => {
+    const { handler } = await createWorld(true);
+    // 起動直前のフロントエンドへの進捗の通知が失敗し続ける状況
+    const deleteSpy = vi
+      .spyOn(TitleProgressor.prototype, 'delete')
+      .mockImplementation(() => {
+        throw new Error('failed to send progress');
+      });
+
+    try {
+      const failed = await handler.run(new GroupProgressor());
+
+      expect(isError(failed.value)).toBe(true);
+      expect(servers.length).toBe(0);
+      expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+    } finally {
+      deleteSpy.mockRestore();
+    }
+
+    // 改めて起動できる
     const running = handler.run(new GroupProgressor());
     const server = await waitServerLaunched(1);
     server.stop();

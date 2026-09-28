@@ -1079,7 +1079,11 @@ export class WorldHandler {
       const ngrokURL = ngrokListener?.url();
       if (ngrokURL) notification.ngrokURL = ngrokURL.slice(6);
 
+      beforeTitle.delete();
+
       // サーバーの実行を開始
+      // (起動後に例外が発生すると，サーバーが起動したまま管理できなくなるため，
+      //  サーバーの起動は例外が発生しうる処理をすべて終えてから行う)
       const runner = runRebootableServer(
         savePath,
         this.id,
@@ -1087,17 +1091,18 @@ export class WorldHandler {
         progress,
         notification
       );
-
       this.runner = runner;
-
-      beforeTitle.delete();
 
       return withError({ runner, ngrokListener, settings }, errors);
     } catch (e) {
       // 起動準備の途中で例外が発生した場合は，サーバー終了後と同様に
       // ポート番号・Ngrok・使用中フラグを元に戻してからエラーを返す
-      beforeTitle.delete();
       const error = toRuntimeError(e);
+      try {
+        beforeTitle.delete();
+      } catch (titleError) {
+        errors.push(toRuntimeError(titleError));
+      }
       try {
         const after = await this.afterRunExec(
           progress,
