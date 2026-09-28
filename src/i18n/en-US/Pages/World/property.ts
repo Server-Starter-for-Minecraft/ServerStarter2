@@ -89,11 +89,11 @@ export const enUSproperty: MessageSchema['property'] = {
     'initial-enabled-packs':
       'List of datapacks to be enabled on world creation',
     'max-tick-time':
-      'Time in milliseconds between server inoperability and forced shutdown',
+      'Time in milliseconds between server inoperability and forced shutdown (-1 to disable forced shutdown)',
     'enable-command-block': 'Allow command block execution',
     'function-permission-level':
       'Function permission level (set between 1 to 4)',
-    'op-permission-level': 'Function permission level (set between 1 to 4)',
+    'op-permission-level': 'OP permission level (set between 0 to 4)',
     'resource-pack': 'URL of the server resource pack',
     'resource-pack-prompt': 'Prompt of server resource pack',
     'resource-pack-sha1': 'Hash value of the server resource pack',
@@ -115,6 +115,35 @@ export const enUSproperty: MessageSchema['property'] = {
       'UUID specified by the resource pack for the client to identify it',
     'region-file-compression': 'Algorithm used to compress chunks in regions',
     'accepts-transfers': 'Allow servers to access them via transfer packets',
+    'bug-report-link':
+      'URL presented to players as the place to report bugs (not presented when empty)',
+    'chat-spam-threshold-seconds':
+      'Threshold for automatically kicking players who send too many chat messages in a short time (0 to never kick)',
+    'command-spam-threshold-seconds':
+      'Threshold for automatically kicking players who run too many commands in a short time (0 to never kick)',
+    'enable-code-of-conduct':
+      'Show the server code of conduct to players (uses "<language code>.txt" files placed in the codeofconduct folder)',
+    'pause-when-empty-seconds':
+      'Pause the server after no players have been online for the specified number of seconds (0 or less to disable)',
+    'text-filtering-version':
+      'Format version of the settings written in text-filtering-config (0 or 1)',
+    'management-server-enabled':
+      'Enable the Management Protocol, which lets external tools manage and monitor the server',
+    'management-server-host': 'Host name the Management Protocol listens on',
+    'management-server-port':
+      'Port number the Management Protocol listens on (0 to assign a random port at startup)',
+    'management-server-allowed-origins':
+      'Origins (comma-separated) that may open a Management Protocol connection (no client can connect when empty)',
+    'management-server-secret':
+      '40-character alphanumeric secret used to authenticate Management Protocol clients (generated automatically when empty)',
+    'management-server-tls-enabled':
+      'Encrypt Management Protocol communication with TLS',
+    'management-server-tls-keystore':
+      'Location of the TLS keystore file (required while TLS is on, otherwise the server fails to start)',
+    'management-server-tls-keystore-password':
+      'Password for opening the TLS keystore file',
+    'status-heartbeat-interval':
+      'Interval in seconds for sending status notifications (heartbeats) to Management Protocol clients (0 to disable)',
   },
   resetProperty:
     '\
