@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
@@ -9,6 +9,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
+import { getLockedProperties } from 'src/components/World/Property/lockedProperties';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -32,8 +33,18 @@ const initProperty: ServerProperties = fromEntries(
 // 入力領域のスクロールバーの制御
 const scrollAreaRef = ref();
 
+// ワールドの設定（ポート開放不要化の利用など）によって編集できないプロパティ
+const lockedProperties = computed(() =>
+  mainStore.world
+    ? getLockedProperties(
+        mainStore.world,
+        sysStore.systemSettings.user.ngrokToken
+      )
+    : {}
+);
+
 /**
- * 全てのServer Propertyを基本設定に戻す
+ * 全てのServer Propertyを基本設定に戻す（編集できないプロパティは変更しない）
  */
 function resetAll() {
   $q.dialog({
@@ -45,6 +56,7 @@ function resetAll() {
     } as dangerDialogProp,
   }).onOk(() => {
     Object.keys(sysStore.systemSettings.world.properties).map((key) => {
+      if (lockedProperties.value[key] !== undefined) return;
       if (mainStore.world && isValid(mainStore.world.properties)) {
         mainStore.world.properties[key] =
           sysStore.systemSettings.world.properties[key];
@@ -98,7 +110,10 @@ function scrollTop() {
             :thumb-style="thumbStyle"
             class="fit"
           >
-            <SettingsView v-model="mainStore.world.properties" />
+            <SettingsView
+              v-model="mainStore.world.properties"
+              :locked-properties="lockedProperties"
+            />
           </q-scroll-area>
         </div>
       </div>

@@ -149,6 +149,10 @@ export const enUSproperty: MessageSchema['property'] = {
     '\
     Reset setting to default setting "{defaultProperty}" \n\
     You can change basic settings from "System Settings" > "Default Property".',
+  locked: {
+    ngrok:
+      'Disabled while "No need to PORT MAPPING" is in use, because the port number is assigned automatically',
+  },
   empty: '(Empty)',
   failed: 'Failed to load properties',
   reset: 'Reset property settings',

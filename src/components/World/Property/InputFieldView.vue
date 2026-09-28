@@ -16,6 +16,8 @@ const { t } = useI18n();
 interface Prop {
   propertyName: string;
   autofocus?: boolean;
+  /** 入力を無効化する（編集不可なプロパティに指定する） */
+  disable?: boolean;
 }
 const prop = defineProps<Prop>();
 const model = defineModel<ServerProperties>({ required: true });
@@ -72,6 +74,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
     v-if="typeof propertyValue === 'boolean' || selectEditer() === 'boolean'"
     v-model="propertyValue"
     :label="propertyValue?.toString()"
+    :disable="disable"
     style="font-size: 1rem; padding-bottom: 12px"
   />
 
@@ -82,8 +85,9 @@ function validationMessage(min?: number, max?: number, step?: number) {
     dense
     type="number"
     :autofocus="autofocus"
+    :disable="disable"
     :rules="[
-      (val) =>
+      (val: number) =>
         isValidNumberProperty(
           val,
           defaultProperty as NumberServerPropertyAnnotation
@@ -103,6 +107,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
     enable-other
     v-model="propertyValue"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
+    :disable="disable"
     style="padding-bottom: 18px"
   />
 
@@ -111,6 +116,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
     v-model="propertyValue"
     dense
     :autofocus="autofocus"
+    :disable="disable"
     style="width: 100%; padding-bottom: 18px"
   />
 </template>

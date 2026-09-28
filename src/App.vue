@@ -12,7 +12,6 @@ import {
   useSystemStore,
 } from './stores/SystemStore';
 import { setWorldSubscriber } from './stores/WorldStore';
-import { usePropertyStore } from './stores/WorldTabs/PropertyStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import { setColor } from './color';
@@ -26,7 +25,6 @@ import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
-const propertyStore = usePropertyStore();
 const consoleStore = useConsoleStore();
 const progressStore = useProgressStore();
 
@@ -53,7 +51,6 @@ watch(
 window.API.onStartServer((_event, worldID, notification) => {
   consoleStore.setConsole(worldID, '', false);
   mainStore.setWorldIP(worldID, notification.ngrokURL);
-  propertyStore.setServerPort(worldID, notification.port);
 });
 // サーバー終了時に画面遷移
 window.API.onFinishServer((_event, worldID) => {
