@@ -97,6 +97,7 @@ const computedModel = computed({
       v-show="(prop.enableOther && !checkInOptions()) || isFocusInput"
       v-model="model"
       dense
+      :disable="disable"
       @focusin="isFocusInput = true"
       @focusout="isFocusInput = false"
       class="q-pt-sm"

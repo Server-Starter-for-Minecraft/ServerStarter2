@@ -10,8 +10,12 @@ import {
   WithError,
 } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
+import { isNgrokEnabled } from 'app/src-electron/schema/ngrok';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
-import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import {
+  ServerPortPropertyKey,
+  ServerProperties,
+} from 'app/src-electron/schema/serverproperty';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { includes } from 'app/src-electron/util/array';
 import {
@@ -167,7 +171,7 @@ async function readyNgrok(
   ngrokToken: string | undefined
 ): Promise<Failable<Listener | undefined>> {
   // 各ワールドに設定されたUseNgrokの値に応じてNgrokの実行有無を制御
-  if (ngrokToken && world.ngrok_setting.use_ngrok) {
+  if (isNgrokEnabled(world, ngrokToken)) {
     return runNgrok(ngrokToken, port, world.ngrok_setting.remote_addr);
   }
 
@@ -175,7 +179,7 @@ async function readyNgrok(
 }
 
 /** server.propertiesに記載するポート番号の組 */
-type ServerPorts = Pick<ServerProperties, 'server-port' | 'query.port'>;
+type ServerPorts = Pick<ServerProperties, ServerPortPropertyKey>;
 
 /** server.propertiesからポート番号の組を取り出す */
 function pickServerPorts(properties: ServerProperties): ServerPorts {
@@ -900,7 +904,7 @@ export class WorldHandler {
     beforeWorld: World,
     ngrokToken: string | undefined
   ): Promise<Failable<number>> {
-    if (beforeWorld.ngrok_setting.use_ngrok && ngrokToken) {
+    if (isNgrokEnabled(beforeWorld, ngrokToken)) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
       const portnum = await this.getFreePort();
       if (isError(portnum)) return portnum;

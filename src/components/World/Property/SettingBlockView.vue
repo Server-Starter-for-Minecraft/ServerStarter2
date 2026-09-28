@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import InputFieldView from './InputFieldView.vue';
+import { LockReason } from './lockedProperties';
 
 interface Prop {
   settingName: string;
+  /** 編集不可である理由（指定した場合は編集不可として表示する） */
+  lockedReason?: LockReason;
 }
 const prop = defineProps<Prop>();
+const isLocked = computed(() => prop.lockedReason !== undefined);
 const propertiesModel = defineModel<ServerProperties>({ required: true });
 
 const sysStore = useSystemStore();
@@ -38,11 +43,21 @@ function cancelSettings() {
             : $t('property.description.notFound')
         }}
       </div>
-      <InputFieldView v-model="propertiesModel" :property-name="settingName" />
+      <div v-if="isLocked" class="text-caption text-negative">
+        <q-icon name="lock" />
+        {{ $t(`property.locked.${lockedReason}`) }}
+      </div>
+      <InputFieldView
+        v-model="propertiesModel"
+        :property-name="settingName"
+        :disable="isLocked"
+      />
     </q-item-section>
 
     <q-item-section
-      v-show="$router.currentRoute.value.path !== '/system/property'"
+      v-show="
+        $router.currentRoute.value.path !== '/system/property' && !isLocked
+      "
       side
     >
       <q-btn

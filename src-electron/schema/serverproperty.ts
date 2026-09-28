@@ -228,6 +228,14 @@ export const DefaultServerPropertiesAnnotation = extractPropertyAnnotation(
 export const ServerProperties = DefaultServerProperties.prefault({});
 export type ServerProperties = z.infer<typeof ServerProperties>;
 
+/**
+ * サーバー起動時にServerStarterがポート番号を割り当てるプロパティ
+ *
+ * ポート開放不要化（Ngrok）の利用時はランダムなポート番号が割り当てられるため，ユーザーの設定値は使われない
+ */
+export const serverPortPropertyKeys = ['server-port', 'query.port'] as const;
+export type ServerPortPropertyKey = (typeof serverPortPropertyKeys)[number];
+
 export const StringServerPropertyAnnotation = z.object({
   type: z.literal('string'),
   default: z.string(),
