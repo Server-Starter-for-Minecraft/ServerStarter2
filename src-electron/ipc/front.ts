@@ -60,6 +60,7 @@ export function getFrontAPIListener(
       FinishServer: send('FinishServer', window),
       Progress: send('Progress', window),
       AddConsole: send('AddConsole', window),
+      UpdateOnlinePlayers: send('UpdateOnlinePlayers', window),
       Error: send('Error', window),
       NotifySystemUpdate: send('NotifySystemUpdate', window),
     },

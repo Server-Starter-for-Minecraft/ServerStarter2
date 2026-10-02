@@ -71,6 +71,12 @@ export interface API extends IAPI {
      */
     AddConsole: (world: WorldID, chunk: string, isError: boolean) => void;
 
+    /**
+     * 実行中のサーバーに参加しているプレイヤーの一覧が変化した際に発火
+     * players: 参加中のプレイヤー名一覧 (サーバー終了時は空配列)
+     */
+    UpdateOnlinePlayers: (world: WorldID, players: string[]) => void;
+
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
 

@@ -11,7 +11,10 @@ import {
   setSysSettingsSubscriber,
   useSystemStore,
 } from './stores/SystemStore';
-import { setWorldSubscriber } from './stores/WorldStore';
+import {
+  registerJoinedPlayersToWorld,
+  setWorldSubscriber,
+} from './stores/WorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
 import { setColor } from './color';
@@ -59,6 +62,12 @@ window.API.onFinishServer((_event, worldID) => {
 // サーバーに送信されたコンソールの処理
 window.API.onAddConsole((_event, worldID, chunk, isError) => {
   consoleStore.setConsole(worldID, chunk, isError);
+});
+// サーバーに参加中のプレイヤーが変化した際の処理
+window.API.onUpdateOnlinePlayers((_event, worldID, players) => {
+  const joined = consoleStore.setOnlinePlayers(worldID, players);
+  // 参加したプレイヤーが未登録の場合はプレイヤー一覧(ホワイトリスト)に登録する
+  registerJoinedPlayersToWorld(worldID, joined);
 });
 // アップデートを実行するときに確認のダイアログを表示する
 window.API.onNotifySystemUpdate((_event, os, newVer) => {
