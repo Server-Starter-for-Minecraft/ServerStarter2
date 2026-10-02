@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { keys } from 'app/src-public/scripts/obj/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { createNewWorld, removeWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import DangerView from 'src/components/util/danger/dangerView.vue';
@@ -11,6 +11,7 @@ import { nextWorldAfterDeletion } from './worldDeletion';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+const sysStore = useSystemStore();
 
 /**
  * 選択されているワールドを削除する
@@ -21,10 +22,10 @@ async function removeWorld_Clicked() {
     // 表示ワールドの変更に対応できるよう、削除するWorldIDを控えておく
     const removeWorldID = mainStore.selectedWorldID;
 
-    // 削除後に表示するワールドを、画面上に表示されているワールドから選ぶ
-    // （非表示のコンテナや検索で隠れているワールドは表示できないため、検索条件のみ無視して候補とする）
+    // 削除後に表示するワールドを、表示中のワールドフォルダに属するワールドから選ぶ
     const nextWorldID = nextWorldAfterDeletion(
-      keys(mainStore.allWorlds.filteredWorlds('')),
+      mainStore.allWorlds.readonlyWorlds,
+      sysStore.systemSettings.container,
       removeWorldID
     );
 

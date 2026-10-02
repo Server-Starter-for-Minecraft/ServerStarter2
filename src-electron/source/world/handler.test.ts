@@ -436,6 +436,7 @@ describe('WorldHandler ワールドの複製', () => {
     return Object.assign(new Error(code), { code });
   }
 
+  // ファイルロックなどのOSに起因する失敗を再現するため、ファイルコピーの実体であるfs-extraのcopyに失敗を注入する
   test('サーバー終了直後などでファイルが一時的にロックされていても複製できる', async () => {
     const { handler, world } = await createWorld(false);
     const realCopy = fs.copy.bind(fs);

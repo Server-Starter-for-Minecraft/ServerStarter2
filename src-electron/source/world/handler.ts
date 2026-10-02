@@ -40,6 +40,7 @@ import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { RunRebootableServer, runRebootableServer } from '../server/server';
 import { closeNgrok, runNgrok } from '../server/setup/ngrok';
+import { sourceLoggers } from '../sourceLogger';
 import { getSystemSettings } from '../stores/system';
 import { getBackUpPath, parseBackUpPath } from './backup';
 import { serverJsonFile, WorldSettings } from './files/json';
@@ -702,6 +703,27 @@ export class WorldHandler {
     return withError(undefined);
   }
 
+  /**
+   * 作成途中で失敗したワールドを破棄する
+   *
+   * 不完全なワールドとして読み込まれないように、データを削除してWorldHandlerの登録も解除する。
+   * データの削除に失敗した場合（ファイルロックなど）でも登録は解除し、存在しないワールドとして扱う。
+   *
+   * @param handler 破棄するワールドのハンドラ
+   */
+  private static async discardIncompleteWorld(handler: WorldHandler) {
+    const removed = await handler.getSavePath().remove();
+    if (isError(removed)) {
+      sourceLoggers()
+        .world.discardIncompleteWorld({
+          container: handler.container,
+          name: handler.name,
+        })
+        .error(removed);
+    }
+    delete WorldHandler.worldHandlerMap[handler.id];
+  }
+
   /** ワールドを複製 */
   async duplicate(name?: WorldName): Promise<WithError<Failable<World>>> {
     const func = () => this.duplicateExec(name);
@@ -743,14 +765,16 @@ export class WorldHandler {
 
     const copied = await this.getSavePath().copyTo(newHandler.getSavePath());
     if (isError(copied)) {
-      // 複製途中のデータが不完全なワールドとして残らないように削除する
-      await newHandler.delete();
+      await WorldHandler.discardIncompleteWorld(newHandler);
       return withError(copied);
     }
 
     // 設定ファイルを上書き
     const savedJson = await newHandler.saveLocalServerJson(worldSettings);
-    if (isError(savedJson)) return withError(savedJson);
+    if (isError(savedJson)) {
+      await WorldHandler.discardIncompleteWorld(newHandler);
+      return withError(savedJson);
+    }
 
     return await newHandler.load();
   }

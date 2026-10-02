@@ -377,23 +377,21 @@ async function changePermissionsRecursively(basePath: string, mode: number) {
   }
 }
 
-/** パスに関する処理を同期的に処理するために各命令をプールする */
-const spoolers = InfinitMap.primitiveKeyWeakValue(
-  (key: string) => new PromiseSpooler()
-);
-/**
- * 各関数の実行時に当該処理をプールする
- *
- * Pathクラスの中でプールが定義された関数を実行するときには`_Hoge()`という本体実装側を呼び出す
- * （関数A自体と関数Aの中で呼び出す処理で重複してプールすることがないようにする）
- */
 /** ファイルロックによる一時的な失敗の場合に再試行する回数 */
 const BUSY_RETRY_COUNT = 5;
 /** ファイルロックによる一時的な失敗の場合に再試行するまでの待機時間(ms) */
 const BUSY_RETRY_DELAY_MS = 200;
 
 /**
- * ファイルが一時的にロックされている(EBUSY)場合に処理を再試行する
+ * 一時的なファイルロックとみなして再試行するエラーコード
+ *
+ * Windowsでは他プロセスが掴んでいるファイルの操作がEBUSYだけでなくEPERMとなる場合もあるため両方を対象とする
+ * （fs.rmのmaxRetriesも同様のエラーコードを再試行対象としている）
+ */
+const BUSY_ERROR_CODES = new Set(['EBUSY', 'EPERM']);
+
+/**
+ * ファイルが一時的にロックされている場合に処理を再試行する
  *
  * サーバー終了直後などは、Javaプロセスやウイルス対策ソフトがファイルを掴んだままの場合があるため、
  * 少し待ってから再試行することで、ファイル操作の失敗を回避する
@@ -406,13 +404,24 @@ async function retryOnBusy<T>(operation: () => Promise<T>): Promise<T> {
     try {
       return await operation();
     } catch (e) {
-      const isBusy = (e as NodeJS.ErrnoException)?.code === 'EBUSY';
+      const code = (e as NodeJS.ErrnoException)?.code;
+      const isBusy = code !== undefined && BUSY_ERROR_CODES.has(code);
       if (!isBusy || retried >= BUSY_RETRY_COUNT) throw e;
       await sleep(BUSY_RETRY_DELAY_MS);
     }
   }
 }
 
+/** パスに関する処理を同期的に処理するために各命令をプールする */
+const spoolers = InfinitMap.primitiveKeyWeakValue(
+  (key: string) => new PromiseSpooler()
+);
+/**
+ * 各関数の実行時に当該処理をプールする
+ *
+ * Pathクラスの中でプールが定義された関数を実行するときには`_Hoge()`という本体実装側を呼び出す
+ * （関数A自体と関数Aの中で呼び出す処理で重複してプールすることがないようにする）
+ */
 function exclusive<P extends any[], R>(
   target: (this: Path, ...args: P) => Promise<R>
 ) {

@@ -20,7 +20,7 @@ async function importProcess() {
   } catch (e) {
     // 導入処理が予期せず失敗した場合も、導入中のダイアログが表示され続けないように閉じる
     onDialogCancel();
-    throw e;
+    console.error(e);
   }
 }
 </script>
