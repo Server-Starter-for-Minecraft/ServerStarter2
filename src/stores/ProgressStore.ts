@@ -6,8 +6,15 @@ interface WorldProgress {
   [id: WorldID]: {
     title: string;
     progress: GroupProgress;
-    selecter?: (value: boolean) => void;
   };
+}
+
+/** ユーザーの回答を待っているEULAへの同意の要求 */
+interface EulaRequest {
+  /** 同意を求めるEULAのURL */
+  url: string;
+  /** ユーザーの回答（同意したか）をバックエンドへ返す */
+  resolve: (agreed: boolean) => void;
 }
 
 export const useProgressStore = defineStore('progressStore', {
@@ -15,6 +22,7 @@ export const useProgressStore = defineStore('progressStore', {
     return {
       shwoWorldID: undefined as undefined | WorldID,
       _world: {} as WorldProgress,
+      _eulaRequests: {} as Record<WorldID, EulaRequest>,
     };
   },
   actions: {
@@ -47,16 +55,39 @@ export const useProgressStore = defineStore('progressStore', {
       };
     },
     /**
-     * バックエンドからユーザーの選択による処理を要求された場合にイベントに登録しておく処理
+     * バックエンドから要求されたEULAへの同意を、ユーザーの回答待ちとして登録する
+     *
+     * 同意の確認は該当するワールドを表示している場合にのみ行うため、回答されるまで保持する
+     *
+     * @param worldID 起動しようとしているワールド
+     * @param url 同意を求めるEULAのURL
+     * @returns ユーザーが同意したか
      */
-    back2frontHandler(
-      worldID: WorldID,
-      resolve: (value: boolean | PromiseLike<boolean>) => void
-    ) {
-      this._world[worldID].selecter = (value: boolean) => {
-        this._world[worldID].selecter = undefined;
-        resolve(value);
-      };
+    requestEula(worldID: WorldID, url: string): Promise<boolean> {
+      return new Promise<boolean>((resolve) => {
+        this._eulaRequests[worldID] = { url, resolve };
+      });
+    },
+    /**
+     * EULAへの同意を待っている場合に、同意を求めるEULAのURLを返す
+     *
+     * @param worldID 対象のワールド
+     * @returns 回答待ちのEULAのURL（回答待ちでない場合はundefined）
+     */
+    waitingEula(worldID: WorldID): string | undefined {
+      return this._eulaRequests[worldID]?.url;
+    },
+    /**
+     * EULAへの同意の要求にユーザーの回答を返す
+     *
+     * @param worldID 対象のワールド
+     * @param agreed ユーザーが同意したか
+     */
+    answerEula(worldID: WorldID, agreed: boolean) {
+      const request = this._eulaRequests[worldID];
+      if (request === undefined) return;
+      delete this._eulaRequests[worldID];
+      request.resolve(agreed);
     },
   },
 });

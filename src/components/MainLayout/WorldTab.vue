@@ -6,6 +6,7 @@ import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useProgressStore } from 'src/stores/ProgressStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { WorldItem } from 'src/stores/WorldStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -18,6 +19,12 @@ const prop = defineProps<Props>();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+const progressStore = useProgressStore();
+
+/** このワールドがEULAへの同意を待っているか */
+const isWaitingEula = computed(
+  () => progressStore.waitingEula(prop.world_item.world.id) !== undefined
+);
 
 const router = useRouter();
 async function startServer(
@@ -60,6 +67,10 @@ function selectWorldIdx() {
 }
 
 const tooltipText = () => {
+  if (isWaitingEula.value) {
+    return `${prop.world_item.world.name}
+${$T('eulaDialog.waiting')}`;
+  }
   switch (prop.world_item.type) {
     case 'abbr':
       return prop.world_item.world.name;
@@ -158,8 +169,17 @@ const tooltipText = () => {
             rounded
             style="background-color: #262626; aspect-ratio: 1"
           >
+            <!-- EULAへの同意待ちの場合は、ワールドを表示して同意が必要なことを示す -->
             <q-icon
-              v-if="consoleStore.status(world_item.world.id) === 'CheckLog'"
+              v-if="isWaitingEula"
+              name="priority_high"
+              color="warning"
+              size="1rem"
+            />
+            <q-icon
+              v-else-if="
+                consoleStore.status(world_item.world.id) === 'CheckLog'
+              "
               name="notes"
               size="1rem"
             />

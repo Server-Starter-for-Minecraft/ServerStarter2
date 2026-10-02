@@ -8,4 +8,5 @@ export const enUSEulaDialog: MessageSchema['eulaDialog'] = {
     Please read before use.',
   eula: 'Minecraft EULA',
   disagree: 'Disagree EULA',
+  waiting: 'Waiting for EULA agreement (select the world to agree)',
 };

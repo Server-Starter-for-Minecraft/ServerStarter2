@@ -8,16 +8,18 @@ import { EulaDialogProp } from './iEulaDialog';
 
 defineProps<EulaDialogProp>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
-  useDialogPluginComponent();
+// 同意・不同意のいずれもOKの値（同意したか）として返し、
+// 回答せずにダイアログが閉じられた場合（キャンセル）と区別する
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
+  <!-- ワールドを切り替えられるよう、画面の操作を妨げない（seamless）ダイアログとして表示する -->
+  <q-dialog ref="dialogRef" @hide="onDialogHide" seamless>
     <BaseDialogCard
       :title="$t('eulaDialog.title')"
       :okBtnTxt="$t('eulaDialog.agree')"
-      @okClick="onDialogOK"
+      @okClick="onDialogOK(true)"
     >
       <template #default>
         <p
@@ -33,7 +35,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
         <SsBtn
           :label="$t('eulaDialog.disagree')"
           color="negative"
-          @click="onDialogCancel"
+          @click="onDialogOK(false)"
         />
       </template>
     </BaseDialogCard>
