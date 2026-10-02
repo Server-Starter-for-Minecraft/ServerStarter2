@@ -14,8 +14,14 @@ const prop = defineProps<CustomMapImporterProp>();
 importProcess();
 
 async function importProcess() {
-  await prop.importFunc();
-  onDialogOK();
+  try {
+    await prop.importFunc();
+    onDialogOK();
+  } catch (e) {
+    // 導入処理が予期せず失敗した場合も、導入中のダイアログが表示され続けないように閉じる
+    onDialogCancel();
+    console.error(e);
+  }
 }
 </script>
 

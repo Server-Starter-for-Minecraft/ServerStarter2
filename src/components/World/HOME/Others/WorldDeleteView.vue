@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { values } from 'app/src-public/scripts/obj/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { useSystemStore } from 'src/stores/SystemStore';
 import { createNewWorld, removeWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import { moveScrollTop_Home } from '../scroll';
+import { nextWorldAfterDeletion } from './worldDeletion';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+const sysStore = useSystemStore();
 
 /**
  * 選択されているワールドを削除する
@@ -20,20 +22,32 @@ async function removeWorld_Clicked() {
     // 表示ワールドの変更に対応できるよう、削除するWorldIDを控えておく
     const removeWorldID = mainStore.selectedWorldID;
 
-    // ワールドが消失する場合は、新規ワールドを自動生成
-    if (values(mainStore.allWorlds.readonlyWorlds).length === 1) {
+    // 削除後に表示するワールドを、表示中のワールドフォルダに属するワールドから選ぶ
+    const nextWorldID = nextWorldAfterDeletion(
+      mainStore.allWorlds.readonlyWorlds,
+      sysStore.systemSettings.container,
+      removeWorldID
+    );
+
+    // 表示できるワールドが無くなる場合は、新規ワールドを自動生成
+    if (nextWorldID === undefined) {
       // 削除する際にworldStore.worldListが更新されてSetWorldが呼ばれるため、
       // 表示しているワールドを確実にNewWorld側にしてから削除処理を実行
       // このためには、削除前にCreateNewWorldする必要あり
-      await createNewWorld();
+      const newWorldID = await createNewWorld();
+      // 新規ワールドを作成できなかった場合は、削除したワールドを選択したままにしない
+      if (newWorldID === undefined) mainStore.unsetWorld();
     }
 
     // 描画上のリストから削除
     removeWorld(removeWorldID);
 
-    // ワールドリストの0番目を表示
-    const world = values(mainStore.allWorlds.filteredWorlds());
-    mainStore.showWorld(world[0].world);
+    // 残っているワールドを表示（新規ワールドを生成した場合は生成時に表示済み）
+    if (nextWorldID !== undefined) {
+      mainStore.showWorld(
+        mainStore.allWorlds.readonlyWorlds[nextWorldID].world
+      );
+    }
 
     // 画面を一番上に
     moveScrollTop_Home();

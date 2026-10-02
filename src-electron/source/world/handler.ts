@@ -40,6 +40,7 @@ import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { RunRebootableServer, runRebootableServer } from '../server/server';
 import { closeNgrok, runNgrok } from '../server/setup/ngrok';
+import { sourceLoggers } from '../sourceLogger';
 import { getSystemSettings } from '../stores/system';
 import { getBackUpPath, parseBackUpPath } from './backup';
 import { serverJsonFile, WorldSettings } from './files/json';
@@ -702,6 +703,27 @@ export class WorldHandler {
     return withError(undefined);
   }
 
+  /**
+   * 作成途中で失敗したワールドを破棄する
+   *
+   * 不完全なワールドとして読み込まれないように、データを削除してWorldHandlerの登録も解除する。
+   * データの削除に失敗した場合（ファイルロックなど）でも登録は解除し、存在しないワールドとして扱う。
+   *
+   * @param handler 破棄するワールドのハンドラ
+   */
+  private static async discardIncompleteWorld(handler: WorldHandler) {
+    const removed = await handler.getSavePath().remove();
+    if (isError(removed)) {
+      sourceLoggers()
+        .world.discardIncompleteWorld({
+          container: handler.container,
+          name: handler.name,
+        })
+        .error(removed);
+    }
+    delete WorldHandler.worldHandlerMap[handler.id];
+  }
+
   /** ワールドを複製 */
   async duplicate(name?: WorldName): Promise<WithError<Failable<World>>> {
     const func = () => this.duplicateExec(name);
@@ -722,13 +744,6 @@ export class WorldHandler {
       );
     }
 
-    // 複製先のワールドの名前を設定
-    const newName =
-      name ?? (await getDuplicateWorldName(this.container, this.name));
-
-    // WorldIDを取得
-    const newId = WorldHandler.register(newName, this.container);
-
     // ワールド設定ファイルの内容を読み込む
     const worldSettings = await this.loadLocalServerJson();
     if (isError(worldSettings)) return withError(worldSettings);
@@ -738,16 +753,38 @@ export class WorldHandler {
     // 使用中フラグを削除
     worldSettings.using = false;
 
-    const newHandler = WorldHandler.get(newId, newName, this.container);
-    if (isError(newHandler)) throw new Error();
+    // 複製先のワールドの名前を設定
+    // （名前を指定された場合も、既存のワールドを上書き・削除しないよう未使用の名前であることを確認する）
+    const newName =
+      name === undefined
+        ? await getDuplicateWorldName(this.container, this.name)
+        : await validateNewWorldName(this.container, name);
+    if (isError(newName)) return withError(newName);
 
-    await this.getSavePath().copyTo(newHandler.getSavePath());
+    // WorldIDを取得
+    const newId = WorldHandler.register(newName, this.container);
+
+    const newHandler = WorldHandler.get(newId, newName, this.container);
+    if (isError(newHandler)) return withError(newHandler);
+
+    const copied = await this.getSavePath().copyTo(newHandler.getSavePath());
+    if (isError(copied)) {
+      await WorldHandler.discardIncompleteWorld(newHandler);
+      return withError(copied);
+    }
 
     // 設定ファイルを上書き
     const savedJson = await newHandler.saveLocalServerJson(worldSettings);
-    if (isError(savedJson)) return withError(savedJson);
+    if (isError(savedJson)) {
+      await WorldHandler.discardIncompleteWorld(newHandler);
+      return withError(savedJson);
+    }
 
-    return await newHandler.load();
+    const loaded = await newHandler.load();
+    if (isError(loaded.value)) {
+      await WorldHandler.discardIncompleteWorld(newHandler);
+    }
+    return loaded;
   }
 
   /** ワールドをバックアップ */

@@ -219,6 +219,10 @@ export class WorldProgressor extends GroupProgressor {
   protected update() {
     super.update();
 
+    // 親クラス(GroupProgressor)のコンストラクタから呼ばれた時点ではidが未代入のため送信しない
+    // (送信するとフロントエンドにworldIDがundefinedのプログレスが届いてしまう)
+    if (this.id === undefined) return;
+
     if (this.hot) return;
 
     this.hot = true;

@@ -1,3 +1,4 @@
+import fs from 'fs-extra';
 import {
   afterEach,
   beforeAll,
@@ -419,5 +420,71 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
 
     expect(isError(result.value)).toBe(false);
     expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+  });
+});
+
+describe('WorldHandler ワールドの複製', () => {
+  beforeAll(async () => {
+    await workPath.mkdir(true);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  /** 指定したエラーコードのファイル操作エラーを生成する */
+  function fsError(code: string) {
+    return Object.assign(new Error(code), { code });
+  }
+
+  // ファイルロックなどのOSに起因する失敗を再現するため、ファイルコピーの実体であるfs-extraのcopyに失敗を注入する
+  test('サーバー終了直後などでファイルが一時的にロックされていても複製できる', async () => {
+    const { handler, world } = await createWorld(false);
+    const realCopy = fs.copy.bind(fs);
+    vi.spyOn(fs, 'copy')
+      .mockRejectedValueOnce(fsError('EBUSY'))
+      .mockImplementation(realCopy as typeof fs.copy);
+
+    const newName = WorldName.parse(`${world.name}_locked`);
+    const result = await handler.duplicate(newName);
+
+    expect(isError(result.value)).toBe(false);
+    // 複製元のワールドデータがコピーされている
+    expect(workPath.child(newName, 'server.properties').exists()).toBe(true);
+  });
+
+  test('複製に失敗した場合はエラーを返し、複製途中のワールドを残さない', async () => {
+    const { handler, world } = await createWorld(false);
+    // コピー先のフォルダを作成した直後に失敗する状況を再現
+    vi.spyOn(fs, 'copy').mockImplementation((async (
+      _src: string,
+      dest: string
+    ) => {
+      await fs.mkdir(dest);
+      throw fsError('EACCES');
+    }) as unknown as typeof fs.copy);
+
+    const newName = WorldName.parse(`${world.name}_failed`);
+    const result = await handler.duplicate(newName);
+
+    expect(isError(result.value)).toBe(true);
+    expect(workPath.child(newName).exists()).toBe(false);
+    // 複製元のワールドはそのまま残る
+    expect(handler.getSavePath().exists()).toBe(true);
+  });
+
+  test('既存のワールドと同じ名前を指定した場合は複製せず、既存のワールドを変更しない', async () => {
+    const { handler } = await createWorld(false);
+    const { handler: existing, world: existingWorld } =
+      await createWorld(false);
+    // 複製に失敗する状況でも既存のワールドが削除されないことを確認する
+    vi.spyOn(fs, 'copy').mockRejectedValue(fsError('EACCES'));
+
+    const result = await handler.duplicate(existingWorld.name);
+
+    expect(isError(result.value)).toBe(true);
+    expect(existing.getSavePath().child('server.properties').exists()).toBe(
+      true
+    );
+    expect(isError(WorldHandler.get(existing.id))).toBe(false);
   });
 });
