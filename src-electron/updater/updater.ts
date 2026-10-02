@@ -1,7 +1,13 @@
 import { rootLogger } from '../common/logger';
+import { OsPlatform } from '../schema/os';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { isError } from '../util/error/error';
 import { osPlatform } from '../util/os/os';
+import {
+  loadUpdateAttempt,
+  saveUpdateAttempt,
+  shouldAutoInstall,
+} from './attempt';
 import { getLatestRelease } from './fetch';
 import { installMac } from './installer/mac';
 import { installWindows } from './installer/windows';
@@ -56,26 +62,51 @@ export async function update() {
   // 環境変数DEBUGGING==true(yarn devで起動した場合)実際のアップデート処理は行わない
   if (import.meta.env.QUASAR_DEBUG) return;
 
+  const vLessVersion = update.version.slice(1);
+
+  // 自動アップデートに対応していないOSでは、最新版があることを通知する
+  const installer = INSTALLERS[osPlatform];
+  if (installer === undefined) {
+    await notifyUpdate(osPlatform, vLessVersion);
+    return;
+  }
+
+  // 直近に同じバージョンへのアップデートを実行したにもかかわらず古いバージョンで起動している場合は、
+  // アップデートに失敗したとみなし、アップデートを繰り返さずに現在のバージョンで起動して手動でのアップデートを促す
+  const lastAttempt = await loadUpdateAttempt();
+  if (!shouldAutoInstall(update.version, lastAttempt, Date.now())) {
+    logger.warn('skip auto update because the last update failed', lastAttempt);
+    await notifyUpdate(osPlatform, vLessVersion);
+    return;
+  }
+
   // lastUpdatedTimeをundefinedに
   const sys = await getSystemSettings();
   sys.system.lastUpdatedTime = undefined;
   await setSystemSettings(sys);
 
-  const vLessVersion = update.version.slice(1);
+  await saveUpdateAttempt({
+    version: update.version,
+    attemptedAt: Date.now(),
+  });
+  const started = await installer(update.url, PAT);
+  if (started) return;
 
-  switch (osPlatform) {
-    case 'windows-x64':
-      await installWindows(update.url, PAT);
-      break;
-    case 'mac-os':
-    case 'mac-os-arm64':
-      await installMac(update.url, PAT);
-      break;
-    case 'debian':
-    case 'redhat':
-      await notifyUpdate(osPlatform, vLessVersion);
-      break;
-  }
-
-  logger.info('success');
+  // ダウンロード等に失敗してインストーラーを起動できなかった場合は、現在のバージョンで起動して手動でのアップデートを促す
+  logger.error('failed to start the installer');
+  await notifyUpdate(osPlatform, vLessVersion);
 }
+
+/**
+ * OSごとの自動アップデートの処理
+ *
+ * インストーラーを起動できた場合はアプリを終了してtrueを、失敗した場合はfalseを返す。
+ * 自動アップデートに対応していないOSは含めない（最新版があることの通知のみ行う）
+ */
+const INSTALLERS: Partial<
+  Record<OsPlatform, (url: string, pat: string | undefined) => Promise<boolean>>
+> = {
+  'windows-x64': installWindows,
+  'mac-os': installMac,
+  'mac-os-arm64': installMac,
+};

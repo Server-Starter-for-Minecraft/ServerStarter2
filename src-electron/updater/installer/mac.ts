@@ -7,16 +7,21 @@ import { isError } from 'app/src-electron/util/error/error';
 import { getBytesFile } from 'app/src-electron/util/github/rest';
 import { updateMessage } from './message';
 
-/** macの最新版をダウンロードしてインストールして再起動 */
+/**
+ * macの最新版をダウンロードしてインストールして再起動
+ *
+ * @returns インストーラーを起動してアプリを終了した場合はtrue、ダウンロード等に失敗した場合はfalse
+ */
 export const installMac = async (
   pkgurl: string,
   pat: string | undefined
-): Promise<void> => {
+): Promise<boolean> => {
   const dest = mainPath.child('updater.pkg');
   const data = await getBytesFile(pkgurl, pat);
 
-  if (isError(data)) return;
-  await data.write(dest.str(), true);
+  if (isError(data)) return false;
+  const written = await data.write(dest.str(), true);
+  if (isError(written)) return false;
 
   const sys = await getSystemSettings();
 
@@ -28,8 +33,9 @@ sudo installer -pkg ${dest.absolute().strQuoted()} -target /
 open -a "${app.getPath('exe')}"
 exit 0
 `);
-  if (isError(script)) return;
-  await script.write(sh.str(), true);
+  if (isError(script)) return false;
+  const writtenScript = await script.write(sh.str(), true);
+  if (isError(writtenScript)) return false;
 
   const sub = spawn('open', ['-a', 'Terminal', 'updater.sh'], {
     cwd: mainPath.str(),
@@ -41,4 +47,5 @@ exit 0
   sub.unref();
 
   app.exit();
+  return true;
 };

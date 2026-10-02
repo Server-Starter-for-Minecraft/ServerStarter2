@@ -10,18 +10,20 @@ import { updateMessage } from './message';
  * windowsの最新版をダウンロードしてインストールして再起動
  *
  * アップデートに失敗してもエラーで処理を止める必要がないため握りつぶす
+ *
+ * @returns インストーラーを起動してアプリを終了した場合はtrue、ダウンロード等に失敗した場合はfalse
  */
 export const installWindows = async (
   msiurl: string,
   pat: string | undefined
-): Promise<void> => {
+): Promise<boolean> => {
   const dest = mainPath.child('updater.msi');
 
   const data = await getBytesFile(msiurl, pat);
-  if (isError(data)) return;
+  if (isError(data)) return false;
 
   const writeUpdater = await data.write(dest.path, true);
-  if (isError(writeUpdater)) return;
+  if (isError(writeUpdater)) return false;
 
   const sys = await getSystemSettings();
 
@@ -31,7 +33,7 @@ echo ${updateMessage[sys.user.language].main}
 msiexec /i updater.msi /qb
 start "" "${app.getPath('exe')}"
 exit`);
-  if (isError(writeBat)) return;
+  if (isError(writeBat)) return false;
 
   const sub = spawn('start', ['/min', '""', 'updater.bat'], {
     cwd: mainPath.path,
@@ -43,4 +45,5 @@ exit`);
   sub.unref();
 
   app.exit();
+  return true;
 };
