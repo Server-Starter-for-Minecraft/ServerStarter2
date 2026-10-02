@@ -6,6 +6,10 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
+import {
+  ConsoleOutputParser,
+  lineToConsoleData,
+} from 'src/components/World/Console/consoleLine';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
 import { updateBackWorld, updateWorld } from './WorldStore';
@@ -17,6 +21,18 @@ interface WorldConsole {
     clickedReboot: boolean;
     console: ConsoleData[];
   };
+}
+
+/**
+ * ワールドごとのサーバー出力の解釈状態（出力をまたいで引き継ぐ文字色など）
+ *
+ * 表示には直接関わらないため、Storeのリアクティブな状態とは別に保持する
+ */
+const outputParsers = new Map<WorldID, ConsoleOutputParser>();
+
+/** コンソールの内容を初期化する際に、出力の解釈状態も初期化する */
+function resetOutputParser(worldID: WorldID) {
+  outputParsers.set(worldID, new ConsoleOutputParser());
 }
 
 export const useConsoleStore = defineStore('consoleStore', {
@@ -41,6 +57,7 @@ export const useConsoleStore = defineStore('consoleStore', {
           clickedReboot: false,
           console: new Array<ConsoleData>(),
         };
+        resetOutputParser(worldID);
       }
     },
     /**
@@ -52,15 +69,18 @@ export const useConsoleStore = defineStore('consoleStore', {
       this._world[worldID].status = 'Ready';
     },
     /**
-     * コンソールに行を追加する
+     * コンソールにサーバーからの出力を追加する
+     *
+     * 文字色などのANSIエスケープシーケンスは装飾として解釈し、
+     * プログレスバーのように\rで書き換えられる出力は直前の行を上書きする
      */
     setConsole(worldID: WorldID, consoleLine: string, isError: boolean) {
       this._world[worldID].status = 'Running';
       if (consoleLine !== void 0) {
-        this._world[worldID].console.push({
-          chunk: consoleLine,
-          isError: isError,
-        });
+        if (!outputParsers.has(worldID)) resetOutputParser(worldID);
+        outputParsers
+          .get(worldID)
+          ?.append(this._world[worldID].console, consoleLine, isError);
       }
     },
     /**
@@ -73,8 +93,9 @@ export const useConsoleStore = defineStore('consoleStore', {
     ) {
       this._world[worldID].status = status;
       this._world[worldID].console = [];
+      resetOutputParser(worldID);
       consoleLines.forEach((l) =>
-        this._world[worldID].console.push({ chunk: l, isError: false })
+        this._world[worldID].console.push(lineToConsoleData(l, false))
       );
     },
     /**
@@ -82,6 +103,7 @@ export const useConsoleStore = defineStore('consoleStore', {
      */
     resetReboot(worldID: WorldID) {
       this._world[worldID].console = [];
+      resetOutputParser(worldID);
       this._world[worldID].clickedReboot = false;
     },
     /**
