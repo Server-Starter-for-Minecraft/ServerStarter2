@@ -7,6 +7,14 @@ import {
 } from 'app/src/schema/console';
 import { parseAnsi, pushStyledText, splitIncompleteEscape } from './ansi';
 
+/** 出力先（標準出力・標準エラー出力）ごとに引き継ぐ解釈状態 */
+type StreamState = {
+  /** 直前の出力の末尾時点で有効な装飾 */
+  style: AnsiStyle;
+  /** 直前の出力の末尾で途切れていたエスケープシーケンス */
+  pending: string;
+};
+
 /**
  * サーバーの出力を、端末と同様の表示になるようにコンソールの行データへ反映する
  *
@@ -18,16 +26,17 @@ import { parseAnsi, pushStyledText, splitIncompleteEscape } from './ansi';
  * - 復帰文字（\r）による行頭への移動（次の出力で最終行を上書きする）
  */
 export class ConsoleOutputParser {
-  /** 直前の出力の末尾時点で有効な装飾 */
-  private style: AnsiStyle = {};
-  /** 直前の出力の末尾で途切れていたエスケープシーケンス */
-  private pending = '';
+  /** 標準出力と標準エラー出力は独立して届くため、それぞれの解釈状態を別々に引き継ぐ */
+  private streams: Record<'out' | 'err', StreamState> = {
+    out: { style: {}, pending: '' },
+    err: { style: {}, pending: '' },
+  };
 
   /**
    * コンソールの行一覧にサーバーからの出力を追加する
    *
    * 1回の出力を1つの行データとして追加する（複数行を含む場合がある）。
-   * ただし、直前の出力が行の途中で終わっている場合は、端末と同様にその行の続きとして扱う。
+   * ただし、同じ出力先の直前の出力が行の途中で終わっている場合は、端末と同様にその行の続きとして扱う。
    * - 改行されていない行に続く出力は、直前の行データに結合する
    * - \rで行頭に戻った後の出力は、直前の行データの最終行を上書きする
    *   （プログレスバーのように同じ行を書き換え続ける出力が、1行ずつ追加されないようにする）
@@ -37,47 +46,59 @@ export class ConsoleOutputParser {
    * @param isError 標準エラー出力か
    */
   append(lines: ConsoleData[], raw: string, isError: boolean) {
-    const { complete, pending } = splitIncompleteEscape(this.pending + raw);
-    this.pending = pending;
+    const state = this.streams[isError ? 'err' : 'out'];
+    const { complete, pending } = splitIncompleteEscape(state.pending + raw);
+    state.pending = pending;
     let text = complete;
     if (text === '') return;
 
     const lastIdx = lines.length - 1;
-    const prev = lines[lastIdx];
-    const prevSegments = prev?.segments ?? [];
+    /** 直前の行データが、同じ出力先の改行されていない行で終わっているか */
+    const continuesLine = () => {
+      const last = lines[lastIdx];
+      return (
+        last !== undefined &&
+        last.isError === isError &&
+        !last.chunk.endsWith('\n')
+      );
+    };
 
     // CRLFの改行コードが出力の境界で分割された場合は、直前の行の改行として扱う
-    if (prev?.overwritable && text.startsWith('\n')) {
+    const prev = lines[lastIdx];
+    if (continuesLine() && prev.overwritable && text.startsWith('\n')) {
       lines[lastIdx] = toConsoleData(
-        [...prevSegments, { text: '\n', style: {} }],
-        prev.isError,
+        [...(prev.segments ?? []), { text: '\n', style: {} }],
+        isError,
         false
       );
       text = text.slice(1);
       if (text === '') return;
     }
 
-    const { segments, endStyle } = parseAnsi(text, this.style);
-    this.style = endStyle;
+    const { segments, endStyle } = parseAnsi(text, state.style);
+    state.style = endStyle;
 
-    // 直前の行データの続きとして表示する部分
-    // （\rで行頭に戻っている場合は、最終行を除いた改行済みの行のみ）
+    if (!continuesLine()) {
+      const screen = applyCarriageReturn(segments);
+      lines.push(
+        toConsoleData(screen.segments, isError, screen.endsWithCarriageReturn)
+      );
+      return;
+    }
+
+    // 改行済みの行はそのまま残し、最終行と新しい出力のみを処理する
+    // （\rで行頭に戻っている場合は、最終行を新しい出力で上書きする）
     const current = lines[lastIdx];
-    const continues = current !== undefined && !current.chunk.endsWith('\n');
-    const base = !continues
-      ? []
-      : current.overwritable
-        ? keepCompletedLines(current.segments ?? [])
-        : (current.segments ?? []);
-
-    const screen = applyCarriageReturn([...base, ...segments]);
-    const data = toConsoleData(
-      screen.segments,
+    const [completed, lastLine] = splitLastLine(current.segments ?? []);
+    const screen = applyCarriageReturn([
+      ...(current.overwritable ? [] : lastLine),
+      ...segments,
+    ]);
+    lines[lastIdx] = toConsoleData(
+      [...completed, ...screen.segments],
       isError,
       screen.endsWithCarriageReturn
     );
-    if (continues) lines[lastIdx] = data;
-    else lines.push(data);
   }
 }
 
@@ -129,28 +150,41 @@ type Screen = {
 function applyCarriageReturn(segments: StyledText[]): Screen {
   const text = segments.map((s) => s.text).join('');
   const result: StyledText[] = [];
-  /** 現在の行の開始位置（resultに含まれる文字数） */
-  let lineStart = 0;
+  /** resultに含まれる文字数 */
   let length = 0;
+  /** 現在の行の開始位置（resultにおける文字数） */
+  let lineStart = 0;
+
+  /** 表示する文字列を追加する */
+  const write = (part: string, style: AnsiStyle) => {
+    if (part === '') return;
+    pushStyledText(result, part, style);
+    const newline = part.lastIndexOf('\n');
+    if (newline >= 0) lineStart = length + newline + 1;
+    length += part.length;
+  };
 
   let offset = 0;
   for (const seg of segments) {
-    for (let k = 0; k < seg.text.length; k++) {
-      const ch = seg.text[k];
-      const idx = offset++;
-      if (ch !== '\r') {
-        pushStyledText(result, ch, seg.style);
-        length += 1;
-        if (ch === '\n') lineStart = length;
-      } else if (text[idx + 1] === '\n' || idx === text.length - 1) {
-        // CRLFの\rは無視する
-        // 末尾の\rは次の出力で上書きされるまで現在の内容を表示し続ける
-      } else {
-        // 行頭に戻る（現在の行の内容を取り除く）
-        truncate(result, lineStart);
-        length = lineStart;
-      }
+    let start = 0;
+    for (
+      let cr = seg.text.indexOf('\r');
+      cr >= 0;
+      cr = seg.text.indexOf('\r', cr + 1)
+    ) {
+      write(seg.text.slice(start, cr), seg.style);
+      start = cr + 1;
+
+      // CRLFの\rと、末尾の\r（次の出力で上書きされるまで現在の内容を表示し続ける）は無視する
+      const idx = offset + cr;
+      if (text[idx + 1] === '\n' || idx === text.length - 1) continue;
+
+      // 行頭に戻る（現在の行の内容を取り除く）
+      truncate(result, lineStart);
+      length = lineStart;
     }
+    write(seg.text.slice(start), seg.style);
+    offset += seg.text.length;
   }
 
   return {
@@ -179,12 +213,31 @@ function truncate(segments: StyledText[], length: number) {
   }
 }
 
-/** 最終行（改行で終わっていない行）を取り除き、改行済みの行のみを返す */
-function keepCompletedLines(segments: StyledText[]): StyledText[] {
-  const text = segments.map((s) => s.text).join('');
-  const kept = segments.map((s) => ({ ...s }));
-  truncate(kept, text.lastIndexOf('\n') + 1);
-  return kept;
+/**
+ * 装飾付きテキストを、改行済みの行と最終行（改行で終わっていない行）に分ける
+ *
+ * @returns [改行済みの行, 最終行]
+ */
+function splitLastLine(segments: StyledText[]): [StyledText[], StyledText[]] {
+  const cut =
+    segments
+      .map((s) => s.text)
+      .join('')
+      .lastIndexOf('\n') + 1;
+  const completed: StyledText[] = [];
+  const lastLine: StyledText[] = [];
+  let pos = 0;
+  for (const seg of segments) {
+    const end = pos + seg.text.length;
+    if (end <= cut) completed.push(seg);
+    else if (pos >= cut) lastLine.push(seg);
+    else {
+      completed.push({ ...seg, text: seg.text.slice(0, cut - pos) });
+      lastLine.push({ ...seg, text: seg.text.slice(cut - pos) });
+    }
+    pos = end;
+  }
+  return [completed, lastLine];
 }
 
 /** 装飾と検索結果の両方を反映した表示用の断片 */

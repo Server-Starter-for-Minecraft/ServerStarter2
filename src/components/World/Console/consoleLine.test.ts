@@ -116,6 +116,36 @@ describe('ConsoleOutputParser', () => {
     expect(colorOf(lines, 'red')).toBeDefined();
     expect(colorOf(lines, 'abc')).toBeUndefined();
   });
+
+  test('終端の無い不正な制御シーケンスがあっても、以降の出力は表示される', () => {
+    expect(displayed(`${ESC}]0;title\nline1\n`, 'line2\n')).toMatch(
+      /line1\nline2\n$/
+    );
+  });
+
+  test('標準出力と標準エラー出力は、行の途中で分割されていても混ざらない', () => {
+    const parser = new ConsoleOutputParser();
+    const lines: ConsoleData[] = [];
+    parser.append(lines, 'stdout partial', false);
+    parser.append(lines, 'ERR line\n', true);
+    parser.append(lines, ' continues\n', false);
+
+    expect(lines.map((l) => [l.chunk, l.isError])).toEqual([
+      ['stdout partial', false],
+      ['ERR line\n', true],
+      [' continues\n', false],
+    ]);
+  });
+
+  test('改行の無い出力が大量に続いても、短時間で処理できる', () => {
+    const parser = new ConsoleOutputParser();
+    const lines: ConsoleData[] = [];
+    const start = performance.now();
+    for (let i = 0; i < 3000; i++) parser.append(lines, 'x'.repeat(100), false);
+
+    expect(lines[0].chunk).toHaveLength(300000);
+    expect(performance.now() - start).toBeLessThan(5000);
+  });
 });
 
 describe('lineToConsoleData', () => {

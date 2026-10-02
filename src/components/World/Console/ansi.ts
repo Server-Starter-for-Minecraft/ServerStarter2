@@ -11,11 +11,12 @@ import { AnsiColor, AnsiStyle, StyledText } from 'app/src/schema/console';
  *
  * - CSI（ESC [ もしくは C1制御文字 0x9B に続くパラメータと終端文字）: 終端が `m` のものがSGR
  * - OSC（ESC ] ... BEL もしくは ESC \）: ウィンドウタイトル変更など
+ *   （終端が無い場合に以降の出力をすべて取り除かないよう、改行をまたがないものとする）
  * - 文字集合の指定（ESC ( B など）
  * - その他の2文字のエスケープシーケンス
  */
 const ESCAPE_SEQUENCE =
-  /(?:\u001b\[|\u009b)([0-9;:?]*)([@-~])|\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)?|\u001b[()*+#%][0-9A-Za-z@]|\u001b[@-Z\\-_]/g;
+  /(?:\u001b\[|\u009b)([0-9;:?]*)([@-~])|\u001b\][^\u0007\u001b\n]*(?:\u0007|\u001b\\)?|\u001b[()*+#%][0-9A-Za-z@]|\u001b[@-Z\\-_]/g;
 
 /**
  * 文字列の末尾で途切れている（後続の出力に続きがある）エスケープシーケンスに一致する正規表現
@@ -23,7 +24,14 @@ const ESCAPE_SEQUENCE =
  * サーバーの出力は任意の位置で分割されて届くため、末尾の不完全なシーケンスは次の出力と結合して解釈する
  */
 const INCOMPLETE_ESCAPE_AT_END =
-  /(?:\u001b(?:\[[0-9;:?]*|\][^\u0007\u001b]*|[()*+#%])?|\u009b[0-9;:?]*)$/;
+  /(?:\u001b(?:\[[0-9;:?]*|\][^\u0007\u001b\n]*|[()*+#%])?|\u009b[0-9;:?]*)$/;
+
+/**
+ * 次の出力と結合するために保留する不完全なエスケープシーケンスの最大長
+ *
+ * これを超える場合は不正なシーケンスとみなし、保留せずにそのまま解釈する（出力が表示されなくなるのを防ぐ）
+ */
+const MAX_PENDING_LENGTH = 256;
 
 /** 装飾を解釈した結果 */
 export type ParsedAnsi = {
@@ -71,7 +79,8 @@ export function splitIncompleteEscape(raw: string): {
   pending: string;
 } {
   const match = raw.match(INCOMPLETE_ESCAPE_AT_END);
-  if (!match || match[0] === '') return { complete: raw, pending: '' };
+  if (!match || match[0] === '' || match[0].length > MAX_PENDING_LENGTH)
+    return { complete: raw, pending: '' };
   return { complete: raw.slice(0, match.index), pending: match[0] };
 }
 
