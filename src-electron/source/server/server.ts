@@ -9,6 +9,7 @@ import { GroupProgressor } from '../../common/progress';
 import { api } from '../../core/api';
 import { WorldSettings } from '../world/files/json';
 import { WorldLogHandler } from '../world/loghandler';
+import { OnlinePlayersTracker } from './onlinePlayers';
 import { ServerProcess, serverProcess } from './process';
 import { readyRunServer } from './ready';
 
@@ -35,13 +36,22 @@ export function runServer(
     const loghandler = new WorldLogHandler(cwdPath);
     await loghandler.archive();
 
+    // ログから参加中のプレイヤーを読み取り，変化があればGUIに通知
+    const onlinePlayers = new OnlinePlayersTracker((players) =>
+      api.send.UpdateOnlinePlayers(id, players)
+    );
+
     const onStart = () => api.send.StartServer(id, notification);
-    const onFinish = () => api.send.FinishServer(id);
+    const onFinish = () => {
+      onlinePlayers.reset();
+      api.send.FinishServer(id);
+    };
     const console = (value: string, isError: boolean) => {
       const trimmed = trimAnsi(value);
       // コンソールの内容をGUIに表示
       api.send.AddConsole(id, trimmed, isError);
       loghandler.append(trimmed);
+      onlinePlayers.push(value, isError);
     };
 
     // サーバーの実行を待機

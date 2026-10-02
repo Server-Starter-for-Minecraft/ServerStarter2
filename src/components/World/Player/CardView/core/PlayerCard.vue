@@ -13,6 +13,7 @@ import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
+import OnlineBadge from 'src/components/World/Player/utils/OnlineBadge.vue';
 import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';
 import GroupBadgeView from './parts/GroupBadgeView.vue';
 
@@ -72,17 +73,29 @@ onBeforeMount(async () => {
   >
     <template #default>
       <q-item style="height: 5rem; padding: 14px" class="full-width">
-        <q-item-section avatar top>
+        <q-item-section
+          avatar
+          top
+          class="row no-wrap"
+          style="flex-direction: row"
+        >
           <PlayerHeadAvatar :player="player" size="2.5rem" />
 
-          <q-item-section top style="max-width: 8rem" class="q-pl-md">
-            <q-item-label class="name text-omit">
-              {{ player.name }}
-              <SsTooltip
-                :name="player.name"
-                anchor="bottom start"
-                self="center start"
-              />
+          <q-item-section
+            top
+            style="max-width: 8rem; min-width: 0"
+            class="q-pl-md"
+          >
+            <q-item-label class="row items-center no-wrap" style="gap: 4px">
+              <div class="name text-omit">
+                {{ player.name }}
+                <SsTooltip
+                  :name="player.name"
+                  anchor="bottom start"
+                  self="center start"
+                />
+              </div>
+              <OnlineBadge :player-name="player.name" />
             </q-item-label>
             <q-item-label
               v-show="opLevel !== void 0"
@@ -107,7 +120,7 @@ onBeforeMount(async () => {
             v-for="[gId, g] in toEntries(
               getGroups(sysStore.systemSettings.player.groups)
             )"
-            :key="g"
+            :key="g.name"
           >
             <GroupBadgeView
               :group-id="gId"
@@ -124,5 +137,7 @@ onBeforeMount(async () => {
 <style scoped lang="scss">
 .name {
   font-size: 1.5rem;
+  height: 1.5rem;
+  align-content: center;
 }
 </style>

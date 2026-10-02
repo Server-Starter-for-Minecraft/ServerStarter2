@@ -67,6 +67,7 @@ export const jaPlayer = {
     '選択中の{n}人をメンバーとするグループを作成します|選択中の{n}人をメンバーとするグループを作成します',
   updateGroupDecide:
     'グループメンバーを選択中の{n}人で設定します|グループメンバーを選択中の{n}人で設定します',
+  online: 'サーバーに参加中',
   opLevel: 'OPレベル',
   noOp: 'OP権限なし',
   addPlayer: 'このプレイヤーを追加',
