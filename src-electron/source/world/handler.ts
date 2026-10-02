@@ -722,13 +722,6 @@ export class WorldHandler {
       );
     }
 
-    // 複製先のワールドの名前を設定
-    const newName =
-      name ?? (await getDuplicateWorldName(this.container, this.name));
-
-    // WorldIDを取得
-    const newId = WorldHandler.register(newName, this.container);
-
     // ワールド設定ファイルの内容を読み込む
     const worldSettings = await this.loadLocalServerJson();
     if (isError(worldSettings)) return withError(worldSettings);
@@ -738,10 +731,22 @@ export class WorldHandler {
     // 使用中フラグを削除
     worldSettings.using = false;
 
-    const newHandler = WorldHandler.get(newId, newName, this.container);
-    if (isError(newHandler)) throw new Error();
+    // 複製先のワールドの名前を設定
+    const newName =
+      name ?? (await getDuplicateWorldName(this.container, this.name));
 
-    await this.getSavePath().copyTo(newHandler.getSavePath());
+    // WorldIDを取得
+    const newId = WorldHandler.register(newName, this.container);
+
+    const newHandler = WorldHandler.get(newId, newName, this.container);
+    if (isError(newHandler)) return withError(newHandler);
+
+    const copied = await this.getSavePath().copyTo(newHandler.getSavePath());
+    if (isError(copied)) {
+      // 複製途中のデータが不完全なワールドとして残らないように削除する
+      await newHandler.delete();
+      return withError(copied);
+    }
 
     // 設定ファイルを上書き
     const savedJson = await newHandler.saveLocalServerJson(worldSettings);

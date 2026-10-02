@@ -279,7 +279,13 @@ export class Path {
     if (isError(isDir)) return isDir;
 
     try {
-      await fs.rm(this._path, { recursive: true, force: true });
+      // 他プロセスによる一時的なファイルロック(EBUSY等)の場合は再試行する
+      await fs.rm(this._path, {
+        recursive: true,
+        force: true,
+        maxRetries: BUSY_RETRY_COUNT,
+        retryDelay: BUSY_RETRY_DELAY_MS,
+      });
     } catch {
       return errorMessage.data.path.deletionFailed({
         type: isDir ? 'directory' : 'file',
@@ -294,7 +300,7 @@ export class Path {
     await target.parent().mkdir(true);
     await target.remove();
     try {
-      await fs.copy(this.path, target.path);
+      await retryOnBusy(() => fs.copy(this.path, target.path));
     } catch {
       const isDir = await this._isDirectory();
       if (isError(isDir)) return isDir;
@@ -381,6 +387,32 @@ const spoolers = InfinitMap.primitiveKeyWeakValue(
  * Pathクラスの中でプールが定義された関数を実行するときには`_Hoge()`という本体実装側を呼び出す
  * （関数A自体と関数Aの中で呼び出す処理で重複してプールすることがないようにする）
  */
+/** ファイルロックによる一時的な失敗の場合に再試行する回数 */
+const BUSY_RETRY_COUNT = 5;
+/** ファイルロックによる一時的な失敗の場合に再試行するまでの待機時間(ms) */
+const BUSY_RETRY_DELAY_MS = 200;
+
+/**
+ * ファイルが一時的にロックされている(EBUSY)場合に処理を再試行する
+ *
+ * サーバー終了直後などは、Javaプロセスやウイルス対策ソフトがファイルを掴んだままの場合があるため、
+ * 少し待ってから再試行することで、ファイル操作の失敗を回避する
+ *
+ * @param operation 再試行するファイル操作
+ * @returns ファイル操作の戻り値（再試行しても失敗した場合はその例外を投げる）
+ */
+async function retryOnBusy<T>(operation: () => Promise<T>): Promise<T> {
+  for (let retried = 0; ; retried++) {
+    try {
+      return await operation();
+    } catch (e) {
+      const isBusy = (e as NodeJS.ErrnoException)?.code === 'EBUSY';
+      if (!isBusy || retried >= BUSY_RETRY_COUNT) throw e;
+      await sleep(BUSY_RETRY_DELAY_MS);
+    }
+  }
+}
+
 function exclusive<P extends any[], R>(
   target: (this: Path, ...args: P) => Promise<R>
 ) {

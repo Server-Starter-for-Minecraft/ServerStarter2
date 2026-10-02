@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { values } from 'app/src-public/scripts/obj/obj';
+import { keys } from 'app/src-public/scripts/obj/obj';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -7,6 +7,7 @@ import { createNewWorld, removeWorld } from 'src/stores/WorldStore';
 import { checkError } from 'src/components/Error/Error';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import { moveScrollTop_Home } from '../scroll';
+import { nextWorldAfterDeletion } from './worldDeletion';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
@@ -20,8 +21,15 @@ async function removeWorld_Clicked() {
     // 表示ワールドの変更に対応できるよう、削除するWorldIDを控えておく
     const removeWorldID = mainStore.selectedWorldID;
 
-    // ワールドが消失する場合は、新規ワールドを自動生成
-    if (values(mainStore.allWorlds.readonlyWorlds).length === 1) {
+    // 削除後に表示するワールドを、画面上に表示されているワールドから選ぶ
+    // （非表示のコンテナや検索で隠れているワールドは表示できないため、検索条件のみ無視して候補とする）
+    const nextWorldID = nextWorldAfterDeletion(
+      keys(mainStore.allWorlds.filteredWorlds('')),
+      removeWorldID
+    );
+
+    // 表示できるワールドが無くなる場合は、新規ワールドを自動生成
+    if (nextWorldID === undefined) {
       // 削除する際にworldStore.worldListが更新されてSetWorldが呼ばれるため、
       // 表示しているワールドを確実にNewWorld側にしてから削除処理を実行
       // このためには、削除前にCreateNewWorldする必要あり
@@ -31,9 +39,12 @@ async function removeWorld_Clicked() {
     // 描画上のリストから削除
     removeWorld(removeWorldID);
 
-    // ワールドリストの0番目を表示
-    const world = values(mainStore.allWorlds.filteredWorlds());
-    mainStore.showWorld(world[0].world);
+    // 残っているワールドを表示（新規ワールドを生成した場合は生成時に表示済み）
+    if (nextWorldID !== undefined) {
+      mainStore.showWorld(
+        mainStore.allWorlds.readonlyWorlds[nextWorldID].world
+      );
+    }
 
     // 画面を一番上に
     moveScrollTop_Home();
