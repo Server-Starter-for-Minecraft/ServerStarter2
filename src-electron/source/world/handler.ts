@@ -754,8 +754,12 @@ export class WorldHandler {
     worldSettings.using = false;
 
     // 複製先のワールドの名前を設定
+    // （名前を指定された場合も、既存のワールドを上書き・削除しないよう未使用の名前であることを確認する）
     const newName =
-      name ?? (await getDuplicateWorldName(this.container, this.name));
+      name === undefined
+        ? await getDuplicateWorldName(this.container, this.name)
+        : await validateNewWorldName(this.container, name);
+    if (isError(newName)) return withError(newName);
 
     // WorldIDを取得
     const newId = WorldHandler.register(newName, this.container);
@@ -776,7 +780,11 @@ export class WorldHandler {
       return withError(savedJson);
     }
 
-    return await newHandler.load();
+    const loaded = await newHandler.load();
+    if (isError(loaded.value)) {
+      await WorldHandler.discardIncompleteWorld(newHandler);
+    }
+    return loaded;
   }
 
   /** ワールドをバックアップ */

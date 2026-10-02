@@ -471,4 +471,20 @@ describe('WorldHandler ワールドの複製', () => {
     // 複製元のワールドはそのまま残る
     expect(handler.getSavePath().exists()).toBe(true);
   });
+
+  test('既存のワールドと同じ名前を指定した場合は複製せず、既存のワールドを変更しない', async () => {
+    const { handler } = await createWorld(false);
+    const { handler: existing, world: existingWorld } =
+      await createWorld(false);
+    // 複製に失敗する状況でも既存のワールドが削除されないことを確認する
+    vi.spyOn(fs, 'copy').mockRejectedValue(fsError('EACCES'));
+
+    const result = await handler.duplicate(existingWorld.name);
+
+    expect(isError(result.value)).toBe(true);
+    expect(existing.getSavePath().child('server.properties').exists()).toBe(
+      true
+    );
+    expect(isError(WorldHandler.get(existing.id))).toBe(false);
+  });
 });

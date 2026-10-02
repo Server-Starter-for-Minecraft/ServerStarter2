@@ -34,7 +34,9 @@ async function removeWorld_Clicked() {
       // 削除する際にworldStore.worldListが更新されてSetWorldが呼ばれるため、
       // 表示しているワールドを確実にNewWorld側にしてから削除処理を実行
       // このためには、削除前にCreateNewWorldする必要あり
-      await createNewWorld();
+      const newWorldID = await createNewWorld();
+      // 新規ワールドを作成できなかった場合は、削除したワールドを選択したままにしない
+      if (newWorldID === undefined) mainStore.unsetWorld();
     }
 
     // 描画上のリストから削除
