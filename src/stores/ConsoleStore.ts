@@ -7,8 +7,8 @@ import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import {
-  appendConsoleOutput,
-  toConsoleData,
+  ConsoleOutputParser,
+  lineToConsoleData,
 } from 'src/components/World/Console/consoleLine';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
@@ -21,6 +21,18 @@ interface WorldConsole {
     clickedReboot: boolean;
     console: ConsoleData[];
   };
+}
+
+/**
+ * ワールドごとのサーバー出力の解釈状態（出力をまたいで引き継ぐ文字色など）
+ *
+ * 表示には直接関わらないため、Storeのリアクティブな状態とは別に保持する
+ */
+const outputParsers = new Map<WorldID, ConsoleOutputParser>();
+
+/** コンソールの内容を初期化する際に、出力の解釈状態も初期化する */
+function resetOutputParser(worldID: WorldID) {
+  outputParsers.set(worldID, new ConsoleOutputParser());
 }
 
 export const useConsoleStore = defineStore('consoleStore', {
@@ -45,6 +57,7 @@ export const useConsoleStore = defineStore('consoleStore', {
           clickedReboot: false,
           console: new Array<ConsoleData>(),
         };
+        resetOutputParser(worldID);
       }
     },
     /**
@@ -64,7 +77,10 @@ export const useConsoleStore = defineStore('consoleStore', {
     setConsole(worldID: WorldID, consoleLine: string, isError: boolean) {
       this._world[worldID].status = 'Running';
       if (consoleLine !== void 0) {
-        appendConsoleOutput(this._world[worldID].console, consoleLine, isError);
+        if (!outputParsers.has(worldID)) resetOutputParser(worldID);
+        outputParsers
+          .get(worldID)
+          ?.append(this._world[worldID].console, consoleLine, isError);
       }
     },
     /**
@@ -77,8 +93,9 @@ export const useConsoleStore = defineStore('consoleStore', {
     ) {
       this._world[worldID].status = status;
       this._world[worldID].console = [];
+      resetOutputParser(worldID);
       consoleLines.forEach((l) =>
-        this._world[worldID].console.push(toConsoleData(l, false))
+        this._world[worldID].console.push(lineToConsoleData(l, false))
       );
     },
     /**
@@ -86,6 +103,7 @@ export const useConsoleStore = defineStore('consoleStore', {
      */
     resetReboot(worldID: WorldID) {
       this._world[worldID].console = [];
+      resetOutputParser(worldID);
       this._world[worldID].clickedReboot = false;
     },
     /**

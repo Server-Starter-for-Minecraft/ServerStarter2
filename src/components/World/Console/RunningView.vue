@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { QScrollArea, useQuasar } from 'quasar';
-import { ConsoleData, MatchedConsoleData } from 'src/schema/console';
+import { QScrollArea } from 'quasar';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { ansiStyleToCss } from './ansi';
-import { ConsolePiece, overlayMatches } from './consoleLine';
+import ConsoleLineView from './ConsoleLineView.vue';
 import { consoleScrollMemory } from './consoleScroll';
 import ConsoleSearch from './ConsoleSearch.vue';
 
-const $q = useQuasar();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
@@ -47,18 +44,6 @@ const currentFocusLineIdx = computed(() => {
 });
 
 /**
- * 1行分のデータを、文字色などの装飾と検索結果を反映した表示用の断片に分割する
- */
-function linePieces(item: ConsoleData | MatchedConsoleData): ConsolePiece[] {
-  if ('matches' in item) {
-    const text = item.matches.map((m) => m.text).join('');
-    return overlayMatches(item.segments ?? [{ text, style: {} }], item.matches);
-  }
-  const segments = item.segments ?? [{ text: item.chunk, style: {} }];
-  return segments.map((s) => ({ ...s, isMatch: false }));
-}
-
-/**
  * 指定されたインデックスの項目にスクロールする
  */
 function scrollToMatch(index: number) {
@@ -84,35 +69,27 @@ function scroll2End() {
 }
 
 /**
- * 表示中のワールドのスクロール状態を復元しているか
- *
- * 表示するワールドの切り替え中は、内容の入れ替えに伴うスクロールイベントを
- * ユーザーの操作として記録しないようにする
- */
-let restoring = false;
-
-/**
  * 表示中のワールドについて記憶しているスクロール位置を復元する
  */
 function restoreScroll() {
-  restoring = true;
+  // 表示する内容が切り替わった後（描画後）に復元する
   nextTick(() => {
     const target = consoleScrollMemory.restoreTarget(mainStore.selectedWorldID);
     if (target === 'bottom') scroll2End();
     else scrollAreaRef.value?.setScrollPosition('vertical', target);
-    // スクロール位置の反映（scrollイベント）が終わってから記録を再開する
-    requestAnimationFrame(() => (restoring = false));
   });
 }
 
 /**
  * スクロールされた際に、表示中のワールドのスクロール状態を記録する
  *
- * QScrollAreaのscrollイベントの値は内容の高さの更新が遅れる場合があるため、実際の要素の値を記録する
+ * QScrollAreaのscrollイベントの値は内容の高さの更新が遅れる場合があるため、実際の要素の値を記録する。
+ * （scrollイベントは描画後に遅れて届くため、表示するワールドの切り替えに伴うイベントでも、
+ * 切り替え後のワールドの表示状態が記録される）
  */
 function onScroll() {
   const target = scrollAreaRef.value?.getScrollTarget();
-  if (restoring || !target) return;
+  if (!target) return;
   consoleScrollMemory.record(mainStore.selectedWorldID, {
     position: target.scrollTop,
     contentSize: target.scrollHeight,
@@ -134,7 +111,6 @@ watch(
     return [lines.length, lines[lines.length - 1]?.chunk];
   },
   () => {
-    if (restoring) return;
     if (consoleScrollMemory.shouldFollowOutput(mainStore.selectedWorldID)) {
       nextTick(() => scroll2End());
     }
@@ -172,13 +148,7 @@ onUnmounted(() => {
         ]"
         :style="defaultStyles"
       >
-        <span
-          v-for="(piece, pieceIndex) in linePieces(item)"
-          :key="pieceIndex"
-          :class="piece.isMatch ? 'highlight-match' : ''"
-          :style="ansiStyleToCss(piece.style, $q.dark.isActive)"
-          >{{ piece.text }}</span
-        >
+        <ConsoleLineView :item="item" />
       </p>
     </q-scroll-area>
   </div>

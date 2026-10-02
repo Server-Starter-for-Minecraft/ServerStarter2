@@ -9,66 +9,114 @@ import { AnsiColor, AnsiStyle, StyledText } from 'app/src/schema/console';
 /**
  * 制御シーケンスに一致する正規表現
  *
- * - CSI（ESC [ ... 終端文字）: 終端が `m` のものがSGR
+ * - CSI（ESC [ もしくは C1制御文字 0x9B に続くパラメータと終端文字）: 終端が `m` のものがSGR
  * - OSC（ESC ] ... BEL もしくは ESC \）: ウィンドウタイトル変更など
+ * - 文字集合の指定（ESC ( B など）
  * - その他の2文字のエスケープシーケンス
  */
 const ESCAPE_SEQUENCE =
-  /\u001b\[([0-9;:?]*)([@-~])|\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)?|\u001b[@-Z\\-_]/g;
+  /(?:\u001b\[|\u009b)([0-9;:?]*)([@-~])|\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)?|\u001b[()*+#%][0-9A-Za-z@]|\u001b[@-Z\\-_]/g;
+
+/**
+ * 文字列の末尾で途切れている（後続の出力に続きがある）エスケープシーケンスに一致する正規表現
+ *
+ * サーバーの出力は任意の位置で分割されて届くため、末尾の不完全なシーケンスは次の出力と結合して解釈する
+ */
+const INCOMPLETE_ESCAPE_AT_END =
+  /(?:\u001b(?:\[[0-9;:?]*|\][^\u0007\u001b]*|[()*+#%])?|\u009b[0-9;:?]*)$/;
+
+/** 装飾を解釈した結果 */
+export type ParsedAnsi = {
+  /** 装飾ごとに分割したテキスト（空文字列の断片は含まない） */
+  segments: StyledText[];
+  /** 文字列の末尾時点で有効な装飾（後続の出力に引き継ぐ） */
+  endStyle: AnsiStyle;
+};
 
 /**
  * ANSIエスケープシーケンスを含む文字列を装飾付きテキストの配列に変換する
  *
  * @param raw サーバーから受け取った文字列
- * @param initialStyle 文字列の先頭に適用されている装飾（前の行から装飾が引き継がれる場合に指定）
- * @returns 装飾ごとに分割したテキストの配列（空文字列の断片は含まない）
+ * @param initialStyle 文字列の先頭に適用されている装飾（直前の出力から引き継ぐ装飾）
+ * @returns 装飾ごとに分割したテキストと、末尾時点の装飾
  */
 export function parseAnsi(
   raw: string,
   initialStyle: AnsiStyle = {}
-): StyledText[] {
-  const result: StyledText[] = [];
+): ParsedAnsi {
+  const segments: StyledText[] = [];
   let style: AnsiStyle = { ...initialStyle };
   let lastIndex = 0;
 
-  /** 現在の装飾でテキストを追加する（直前と同じ装飾の場合は結合する） */
-  const push = (text: string) => {
-    if (text === '') return;
-    const prev = result[result.length - 1];
-    if (prev && isSameStyle(prev.style, style)) prev.text += text;
-    else result.push({ text, style: { ...style } });
-  };
-
   for (const match of raw.matchAll(ESCAPE_SEQUENCE)) {
-    push(raw.slice(lastIndex, match.index));
+    pushStyledText(segments, raw.slice(lastIndex, match.index), style);
     lastIndex = match.index + match[0].length;
 
     // SGR以外の制御シーケンスは表示に影響させずに取り除く
     if (match[2] === 'm') style = applySgr(style, match[1]);
   }
-  push(raw.slice(lastIndex));
+  pushStyledText(segments, raw.slice(lastIndex), style);
 
-  return result;
+  return { segments, endStyle: style };
 }
 
 /**
- * ANSIエスケープシーケンスを取り除いた文字列を返す
+ * 文字列を末尾の不完全なエスケープシーケンスとそれ以外に分ける
  *
  * @param raw サーバーから受け取った文字列
- * @returns 表示される文字のみからなる文字列（検索などに利用する）
+ * @returns 解釈できる部分（complete）と、次の出力と結合して解釈する部分（pending）
  */
-export function stripAnsi(raw: string): string {
-  return raw.replace(ESCAPE_SEQUENCE, '');
+export function splitIncompleteEscape(raw: string): {
+  complete: string;
+  pending: string;
+} {
+  const match = raw.match(INCOMPLETE_ESCAPE_AT_END);
+  if (!match || match[0] === '') return { complete: raw, pending: '' };
+  return { complete: raw.slice(0, match.index), pending: match[0] };
 }
 
+/**
+ * 装飾付きテキストの配列の末尾にテキストを追加する（直前と同じ装飾の場合は結合する）
+ *
+ * @param segments 追加先の配列（直接更新する）
+ * @param text 追加するテキスト
+ * @param style 追加するテキストの装飾
+ */
+export function pushStyledText(
+  segments: StyledText[],
+  text: string,
+  style: AnsiStyle
+) {
+  if (text === '') return;
+  const prev = segments[segments.length - 1];
+  if (prev && isSameStyle(prev.style, style)) prev.text += text;
+  else segments.push({ text, style: { ...style } });
+}
+
+/** 真偽値で表す装飾の種類 */
+type FlagStyle = 'bold' | 'italic' | 'underline';
+
+/**
+ * 真偽値で表す装飾の一覧と、それぞれを有効化・無効化するSGRのパラメータ、対応するCSS
+ *
+ * 装飾の種類を追加する場合はここに追記する
+ */
+const FLAG_STYLES: Record<
+  FlagStyle,
+  { on: number; off: number; css: [string, string] }
+> = {
+  bold: { on: 1, off: 22, css: ['font-weight', 'bold'] },
+  italic: { on: 3, off: 23, css: ['font-style', 'italic'] },
+  underline: { on: 4, off: 24, css: ['text-decoration', 'underline'] },
+};
+const FLAG_KEYS = Object.keys(FLAG_STYLES) as FlagStyle[];
+
 /** 2つの装飾が同一か */
-function isSameStyle(a: AnsiStyle, b: AnsiStyle) {
+export function isSameStyle(a: AnsiStyle, b: AnsiStyle) {
   return (
     a.color === b.color &&
     a.bgColor === b.bgColor &&
-    !!a.bold === !!b.bold &&
-    !!a.italic === !!b.italic &&
-    !!a.underline === !!b.underline
+    FLAG_KEYS.every((key) => !!a[key] === !!b[key])
   );
 }
 
@@ -80,25 +128,21 @@ function isSameStyle(a: AnsiStyle, b: AnsiStyle) {
  * @returns 更新後の装飾
  */
 function applySgr(current: AnsiStyle, params: string): AnsiStyle {
-  const style = { ...current };
+  let style: AnsiStyle = { ...current };
   // `ESC[m` はリセット（パラメータ0）と同じ扱い
   const codes = params === '' ? [0] : params.split(/[;:]/).map(Number);
 
   for (let i = 0; i < codes.length; i++) {
     const code = codes[i];
-    if (code === 0) {
-      delete style.color;
-      delete style.bgColor;
-      delete style.bold;
-      delete style.italic;
-      delete style.underline;
-    } else if (code === 1) style.bold = true;
-    else if (code === 22) delete style.bold;
-    else if (code === 3) style.italic = true;
-    else if (code === 23) delete style.italic;
-    else if (code === 4) style.underline = true;
-    else if (code === 24) delete style.underline;
-    else if (30 <= code && code <= 37) style.color = code - 30;
+    const flag = FLAG_KEYS.find(
+      (key) => FLAG_STYLES[key].on === code || FLAG_STYLES[key].off === code
+    );
+
+    if (code === 0) style = {};
+    else if (flag !== undefined) {
+      if (FLAG_STYLES[flag].on === code) style[flag] = true;
+      else delete style[flag];
+    } else if (30 <= code && code <= 37) style.color = code - 30;
     else if (90 <= code && code <= 97) style.color = code - 90 + 8;
     else if (code === 39) delete style.color;
     else if (40 <= code && code <= 47) style.bgColor = code - 40;
@@ -233,8 +277,11 @@ export function ansiStyleToCss(
     css.color = ansiColorToCss(style.color, isDark);
   if (style.bgColor !== undefined)
     css['background-color'] = ansiColorToCss(style.bgColor, isDark);
-  if (style.bold) css['font-weight'] = 'bold';
-  if (style.italic) css['font-style'] = 'italic';
-  if (style.underline) css['text-decoration'] = 'underline';
+  for (const key of FLAG_KEYS) {
+    if (style[key]) {
+      const [prop, value] = FLAG_STYLES[key].css;
+      css[prop] = value;
+    }
+  }
   return css;
 }

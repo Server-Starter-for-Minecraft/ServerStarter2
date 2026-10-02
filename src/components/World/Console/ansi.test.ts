@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest';
-import { ansiStyleToCss, parseAnsi, stripAnsi } from './ansi';
+import { ansiStyleToCss, parseAnsi, splitIncompleteEscape } from './ansi';
 
 const ESC = '\u001b';
 
-/** 装飾付きテキストを、表示される文字列とCSSの文字色の組に変換する */
+/** 装飾付きテキストを、表示される文字列とCSSの組に変換する */
 function render(raw: string, isDark = true) {
-  return parseAnsi(raw).map(
+  return parseAnsi(raw).segments.map(
     (s) => [s.text, ansiStyleToCss(s.style, isDark)] as const
   );
 }
@@ -42,10 +42,17 @@ describe('parseAnsi', () => {
     expect(style).toHaveProperty('background-color');
   });
 
-  test('文字色以外の制御シーケンス（カーソル移動・タイトル変更など）は表示しない', () => {
-    const raw = `${ESC}]0;Minecraft Server\u0007${ESC}[2K${ESC}[1G> help`;
+  test('文字色以外の制御シーケンス（カーソル移動・タイトル変更・文字集合の指定など）は表示しない', () => {
+    const raw = `${ESC}]0;Minecraft Server\u0007${ESC}[2K${ESC}[1G> help${ESC}(B\u009b0m`;
 
     expect(render(raw)).toEqual([['> help', {}]]);
+  });
+
+  test('文字列の末尾時点の装飾を返し、後続の文字列に引き継げる', () => {
+    const first = parseAnsi(`${ESC}[31mred`);
+    const second = parseAnsi('still red', first.endStyle);
+
+    expect(second.segments[0].style).toEqual(first.segments[0].style);
   });
 
   test('テーマに応じて背景色に対して読みやすい色を使う', () => {
@@ -56,10 +63,22 @@ describe('parseAnsi', () => {
   });
 });
 
-describe('stripAnsi', () => {
-  test('制御シーケンスを取り除いた表示文字列を返す', () => {
-    expect(stripAnsi(`${ESC}[32m[INFO]${ESC}[m Starting`)).toBe(
-      '[INFO] Starting'
-    );
+describe('splitIncompleteEscape', () => {
+  test('末尾で途切れたエスケープシーケンスを後続の出力と結合するために分ける', () => {
+    expect(splitIncompleteEscape(`abc${ESC}[3`)).toEqual({
+      complete: 'abc',
+      pending: `${ESC}[3`,
+    });
+    expect(splitIncompleteEscape(`abc${ESC}`)).toEqual({
+      complete: 'abc',
+      pending: ESC,
+    });
+  });
+
+  test('完結しているエスケープシーケンスはそのまま解釈する', () => {
+    expect(splitIncompleteEscape(`abc${ESC}[31m`)).toEqual({
+      complete: `abc${ESC}[31m`,
+      pending: '',
+    });
   });
 });

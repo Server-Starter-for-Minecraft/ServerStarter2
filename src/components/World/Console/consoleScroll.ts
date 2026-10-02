@@ -36,6 +36,7 @@ export type ScrollTarget = number | 'bottom';
  * - 表示するワールドを切り替えても、ワールドごとのスクロール状態を復元できる
  */
 export class ConsoleScrollMemory {
+  /** ワールドごとの最後に記録したスクロール位置と、最下部を表示していたか */
   private states = new Map<WorldID, { position: number; atBottom: boolean }>();
 
   /**
