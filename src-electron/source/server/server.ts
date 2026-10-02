@@ -38,10 +38,11 @@ export function runServer(
     const onStart = () => api.send.StartServer(id, notification);
     const onFinish = () => api.send.FinishServer(id);
     const console = (value: string, isError: boolean) => {
-      const trimmed = trimAnsi(value);
       // コンソールの内容をGUIに表示
-      api.send.AddConsole(id, trimmed, isError);
-      loghandler.append(trimmed);
+      // （文字色を表示できるよう、ANSIエスケープシーケンスはフロントエンドで解釈する）
+      api.send.AddConsole(id, value, isError);
+      // ログファイルにはエディタ等で読みやすいよう、ANSIエスケープシーケンスを除いて保存する
+      loghandler.append(trimAnsi(value));
     };
 
     // サーバーの実行を待機

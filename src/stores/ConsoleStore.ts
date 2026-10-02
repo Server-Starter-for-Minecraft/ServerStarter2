@@ -6,6 +6,10 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
+import {
+  appendConsoleOutput,
+  toConsoleData,
+} from 'src/components/World/Console/consoleLine';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
 import { updateBackWorld, updateWorld } from './WorldStore';
@@ -52,15 +56,15 @@ export const useConsoleStore = defineStore('consoleStore', {
       this._world[worldID].status = 'Ready';
     },
     /**
-     * コンソールに行を追加する
+     * コンソールにサーバーからの出力を追加する
+     *
+     * 文字色などのANSIエスケープシーケンスは装飾として解釈し、
+     * プログレスバーのように\rで書き換えられる出力は直前の行を上書きする
      */
     setConsole(worldID: WorldID, consoleLine: string, isError: boolean) {
       this._world[worldID].status = 'Running';
       if (consoleLine !== void 0) {
-        this._world[worldID].console.push({
-          chunk: consoleLine,
-          isError: isError,
-        });
+        appendConsoleOutput(this._world[worldID].console, consoleLine, isError);
       }
     },
     /**
@@ -74,7 +78,7 @@ export const useConsoleStore = defineStore('consoleStore', {
       this._world[worldID].status = status;
       this._world[worldID].console = [];
       consoleLines.forEach((l) =>
-        this._world[worldID].console.push({ chunk: l, isError: false })
+        this._world[worldID].console.push(toConsoleData(l, false))
       );
     },
     /**
