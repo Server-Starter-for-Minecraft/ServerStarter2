@@ -69,6 +69,7 @@ export const enUSPlayer: MessageSchema['player'] = {
     'Make new group  with selected {n} player | Make new group  with selected {n} players',
   updateGroupDecide:
     'Update this group with selected {n} player | Update this group with selected {n} players',
+  online: 'Playing on the server',
   opLevel: 'OP level',
   noOp: 'No OP',
   addPlayer: 'Register this player',
