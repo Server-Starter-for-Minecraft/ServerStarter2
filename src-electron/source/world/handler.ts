@@ -37,6 +37,7 @@ import { sleep } from 'app/src-electron/util/promise/sleep';
 import { genUUID } from 'app/src-electron/util/random/uuid';
 import { allocateTempDir } from 'app/src-electron/util/tempPath';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { serverAllAdditionalFiles } from '../additionalContents/all';
 import { pullRemoteWorld, pushRemoteWorld } from '../remote/remote';
 import { RunRebootableServer, runRebootableServer } from '../server/server';
 import { closeNgrok, runNgrok } from '../server/setup/ngrok';
@@ -700,6 +701,19 @@ export class WorldHandler {
 
     delete WorldHandler.worldHandlerMap[this.id];
     return withError(undefined);
+  }
+
+  /**
+   * 保存先にある追加コンテンツの一覧を読み込む
+   *
+   * 保存処理などと同じ待機列で実行し、実行中の保存（追加コンテンツのコピー・削除）が終わってから読み込む
+   *
+   * @returns 保存先にある追加コンテンツの一覧
+   */
+  async loadContents() {
+    return await this.promiseSpooler.spool(() =>
+      serverAllAdditionalFiles.load(this.getSavePath(), this.id)
+    );
   }
 
   /** ワールドを複製 */

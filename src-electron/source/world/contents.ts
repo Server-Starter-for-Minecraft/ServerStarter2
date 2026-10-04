@@ -3,7 +3,6 @@ import { WorldAdditional, WorldID } from 'app/src-electron/schema/world';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { serverAllAdditionalFiles } from '../additionalContents/all';
 import { WorldHandler } from './handler';
 
 /**
@@ -20,5 +19,5 @@ export async function getWorldContents(
 ): Promise<WithError<Failable<WorldAdditional>>> {
   const handler = WorldHandler.get(world);
   if (isError(handler)) return withError(handler);
-  return await serverAllAdditionalFiles.load(handler.getSavePath(), world);
+  return await handler.loadContents();
 }

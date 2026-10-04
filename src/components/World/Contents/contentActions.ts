@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { getCacheContents } from 'src/init';
+import { keys } from 'app/src-public/scripts/obj/obj';
 import {
   AllFileData,
   DatapackData,
@@ -26,6 +27,8 @@ export type ContentType = 'datapack' | 'plugin' | 'mod';
  * 読み込み中は各画面で導入・削除の操作を受け付けない
  */
 const reloading = ref(false);
+/** 読み込み中に表示するワールドが切り替わり、読み込みが終わった後に再度読み込む必要があるか */
+let reloadRequested = false;
 
 /**
  * 追加コンテンツの導入・削除・再読み込みの操作
@@ -92,7 +95,12 @@ export function useContentActions() {
    */
   async function reloadContents() {
     const world = mainStore.world;
-    if (world === undefined || reloading.value) return;
+    if (world === undefined) return;
+    // 読み込み中の場合は、読み込みが終わった後に表示中のワールドを読み込み直す
+    if (reloading.value) {
+      reloadRequested = true;
+      return;
+    }
 
     reloading.value = true;
     try {
@@ -104,8 +112,7 @@ export function useContentActions() {
           const current = mainStore.world;
           if (current?.id !== world.id) return;
 
-          const types = ['datapacks', 'plugins', 'mods'] as const;
-          for (const key of types) {
+          for (const key of keys(loaded)) {
             const merged = mergeReloadedContents<AllFileData<Content>>(
               current.additional[key] as AllFileData<Content>[],
               loaded[key] as AllFileData<Content>[]
@@ -116,6 +123,7 @@ export function useContentActions() {
 
             // 停止中は「ワールド起動前のデータ」にも反映し、保存先にあるコンテンツを導入済みとして扱う
             // （起動履歴があり得るコンテンツの削除時に警告を表示するため）
+            // なお、この変更でもワールドの保存が要求されるが、上記の変更による保存とまとめて処理される
             const back = mainStore.worldBack;
             if (back && consoleStore.status(world.id) === 'Stop') {
               (back.additional[key] as AllFileData<Content>[]) = [
@@ -129,6 +137,10 @@ export function useContentActions() {
       await getCacheContents();
     } finally {
       reloading.value = false;
+    }
+    if (reloadRequested) {
+      reloadRequested = false;
+      await reloadContents();
     }
   }
 
