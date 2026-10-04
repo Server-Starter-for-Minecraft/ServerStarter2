@@ -3,7 +3,6 @@ import { defineStore } from 'pinia';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
-import { sortValue } from 'app/src-public/scripts/obj/objSort';
 import { zen2han } from 'app/src-public/scripts/textUtils';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
@@ -16,6 +15,7 @@ import {
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from './SystemStore';
+import { filterWorldContainer, sortWorldList } from './worldListUtils';
 import { __getWorldList, __getWorldListBack, WorldList } from './WorldStore';
 
 export const useMainStore = defineStore('mainStore', {
@@ -71,7 +71,10 @@ export const useMainStore = defineStore('mainStore', {
         readonlyWorlds: deepcopy(__getWorldList()),
         filteredWorlds: (searchText?: string) => {
           const wList = filterSearchingText(
-            filterWorldContainer(__getWorldList()),
+            filterWorldContainer(
+              __getWorldList(),
+              useSystemStore().systemSettings.container
+            ),
             searchText ?? state.worldSearchText
           );
           return sortWorldList(wList);
@@ -123,34 +126,6 @@ export const useMainStore = defineStore('mainStore', {
     },
   },
 });
-
-/**
- * 渡されたワールドリストを更新日時順にソート
- */
-function sortWorldList(wList: WorldList) {
-  return sortValue(wList, (a, b) => {
-    if (a.type === 'edited' && b.type === 'edited') {
-      return (b.world.last_date ?? 0) - (a.world.last_date ?? 0);
-    } else {
-      return 0;
-    }
-  });
-}
-
-/**
- * コンテナの設定に基づいて表示するワールドをフィルタ
- */
-function filterWorldContainer(wList: WorldList) {
-  const sysStore = useSystemStore();
-  const visibleContainers = new Set(
-    sysStore.systemSettings.container
-      .filter((c) => c.visible)
-      .map((c) => c.container)
-  );
-  return recordValueFilter(wList, (w) =>
-    visibleContainers.has(w.world.container)
-  );
-}
 
 /**
  * 検索ワードを下記の項目についてチェックし，マッチするワールドを返す

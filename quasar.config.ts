@@ -53,6 +53,17 @@ export default defineConfig((ctx) => {
             './src/components/**/*.vue',
           ],
         };
+        // devモードではワールドやキャッシュがリポジトリ内の`userData/`に置かれるため，ファイル監視の対象から外す。
+        // 監視対象に含めると，サーバー(Java)などがロックしているファイルの監視がEBUSYで失敗し，
+        // devサーバーごと異常終了してしまう（ワールドの複製時などに発生）。
+        // （`watch: null`は監視の無効化を意味するため，その場合は設定しない）
+        if (viteConf.server.watch !== null) {
+          viteConf.server.watch ??= {};
+          viteConf.server.watch.ignored = [
+            ...[viteConf.server.watch.ignored ?? []].flat(),
+            '**/userData/**',
+          ];
+        }
       },
 
       define: {

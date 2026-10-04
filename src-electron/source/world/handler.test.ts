@@ -1,3 +1,4 @@
+import fs from 'fs-extra';
 import {
   afterEach,
   beforeAll,
@@ -419,5 +420,130 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
 
     expect(isError(result.value)).toBe(false);
     expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
+  });
+});
+
+describe('WorldHandler ワールドの複製', () => {
+  beforeAll(async () => {
+    await workPath.mkdir(true);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  /** 指定したエラーコードのファイル操作エラーを生成する */
+  function fsError(code: string) {
+    return Object.assign(new Error(code), { code });
+  }
+
+  // ファイルロックなどのOSに起因する失敗を再現するため、ファイルコピーの実体であるfs-extraのcopyに失敗を注入する
+  test('サーバー終了直後などでファイルが一時的にロックされていても複製できる', async () => {
+    const { handler, world } = await createWorld(false);
+    const realCopy = fs.copy.bind(fs);
+    vi.spyOn(fs, 'copy')
+      .mockRejectedValueOnce(fsError('EBUSY'))
+      .mockImplementation(realCopy as typeof fs.copy);
+
+    const newName = WorldName.parse(`${world.name}_locked`);
+    const result = await handler.duplicate(newName);
+
+    expect(isError(result.value)).toBe(false);
+    // 複製元のワールドデータがコピーされている
+    expect(workPath.child(newName, 'server.properties').exists()).toBe(true);
+  });
+
+  test('複製に失敗した場合はエラーを返し、複製途中のワールドを残さない', async () => {
+    const { handler, world } = await createWorld(false);
+    // コピー先のフォルダを作成した直後に失敗する状況を再現
+    vi.spyOn(fs, 'copy').mockImplementation((async (
+      _src: string,
+      dest: string
+    ) => {
+      await fs.mkdir(dest);
+      throw fsError('EACCES');
+    }) as unknown as typeof fs.copy);
+
+    const newName = WorldName.parse(`${world.name}_failed`);
+    const result = await handler.duplicate(newName);
+
+    expect(isError(result.value)).toBe(true);
+    expect(workPath.child(newName).exists()).toBe(false);
+    // 複製元のワールドはそのまま残る
+    expect(handler.getSavePath().exists()).toBe(true);
+  });
+
+  test('既存のワールドと同じ名前を指定した場合は複製せず、既存のワールドを変更しない', async () => {
+    const { handler } = await createWorld(false);
+    const { handler: existing, world: existingWorld } =
+      await createWorld(false);
+    // 複製に失敗する状況でも既存のワールドが削除されないことを確認する
+    vi.spyOn(fs, 'copy').mockRejectedValue(fsError('EACCES'));
+
+    const result = await handler.duplicate(existingWorld.name);
+
+    expect(isError(result.value)).toBe(true);
+    expect(existing.getSavePath().child('server.properties').exists()).toBe(
+      true
+    );
+    expect(isError(WorldHandler.get(existing.id))).toBe(false);
+  });
+
+  test('異なるワールドから同じ名前へ同時に複製しても、複製に成功したワールドを削除しない', async () => {
+    const { handler: first } = await createWorld(false);
+    const { handler: second } = await createWorld(false);
+    // 先に始めた複製が遅れて失敗する状況を再現し、その後処理で他方の複製結果が消えないことを確認する
+    const realCopy = fs.copy.bind(fs);
+    vi.spyOn(fs, 'copy')
+      .mockImplementationOnce((async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        throw fsError('EACCES');
+      }) as unknown as typeof fs.copy)
+      .mockImplementation(realCopy as typeof fs.copy);
+
+    const newName = WorldName.parse(`world${worldIdx++}_concurrent`);
+    const results = await Promise.all([
+      first.duplicate(newName),
+      second.duplicate(newName),
+    ]);
+
+    const succeeded = results.flatMap((r) =>
+      isError(r.value) ? [] : [r.value]
+    );
+    expect(succeeded.length).toBeLessThanOrEqual(1);
+    // 複製に失敗した場合は、複製先のデータを残さない
+    expect(workPath.child(newName).exists()).toBe(succeeded.length === 1);
+    for (const world of succeeded) {
+      expect(workPath.child(world.name, 'server.properties').exists()).toBe(
+        true
+      );
+      expect(isError(WorldHandler.get(world.id))).toBe(false);
+    }
+  });
+
+  test('名前を指定せずに同時に複製した場合はそれぞれ異なる名前で複製する', async () => {
+    const base = `world${worldIdx++}`;
+    // 「base」と「base_1」はどちらも「base」を元に複製先の名前を決めるため、同じ候補名が衝突する
+    const sources = await Promise.all(
+      [base, `${base}_1`].map(async (name) => {
+        const { handler, world } = await createWorld(false);
+        const renamed = await handler.save({
+          ...world,
+          name: WorldName.parse(name),
+        });
+        if (isError(renamed.value)) throw new Error('failed to rename world');
+        return handler;
+      })
+    );
+
+    const results = await Promise.all(sources.map((h) => h.duplicate()));
+
+    const names = results.map((r) => {
+      if (isError(r.value)) throw new Error('failed to duplicate world');
+      return r.value.name;
+    });
+    expect(new Set(names).size).toBe(2);
+    for (const name of names) {
+      expect(workPath.child(name, 'server.properties').exists()).toBe(true);
+    }
   });
 });

@@ -21,7 +21,10 @@ import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
 import { validateNewWorldName } from './name';
-import { worldContainerToPath } from './worldContainer';
+import {
+  selectNewWorldContainer,
+  worldContainerToPath,
+} from './worldContainer';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -108,7 +111,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     throw new Error('Assertion: This error cannot occur');
 
   // ワールドを配置するデフォルトのコンテナを指定
-  const containerSetting = systemSettings.container[0];
+  const containerSetting = selectNewWorldContainer(systemSettings.container);
   if (containerSetting === undefined) {
     return withError(errorMessage.core.container.noContainerSubscribed());
   }
