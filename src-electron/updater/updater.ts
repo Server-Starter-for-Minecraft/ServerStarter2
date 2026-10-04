@@ -80,20 +80,31 @@ export async function update() {
     return;
   }
 
-  // lastUpdatedTimeをundefinedに
-  const sys = await getSystemSettings();
-  sys.system.lastUpdatedTime = undefined;
-  await setSystemSettings(sys);
-
-  await saveUpdateAttempt({
+  // 実行記録を保存できない場合は、失敗時にアップデートを繰り返すおそれがあるため自動アップデートを行わない
+  const saved = await saveUpdateAttempt({
     version: update.version,
     attemptedAt: Date.now(),
   });
+  if (isError(saved)) {
+    logger.error('failed to save the update attempt', saved);
+    await notifyUpdate(osPlatform, vLessVersion);
+    return;
+  }
+
+  // lastUpdatedTimeをundefinedに（アップデート後の初回起動で更新日時が記録される）
+  const sys = await getSystemSettings();
+  const prevUpdatedTime = sys.system.lastUpdatedTime;
+  sys.system.lastUpdatedTime = undefined;
+  await setSystemSettings(sys);
+
   const started = await installer(update.url, PAT);
   if (started) return;
 
-  // ダウンロード等に失敗してインストーラーを起動できなかった場合は、現在のバージョンで起動して手動でのアップデートを促す
+  // ダウンロード等に失敗してインストーラーを起動できなかった場合は、
+  // アップデートしていないため更新日時を戻し、現在のバージョンで起動して手動でのアップデートを促す
   logger.error('failed to start the installer');
+  sys.system.lastUpdatedTime = prevUpdatedTime;
+  await setSystemSettings(sys);
   await notifyUpdate(osPlatform, vLessVersion);
 }
 

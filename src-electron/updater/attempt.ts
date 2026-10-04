@@ -41,7 +41,10 @@ export function shouldAutoInstall(
 ): boolean {
   if (lastAttempt === undefined) return true;
   if (lastAttempt.version !== latestVersion) return true;
-  return now - lastAttempt.attemptedAt >= UPDATE_RETRY_INTERVAL_MS;
+  const elapsed = now - lastAttempt.attemptedAt;
+  // 時計が戻された場合（実行記録が未来の日時）は、長期間アップデートできなくならないよう期限切れとみなす
+  if (elapsed < 0) return true;
+  return elapsed >= UPDATE_RETRY_INTERVAL_MS;
 }
 
 /**

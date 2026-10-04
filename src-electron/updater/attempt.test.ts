@@ -28,6 +28,11 @@ describe('shouldAutoInstall', () => {
     expect(shouldAutoInstall('v2.3.0', lastAttempt, NOW)).toBe(true);
   });
 
+  test('時計が戻されて実行記録が未来の日時になっている場合は、アップデートを試みる', () => {
+    const lastAttempt = { version: 'v2.3.0', attemptedAt: NOW + 3 * 24 * HOUR };
+    expect(shouldAutoInstall('v2.3.0', lastAttempt, NOW)).toBe(true);
+  });
+
   test('前回とは別のバージョンが公開された場合はアップデートする', () => {
     const lastAttempt = { version: 'v2.3.0', attemptedAt: NOW - HOUR };
     expect(shouldAutoInstall('v2.3.1', lastAttempt, NOW)).toBe(true);

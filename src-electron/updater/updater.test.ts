@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { SystemSettings } from '../schema/system';
-import { UpdateAttempt } from './attempt';
+import { Path } from '../util/binary/path';
 
 const LATEST = 'v9.9.9';
 
-/** 保存された自動アップデートの実行記録（ファイルの代わり） */
-let savedAttempt: UpdateAttempt | undefined;
+/** テスト用のServerStarter2のデータの保存先 */
+const workPath = new Path(__dirname).child('work', 'updater');
 
 vi.mock('electron', () => ({ app: undefined }));
 vi.mock('../util/os/os', () => ({ osPlatform: 'windows-x64' }));
@@ -24,21 +24,22 @@ vi.mock('../source/stores/system', () => ({
   getSystemSettings: async () => SystemSettings.parse({}),
   setSystemSettings: async (s: SystemSettings) => s,
 }));
-// 実行記録の判定処理はそのままに、ファイルへの保存のみ置き換える
-vi.mock('./attempt', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./attempt')>()),
-  loadUpdateAttempt: async () => savedAttempt,
-  saveUpdateAttempt: async (attempt: UpdateAttempt) => {
-    savedAttempt = attempt;
-  },
-}));
+// 自動アップデートの実行記録などのデータを、テスト用のフォルダに保存する
+vi.mock('../source/const', async (importOriginal) => {
+  const { Path } = await import('../util/binary/path');
+  return {
+    ...(await importOriginal<typeof import('../source/const')>()),
+    mainPath: new Path(__dirname).child('work', 'updater'),
+  };
+});
 
 const { update } = await import('./updater');
 const { installWindows } = await import('./installer/windows');
 const { notifyUpdate } = await import('./notify');
 
-beforeEach(() => {
-  savedAttempt = undefined;
+beforeEach(async () => {
+  // 前回のテストでの自動アップデートの実行記録を削除する
+  await workPath.emptyDir();
   vi.mocked(installWindows).mockReset();
   vi.mocked(notifyUpdate).mockReset();
 });
@@ -71,5 +72,15 @@ describe('update', () => {
     await update();
 
     expect(notifyUpdate).toHaveBeenCalledWith('windows-x64', '9.9.9');
+  });
+
+  test('自動アップデートに対応していないOSでは、最新版があることを通知する', async () => {
+    const os = await import('../util/os/os');
+    vi.spyOn(os, 'osPlatform', 'get').mockReturnValue('debian');
+
+    await update();
+
+    expect(installWindows).not.toHaveBeenCalled();
+    expect(notifyUpdate).toHaveBeenCalledWith('debian', '9.9.9');
   });
 });
