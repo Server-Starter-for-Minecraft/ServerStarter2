@@ -6,6 +6,7 @@ import {
   WorldID,
 } from 'src-electron/schema/world';
 import { versionContainer } from 'app/src-electron/core/setup';
+import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
@@ -259,7 +260,7 @@ export async function reboot(worldID: WorldID): Promise<void> {
  */
 export async function fetchLatestWorldLog(
   worldID: WorldID
-): Promise<Failable<string[]>> {
+): Promise<Failable<ConsoleOutput[]>> {
   const handler = WorldHandler.get(worldID);
 
   if (isError(handler)) return handler;

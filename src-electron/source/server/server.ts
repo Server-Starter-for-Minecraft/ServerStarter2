@@ -1,6 +1,5 @@
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { WorldID } from 'app/src-electron/schema/world';
-import { trimAnsi } from 'app/src-electron/util/ansi';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
@@ -47,10 +46,12 @@ export function runServer(
       api.send.FinishServer(id);
     };
     const console = (value: string, isError: boolean) => {
-      const trimmed = trimAnsi(value);
       // コンソールの内容をGUIに表示
-      api.send.AddConsole(id, trimmed, isError);
-      loghandler.append(trimmed);
+      // （文字色を表示できるよう、ANSIエスケープシーケンスはフロントエンドで解釈する）
+      api.send.AddConsole(id, value, isError);
+      // ログには表示を再現できるよう、出力の区切りや標準エラー出力の区別も含めて保存する
+      loghandler.append({ text: value, isError });
+      // オンラインプレイヤーの情報をログから抽出する
       onlinePlayers.push(value, isError);
     };
 
