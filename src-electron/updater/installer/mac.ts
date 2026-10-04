@@ -1,10 +1,10 @@
-import { spawn } from 'child_process';
 import { app } from 'electron';
 import { mainPath } from 'app/src-electron/source/const';
 import { getSystemSettings } from 'app/src-electron/source/stores/system';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { isError } from 'app/src-electron/util/error/error';
 import { getBytesFile } from 'app/src-electron/util/github/rest';
+import { launchDetached } from './launch';
 import { updateMessage } from './message';
 
 /**
@@ -37,14 +37,13 @@ exit 0
   const writtenScript = await script.write(sh.str(), true);
   if (isError(writtenScript)) return false;
 
-  const sub = spawn('open', ['-a', 'Terminal', 'updater.sh'], {
-    cwd: mainPath.str(),
-    env: process.env,
-    shell: true,
-    detached: true,
-    windowsHide: true,
-  });
-  sub.unref();
+  // インストーラーを起動できなかった場合は、アプリを終了せずに失敗を返す
+  const launched = await launchDetached(
+    'open',
+    ['-a', 'Terminal', 'updater.sh'],
+    mainPath.str()
+  );
+  if (!launched) return false;
 
   app.exit();
   return true;
