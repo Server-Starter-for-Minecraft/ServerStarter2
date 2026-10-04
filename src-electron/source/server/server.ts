@@ -1,6 +1,5 @@
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { WorldID } from 'app/src-electron/schema/world';
-import { trimAnsi } from 'app/src-electron/util/ansi';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
@@ -41,8 +40,8 @@ export function runServer(
       // コンソールの内容をGUIに表示
       // （文字色を表示できるよう、ANSIエスケープシーケンスはフロントエンドで解釈する）
       api.send.AddConsole(id, value, isError);
-      // ログファイルにはエディタ等で読みやすいよう、ANSIエスケープシーケンスを除いて保存する
-      loghandler.append(trimAnsi(value));
+      // ログには表示を再現できるよう、出力の区切りや標準エラー出力の区別も含めて保存する
+      loghandler.append({ text: value, isError });
     };
 
     // サーバーの実行を待機

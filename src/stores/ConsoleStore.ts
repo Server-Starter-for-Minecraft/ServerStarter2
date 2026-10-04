@@ -2,13 +2,14 @@ import { defineStore } from 'pinia';
 import { ConsoleData, WorldStatus } from 'src/schema/console';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
+import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { checkError } from 'src/components/Error/Error';
 import {
   ConsoleOutputParser,
-  lineToConsoleData,
+  replayConsoleOutputs,
 } from 'src/components/World/Console/consoleLine';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
@@ -84,19 +85,16 @@ export const useConsoleStore = defineStore('consoleStore', {
       }
     },
     /**
-     * 一括でコンソールの中身を登録する
+     * ログに記録したサーバーの出力から、一括でコンソールの中身を登録する
      */
     setAllConsole(
       worldID: WorldID,
-      consoleLines: string[],
+      outputs: ConsoleOutput[],
       status: WorldStatus
     ) {
       this._world[worldID].status = status;
-      this._world[worldID].console = [];
+      this._world[worldID].console = replayConsoleOutputs(outputs);
       resetOutputParser(worldID);
-      consoleLines.forEach((l) =>
-        this._world[worldID].console.push(lineToConsoleData(l, false))
-      );
     },
     /**
      * コンソールに行を追加する

@@ -64,6 +64,8 @@ describe('parseAnsi', () => {
 
   test('DCSなどの文字列を伴う制御シーケンスは、終端までの内容も表示しない', () => {
     expect(render(`a${ESC}Pq#0;2;0;0;0${ESC}\\b`)).toEqual([['ab', {}]]);
+    // 内容に改行を含む場合も、終端までを取り除く
+    expect(render(`a${ESC}Pq#0\n#1${ESC}\\b`)).toEqual([['ab', {}]]);
   });
 });
 

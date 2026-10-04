@@ -1,4 +1,5 @@
 import { RemoteWorldName, WorldContainer, WorldName } from '../schema/brands';
+import { ConsoleOutput } from '../schema/console';
 import { DialogOptions } from '../schema/dialog';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import {
@@ -157,8 +158,8 @@ export interface API extends IAPI {
       backup: BackupData
     ) => Promise<WithError<Failable<World>>>;
 
-    /** ワールドの最新のログを取得する */
-    FetchLatestWorldLog: (world: WorldID) => Promise<Failable<string[]>>;
+    /** ワールドの最新のログを、コンソールへの出力ごとに取得する */
+    FetchLatestWorldLog: (world: WorldID) => Promise<Failable<ConsoleOutput[]>>;
 
     /**
      * ワールドに関連するパスを取得する

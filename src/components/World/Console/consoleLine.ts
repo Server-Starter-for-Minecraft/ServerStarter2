@@ -5,6 +5,7 @@ import {
   MatchResult,
   StyledText,
 } from 'app/src/schema/console';
+import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { parseAnsi, pushStyledText, splitIncompleteEscape } from './ansi';
 
 /** 出力先（標準出力・標準エラー出力）ごとに引き継ぐ解釈状態 */
@@ -103,14 +104,16 @@ export class ConsoleOutputParser {
 }
 
 /**
- * ファイルから読み込んだログなど、1行ずつの文字列をコンソールの行データに変換する
+ * ログに記録したサーバーの出力を、実行中と同じ表示になるようにコンソールの行データに変換する
  *
- * @param line 表示する1行分の文字列（ANSIエスケープシーケンスを含んでもよい）
- * @param isError 標準エラー出力か
+ * @param outputs サーバーのコンソールへの出力を、出力された順に並べたもの
  * @returns コンソールに表示する行データ
  */
-export function lineToConsoleData(line: string, isError: boolean) {
-  return toConsoleData(parseAnsi(line).segments, isError, false);
+export function replayConsoleOutputs(outputs: ConsoleOutput[]) {
+  const parser = new ConsoleOutputParser();
+  const lines: ConsoleData[] = [];
+  outputs.forEach((o) => parser.append(lines, o.text, o.isError));
+  return lines;
 }
 
 /**

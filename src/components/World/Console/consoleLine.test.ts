@@ -2,8 +2,8 @@ import { ConsoleData } from 'app/src/schema/console';
 import { describe, expect, test } from 'vitest';
 import {
   ConsoleOutputParser,
-  lineToConsoleData,
   overlayMatches,
+  replayConsoleOutputs,
 } from './consoleLine';
 
 const ESC = '\u001b';
@@ -121,6 +121,8 @@ describe('ConsoleOutputParser', () => {
     expect(displayed(`${ESC}]0;title\nline1\n`, 'line2\n')).toMatch(
       /line1\nline2\n$/
     );
+    // DCSなどの文字列を伴う制御シーケンスに終端が無い場合も、後続の行の表示を止めない
+    expect(displayed(`${ESC}Pq\n`, 'Done!\n')).toMatch(/Done!\n$/);
   });
 
   test('標準出力と標準エラー出力は、行の途中で分割されていても混ざらない', () => {
@@ -148,19 +150,40 @@ describe('ConsoleOutputParser', () => {
   });
 });
 
-describe('lineToConsoleData', () => {
-  test('ファイルから読み込んだ行を、装飾を解釈した行データに変換する', () => {
-    const data = lineToConsoleData(`${ESC}[32m[INFO]${ESC}[m Starting`, true);
+describe('replayConsoleOutputs', () => {
+  test('ログに記録した出力は、実行中に表示していた内容と同じ行データになる', () => {
+    const outputs = [
+      { text: `${ESC}[32m[INFO]${ESC}[m Starting\n`, isError: false },
+      { text: 'Exception\n\tat Foo\n', isError: true },
+      { text: 'Libraries:\n', isError: false },
+      { text: '\r[===   ] 50%', isError: false },
+      { text: '\r[======] 100%\n', isError: false },
+    ];
+    const parser = new ConsoleOutputParser();
+    const live: ConsoleData[] = [];
+    outputs.forEach((o) => parser.append(live, o.text, o.isError));
 
-    expect(data.chunk).toBe('[INFO] Starting');
-    expect(data.isError).toBe(true);
-    expect(data.segments?.[0].style.color).toBeDefined();
+    expect(replayConsoleOutputs(outputs)).toEqual(live);
+  });
+
+  test('標準エラー出力の区別と、出力ごとのまとまりを保持する', () => {
+    const lines = replayConsoleOutputs([
+      { text: 'line1\n', isError: false },
+      { text: 'Exception\n\tat Foo\n', isError: true },
+    ]);
+
+    expect(lines.map((l) => [l.chunk, l.isError])).toEqual([
+      ['line1\n', false],
+      ['Exception\n\tat Foo\n', true],
+    ]);
   });
 });
 
 describe('overlayMatches', () => {
   test('文字色の境界と検索結果の境界の両方で分割し、それぞれの情報を保持する', () => {
-    const data = lineToConsoleData(`ab${ESC}[31mcd${ESC}[0mef`, false);
+    const [data] = replayConsoleOutputs([
+      { text: `ab${ESC}[31mcd${ESC}[0mef`, isError: false },
+    ]);
     const pieces = overlayMatches(data.segments ?? [], [
       { text: 'a', isMatch: false },
       { text: 'bcd', isMatch: true },
