@@ -93,4 +93,20 @@ describe('VersionedSchema', () => {
     expect(result.inner.v).toBe(2);
     expect(raw.inner.v).toBe(1);
   });
+
+  test('想定外の形式により変換処理が失敗した場合は、検証の失敗として返す', () => {
+    const nested = new VersionedSchema(
+      z.object({ inner: z.object({ v: z.number() }) }),
+      [
+        (data) => ({
+          ...data,
+          inner: { v: (data.inner as { v: number }).v + 1 },
+        }),
+      ]
+    );
+
+    const result = nested.safeParse({ inner: null });
+
+    expect(result.success).toBe(false);
+  });
 });

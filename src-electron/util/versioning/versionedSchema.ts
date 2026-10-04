@@ -82,11 +82,31 @@ export class VersionedSchema<T extends object> {
   /**
    * 設定ファイルの内容を最新のスキーマに変換して検証する
    *
+   * 変換処理が例外を投げた場合（想定外の形式の内容を変換しようとした場合など）も、検証の失敗として返す。
+   *
    * @param raw 設定ファイルの内容
    * @returns 検証の結果（zodのsafeParseと同じ形式）
    */
-  safeParse(raw: unknown) {
-    return this.schema.safeParse(this.migrate(raw));
+  safeParse(raw: unknown): z.ZodSafeParseResult<T> {
+    let migrated: RawSettings;
+    try {
+      migrated = this.migrate(raw);
+    } catch (e) {
+      const reason = e instanceof Error ? e.message : String(e);
+      return {
+        success: false,
+        // 変換に失敗した時点では最新のスキーマとして検証していないため、キャストでエラーの型を合わせる
+        error: new z.ZodError([
+          {
+            code: 'custom',
+            path: [],
+            message: `Failed to migrate settings: ${reason}`,
+            input: raw,
+          },
+        ]) as z.ZodError<T>,
+      };
+    }
+    return this.schema.safeParse(migrated);
   }
 
   /**
@@ -96,7 +116,10 @@ export class VersionedSchema<T extends object> {
    * @returns 最新のスキーマの値
    */
   parse(raw: unknown): T {
-    return this.schema.parse(this.migrate(raw));
+    // 変換処理の失敗も含めて、safeParseと同じ基準で失敗を判定する
+    const result = this.safeParse(raw);
+    if (!result.success) throw result.error;
+    return result.data;
   }
 
   /**
