@@ -14,6 +14,9 @@ export const enAdditionalContents: MessageSchema['additionalContents'] = {
   install: 'Install',
   installFromZip: 'New install from Zip',
   installFromFolder: 'New install from Folder',
+  search: 'Filter by name or description',
+  reload: 'Reload from the save location',
+  noMatch: 'No contents match the search',
   needReboot: 'A server restart is required for the changes to take effect',
   deleteDialog: {
     title: 'Checking delete the {type}',

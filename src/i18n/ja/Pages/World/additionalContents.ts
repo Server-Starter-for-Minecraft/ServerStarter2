@@ -12,6 +12,9 @@ export const jaAdditionalContents = {
   install: '導入',
   installFromZip: 'Zipから追加',
   installFromFolder: 'フォルダーから追加',
+  search: '名前・説明で絞り込む',
+  reload: '保存先から読み込み直す',
+  noMatch: '検索に一致するコンテンツはありません',
   needReboot: '変更を反映するにはサーバーの再起動が必要です',
   deleteDialog: {
     title: '{type}の削除',

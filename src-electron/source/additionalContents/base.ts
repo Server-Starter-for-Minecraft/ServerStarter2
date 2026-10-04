@@ -129,18 +129,34 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     return await this.installer(sourcePath, targetPath);
   }
 
+  /**
+   * 各パスがファイル（zipやjarなど）か、フォルダかを判定する
+   *
+   * @param paths 追加コンテンツのパスの一覧
+   * @returns 各パスがファイルの場合はtrue（判定に失敗した場合はファイルとみなす）
+   */
+  private async isFiles(paths: Path[]): Promise<boolean[]> {
+    return await asyncMap(paths, async (p) => {
+      const isDir = await p.isDirectory();
+      return isError(isDir) || !isDir;
+    });
+  }
+
   async loadCache(): Promise<WithError<CacheFileData<T>[]>> {
     const paths = await this.cachePath.iter();
     if (isError(paths)) return withError([], [paths]);
 
     const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
+    const isFiles = await this.isFiles(paths);
 
-    const array = zip(paths, loaded)
-      .filter((x): x is [Path, T] => x[1] !== undefined && isValid(x[1]))
-      .map<CacheFileData<T>>(([p, v]) => ({
+    const array = zip(zip(paths, isFiles), loaded)
+      .filter(
+        (x): x is [[Path, boolean], T] => x[1] !== undefined && isValid(x[1])
+      )
+      .map<CacheFileData<T>>(([[p, isFile], v]) => ({
         ...v,
         type: 'system',
-        isFile: !p.isDirectory(),
+        isFile,
         name: p.stemname(),
         ext: p.extname(),
       }));
@@ -158,14 +174,17 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     if (isError(paths)) return withError([], [paths]);
 
     const loaded = await asyncMap(paths, async (x) => this.loader(x, false));
+    const isFiles = await this.isFiles(paths);
 
-    const array = zip(paths, loaded)
-      .filter((x): x is [Path, T] => x[1] !== undefined && isValid(x[1]))
-      .map<WorldFileData<T>>(([p, v]) => ({
+    const array = zip(zip(paths, isFiles), loaded)
+      .filter(
+        (x): x is [[Path, boolean], T] => x[1] !== undefined && isValid(x[1])
+      )
+      .map<WorldFileData<T>>(([[p, isFile], v]) => ({
         ...v,
         type: 'world',
         id: id,
-        isFile: !p.isDirectory(),
+        isFile,
         name: p.stemname(),
         ext: p.extname(),
       }));
