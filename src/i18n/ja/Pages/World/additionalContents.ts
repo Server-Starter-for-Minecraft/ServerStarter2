@@ -15,6 +15,7 @@ export const jaAdditionalContents = {
   search: '名前・説明で絞り込む',
   reload: '保存先から読み込み直す',
   noMatch: '検索に一致するコンテンツはありません',
+  folder: 'フォルダ',
   needReboot: '変更を反映するにはサーバーの再起動が必要です',
   deleteDialog: {
     title: '{type}の削除',

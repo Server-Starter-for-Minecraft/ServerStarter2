@@ -16,6 +16,7 @@ import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { getStaticResoure } from '../source/system/resource';
 import { pickDialog } from '../source/world/dialog';
 import { validateNewWorldName } from '../source/world/name';
+import { getWorldContents } from '../source/world/contents';
 import { getWorldPaths } from '../source/world/paths';
 import {
   backupWorld,
@@ -68,6 +69,7 @@ export const getBackListener = (
     FetchLatestWorldLog: fetchLatestWorldLog,
 
     GetWorldPaths: getWorldPaths,
+    GetWorldContents: getWorldContents,
 
     GetPlayer: getPlayer,
     ResearchPlayer: researchPlayer,

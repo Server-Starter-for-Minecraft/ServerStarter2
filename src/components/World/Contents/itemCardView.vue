@@ -21,9 +21,16 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
-const { addContent: add, deleteContent: remove } = useContentActions();
-const addContent = () => add(prop.contentType, prop.content);
-const deleteContent = () => remove(prop.contentType, prop.content);
+const {
+  addContent: add,
+  deleteContent: remove,
+  reloading,
+} = useContentActions();
+// 保存先から読み込み直している間は、読み込み結果で操作が上書きされないよう操作を受け付けない
+const addContent = () =>
+  !reloading.value && add(prop.contentType, prop.content);
+const deleteContent = () =>
+  !reloading.value && remove(prop.contentType, prop.content);
 
 const transformedName = computed(() => toDisplayText(prop.content.name));
 const transformedDescription = computed(() =>

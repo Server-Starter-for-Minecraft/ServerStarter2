@@ -17,6 +17,7 @@ export const enAdditionalContents: MessageSchema['additionalContents'] = {
   search: 'Filter by name or description',
   reload: 'Reload from the save location',
   noMatch: 'No contents match the search',
+  folder: 'folder',
   needReboot: 'A server restart is required for the changes to take effect',
   deleteDialog: {
     title: 'Checking delete the {type}',

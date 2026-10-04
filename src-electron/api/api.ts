@@ -24,7 +24,13 @@ import { ServerStartNotification } from '../schema/server';
 import { StaticResouce } from '../schema/static';
 import { SystemSettings } from '../schema/system';
 import { AllVersion, VersionType } from '../schema/version';
-import { World, WorldAbbr, WorldEdited, WorldID } from '../schema/world';
+import {
+  World,
+  WorldAbbr,
+  WorldAdditional,
+  WorldEdited,
+  WorldID,
+} from '../schema/world';
 import { IAPI, IBackAPI, IFrontAPI } from './types';
 
 /**
@@ -191,6 +197,11 @@ export interface API extends IAPI {
      * （必要な場合はGetPlayerを別途呼び出す）
      */
     ResearchPlayer: (searchText: string) => Promise<Failable<Player[]>>;
+
+    /** ワールドの保存先にある追加コンテンツの一覧を取得する（リモートとの同期や設定の保存は行わない） */
+    GetWorldContents: (
+      world: WorldID
+    ) => Promise<WithError<Failable<WorldAdditional>>>;
 
     /** キャッシュされたデータを取得する */
     GetCacheContents: ((

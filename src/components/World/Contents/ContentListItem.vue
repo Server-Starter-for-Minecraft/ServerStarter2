@@ -6,6 +6,7 @@ import {
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
+import { $T } from 'src/i18n/utils/tFunc';
 import { ContentType, useContentActions } from './contentActions';
 import { toDisplayText } from './contentFilter';
 
@@ -19,7 +20,7 @@ interface Prop {
 }
 const prop = defineProps<Prop>();
 
-const { addContent, deleteContent } = useContentActions();
+const { addContent, deleteContent, reloading } = useContentActions();
 
 const name = computed(() => toDisplayText(prop.content.name));
 const description = computed(() =>
@@ -27,7 +28,7 @@ const description = computed(() =>
 );
 /** 拡張子（フォルダの場合はフォルダであることを示す） */
 const fileLabel = computed(() =>
-  prop.content.isFile ? prop.content.ext : 'folder'
+  prop.content.isFile ? prop.content.ext : $T('additionalContents.folder')
 );
 </script>
 
@@ -54,6 +55,7 @@ const fileLabel = computed(() =>
         no-caps
         color="negative"
         icon="close"
+        :disable="reloading"
         :label="$t('general.delete')"
         @click="deleteContent(contentType, content)"
       />
@@ -64,6 +66,7 @@ const fileLabel = computed(() =>
         no-caps
         color="primary"
         icon="add"
+        :disable="reloading"
         :label="$t('additionalContents.install')"
         @click="addContent(contentType, content)"
       />
