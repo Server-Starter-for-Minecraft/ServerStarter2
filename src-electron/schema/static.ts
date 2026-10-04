@@ -10,24 +10,29 @@ import {
   ServerPropertiesAnnotation,
 } from './serverproperty';
 
+/**
+ * プレイヤーグループの配色に用いるMinecraftの染料の16色（キーは染料・羊毛の画像の名前と一致する）
+ *
+ * 色コードはMinecraftの染料の色（DyeColor）に合わせる。並び順はクリエイティブインベントリの順とする
+ */
 export const MinecraftColors = z
   .object({
-    dark_red: z.string().default('#AA0000'),
-    red: z.string().default('#FF5555'),
-    gold: z.string().default('#FFAA00'),
-    yellow: z.string().default('#FFFF55'),
-    dark_green: z.string().default('#00AA00'),
-    green: z.string().default('#55FF55'),
-    aqua: z.string().default('#55FFFF'),
-    dark_aqua: z.string().default('#00AAAA'),
-    dark_blue: z.string().default('#0000AA'),
-    blue: z.string().default('#5555FF'),
-    light_purple: z.string().default('#FF55FF'),
-    dark_purple: z.string().default('#AA00AA'),
-    white: z.string().default('#FFFFFF'),
-    gray: z.string().default('#AAAAAA'),
-    dark_gray: z.string().default('#555555'),
-    black: z.string().default('#000000'),
+    white: z.string().default('#F9FFFE'),
+    light_gray: z.string().default('#9D9D97'),
+    gray: z.string().default('#474F52'),
+    black: z.string().default('#1D1D21'),
+    brown: z.string().default('#835432'),
+    red: z.string().default('#B02E26'),
+    orange: z.string().default('#F9801D'),
+    yellow: z.string().default('#FED83D'),
+    lime: z.string().default('#80C71F'),
+    green: z.string().default('#5E7C16'),
+    cyan: z.string().default('#169C9C'),
+    light_blue: z.string().default('#3AB3DA'),
+    blue: z.string().default('#3C44AA'),
+    purple: z.string().default('#8932B8'),
+    magenta: z.string().default('#C74EBD'),
+    pink: z.string().default('#F38BAA'),
   })
   .prefault({});
 export type MinecraftColors = z.infer<typeof MinecraftColors>;
