@@ -14,11 +14,12 @@ import {
 import { setWorldSubscriber } from './stores/WorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
+import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
 import { setOpenDialogFunc } from 'src/components/Error/Error';
-import { useEulaPrompt } from 'src/components/Progress/eulaPrompt';
+import { useWorldRequestPrompt } from 'src/components/Progress/worldRequestPrompt';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 
@@ -26,6 +27,7 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const progressStore = useProgressStore();
+const worldRequestStore = useWorldRequestStore();
 
 // routerを定義
 const router = useRouter();
@@ -78,9 +80,9 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
 // （同意を求めるダイアログは、該当するワールドを表示している間だけ表示する）
 window.API.handleAgreeEula(
   async (_: Electron.IpcRendererEvent, worldID, url) =>
-    await progressStore.requestEula(worldID, url)
+    await worldRequestStore.request(worldID, 'eula', { url })
 );
-useEulaPrompt();
+useWorldRequestPrompt();
 // Progressがバックエンドからやってきたときの処理
 window.API.onProgress((_event, worldID, progress) => {
   progressStore.setProgress(worldID, progress);

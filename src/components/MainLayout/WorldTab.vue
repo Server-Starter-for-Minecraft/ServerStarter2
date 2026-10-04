@@ -6,9 +6,10 @@ import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { useProgressStore } from 'src/stores/ProgressStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { WorldItem } from 'src/stores/WorldStore';
+import { waitingRequestLabel } from 'src/components/Progress/worldRequestPrompt';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Props {
@@ -19,11 +20,11 @@ const prop = defineProps<Props>();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
-const progressStore = useProgressStore();
+const worldRequestStore = useWorldRequestStore();
 
-/** このワールドがEULAへの同意を待っているか */
-const isWaitingEula = computed(
-  () => progressStore.waitingEula(prop.world_item.world.id) !== undefined
+/** このワールドに対する、ユーザーの回答待ちの要求（EULAへの同意など） */
+const pendingRequest = computed(() =>
+  worldRequestStore.pending(prop.world_item.world.id)
 );
 
 const router = useRouter();
@@ -67,9 +68,9 @@ function selectWorldIdx() {
 }
 
 const tooltipText = () => {
-  if (isWaitingEula.value) {
+  if (pendingRequest.value) {
     return `${prop.world_item.world.name}
-${$T('eulaDialog.waiting')}`;
+${waitingRequestLabel(pendingRequest.value)}`;
   }
   switch (prop.world_item.type) {
     case 'abbr':
@@ -169,9 +170,9 @@ ${$T('eulaDialog.waiting')}`;
             rounded
             style="background-color: #262626; aspect-ratio: 1"
           >
-            <!-- EULAへの同意待ちの場合は、ワールドを表示して同意が必要なことを示す -->
+            <!-- EULAへの同意待ちなどの場合は、アイコンに印を表示して回答が必要なことを示す -->
             <q-icon
-              v-if="isWaitingEula"
+              v-if="pendingRequest"
               name="priority_high"
               color="warning"
               size="1rem"
