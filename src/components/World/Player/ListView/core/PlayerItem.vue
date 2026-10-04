@@ -5,6 +5,7 @@ import { OpLevel, Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
 import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
+import OnlineBadge from 'src/components/World/Player/utils/OnlineBadge.vue';
 import OpPanel from './OpPanel.vue';
 import RemovePlayerBtn from './parts/RemovePlayerBtn.vue';
 
@@ -59,8 +60,13 @@ onBeforeMount(async () => {
       <q-skeleton v-else type="rect" style="height: 1.2rem; width: 1.2rem" />
     </q-item-section>
     <q-item-section>
-      <q-item-label v-if="player !== void 0" class="q-px-sm name text-omit">
-        {{ player.name }}
+      <q-item-label
+        v-if="player !== void 0"
+        class="q-px-sm row items-center no-wrap"
+        style="gap: 4px"
+      >
+        <span class="name text-omit">{{ player.name }}</span>
+        <OnlineBadge :player-name="player.name" />
       </q-item-label>
       <q-skeleton v-else type="text" style="width: 6rem" />
     </q-item-section>

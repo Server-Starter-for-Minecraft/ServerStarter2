@@ -21,6 +21,8 @@ interface WorldConsole {
     clickedStop: boolean;
     clickedReboot: boolean;
     console: ConsoleData[];
+    /** サーバーに参加中のプレイヤー名一覧 */
+    onlinePlayers: string[];
   };
 }
 
@@ -57,6 +59,7 @@ export const useConsoleStore = defineStore('consoleStore', {
           clickedStop: false,
           clickedReboot: false,
           console: new Array<ConsoleData>(),
+          onlinePlayers: [],
         };
         resetOutputParser(worldID);
       }
@@ -153,6 +156,34 @@ export const useConsoleStore = defineStore('consoleStore', {
      */
     console(worldID: WorldID) {
       return this._world[worldID].console;
+    },
+    /**
+     * サーバーに参加中のプレイヤー一覧を更新する
+     *
+     * @param worldID 更新するワールド
+     * @param players 参加中のプレイヤー名一覧
+     * @returns 前回の更新から新たに参加したプレイヤー名一覧
+     */
+    setOnlinePlayers(worldID: WorldID, players: string[]) {
+      const world = this._world[worldID];
+      if (world === void 0) return [];
+
+      const before = new Set(world.onlinePlayers.map((n) => n.toLowerCase()));
+      world.onlinePlayers = players;
+      return players.filter((n) => !before.has(n.toLowerCase()));
+    },
+    /**
+     * プレイヤーがサーバーに参加中か否かを返す
+     *
+     * Minecraftのユーザー名は大文字小文字を区別しないため，区別せずに比較する
+     */
+    isOnlinePlayer(worldID: WorldID, playerName: string) {
+      const name = playerName.toLowerCase();
+      return (
+        this._world[worldID]?.onlinePlayers.some(
+          (n) => n.toLowerCase() === name
+        ) ?? false
+      );
     },
   },
 });

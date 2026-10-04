@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
+import { PlayerSetting } from 'app/src-electron/schema/player';
 import {
   World,
   WorldAbbr,
@@ -15,6 +16,7 @@ import { checkError, ErrorFuncReturns } from 'src/components/Error/Error';
 import { useConsoleStore } from './ConsoleStore';
 import { useMainStore } from './MainStore';
 import { useSystemStore } from './SystemStore';
+import { findPlayersToRegister } from './WorldTabs/findPlayersToRegister';
 
 export type WorldItem =
   | { type: 'edited'; world: WorldEdited; error?: ErrorFuncReturns }
@@ -54,6 +56,30 @@ export function __getWorldListBack() {
   return worldStore.worldListBack;
 }
 
+/** trueの間はworldStoreの更新をバックエンドに伝達しない */
+let isSavingSuppressed = false;
+
+/**
+ * バックエンドへの保存処理(Subscriber)を発火させずにworldStoreを更新する
+ *
+ * バックエンド側で既に反映済みの変更をフロントエンドに同期する場合に使用する
+ *
+ * @param update worldStoreのstateを更新する関数
+ */
+function updateWithoutSaving(
+  update: (state: ReturnType<typeof useWorldStore>['$state']) => void
+) {
+  const worldStore = useWorldStore();
+  // $patchはSubscriberを同期的に呼び出すため，その間だけ保存を抑止する
+  // (Pinia の仕様上，同一tick内で$patch以前に行われた直接変更の保存も抑止される点に注意)
+  isSavingSuppressed = true;
+  try {
+    worldStore.$patch(update);
+  } finally {
+    isSavingSuppressed = false;
+  }
+}
+
 /**
  * worldStoreを監視して，更新があった際にバックエンドにWorldの更新を伝達する
  */
@@ -62,6 +88,8 @@ export function setWorldSubscriber() {
   const mainStore = useMainStore();
 
   worldStore.$subscribe((mutation, state) => {
+    if (isSavingSuppressed) return;
+
     const world = mainStore.world;
     if (world) {
       // SetWorldの戻り値でWorldStoreに更新をかけると、
@@ -182,6 +210,51 @@ export function updateWorld(world: World | WorldEdited) {
     type: 'edited',
     world: toRaw(world),
   };
+}
+
+/**
+ * 実行中のサーバーに参加したプレイヤーのうち，ワールドのプレイヤー一覧(ホワイトリスト)に未登録のプレイヤーを登録する
+ *
+ * 通常の保存処理は実行中のサーバーで`/reload`を伴うため，プレイヤーが参加する度に実行しないよう，
+ * サーバーへの反映は`whitelist add`コマンドで行い，フロントエンドの一覧は保存処理を発火させずに更新する
+ *
+ * @param worldID プレイヤーが参加したワールド (GUIで表示中でなくてもよい)
+ * @param joinedNames 新たに参加したプレイヤー名一覧
+ */
+export async function registerJoinedPlayersToWorld(
+  worldID: WorldID,
+  joinedNames: string[]
+) {
+  const worldStore = useWorldStore();
+  const item = worldStore.worldList[worldID];
+  if (item?.type !== 'edited') return;
+
+  const candidates = await findPlayersToRegister(
+    item.world,
+    joinedNames,
+    (name) => window.API.invokeGetPlayer(name, 'name')
+  );
+  if (candidates.length === 0) return;
+
+  // プレイヤー情報の取得中にサーバーが停止した場合は`whitelist add`を実行できないため登録しない
+  // (登録すると，ホワイトリストに存在しないプレイヤーがフロントエンドにのみ表示されてしまう)
+  if (useConsoleStore().status(worldID) !== 'Running') return;
+
+  // 実際に追加したプレイヤー (updateWithoutSaving内で代入する)
+  let added: PlayerSetting[] = [];
+  updateWithoutSaving((state) => {
+    const latest = state.worldList[worldID];
+    if (latest?.type !== 'edited' || !isValid(latest.world.players)) return;
+
+    // プレイヤー情報の取得中にユーザーが同じプレイヤーを追加した場合に備え，最新の一覧と重複するプレイヤーを除外する
+    const players = latest.world.players;
+    added = candidates.filter((c) => !players.some((p) => p.uuid === c.uuid));
+    players.push(...added);
+  });
+
+  added.forEach((p) =>
+    window.API.sendCommand(worldID, `whitelist add ${p.name}`)
+  );
 }
 
 /**
