@@ -42,7 +42,7 @@ function read() {
     parsed = {};
   }
   // 古いバージョンの内容も読み込めるよう、最新のスキーマに変換してから検証する
-  const fixed = SystemSettings.parse(systemSettingsSchema.migrate(parsed));
+  const fixed = systemSettingsSchema.parse(parsed);
   return fixed;
 }
 

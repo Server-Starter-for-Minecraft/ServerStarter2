@@ -75,4 +75,22 @@ describe('VersionedSchema', () => {
       port: 25565,
     });
   });
+
+  test('変換処理が入れ子の値を変更しても、読み込んだ元の内容は変更されない', () => {
+    const nested = new VersionedSchema(
+      z.object({ inner: z.object({ v: z.number() }) }),
+      [
+        (data) => {
+          (data.inner as { v: number }).v += 1;
+          return data;
+        },
+      ]
+    );
+    const raw = { inner: { v: 1 } };
+
+    const result = nested.parse(raw);
+
+    expect(result.inner.v).toBe(2);
+    expect(raw.inner.v).toBe(1);
+  });
 });

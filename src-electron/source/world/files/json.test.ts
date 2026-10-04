@@ -41,6 +41,7 @@ describe('server_settings.json', () => {
 
     const loaded = await serverJsonFile.load(dir);
 
+    expect(isError(loaded)).toBe(false);
     expect(loaded).toEqual(settings);
   });
 });

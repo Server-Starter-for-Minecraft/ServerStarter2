@@ -20,6 +20,11 @@ export type Migration = (data: RawSettings) => RawSettings;
  * 最新のスキーマへ順に変換してから検証する。
  * スキーマを変更する場合は、変換処理を `migrations` の末尾に追加する（最新のバージョンは変換処理の数となる）。
  * バージョンが記録されていない設定ファイルは、バージョン管理を導入する前の内容（バージョン0）とみなす。
+ *
+ * 注意：新しいバージョンのアプリで保存された設定ファイルを古いバージョンのアプリで読み込むと、
+ * 古いスキーマで解釈できない項目は読み込まれず、そのまま保存すると失われる。
+ * また、項目の改名や型の変更は古いアプリで読み込めなくなる（既定値に戻る）原因となるため、
+ * スキーマの変更はできるだけ項目の追加にとどめる。
  */
 export class VersionedSchema<T extends object> {
   private schema: z.ZodType<T>;
@@ -65,7 +70,8 @@ export class VersionedSchema<T extends object> {
    * @returns 最新のスキーマの形式に変換した内容（検証は行わない）
    */
   migrate(raw: unknown): RawSettings {
-    let data: RawSettings = isRawSettings(raw) ? { ...raw } : {};
+    // 変換処理が入れ子の値を直接変更しても呼び出し元の値に影響しないよう、複製してから変換する
+    let data: RawSettings = isRawSettings(raw) ? structuredClone(raw) : {};
     for (let v = this.versionOf(raw); v < this.latestVersion; v++) {
       data = this.migrations[v](data);
     }
@@ -81,6 +87,16 @@ export class VersionedSchema<T extends object> {
    */
   safeParse(raw: unknown) {
     return this.schema.safeParse(this.migrate(raw));
+  }
+
+  /**
+   * 設定ファイルの内容を最新のスキーマに変換して検証する（検証に失敗した場合は例外を投げる）
+   *
+   * @param raw 設定ファイルの内容
+   * @returns 最新のスキーマの値
+   */
+  parse(raw: unknown): T {
+    return this.schema.parse(this.migrate(raw));
   }
 
   /**
