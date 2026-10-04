@@ -67,7 +67,7 @@ export const dummySystemSettings: SystemSettings = {
     groups: {
       testGroup: {
         name: 'testGroup',
-        color: '#ff0000',
+        color: '#B02E26',
         players: [player1UUID, player2UUID, player3UUID],
       },
     },

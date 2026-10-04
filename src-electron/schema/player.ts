@@ -18,8 +18,8 @@ export type Player = z.infer<typeof Player>;
 export const PlayerGroup = z.object({
   /** グループ名 */
   name: z.string(),
-  /** グループのカラー(#入りコード) */
-  color: z.string().default('#FFFFFF'),
+  /** グループのカラー(#入りコード、染料の16色のいずれか) */
+  color: z.string().default('#F9FFFE'),
   /** 所属するプレイヤーのUUIDのリスト */
   players: z.array(PlayerUUID).default([]),
 });
