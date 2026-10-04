@@ -1,3 +1,5 @@
+import { fileDataKey } from 'app/src-electron/schema/filedata';
+
 /** 追加コンテンツの識別に用いる情報 */
 type ContentEntry = { name: string; ext: string; type: string };
 
@@ -24,19 +26,18 @@ export function mergeReloadedContents<T extends ContentEntry>(
   current: T[],
   loaded: T[]
 ): ReloadedContents<T> {
-  const key = (c: ContentEntry) => `${c.name}${c.ext}`;
-  const loadedKeys = new Set(loaded.map(key));
+  const loadedKeys = new Set(loaded.map(fileDataKey));
 
   // 保存先に無い、ワールド外から導入したばかりの追加コンテンツ
   const pending = current.filter(
-    (c) => c.type !== 'world' && !loadedKeys.has(key(c))
+    (c) => c.type !== 'world' && !loadedKeys.has(fileDataKey(c))
   );
   const contents = [...loaded, ...pending];
 
-  const currentKeys = new Set(current.map(key));
+  const currentKeys = new Set(current.map(fileDataKey));
   const changed =
     contents.length !== current.length ||
-    contents.some((c) => !currentKeys.has(key(c)));
+    contents.some((c) => !currentKeys.has(fileDataKey(c)));
 
   return changed
     ? { contents, changed }

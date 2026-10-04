@@ -39,3 +39,35 @@ describe('ワールドのデータパックの読み込み', () => {
     expect(isFile).toEqual({ ZipPack: true, FolderPack: false });
   });
 });
+
+describe('ワールドのデータパックの保存', () => {
+  const savePath = new Path(__dirname).child('work', 'datapack-save');
+  const datapacks = savePath.child(LEVEL_NAME, 'datapacks');
+
+  beforeAll(async () => {
+    await savePath.emptyDir();
+    await datapacks.mkdir(true);
+    // 同じ名前のzip形式とフォルダ形式のデータパック
+    const zip = new JSZip();
+    zip.file('pack.mcmeta', mcmeta);
+    await writeFile(
+      datapacks.child('SamePack.zip').path,
+      await zip.generateAsync({ type: 'uint8array' })
+    );
+    await datapacks.child('SamePack').mkdir(true);
+    await datapacks.child('SamePack', 'pack.mcmeta').writeText(mcmeta);
+  });
+
+  test('同じ名前のフォルダとファイルのうち、一覧から除いた方のみを削除する', async () => {
+    const loaded = await datapackFiles.load(savePath, 'world-id' as WorldID);
+    const kept = loaded.value.filter((d) => !d.isFile);
+
+    // 保存先にあるデータパックのみを渡すため、新たに導入するものはない
+    // （テストではワールドを登録していないため導入元の取得はエラーとなるが、削除の結果には影響しないため検証しない）
+
+    await datapackFiles.save(savePath, kept);
+
+    expect(datapacks.child('SamePack.zip').exists()).toBe(false);
+    expect(datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(true);
+  });
+});

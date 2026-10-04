@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import {
   AllFileData,
   DatapackData,
+  fileDataKey,
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
@@ -33,7 +34,7 @@ export const useContentsStore = defineStore('contentsStore', {
     isNewContents(contents: AllFileData<Contents>) {
       const mainStore = useMainStore();
       return !mainStore.worldBack?.additional[`${this.selectedTab}s`].find(
-        (c) => c.name === contents.name
+        (c) => fileDataKey(c) === fileDataKey(contents)
       );
     },
   },

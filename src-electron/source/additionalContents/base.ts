@@ -7,6 +7,7 @@ import {
 import {
   AllFileData,
   CacheFileData,
+  fileDataKey,
   NewFileData,
   WorldFileData,
 } from 'app/src-electron/schema/filedata';
@@ -60,10 +61,10 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         sourcePath = handler
           .getSavePath()
           .child(this.childPath)
-          .child(source.name + source.ext);
+          .child(fileDataKey(source));
         break;
       case 'system':
-        sourcePath = this.cachePath.child(source.name + source.ext);
+        sourcePath = this.cachePath.child(fileDataKey(source));
         break;
     }
     return sourcePath;
@@ -74,7 +75,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     sourcePath: Path,
     source: NewFileData<T>
   ): Failable<undefined> {
-    const basename = source.name + source.ext;
+    const basename = fileDataKey(source);
     const targetPath = this.cachePath.child(basename);
     if (targetPath.exists())
       return errorMessage.data.path.alreadyExists({
@@ -118,7 +119,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
 
   /** キャッシュにファイルを追加 */
   async appendCache(source: NewFileData<T>): Promise<Failable<void>> {
-    const basename = source.name + source.ext;
+    const basename = fileDataKey(source);
     const sourcePath = new Path(source.path);
     const targetPath = this.cachePath.child(basename);
     if (targetPath.exists())
@@ -217,7 +218,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       }
 
       // 同一のパスだった場合無視
-      const tgtPath = dirPath.child(source.name + source.ext);
+      const tgtPath = dirPath.child(fileDataKey(source));
       if (tgtPath.path === srcPath.path) return;
 
       // ソースが有効なデータかどうかを確認
@@ -240,13 +241,14 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     errors.push(...loaded.errors);
 
     // 削除すべきファイル一覧
+    const keepKeys = new Set(value.map(fileDataKey));
     const deletFiles = loaded.value
       .filter((x): x is WorldFileData<T> => x !== undefined && isValid(x))
-      .filter((file) => value.find((x) => x.name === file.name) === undefined);
+      .filter((file) => !keepKeys.has(fileDataKey(file)));
 
     // 非同期で削除
     const deleteErrs = await asyncMap(deletFiles, (x) =>
-      dirPath.child(`${x.name}${x.ext}`).remove()
+      dirPath.child(fileDataKey(x)).remove()
     );
     errors.push(...deleteErrs.filter(isError));
 

@@ -38,6 +38,18 @@ export type CacheFileData<T extends Record<string, any>> = T & {
 export type AllFileData<T extends Record<string, any>> =
   WorldFileData<T> | NewFileData<T> | CacheFileData<T>;
 
+/**
+ * mod/plugin/datapackを一意に識別するキーを返す
+ *
+ * 同じ名前のフォルダーとファイル（例：`foo` と `foo.zip`）を区別するため、拡張子を含めたファイル名をキーとする
+ *
+ * @param data mod/plugin/datapackのデータ
+ * @returns 保存先のフォルダー内でのファイル名（フォルダー名）
+ */
+export function fileDataKey(data: { name: string; ext: string }) {
+  return `${data.name}${data.ext}`;
+}
+
 /** Datapackのデータ */
 export const DatapackData = z.object({
   kind: z.literal('datapack'),

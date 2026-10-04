@@ -5,6 +5,7 @@ import {
   AllFileData,
   CacheFileData,
   DatapackData,
+  fileDataKey,
   ModData,
   NewFileData,
   PluginData,
@@ -70,7 +71,9 @@ watch(() => mainStore.selectedWorldID, reloadContents);
 function getNewContents(worldContents?: AllFileData<T>[]) {
   return (
     sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]
-  ).filter((c) => !worldContents?.map((wc) => wc.name).includes(c.name));
+  ).filter(
+    (c) => !worldContents?.some((wc) => fileDataKey(wc) === fileDataKey(c))
+  );
 }
 
 /**
@@ -240,14 +243,18 @@ async function openCacheFolder() {
       <q-list v-if="isListView" separator class="q-pa-sm">
         <ContentListItem
           v-for="item in installedContents"
-          :key="item.name"
+          :key="fileDataKey(item)"
           :content-type="contentType"
           :content="item"
           is-delete
         />
       </q-list>
       <div v-else class="row q-gutter-md q-pa-sm">
-        <div v-for="item in installedContents" :key="item.name" class="col-">
+        <div
+          v-for="item in installedContents"
+          :key="fileDataKey(item)"
+          class="col-"
+        >
           <ItemCardView :content-type="contentType" is-delete :content="item" />
         </div>
       </div>
@@ -319,7 +326,7 @@ async function openCacheFolder() {
         />
       </div>
       <template v-if="!isListView">
-        <div v-for="item in newContents" :key="item.name">
+        <div v-for="item in newContents" :key="fileDataKey(item)">
           <ItemCardView :content-type="contentType" :content="item" />
         </div>
       </template>
@@ -327,7 +334,7 @@ async function openCacheFolder() {
     <q-list v-if="isListView" separator class="q-pa-sm">
       <ContentListItem
         v-for="item in newContents"
-        :key="item.name"
+        :key="fileDataKey(item)"
         :content-type="contentType"
         :content="item"
       />

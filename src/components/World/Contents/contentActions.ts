@@ -15,6 +15,7 @@ import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
 import { checkError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import { removeContent } from './contentList';
 import { mergeReloadedContents } from './contentReload';
 
 type Content = DatapackData | ModData | PluginData;
@@ -68,8 +69,7 @@ export function useContentActions() {
   function deleteContent(type: ContentType, content: AllFileData<Content>) {
     function __delete() {
       const list = installed(type);
-      const idx = list?.findIndex((c) => c.name === content.name) ?? -1;
-      if (idx >= 0) list?.splice(idx, 1);
+      if (list !== undefined) removeContent(list, content);
     }
 
     // 起動前に登録された追加コンテンツに対して警告を出さない
