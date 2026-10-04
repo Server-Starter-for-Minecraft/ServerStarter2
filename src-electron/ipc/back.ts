@@ -14,9 +14,9 @@ import {
 import { getCacheContents } from '../source/stores/cache';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { getStaticResoure } from '../source/system/resource';
+import { getWorldContents } from '../source/world/contents';
 import { pickDialog } from '../source/world/dialog';
 import { validateNewWorldName } from '../source/world/name';
-import { getWorldContents } from '../source/world/contents';
 import { getWorldPaths } from '../source/world/paths';
 import {
   backupWorld,
