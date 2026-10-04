@@ -134,6 +134,26 @@ class PromiseSpooler {
   }
 }
 
+/**
+ * 新規ワールドとして使用できる名前かを検証する
+ *
+ * 保存先が存在しないことに加え、処理中の他の操作（複製など）がWorldHandlerに登録済みの名前でないことも確認する
+ *
+ * @param container ワールドを作成するコンテナ
+ * @param name 検証する名前
+ * @returns 使用可能な場合はその名前、使用できない場合はエラー
+ */
+async function validateUnusedWorldName(
+  container: WorldContainer,
+  name: string
+): Promise<Failable<WorldName>> {
+  const validated = await validateNewWorldName(container, name);
+  if (isError(validated)) return validated;
+  if (WorldHandler.isRegistered(validated, container))
+    return errorMessage.value.worldName.alreadyUsed({ value: name });
+  return validated;
+}
+
 /** 複製する際のワールド名を取得 */
 async function getDuplicateWorldName(
   container: WorldContainer,
@@ -146,12 +166,12 @@ async function getDuplicateWorldName(
   }
 
   let worldName: string = baseName;
-  let result = await validateNewWorldName(container, worldName);
+  let result = await validateUnusedWorldName(container, worldName);
   let i = 1;
   while (isError(result)) {
     worldName = `${baseName}_${i}`;
     i += 1;
-    result = await validateNewWorldName(container, worldName);
+    result = await validateUnusedWorldName(container, worldName);
   }
   return result;
 }
@@ -259,16 +279,52 @@ export class WorldHandler {
 
   /** WorldAbbr/WorldNewができた段階でここに登録し、idを生成 */
   static register(name: WorldName, container: WorldContainer): WorldID {
-    const registered = Object.entries(WorldHandler.worldHandlerMap).find(
-      ([, value]) => value.container == container && value.name == name
-    );
     // 既に登録済みの場合登録されたidを返す
+    const registered = WorldHandler.findRegistered(name, container);
     if (registered !== undefined) {
-      return registered[0] as WorldID;
+      return registered.id;
     }
     const id = WorldID.parse(genUUID());
     WorldHandler.worldHandlerMap[id] = new WorldHandler(id, name, container);
     return id;
+  }
+
+  /** 指定したコンテナ・名前で登録済みのハンドラを返す（未登録の場合はundefined） */
+  private static findRegistered(name: WorldName, container: WorldContainer) {
+    return Object.values(WorldHandler.worldHandlerMap).find(
+      (value) => value.container == container && value.name == name
+    );
+  }
+
+  /**
+   * 指定したコンテナ・名前のワールドが登録済みかどうか
+   *
+   * @param name ワールド名
+   * @param container ワールドのコンテナ
+   * @returns 登録済みの場合はtrue
+   */
+  static isRegistered(name: WorldName, container: WorldContainer) {
+    return WorldHandler.findRegistered(name, container) !== undefined;
+  }
+
+  /**
+   * 新規に作成するワールドとして登録する
+   *
+   * `register` と異なり、同じコンテナ・名前のワールドが登録済みの場合は既存のハンドラを返さずエラーとする。
+   * 確認と登録の間に非同期処理を挟まないため、並行する他の操作と同じ名前を確保することはない。
+   *
+   * @param name 登録するワールド名
+   * @param container 登録するコンテナ
+   * @returns 新規に作成したハンドラ、登録済みの場合はエラー
+   */
+  private static registerNew(
+    name: WorldName,
+    container: WorldContainer
+  ): Failable<WorldHandler> {
+    if (WorldHandler.isRegistered(name, container))
+      return errorMessage.value.worldName.alreadyUsed({ value: name });
+    const id = WorldHandler.register(name, container);
+    return WorldHandler.worldHandlerMap[id];
   }
 
   // worldIDからWorldHandlerを取得する
@@ -753,18 +809,19 @@ export class WorldHandler {
     // 使用中フラグを削除
     worldSettings.using = false;
 
-    // 複製先のワールドの名前を設定
+    // 複製先のワールドの名前を決めて登録する
     // （名前を指定された場合も、既存のワールドを上書き・削除しないよう未使用の名前であることを確認する）
-    const newName =
-      name === undefined
-        ? await getDuplicateWorldName(this.container, this.name)
-        : await validateNewWorldName(this.container, name);
-    if (isError(newName)) return withError(newName);
-
-    // WorldIDを取得
-    const newId = WorldHandler.register(newName, this.container);
-
-    const newHandler = WorldHandler.get(newId, newName, this.container);
+    // 名前の検証から登録までの間に、並行する他の複製が同じ名前を登録した場合は登録に失敗する。
+    // その場合、名前を自動で決める場合は別の名前で再試行し、指定された名前の場合は複製を中止する。
+    let newHandler: Failable<WorldHandler>;
+    do {
+      const newName =
+        name === undefined
+          ? await getDuplicateWorldName(this.container, this.name)
+          : await validateUnusedWorldName(this.container, name);
+      if (isError(newName)) return withError(newName);
+      newHandler = WorldHandler.registerNew(newName, this.container);
+    } while (isError(newHandler) && name === undefined);
     if (isError(newHandler)) return withError(newHandler);
 
     const copied = await this.getSavePath().copyTo(newHandler.getSavePath());

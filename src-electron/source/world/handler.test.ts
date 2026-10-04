@@ -487,4 +487,63 @@ describe('WorldHandler ワールドの複製', () => {
     );
     expect(isError(WorldHandler.get(existing.id))).toBe(false);
   });
+
+  test('異なるワールドから同じ名前へ同時に複製しても、複製に成功したワールドを削除しない', async () => {
+    const { handler: first } = await createWorld(false);
+    const { handler: second } = await createWorld(false);
+    // 先に始めた複製が遅れて失敗する状況を再現し、その後処理で他方の複製結果が消えないことを確認する
+    const realCopy = fs.copy.bind(fs);
+    vi.spyOn(fs, 'copy')
+      .mockImplementationOnce((async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        throw fsError('EACCES');
+      }) as unknown as typeof fs.copy)
+      .mockImplementation(realCopy as typeof fs.copy);
+
+    const newName = WorldName.parse(`world${worldIdx++}_concurrent`);
+    const results = await Promise.all([
+      first.duplicate(newName),
+      second.duplicate(newName),
+    ]);
+
+    const succeeded = results.flatMap((r) =>
+      isError(r.value) ? [] : [r.value]
+    );
+    expect(succeeded.length).toBeLessThanOrEqual(1);
+    // 複製に失敗した場合は、複製先のデータを残さない
+    expect(workPath.child(newName).exists()).toBe(succeeded.length === 1);
+    for (const world of succeeded) {
+      expect(workPath.child(world.name, 'server.properties').exists()).toBe(
+        true
+      );
+      expect(isError(WorldHandler.get(world.id))).toBe(false);
+    }
+  });
+
+  test('名前を指定せずに同時に複製した場合はそれぞれ異なる名前で複製する', async () => {
+    const base = `world${worldIdx++}`;
+    // 「base」と「base_1」はどちらも「base」を元に複製先の名前を決めるため、同じ候補名が衝突する
+    const sources = await Promise.all(
+      [base, `${base}_1`].map(async (name) => {
+        const { handler, world } = await createWorld(false);
+        const renamed = await handler.save({
+          ...world,
+          name: WorldName.parse(name),
+        });
+        if (isError(renamed.value)) throw new Error('failed to rename world');
+        return handler;
+      })
+    );
+
+    const results = await Promise.all(sources.map((h) => h.duplicate()));
+
+    const names = results.map((r) => {
+      if (isError(r.value)) throw new Error('failed to duplicate world');
+      return r.value.name;
+    });
+    expect(new Set(names).size).toBe(2);
+    for (const name of names) {
+      expect(workPath.child(name, 'server.properties').exists()).toBe(true);
+    }
+  });
 });
