@@ -61,6 +61,10 @@ describe('parseAnsi', () => {
 
     expect(dark.color).not.toBe(light.color);
   });
+
+  test('DCSなどの文字列を伴う制御シーケンスは、終端までの内容も表示しない', () => {
+    expect(render(`a${ESC}Pq#0;2;0;0;0${ESC}\\b`)).toEqual([['ab', {}]]);
+  });
 });
 
 describe('splitIncompleteEscape', () => {
@@ -72,6 +76,11 @@ describe('splitIncompleteEscape', () => {
     expect(splitIncompleteEscape(`abc${ESC}`)).toEqual({
       complete: 'abc',
       pending: ESC,
+    });
+    // 終端（ESC \）の途中で分割された場合も、文字列全体を保留する
+    expect(splitIncompleteEscape(`abc${ESC}Pdata${ESC}`)).toEqual({
+      complete: 'abc',
+      pending: `${ESC}Pdata${ESC}`,
     });
   });
 
