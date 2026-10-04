@@ -54,4 +54,28 @@ describe('システム設定ファイルの変換', () => {
       dye.orange
     );
   });
+
+  test('想定外の形式のグループ設定があっても、変換処理で例外が発生しない（形式の検証はスキーマで行う）', () => {
+    const malformed = [
+      { [SCHEMA_VERSION_KEY]: 1 },
+      { player: 'invalid', [SCHEMA_VERSION_KEY]: 1 },
+      { player: { groups: ['invalid'] }, [SCHEMA_VERSION_KEY]: 1 },
+    ];
+    for (const raw of malformed) {
+      expect(() => systemSettingsSchema.migrate(raw)).not.toThrow();
+    }
+  });
+
+  test('色が指定されていないグループは白になり、他のグループは変換される', () => {
+    const raw = settingsV1({ g: '#FFAA00' });
+    (raw.player.groups as Record<string, unknown>).noColor = {
+      name: 'noColor',
+      players: [],
+    };
+
+    const settings = systemSettingsSchema.parse(raw);
+
+    expect(settings.player.groups.noColor.color).toBe(dye.white);
+    expect(settings.player.groups.g.color).toBe(dye.orange);
+  });
 });

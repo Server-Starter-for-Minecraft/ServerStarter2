@@ -4,6 +4,7 @@ import { keys } from 'app/src-public/scripts/obj/obj';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import { getColorLabel } from './groupColor';
 
 interface Prop {
   groupColor: string;
@@ -25,7 +26,7 @@ const label2code = sysStore.staticResouces.minecraftColors;
         <q-btn
           v-close-popup
           dense
-          :flat="groupColor !== label2code[colorLabel]"
+          :flat="getColorLabel(label2code, groupColor) !== colorLabel"
           outline
           color="primary"
           class="q-ma-none"
