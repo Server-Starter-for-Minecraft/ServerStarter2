@@ -4,10 +4,11 @@ import { getJsonResponse } from '../rest';
 export const ReleaseAsset = z.object({
   url: z.string(),
   browser_download_url: z.string(),
-  id: z.literal(1),
+  id: z.number(),
   node_id: z.string(),
   name: z.string(),
-  label: z.string(),
+  /** ラベルを設定していないアセットは空文字列またはnullになる */
+  label: z.string().nullable(),
   state: z.enum(['uploaded', 'open']),
   content_type: z.string(),
   size: z.number(),
@@ -25,7 +26,7 @@ export const Release = z.object({
   upload_url: z.string(),
   tarball_url: z.string(),
   zipball_url: z.string(),
-  id: z.literal(1),
+  id: z.number(),
   node_id: z.string(),
   tag_name: z.string(),
   target_commitish: z.string(),
