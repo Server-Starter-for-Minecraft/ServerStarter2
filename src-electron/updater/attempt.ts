@@ -1,7 +1,9 @@
 import { z } from 'zod';
+import { Failable } from '../schema/error';
 import { mainPath } from '../source/const';
 import { Path } from '../util/binary/path';
 import { isError } from '../util/error/error';
+import { safeExecAsync } from '../util/error/failable';
 
 /**
  * 自動アップデートを実行した記録
@@ -66,10 +68,12 @@ export async function loadUpdateAttempt(
  *
  * @param attempt 実行記録
  * @param path 実行記録のファイル（テスト用に差し替え可能）
+ * @returns 保存に失敗した場合はエラー（例外は投げない）
  */
 export async function saveUpdateAttempt(
   attempt: UpdateAttempt,
   path: Path = UPDATE_ATTEMPT_PATH
-) {
-  return await path.writeJson(attempt);
+): Promise<Failable<void>> {
+  // 保存先フォルダの作成などで発生する例外もエラーとして返し、呼び出し元で通知できるようにする
+  return safeExecAsync(() => path.writeJson(attempt));
 }

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest';
 import { Path } from '../util/binary/path';
+import { isError } from '../util/error/error';
 import {
   loadUpdateAttempt,
   saveUpdateAttempt,
@@ -52,6 +53,19 @@ describe('自動アップデートの実行記録', () => {
     await saveUpdateAttempt(attempt, attemptPath);
 
     await expect(loadUpdateAttempt(attemptPath)).resolves.toEqual(attempt);
+  });
+
+  test('実行記録を保存できない場合は、例外を投げずにエラーを返す', async () => {
+    // 保存先フォルダの途中にファイルを置き、保存先フォルダを作成できないようにする
+    const notDir = workPath.child('not_dir');
+    await notDir.writeText('');
+
+    const saved = await saveUpdateAttempt(
+      { version: 'v2.3.0', attemptedAt: NOW },
+      notDir.child('sub', 'update_attempt.json')
+    );
+
+    expect(isError(saved)).toBe(true);
   });
 
   test('実行記録が無い・壊れている場合は記録が無いものとして扱う', async () => {

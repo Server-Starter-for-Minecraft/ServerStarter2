@@ -39,7 +39,8 @@ const { notifyUpdate } = await import('./notify');
 
 beforeEach(async () => {
   // 前回のテストでの自動アップデートの実行記録を削除する
-  await workPath.emptyDir();
+  await workPath.remove();
+  await workPath.mkdir(true);
   vi.mocked(installWindows).mockReset();
   vi.mocked(notifyUpdate).mockReset();
 });
@@ -71,6 +72,18 @@ describe('update', () => {
 
     await update();
 
+    expect(notifyUpdate).toHaveBeenCalledWith('windows-x64', '9.9.9');
+  });
+
+  test('実行記録を保存できない場合は、自動アップデートせずに手動でのアップデートを促す', async () => {
+    vi.mocked(installWindows).mockResolvedValue(true);
+    // データの保存先をファイルに置き換え、実行記録の保存先フォルダを作成できないようにする
+    await workPath.remove();
+    await workPath.writeText('');
+
+    await update();
+
+    expect(installWindows).not.toHaveBeenCalled();
     expect(notifyUpdate).toHaveBeenCalledWith('windows-x64', '9.9.9');
   });
 
