@@ -34,7 +34,7 @@ const fileLabel = computed(() =>
 
 <template>
   <!-- 名前を省略せずに表示し、たくさん導入した場合も一覧しやすいよう1行ずつ並べる -->
-  <q-item dense class="q-px-sm content-item">
+  <q-item dense class="q-px-sm q-py-sm content-item">
     <q-item-section>
       <q-item-label class="content-name">
         {{ name }}

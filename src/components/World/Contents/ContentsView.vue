@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { getCssVar } from 'quasar';
 import {
   AllFileData,
@@ -19,15 +20,17 @@ import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import ViewStyleToggle from 'src/components/util/ViewStyleToggle.vue';
-import { useContentActions } from './contentActions';
+import { ContentType, useContentActions } from './contentActions';
 import { filterContents } from './contentFilter';
+import { ContentPickOption, getImportActions } from './contentImport';
 import ContentListItem from './ContentListItem.vue';
+import ContentsSectionHeader from './ContentsSectionHeader.vue';
 import ItemCardView from './itemCardView.vue';
 
 type T = DatapackData | PluginData | ModData;
 
 interface Prop {
-  contentType: 'datapack' | 'plugin' | 'mod';
+  contentType: ContentType;
 }
 const prop = defineProps<Prop>();
 
@@ -35,6 +38,7 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const { reloadContents, reloading } = useContentActions();
+const { t } = useI18n();
 
 /** 追加コンテンツの検索ワード */
 const searchText = ref('');
@@ -43,6 +47,39 @@ const searchText = ref('');
 const isListView = computed(
   () => sysStore.systemSettings.user.viewStyle.contents === 'list'
 );
+
+/** リスト表示時の左右の仕切りの初期位置（左側の幅の割合[%]） */
+const DEFAULT_SPLIT_POS = 50;
+const splitPos = ref(DEFAULT_SPLIT_POS);
+
+/** 表示中の種別で使える新規導入ボタンの一覧 */
+const importActions = computed(() => getImportActions(prop.contentType));
+
+/**
+ * 新規導入ボタン1つあたりに必要な幅[px]
+ * これを下回る場合は、ボタンをアイコンのみの表示に切り替える
+ * （最も長い表示名である英語の「New install from Folder」とアイコンが1行に収まる幅）
+ */
+const IMPORT_BTN_MIN_WIDTH = 220;
+/** 新規導入ボタンを並べる領域の幅[px] */
+const importAreaWidth = ref(Infinity);
+/** 新規導入ボタンを（ラベルを省いた）アイコンのみで表示するか */
+const isCompactImportBtn = computed(
+  () =>
+    importAreaWidth.value / importActions.value.length < IMPORT_BTN_MIN_WIDTH
+);
+
+/** サーバー起動中に、変更の反映に再起動が必要な旨を表示するか */
+const needReboot = computed(
+  () =>
+    consoleStore.status(mainStore.selectedWorldID) !== 'Stop' &&
+    prop.contentType !== 'datapack'
+);
+
+/** 種別名を埋め込む文言（「追加済み〇〇」など）に渡すi18n引数 */
+const typeLabelArg = computed(() => ({
+  type: t(`additionalContents.${prop.contentType}`),
+}));
 
 /** 検索ワードで絞り込んだ、表示中のワールドに導入済みの追加コンテンツ */
 const installedContents = computed(() =>
@@ -77,28 +114,31 @@ function getNewContents(worldContents?: AllFileData<T>[]) {
 }
 
 /**
- * コンテンツを新規導入
+ * ダイアログで選んだ追加コンテンツを新規導入する
+ *
+ * @param option 新規導入ボタンに対応するダイアログのオプション
  */
-async function importNewContent(isFile = false) {
-  // エラー回避のため、意図的にswitchで分岐して表現を分かりやすくしている
-  switch (prop.contentType) {
+async function importNewContent(option: ContentPickOption) {
+  // invokePickDialogは種別ごとに戻り値の型が異なるオーバーロードのため、
+  // 種別で絞り込んでから呼び出す（オプションの中身はそのまま渡す）
+  switch (option.type) {
     case 'datapack':
       checkError(
-        await window.API.invokePickDialog({ type: 'datapack', isFile: isFile }),
+        await window.API.invokePickDialog(option),
         (c) => addContent2World(c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
       break;
     case 'plugin':
       checkError(
-        await window.API.invokePickDialog({ type: 'plugin' }),
+        await window.API.invokePickDialog(option),
         (c) => addContent2World(c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
       break;
     case 'mod':
       checkError(
-        await window.API.invokePickDialog({ type: 'mod' }),
+        await window.API.invokePickDialog(option),
         (c) => addContent2World(c),
         (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
       );
@@ -169,13 +209,9 @@ async function openCacheFolder() {
 </script>
 
 <template>
-  <div class="q-px-md">
+  <div class="column no-wrap fit q-px-md">
     <h1 class="q-py-xs">
-      {{
-        $t('additionalContents.management', {
-          type: $t(`additionalContents.${contentType}`),
-        })
-      }}
+      {{ $t('additionalContents.management', typeLabelArg) }}
     </h1>
 
     <div class="row items-center q-gutter-sm q-pb-sm">
@@ -207,143 +243,150 @@ async function openCacheFolder() {
       <ViewStyleToggle target="contents" />
     </div>
 
-    <div class="row justify-between">
-      <span class="text-caption">
-        {{
-          $t('additionalContents.installed', {
-            type: $t(`additionalContents.${contentType}`),
-          })
-        }}
-      </span>
-      <q-btn
-        dense
-        flat
-        :label="
-          $t('additionalContents.openSaveLocation', {
-            type: $t(`additionalContents.${contentType}`),
-          })
-        "
-        icon="folder"
-        color="grey"
-        size=".7rem"
-        @click="openSavedFolder"
-        class="folderBtn"
-      />
-    </div>
-    <p
-      v-if="
-        consoleStore.status(mainStore.selectedWorldID) !== 'Stop' &&
-        contentType !== 'datapack'
-      "
-      class="text-caption text-negative q-ma-none"
+    <!-- リスト表示：プレイヤー画面と同様に、左に「〇〇を追加」、右に「追加済み〇〇」を並べる -->
+    <q-splitter
+      v-if="isListView"
+      v-model="splitPos"
+      @dblclick="splitPos = DEFAULT_SPLIT_POS"
+      :limits="[25, 75]"
+      emit-immediately
+      separator-style="margin-left: 10px; margin-right: 10px"
+      class="col q-pb-md"
+      style="min-height: 0"
     >
-      {{ $t('additionalContents.needReboot') }}
-    </p>
-    <template v-if="installedContents.length > 0">
-      <q-list v-if="isListView" separator class="q-pa-sm">
-        <ContentListItem
-          v-for="item in installedContents"
-          :key="fileDataKey(item)"
-          :content-type="contentType"
-          :content="item"
-          is-delete
+      <template #before>
+        <ContentsSectionHeader
+          :label="$t('additionalContents.add', typeLabelArg)"
+          :folder-label="
+            $t('additionalContents.openAllSaveLocation', typeLabelArg)
+          "
+          @open-folder="openCacheFolder"
         />
-      </q-list>
-      <div v-else class="row q-gutter-md q-pa-sm">
-        <div
-          v-for="item in installedContents"
-          :key="fileDataKey(item)"
-          class="col-"
+        <!-- 幅が足りない場合は、ラベルを省いてアイコンとTooltipで表示する -->
+        <div class="row no-wrap q-py-sm import-btns">
+          <q-resize-observer @resize="(s) => (importAreaWidth = s.width)" />
+          <q-btn
+            v-for="action in importActions"
+            :key="action.key"
+            outline
+            no-caps
+            color="primary"
+            class="col"
+            @click="importNewContent(action.pickOption)"
+          >
+            <q-icon :name="action.icon" />
+            <q-icon v-if="isCompactImportBtn" name="add" size="1rem" />
+            <span v-else class="q-ml-sm">{{ $t(action.labelKey) }}</span>
+            <SsTooltip
+              v-if="isCompactImportBtn"
+              :name="$t(action.labelKey)"
+              anchor="bottom middle"
+              self="top middle"
+            />
+          </q-btn>
+        </div>
+        <p
+          v-if="searchText && newContents.length === 0"
+          class="q-my-lg text-center text-h5"
+          style="opacity: 0.6"
         >
+          {{ $t('additionalContents.noMatch') }}
+        </p>
+        <q-list v-else separator>
+          <ContentListItem
+            v-for="item in newContents"
+            :key="fileDataKey(item)"
+            :content-type="contentType"
+            :content="item"
+          />
+        </q-list>
+      </template>
+
+      <template #after>
+        <ContentsSectionHeader
+          :label="$t('additionalContents.installed', typeLabelArg)"
+          :folder-label="
+            $t('additionalContents.openSaveLocation', typeLabelArg)
+          "
+          @open-folder="openSavedFolder"
+        />
+        <p v-if="needReboot" class="text-caption text-negative q-ma-none">
+          {{ $t('additionalContents.needReboot') }}
+        </p>
+        <q-list v-if="installedContents.length > 0" separator class="q-py-sm">
+          <ContentListItem
+            v-for="item in installedContents"
+            :key="fileDataKey(item)"
+            :content-type="contentType"
+            :content="item"
+            is-delete
+          />
+        </q-list>
+        <p v-else class="q-my-lg text-center text-h5" style="opacity: 0.6">
+          {{
+            searchText
+              ? $t('additionalContents.noMatch')
+              : $t('additionalContents.notInstalled', typeLabelArg)
+          }}
+        </p>
+      </template>
+    </q-splitter>
+
+    <!-- カード表示：「追加済み〇〇」の下に「〇〇を追加」を並べる -->
+    <q-scroll-area v-else class="col">
+      <ContentsSectionHeader
+        :label="$t('additionalContents.installed', typeLabelArg)"
+        :folder-label="$t('additionalContents.openSaveLocation', typeLabelArg)"
+        @open-folder="openSavedFolder"
+      />
+      <p v-if="needReboot" class="text-caption text-negative q-ma-none">
+        {{ $t('additionalContents.needReboot') }}
+      </p>
+      <div v-if="installedContents.length > 0" class="row q-gutter-md q-pa-sm">
+        <div v-for="item in installedContents" :key="fileDataKey(item)">
           <ItemCardView :content-type="contentType" is-delete :content="item" />
         </div>
       </div>
-    </template>
-    <div v-else class="full-width">
-      <p class="q-my-lg text-center text-h5" style="opacity: 0.6">
+      <p v-else class="q-my-lg text-center text-h5" style="opacity: 0.6">
         {{
           searchText
             ? $t('additionalContents.noMatch')
-            : $t('additionalContents.notInstalled', {
-                type: $t(`additionalContents.${contentType}`),
-              })
+            : $t('additionalContents.notInstalled', typeLabelArg)
         }}
       </p>
-    </div>
 
-    <q-separator class="q-my-md" />
+      <q-separator class="q-my-md" />
 
-    <div class="row justify-between">
-      <span class="text-caption">
-        {{
-          $t('additionalContents.add', {
-            type: $t(`additionalContents.${contentType}`),
-          })
-        }}
-      </span>
-      <q-btn
-        dense
-        flat
-        :label="
-          $t('additionalContents.openAllSaveLocation', {
-            type: $t(`additionalContents.${contentType}`),
-          })
+      <ContentsSectionHeader
+        :label="$t('additionalContents.add', typeLabelArg)"
+        :folder-label="
+          $t('additionalContents.openAllSaveLocation', typeLabelArg)
         "
-        icon="folder"
-        color="grey"
-        size=".7rem"
-        @click="openCacheFolder"
-        class="folderBtn"
+        @open-folder="openCacheFolder"
       />
-    </div>
-    <div class="row q-gutter-sm q-pa-sm">
-      <div>
-        <AddContentsCard
-          :label="
-            contentType === 'datapack'
-              ? $t('additionalContents.installFromZip')
-              : $t('additionalContents.newInstall')
-          "
-          min-height="4rem"
-          @click="importNewContent(true)"
-          :card-style="{
-            'border-radius': '6px',
-            'border-color': getCssVar('primary'),
-          }"
-          class="text-primary"
-        />
-      </div>
-      <div v-if="contentType === 'datapack'">
-        <AddContentsCard
-          :label="$t('additionalContents.installFromFolder')"
-          min-height="4rem"
-          @click="importNewContent(false)"
-          :card-style="{
-            'border-radius': '6px',
-            'border-color': getCssVar('primary'),
-          }"
-          class="text-primary"
-        />
-      </div>
-      <template v-if="!isListView">
+      <div class="row q-gutter-sm q-pa-sm">
+        <div v-for="action in importActions" :key="action.key">
+          <AddContentsCard
+            :label="$t(action.labelKey)"
+            min-height="4rem"
+            @click="importNewContent(action.pickOption)"
+            :card-style="{
+              'border-radius': '6px',
+              'border-color': getCssVar('primary'),
+            }"
+            class="text-primary"
+          />
+        </div>
         <div v-for="item in newContents" :key="fileDataKey(item)">
           <ItemCardView :content-type="contentType" :content="item" />
         </div>
-      </template>
-    </div>
-    <q-list v-if="isListView" separator class="q-pa-sm">
-      <ContentListItem
-        v-for="item in newContents"
-        :key="fileDataKey(item)"
-        :content-type="contentType"
-        :content="item"
-      />
-    </q-list>
+      </div>
+    </q-scroll-area>
   </div>
 </template>
 
 <style scoped lang="scss">
-.folderBtn {
-  border-color: transparent;
+.import-btns {
+  gap: 8px;
 }
 </style>
