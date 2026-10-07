@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getCssVar } from 'quasar';
 import {
   AllFileData,
   CacheFileData,
@@ -16,7 +15,6 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
-import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import ViewStyleToggle from 'src/components/util/ViewStyleToggle.vue';
@@ -57,16 +55,21 @@ const importActions = computed(() => getImportActions(prop.contentType));
 
 /**
  * 新規導入ボタン1つあたりに必要な幅[px]
- * これを下回る場合は、ボタンをアイコンのみの表示に切り替える
  * （最も長い表示名である英語の「New install from Folder」とアイコンが1行に収まる幅）
  */
 const IMPORT_BTN_MIN_WIDTH = 220;
-/** 新規導入ボタンを並べる領域の幅[px] */
-const importAreaWidth = ref(Infinity);
-/** 新規導入ボタンを（ラベルを省いた）アイコンのみで表示するか */
+/** 検索欄の行のうち、新規導入ボタン以外（検索欄・再読み込み・表示切替）に確保する幅[px] */
+const TOOLBAR_RESERVED_WIDTH = 450;
+/** 検索欄の行の幅[px] */
+const toolbarWidth = ref(Infinity);
+/**
+ * 新規導入ボタンを（ラベルを省いた）アイコンのみで表示するか
+ * 検索欄の行にボタンの表示名まで収まらない場合はアイコンとTooltipで表示する
+ */
 const isCompactImportBtn = computed(
   () =>
-    importAreaWidth.value / importActions.value.length < IMPORT_BTN_MIN_WIDTH
+    toolbarWidth.value - TOOLBAR_RESERVED_WIDTH <
+    importActions.value.length * IMPORT_BTN_MIN_WIDTH
 );
 
 /** サーバー起動中に、変更の反映に再起動が必要な旨を表示するか */
@@ -214,7 +217,9 @@ async function openCacheFolder() {
       {{ $t('additionalContents.management', typeLabelArg) }}
     </h1>
 
-    <div class="row items-center q-gutter-sm q-pb-sm">
+    <!-- 検索欄の行：両方の表示形式で共通の新規導入ボタンもここに並べる -->
+    <div class="row no-wrap items-center q-pb-sm toolbar">
+      <q-resize-observer @resize="(s) => (toolbarWidth = s.width)" />
       <SsInput
         v-model="searchText"
         dense
@@ -226,6 +231,26 @@ async function openCacheFolder() {
           <q-icon name="search" />
         </template>
       </SsInput>
+      <!-- 幅が足りない場合は、ラベルを省いてアイコンとTooltipで表示する -->
+      <q-btn
+        v-for="action in importActions"
+        :key="action.key"
+        outline
+        no-caps
+        color="primary"
+        class="import-btn"
+        @click="importNewContent(action.pickOption)"
+      >
+        <q-icon :name="action.icon" />
+        <q-icon v-if="isCompactImportBtn" name="add" size="1rem" />
+        <span v-else class="q-ml-sm">{{ $t(action.labelKey) }}</span>
+        <SsTooltip
+          v-if="isCompactImportBtn"
+          :name="$t(action.labelKey)"
+          anchor="bottom middle"
+          self="top middle"
+        />
+      </q-btn>
       <q-btn
         dense
         flat
@@ -242,6 +267,10 @@ async function openCacheFolder() {
       </q-btn>
       <ViewStyleToggle target="contents" />
     </div>
+    <!-- 左右の一覧の開始位置が揃うよう、注意書きは両区画の外に表示する -->
+    <p v-if="needReboot" class="text-caption text-negative q-mt-none q-mb-sm">
+      {{ $t('additionalContents.needReboot') }}
+    </p>
 
     <!-- リスト表示：プレイヤー画面と同様に、左に「〇〇を追加」、右に「追加済み〇〇」を並べる -->
     <q-splitter
@@ -262,29 +291,6 @@ async function openCacheFolder() {
           "
           @open-folder="openCacheFolder"
         />
-        <!-- 幅が足りない場合は、ラベルを省いてアイコンとTooltipで表示する -->
-        <div class="row no-wrap q-py-sm import-btns">
-          <q-resize-observer @resize="(s) => (importAreaWidth = s.width)" />
-          <q-btn
-            v-for="action in importActions"
-            :key="action.key"
-            outline
-            no-caps
-            color="primary"
-            class="col"
-            @click="importNewContent(action.pickOption)"
-          >
-            <q-icon :name="action.icon" />
-            <q-icon v-if="isCompactImportBtn" name="add" size="1rem" />
-            <span v-else class="q-ml-sm">{{ $t(action.labelKey) }}</span>
-            <SsTooltip
-              v-if="isCompactImportBtn"
-              :name="$t(action.labelKey)"
-              anchor="bottom middle"
-              self="top middle"
-            />
-          </q-btn>
-        </div>
         <p
           v-if="searchText && newContents.length === 0"
           class="q-my-lg text-center text-h5"
@@ -310,10 +316,7 @@ async function openCacheFolder() {
           "
           @open-folder="openSavedFolder"
         />
-        <p v-if="needReboot" class="text-caption text-negative q-ma-none">
-          {{ $t('additionalContents.needReboot') }}
-        </p>
-        <q-list v-if="installedContents.length > 0" separator class="q-py-sm">
+        <q-list v-if="installedContents.length > 0" separator>
           <ContentListItem
             v-for="item in installedContents"
             :key="fileDataKey(item)"
@@ -339,9 +342,6 @@ async function openCacheFolder() {
         :folder-label="$t('additionalContents.openSaveLocation', typeLabelArg)"
         @open-folder="openSavedFolder"
       />
-      <p v-if="needReboot" class="text-caption text-negative q-ma-none">
-        {{ $t('additionalContents.needReboot') }}
-      </p>
       <div v-if="installedContents.length > 0" class="row q-gutter-md q-pa-sm">
         <div v-for="item in installedContents" :key="fileDataKey(item)">
           <ItemCardView :content-type="contentType" is-delete :content="item" />
@@ -364,19 +364,14 @@ async function openCacheFolder() {
         "
         @open-folder="openCacheFolder"
       />
-      <div class="row q-gutter-sm q-pa-sm">
-        <div v-for="action in importActions" :key="action.key">
-          <AddContentsCard
-            :label="$t(action.labelKey)"
-            min-height="4rem"
-            @click="importNewContent(action.pickOption)"
-            :card-style="{
-              'border-radius': '6px',
-              'border-color': getCssVar('primary'),
-            }"
-            class="text-primary"
-          />
-        </div>
+      <p
+        v-if="searchText && newContents.length === 0"
+        class="q-my-lg text-center text-h5"
+        style="opacity: 0.6"
+      >
+        {{ $t('additionalContents.noMatch') }}
+      </p>
+      <div v-else class="row q-gutter-sm q-pa-sm">
         <div v-for="item in newContents" :key="fileDataKey(item)">
           <ItemCardView :content-type="contentType" :content="item" />
         </div>
@@ -386,7 +381,11 @@ async function openCacheFolder() {
 </template>
 
 <style scoped lang="scss">
-.import-btns {
+.toolbar {
   gap: 8px;
+}
+
+.import-btn {
+  flex-shrink: 0;
 }
 </style>
