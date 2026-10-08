@@ -772,7 +772,7 @@ export class WorldHandler {
       serverAllAdditionalFiles.load(this.getSavePath(), this.id)
     );
   }
-  
+
   /**
    * 作成途中で失敗したワールドを破棄する
    *
