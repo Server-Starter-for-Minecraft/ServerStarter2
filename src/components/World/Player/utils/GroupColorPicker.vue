@@ -4,7 +4,7 @@ import { keys } from 'app/src-public/scripts/obj/obj';
 import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import { getColorLabel, old2newKey } from './groupColor';
+import { getColorLabel } from './groupColor';
 
 interface Prop {
   groupColor: string;
@@ -26,7 +26,7 @@ const label2code = sysStore.staticResouces.minecraftColors;
         <q-btn
           v-close-popup
           dense
-          :flat="groupColor !== label2code[colorLabel]"
+          :flat="getColorLabel(label2code, groupColor) !== colorLabel"
           outline
           color="primary"
           class="q-ma-none"
@@ -34,17 +34,10 @@ const label2code = sysStore.staticResouces.minecraftColors;
           @click="changeColor(label2code[colorLabel])"
         >
           <q-avatar square size="2rem">
-            <q-img
-              :src="
-                assets.png[
-                  `${getColorLabel(label2code, label2code[colorLabel])}_dye`
-                ]
-              "
-              class="avaterImg"
-            />
+            <q-img :src="assets.png[`${colorLabel}_dye`]" class="avaterImg" />
           </q-avatar>
           <SsTooltip
-            :name="old2newKey[colorLabel]"
+            :name="$t(`player.color.${colorLabel}`)"
             anchor="bottom middle"
             self="center middle"
           />

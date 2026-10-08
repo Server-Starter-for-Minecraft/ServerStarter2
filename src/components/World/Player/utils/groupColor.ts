@@ -1,29 +1,19 @@
 import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { MinecraftColors } from 'app/src-electron/schema/static';
 
-// TODO: 変換コードをバックエンドに移築
-export const old2newKey = {
-  dark_red: 'red',
-  red: 'pink',
-  gold: 'orange',
-  yellow: 'yellow',
-  dark_green: 'green',
-  green: 'lime',
-  aqua: 'light_blue',
-  dark_aqua: 'cyan',
-  dark_blue: 'blue',
-  blue: 'brown',
-  light_purple: 'magenta',
-  dark_purple: 'purple',
-  white: 'white',
-  gray: 'light_gray',
-  dark_gray: 'gray',
-  black: 'black',
-} as const;
-
-export const getColorLabel = (label2code: MinecraftColors, color: string) => {
-  const index = values(label2code).indexOf(color);
-  // 未定義の色コードの場合は白にフォールバック
-  const oldKey = index === -1 ? 'white' : keys(label2code)[index];
-  return old2newKey[oldKey];
+/**
+ * グループの色コードに対応する染料の名前（染料・羊毛の画像の名前）を返す
+ *
+ * @param label2code 染料の名前と色コードの対応（システムの静的リソース）
+ * @param color グループの色コード
+ * @returns 染料の名前（未定義の色コードの場合は白）
+ */
+export const getColorLabel = (
+  label2code: MinecraftColors,
+  color: string
+): keyof MinecraftColors => {
+  const index = values(label2code).findIndex(
+    (code) => code.toUpperCase() === color.toUpperCase()
+  );
+  return index === -1 ? 'white' : keys(label2code)[index];
 };

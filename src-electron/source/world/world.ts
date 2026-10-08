@@ -6,6 +6,7 @@ import {
   WorldID,
 } from 'src-electron/schema/world';
 import { versionContainer } from 'app/src-electron/core/setup';
+import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
@@ -21,7 +22,10 @@ import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
 import { validateNewWorldName } from './name';
-import { worldContainerToPath } from './worldContainer';
+import {
+  selectNewWorldContainer,
+  worldContainerToPath,
+} from './worldContainer';
 
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
@@ -108,7 +112,7 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     throw new Error('Assertion: This error cannot occur');
 
   // ワールドを配置するデフォルトのコンテナを指定
-  const containerSetting = systemSettings.container[0];
+  const containerSetting = selectNewWorldContainer(systemSettings.container);
   if (containerSetting === undefined) {
     return withError(errorMessage.core.container.noContainerSubscribed());
   }
@@ -256,7 +260,7 @@ export async function reboot(worldID: WorldID): Promise<void> {
  */
 export async function fetchLatestWorldLog(
   worldID: WorldID
-): Promise<Failable<string[]>> {
+): Promise<Failable<ConsoleOutput[]>> {
   const handler = WorldHandler.get(worldID);
 
   if (isError(handler)) return handler;

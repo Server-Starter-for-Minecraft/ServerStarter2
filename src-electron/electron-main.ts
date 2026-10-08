@@ -57,6 +57,10 @@ async function createWindow() {
     },
   });
 
+  // Shift+クリック等でリンクが新規ウィンドウとして開かれ、空の画面が起動するのを防ぐ
+  // (外部ページはsendOpenBrowserで既定のブラウザに開くため、アプリ内で新規ウィンドウを開く必要はない)
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+
   if (import.meta.env.QUASAR_DEV) {
     await mainWindow.loadURL(import.meta.env.QUASAR_APP_URL);
   } else {

@@ -122,7 +122,7 @@ function getMatchedLines(lines: ConsoleData[]): MatchedConsoleData[] {
   const res = lines.map((item, idx) => {
     const res = isMatchQuery(item.chunk);
     if (res.some((part) => part.isMatch)) matchedIdx2LineNum.value.push(idx);
-    return { isError: item.isError, matches: res };
+    return { isError: item.isError, matches: res, segments: item.segments };
   });
 
   if (matchedIdx2LineNum.value.length === 0) {

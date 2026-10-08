@@ -2,13 +2,14 @@ import { safeStorage } from 'electron';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { SystemSettings } from 'src-electron/schema/system';
 import { settingPath } from '../const';
+import { systemSettingsSchema } from './systemSchema';
 
 // 設定ファイルの書き込み
 function write(settings: SystemSettings) {
   systemSettingsValue = settings;
 
-  // 文字列化
-  const stringified = JSON.stringify(settings);
+  // スキーマのバージョンを付与して文字列化
+  const stringified = JSON.stringify(systemSettingsSchema.serialize(settings));
 
   // 暗号化
   const encrypted = safeStorage.encryptString(stringified);
@@ -30,7 +31,8 @@ function read() {
   } catch {
     parsed = {};
   }
-  const fixed = SystemSettings.parse(parsed);
+  // 古いバージョンの内容も読み込めるよう、最新のスキーマに変換してから検証する
+  const fixed = systemSettingsSchema.parse(parsed);
   return fixed;
 }
 

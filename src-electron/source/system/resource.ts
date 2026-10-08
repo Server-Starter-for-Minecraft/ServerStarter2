@@ -12,7 +12,7 @@ if (import.meta.vitest) {
     const staticResources = await getStaticResoure();
 
     // colors
-    expect(staticResources.minecraftColors.aqua).toBe('#55FFFF');
+    expect(staticResources.minecraftColors.light_blue).toBe('#3AB3DA');
 
     // properties
     expect(staticResources.properties['white-list']).toMatchObject({

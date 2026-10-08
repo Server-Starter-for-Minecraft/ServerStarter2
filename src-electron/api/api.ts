@@ -1,4 +1,5 @@
 import { RemoteWorldName, WorldContainer, WorldName } from '../schema/brands';
+import { ConsoleOutput } from '../schema/console';
 import { DialogOptions } from '../schema/dialog';
 import { ErrorMessage, Failable, WithError } from '../schema/error';
 import {
@@ -76,6 +77,12 @@ export interface API extends IAPI {
      * isError: stdoutの場合はfalse,stderrの場合はtrue
      */
     AddConsole: (world: WorldID, chunk: string, isError: boolean) => void;
+
+    /**
+     * 実行中のサーバーに参加しているプレイヤーの一覧が変化した際に発火
+     * players: 参加中のプレイヤー名一覧 (サーバー終了時は空配列)
+     */
+    UpdateOnlinePlayers: (world: WorldID, players: string[]) => void;
 
     /** バックエンドプロセスで致命的でないエラーが起こった時に走る */
     Error: (error: ErrorMessage) => void;
@@ -163,8 +170,8 @@ export interface API extends IAPI {
       backup: BackupData
     ) => Promise<WithError<Failable<World>>>;
 
-    /** ワールドの最新のログを取得する */
-    FetchLatestWorldLog: (world: WorldID) => Promise<Failable<string[]>>;
+    /** ワールドの最新のログを、コンソールへの出力ごとに取得する */
+    FetchLatestWorldLog: (world: WorldID) => Promise<Failable<ConsoleOutput[]>>;
 
     /**
      * ワールドに関連するパスを取得する

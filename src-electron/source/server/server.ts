@@ -1,6 +1,5 @@
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { WorldID } from 'app/src-electron/schema/world';
-import { trimAnsi } from 'app/src-electron/util/ansi';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
@@ -9,6 +8,7 @@ import { GroupProgressor } from '../../common/progress';
 import { api } from '../../core/api';
 import { WorldSettings } from '../world/files/json';
 import { WorldLogHandler } from '../world/loghandler';
+import { OnlinePlayersTracker } from './onlinePlayers';
 import { ServerProcess, serverProcess } from './process';
 import { readyRunServer } from './ready';
 
@@ -35,13 +35,24 @@ export function runServer(
     const loghandler = new WorldLogHandler(cwdPath);
     await loghandler.archive();
 
+    // ログから参加中のプレイヤーを読み取り，変化があればGUIに通知
+    const onlinePlayers = new OnlinePlayersTracker((players) =>
+      api.send.UpdateOnlinePlayers(id, players)
+    );
+
     const onStart = () => api.send.StartServer(id, notification);
-    const onFinish = () => api.send.FinishServer(id);
+    const onFinish = () => {
+      onlinePlayers.reset();
+      api.send.FinishServer(id);
+    };
     const console = (value: string, isError: boolean) => {
-      const trimmed = trimAnsi(value);
       // コンソールの内容をGUIに表示
-      api.send.AddConsole(id, trimmed, isError);
-      loghandler.append(trimmed);
+      // （文字色を表示できるよう、ANSIエスケープシーケンスはフロントエンドで解釈する）
+      api.send.AddConsole(id, value, isError);
+      // ログには表示を再現できるよう、出力の区切りや標準エラー出力の区別も含めて保存する
+      loghandler.append({ text: value, isError });
+      // オンラインプレイヤーの情報をログから抽出する
+      onlinePlayers.push(value, isError);
     };
 
     // サーバーの実行を待機

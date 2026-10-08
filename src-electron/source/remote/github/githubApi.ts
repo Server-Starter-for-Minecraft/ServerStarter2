@@ -3,7 +3,10 @@ import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
-import { WorldSettings } from '../../../source/world/files/json';
+import {
+  WorldSettings,
+  worldSettingsSchema,
+} from '../../../source/world/files/json';
 import { BlobRes, CommitRes, TreeRes } from './githubApiTypes';
 
 /** リポジトリのブランチ一覧を取得 */
@@ -111,7 +114,7 @@ export class GithubBlob {
     const blobRes = await get(BlobRes, this.url, this.pat);
     if (isError(blobRes)) return blobRes;
 
-    let data: Failable<WorldSettings>;
+    let data: Failable<unknown>;
     switch (blobRes.encoding) {
       case 'utf-8':
         data = JSON.parse(blobRes.content);
@@ -119,7 +122,7 @@ export class GithubBlob {
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
         if (isError(b64data)) return b64data;
-        data = await b64data.json(WorldSettings);
+        data = await b64data.json(z.unknown());
         break;
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
@@ -129,7 +132,8 @@ export class GithubBlob {
     }
     if (isError(data)) return data;
 
-    const fixed = WorldSettings.safeParse(data);
+    // 古いバージョンのServerStarter2で保存された内容も読み込めるよう、最新のスキーマに変換してから検証する
+    const fixed = worldSettingsSchema.safeParse(data);
     if (!fixed.success) {
       return errorMessage.data.failJsonFix();
     }
