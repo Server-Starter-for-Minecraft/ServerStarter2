@@ -7,7 +7,9 @@ import { $T } from 'src/i18n/utils/tFunc';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { WorldItem } from 'src/stores/WorldStore';
+import { waitingRequestLabel } from 'src/components/Progress/worldRequestPrompt';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Props {
@@ -18,6 +20,12 @@ const prop = defineProps<Props>();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
+const worldRequestStore = useWorldRequestStore();
+
+/** このワールドに対する、ユーザーの回答待ちの要求（EULAへの同意など） */
+const pendingRequest = computed(() =>
+  worldRequestStore.pending(prop.world_item.world.id)
+);
 
 const router = useRouter();
 async function startServer(
@@ -60,6 +68,10 @@ function selectWorldIdx() {
 }
 
 const tooltipText = () => {
+  if (pendingRequest.value) {
+    return `${prop.world_item.world.name}
+${waitingRequestLabel(pendingRequest.value)}`;
+  }
   switch (prop.world_item.type) {
     case 'abbr':
       return prop.world_item.world.name;
@@ -158,8 +170,17 @@ const tooltipText = () => {
             rounded
             style="background-color: #262626; aspect-ratio: 1"
           >
+            <!-- EULAへの同意待ちなどの場合は、アイコンに印を表示して回答が必要なことを示す -->
             <q-icon
-              v-if="consoleStore.status(world_item.world.id) === 'CheckLog'"
+              v-if="pendingRequest"
+              name="priority_high"
+              color="warning"
+              size="1rem"
+            />
+            <q-icon
+              v-else-if="
+                consoleStore.status(world_item.world.id) === 'CheckLog'
+              "
               name="notes"
               size="1rem"
             />

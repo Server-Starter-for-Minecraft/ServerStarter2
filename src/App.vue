@@ -17,19 +17,19 @@ import {
 } from './stores/WorldStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useProgressStore } from 'src/stores/ProgressStore';
+import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
 import { setOpenDialogFunc } from 'src/components/Error/Error';
-import { EulaDialogProp } from 'src/components/Progress/iEulaDialog';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
-import EulaDialog from 'src/components/Progress/EulaDialog.vue';
 
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const progressStore = useProgressStore();
+const worldRequestStore = useWorldRequestStore();
 
 // routerを定義
 const router = useRouter();
@@ -85,27 +85,10 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
 });
 
 // Eulaの同意処理
+// （同意を求める画面は、該当するワールドを表示している間だけ表示する）
 window.API.handleAgreeEula(
-  async (_: Electron.IpcRendererEvent, worldID, url) => {
-    const promise = new Promise<boolean>((resolve) => {
-      progressStore.back2frontHandler(worldID, resolve);
-    });
-
-    $q.dialog({
-      component: EulaDialog,
-      componentProps: {
-        eulaURL: url,
-      } as EulaDialogProp,
-    })
-      .onOk(() => {
-        progressStore.getProgress(worldID).selecter?.(true);
-      })
-      .onCancel(() => {
-        progressStore.getProgress(worldID).selecter?.(false);
-      });
-
-    return await promise;
-  }
+  async (_: Electron.IpcRendererEvent, worldID, url) =>
+    await worldRequestStore.request(worldID, 'eula', { url })
 );
 // Progressがバックエンドからやってきたときの処理
 window.API.onProgress((_event, worldID, progress) => {

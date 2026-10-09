@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router';
 import { keys } from 'app/src-public/scripts/obj/obj';
 import { useMainStore } from 'src/stores/MainStore';
+import WorldRequestView from 'src/components/Progress/WorldRequestView.vue';
 import FailedLoadingView from 'src/components/World/FailedLoadingView.vue';
 import HeaderView from 'src/components/World/HeaderView.vue';
 import LoadingView from 'src/components/World/LoadingView.vue';
@@ -60,6 +61,9 @@ const isFailedLoading = () =>
   <div v-else-if="isLoading()" class="absolute-center text-h5">
     <LoadingView />
   </div>
+
+  <!-- EULAへの同意など、表示中のワールドに対する要求への回答画面 -->
+  <WorldRequestView />
 </template>
 
 <style scoped lang="scss">

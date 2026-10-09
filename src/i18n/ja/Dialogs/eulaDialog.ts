@@ -6,4 +6,5 @@ export const jaEulaDialog = {
     ご利用前にご一読ください。',
   eula: 'Minecraft EULA',
   disagree: 'EULA に同意しない',
+  waiting: 'EULA への同意待ち（ワールドを選択して同意してください）',
 };

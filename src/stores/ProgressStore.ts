@@ -6,7 +6,6 @@ interface WorldProgress {
   [id: WorldID]: {
     title: string;
     progress: GroupProgress;
-    selecter?: (value: boolean) => void;
   };
 }
 
@@ -44,18 +43,6 @@ export const useProgressStore = defineStore('progressStore', {
       this._world[worldID] = {
         title: title,
         progress: {} as GroupProgress,
-      };
-    },
-    /**
-     * バックエンドからユーザーの選択による処理を要求された場合にイベントに登録しておく処理
-     */
-    back2frontHandler(
-      worldID: WorldID,
-      resolve: (value: boolean | PromiseLike<boolean>) => void
-    ) {
-      this._world[worldID].selecter = (value: boolean) => {
-        this._world[worldID].selecter = undefined;
-        resolve(value);
       };
     },
   },
