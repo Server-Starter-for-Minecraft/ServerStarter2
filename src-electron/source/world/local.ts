@@ -136,6 +136,7 @@ export async function loadLocalFiles(
     last_user: worldSettings.last_user,
     last_id: worldSettings.last_id,
     memory: worldSettings.memory,
+    javaArguments: worldSettings.javaArguments,
     additional: additional.value,
     properties,
     players,

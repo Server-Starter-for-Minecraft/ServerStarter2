@@ -91,19 +91,31 @@ function promissifyProcess(
   return promise;
 }
 
+/**
+ * 標準入出力をやり取りできる子プロセスを起動する
+ *
+ * シェルを介さずに実行ファイルを直接起動するため，引数はエスケープや引用符で囲む必要がなく，
+ * スペースやシェルの特殊文字を含む値もそのまま1つの引数として渡される
+ *
+ * @param process 起動する実行ファイルのパス
+ * @param args 実行ファイルに渡す引数（1要素が1つの引数となる）
+ * @param onout 標準出力を受け取るコールバック（未指定の場合は出力を破棄する）
+ * @param onerr 標準エラー出力を受け取るコールバック（未指定の場合は出力を破棄する）
+ * @param cwd 作業ディレクトリ
+ * @param beforeKill プロセスをkillする前に実行する処理
+ * @param beforeKillTimeout `beforeKill`の完了を待つ最大時間（ミリ秒）
+ */
 export const interactiveProcess = (
   process: Path,
   args: string[],
   onout: ((chunk: string) => void) | undefined,
   onerr: ((chunk: string) => void) | undefined,
   cwd: Path | undefined = undefined,
-  shell = false,
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
 ): ChildProcessPromise => {
-  const child = child_process.spawn(process.quotedPath, args, {
+  const child = child_process.spawn(process.path, args, {
     cwd: cwd?.path,
-    shell,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
   });
 
@@ -128,15 +140,22 @@ export const interactiveProcess = (
   return result;
 };
 
+/**
+ * 子プロセスを起動して終了を待つ
+ *
+ * `interactiveProcess`と同様に，シェルを介さずに実行ファイルを直接起動する
+ *
+ * @param process 起動する実行ファイルのパス
+ * @param args 実行ファイルに渡す引数（1要素が1つの引数となる）
+ * @param cwd 作業ディレクトリ
+ */
 export function execProcess(
   process: Path,
   args: string[],
-  cwd: Path | undefined = undefined,
-  shell = false
+  cwd: Path | undefined = undefined
 ) {
-  const child = child_process.spawn(process.quotedPath, args, {
+  const child = child_process.spawn(process.path, args, {
     cwd: cwd?.path,
-    shell,
   });
   return promissifyProcess(child, process, args);
 }

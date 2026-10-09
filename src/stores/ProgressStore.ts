@@ -20,7 +20,7 @@ export const useProgressStore = defineStore('progressStore', {
     /**
      * 登録されているProgressGroupを呼び出す
      */
-    getProgress(worldID: WorldID) {
+    getProgress(worldID: WorldID): WorldProgress[WorldID] | undefined {
       return this._world[worldID];
     },
     /**
@@ -30,7 +30,12 @@ export const useProgressStore = defineStore('progressStore', {
      * 指定しなければWorldに依存しないProgressとして記録される
      */
     setProgress(worldID: WorldID, progress: GroupProgress) {
-      this._world[worldID].progress = progress;
+      // `initProgress()`より先にバックエンドからProgressが届いた場合でも例外にせず記録する
+      // （その後に`initProgress()`が呼ばれた場合は，タイトルとともにプログレスも初期化される）
+      this._world[worldID] = {
+        title: this._world[worldID]?.title ?? '',
+        progress,
+      };
     },
     /**
      * プログレスの初期化を行う

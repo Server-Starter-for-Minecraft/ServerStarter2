@@ -169,7 +169,7 @@ async function getServerJarFromBuildTools(
   const args = [
     javaEncodingToUtf8(),
     '-jar',
-    buildToolsPath.absolute().quotedPath,
+    buildToolsPath.absolute().path,
     '--rev',
     versionId,
   ];
