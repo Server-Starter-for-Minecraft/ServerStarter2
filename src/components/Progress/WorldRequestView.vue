@@ -59,7 +59,6 @@ watch(
       ref="backdropRef"
       class="absolute-full flex flex-center backdrop"
       role="dialog"
-      aria-modal="true"
       tabindex="-1"
     >
       <component
