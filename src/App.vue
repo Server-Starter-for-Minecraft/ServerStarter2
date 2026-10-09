@@ -19,7 +19,6 @@ import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
 import { setOpenDialogFunc } from 'src/components/Error/Error';
-import { useWorldRequestPrompt } from 'src/components/Progress/worldRequestPrompt';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 
@@ -77,12 +76,11 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
 });
 
 // Eulaの同意処理
-// （同意を求めるダイアログは、該当するワールドを表示している間だけ表示する）
+// （同意を求める画面は、該当するワールドを表示している間だけ表示する）
 window.API.handleAgreeEula(
   async (_: Electron.IpcRendererEvent, worldID, url) =>
     await worldRequestStore.request(worldID, 'eula', { url })
 );
-useWorldRequestPrompt();
 // Progressがバックエンドからやってきたときの処理
 window.API.onProgress((_event, worldID, progress) => {
   progressStore.setProgress(worldID, progress);
