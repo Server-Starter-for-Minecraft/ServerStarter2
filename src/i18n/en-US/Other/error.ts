@@ -164,7 +164,7 @@ export const enUSError: MessageSchema['error'] = {
       title: 'No figure exist in {value}',
     },
     commandLineArgument: {
-      title: 'Wrong command line, {value} does not exist',
+      title: 'A quotation mark in the Java arguments "{value}" is not closed',
     },
     worldName: {
       notMatchRegex: {
