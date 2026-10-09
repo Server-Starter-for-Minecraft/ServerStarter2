@@ -94,7 +94,6 @@ export async function readyRunServer(
         args.onOut,
         args.onOut,
         args.currentDir,
-        true,
         undefined,
         10000
       );

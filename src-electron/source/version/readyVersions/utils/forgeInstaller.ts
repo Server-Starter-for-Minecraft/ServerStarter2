@@ -44,7 +44,7 @@ export async function getServerJarFromInstaller(
         : '';
 
   // `installer.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
-  const args = ['-jar', installFilePath.absolute().quotedPath, installerTag];
+  const args = ['-jar', installFilePath.absolute().path, installerTag];
 
   const sp = progress?.subtitle({
     key: `server.readyVersion.${type}.installing`,
