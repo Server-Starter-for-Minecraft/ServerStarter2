@@ -64,6 +64,12 @@ export async function getServerJarFromInstaller(
   return res;
 }
 
+/** `installer.jar`が生成する起動スクリプトのファイル名と，リネーム後の拡張子の対応 */
+const RUN_SCRIPTS = new Map<string, '.bat' | '.sh'>([
+  ['run.bat', '.bat'],
+  ['run.sh', '.sh'],
+]);
+
 /**
  * `installer.jar`によって書き出したファイルを適切な名前にリネーム
  */
@@ -74,10 +80,15 @@ export async function renameFilesFromInstaller(
   const paths = await cachePath.iter();
   if (isError(paths)) return paths;
 
+  // 起動スクリプト（run.bat / run.sh）が生成されるバージョンでは，スクリプトが参照する引数ファイル内で
+  // jarが元のファイル名で指定される（例：`-jar forge-26.2-65.1.3-shim.jar`）ため，元のjarを残す必要がある
+  const hasRunScript = paths.some((p) => RUN_SCRIPTS.has(p.basename()));
+
   for (const file of paths) {
     const filename = file.basename();
 
-    // 生成されたjarのファイル名を変更 (jarを生成するバージョンだった場合)
+    // 生成されたjarを`version.jar`として配置 (jarを生成するバージョンだった場合)
+    // `version.jar`はキャッシュの準備が完了したことの目印も兼ねる
     const matchRgx =
       version.type === 'forge'
         ? /(minecraft)?forge(-universal)?-[0-9\.-]+(-mc\d+)?(-universal|-shim)?.jar/
@@ -86,25 +97,21 @@ export async function renameFilesFromInstaller(
           : '';
     const match = filename.match(matchRgx);
     if (match) {
-      const renameJarRes = await file.rename(getJarPath(cachePath));
-      if (isError(renameJarRes)) return renameJarRes;
+      const jarPath = getJarPath(cachePath);
+      const placeJarRes = hasRunScript
+        ? await file.copyTo(jarPath)
+        : await file.rename(jarPath);
+      if (isError(placeJarRes)) return placeJarRes;
       continue;
     }
 
-    // 生成されたbatのファイル名を変更 (batを生成するバージョンだった場合)
-    if (filename === 'run.bat') {
-      const renameBatRes = await file.rename(
-        constructExecPath(cachePath, version, '.bat')
+    // 生成された起動スクリプト（bat / sh）のファイル名を変更 (起動スクリプトを生成するバージョンだった場合)
+    const scriptExt = RUN_SCRIPTS.get(filename);
+    if (scriptExt !== undefined) {
+      const renameScriptRes = await file.rename(
+        constructExecPath(cachePath, version, scriptExt)
       );
-      if (isError(renameBatRes)) return renameBatRes;
-    }
-
-    // 生成されたshのファイル名を変更 (shを生成するバージョンだった場合)
-    if (filename === 'run.sh') {
-      const renameShRes = await file.rename(
-        constructExecPath(cachePath, version, '.sh')
-      );
-      if (isError(renameShRes)) return renameShRes;
+      if (isError(renameScriptRes)) return renameScriptRes;
     }
   }
 }
