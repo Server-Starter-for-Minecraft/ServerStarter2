@@ -8,12 +8,13 @@ const contentsStore = useContentsStore();
 </script>
 
 <template>
-  <q-scroll-area class="full-height" style="flex: 1 1 0">
+  <!-- スクロールはContentsView側で区画ごとに行う -->
+  <div class="fit">
     <ContentsView
       v-if="mainStore.world"
       :content-type="
         contentsStore.getShowingContentPage(mainStore.world.version.type)
       "
     />
-  </q-scroll-area>
+  </div>
 </template>
