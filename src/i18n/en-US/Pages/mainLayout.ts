@@ -3,6 +3,21 @@ import { MessageSchema } from 'src/boot/i18n';
 export const enUSMainLayout: MessageSchema['mainLayout'] = {
   allWorld: 'All Worlds',
   systemSetting: 'System Settings',
+  donation: {
+    btn: 'Support us',
+    title: 'Support the development of ServerStarter',
+    desc: '\
+      ServerStarter is developed and run as a non-profit project without any ads.\n\
+      Your donation will be used for future development and operation.',
+    select: 'Choose an amount to donate',
+    note: 'The Square payment page will open in your browser (credit cards, Apple Pay and Google Pay are accepted)',
+    options: {
+      small: { desc: 'Buy us a coffee' },
+      medium: { desc: 'Buy us a lunch' },
+      large: { desc: 'Give development a big boost' },
+      custom: { title: 'Custom amount', desc: 'Donate any amount you like' },
+    },
+  },
   searchWorld: 'Search world',
   openList: 'Open the world list',
   minimizeList: 'Minimize world list',

@@ -1,6 +1,21 @@
 export const jaMainLayout = {
   allWorld: 'ワールド一覧',
   systemSetting: 'システム設定',
+  donation: {
+    btn: '開発を応援',
+    title: 'ServerStarterの開発を応援する',
+    desc: '\
+      ServerStarterは広告を表示せず，非営利で開発・運営しています\n\
+      いただいたご寄付は，今後の開発や運営に大切に使わせていただきます',
+    select: '応援する金額を選んでください',
+    note: 'Squareの決済ページがブラウザで開きます（クレジットカード・Apple Pay・Google Pay に対応）',
+    options: {
+      small: { desc: 'コーヒー1杯分の応援' },
+      medium: { desc: 'ランチ1回分の応援' },
+      large: { desc: '開発を大きく後押し' },
+      custom: { title: '金額を指定', desc: 'お好きな金額で応援' },
+    },
+  },
   searchWorld: 'ワールドを検索',
   openList: 'ワールド一覧を開く',
   minimizeList: 'ワールド一覧を最小化',
