@@ -7,15 +7,20 @@ import { osPlatform } from 'app/src-electron/util/os/os';
 import { getJarPath } from '../base';
 import { getVersionJsonObj, VersionJson } from './versionJson';
 
+/** `installer.jar`が生成する起動スクリプトの拡張子 */
+export type ScriptExt = '.bat' | '.sh';
+
 /**
- * `installer.jar`から生成されたファイル名を下記の規則でリネーム
+ * `installer.jar`が生成した起動スクリプトの，リネーム後のパスを返す
  *
- * @param ext:拡張子(.sh/.bat)
+ * @param cwdPath 起動スクリプトを置くフォルダ
+ * @param version 対象のバージョン
+ * @param ext 起動スクリプトの拡張子
  */
 export function constructExecPath(
   cwdPath: Path,
   version: ForgeVersion | NeoForgeVersion,
-  ext: '.sh' | '.bat'
+  ext: ScriptExt
 ) {
   return cwdPath.child(`version${ext}`);
 }
@@ -33,8 +38,9 @@ export async function getNewForgeArgs(
     runPath = constructExecPath(serverCwdPath, version, '.bat');
     if (runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromBat(
+      return await getProgramArgumentsFromScript(
         runPath,
+        '.bat',
         oldVerJson.download.url,
         oldVerJson.javaVersion
       );
@@ -44,8 +50,9 @@ export async function getNewForgeArgs(
     runPath = constructExecPath(serverCwdPath, version, '.sh');
     if (runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromSh(
+      return await getProgramArgumentsFromScript(
         runPath,
+        '.sh',
         oldVerJson.download.url,
         oldVerJson.javaVersion
       );
@@ -62,46 +69,57 @@ export async function getNewForgeArgs(
   });
 }
 
-async function getProgramArgumentsFromBat(
-  batPath: Path,
-  downloadURL: string,
-  javaVersion?: VersionJson['javaVersion']
-): Promise<Failable<VersionJson>> {
-  const txt = await batPath.readText();
+/**
+ * 起動スクリプト内でJavaを起動する行のパターン（拡張子ごと）
+ *
+ * キャプチャ部分が`user_jvm_args.txt`以外の実行時引数（例：`@libraries/.../win_args.txt`）
+ */
+const SCRIPT_JAVA_LINE_PATTERNS: Record<ScriptExt, RegExp> = {
+  '.bat': /^\s*java @user_jvm_args\.txt (.+) %\*\s*$/,
+  '.sh': /^\s*java @user_jvm_args\.txt (.+) "\$@"\s*$/,
+};
+
+/**
+ * `installer.jar`が生成した起動スクリプト（bat / sh）から，Javaに渡される実行時引数を取り出す
+ *
+ * @param scriptPath 起動スクリプトのパス
+ * @param ext 起動スクリプトの拡張子
+ * @returns `user_jvm_args.txt`を除いた実行時引数の配列
+ */
+export async function readScriptArgs(
+  scriptPath: Path,
+  ext: ScriptExt
+): Promise<Failable<string[]>> {
+  const txt = await scriptPath.readText();
   if (isError(txt)) return txt;
 
   for (const line of txt.split('\n')) {
-    const pattern = /^\s*java @user_jvm_args\.txt (.+) %\*\s*$/;
-    const match = line.match(pattern);
-    if (match) {
-      const arg = match[1];
-      return getVersionJsonObj(downloadURL, false, undefined, javaVersion, [
-        ...arg.split(' '),
-      ]);
-    }
+    const match = line.match(SCRIPT_JAVA_LINE_PATTERNS[ext]);
+    if (match) return match[1].split(' ');
   }
 
-  return fromRuntimeError(new Error(`MISSING_JAVA_COMMAND_(${batPath.path})`));
+  return fromRuntimeError(
+    new Error(`MISSING_JAVA_COMMAND_(${scriptPath.path})`)
+  );
 }
 
-async function getProgramArgumentsFromSh(
-  shPath: Path,
+/**
+ * 起動スクリプトの内容から，引数を更新した`version.json`のオブジェクトを生成する
+ *
+ * @param scriptPath 起動スクリプトのパス
+ * @param ext 起動スクリプトの拡張子
+ * @param downloadURL `installer.jar`のダウンロードURL（`version.json`にそのまま引き継ぐ）
+ * @param javaVersion 必要なJavaのバージョン（`version.json`にそのまま引き継ぐ）
+ * @returns 起動スクリプトにJavaを起動する行がない場合はエラー
+ */
+async function getProgramArgumentsFromScript(
+  scriptPath: Path,
+  ext: ScriptExt,
   downloadURL: string,
   javaVersion?: VersionJson['javaVersion']
 ): Promise<Failable<VersionJson>> {
-  const txt = await shPath.readText();
-  if (isError(txt)) return txt;
+  const args = await readScriptArgs(scriptPath, ext);
+  if (isError(args)) return args;
 
-  for (const line of txt.split('\n')) {
-    const pattern = /^\s*java @user_jvm_args\.txt (.+) "\$@"\s*$/;
-    const match = line.match(pattern);
-    if (match) {
-      const arg = match[1];
-      return getVersionJsonObj(downloadURL, false, undefined, javaVersion, [
-        ...arg.split(' '),
-      ]);
-    }
-  }
-
-  return fromRuntimeError(new Error(`MISSING_JAVA_COMMAND_(${shPath.path})`));
+  return getVersionJsonObj(downloadURL, false, undefined, javaVersion, args);
 }

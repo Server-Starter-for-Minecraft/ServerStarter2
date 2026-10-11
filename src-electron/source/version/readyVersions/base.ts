@@ -151,7 +151,7 @@ export abstract class ReadyVersion<
   ): Promise<Failable<Path[]>> {
     // Jarの生成
     const cachedJarPath = getJarPath(this.cachePath);
-    if (!cachedJarPath.exists()) {
+    if (!(await this.isCacheReady())) {
       // Jarのダウンロードとファイルへの書き出し
       const generateJarRes = await this.generateCachedJar(
         verJsonHandler,
@@ -180,6 +180,17 @@ export abstract class ReadyVersion<
     paths.push(...cachedMatchFiles);
 
     return paths;
+  }
+
+  /**
+   * キャッシュの準備（`generateCachedJar()`）が完了しているかを判定する
+   *
+   * 既定ではサーバーJarの有無で判定する。キャッシュの整合性を追加で確認する必要があるサーバーでは上書きする
+   *
+   * @returns 準備済みで`generateCachedJar()`を実行する必要がなければ`true`
+   */
+  protected async isCacheReady(): Promise<boolean> {
+    return getJarPath(this.cachePath).exists();
   }
 
   /**
