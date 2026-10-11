@@ -2,31 +2,49 @@ import { app } from 'electron';
 import { z } from 'zod';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { osPlatform } from 'app/src-electron/util/os/os';
 
+/**
+ * launcher_profiles.json の起動構成のうち，ServerStarterで使用する値のスキーマ
+ *
+ * ランチャーのバージョンや起動構成の種類によって含まれる項目が異なる
+ * (javaArgs や created が無い起動構成もある)ため，使用する項目のみを検証する
+ */
 const LauncherProfile = z.object({
-  created: z.string(),
-  gameDir: z.string().optional(),
-  icon: z.string(),
-  javaArgs: z.string(),
-  lastUsed: z.string(),
-  lastVersionId: z.string(),
-  name: z.string(),
-  type: z.string(),
+  /** ゲームディレクトリ(未設定の場合はランチャーのディレクトリを使用する) */
+  gameDir: z.string().optional().catch(undefined),
 });
-type LauncherProfile = z.infer<typeof LauncherProfile>;
 
+/**
+ * launcher_profiles.json のうち，ServerStarterで使用する値のスキーマ
+ *
+ * ファイル全体の version はランチャーの更新に伴って変化するため検証しない
+ */
 const LauncherProfiles = z.object({
-  profiles: z.record(z.string(), LauncherProfile),
-  version: z.literal(3),
+  // 1つの起動構成が想定外の形式でも，他の起動構成は読み込めるようにする
+  profiles: z.record(z.string(), LauncherProfile.catch({ gameDir: undefined })),
 });
-type LauncherProfiles = z.infer<typeof LauncherProfiles>;
 
-/** Minecraft Launcherの起動構成のゲームディレクトリ一覧を取得 */
-// TODO: LauncherProfilesのversionが3以外だったらエラー
+/**
+ * Minecraft Launcherの起動構成のゲームディレクトリ一覧を取得
+ * @returns セーブデータの保存先ディレクトリの一覧 (launcher_profiles.json が読み込めない場合はエラー)
+ */
 export async function getLocalSaveContainers() {
-  const launcherPath = getLauncherPath();
-  const jsonPath = getLauncherPath().child('launcher_profiles.json');
+  return loadLocalSaveContainers(getLauncherPath());
+}
+
+/**
+ * 指定したランチャーのディレクトリにある launcher_profiles.json から，
+ * 各起動構成のセーブデータの保存先ディレクトリ(重複なし)を取得する
+ *
+ * @param launcherPath Minecraft Launcherのディレクトリ (e.g. %APPDATA%/.minecraft)
+ * @returns セーブデータの保存先ディレクトリ(`<gameDir>/saves`)の一覧
+ */
+export async function loadLocalSaveContainers(
+  launcherPath: Path
+): Promise<Failable<Path[]>> {
+  const jsonPath = launcherPath.child('launcher_profiles.json');
   const json = await jsonPath.readJson(LauncherProfiles);
 
   if (isError(json)) return json;

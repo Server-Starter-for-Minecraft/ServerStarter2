@@ -53,6 +53,14 @@ async function findIconPngInZip(zip: ZipFile): Promise<Failable<BytesData>> {
   return Object.values(pngs)[0];
 }
 
+/** ワールドとして読み込めなかったことを示すエラーを生成する */
+function invalidCustomMapError(path: Path, isDirectory: boolean) {
+  return errorMessage.data.path.invalidContent.invalidCustomMap({
+    type: isDirectory ? 'directory' : 'file',
+    path: path.path,
+  });
+}
+
 /** パスを受け適切なマップ形式だった場合CustomMapを返す */
 export async function loadCustomMap(
   path: Path
@@ -73,10 +81,7 @@ export async function loadCustomMap(
     const datPath = path.child(LEVEL_DAT);
     if (!datPath.exists()) {
       // /level.dat がない場合エラー
-      return errorMessage.data.path.invalidContent.invalidCustomMap({
-        type: isDirectory ? 'directory' : 'file',
-        path: path.path,
-      });
+      return invalidCustomMapError(path, true);
     }
     dat = await BytesData.fromPath(datPath);
 
@@ -88,10 +93,7 @@ export async function loadCustomMap(
     // zipの場合
     if (path.extname() !== '.zip') {
       // zipでないファイル場合エラー
-      return errorMessage.data.path.invalidContent.invalidCustomMap({
-        type: 'file',
-        path: path.path,
-      });
+      return invalidCustomMapError(path, false);
     }
     // zipの場合
     const zip = new ZipFile(path);
@@ -110,8 +112,13 @@ export async function loadCustomMap(
   }
 
   if (isError(dat)) return dat;
-  const datContent = await dat.nbt<LevelDat>();
-  if (isError(datContent)) return datContent;
+  const rawDatContent = await dat.nbt<object>();
+  if (isError(rawDatContent)) return rawDatContent;
+
+  // 必要な値が欠けているlevel.dat(古い形式など)は例外にせず，読み込めないワールドとして扱う
+  const parsedDat = LevelDat.safeParse(rawDatContent);
+  if (!parsedDat.success) return invalidCustomMapError(path, isDirectory);
+  const datContent = parsedDat.data;
 
   const iconURI = await icon?.encodeURI('image/png');
 
@@ -131,15 +138,11 @@ export async function loadCustomMap(
     versionName: datContent.Data.Version.Name,
     icon: iconURI,
     isFile: !isDirectory,
-    lastPlayed: longToNumber(datContent.Data.LastPlayed),
+    lastPlayed: datContent.Data.LastPlayed,
     gamemode: gamemodeMap[datContent.Data.GameType],
     hardcore: datContent.Data.hardcore,
-    difficulty: difficultyMap[datContent.Data.GameType],
+    difficulty: difficultyMap[datContent.Data.Difficulty],
   };
-}
-
-function longToNumber(value: any): number {
-  return Number(value);
 }
 
 /**
