@@ -33,6 +33,14 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
       Worlds are loaded from the folders added here in addition to the folders detected from the Minecraft Launcher settings.',
       detected: 'Detected',
       add: 'Add a folder to load',
+      tooltipVisible:
+        'Display worlds saved in this folder in "Introduce a created world"',
+      tooltipInvisible:
+        'Do not display worlds saved in this folder in "Introduce a created world"',
+      unregistDialog:
+        '\
+      Unregister {name} from the single player world folders. \n\
+      Unregistered folders and their internal data will not be deleted.',
     },
   },
   info: {

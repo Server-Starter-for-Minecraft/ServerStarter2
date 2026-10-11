@@ -1,48 +1,40 @@
 <script setup lang="ts">
 import { computed, onMounted, Ref, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
+import {
+  listLocalSaveFolders,
+  LocalSaveFolder,
+  localSaveFolderTitle,
+  registerLocalSaveFolder,
+  setLocalSaveFolderVisible,
+  unregisterLocalSaveFolder,
+} from 'app/src-public/scripts/localSaveFolders';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { checkError } from 'src/components/Error/Error';
+import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
+import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
+import FolderCardBase from './FolderCardBase.vue';
 
+const { t } = useI18n();
+const $q = useQuasar();
 const sysStore = useSystemStore();
 
-/** Minecraft Launcherの設定から自動検出した読み込み先(編集不可) */
+/** Minecraft Launcherの設定から自動検出した読み込み先 */
 const detectedFolders: Ref<string[]> = ref([]);
 
-/**
- * 画面に表示する読み込み先の一覧
- *
- * 自動検出した読み込み先(index なし)の後に，ユーザーが追加した読み込み先(設定内の位置を index に持つ)を並べる
- */
-const folders = computed(() => [
-  ...detectedFolders.value.map((path) => ({
-    path,
-    detected: true,
-    index: undefined,
-  })),
-  ...sysStore.systemSettings.localSave.containers.map((path, index) => ({
-    path,
-    detected: false,
-    index,
-  })),
-]);
+/** 画面に表示する読み込み先の一覧(自動検出したフォルダ，追加したフォルダの順) */
+const folders = computed(() =>
+  listLocalSaveFolders(detectedFolders.value, sysStore.systemSettings.localSave)
+);
 
 onMounted(async () => {
   detectedFolders.value =
     await window.API.invokeGetDetectedLocalSaveContainers();
 });
-
-/**
- * エクスプローラーでフォルダを開く
- * @param path 開くフォルダのパス
- */
-async function openFolder(path: string) {
-  const res = await window.API.sendOpenFolder(path, false);
-  checkError(res, undefined, (e) => tError(e));
-}
 
 /**
  * フォルダ選択ダイアログで選んだフォルダを読み込み先に追加する
@@ -51,22 +43,27 @@ async function addFolder() {
   const res = await window.API.invokePickDialog({ type: 'container' });
   checkError(
     res,
-    (path) => {
-      // 自動検出済み・追加済みのフォルダは重複して登録しない
-      const containers = sysStore.systemSettings.localSave.containers;
-      if (!containers.includes(path) && !detectedFolders.value.includes(path))
-        containers.push(path);
-    },
+    (path) => registerLocalSaveFolder(sysStore.systemSettings.localSave, path),
     (e) => tError(e, { ignoreErrors: ['data.path.dialogCanceled'] })
   );
 }
 
 /**
- * 追加した読み込み先を一覧から削除する(フォルダ自体は削除しない)
- * @param index 削除する読み込み先の番号
+ * 確認ダイアログを表示した上で，読み込み先の登録を解除する(フォルダ自体は削除しない)
+ * @param folder 登録を解除する読み込み先
  */
-function removeFolder(index: number) {
-  sysStore.systemSettings.localSave.containers.splice(index, 1);
+function removeFolder(folder: LocalSaveFolder) {
+  const name = localSaveFolderTitle(folder.path);
+  $q.dialog({
+    component: DangerDialog,
+    componentProps: {
+      dialogTitle: t('systemsetting.folder.unregistTitle', { name }),
+      dialogDesc: t('systemsetting.folder.localSave.unregistDialog', { name }),
+      okBtnTxt: t('systemsetting.folder.unregist'),
+    } as dangerDialogProp,
+  }).onOk(() =>
+    unregisterLocalSaveFolder(sysStore.systemSettings.localSave, folder)
+  );
 }
 </script>
 
@@ -80,50 +77,42 @@ function removeFolder(index: number) {
     </p>
 
     <div class="column q-py-sm q-gutter-y-md">
-      <q-card
-        v-for="folder in folders"
-        :key="`${folder.detected}-${folder.path}`"
-        flat
-        bordered
-        class="card"
-      >
-        <div class="row items-center no-wrap q-px-md q-py-sm q-gutter-x-sm">
-          <!-- パスが長い場合は省略表示し，操作ボタンが画面外に出ないようにする -->
-          <div class="col text-omit" style="width: 0">
-            {{ folder.path }}
-            <SsTooltip
-              :name="folder.path"
-              anchor="bottom start"
-              self="center start"
+      <template v-for="folder in folders" :key="folder.path">
+        <FolderCardBase
+          :visible="folder.visible"
+          :title="localSaveFolderTitle(folder.path)"
+          :path="folder.path"
+          :tooltip-visible="$t('systemsetting.folder.localSave.tooltipVisible')"
+          :tooltip-invisible="
+            $t('systemsetting.folder.localSave.tooltipInvisible')
+          "
+          @update:visible="
+            (v) =>
+              setLocalSaveFolderVisible(
+                sysStore.systemSettings.localSave,
+                folder,
+                v
+              )
+          "
+        >
+          <template #title-append>
+            <q-badge
+              v-if="folder.detected"
+              outline
+              color="primary"
+              :label="$t('systemsetting.folder.localSave.detected')"
             />
-          </div>
-          <q-badge
-            v-if="folder.detected"
-            outline
-            color="primary"
-            :label="$t('systemsetting.folder.localSave.detected')"
-          />
-          <SsBtn
-            dense
-            free-width
-            icon="folder_open"
-            @click="openFolder(folder.path)"
-          >
-            <SsTooltip
-              :name="$t('others.worldFolder.openFolder')"
-              anchor="bottom middle"
-              self="center middle"
+          </template>
+          <template #actions>
+            <SsBtn
+              free-width
+              color="negative"
+              :label="$t('systemsetting.folder.unregist')"
+              @click="removeFolder(folder)"
             />
-          </SsBtn>
-          <SsBtn
-            v-if="folder.index !== undefined"
-            free-width
-            color="negative"
-            :label="$t('systemsetting.folder.unregist')"
-            @click="removeFolder(folder.index)"
-          />
-        </div>
-      </q-card>
+          </template>
+        </FolderCardBase>
+      </template>
       <AddContentsCard
         :label="$t('systemsetting.folder.localSave.add')"
         min-height="4rem"
@@ -133,9 +122,3 @@ function removeFolder(index: number) {
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.card {
-  border-radius: 5px;
-}
-</style>

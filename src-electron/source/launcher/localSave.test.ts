@@ -1,7 +1,11 @@
 import prismarineNbt, { NBT, Tags, TagType } from 'prismarine-nbt';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { gzipSync } from 'zlib';
-import { SystemSettings } from 'app/src-electron/schema/system';
+import { z } from 'zod';
+import {
+  SystemLocalSaveSetting,
+  SystemSettings,
+} from 'app/src-electron/schema/system';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
@@ -142,25 +146,53 @@ describe('getAllLocalSaveData', () => {
     vi.mocked(getLocalSaveContainers).mockResolvedValue([detectedPath]);
   });
 
-  test('自動検出した保存先とシステム設定で追加した保存先の両方のワールドを読み込む', async () => {
+  /** 各保存先にワールドを1つずつ作成し，指定したシステム設定で読み込んだワールドのパスを返す */
+  async function loadWith(localSave: z.input<typeof SystemLocalSaveSetting>) {
     await createWorld('detected', modernLevelDat(), detectedPath);
     await createWorld('additional', modernLevelDat(), additionalPath);
     vi.mocked(getSystemSettings).mockResolvedValue(
-      SystemSettings.parse({
-        // 自動検出した保存先と同じフォルダが設定されていても重複して読み込まない
-        localSave: { containers: [additionalPath.str(), detectedPath.str()] },
-      })
+      SystemSettings.parse({ localSave })
     );
 
     const result = await getAllLocalSaveData();
+    if (isError(result.value)) throw new Error(result.value.key);
+    return result.value.map((w) => w.path).sort();
+  }
 
-    expect(isError(result.value)).toBe(false);
-    if (isError(result.value)) return;
-    expect(result.value.map((w) => w.path).sort()).toEqual(
+  test('自動検出した保存先とシステム設定で追加した保存先の両方のワールドを読み込む', async () => {
+    const paths = await loadWith({
+      // 自動検出した保存先と同じフォルダが設定されていても重複して読み込まない
+      containers: [
+        { path: additionalPath.str() },
+        { path: detectedPath.str() },
+      ],
+    });
+
+    expect(paths).toEqual(
       [
         detectedPath.child('detected').path,
         additionalPath.child('additional').path,
       ].sort()
     );
+  });
+
+  test('非表示にした保存先のワールドは読み込まない', async () => {
+    const paths = await loadWith({
+      containers: [
+        { path: additionalPath.str(), visible: false },
+        { path: detectedPath.str(), visible: false },
+      ],
+    });
+
+    expect(paths).toEqual([]);
+  });
+
+  test('登録を解除した自動検出の保存先のワールドは読み込まない', async () => {
+    const paths = await loadWith({
+      containers: [{ path: additionalPath.str() }],
+      excluded: [detectedPath.str()],
+    });
+
+    expect(paths).toEqual([additionalPath.child('additional').path]);
   });
 });

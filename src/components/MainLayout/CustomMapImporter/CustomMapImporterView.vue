@@ -67,6 +67,20 @@ function showCheckDialog(customMap: CustomMapData) {
   });
 }
 
+/** 配布ワールドの導入ボタン */
+const importActions = [
+  {
+    icon: 'folder_zip',
+    labelKey: 'mainLayout.customMapImporter.selectZip',
+    onClick: importZip,
+  },
+  {
+    icon: 'create_new_folder',
+    labelKey: 'mainLayout.customMapImporter.selectFolder',
+    onClick: importFolder,
+  },
+] as const;
+
 /**
  * シングルプレイのワールドの読み込み先を設定するシステム設定の画面へ移動する
  */
@@ -93,32 +107,26 @@ onMounted(async () => {
     <BaseDialogCard
       :title="$t('mainLayout.customMapImporter.addSeveralWorld')"
       @close="onDialogCancel"
-      style="max-width: 50%"
+      style="width: 60vw; max-width: 60rem"
     >
       <q-card-section>
         <span class="text-caption">{{
           $t('mainLayout.customMapImporter.addCustomWorld')
         }}</span>
-        <q-card-actions>
-          <div class="row full-width q-gutter-sm">
-            <SsBtn
-              free-width
-              color="primary"
-              icon="add"
-              :label="$t('mainLayout.customMapImporter.selectZip')"
-              @click="importZip"
-              class="btn col"
-            />
-            <SsBtn
-              free-width
-              color="primary"
-              icon="add"
-              :label="$t('mainLayout.customMapImporter.selectFolder')"
-              @click="importFolder"
-              class="btn col"
-            />
-          </div>
-        </q-card-actions>
+        <!-- 追加コンテンツの新規導入ボタンと同じデザインにする -->
+        <div class="row q-pt-sm import-btns">
+          <q-btn
+            v-for="action in importActions"
+            :key="action.labelKey"
+            outline
+            no-caps
+            color="primary"
+            @click="action.onClick"
+          >
+            <q-icon :name="action.icon" />
+            <span class="q-ml-sm">{{ $t(action.labelKey) }}</span>
+          </q-btn>
+        </div>
       </q-card-section>
 
       <q-card-section>
@@ -150,7 +158,8 @@ onMounted(async () => {
             />
           </div>
         </div>
-        <div v-else class="row q-gutter-sm justify-center">
+        <!-- 余白に応じて列数とアイテムの幅を変え，最小幅を下回る場合は1列で表示する -->
+        <div v-else class="world-grid q-pt-sm">
           <template
             v-for="localWorld in localWorlds.sort(
               (w1, w2) => w2.lastPlayed - w1.lastPlayed
@@ -163,7 +172,6 @@ onMounted(async () => {
               :version-name="localWorld.versionName"
               :last-played="localWorld.lastPlayed"
               @click="showCheckDialog(localWorld)"
-              style="min-width: 20rem; max-width: 20rem"
             />
           </template>
         </div>
@@ -173,9 +181,14 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-.btn {
-  font-size: 1rem;
-  min-width: 12rem;
+.import-btns {
+  gap: 8px;
+}
+
+.world-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 8px;
 }
 
 .messageField {

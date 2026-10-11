@@ -1,3 +1,4 @@
+import { listLocalSaveFolders } from 'app/src-public/scripts/localSaveFolders';
 import {
   ErrorMessage,
   Failable,
@@ -23,17 +24,23 @@ export async function getDetectedLocalSaveContainers(): Promise<string[]> {
 }
 
 /**
- * 自動検出した保存先とシステム設定で追加された保存先にある，全てのシングルプレイのワールドを取得する
+ * 自動検出した保存先とシステム設定で追加された保存先(非表示・登録解除したものを除く)にある，
+ * 全てのシングルプレイのワールドを取得する
  * @returns 読み込めたワールドの一覧(読み込めなかったワールドはエラーとして返す)
  */
 export async function getAllLocalSaveData(): Promise<
   WithError<Failable<CustomMapData[]>>
 > {
   const settings = await getSystemSettings();
-  const containers = uniquePaths([
-    ...(await getLocalSaveContainers()),
-    ...settings.localSave.containers.map((c) => new Path(c)),
-  ]);
+  // 非表示にした・登録を解除した保存先は読み込まない
+  const containers = uniquePaths(
+    listLocalSaveFolders(
+      await getDetectedLocalSaveContainers(),
+      settings.localSave
+    )
+      .filter((f) => f.visible)
+      .map((f) => new Path(f.path))
+  );
 
   const savedatas = await asyncMap(Array.from(containers), getLocalSaveData);
 
