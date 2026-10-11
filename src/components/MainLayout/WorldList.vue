@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getCssVar } from 'quasar';
+import { getCssVar, useQuasar } from 'quasar';
 import { assets } from 'src/assets/assets';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import SearchWorldView from '../World/SearchWorldView.vue';
 import IconButtonView from '../World/utils/IconButtonView.vue';
+import DonationDialog from './Donation/DonationDialog.vue';
 import NewWorldBtn from './NewWorldBtn.vue';
 import WorldTab from './WorldTab.vue';
 
@@ -16,8 +17,16 @@ interface Prop {
 }
 defineProps<Prop>();
 
+const $q = useQuasar();
 const sysStore = useSystemStore();
 const mainStore = useMainStore();
+
+/**
+ * 寄付の金額を選択するダイアログを開く
+ */
+function openDonationDialog() {
+  $q.dialog({ component: DonationDialog });
+}
 
 const miniChangeWidth = 200;
 const drawer = ref(true);
@@ -83,6 +92,12 @@ const drawer = ref(true);
 
     <NewWorldBtn :mini-change-width="miniChangeWidth" />
     <q-separator class="q-mx-xs" />
+    <IconButtonView
+      icon-name="volunteer_activism"
+      :label="$t('mainLayout.donation.btn')"
+      :tooltip="$t('mainLayout.donation.title')"
+      @click="openDonationDialog"
+    />
     <IconButtonView
       icon-name="settings"
       :label="$t('mainLayout.systemSetting')"
