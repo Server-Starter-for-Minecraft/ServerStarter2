@@ -114,18 +114,18 @@ onMounted(async () => {
           $t('mainLayout.customMapImporter.addCustomWorld')
         }}</span>
         <!-- 追加コンテンツの新規導入ボタンと同じデザインにする -->
-        <div class="row q-pt-sm import-btns">
-          <q-btn
+        <div class="row q-pt-sm q-gutter-sm">
+          <SsBtn
             v-for="action in importActions"
             :key="action.labelKey"
-            outline
-            no-caps
+            free-width
             color="primary"
+            class="col"
             @click="action.onClick"
           >
             <q-icon :name="action.icon" />
             <span class="q-ml-sm">{{ $t(action.labelKey) }}</span>
-          </q-btn>
+          </SsBtn>
         </div>
       </q-card-section>
 
@@ -181,10 +181,6 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-.import-btns {
-  gap: 8px;
-}
-
 .world-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
