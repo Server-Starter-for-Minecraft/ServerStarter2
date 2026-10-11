@@ -137,6 +137,9 @@ const api: FrontAPI = {
   invokeGetCacheContents: invoke('GetCacheContents'),
 
   invokeGetLocalSaveData: invoke('GetLocalSaveData'),
+  invokeGetDetectedLocalSaveContainers: invoke(
+    'GetDetectedLocalSaveContainers'
+  ),
 
   invokeValidateRemoteSetting: invoke('ValidateRemoteSetting'),
 

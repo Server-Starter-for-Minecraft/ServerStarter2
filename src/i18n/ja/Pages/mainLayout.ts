@@ -38,6 +38,7 @@ export const jaMainLayout = {
     addSingleWorld: 'シングルワールドを導入',
     loadSingleWorld: 'シングルプレイワールドを\n読み込み中',
     noSingleWorld: 'シングルプレイワールドは\n見つかりませんでした',
+    openLocalSaveSetting: 'ワールドの読み込み先を設定',
     checkDialog: {
       title: 'ワールドを導入中',
       desc: '下記に表示中のワールドを新規作成しています',

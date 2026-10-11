@@ -3,7 +3,10 @@ import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
 import { getVersions } from '../core/setup';
 import { readyWindow } from '../lifecycle/lifecycle';
-import { getAllLocalSaveData } from '../source/launcher/localSave';
+import {
+  getAllLocalSaveData,
+  getDetectedLocalSaveContainers,
+} from '../source/launcher/localSave';
 import { getPlayer, researchPlayer } from '../source/player/main';
 import {
   deleteRemoteWorld,
@@ -87,6 +90,7 @@ export const getBackListener = (
     ValidateNewRemoteWorldName: validateNewRemoteWorldName,
 
     GetLocalSaveData: getAllLocalSaveData,
+    GetDetectedLocalSaveContainers: getDetectedLocalSaveContainers,
     GetRemoteWorlds: getRemoteWorlds,
     DeleteRemoteWorld: deleteRemoteWorld,
 

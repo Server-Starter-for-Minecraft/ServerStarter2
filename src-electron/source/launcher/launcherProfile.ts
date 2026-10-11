@@ -1,8 +1,7 @@
 import { app } from 'electron';
 import { z } from 'zod';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isError } from 'app/src-electron/util/error/error';
-import { Failable } from 'app/src-electron/util/error/failable';
+import { isValid } from 'app/src-electron/util/error/error';
 import { osPlatform } from 'app/src-electron/util/os/os';
 
 /**
@@ -27,42 +26,71 @@ const LauncherProfiles = z.object({
 });
 
 /**
- * Minecraft Launcherの起動構成のゲームディレクトリ一覧を取得
- * @returns セーブデータの保存先ディレクトリの一覧 (launcher_profiles.json が読み込めない場合はエラー)
+ * 起動構成を記録したファイル名の一覧
+ *
+ * Microsoft Store版(Xboxアプリ)のランチャーは別名のファイルに記録するため，両方を読み込む
  */
-export async function getLocalSaveContainers() {
+const LAUNCHER_PROFILES_FILES = [
+  'launcher_profiles.json',
+  'launcher_profiles_microsoft_store.json',
+];
+
+/**
+ * Minecraft Launcherの設定から，シングルプレイのワールドの保存先ディレクトリ一覧を自動検出する
+ * @returns セーブデータの保存先ディレクトリの一覧
+ */
+export async function getLocalSaveContainers(): Promise<Path[]> {
   return loadLocalSaveContainers(getLauncherPath());
 }
 
 /**
- * 指定したランチャーのディレクトリにある launcher_profiles.json から，
+ * 指定したランチャーのディレクトリにある起動構成のファイルから，
  * 各起動構成のセーブデータの保存先ディレクトリ(重複なし)を取得する
+ *
+ * 既定の保存先(`<launcherPath>/saves`)は，起動構成のファイルが無い・読み込めない場合も含めて常に結果に含める
  *
  * @param launcherPath Minecraft Launcherのディレクトリ (e.g. %APPDATA%/.minecraft)
  * @returns セーブデータの保存先ディレクトリ(`<gameDir>/saves`)の一覧
  */
 export async function loadLocalSaveContainers(
   launcherPath: Path
-): Promise<Failable<Path[]>> {
-  const jsonPath = launcherPath.child('launcher_profiles.json');
-  const json = await jsonPath.readJson(LauncherProfiles);
-
-  if (isError(json)) return json;
-
+): Promise<Path[]> {
   const defaultLocalSaveContainer = launcherPath.child('saves');
 
-  return [
-    ...new Set(
-      Object.values(json.profiles).map((v) =>
-        (v.gameDir
-          ? new Path(v.gameDir).child('saves')
-          : defaultLocalSaveContainer
-        )
-          .absolute()
-          .str()
-      )
-    ),
-  ].map((x) => new Path(x));
+  const profilesList = await Promise.all(
+    LAUNCHER_PROFILES_FILES.map((name) =>
+      launcherPath.child(name).readJson(LauncherProfiles)
+    )
+  );
+
+  // 読み込めなかったファイルは無視する(ランチャーの種類によって存在しないファイルがあるため)
+  const gameDirContainers = profilesList
+    .filter(isValid)
+    .flatMap((json) => Object.values(json.profiles))
+    .map((v) =>
+      v.gameDir ? new Path(v.gameDir).child('saves') : defaultLocalSaveContainer
+    );
+
+  return uniquePaths([defaultLocalSaveContainer, ...gameDirContainers]);
+}
+
+/**
+ * パスの一覧から，同じ場所を指すパスの重複を取り除く
+ * @param paths パスの一覧
+ * @returns 重複を除いた絶対パスの一覧(最初に現れた順)
+ */
+export function uniquePaths(paths: Path[]): Path[] {
+  // Windowsではパスの大文字・小文字を区別しないため，比較時のみ小文字にそろえる
+  const toKey = (str: string) =>
+    osPlatform === 'windows-x64' ? str.toLowerCase() : str;
+
+  const unique = new Map<string, Path>();
+  paths.forEach((p) => {
+    const absolute = p.absolute();
+    const key = toKey(absolute.str());
+    if (!unique.has(key)) unique.set(key, absolute);
+  });
+  return [...unique.values()];
 }
 
 function getLauncherPath(): Path {

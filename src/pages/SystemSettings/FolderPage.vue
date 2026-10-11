@@ -9,6 +9,7 @@ import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAd
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
 import FolderCard from 'src/components/SystemSettings/Folder/FolderCard.vue';
+import LocalSaveFolderSetting from 'src/components/SystemSettings/Folder/LocalSaveFolderSetting.vue';
 
 const $q = useQuasar();
 const sysStore = useSystemStore();
@@ -65,5 +66,10 @@ async function loadFolderWorlds(container: WorldContainer) {
         @click="openFolderEditor"
       />
     </div>
+
+    <q-separator class="q-my-lg" />
+
+    <!-- 「既存のワールドを導入」で読み込むシングルプレイのワールドの保存先 -->
+    <LocalSaveFolderSetting />
   </div>
 </template>

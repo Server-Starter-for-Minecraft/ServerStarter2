@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, Ref, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { tError } from 'src/i18n/utils/tFunc';
@@ -15,6 +16,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 
 const $q = useQuasar();
+const router = useRouter();
 const localWorlds: Ref<CustomMapData[]> = ref([]);
 const loading = ref(true);
 
@@ -63,6 +65,14 @@ function showCheckDialog(customMap: CustomMapData) {
   }).onOk(() => {
     onDialogOK();
   });
+}
+
+/**
+ * シングルプレイのワールドの読み込み先を設定するシステム設定の画面へ移動する
+ */
+function openLocalSaveSetting() {
+  onDialogCancel();
+  router.push('/system/folder');
 }
 
 onMounted(async () => {
@@ -128,12 +138,16 @@ onMounted(async () => {
               {{ $t('mainLayout.customMapImporter.loadSingleWorld') }}
             </p>
           </div>
-          <div
-            v-else
-            class="absolute-center messageText"
-            style="white-space: pre-line"
-          >
-            {{ $t('mainLayout.customMapImporter.noSingleWorld') }}
+          <div v-else class="absolute-center column items-center q-gutter-y-md">
+            <div class="messageText" style="white-space: pre-line">
+              {{ $t('mainLayout.customMapImporter.noSingleWorld') }}
+            </div>
+            <SsBtn
+              free-width
+              icon="settings"
+              :label="$t('mainLayout.customMapImporter.openLocalSaveSetting')"
+              @click="openLocalSaveSetting"
+            />
           </div>
         </div>
         <div v-else class="row q-gutter-sm justify-center">

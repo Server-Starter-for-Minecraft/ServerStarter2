@@ -1,13 +1,24 @@
 import prismarineNbt, { NBT, Tags, TagType } from 'prismarine-nbt';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { gzipSync } from 'zlib';
+import { SystemSettings } from 'app/src-electron/schema/system';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
-import { getLocalSaveData } from './localSave';
+import { getSystemSettings } from '../stores/system';
+import { getLocalSaveContainers } from './launcherProfile';
+import { getAllLocalSaveData, getLocalSaveData } from './localSave';
+
+// システム設定と，ランチャーの設定から自動検出される保存先はテストごとに指定する
+vi.mock('../stores/system', () => ({ getSystemSettings: vi.fn() }));
+vi.mock('./launcherProfile', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./launcherProfile')>()),
+  getLocalSaveContainers: vi.fn(),
+}));
 
 const nbt = prismarineNbt;
-const savesPath = new Path(__dirname).child('work', 'localSave', 'saves');
+const workPath = new Path(__dirname).child('work', 'localSave');
+const savesPath = workPath.child('saves');
 
 /** level.dat の Data タグの中身(タグ名とタグの組) */
 type LevelDatTags = Record<string, Tags[TagType]>;
@@ -16,9 +27,14 @@ type LevelDatTags = Record<string, Tags[TagType]>;
  * Minecraftと同じ形式(gzip圧縮したNBT)で level.dat を持つワールドを作成する
  * @param dirName ワールドのディレクトリ名
  * @param data level.dat の Data タグの中身
+ * @param container ワールドを作成する保存先ディレクトリ
  */
-async function createWorld(dirName: string, data: LevelDatTags) {
-  const worldPath = savesPath.child(dirName);
+async function createWorld(
+  dirName: string,
+  data: LevelDatTags,
+  container: Path = savesPath
+) {
+  const worldPath = container.child(dirName);
   await worldPath.mkdir(true);
   const root: NBT = {
     type: 'compound',
@@ -52,7 +68,7 @@ function modernLevelDat(overrides: LevelDatTags = {}): LevelDatTags {
 
 describe('getLocalSaveData', () => {
   beforeEach(async () => {
-    await savesPath.emptyDir();
+    await workPath.emptyDir();
   });
 
   test('シングルプレイのワールド情報を読み込める', async () => {
@@ -113,6 +129,38 @@ describe('getLocalSaveData', () => {
     // 読み込めなかったワールドはエラーとして通知される
     expect(result.errors.map((e) => e.arg)).toContainEqual(
       expect.objectContaining({ path: savesPath.child('legacy').path })
+    );
+  });
+});
+
+describe('getAllLocalSaveData', () => {
+  const detectedPath = workPath.child('detected', 'saves');
+  const additionalPath = workPath.child('additional', 'saves');
+
+  beforeEach(async () => {
+    await workPath.emptyDir();
+    vi.mocked(getLocalSaveContainers).mockResolvedValue([detectedPath]);
+  });
+
+  test('自動検出した保存先とシステム設定で追加した保存先の両方のワールドを読み込む', async () => {
+    await createWorld('detected', modernLevelDat(), detectedPath);
+    await createWorld('additional', modernLevelDat(), additionalPath);
+    vi.mocked(getSystemSettings).mockResolvedValue(
+      SystemSettings.parse({
+        // 自動検出した保存先と同じフォルダが設定されていても重複して読み込まない
+        localSave: { containers: [additionalPath.str(), detectedPath.str()] },
+      })
+    );
+
+    const result = await getAllLocalSaveData();
+
+    expect(isError(result.value)).toBe(false);
+    if (isError(result.value)) return;
+    expect(result.value.map((w) => w.path).sort()).toEqual(
+      [
+        detectedPath.child('detected').path,
+        additionalPath.child('additional').path,
+      ].sort()
     );
   });
 });

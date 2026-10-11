@@ -1,5 +1,9 @@
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import {
+  AllVanillaVersion,
+  VanillaVersion,
+} from 'app/src-electron/schema/version';
 import { ZipFile } from 'app/src-electron/util/binary/archive/zipFile';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
@@ -7,6 +11,7 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { asyncMap } from 'app/src-electron/util/obj/objmap';
+import { versionContainer } from '../../core/setup';
 import { datapackFiles } from '../additionalContents/datapack/datapack';
 import { modFiles } from '../additionalContents/mod/mod';
 import { pluginFiles } from '../additionalContents/plugin/plugin';
@@ -169,10 +174,51 @@ export async function importCustomMap(
 
   // ワールドのディレクトリ構造をvanillaとして扱う
   settings.directoryType = 'vanilla';
+
+  // サーバーのバージョンを導入したワールドが最後に遊ばれたバージョンに合わせる
+  // (一致するバージョンが見つからない場合は元の設定のまま)
+  const version = await resolveCustomMapVersion(mapData.versionName);
+  if (version) settings.version = version;
+
   return {
     settings,
     properties,
   };
+}
+
+/**
+ * level.dat に記録されたバージョン名から，サーバーとして起動するバニラのバージョンを取得する
+ *
+ * キャッシュしたバージョン一覧に見つからない場合は，最新のバージョン一覧を取得して再度探す
+ * @param versionName level.dat の Data.Version.Name の値 (e.g. 1.21.4)
+ * @returns 一致するバージョン(見つからない場合は undefined)
+ */
+async function resolveCustomMapVersion(
+  versionName: string
+): Promise<VanillaVersion | undefined> {
+  for (const useCache of [true, false]) {
+    const versions = await versionContainer.listVersions('vanilla', useCache);
+    if (isError(versions)) continue;
+    const found = findVanillaVersion(versionName, versions);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/**
+ * バージョン一覧から，バージョン名に一致するバニラのバージョンを探す
+ * @param versionName level.dat の Data.Version.Name の値 (e.g. 1.21.4)
+ * @param versions バニラのバージョン一覧
+ * @returns 一致するバージョン(見つからない場合は undefined)
+ */
+function findVanillaVersion(
+  versionName: string,
+  versions: AllVanillaVersion
+): VanillaVersion | undefined {
+  const found = versions.find((v) => v.id === versionName);
+  return found
+    ? { type: 'vanilla', id: found.id, release: found.release }
+    : undefined;
 }
 
 /** CustomMapのデータでワールドを上書きする */

@@ -84,6 +84,19 @@ export const SystemPlayerSetting = z
   .prefault({});
 export type SystemPlayerSetting = z.infer<typeof SystemPlayerSetting>;
 
+/** シングルプレイのワールド(既存のワールドの導入元)に関する設定 */
+export const SystemLocalSaveSetting = z
+  .object({
+    /**
+     * 自動検出した保存先に加えて読み込む，シングルプレイのワールドの保存先フォルダ(savesフォルダ)の一覧
+     *
+     * Minecraft Launcher以外のランチャーなどで保存先を変更しているユーザー向け
+     */
+    containers: z.array(z.string()).default([]),
+  })
+  .prefault({});
+export type SystemLocalSaveSetting = z.infer<typeof SystemLocalSaveSetting>;
+
 export const SystemRemoteSetting = z.array(RemoteSetting).default([]);
 export type SystemRemoteSetting = z.infer<typeof SystemRemoteSetting>;
 
@@ -94,6 +107,7 @@ export const SystemSettings = z.object({
   remote: SystemRemoteSetting,
   player: SystemPlayerSetting,
   user: SystemUserSetting,
+  localSave: SystemLocalSaveSetting,
 
   // /** 基本的にはフロントから編集不可の定数 */
   system: SystemSystemSetting,
