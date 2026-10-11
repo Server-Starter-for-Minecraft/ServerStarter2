@@ -25,6 +25,13 @@ const sysStore = useSystemStore();
 
 /** Minecraft Launcherの設定から自動検出した読み込み先 */
 const detectedFolders: Ref<string[]> = ref([]);
+/**
+ * 自動検出が完了したか
+ *
+ * 完了前は自動検出したフォルダを「追加したフォルダ」と区別できず，
+ * 誤った種別のまま登録解除などを操作できてしまうため，完了するまで一覧を表示しない
+ */
+const detectionLoaded = ref(false);
 
 /** 画面に表示する読み込み先の一覧(自動検出したフォルダ，追加したフォルダの順) */
 const folders = computed(() =>
@@ -34,6 +41,7 @@ const folders = computed(() =>
 onMounted(async () => {
   detectedFolders.value =
     await window.API.invokeGetDetectedLocalSaveContainers();
+  detectionLoaded.value = true;
 });
 
 /**
@@ -76,7 +84,10 @@ function removeFolder(folder: LocalSaveFolder) {
       {{ $t('systemsetting.folder.localSave.desc') }}
     </p>
 
-    <div class="column q-py-sm q-gutter-y-md">
+    <div v-if="!detectionLoaded" class="row justify-center q-py-md">
+      <q-circular-progress indeterminate rounded size="2rem" color="primary" />
+    </div>
+    <div v-else class="column q-py-sm q-gutter-y-md">
       <template v-for="folder in folders" :key="folder.path">
         <FolderCardBase
           :visible="folder.visible"
