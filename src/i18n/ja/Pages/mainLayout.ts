@@ -2,8 +2,8 @@ export const jaMainLayout = {
   allWorld: 'ワールド一覧',
   systemSetting: 'システム設定',
   donation: {
-    btn: '開発を応援',
-    title: 'ServerStarterの開発を応援する',
+    btn: 'プロジェクトを応援！',
+    title: 'ServerStarter2の開発を応援する',
     desc: '\
       ServerStarterは広告を表示せず，非営利で開発・運営しています\n\
       いただいたご寄付は，今後の開発や運営に大切に使わせていただきます',

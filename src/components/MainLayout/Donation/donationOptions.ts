@@ -36,24 +36,24 @@ export const donationOptions: readonly DonationOption[] = [
     id: 'small',
     amount: 500,
     icon: 'local_cafe',
-    url: 'https://square.link/u/TODO_500',
+    url: 'https://square.link/u/BlJBjzvq',
   },
   {
     id: 'medium',
     amount: 1000,
     icon: 'lunch_dining',
-    url: 'https://square.link/u/TODO_1000',
+    url: 'https://square.link/u/ASAPhIgk',
   },
   {
     id: 'large',
     amount: 2000,
     icon: 'celebration',
-    url: 'https://square.link/u/TODO_2000',
+    url: 'https://square.link/u/cFtKreQC',
   },
   {
     id: 'custom',
     icon: 'edit',
-    url: 'https://square.link/u/TODO_CUSTOM',
+    url: 'https://square.link/u/RhX4i7G1',
   },
 ];
 

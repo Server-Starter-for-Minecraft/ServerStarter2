@@ -4,8 +4,8 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
   allWorld: 'All Worlds',
   systemSetting: 'System Settings',
   donation: {
-    btn: 'Support us',
-    title: 'Support the development of ServerStarter',
+    btn: 'Support us!',
+    title: 'Support the development of ServerStarter2',
     desc: '\
       ServerStarter is developed and run as a non-profit project without any ads.\n\
       Your donation will be used for future development and operation.',
