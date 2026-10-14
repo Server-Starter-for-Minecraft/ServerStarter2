@@ -25,6 +25,7 @@ export default defineConfig({
         '**/schema/**',
         '**/api/**',
         '**/dummy/**',
+        '**/*.fixtures.ts',
       ],
       // set limit ratio
       // thresholds: {

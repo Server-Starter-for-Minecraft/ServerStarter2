@@ -3,7 +3,7 @@ import { mainPath } from 'app/src-electron/source/const';
 import { getSystemSettings } from 'app/src-electron/source/stores/system';
 import { isError } from 'app/src-electron/util/error/error';
 import { getBytesFile } from 'app/src-electron/util/github/rest';
-import { launchDetached } from './launch';
+import { launchDetachedInShell } from './launch';
 import { updateMessage } from './message';
 
 /**
@@ -36,9 +36,8 @@ exit`);
   if (isError(writeBat)) return false;
 
   // インストーラーを起動できなかった場合は、アプリを終了せずに失敗を返す
-  const launched = await launchDetached(
-    'start',
-    ['/min', '""', 'updater.bat'],
+  const launched = await launchDetachedInShell(
+    'start /min "" updater.bat',
     mainPath.path
   );
   if (!launched) return false;

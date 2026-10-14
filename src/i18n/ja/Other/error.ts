@@ -166,7 +166,7 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       title: '{value}には画像が存在しません',
     },
     commandLineArgument: {
-      title: '{value}というコマンドは存在しません',
+      title: 'Javaの実行時引数「{value}」の引用符が閉じられていません',
     },
     worldName: {
       notMatchRegex: {

@@ -55,10 +55,7 @@ export async function readyRunServer(
       settings.javaArguments
     );
     sub.delete();
-    if (isValid(additionalJavaArgument)) {
-      return additionalJavaArgument;
-    }
-    return [];
+    return additionalJavaArgument;
   }
 
   async function serverData() {
@@ -94,7 +91,6 @@ export async function readyRunServer(
         args.onOut,
         args.onOut,
         args.currentDir,
-        true,
         undefined,
         10000
       );
@@ -113,12 +109,13 @@ export async function readyRunServer(
     return server;
   }
 
-  // ユーザーカスタム要素のJVM引数とサーバーJarの情報を取得
-  const [memory, user, server] = await Promise.all([
-    memoryArg(),
-    userArg(),
-    serverData(),
-  ]);
+  // ユーザー定義のJVM引数が不正な場合は，引数を無視して起動するとユーザーが気付けないため，
+  // サーバーデータの準備（ダウンロード等）を始める前に起動を中止してエラーを返す
+  const user = await userArg();
+  if (isError(user)) return user;
+
+  // メモリ量のJVM引数とサーバーJarの情報を取得
+  const [memory, server] = await Promise.all([memoryArg(), serverData()]);
   if (isError(server)) return server;
 
   // サーバーJarを実行するためのRuntimeの準備を行う

@@ -31,7 +31,6 @@ export function serverProcess(
     stdout,
     stderr,
     cwdPath,
-    true,
     // アプリケーション終了時/stopコマンドを実行 (実行から10秒のタイムアウトでプロセスキル)
     async (process) => {
       await process.write('stop');

@@ -11,6 +11,7 @@ import { getNewForgeArgs } from './utils/forgeArgAnalyzer';
 import {
   downloadInstaller,
   getServerJarFromInstaller,
+  hasMissingJarReference,
   renameFilesFromInstaller,
 } from './utils/forgeInstaller';
 import { VersionJson } from './utils/versionJson';
@@ -32,6 +33,19 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
   constructor(version: ForgeVersion, cacheFolder: Path) {
     // キャッシュから本番環境へコピーするファイルを追加
     super(version, cacheFolder, SUPPORT_SECONDARY_FILES);
+  }
+
+  /**
+   * キャッシュの準備が完了しているかを判定する
+   *
+   * `version.jar`があっても，引数ファイルが存在しないjarを参照している起動できない古いキャッシュ
+   * （引数ファイルの書き換えに対応する前に準備したもの）は未準備として扱い，`installer.jar`の実行からやり直す
+   */
+  protected async isCacheReady(): Promise<boolean> {
+    return (
+      (await super.isCacheReady()) &&
+      !(await hasMissingJarReference(this.cachePath, this._version))
+    );
   }
 
   protected async generateVersionJson() {
@@ -86,7 +100,11 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
     if (isError(installerRunRes)) return installerRunRes;
 
     // 生成したファイル群をリネーム
-    await renameFilesFromInstaller(this.cachePath, this._version);
+    const renameRes = await renameFilesFromInstaller(
+      this.cachePath,
+      this._version
+    );
+    if (isError(renameRes)) return renameRes;
 
     // 生成されたファイルを解析して，引数を更新
     const newVerJson = await getNewForgeArgs(

@@ -11,7 +11,7 @@ const progressStore = useProgressStore();
   <div class="fit" style="position: relative">
     <div class="q-pa-md absolute-center" style="width: 40rem; max-width: 100%">
       <h1 class="q-pa-none" style="font-weight: bold">
-        {{ progressStore.getProgress(mainStore.selectedWorldID).title }}
+        {{ progressStore.getProgress(mainStore.selectedWorldID)?.title }}
       </h1>
       <ProgressView
         :progress="
