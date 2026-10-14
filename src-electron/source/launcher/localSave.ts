@@ -17,10 +17,14 @@ import { getLocalSaveContainers, uniquePaths } from './launcherProfile';
  * Minecraft Launcherの設定から自動検出した，シングルプレイのワールドの保存先一覧を取得する
  *
  * システム設定でユーザーが追加した保存先は含まない
- * @returns 保存先ディレクトリの絶対パスの一覧
+ * @returns 保存先ディレクトリの絶対パスの一覧(ランチャーのディレクトリを特定できない場合はエラー)
  */
-export async function getDetectedLocalSaveContainers(): Promise<string[]> {
-  return (await getLocalSaveContainers()).map((p) => p.str());
+export async function getDetectedLocalSaveContainers(): Promise<
+  Failable<string[]>
+> {
+  const containers = await getLocalSaveContainers();
+  if (isError(containers)) return containers;
+  return containers.map((p) => p.str());
 }
 
 /**
@@ -31,13 +35,13 @@ export async function getDetectedLocalSaveContainers(): Promise<string[]> {
 export async function getAllLocalSaveData(): Promise<
   WithError<Failable<CustomMapData[]>>
 > {
+  const detected = await getDetectedLocalSaveContainers();
+  if (isError(detected)) return withError(detected);
+
   const settings = await getSystemSettings();
   // 非表示にした・登録を解除した保存先は読み込まない
   const containers = uniquePaths(
-    listLocalSaveFolders(
-      await getDetectedLocalSaveContainers(),
-      settings.localSave
-    )
+    listLocalSaveFolders(detected, settings.localSave)
       .filter((f) => f.visible)
       .map((f) => new Path(f.path))
   );

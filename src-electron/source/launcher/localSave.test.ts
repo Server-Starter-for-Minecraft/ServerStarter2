@@ -8,7 +8,7 @@ import {
 } from 'app/src-electron/schema/system';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isError } from 'app/src-electron/util/error/error';
+import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
 import { getSystemSettings } from '../stores/system';
 import { getLocalSaveContainers } from './launcherProfile';
 import { getAllLocalSaveData, getLocalSaveData } from './localSave';
@@ -194,5 +194,16 @@ describe('getAllLocalSaveData', () => {
     });
 
     expect(paths).toEqual([additionalPath.child('additional').path]);
+  });
+
+  test('保存先を自動検出できない場合はエラーを返す', async () => {
+    vi.mocked(getLocalSaveContainers).mockResolvedValue(
+      fromRuntimeError(new Error('cannot get home directory'))
+    );
+    vi.mocked(getSystemSettings).mockResolvedValue(SystemSettings.parse({}));
+
+    const result = await getAllLocalSaveData();
+
+    expect(isError(result.value)).toBe(true);
   });
 });

@@ -39,16 +39,14 @@ const folders = computed(() =>
 );
 
 onMounted(async () => {
-  try {
-    detectedFolders.value =
-      await window.API.invokeGetDetectedLocalSaveContainers();
-  } catch (e) {
-    // 検出に失敗した場合も，追加したフォルダの一覧は操作できるよう読み込み中の表示を解除する
-    console.error(e);
-    detectedFolders.value = [];
-  } finally {
-    detectionLoaded.value = true;
-  }
+  const res = await window.API.invokeGetDetectedLocalSaveContainers();
+  checkError(
+    res,
+    (detected) => (detectedFolders.value = detected),
+    (e) => tError(e)
+  );
+  // 検出に失敗した場合も，追加したフォルダの一覧は操作できるよう読み込み中の表示を解除する
+  detectionLoaded.value = true;
 });
 
 /**

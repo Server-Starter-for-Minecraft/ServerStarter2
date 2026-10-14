@@ -1,7 +1,8 @@
 import { app } from 'electron';
 import { z } from 'zod';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isValid } from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { Failable, safeExec } from 'app/src-electron/util/error/failable';
 import { osPlatform } from 'app/src-electron/util/os/os';
 
 /**
@@ -37,10 +38,12 @@ const LAUNCHER_PROFILES_FILES = [
 
 /**
  * Minecraft Launcherの設定から，シングルプレイのワールドの保存先ディレクトリ一覧を自動検出する
- * @returns セーブデータの保存先ディレクトリの一覧
+ * @returns セーブデータの保存先ディレクトリの一覧(ランチャーのディレクトリを特定できない場合はエラー)
  */
-export async function getLocalSaveContainers(): Promise<Path[]> {
-  return loadLocalSaveContainers(getLauncherPath());
+export async function getLocalSaveContainers(): Promise<Failable<Path[]>> {
+  const launcherPath = getLauncherPath();
+  if (isError(launcherPath)) return launcherPath;
+  return loadLocalSaveContainers(launcherPath);
 }
 
 /**
@@ -93,8 +96,16 @@ export function uniquePaths(paths: Path[]): Path[] {
   return [...unique.values()];
 }
 
-function getLauncherPath(): Path {
-  const homePath = new Path(app.getPath('home'));
+/**
+ * OSごとのMinecraft Launcherのディレクトリを返す
+ * @returns ランチャーのディレクトリ(ホームディレクトリを取得できない場合はエラー)
+ */
+function getLauncherPath(): Failable<Path> {
+  // app.getPath はホームディレクトリを取得できない場合に例外を投げるため，エラーに変換する
+  const home = safeExec(() => app.getPath('home'));
+  if (isError(home)) return home;
+
+  const homePath = new Path(home);
   switch (osPlatform) {
     case 'windows-x64':
       return homePath.child('AppData/Roaming/.minecraft/');
