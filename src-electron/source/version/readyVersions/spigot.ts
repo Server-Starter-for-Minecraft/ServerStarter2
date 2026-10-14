@@ -134,19 +134,36 @@ export class RemoveSpigotVersion extends RemoveVersion<SpigotVersion> {
 
 /**
  * SpigotのJarを入手するために必要な`BuildTools.jar`を入手
+ *
+ * ビルド作業フォルダは空の状態にしてから`BuildTools.jar`を配置する
+ *
+ * @param downloadURL `BuildTools.jar`のダウンロードURL
+ * @param buildToolsPath `BuildTools.jar`の保存先（親フォルダは中身ごと削除して作り直す）
+ * @param progress 進捗の通知先
+ * @returns 失敗した場合はエラー
  */
 async function downloadBuildTools(
   downloadURL: string,
   buildToolsPath: Path,
   progress?: GroupProgressor
 ): Promise<Failable<void>> {
-  progress?.subtitle({
+  const p = progress?.subtitle({
     key: 'server.readyVersion.spigot.loadBuildData',
   });
-  await buildToolsPath.parent().mkdir();
+
+  // BuildToolsはリポジトリのclone先が空でないと失敗するため，
+  // 中断されたビルド等の残骸を削除してから作業を始める
+  const buildPath = buildToolsPath.parent();
+  const removeRes = await buildPath.remove();
+  if (isError(removeRes)) {
+    p?.delete();
+    return removeRes;
+  }
+  await buildPath.mkdir();
 
   // BuildTools.jarをダウンロード
   const downloadJar = await BytesData.fromURL(downloadURL);
+  p?.delete();
   if (isError(downloadJar)) return downloadJar;
 
   // generateVersionJsonHandler()において，BuildTools.jarのHashを書き込んでいないため，Hashのチェックは省略
@@ -156,6 +173,14 @@ async function downloadBuildTools(
 
 /**
  * 入手した`BuildTools.jar`を実行して`server.jar`を書き出す
+ *
+ * @param versionId ビルドするSpigotのバージョン
+ * @param buildToolsPath `BuildTools.jar`のパス（親フォルダを作業フォルダとして使用し，完了後に削除する）
+ * @param serverCachePath ビルドしたJarを配置するキャッシュフォルダ
+ * @param runtime BuildToolsの実行に用いるJavaランタイム
+ * @param execRuntime ランタイムを実行する関数
+ * @param progress 進捗の通知先
+ * @returns 失敗した場合はエラー
  */
 async function getServerJarFromBuildTools(
   versionId: VersionId,
@@ -198,9 +223,20 @@ async function getServerJarFromBuildTools(
     .parent()
     .child(`spigot-${versionId}.jar`);
   const targetJarPath = getJarPath(serverCachePath);
-  await sourceJarPath.rename(targetJarPath);
+  if (!sourceJarPath.exists()) {
+    p?.delete();
+    return errorMessage.core.version.failSpigotBuild.missingJar({
+      spigotVersion: versionId,
+    });
+  }
+  const renameRes = await sourceJarPath.rename(targetJarPath);
+  if (isError(renameRes)) {
+    p?.delete();
+    return renameRes;
+  }
 
   // 余計なファイルを削除
+  // 削除に失敗しても次回のビルド開始時に改めて削除するため，結果は無視する
   await buildToolsPath.parent().remove();
 
   p?.delete();
@@ -247,7 +283,7 @@ if (import.meta.vitest) {
       const execRuntime: ExecRuntime = vi.fn(async (options) => {
         const versionId = options.args[4];
         const tgtJarPath = options.currentDir.child(`spigot-${versionId}.jar`);
-        tgtJarPath.writeText(`spigot-${versionId}.jar`);
+        await tgtJarPath.writeText(`spigot-${versionId}.jar`);
       });
 
       // テスト対象の関数
@@ -296,5 +332,53 @@ if (import.meta.vitest) {
       expect(getJarPath(outputPath).exists()).toBe(false);
       expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
     });
+
+    test(
+      'ビルド作業フォルダに前回の残骸があってもビルドできる',
+      { timeout: 1000 * 60 },
+      async () => {
+        const outputPath = serverFolder.child(`${ver19.id}-leftover`);
+        const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
+        const cachePath = readyOperator.cachePath;
+        await outputPath.remove();
+        await getJarPath(cachePath).remove();
+
+        // 中断されたビルド等による残骸を再現する
+        // （`generateCachedJar()`がBuildToolsを実行する作業フォルダと一致させること）
+        // 古いJarは，前回の残骸が誤って設置されないことの確認に用いる
+        const buildPath = cachePath.child('build');
+        await buildPath
+          .child('Spigot', 'Spigot-Server', 'pom.xml')
+          .writeText('');
+        await buildPath.child(`spigot-${ver19.id}.jar`).writeText('old jar');
+
+        // BuildToolsと同様に，cloneすべきリポジトリのフォルダが空でなければ失敗する
+        const repos = ['Bukkit', 'CraftBukkit', 'Spigot'];
+        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+          for (const repo of repos) {
+            const repoPath = options.currentDir.child(repo);
+            const children = repoPath.exists() ? await repoPath.iter() : [];
+            if (!isError(children) && children.length > 0) {
+              return errorMessage.system.subprocess({
+                processPath: 'java',
+                args: options.args,
+                exitcode: 1,
+              });
+            }
+          }
+          await options.currentDir
+            .child(`spigot-${ver19.id}.jar`)
+            .writeText('new jar');
+        });
+
+        const res = await readyOperator.completeReady4VersionFiles(
+          outputPath,
+          execRuntime
+        );
+        expect(isError(res)).toBe(false);
+        // 今回ビルドしたJarが設置されているはず
+        expect(await getJarPath(outputPath).readText()).toBe('new jar');
+      }
+    );
   });
 }

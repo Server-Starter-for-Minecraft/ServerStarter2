@@ -131,6 +131,8 @@ export class VersionContainer {
       execRuntime,
       progress
     );
+    // 準備に失敗したサーバーは起動できないため，Eulaの同意を求めずに終了する
+    if (isError(result)) return result;
 
     // Eulaチェック
     progress?.title({ key: 'server.eula.title' });
