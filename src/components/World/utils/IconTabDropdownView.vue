@@ -50,7 +50,7 @@ function btnClicked(btn: DropBtn) {
       "
     >
       <q-list>
-        <template v-for="btn in btns" :key="btn">
+        <template v-for="btn in btns" :key="btn.activeModelValue">
           <DropBtnView
             :active="
               $route.path === `/${path}` && model === btn.activeModelValue

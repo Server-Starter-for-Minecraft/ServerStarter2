@@ -51,7 +51,7 @@ async function loadFolderWorlds(container: WorldContainer) {
     <div class="column q-py-sm q-gutter-y-md">
       <template
         v-for="n in sysStore.systemSettings.container.length"
-        :key="sysStore.systemSettings.container[n - 1]"
+        :key="sysStore.systemSettings.container[n - 1].container"
       >
         <FolderCard
           show-operation-btns

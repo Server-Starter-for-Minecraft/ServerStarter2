@@ -10,7 +10,7 @@
     "postinstall": "bun install --cwd src-electron && quasar prepare",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,json}\" --ignore-path .gitignore",
-    "typecheck": "vue-tsc --noEmit",
+    "typecheck": "bun scripts/typecheck.ts",
     "test": "vitest",
     "dev": "bun scripts/quasar.ts dev -m electron",
     "build": "quasar build -m electron"

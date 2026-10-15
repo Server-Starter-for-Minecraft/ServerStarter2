@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { getVersionId } from 'app/src-public/scripts/version';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
@@ -103,7 +104,7 @@ async function duplicateWorld(world?: WorldEdited) {
       componentProps: {
         icon: world.avater_path,
         worldName: world.name,
-        versionName: world.version.id,
+        versionName: getVersionId(world.version),
         importFunc: async () => {
           const newWorldID = await createNewWorld(world.id);
           // ワールドの複製は新規ワールドとみなさない
@@ -175,7 +176,7 @@ async function introduceBackup() {
     </template>
 
     <q-list>
-      <template v-for="content in contents" :key="content.name">
+      <template v-for="content in contents" :key="content.i18nKey">
         <q-item
           :disable="content.disable ? content.disable(mainStore.world) : false"
           clickable

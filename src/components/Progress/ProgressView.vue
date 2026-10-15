@@ -33,7 +33,7 @@ const linearMessage = computed(() =>
 </script>
 
 <template>
-  <template v-for="p in flatProgress(progress?.value)" :key="p">
+  <template v-for="(p, idx) in flatProgress(progress?.value)" :key="idx">
     <p
       v-if="p.type === 'title'"
       class="q-pt-lg q-ma-none text-omit"

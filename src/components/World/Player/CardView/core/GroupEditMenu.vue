@@ -125,7 +125,7 @@ onMounted(() => playerStore.selectGroup(playerStore.selectedGroupId, false));
           class="q-gutter-sm row q-pa-xs"
           style="width: 136px; margin: 0 auto"
         >
-          <template v-for="colorOp in colorOps" :key="colorOp">
+          <template v-for="colorOp in colorOps" :key="colorOp.label">
             <q-btn
               v-close-popup
               dense

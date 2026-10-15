@@ -85,7 +85,7 @@ watch(
       <q-list separator class="scroll">
         <!-- TODO: ヒットするプレイヤーは「完全一致」「選択履歴のあるプレイヤー」一覧とする -->
         <!-- 「選択履歴のあるプレイヤー」はSystemSettingsからの引継ぎ処理が必要？ -->
-        <template v-for="p in loadedSearchedPlayers" :key="p">
+        <template v-for="p in loadedSearchedPlayers" :key="p.uuid">
           <SearchResultItem
             :player="p"
             :register-btn-text="registerBtnText"
