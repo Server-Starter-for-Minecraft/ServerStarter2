@@ -68,6 +68,7 @@ jobs:
           git commit -m "🔖 Release ${{ steps.get_version.outputs.next-version }}"
 
       # mainに対してpullRequestを作成 [リリースブランチがない場合]
+      # PRの承認とマージは、本文のチェックリストに沿って動作確認を行った後に手動で行う
       - name: Create Pull Request
         if: env.BRANCH_EXISTS == 'false'
         id: pullrequest
@@ -76,7 +77,40 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 🔖 Release ${{ steps.get_version.outputs.next-version }}
           title: 🔖 Release ${{ steps.get_version.outputs.next-version }}
-          body: 🔖 Release ${{ steps.get_version.outputs.next-version }}
+          body: |
+            🔖 Release ${{ steps.get_version.outputs.next-version }}
+
+            ## リリース前の動作確認
+
+            現行版（v${{ steps.get_version.outputs.current-version }}）から Draft Release の新版（v${{ steps.get_version.outputs.next-version }}）へ、自動アップデートできることを確認する。
+            現行版のインストーラーは、[ビルドの実行結果](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) の Artifacts（`ServerStarter-v${{ steps.get_version.outputs.current-version }}-*`）からダウンロードする。
+            ビルドスクリプトを再実行した場合は、このPRにコメントされる最新の実行結果を使う。
+
+            ### 手順（各OS共通）
+
+            1. 現行版をインストールする
+            2. 環境変数 `SERVERSTARTER_MODE=debug` と `SERVERSTARTER_TOKEN=<Draft Releaseを参照できるPAT>` を設定して、ターミナルから起動する
+               - Windows (PowerShell): `$env:SERVERSTARTER_MODE='debug'; $env:SERVERSTARTER_TOKEN='<PAT>'; & '<インストール先>\ServerStarter2.exe'`
+               - Mac: `SERVERSTARTER_MODE=debug SERVERSTARTER_TOKEN=<PAT> /Applications/ServerStarter2.app/Contents/MacOS/ServerStarter2`
+            3. 新版のインストーラーが起動し、更新後の ServerStarter2 が新版として起動することを確認する
+
+            ### 確認結果
+
+            - [ ] Windows (x64)：`-win`
+            - [ ] Mac (Apple Silicon)：`-mac-silicon` ※Macの実機を持つメンバーに依頼
+            - [ ] Mac (Intel)：`-mac-intel` ※Macの実機を持つメンバーに依頼
+            - [ ] Mac (Apple Silicon 上で Intel 版を Rosetta 経由で起動)：`-mac-intel` → Apple Silicon 版に更新されること ※Macの実機を持つメンバーに依頼
+
+            ### 公開中のバージョンからの確認
+
+            Artifacts の現行版は main からビルドしたものなので、アップデーターの実装が公開中のバージョンと異なる場合がある。
+            アップデーターに変更があったリリースでは、[公開中の最新版](${{ github.server_url }}/${{ github.repository }}/releases/latest) のインストーラーでも同じ手順で確認する。
+
+            - [ ] Windows (x64)
+            - [ ] Mac ※Macの実機を持つメンバーに依頼
+
+            すべて確認できたら、このPRを main にマージし、Draft Release を公開する。
+            問題があった場合は、修正を main に取り込んでからビルドスクリプトを再実行する（このブランチと Draft Release が更新される）。
           branch: 'release/v${{ steps.get_version.outputs.next-version }}'
           base: main
           labels: release
@@ -93,10 +127,17 @@ jobs:
           git merge origin/main
           git push
 
+      # 動作確認に使う最新のビルドの実行結果をPRに通知 [リリースブランチがある場合]
+      - name: Comment on Pull Request
+        if: env.BRANCH_EXISTS == 'true'
+        run: |
+          gh pr comment 'release/v${{ steps.get_version.outputs.next-version }}' --body \
+            'ビルドスクリプトを再実行しています。[この実行結果](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) が成功したら、その Artifacts を使って動作確認してください。'
+
     outputs:
       current-version: ${{steps.get_version.outputs.current-version }}
       next-version: ${{steps.get_version.outputs.next-version }}
-      brench-name: release/v${{ steps.get_version.outputs.next-version }}
+      branch-name: release/v${{ steps.get_version.outputs.next-version }}
 
   # 各osでelectronをビルド
   build-electron:
@@ -107,12 +148,42 @@ jobs:
         shell: bash
 
     # 各osで並列ビルド
+    # new-ver=true : リリースする新版（リリースブランチ）
+    # new-ver=false: アップデートの動作確認に使う現行版（実行したブランチ）
+    # 1つのランナーの失敗で、他のビルド（動作確認用の現行版を含む）を中断しない
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest ,ubuntu-latest]
+        target:
+          # exts: electron-builderが出力するインストーラーの拡張子
+          # suffix: アセット名でアーキテクチャを区別するための接尾辞
+          #   アセット名は `ServerStarter-v<バージョン><suffix>.<拡張子>` とし、
+          #   アップデーターが探すアセット名（src-electron/updater/fetch.ts の ASSET_SUFFIX）と一致させること
+          - os: windows-latest
+            name: win
+            exts: msi
+            suffix: ''
+          - os: ubuntu-latest
+            name: linux
+            exts: deb rpm
+            suffix: ''
+          # macOSはネイティブモジュール（sharp / @ngrok）を含むため、アーキテクチャごとのランナーでビルドする
+          # 接尾辞を -intel / -silicon とする理由は fetch.ts の ASSET_SUFFIX を参照
+          # NOTE: Intelランナー（macos-15-intel）は2027年8月に廃止予定のため、それまでにarm64ランナー上でのx64ビルドへ移行する
+          - os: macos-latest
+            name: mac-silicon
+            exts: pkg
+            suffix: '-silicon'
+          - os: macos-15-intel
+            name: mac-intel
+            exts: pkg
+            suffix: '-intel'
         new-ver: [true, false]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.target.os }}
+
+    env:
+      VERSION: ${{ matrix.new-ver && needs.create-commit.outputs.next-version || needs.create-commit.outputs.current-version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -121,8 +192,8 @@ jobs:
       - name: Checkout release branch
         if: matrix.new-ver == true
         run: |
-          git fetch origin ${{ needs.create-commit.outputs.brench-name }}
-          git checkout ${{ needs.create-commit.outputs.brench-name }}
+          git fetch origin ${{ needs.create-commit.outputs.branch-name }}
+          git checkout ${{ needs.create-commit.outputs.branch-name }}
 
       # Bunを使用
       - name: Setup Bun
@@ -139,41 +210,33 @@ jobs:
           bun install
           bun run build
 
-      # WindowsのビルドデータをArtifactとして一時保存
-      - name: Upload Artifact Win
-        if: matrix.os == 'windows-latest'
+      # ビルドしたインストーラーをアセット名に変更
+      - name: Rename Installers
+        run: |
+          mkdir -p dist/release
+          for ext in ${{ matrix.target.exts }}; do
+            cp "dist/electron/Packaged/ServerStarter.build.${ext}" \
+              "dist/release/ServerStarter-v${VERSION}${{ matrix.target.suffix }}.${ext}"
+          done
+          ls -la dist/release
+
+      # 新版のビルドデータをArtifactとして一時保存（Draft Releaseへアップロードする）
+      - name: Upload Artifact (Release)
+        if: matrix.new-ver == true
         uses: actions/upload-artifact@v7
         with:
-          name: ${{matrix.new-ver}}.msi
-          path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.msi"
+          name: release-${{ matrix.target.name }}
+          path: dist/release/*
           retention-days: 1
 
-      # MacのビルドデータをArtifactとして一時保存
-      - name: Upload Artifact Mac
-        if: matrix.os == 'macos-latest'
+      # 現行版のビルドデータをArtifactとして保存（アップデートの動作確認用。Draft Releaseには含めない）
+      - name: Upload Artifact (Current Version)
+        if: matrix.new-ver == false
         uses: actions/upload-artifact@v7
         with:
-          name: ${{matrix.new-ver}}.pkg
-          path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.pkg"
-          retention-days: 1
-
-      # Debianのビルドデータを指定のパスに移動
-      - name: Upload Artifact Debian
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{matrix.new-ver}}.deb
-          path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.deb"
-          retention-days: 1
-
-      # Redhatのビルドデータを指定のパスに移動
-      - name: Upload Artifact Redhat
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{matrix.new-ver}}.rpm
-          path: "${{github.workspace}}/dist/electron/Packaged/ServerStarter.build.rpm"
-          retention-days: 1
+          name: ServerStarter-v${{ env.VERSION }}-${{ matrix.target.name }}
+          path: dist/release/*
+          retention-days: 14
 
   # リリースを作成
   create-release:
@@ -184,6 +247,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
+      id: ${{ steps.create_release.outputs.id }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
 
     steps:
@@ -196,60 +260,49 @@ jobs:
         with:
           tag: v${{ needs.create-commit.outputs.next-version }}
           version: v${{ needs.create-commit.outputs.next-version }}
-          commitish: ${{ needs.create-commit.outputs.brench-name }}
+          commitish: ${{ needs.create-commit.outputs.branch-name }}
           publish: false # draft状態で作成
           prerelease: false
 
-  # ビルドデータをアップロード
+  # 新版のビルドデータをDraft Releaseにアップロード
   upload-build:
     needs:
       - create-commit
       - create-release
     runs-on: ubuntu-latest
 
-    # 各osのビルドデータを並列処理
-    strategy:
-      matrix:
-        ext: [pkg, msi, deb, rpm]
-
     steps:
-      # 一時保存したアーティファクトをダウンロード
+      # 一時保存した全OSのアーティファクトをダウンロード
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
-          name: true.${{ matrix.ext }}
-          path: true/
+          pattern: release-*
+          path: release/
+          merge-multiple: true
 
-      # リリースにビルドデータをアップロード
-      - name: Upload a Release Asset
-        id: upload_release_asset_next
+      # リリースにビルドデータをアップロード（アセット名はファイル名のまま）
+      - name: Upload Release Assets
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: true/ServerStarter.build.${{ matrix.ext }}
-          asset_name: ServerStarter-v${{ needs.create-commit.outputs.next-version }}.${{ matrix.ext }}
-          asset_content_type: appliction/${{ matrix.ext }}
+          asset_path: release/*
           overwrite: true
 
-      # 一時保存したアーティファクトをダウンロード(現行バージョン)
-      - name: Download Artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: false.${{ matrix.ext }}
-          path: false/
-
-      # リリースにビルドデータをアップロード(現行バージョン)
-      - name: Upload a Release Asset
-        id: upload_release_asset_current
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: false/ServerStarter.build.${{ matrix.ext }}
-          asset_name: ServerStarter-v${{ needs.create-commit.outputs.current-version }}.${{ matrix.ext }}
-          asset_content_type: appliction/${{ matrix.ext }}
-          overwrite: true
+      # v2.2.0以前のアップデーターは、リリース内で最初に見つかった .pkg をインストールする。
+      # v2.2.0のmacOS版はIntel版のため、Intel版が先頭に並んでいることを確認する（並び順はGitHubが決める）
+      - name: Check Asset Order for Legacy Updater
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED: ServerStarter-v${{ needs.create-commit.outputs.next-version }}-intel.pkg
+        run: |
+          first=$(gh api "repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.id }}" \
+            --jq '[.assets[].name | select(endswith(".pkg"))][0]')
+          echo "first .pkg asset: ${first}"
+          if [ "${first}" != "${EXPECTED}" ]; then
+            echo "::error::v2.2.0以前のアップデーターが ${EXPECTED} ではなく ${first} を選んでしまいます。アセット名を見直してください"
+            exit 1
+          fi
 
   # Discordに通知
   notify:

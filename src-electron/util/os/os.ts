@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { app } from 'electron';
 import { OsPlatform } from '../../schema/os';
 
 function getOsPlatform(): OsPlatform {
@@ -76,3 +77,17 @@ function getLinuxType() {
 }
 
 export const osPlatform = getOsPlatform();
+
+/**
+ * Apple SiliconのMac上で、Intel版のServerStarter2をRosetta経由で実行しているかを判定する
+ *
+ * Rosetta経由の場合は `osPlatform` が `mac-os`（Intel版）となるため、実機のアーキテクチャを知る必要がある処理で利用する
+ *
+ * @returns Rosetta経由で実行している場合はtrue（Electron外で実行している場合はfalse）
+ */
+export function isRunningUnderRosetta(): boolean {
+  return (
+    process.platform === 'darwin' &&
+    (app?.runningUnderARM64Translation ?? false)
+  );
+}

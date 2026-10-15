@@ -1,20 +1,36 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { OsPlatform } from '../schema/os';
 import { SystemSettings } from '../schema/system';
 import { Path } from '../util/binary/path';
 
-const LATEST = 'v9.9.9';
+/** 起動中のServerStarter2のバージョン */
+const CURRENT = '2.2.0';
+/** GitHubのリリースから取得する最新版のバージョン（テストごとに変更できる） */
+const latest = vi.hoisted(() => ({ version: 'v9.9.9' }));
 
 /** テスト用のServerStarter2のデータの保存先 */
 const workPath = new Path(__dirname).child('work', 'updater');
 
+/** 実行環境のOSの状態（テストごとに変更できる） */
+const osState = vi.hoisted(() => ({
+  platform: 'windows-x64' as OsPlatform,
+  underRosetta: false,
+}));
+
 vi.mock('electron', () => ({ app: undefined }));
-vi.mock('../util/os/os', () => ({ osPlatform: 'windows-x64' }));
-vi.mock('./version', () => ({ getSystemVersion: async () => '2.2.0' }));
+vi.mock('../util/os/os', () => ({
+  get osPlatform() {
+    return osState.platform;
+  },
+  isRunningUnderRosetta: () => osState.underRosetta,
+}));
+vi.mock('./version', () => ({ getSystemVersion: async () => CURRENT }));
+// 指定したOS向けのインストーラーを含む最新版のリリースを返す
 vi.mock('./fetch', () => ({
-  getLatestRelease: async () => ({
-    platform: 'windows-x64',
-    version: LATEST,
-    url: 'https://example.com/ServerStarter2.msi',
+  getLatestRelease: async (platform: string) => ({
+    platform,
+    version: latest.version,
+    url: `https://example.com/installer/${platform}`,
   }),
 }));
 vi.mock('./installer/windows', () => ({ installWindows: vi.fn() }));
@@ -35,13 +51,18 @@ vi.mock('../source/const', async (importOriginal) => {
 
 const { update } = await import('./updater');
 const { installWindows } = await import('./installer/windows');
+const { installMac } = await import('./installer/mac');
 const { notifyUpdate } = await import('./notify');
 
 beforeEach(async () => {
   // 前回のテストでの自動アップデートの実行記録を削除する
   await workPath.remove();
   await workPath.mkdir(true);
+  latest.version = 'v9.9.9';
+  osState.platform = 'windows-x64';
+  osState.underRosetta = false;
   vi.mocked(installWindows).mockReset();
+  vi.mocked(installMac).mockReset();
   vi.mocked(notifyUpdate).mockReset();
 });
 
@@ -88,12 +109,45 @@ describe('update', () => {
   });
 
   test('自動アップデートに対応していないOSでは、最新版があることを通知する', async () => {
-    const os = await import('../util/os/os');
-    vi.spyOn(os, 'osPlatform', 'get').mockReturnValue('debian');
+    osState.platform = 'debian';
 
     await update();
 
     expect(installWindows).not.toHaveBeenCalled();
     expect(notifyUpdate).toHaveBeenCalledWith('debian', '9.9.9');
   });
+
+  test.each([
+    ['起動中と同じバージョン', `v${CURRENT}`],
+    ['起動中より古いバージョン', 'v2.1.5'],
+  ])(
+    '取得した最新版が%sの場合は、アップデートも通知も行わない',
+    async (_, version) => {
+      latest.version = version;
+
+      await update();
+
+      expect(installWindows).not.toHaveBeenCalled();
+      expect(notifyUpdate).not.toHaveBeenCalled();
+    }
+  );
+
+  test.each([
+    ['Intel Mac', false, 'mac-os'],
+    ['Apple Silicon上のRosetta', true, 'mac-os-arm64'],
+  ])(
+    '%sで起動しているIntel版は、実機のアーキテクチャに合ったインストーラーでアップデートする',
+    async (_, underRosetta, expectedPlatform) => {
+      osState.platform = 'mac-os';
+      osState.underRosetta = underRosetta;
+      vi.mocked(installMac).mockResolvedValue(true);
+
+      await update();
+
+      expect(installMac).toHaveBeenCalledWith(
+        `https://example.com/installer/${expectedPlatform}`,
+        undefined
+      );
+    }
+  );
 });
