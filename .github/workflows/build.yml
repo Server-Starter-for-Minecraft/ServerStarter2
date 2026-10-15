@@ -280,8 +280,24 @@ jobs:
           path: release/
           merge-multiple: true
 
+      # v2.2.0以前のアップデーターは、リリース内で最初に見つかった .pkg をインストールする。
+      # v2.2.0のmacOS版はIntel版のため、Intel版の .pkg を先にアップロードする
+      # （GitHubは現状アセットを名前順に返すが、順序は保証されていないため、アップロード順でもIntel版を先頭にしておく）
+      - name: Separate Intel Installer
+        run: |
+          mkdir -p release-intel
+          mv release/*-intel.pkg release-intel/
+
       # リリースにビルドデータをアップロード（アセット名はファイル名のまま）
-      - name: Upload Release Assets
+      - name: Upload Release Assets (Intel)
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: release-intel/*
+          overwrite: true
+
+      - name: Upload Release Assets (Others)
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -289,14 +305,15 @@ jobs:
           asset_path: release/*
           overwrite: true
 
-      # v2.2.0以前のアップデーターは、リリース内で最初に見つかった .pkg をインストールする。
-      # v2.2.0のmacOS版はIntel版のため、Intel版が先頭に並んでいることを確認する（並び順はGitHubが決める）
+      # 旧アップデーターが選ぶ最初の .pkg がIntel版になっていることを確認する（並び順はGitHubが決める）
       - name: Check Asset Order for Legacy Updater
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_ID: ${{ needs.create-release.outputs.id }}
           EXPECTED: ServerStarter-v${{ needs.create-commit.outputs.next-version }}-intel.pkg
         run: |
-          first=$(gh api "repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.id }}" \
+          first=$(gh api "repos/${REPOSITORY}/releases/${RELEASE_ID}" \
             --jq '[.assets[].name | select(endswith(".pkg"))][0]')
           echo "first .pkg asset: ${first}"
           if [ "${first}" != "${EXPECTED}" ]; then
