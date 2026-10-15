@@ -55,6 +55,7 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     addSingleWorld: 'Add single world',
     loadSingleWorld: 'Loading\nsingle play world',
     noSingleWorld: 'Single play world\nwas not found',
+    openLocalSaveSetting: 'Set world folders to load',
     checkDialog: {
       title: 'Introducing new world',
       desc: 'I am introducing the following world data',

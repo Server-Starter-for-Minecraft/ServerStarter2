@@ -1,3 +1,4 @@
+import { listLocalSaveFolders } from 'app/src-public/scripts/localSaveFolders';
 import {
   ErrorMessage,
   Failable,
@@ -8,14 +9,42 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncMap } from 'app/src-electron/util/obj/objmap';
+import { getSystemSettings } from '../stores/system';
 import { loadCustomMap } from '../world/customMap';
-import { getLocalSaveContainers } from './launcherProfile';
+import { getLocalSaveContainers, uniquePaths } from './launcherProfile';
 
+/**
+ * Minecraft Launcherの設定から自動検出した，シングルプレイのワールドの保存先一覧を取得する
+ *
+ * システム設定でユーザーが追加した保存先は含まない
+ * @returns 保存先ディレクトリの絶対パスの一覧(ランチャーのディレクトリを特定できない場合はエラー)
+ */
+export async function getDetectedLocalSaveContainers(): Promise<
+  Failable<string[]>
+> {
+  const containers = await getLocalSaveContainers();
+  if (isError(containers)) return containers;
+  return containers.map((p) => p.str());
+}
+
+/**
+ * 自動検出した保存先とシステム設定で追加された保存先(非表示・登録解除したものを除く)にある，
+ * 全てのシングルプレイのワールドを取得する
+ * @returns 読み込めたワールドの一覧(読み込めなかったワールドはエラーとして返す)
+ */
 export async function getAllLocalSaveData(): Promise<
   WithError<Failable<CustomMapData[]>>
 > {
-  const containers = await getLocalSaveContainers();
-  if (isError(containers)) return withError(containers);
+  const detected = await getDetectedLocalSaveContainers();
+  if (isError(detected)) return withError(detected);
+
+  const settings = await getSystemSettings();
+  // 非表示にした・登録を解除した保存先は読み込まない
+  const containers = uniquePaths(
+    listLocalSaveFolders(detected, settings.localSave)
+      .filter((f) => f.visible)
+      .map((f) => new Path(f.path))
+  );
 
   const savedatas = await asyncMap(Array.from(containers), getLocalSaveData);
 
@@ -30,6 +59,11 @@ export async function getAllLocalSaveData(): Promise<
   return withError(values, errors);
 }
 
+/**
+ * 保存先ディレクトリ直下にあるシングルプレイのワールドを読み込む
+ * @param container 保存先ディレクトリ(savesフォルダ)
+ * @returns 読み込めたワールドの一覧と，読み込めなかったワールドのエラー
+ */
 export async function getLocalSaveData(
   container: Path
 ): Promise<WithError<CustomMapData[]>> {

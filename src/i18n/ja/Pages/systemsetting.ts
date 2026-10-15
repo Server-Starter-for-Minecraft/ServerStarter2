@@ -25,6 +25,22 @@ export const jaSystemSetting = {
     tooltipInvisible:
       'ワールド一覧にこのフォルダに保存されたワールドを表示しない',
     unregist: '登録解除',
+    localSave: {
+      title: 'シングルプレイのワールドの読み込み先',
+      desc: '\
+      「既存のワールドを導入」で表示するシングルプレイのワールドを読み込むフォルダ（savesフォルダ）を設定します。\n\
+      Minecraft Launcherの設定から自動で検出したフォルダに加えて、ここで追加したフォルダからも読み込みます。',
+      detected: '自動検出',
+      add: '読み込み先のフォルダを追加',
+      tooltipVisible:
+        '「既存のワールドを導入」にこのフォルダに保存されたワールドを表示する',
+      tooltipInvisible:
+        '「既存のワールドを導入」にこのフォルダに保存されたワールドを表示しない',
+      unregistDialog:
+        '\
+      シングルプレイのワールドの読み込み先より{name}の登録を解除します。\n\
+      解除したフォルダとその内部データが削除されることはありません。',
+    },
   },
   info: {
     systemVersion: 'システムバージョン',

@@ -26,6 +26,22 @@ export const enUSSystemSetting: MessageSchema['systemsetting'] = {
     tooltipInvisible:
       'Do not display worlds saved in this folder in the world list',
     unregist: 'Unregister',
+    localSave: {
+      title: 'Single player world folders',
+      desc: '\
+      Set the folders (saves folders) to load the single player worlds shown in "Introduce a created world".\n\
+      Worlds are loaded from the folders added here in addition to the folders detected from the Minecraft Launcher settings.',
+      detected: 'Detected',
+      add: 'Add a folder to load',
+      tooltipVisible:
+        'Display worlds saved in this folder in "Introduce a created world"',
+      tooltipInvisible:
+        'Do not display worlds saved in this folder in "Introduce a created world"',
+      unregistDialog:
+        '\
+      Unregister {name} from the single player world folders. \n\
+      Unregistered folders and their internal data will not be deleted.',
+    },
   },
   info: {
     systemVersion: 'System version',

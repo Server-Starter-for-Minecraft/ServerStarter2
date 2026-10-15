@@ -226,6 +226,9 @@ export interface API extends IAPI {
     /** ローカルのセーブデータ一覧を取得 */
     GetLocalSaveData: () => Promise<WithError<Failable<CustomMapData[]>>>;
 
+    /** Minecraft Launcherの設定から自動検出したローカルのセーブデータの保存先一覧を取得 */
+    GetDetectedLocalSaveContainers: () => Promise<Failable<string[]>>;
+
     /** ワールド名が使用可能かどうかを検証する */
     ValidateNewWorldName: (
       worldContainer: WorldContainer,

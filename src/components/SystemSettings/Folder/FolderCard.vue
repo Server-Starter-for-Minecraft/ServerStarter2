@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { getCssVar, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
-import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
+import FolderCardBase from './FolderCardBase.vue';
 import { AddFolderDialogProps, AddFolderDialogReturns } from './iAddFolder';
 
 const { t } = useI18n();
@@ -22,31 +20,11 @@ interface Prop {
   onClick?: () => void;
   onVisibleClick?: () => void;
 }
-const prop = defineProps<Prop>();
+defineProps<Prop>();
 const folder = defineModel<WorldContainerSetting>({ required: true });
 
 const $q = useQuasar();
 const sysStore = useSystemStore();
-
-/**
- * エクスプローラーでワールドフォルダを開く
- */
-async function openWorldFolder() {
-  const res = await window.API.sendOpenFolder(folder.value.container, false);
-  checkError(res, undefined, (e) => tError(e));
-}
-
-function switchVisible() {
-  folder.value.visible = !folder.value.visible;
-  if (prop.onVisibleClick !== void 0) prop.onVisibleClick();
-}
-
-function getCardSytleClass(active?: boolean, disable?: boolean) {
-  const returnClasses = ['column'];
-  if (active) returnClasses.push('text-primary');
-  if (disable) returnClasses.push('disable');
-  return returnClasses.join(' ');
-}
 
 function editFolder() {
   $q.dialog({
@@ -84,76 +62,30 @@ function removeFolder() {
 </script>
 
 <template>
-  <q-card
-    flat
-    bordered
-    class="card fit"
-    :style="{ 'border-color': active ? getCssVar('primary') : 'transparent' }"
+  <FolderCardBase
+    v-model:visible="folder.visible"
+    :title="folder.name"
+    :path="folder.container"
+    :tooltip-visible="$t('systemsetting.folder.tooltipVisible')"
+    :tooltip-invisible="$t('systemsetting.folder.tooltipInvisible')"
+    :loading="loading"
+    :disable="disable"
+    :active="active"
+    :disable-open="folder.name === 'default'"
+    :disable-visible="
+      (sysStore.systemSettings.container.filter((c) => c.visible).length ===
+        1 &&
+        folder.visible) ||
+      active ||
+      sysStore.systemSettings.container
+        .map((c) => c.name)
+        .indexOf(folder.name) === 0 ||
+      disable
+    "
+    :on-click="onClick"
+    @update:visible="onVisibleClick?.()"
   >
-    <q-item
-      :clickable="onClick !== void 0 && !disable"
-      @click="onClick"
-      :class="getCardSytleClass(active, disable || loading)"
-    >
-      <div class="text-omit" style="font-size: 1.1rem">
-        {{ folder.name }}
-        <SsTooltip
-          :name="folder.name"
-          anchor="bottom start"
-          self="center start"
-        />
-      </div>
-      <div class="text-caption text-omit" style="opacity: 0.6">
-        {{ folder.container }}
-        <SsTooltip
-          :name="folder.container"
-          anchor="bottom start"
-          self="center start"
-        />
-      </div>
-    </q-item>
-
-    <div class="absolute-center-right block row q-gutter-x-sm q-pr-md">
-      <SsBtn
-        dense
-        free-width
-        icon="folder_open"
-        :disable="folder.name === 'default'"
-        @click="openWorldFolder()"
-      >
-        <SsTooltip
-          :name="$t('others.worldFolder.openFolder')"
-          anchor="bottom middle"
-          self="center middle"
-        />
-      </SsBtn>
-
-      <ss-btn
-        dense
-        free-width
-        :icon="folder.visible ? 'visibility' : 'visibility_off'"
-        :disable="
-          (sysStore.systemSettings.container.filter((c) => c.visible).length ===
-            1 &&
-            folder.visible) ||
-          active ||
-          sysStore.systemSettings.container
-            .map((c) => c.name)
-            .indexOf(folder.name) === 0 ||
-          disable
-        "
-        @click="switchVisible"
-      >
-        <SsTooltip
-          :name="
-            folder.visible
-              ? $t('systemsetting.folder.tooltipVisible')
-              : $t('systemsetting.folder.tooltipInvisible')
-          "
-          anchor="bottom middle"
-          self="center middle"
-        />
-      </ss-btn>
+    <template #actions>
       <ss-btn
         v-show="showOperationBtns && folder.name !== 'default'"
         free-width
@@ -169,36 +101,6 @@ function removeFolder() {
         :disable="sysStore.systemSettings.container.length === 1 || disable"
         @click="removeFolder"
       />
-    </div>
-
-    <div class="absolute-center">
-      <q-circular-progress
-        v-show="loading"
-        indeterminate
-        rounded
-        size="40px"
-        color="primary"
-        class="q-ma-md"
-      />
-    </div>
-  </q-card>
+    </template>
+  </FolderCardBase>
 </template>
-
-<style scoped lang="scss">
-.card {
-  border-radius: 5px;
-}
-
-.disable {
-  opacity: 0.6;
-  outline: 0;
-  cursor: not-allowed;
-}
-
-.absolute-center-right {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translate(0, -50%);
-}
-</style>
