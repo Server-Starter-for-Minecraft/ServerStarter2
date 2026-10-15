@@ -1,6 +1,8 @@
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { InfinitMap } from 'app/src-electron/util/helper/infinitMap';
+import { PromiseSpooler } from 'app/src-electron/util/promise/spool';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 import { Runtime } from '../../../schema/runtime';
 import { UnknownVersion, Version } from '../../../schema/version';
@@ -11,6 +13,15 @@ import {
   replaceEmbedArgs,
   VersionJson,
 } from './utils/versionJson';
+
+/**
+ * キャッシュフォルダ（絶対パス）ごとに準備処理を直列化するためのプール
+ *
+ * `Path`クラス内部のプールとは別に管理し，キャッシュ内のファイル操作と待ち合わせて停止しないようにする
+ */
+const cacheSpoolers = InfinitMap.primitiveKeyWeakValue(
+  (_key: string) => new PromiseSpooler()
+);
 
 /**
  * サーバーJarファイルのパスを返す
@@ -82,7 +93,7 @@ abstract class BaseVersionProcess<V extends Exclude<Version, UnknownVersion>> {
 /**
  * `server.jar`やその関連するサーバーファイルを設置する
  *
- * このクラスは各サーバーごとに１つのみ生成する
+ * インスタンスはサーバーの準備ごとに生成されうるため，同じキャッシュに対する排他はインスタンスの外（`cacheSpoolers`）で行う
  */
 export abstract class ReadyVersion<
   V extends Exclude<Version, UnknownVersion>,
@@ -145,6 +156,25 @@ export abstract class ReadyVersion<
    * サーバー実行に必要なパスの一覧を返す
    */
   protected async readyCache(
+    verJsonHandler: JsonSourceHandler<VersionJson>,
+    execRuntime: ExecRuntime,
+    progress?: GroupProgressor
+  ): Promise<Failable<Path[]>> {
+    // 同じキャッシュを対象とする準備処理は直列に実行する
+    // （複数のワールドを同時に起動した際に，キャッシュの生成処理同士が作業ファイルを壊し合わないようにする）
+    return cacheSpoolers
+      .get(this.cachePath.absolute().path)
+      .spool(() =>
+        this.readyCacheExclusively(verJsonHandler, execRuntime, progress)
+      );
+  }
+
+  /**
+   * キャッシュを準備する（`readyCache()`の本体実装）
+   *
+   * 同じキャッシュに対して並列に実行されないことを前提とする
+   */
+  private async readyCacheExclusively(
     verJsonHandler: JsonSourceHandler<VersionJson>,
     execRuntime: ExecRuntime,
     progress?: GroupProgressor
