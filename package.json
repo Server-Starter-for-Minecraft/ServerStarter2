@@ -13,7 +13,6 @@
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest",
     "dev": "bun scripts/quasar.ts dev -m electron",
-    "dummy": "SRC_DIR=src/dummy bun scripts/quasar.ts dev -m electron",
     "build": "quasar build -m electron"
   },
   "dependencies": {

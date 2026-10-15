@@ -42,7 +42,7 @@ const visible = defineModel<boolean>('visible', { required: true });
  * @param path 開くフォルダのパス
  */
 async function openFolder(path: string) {
-  const res = await window.API.sendOpenFolder(path, false);
+  const res = await window.API.invokeOpenFolder(path, false);
   checkError(res, undefined, (e) => tError(e));
 }
 

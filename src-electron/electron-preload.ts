@@ -93,18 +93,17 @@ const api: FrontAPI = {
   onNotifySystemUpdate: on('NotifySystemUpdate'),
 
   // HANDLE
-  handleNotifySystemUpdate: send('NotifySystemUpdate'),
   handleAgreeEula: handle('AgreeEula'),
   handleCheckShutdown: handle('CheckShutdown'),
 
   // SEND
   sendCommand: send('Command'),
   sendOpenBrowser: send('OpenBrowser'),
-  sendOpenFolder: send('OpenFolder'),
   sendReadyWindow: send('ReadyWindow'),
 
   // INVOKE
   invokeReboot: invoke('Reboot'),
+  invokeOpenFolder: invoke('OpenFolder'),
 
   invokeGetStaticResouce: invoke('GetStaticResouce'),
 

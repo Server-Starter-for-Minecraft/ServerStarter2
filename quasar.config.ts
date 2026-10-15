@@ -5,8 +5,6 @@ import { copyFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 export default defineConfig((ctx) => {
-  const srcDir = process.env.SRC_DIR || 'src';
-
   return {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
@@ -46,8 +44,8 @@ export default defineConfig((ctx) => {
         viteConf.server ??= {};
         viteConf.server.warmup = {
           clientFiles: [
-            `./${srcDir}/App.vue`,
-            `./${srcDir}/router/*.ts`,
+            './src/App.vue',
+            './src/router/*.ts',
             './src/layouts/**/*.vue',
             './src/pages/**/*.vue',
             './src/components/**/*.vue',
@@ -108,13 +106,6 @@ export default defineConfig((ctx) => {
 
     // https://v2.quasar.dev/options/animations
     animations: [],
-
-    // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#sourcefiles
-    sourceFiles: {
-      rootComponent: `${srcDir}/App.vue`,
-      router: `${srcDir}/router/index`,
-      store: `${srcDir}/stores/index`,
-    },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
     electron: {

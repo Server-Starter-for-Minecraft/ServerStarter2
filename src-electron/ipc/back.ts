@@ -45,11 +45,11 @@ export const getBackListener = (
   on: {
     Command: runCommand,
     OpenBrowser: openBrowser,
-    OpenFolder: openFolder,
     ReadyWindow: readyWindow,
   },
   handle: {
     Reboot: reboot,
+    OpenFolder: openFolder,
 
     GetStaticResouce: getStaticResoure,
 

@@ -15,7 +15,7 @@ async function openFolder() {
   checkError(
     path,
     async (p) => {
-      const res = await window.API.sendOpenFolder(p, true);
+      const res = await window.API.invokeOpenFolder(p, true);
       checkError(res, undefined, (e) => tError(e));
     },
     (e) => tError(e)
