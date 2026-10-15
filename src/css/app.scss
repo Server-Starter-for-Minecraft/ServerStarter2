@@ -18,6 +18,13 @@ h1 {
 
 body {
   user-select: none;
+  // Quasar既定のフォント指定（quasar/src/css/variables.sassの$typography-font-family）は
+  // 日本語フォントを含まず，日本語はChromiumのフォールバックに依存する．
+  // Electron 44以降のWindowsではMeiryoではなくNoto Sans JPが選ばれるため，'Meiryo'を追加して明示する
+  // （quasar.variables.scssは起動速度のため置かない方針なので，SASS変数ではなくここで上書きする）
+  font-family:
+    'Roboto', 'Meiryo', '-apple-system', 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
 }
 
 // テキストを１行に制限してはみ出した分は省略する
