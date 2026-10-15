@@ -182,6 +182,29 @@ describe(
       await container.removeVersion(vanilla, serverPath);
       expect(serverPath.child('eula.txt').exists()).toBe(false);
     });
+
+    // バージョンの準備に失敗した場合
+    test('バージョン準備失敗時はeulaの同意を求めない', async () => {
+      // 存在しないバージョンを指定して準備を失敗させる
+      const missingVersion = VanillaVersion.parse({
+        type: 'vanilla',
+        id: 'not-existing-version',
+        release: false,
+      });
+      const failServerPath = workPath.child('failServer');
+      const eulaAgree = vi.fn(async () => true);
+      const readyResult = await container.readyVersion(
+        missingVersion,
+        failServerPath,
+        async () => {},
+        eulaAgree
+      );
+      // 準備の失敗がそのまま返るはず
+      expect(isError(readyResult)).toBe(true);
+      // 起動できないサーバーのeulaの同意を求めないはず
+      expect(eulaAgree).toHaveBeenCalledTimes(0);
+      expect(failServerPath.child('eula.txt').exists()).toBe(false);
+    });
   },
   1000 * 60
 );
