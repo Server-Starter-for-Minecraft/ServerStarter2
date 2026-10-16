@@ -82,13 +82,13 @@ jobs:
 
             ## リリース前の動作確認
 
-            現行版（v${{ steps.get_version.outputs.current-version }}）から Draft Release の新版（v${{ steps.get_version.outputs.next-version }}）へ、自動アップデートできることを確認する。
-            現行版のインストーラーは、[ビルドの実行結果](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) の Artifacts（`ServerStarter-v${{ steps.get_version.outputs.current-version }}-*`）からダウンロードする。
+            更新前ビルドから Draft Release の新版（v${{ steps.get_version.outputs.next-version }}）へ、自動アップデートできることを確認する。
+            更新前ビルドは、リリースする内容（main）をバージョン番号だけ v${{ steps.get_version.outputs.current-version }} のままビルドしたもので、[ビルドの実行結果](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) の Artifacts（`ServerStarter-v${{ steps.get_version.outputs.current-version }}-*`）からダウンロードする。
             ビルドスクリプトを再実行した場合は、このPRにコメントされる最新の実行結果を使う。
 
             ### 手順（各OS共通）
 
-            1. 現行版をインストールする
+            1. 更新前ビルドをインストールする
             2. 環境変数 `SERVERSTARTER_MODE=debug` と `SERVERSTARTER_TOKEN=<Draft Releaseを参照できるPAT>` を設定して、ターミナルから起動する
                - Windows (PowerShell): `$env:SERVERSTARTER_MODE='debug'; $env:SERVERSTARTER_TOKEN='<PAT>'; & '<インストール先>\ServerStarter2.exe'`
                - Mac: `SERVERSTARTER_MODE=debug SERVERSTARTER_TOKEN=<PAT> /Applications/ServerStarter2.app/Contents/MacOS/ServerStarter2`
@@ -97,17 +97,17 @@ jobs:
             ### 確認結果
 
             - [ ] Windows (x64)：`-win`
-            - [ ] Mac (Apple Silicon)：`-mac-silicon` ※Macの実機を持つメンバーに依頼
-            - [ ] Mac (Intel)：`-mac-intel` ※Macの実機を持つメンバーに依頼
-            - [ ] Mac (Apple Silicon 上で Intel 版を Rosetta 経由で起動)：`-mac-intel` → Apple Silicon 版に更新されること ※Macの実機を持つメンバーに依頼
+            - [ ] Mac (Apple Silicon)：`-mac-silicon`
+            - [ ] Mac (Intel)：`-mac-intel`
+            - [ ] Mac (Apple Silicon 上で Intel 版を Rosetta 経由で起動)：`-mac-intel` → Apple Silicon 版に更新されること
 
             ### 公開中のバージョンからの確認
 
-            Artifacts の現行版は main からビルドしたものなので、アップデーターの実装が公開中のバージョンと異なる場合がある。
+            更新前ビルドは main からビルドしたものなので、アップデーターの実装が公開中のバージョンと異なる場合がある。
             アップデーターに変更があったリリースでは、[公開中の最新版](${{ github.server_url }}/${{ github.repository }}/releases/latest) のインストーラーでも同じ手順で確認する。
 
             - [ ] Windows (x64)
-            - [ ] Mac ※Macの実機を持つメンバーに依頼
+            - [ ] Mac
 
             すべて確認できたら、このPRを main にマージし、Draft Release を公開する。
             問題があった場合は、修正を main に取り込んでからビルドスクリプトを再実行する（このブランチと Draft Release が更新される）。
@@ -149,8 +149,8 @@ jobs:
 
     # 各osで並列ビルド
     # new-ver=true : リリースする新版（リリースブランチ）
-    # new-ver=false: アップデートの動作確認に使う現行版（実行したブランチ）
-    # 1つのランナーの失敗で、他のビルド（動作確認用の現行版を含む）を中断しない
+    # new-ver=false: アップデートの動作確認に使う更新前ビルド（実行したブランチを、更新前のバージョン番号のままビルドしたもの）
+    # 1つのランナーの失敗で、他のビルド（動作確認用の更新前ビルドを含む）を中断しない
     strategy:
       fail-fast: false
       matrix:
@@ -229,7 +229,7 @@ jobs:
           path: dist/release/*
           retention-days: 1
 
-      # 現行版のビルドデータをArtifactとして保存（アップデートの動作確認用。Draft Releaseには含めない）
+      # 更新前ビルドのデータをArtifactとして保存（アップデートの動作確認用。Draft Releaseには含めない）
       - name: Upload Artifact (Current Version)
         if: matrix.new-ver == false
         uses: actions/upload-artifact@v7
