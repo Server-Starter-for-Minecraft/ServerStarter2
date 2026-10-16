@@ -54,9 +54,7 @@ import { IAPI, IBackAPI, IFrontAPI } from './types';
  *
  * 3 src-electron/ipc/front の `function getFrontAPIListener`でエラーが出ていたら修正
  *
- * 4 src-electron/ipc/dummy_back の `const backListener`でエラーが出ていたら修正
- *
- * 5 src-electron/ipc/back の `const backListener`でエラーが出ていたら関数を追加(バックエンド側の対応が必要)
+ * 4 src-electron/ipc/back の `getBackListener`でエラーが出ていたら関数を追加(バックエンド側の対応が必要)
  */
 export interface API extends IAPI {
   sendMainToWindow: {
@@ -114,15 +112,19 @@ export interface API extends IAPI {
     /** URLをブラウザで開く */
     OpenBrowser: (url: string) => void;
 
-    /** pathをエクスプローラーで開く */
-    OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
-
     /** mainWindowが準備できた(App.vueのセットアップ処理が終わった)ときに発火 */
     ReadyWindow: () => void;
   };
   invokeWindowToMain: {
     /** 実行中のサーバーを再起動 */
     Reboot: (world: WorldID) => Promise<void>;
+
+    /**
+     * pathをエクスプローラーで開く
+     * @param path 開くフォルダのパス
+     * @param autocreate trueの場合，フォルダが存在しなければ作成してから開く
+     */
+    OpenFolder: (path: string, autocreate: boolean) => Promise<Failable<void>>;
 
     /** Backend側から静的なデータを取得する */
     GetStaticResouce: () => Promise<StaticResouce>;

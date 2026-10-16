@@ -1,0 +1,25 @@
+name: Typecheck
+
+on: [pull_request]
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        # pushは行わないため，認証情報をチェックアウト先に残さない
+        with:
+          persist-credentials: false
+      - name: 'Install Bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # postinstallの`quasar prepare`で型チェックに必要な`.quasar/tsconfig.json`も生成される
+      - name: 'Install Deps'
+        run: bun install
+      # vue-tscの型エラーが1件でもあればjobを失敗扱いにする
+      - name: 'Execute Typecheck'
+        run: bun run typecheck

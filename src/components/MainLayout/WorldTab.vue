@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
+import { Version } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { runServer, useConsoleStore } from 'src/stores/ConsoleStore';
@@ -28,6 +29,22 @@ const pendingRequest = computed(() =>
 );
 
 const router = useRouter();
+
+/**
+ * ワールド一覧に表示するバージョン名
+ *
+ * バニラ以外はサーバー種別を併記する（例: `1.20.4 (Spigot)`）。バージョンが不明な場合は空文字
+ */
+function versionLabel(version: Version) {
+  switch (version.type) {
+    case 'unknown':
+      return '';
+    case 'vanilla':
+      return version.id;
+    default:
+      return `${version.id} (${$T(`home.serverType.${version.type}`)})`;
+  }
+}
 async function startServer(
   mStore: typeof mainStore,
   cStore: typeof consoleStore
@@ -77,13 +94,7 @@ ${waitingRequestLabel(pendingRequest.value)}`;
       return prop.world_item.world.name;
     case 'edited':
       return `${prop.world_item.world.name}
-              ${
-                prop.world_item.world.version.type === 'vanilla'
-                  ? prop.world_item.world.version.id
-                  : `${prop.world_item.world.version.id} (${$T(
-                      `home.serverType.${prop.world_item.world.version.type}`
-                    )})`
-              }`;
+              ${versionLabel(prop.world_item.world.version)}`;
   }
 };
 </script>
@@ -202,13 +213,7 @@ ${waitingRequestLabel(pendingRequest.value)}`;
         world_item.world.name
       }}</q-item-label>
       <q-item-label v-if="world_item.type === 'edited'" class="versionName">
-        {{
-          world_item.world.version.type === 'vanilla'
-            ? world_item.world.version.id
-            : `${world_item.world.version.id} (${$t(
-                `home.serverType.${world_item.world.version.type}`
-              )})`
-        }}
+        {{ versionLabel(world_item.world.version) }}
       </q-item-label>
       <q-item-label
         v-if="world_item.type === 'edited' && world_item.world.last_date"

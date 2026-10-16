@@ -61,7 +61,7 @@ async function setWorldContainer(container: WorldContainer) {
  * エクスプローラーでワールドフォルダを開く
  */
 async function openWorldFolder() {
-  const res = await window.API.sendOpenFolder(
+  const res = await window.API.invokeOpenFolder(
     mainStore.readonlyWorld.world.container,
     false
   );

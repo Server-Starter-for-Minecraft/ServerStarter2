@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ValidationRule } from 'quasar/dist/types/api/validation';
+import type { ValidationRule } from 'quasar';
 
 interface Prop {
   label?: string;

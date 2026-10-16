@@ -83,7 +83,7 @@ const drawer = ref(true);
       <q-list>
         <template
           v-for="(world, idx) in mainStore.allWorlds.filteredWorlds()"
-          :key="world"
+          :key="world.world.id"
         >
           <WorldTab :world_item="world" :idx="idx" />
         </template>

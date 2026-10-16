@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, Ref, ref, toRaw } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
+import { getVersionId } from 'app/src-public/scripts/version';
 import { RemoteWorld } from 'app/src-electron/schema/remote';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
@@ -32,7 +33,7 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
       remoteData: prop.remoteData,
       rWorldName: selectedRemote.remote.name,
       rIcon: selectedRemote.avater_path,
-      rVersionName: selectedRemote.version.id,
+      rVersionName: getVersionId(selectedRemote.version),
       rLastPlayed: selectedRemote.last_date,
     } as GithubCheckDialogProp,
   }).onOk(() => {
@@ -55,7 +56,7 @@ function checkSetNewRemote() {
       remoteData: prop.remoteData,
       rWorldName: mainStore.world.name,
       rIcon: mainStore.world.avater_path,
-      rVersionName: mainStore.world.version.id,
+      rVersionName: getVersionId(mainStore.world.version),
       rLastPlayed: mainStore.world.last_date,
     } as GithubCheckDialogProp,
   }).onOk(onDialogOK);
@@ -135,7 +136,7 @@ onMounted(async () => {
             <WorldItem
               :icon="remoteWorld.avater_path"
               :world-name="remoteWorld.remote.name"
-              :version-name="remoteWorld.version.id"
+              :version-name="getVersionId(remoteWorld.version)"
               :last-played="remoteWorld.last_date"
               @click="checkSetExistedRemote(remoteWorld)"
               style="min-width: 20rem; max-width: 20rem"

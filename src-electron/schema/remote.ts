@@ -29,7 +29,15 @@ export const Remote = z.object({
   folder: RemoteFolder,
   name: RemoteWorldName,
 });
-export type Remote = z.infer<typeof Remote>;
+/**
+ * リモート上のワールドの所在
+ *
+ * @template T リモートフォルダの種別（種別ごとの処理で`folder`の型を絞り込むために指定する）
+ */
+export type Remote<T extends RemoteFolder = RemoteFolder> = Omit<
+  z.infer<typeof Remote>,
+  'folder'
+> & { folder: T };
 
 export const RemoteWorld = z.object({
   /** リモート */

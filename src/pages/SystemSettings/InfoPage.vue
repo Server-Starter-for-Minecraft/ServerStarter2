@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
+import { checkError } from 'src/components/Error/Error';
 import SsA from 'src/components/util/base/ssA.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CreaterItem from 'src/components/SystemSettings/Info/CreaterItem.vue';
@@ -18,8 +20,12 @@ function systemUpdate() {}
 /**
  * システムログフォルダを開く
  */
-function openLog() {
-  window.API.sendOpenFolder(sysStore.staticResouces.paths.log, true);
+async function openLog() {
+  const res = await window.API.invokeOpenFolder(
+    sysStore.staticResouces.paths.log,
+    true
+  );
+  checkError(res, undefined, (e) => tError(e));
 }
 
 /**

@@ -24,7 +24,6 @@ export default defineConfig({
         '**/node_modules/**',
         '**/schema/**',
         '**/api/**',
-        '**/dummy/**',
         '**/*.fixtures.ts',
       ],
       // set limit ratio

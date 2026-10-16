@@ -193,7 +193,7 @@ async function openSavedFolder() {
   checkError(
     path,
     async (p) => {
-      const res = await window.API.sendOpenFolder(p, true);
+      const res = await window.API.invokeOpenFolder(p, true);
       checkError(res, undefined, (e) => tError(e));
     },
     (e) => tError(e)
@@ -203,7 +203,7 @@ async function openSavedFolder() {
  * キャッシュフォルダを開く
  */
 async function openCacheFolder() {
-  const res = await window.API.sendOpenFolder(
+  const res = await window.API.invokeOpenFolder(
     sysStore.staticResouces.paths.cache[prop.contentType],
     true
   );
