@@ -4,6 +4,7 @@
   "description": "start Minecraft server only ONE click !",
   "productName": "ServerStarter2",
   "author": "CivilTT, txkodo <serverstarter.contact@gmail.com>",
+  "homepage": "https://server-starter-for-minecraft.github.io",
   "private": true,
   "type": "module",
   "scripts": {

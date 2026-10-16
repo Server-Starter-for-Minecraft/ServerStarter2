@@ -61,17 +61,20 @@ function release(id: number, tag: string, assets: ReturnType<typeof asset>[]) {
   };
 }
 
-/** 新しい順に並んだリリース一覧（実際のGitHubのレスポンスと同様にラベルの値が混在する） */
+/** 新しい順に並んだリリース一覧（実際のGitHubのレスポンスと同様にラベルの値が混在し、アセットは名前順に並ぶ） */
 const RELEASES = [
+  release(166000000, 'v2.3.0', [
+    asset(177000001, 'ServerStarter-v2.3.0.deb', ''),
+    asset(177000002, 'ServerStarter-v2.3.0-intel.pkg', ''),
+    asset(177000003, 'ServerStarter-v2.3.0.msi', null),
+    asset(177000004, 'ServerStarter-v2.3.0.rpm', ''),
+    asset(177000005, 'ServerStarter-v2.3.0-silicon.pkg', ''),
+  ]),
   release(155432110, 'v2.2.0', [
     asset(166778801, 'ServerStarter-v2.2.0.deb', ''),
     asset(166778802, 'ServerStarter-v2.2.0.msi', ''),
     asset(166778803, 'ServerStarter-v2.2.0.pkg', null),
     asset(166778804, 'ServerStarter-v2.2.0.rpm', ''),
-  ]),
-  release(144210987, 'v2.1.5', [
-    asset(153300001, 'ServerStarter-v2.1.5.msi', null),
-    asset(153300002, 'ServerStarter-v2.1.5.pkg', null),
   ]),
 ];
 
@@ -95,11 +98,11 @@ afterEach(() => {
 
 describe('getLatestRelease', () => {
   test.each([
-    ['windows-x64', 'ServerStarter-v2.2.0.msi'],
-    ['mac-os', 'ServerStarter-v2.2.0.pkg'],
-    ['mac-os-arm64', 'ServerStarter-v2.2.0.pkg'],
-    ['debian', 'ServerStarter-v2.2.0.deb'],
-    ['redhat', 'ServerStarter-v2.2.0.rpm'],
+    ['windows-x64', 'ServerStarter-v2.3.0.msi'],
+    ['mac-os', 'ServerStarter-v2.3.0-intel.pkg'],
+    ['mac-os-arm64', 'ServerStarter-v2.3.0-silicon.pkg'],
+    ['debian', 'ServerStarter-v2.3.0.deb'],
+    ['redhat', 'ServerStarter-v2.3.0.rpm'],
   ] as const)(
     'GitHubのリリース一覧から%sの最新版を取得できる',
     async (platform, assetName) => {
@@ -109,16 +112,16 @@ describe('getLatestRelease', () => {
 
       expect(latest).toEqual({
         platform,
-        version: 'v2.2.0',
-        url: assetUrl(RELEASES, 'v2.2.0', assetName),
+        version: 'v2.3.0',
+        url: assetUrl(RELEASES, 'v2.3.0', assetName),
       });
     }
   );
 
   test('最新のリリースにOS向けのアセットがない場合は、アセットがある中で最新のリリースを取得する', async () => {
     const releases = [
-      release(166000000, 'v2.3.0', [
-        asset(177000001, 'ServerStarter-v2.3.0.msi', null),
+      release(170000000, 'v2.4.0', [
+        asset(180000001, 'ServerStarter-v2.4.0.msi', null),
       ]),
       ...RELEASES,
     ];
@@ -128,10 +131,45 @@ describe('getLatestRelease', () => {
 
     expect(latest).toEqual({
       platform: 'debian',
-      version: 'v2.2.0',
-      url: assetUrl(releases, 'v2.2.0', 'ServerStarter-v2.2.0.deb'),
+      version: 'v2.3.0',
+      url: assetUrl(releases, 'v2.3.0', 'ServerStarter-v2.3.0.deb'),
     });
   });
+
+  test('リリースに別バージョンのアセットが含まれていても、リリースのバージョンのアセットを取得する', async () => {
+    // 動作確認用に、現行バージョンのビルドが同じリリースにアップロードされている場合
+    const releases = [
+      release(170000000, 'v2.4.0', [
+        asset(180000001, 'ServerStarter-v2.3.0.msi', null),
+        asset(180000002, 'ServerStarter-v2.4.0.msi', null),
+      ]),
+      ...RELEASES,
+    ];
+    mockReleasesResponse(releases);
+
+    const latest = await getLatestRelease('windows-x64', undefined);
+
+    expect(latest).toEqual({
+      platform: 'windows-x64',
+      version: 'v2.4.0',
+      url: assetUrl(releases, 'v2.4.0', 'ServerStarter-v2.4.0.msi'),
+    });
+  });
+
+  test.each(['mac-os', 'mac-os-arm64'] as const)(
+    '%sでは、アーキテクチャの区別がない旧形式のインストーラーは取得しない',
+    async (platform) => {
+      mockReleasesResponse([
+        release(155432110, 'v2.2.0', [
+          asset(166778803, 'ServerStarter-v2.2.0.pkg', null),
+        ]),
+      ]);
+
+      const latest = await getLatestRelease(platform, undefined);
+
+      expect(isError(latest)).toBe(true);
+    }
+  );
 
   test('取得したリリース一覧が想定外の形式の場合はエラーを返す', async () => {
     mockReleasesResponse({ message: 'Not Found' });

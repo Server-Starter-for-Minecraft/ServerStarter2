@@ -133,6 +133,9 @@ export default defineConfig((ctx) => {
         // https://www.electron.build/configuration/configuration
         appId: 'ServerStarter2',
         artifactName: 'ServerStarter.build.${ext}',
+        // リリースへのアップロードはビルドスクリプト（.github/workflows/build.yml）で行うため、
+        // CI上で electron-builder が暗黙に publish を試みて失敗しないよう無効化する
+        publish: null,
         asarUnpack: [
           'node_modules/sharp/**',
           'node_modules/@img/**',
@@ -144,6 +147,9 @@ export default defineConfig((ctx) => {
         },
         mac: {
           target: 'pkg',
+          // 署名用の証明書がないため ad-hoc 署名する（Apple Silicon では署名のないアプリを起動できないため）
+          // アーキテクチャはビルドするマシンに合わせる（CIではアーキテクチャごとのランナーでビルドする）
+          identity: '-',
         },
         linux: {
           target: ['deb', 'rpm'],

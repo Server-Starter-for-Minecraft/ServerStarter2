@@ -2,7 +2,7 @@ import { rootLogger } from '../common/logger';
 import { OsPlatform } from '../schema/os';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { isError } from '../util/error/error';
-import { osPlatform } from '../util/os/os';
+import { isRunningUnderRosetta, osPlatform } from '../util/os/os';
 import {
   loadUpdateAttempt,
   saveUpdateAttempt,
@@ -12,7 +12,22 @@ import { getLatestRelease } from './fetch';
 import { installMac } from './installer/mac';
 import { installWindows } from './installer/windows';
 import { notifyUpdate } from './notify';
+import { isNewerVersion } from './semver';
 import { getSystemVersion } from './version';
+
+/**
+ * アップデート先のインストーラーの対象OSを判定する
+ *
+ * Apple Silicon上でIntel版をRosetta経由で実行している場合は、Apple Silicon版へ移行する
+ * （v2.2.0以前はIntel版のみを配布していたため）
+ * 移行は通常のアップデートと同時に行う（起動中より新しいバージョンがない場合は、同じバージョンのApple Silicon版へは入れ替えない）
+ *
+ * @returns アップデート先のインストーラーの対象OS
+ */
+function getUpdatePlatform(): OsPlatform {
+  if (osPlatform === 'mac-os' && isRunningUnderRosetta()) return 'mac-os-arm64';
+  return osPlatform;
+}
 
 /**
  * アップデートがあるかどうかチェック
@@ -22,11 +37,11 @@ import { getSystemVersion } from './version';
 async function checkUpdate(pat: string | undefined) {
   /** 接頭辞vのついていないSemVar e.g. "1.2.3" */
   const currentVersion = await getSystemVersion();
-  const latestRelease = await getLatestRelease(osPlatform, pat);
+  const latestRelease = await getLatestRelease(getUpdatePlatform(), pat);
   // アップデートの取得に失敗
   if (isError(latestRelease)) return latestRelease;
-  // アップデートなし
-  if (`v${currentVersion}` === latestRelease.version) return false;
+  // アップデートなし（ダウングレードを防ぐため、起動中のバージョンより新しい場合のみ更新する）
+  if (!isNewerVersion(latestRelease.version, currentVersion)) return false;
   return latestRelease;
 }
 
@@ -49,7 +64,7 @@ export async function update() {
   const update = await checkUpdate(PAT);
 
   if (update === false) {
-    logger.error(update);
+    logger.info('already up to date');
     return;
   }
 
@@ -63,11 +78,12 @@ export async function update() {
   if (import.meta.env.QUASAR_DEBUG) return;
 
   const vLessVersion = update.version.slice(1);
+  const platform = update.platform;
 
   // 自動アップデートに対応していないOSでは、最新版があることを通知する
-  const installer = INSTALLERS[osPlatform];
+  const installer = INSTALLERS[platform];
   if (installer === undefined) {
-    await notifyUpdate(osPlatform, vLessVersion);
+    await notifyUpdate(platform, vLessVersion);
     return;
   }
 
@@ -76,7 +92,7 @@ export async function update() {
   const lastAttempt = await loadUpdateAttempt();
   if (!shouldAutoInstall(update.version, lastAttempt, Date.now())) {
     logger.warn('skip auto update because the last update failed', lastAttempt);
-    await notifyUpdate(osPlatform, vLessVersion);
+    await notifyUpdate(platform, vLessVersion);
     return;
   }
 
@@ -87,7 +103,7 @@ export async function update() {
   });
   if (isError(saved)) {
     logger.error('failed to save the update attempt', saved);
-    await notifyUpdate(osPlatform, vLessVersion);
+    await notifyUpdate(platform, vLessVersion);
     return;
   }
 
@@ -105,7 +121,7 @@ export async function update() {
   logger.error('failed to start the installer');
   sys.system.lastUpdatedTime = prevUpdatedTime;
   await setSystemSettings(sys);
-  await notifyUpdate(osPlatform, vLessVersion);
+  await notifyUpdate(platform, vLessVersion);
 }
 
 /**
