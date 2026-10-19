@@ -9,7 +9,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         # pushは行わないため，認証情報をチェックアウト先に残さない
         with:
           persist-credentials: false

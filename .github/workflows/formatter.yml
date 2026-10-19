@@ -9,19 +9,29 @@ jobs:
   prettier:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: technote-space/get-diff-action@v6 #差分を取得する
+      # git-auto-commit-actionでPRのブランチへコミットするため、detached HEADではなくPRのブランチをチェックアウトする
+      # 差分の取得にベースブランチとの共通祖先が必要なため、履歴をすべて取得する
+      - uses: actions/checkout@v7
         with:
-          PATTERNS: |
-            **/*.{ts,tsx,js,jsx,json,vue}
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2 #bunをインストール
         with:
           bun-version-file: package.json
-      - name: Run Prettier # prettier自体を実行
+      - name: Install Deps
+        run: bun install
+      # PRで変更（追加・更新・リネーム）されたファイルのみにprettierを実行する
+      # 差分の取得は、Node.jsのランタイムに依存する外部actionを避けるためgitで行う
+      # ファイル名に空白などが含まれていても扱えるよう、NUL区切りでprettierへ渡す（差分がない場合は実行しない）
+      # git diffの失敗を見逃さないよう、shell: bash でpipefailを有効にする
+      - name: Run Prettier
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          bun install
-          bunx prettier --write ${{ env.GIT_DIFF_FILTERED }} --ignore-path .gitignore # 環境変数GIT_DIFF_FILTEREDに差分のあるファイルが列挙されている
-        if: env.GIT_DIFF
-      - uses: stefanzweifel/git-auto-commit-action@v4 # フォーマットしたファイルをコミット
+          git diff -z --name-only --diff-filter=ACMR "origin/${BASE_REF}...HEAD" -- \
+            '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.vue' |
+            xargs -0 -r bunx prettier --write --ignore-path .gitignore
+      - uses: stefanzweifel/git-auto-commit-action@v7 # フォーマットしたファイルをコミット
         with:
           commit_message: 🚨 Apply Prettier Change
