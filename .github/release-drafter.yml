@@ -1,5 +1,5 @@
 # リリースノートのテンプレートファイル
-# release-drafter/release-drafter@v5で使用
+# release-drafter/release-drafter@v7で使用
 
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'

@@ -12,7 +12,10 @@ jobs:
       pull-requests: write
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        # pushは行わないため，認証情報をチェックアウト先に残さない
+        with:
+          persist-credentials: false
       - name: 'Install Bun'
         uses: oven-sh/setup-bun@v2
         with:
@@ -23,4 +26,4 @@ jobs:
         run: bun run test --run --coverage --passWithNoTests
       - name: Coverage Report
         if: always()
-        uses: davelosert/vitest-coverage-report-action@v2.5.0
+        uses: davelosert/vitest-coverage-report-action@v2

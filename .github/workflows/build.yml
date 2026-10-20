@@ -33,15 +33,24 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       # package.jsonのversionを次のバージョンに更新
-      - uses: Server-Starter-for-Minecraft/VersionUpdater@v1
+      # 出力: current-version（更新前）/ next-version（更新後）。いずれも接頭辞vのないSemVer e.g. "1.2.3"
+      # Node.jsのランタイムに依存する外部actionを避けるため、ランナー標準のnpm / jqで更新する
+      # （package.jsonのversion系スクリプトの出力が混ざらないよう、更新後の値はpackage.jsonから読み直す）
+      - name: Update version
         id: get_version
-        with:
-          update-type: ${{inputs.type}}
+        env:
+          UPDATE_TYPE: ${{ inputs.type }}
+        run: |
+          current=$(jq -r .version package.json)
+          npm version "${UPDATE_TYPE}" --no-git-tag-version --ignore-scripts
+          next=$(jq -r .version package.json)
+          echo "current-version=${current}" >> "$GITHUB_OUTPUT"
+          echo "next-version=${next}" >> "$GITHUB_OUTPUT"
 
       # git config
       - name: git config
@@ -72,7 +81,7 @@ jobs:
       - name: Create Pull Request
         if: env.BRANCH_EXISTS == 'false'
         id: pullrequest
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 🔖 Release ${{ steps.get_version.outputs.next-version }}
@@ -89,10 +98,14 @@ jobs:
             ### 手順（各OS共通）
 
             1. 更新前ビルドをインストールする
+               - Linux (Debian系): `sudo apt install ./ServerStarter-v${{ steps.get_version.outputs.current-version }}.deb`
+               - Linux (Red Hat系): `sudo dnf install ./ServerStarter-v${{ steps.get_version.outputs.current-version }}.rpm`
             2. 環境変数 `SERVERSTARTER_MODE=debug` と `SERVERSTARTER_TOKEN=<Draft Releaseを参照できるPAT>` を設定して、ターミナルから起動する
                - Windows (PowerShell): `$env:SERVERSTARTER_MODE='debug'; $env:SERVERSTARTER_TOKEN='<PAT>'; & '<インストール先>\ServerStarter2.exe'`
                - Mac: `SERVERSTARTER_MODE=debug SERVERSTARTER_TOKEN=<PAT> /Applications/ServerStarter2.app/Contents/MacOS/ServerStarter2`
+               - Linux: `SERVERSTARTER_MODE=debug SERVERSTARTER_TOKEN=<PAT> serverstarter2`
             3. 新版のインストーラーが起動し、更新後の ServerStarter2 が新版として起動することを確認する
+               - Linux は自動アップデートに対応していないため、インストーラーは起動しない。代わりに新版（v${{ steps.get_version.outputs.next-version }}）があることを知らせるダイアログが表示されることを確認する
 
             ### 確認結果
 
@@ -100,6 +113,8 @@ jobs:
             - [ ] Mac (Apple Silicon)：`-mac-silicon`
             - [ ] Mac (Intel)：`-mac-intel`
             - [ ] Mac (Apple Silicon 上で Intel 版を Rosetta 経由で起動)：`-mac-intel` → Apple Silicon 版に更新されること
+            - [ ] Linux (Debian系 e.g. Ubuntu)：`-linux` の `.deb`
+            - [ ] Linux (Red Hat系 e.g. Fedora)：`-linux` の `.rpm`
 
             ### 公開中のバージョンからの確認
 
@@ -108,6 +123,7 @@ jobs:
 
             - [ ] Windows (x64)
             - [ ] Mac
+            - [ ] Linux
 
             すべて確認できたら、このPRを main にマージし、Draft Release を公開する。
             問題があった場合は、修正を main に取り込んでからビルドスクリプトを再実行する（このブランチと Draft Release が更新される）。
@@ -186,7 +202,7 @@ jobs:
       VERSION: ${{ matrix.new-ver && needs.create-commit.outputs.next-version || needs.create-commit.outputs.current-version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # releaseブランチをチェックアウト
       - name: Checkout release branch
@@ -254,10 +270,9 @@ jobs:
       # リリースとリリースノートを作成
       - name: Create a Release and Release note
         id: create_release
-        uses: release-drafter/release-drafter@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: release-drafter/release-drafter@v7
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ needs.create-commit.outputs.next-version }}
           version: v${{ needs.create-commit.outputs.next-version }}
           commitish: ${{ needs.create-commit.outputs.branch-name }}
@@ -323,8 +338,11 @@ jobs:
 
   # Discordに通知
   notify:
+    # ワークフローの成否を判定するため、すべてのジョブを待つ
     needs:
       - create-commit
+      - build-electron
+      - create-release
       - upload-build
 
     runs-on: ubuntu-latest
@@ -333,10 +351,8 @@ jobs:
     if: always()
 
     steps:
-      # ワークフローが失敗したかどうかを調べる
-      - uses: technote-space/workflow-conclusion-action@v1
-
       # discordに通知
+      # status: いずれかのジョブが失敗していれば failure、キャンセルされていれば cancelled、それ以外は success
       - name: notify via discord
         uses: sarisia/actions-status-discord@v1
         with:
@@ -347,4 +363,4 @@ jobs:
           nocontext: true
           username: GitHub Actions
           webhook: ${{ secrets.DISCORD_WEBHOOK_BUILD }}
-          status: ${{ env.WORKFLOW_CONCLUSION }}
+          status: ${{ contains(needs.*.result, 'failure') && 'failure' || contains(needs.*.result, 'cancelled') && 'cancelled' || 'success' }}
