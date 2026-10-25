@@ -72,7 +72,7 @@ export async function searchPlayerFromUUID(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('searchPlayerFromName', async () => {
+  test('searchPlayerFromName', { tags: ['network'] }, async () => {
     const { isValid } = await import('app/src-electron/util/error/error');
 
     const res = await searchPlayerFromName('Notch');

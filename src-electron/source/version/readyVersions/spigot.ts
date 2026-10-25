@@ -251,7 +251,7 @@ async function getServerJarFromBuildTools(
 if (import.meta.vitest) {
   const { describe, test, expect, vi } = import.meta.vitest;
 
-  describe('spigot version', async () => {
+  describe('spigot version', { tags: ['network'] }, async () => {
     const path = await import('path');
 
     // 一時使用フォルダを初期化

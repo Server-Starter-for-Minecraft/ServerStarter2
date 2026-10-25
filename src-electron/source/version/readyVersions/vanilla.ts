@@ -144,25 +144,15 @@ if (import.meta.vitest) {
       release: true,
     };
 
+    const { createFromURLMock } = await import('../test/fromURLMock.fixtures');
+    const originalFromURL = BytesData.fromURL.bind(BytesData);
     const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-    urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
-      const dummyAssets = new Path(__dirname).parent().child('test');
-      const verManifestURL =
-        'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
-      if (url === verManifestURL) {
-        return BytesData.fromPath(
-          dummyAssets.child('version_manifest_v2.json')
-        );
-      } else if (url.endsWith('.xml')) {
-        return BytesData.fromPath(dummyAssets.child('sample.xml'));
-      } else if (url.endsWith('.jar')) {
-        return BytesData.fromPath(dummyAssets.child('sample.jar'));
-      }
-
-      const res = await fetch(url);
-      const buffer = await res.arrayBuffer();
-      return BytesData.fromBuffer(Buffer.from(buffer));
-    });
+    urlCreateReadStreamSpy.mockImplementation(
+      createFromURLMock([
+        { suffix: '.xml', fileName: 'sample.xml' },
+        { suffix: '.jar', fileName: 'sample.jar' },
+      ])
+    );
 
     test('metaJsonParser', async () => {
       const res = await getVanillaVersionJson(
@@ -174,6 +164,24 @@ if (import.meta.vitest) {
       if (isError(res)) return res;
 
       expect(res.javaVersion?.component).toEqual('java-runtime-delta');
+    });
+
+    // 実際のMojang APIのレスポンスを解析できることを確認する(APIの仕様変更の検知用)
+    test('metaJsonParser (Mojang API)', { tags: ['network'] }, async () => {
+      await urlCreateReadStreamSpy.withImplementation(
+        originalFromURL,
+        async () => {
+          const res = await getVanillaVersionJson(
+            VersionId.parse('1.21'),
+            workPath.child('apiCache'),
+            false
+          );
+          expect(isError(res)).toBe(false);
+          if (isError(res)) return;
+
+          expect(res.javaVersion?.component).toEqual('java-runtime-delta');
+        }
+      );
     });
 
     test('setVersionJar', { timeout: 1000 * 60 }, async () => {

@@ -4,13 +4,13 @@ on: [pull_request]
 jobs:
   vitest:
     runs-on: ubuntu-latest
-    
+
     permissions:
       # Required to checkout the code
       contents: read
       # Required to put a comment into the pull-request
       pull-requests: write
-    
+
     steps:
       - uses: actions/checkout@v7
         # pushは行わないため，認証情報をチェックアウト先に残さない
@@ -19,11 +19,14 @@ jobs:
       - name: 'Install Bun'
         uses: oven-sh/setup-bun@v2
         with:
-            bun-version-file: package.json
+          bun-version-file: package.json
       - name: 'Install Deps'
         run: bun install
+      # 外部サービスにアクセスする`network`タグのテストは除外し，外部への通信を遮断して実行する
+      # (外部サービスの状態に結果が左右されないため，このジョブの失敗はコードの問題とみなせる)
+      # `network`タグのテストは vitest-network.yml で実行する
       - name: 'Execute Test'
-        run: bun run test --run --coverage --passWithNoTests
+        run: bun run test:offline --coverage --passWithNoTests
       - name: Coverage Report
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2

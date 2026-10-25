@@ -330,7 +330,7 @@ export class BytesData {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  const { describe, test, expect, afterAll } = import.meta.vitest;
 
   describe('BytesData', async () => {
     const { Path } = await import('./path');
@@ -345,8 +345,7 @@ if (import.meta.vitest) {
     // テストファイルのパス
     const testPath = new Path(__dirname).child('archive', 'test', 'sample.txt');
 
-    // url(API) mock
-    const url = 'https://jsonplaceholder.typicode.com/todos/1';
+    // URLからの取得はローカルHTTPサーバーで検証する(外部サービスの状態にテスト結果を左右させない)
     const returnObj = {
       userId: 1,
       id: 1,
@@ -359,6 +358,17 @@ if (import.meta.vitest) {
       title: z.string(),
       completed: z.boolean(),
     });
+    const { startLocalServer } = await import('app/test/util/localServer');
+    const server = await startLocalServer({
+      '/todos/1': {
+        body: JSON.stringify(returnObj),
+        contentType: 'application/json',
+      },
+      '/text': { body: 'test' },
+      '/server-error': { status: 500, body: 'error' },
+    });
+    afterAll(() => server.close());
+    const url = server.url('/todos/1');
 
     test('from', async () => {
       // テキスト
@@ -392,6 +402,12 @@ if (import.meta.vitest) {
       expect(isError(data3)).toBe(false);
       if (isError(data3)) return;
       await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
+
+      // ステータスコードが200以外の場合はエラー
+      const data5 = await BytesData.fromURL(server.url('/server-error'));
+      expect(isError(data5)).toBe(true);
+      const data6 = await BytesData.fromURL(server.url('/not-found'));
+      expect(isError(data6)).toBe(true);
     });
 
     test('fromPathOrUrl', async () => {
@@ -429,29 +445,33 @@ if (import.meta.vitest) {
       await expect(data4.text()).resolves.toBe('Hello World!');
     });
 
-    test(
-      'hash',
-      async () => {
-        const text = 'test';
-        const data = await BytesData.fromText(text);
-        expect(isError(data)).toBe(false);
-        if (isError(data)) return;
-        await expect(data.hash('sha256')).resolves.toBe(
-          '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
-        );
+    test('hash', async () => {
+      const text = 'test';
+      const sha1 = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3';
+      const data = await BytesData.fromText(text);
+      expect(isError(data)).toBe(false);
+      if (isError(data)) return;
+      await expect(data.hash('sha256')).resolves.toBe(
+        '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
+      );
+      await expect(data.hash('sha1')).resolves.toBe(sha1);
+      await expect(data.hash('md5')).resolves.toBe(
+        '098f6bcd4621d373cade4e832627b4f6'
+      );
 
-        // server.jar (vanilla 1.21.4)
-        const jarUrl =
-          'https://piston-data.mojang.com/v1/objects/4707d00eb834b446575d89a61a11b5d548d8c001/server.jar';
-        const jarHash = '4707d00eb834b446575d89a61a11b5d548d8c001';
+      // URLから取得したデータのハッシュ値が一致する場合は取得に成功する
+      const bytes = await BytesData.fromURL(server.url('/text'), {
+        type: 'sha1',
+        value: sha1,
+      });
+      expect(isError(bytes)).toBe(false);
 
-        const bytes = await BytesData.fromURL(jarUrl);
-        expect(isError(bytes)).toBe(false);
-        if (isError(bytes)) return;
-
-        await expect(bytes.hash('sha1')).resolves.toBe(jarHash);
-      },
-      60 * 1000
-    );
+      // ハッシュ値が一致しない場合はエラー
+      const mismatch = await BytesData.fromURL(server.url('/text'), {
+        type: 'sha1',
+        value: '0000000000000000000000000000000000000000',
+      });
+      expect(isError(mismatch)).toBe(true);
+    });
   });
 }
