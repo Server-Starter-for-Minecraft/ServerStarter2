@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import { enUSMainLayout } from '../../../i18n/en-US/Pages/mainLayout';
 import { jaMainLayout } from '../../../i18n/ja/Pages/mainLayout';
-import { donationOptions, formatYen } from './donationOptions';
+import {
+  donationOptions,
+  formatYen,
+  getDonationPageUrl,
+} from './donationOptions';
 
 /**
  * 寄付ダイアログの選択肢が，正しく表示・遷移できる定義になっていることを確認する
@@ -12,8 +16,24 @@ describe('寄付の選択肢', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  test.each(donationOptions)('$id の寄付ページは https の URL である', (o) => {
-    expect(new URL(o.url).protocol).toBe('https:');
+  test.each(donationOptions)(
+    '$id の寄付ページは公式ホームページの https の URL である',
+    (o) => {
+      const url = new URL(getDonationPageUrl(o));
+      expect(url.protocol).toBe('https:');
+      expect(url.hostname).toBe('server-starter-for-minecraft.github.io');
+    }
+  );
+
+  test('選択肢ごとに異なる寄付ページを開く', () => {
+    const urls = donationOptions.map(getDonationPageUrl);
+    expect(new Set(urls).size).toBe(urls.length);
+  });
+
+  // ホームページ側は amount の値（円）から決済ページを選ぶため，選択肢の金額がそのまま渡る必要がある
+  test.each(donationOptions)('$id の寄付ページに寄付金額が渡される', (o) => {
+    const amount = new URL(getDonationPageUrl(o)).searchParams.get('amount');
+    expect(amount).toBe(o.amount === void 0 ? null : String(o.amount));
   });
 
   test.each(donationOptions.filter((o) => o.amount !== void 0))(
