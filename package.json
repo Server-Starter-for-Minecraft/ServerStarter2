@@ -10,7 +10,7 @@
   "scripts": {
     "postinstall": "bun install --cwd src-electron && quasar prepare",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,json}\" --ignore-path .gitignore",
+    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,json}\" --ignore-path .gitignore --ignore-path .prettierignore",
     "typecheck": "bun scripts/typecheck.ts",
     "test": "vitest",
     "test:offline": "VITEST_BLOCK_NETWORK=1 vitest --run --tags-filter=!network",
