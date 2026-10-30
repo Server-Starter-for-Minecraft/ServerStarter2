@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
-import { DonationOption, donationOptions, formatYen } from './donationOptions';
+import {
+  DonationOption,
+  donationOptions,
+  formatYen,
+  getDonationPageUrl,
+} from './donationOptions';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 
 /**
- * 選択された金額の寄付ページをブラウザで開き，ダイアログを閉じる
+ * 選択された金額の寄付ページ（公式ホームページ経由で決済ページへ移動する）をブラウザで開き，ダイアログを閉じる
  *
  * @param option 選択された寄付の選択肢
  */
 function openDonationPage(option: DonationOption) {
-  window.API.sendOpenBrowser(option.url);
+  window.API.sendOpenBrowser(getDonationPageUrl(option));
   onDialogOK();
 }
 </script>
