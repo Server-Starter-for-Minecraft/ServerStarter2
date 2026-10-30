@@ -110,25 +110,32 @@ async function loadEachVersion(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('mohist correct jar download', { timeout: 60 * 10 ** 3 }, async () => {
-    const ver = '1.20.1';
-    const build = 157;
+  test(
+    'mohist correct jar download',
+    { tags: ['network'], timeout: 60 * 10 ** 3 },
+    async () => {
+      const ver = '1.20.1';
+      const build = 157;
 
-    // バージョンの中のビルド一覧を取得
-    const allVers = await loadEachVersion(ver);
-    expect(isError(allVers)).toBe(false);
-    if (isError(allVers)) return;
+      // バージョンの中のビルド一覧を取得
+      const allVers = await loadEachVersion(ver);
+      expect(isError(allVers)).toBe(false);
+      if (isError(allVers)) return;
 
-    // ビルド一覧から対象のビルドを取得
-    const targetVer = allVers.builds.find((b) => b.id === build);
-    expect(targetVer).toBeDefined();
-    if (!targetVer) return;
+      // ビルド一覧から対象のビルドを取得
+      const targetVer = allVers.builds.find((b) => b.id === build);
+      expect(targetVer).toBeDefined();
+      if (!targetVer) return;
 
-    // ビルドのjarをダウンロード（テスト対象は必ずHashを有しているため，Undefinedを握りつぶす）
-    const hash = { type: 'sha256' as const, value: targetVer.jar.sha256 ?? '' };
-    const jar = await BytesData.fromURL(targetVer.jar.url, hash);
+      // ビルドのjarをダウンロード（テスト対象は必ずHashを有しているため，Undefinedを握りつぶす）
+      const hash = {
+        type: 'sha256' as const,
+        value: targetVer.jar.sha256 ?? '',
+      };
+      const jar = await BytesData.fromURL(targetVer.jar.url, hash);
 
-    // Hashの検証まで含めて正常にデータがダウンロードできたことを確認
-    expect(isError(jar)).toBe(false);
-  });
+      // Hashの検証まで含めて正常にデータがダウンロードできたことを確認
+      expect(isError(jar)).toBe(false);
+    }
+  );
 }
