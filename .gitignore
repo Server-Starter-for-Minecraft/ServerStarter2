@@ -52,3 +52,4 @@ work/
 
 # Quasar config compile cache
 /quasar.config.*.temporary.compiled*
+/.vitest

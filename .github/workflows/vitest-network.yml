@@ -1,12 +1,13 @@
 name: Vitest (network)
 
 # 外部サービス(Mojang・PaperMC・Forge等)に実際にアクセスする`network`タグのテストを実行する
-# - PR: 変更が外部サービスとの連携を壊していないかを確認する
+# - PR: 変更が外部サービスとの連携を壊していないかを確認する(vitest.yml から呼び出す)
 # - 定期実行: PRが無い期間でも，外部APIの仕様変更などで修正が必要になったことを検知する
 # 一時的な通信失敗はテスト単位の再試行(vitest.config.jsの`network`タグの設定)で吸収するため，
 # 再試行しても失敗する場合は外部APIの仕様変更などを疑うこと (test/readme.md 参照)
 on:
-  pull_request:
+  # PRでは vitest.yml から呼び出し，カバレッジを`network`タグ以外のテスト分と合算する
+  workflow_call:
   schedule:
     # 毎週月曜 9:00 (JST)
     - cron: '0 0 * * 1'
@@ -27,8 +28,22 @@ jobs:
       - name: 'Install Bun'
         uses: oven-sh/setup-bun@v2
         with:
-            bun-version-file: package.json
+          bun-version-file: package.json
       - name: 'Install Deps'
         run: bun install
+      # カバレッジは vitest.yml の coverage-report ジョブで合算するため，blobレポート(Vitestの既定の出力先 .vitest/blob)にも出力する．
+      # (定期実行・手動実行では使われないが，呼び出し元による分岐を避けるため常に出力する)
+      # (`--reporter`を指定すると既定のレポーターが無効になるため，default・github-actionsも明示する)
       - name: 'Execute Test'
-        run: bun run test:network
+        run: bun run test:network --coverage --reporter=default --reporter=github-actions --reporter=blob
+        env:
+          VITEST_BLOB_LABEL: network
+      # upload-artifactは既定でドットから始まるディレクトリを除外するため，include-hidden-filesを指定する
+      - name: 'Upload Test Report'
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vitest-report-network
+          path: .vitest/blob/
+          include-hidden-files: true
+          retention-days: 1
