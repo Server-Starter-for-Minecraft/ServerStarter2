@@ -26,6 +26,7 @@ export function javaProcessEnv(
 
   // WindowsではPATHのキー名の大文字小文字が環境により異なる（`Path`など）ため，
   // 既存のキーをすべて取り除いたうえで1つのキーにまとめる（重複したキーがあると子プロセスでどちらが使われるか不定になる）
+  // 複数のキーに値がある場合は，最初に見つかった空でない値を元のPATHとして採用する
   const pathKeys = Object.keys(env).filter((k) => k.toUpperCase() === 'PATH');
   const currentPath = pathKeys.map((k) => env[k]).find((v) => v);
   pathKeys.forEach((k) => delete env[k]);
@@ -37,37 +38,28 @@ export function javaProcessEnv(
   return env;
 }
 
+type InteractiveProcessArgs = Parameters<typeof interactiveProcess>;
+
+/**
+ * `interactiveProcess()`の引数のうち，環境変数の位置
+ *
+ * 引数の並びが変わって位置がずれた場合は，代入する値の型が合わずに型エラーとなる
+ */
+const ENV_ARG_INDEX = 7;
+
 /**
  * ServerStarterが用意したJavaで，標準入出力をやり取りできる子プロセスを起動する
  *
  * 子プロセスがさらに`java`コマンドを呼び出した場合にも同じJavaが使われるよう，
- * `javaProcessEnv()`で環境変数を設定して起動する。引数は`interactiveProcess()`と同じ
- *
- * @param javaPath 起動するJavaの実行ファイルのパス
- * @param args Javaに渡す引数（1要素が1つの引数となる）
- * @param onout 標準出力を受け取るコールバック（未指定の場合は出力を破棄する）
- * @param onerr 標準エラー出力を受け取るコールバック（未指定の場合は出力を破棄する）
- * @param cwd 作業ディレクトリ
- * @param beforeKill プロセスをkillする前に実行する処理
- * @param beforeKillTimeout `beforeKill`の完了を待つ最大時間（ミリ秒）
+ * `javaProcessEnv()`で環境変数を設定して起動する。
+ * 引数は`interactiveProcess()`と同じ（第1引数が起動するJavaのパス）で，
+ * 環境変数を指定した場合はそれを元にPATHと`JAVA_HOME`を書き換える
  */
 export function interactiveJavaProcess(
-  javaPath: Path,
-  args: string[],
-  onout: ((chunk: string) => void) | undefined,
-  onerr: ((chunk: string) => void) | undefined,
-  cwd: Path | undefined = undefined,
-  beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
-  beforeKillTimeout = 1000
+  ...args: InteractiveProcessArgs
 ): ChildProcessPromise {
-  return interactiveProcess(
-    javaPath,
-    args,
-    onout,
-    onerr,
-    cwd,
-    beforeKill,
-    beforeKillTimeout,
-    javaProcessEnv(javaPath)
-  );
+  // `interactiveProcess()`の引数が増えても追従できるよう，環境変数（最後の引数）だけを差し替えて委譲する
+  const params: InteractiveProcessArgs = [...args];
+  params[ENV_ARG_INDEX] = javaProcessEnv(args[0], args[ENV_ARG_INDEX]);
+  return interactiveProcess(...params);
 }

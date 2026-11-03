@@ -9,7 +9,18 @@ export type ServerProcess = Promise<Failable<undefined>> & {
   kill: () => Promise<void>;
 };
 
-/** javaのサブプロセスを起動 */
+/**
+ * サーバー本体（javaのサブプロセス）を起動
+ *
+ * @param cwdPath サーバーの作業ディレクトリ
+ * @param id 起動するワールドのID
+ * @param javaPath ServerStarterが用意したJavaの実行ファイルのパス
+ * @param args Javaに渡す実行時引数
+ * @param console サーバーのコンソール出力を受け取るコールバック
+ * @param onStart サーバーの起動直後に呼ばれるコールバック
+ * @param onFinish サーバーの終了時に呼ばれるコールバック
+ * @returns サーバーの終了を待つPromise（コマンドの送信・強制終了が可能）
+ */
 export function serverProcess(
   cwdPath: Path,
   id: WorldID,
