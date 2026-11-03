@@ -1,0 +1,69 @@
+import type { MessageSchema } from 'src/boot/i18n';
+
+/**
+ * 寄付サービスの識別子（i18n の `mainLayout.donation.services` に文言が定義されているもの）
+ *
+ * 公式ホームページへ `?service={識別子}` として渡すため，ホームページ側の識別子と一致させる
+ */
+type DonationServiceId =
+  keyof MessageSchema['mainLayout']['donation']['services'];
+
+/**
+ * 寄付サービスを指定して寄付ページへ移動する公式ホームページのページの URL
+ *
+ * 寄付ページ（OFUSE など）の URL はホームページ側で管理しており，
+ * クエリパラメータ `service` で指定したサービスの寄付ページへリダイレクトされる。
+ * これにより，寄付ページを差し替えてもアプリを更新せずに済む。
+ */
+const DONATE_PAGE_URL =
+  'https://server-starter-for-minecraft.github.io/support/donate';
+
+/**
+ * 寄付ダイアログに表示する寄付サービス
+ *
+ * 選択すると，公式ホームページを経由してサービスの寄付ページを開く
+ */
+export interface DonationService {
+  /** サービスの識別子（i18n の `mainLayout.donation.services.{id}` の参照にも使う） */
+  id: DonationServiceId;
+  /** ボタンに表示するアイコン（Material Icons の名前） */
+  icon: string;
+  /**
+   * 寄付ダイアログに表示するか
+   *
+   * 準備中のサービスは `false` にしておき，受付を開始したら `true` にする
+   */
+  visible: boolean;
+}
+
+/**
+ * 寄付サービスの一覧（表示順）
+ *
+ * サービスを追加・変更する場合はこの配列と i18n の文言のみを変更すればよい
+ * （ホームページ側にも同じ識別子のサービスが定義されている必要がある）
+ */
+export const donationServices: readonly DonationService[] = [
+  {
+    id: 'ofuse',
+    icon: 'redeem',
+    visible: true,
+  },
+  {
+    // 受付開始までは非表示にしておく
+    id: 'githubSponsors',
+    icon: 'favorite',
+    visible: false,
+  },
+];
+
+/**
+ * 寄付サービスの寄付ページ（公式ホームページ経由でサービスのページへ移動する URL）を返す
+ *
+ * @param service 寄付サービス
+ * @returns `?service={識別子}` 付きの公式ホームページの URL
+ */
+export function getDonationPageUrl(service: DonationService): string {
+  const url = new URL(DONATE_PAGE_URL);
+  url.searchParams.set('service', service.id);
+  return url.toString();
+}

@@ -9,13 +9,16 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     desc: '\
       ServerStarter is developed and run as a non-profit project without any ads.\n\
       Your donation will be used for future development and operation.',
-    select: 'Choose an amount to donate',
-    note: 'The Square payment page will open in your browser (credit cards, Apple Pay and Google Pay are accepted)',
-    options: {
-      small: { desc: 'Buy us a coffee' },
-      medium: { desc: 'Buy us a lunch' },
-      large: { desc: 'Give development a big boost' },
-      custom: { title: 'Custom amount', desc: 'Donate any amount you like' },
+    note: 'The donation page will open in your browser',
+    services: {
+      ofuse: {
+        title: 'Support us on OFUSE',
+        desc: 'Donate any amount you like, along with a message',
+      },
+      githubSponsors: {
+        title: 'Support us on GitHub Sponsors',
+        desc: 'Sponsor us monthly or once with your GitHub account',
+      },
     },
   },
   searchWorld: 'Search world',
