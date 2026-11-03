@@ -6,11 +6,11 @@ import {
 import { Runtime } from 'app/src-electron/schema/runtime';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
-import { interactiveProcess } from 'app/src-electron/util/binary/subprocess';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { osPlatform } from 'app/src-electron/util/os/os';
 import { GroupProgressor } from '../../common/progress';
+import { interactiveJavaProcess } from '../runtime/process';
 import { ExecRuntime } from '../version/readyVersions/base';
 import { WorldSettings } from '../world/files/json';
 import { getAdditionalJavaArgument } from './setup/javaArgs';
@@ -85,7 +85,7 @@ export async function readyRunServer(
       const javaPath = await readyRuntime(targetRuntime);
       if (isError(javaPath)) return javaPath;
 
-      return interactiveProcess(
+      return interactiveJavaProcess(
         javaPath,
         args.args,
         args.onOut,

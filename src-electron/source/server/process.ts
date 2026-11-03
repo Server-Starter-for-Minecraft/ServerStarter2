@@ -1,8 +1,8 @@
 import { Failable } from 'app/src-electron/schema/error';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
-import { interactiveProcess } from 'app/src-electron/util/binary/subprocess';
 import { decoratePromise } from 'app/src-electron/util/promise/promiseDecorator';
+import { interactiveJavaProcess } from '../runtime/process';
 
 export type ServerProcess = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
@@ -25,7 +25,7 @@ export function serverProcess(
   const stdout = (chunk: string) => splitLine(chunk, false, console);
   const stderr = (chunk: string) => splitLine(chunk, true, console);
 
-  const process = interactiveProcess(
+  const process = interactiveJavaProcess(
     javaPath,
     args,
     stdout,

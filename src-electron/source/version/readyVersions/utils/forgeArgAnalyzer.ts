@@ -73,10 +73,12 @@ export async function getNewForgeArgs(
  * 起動スクリプト内でJavaを起動する行のパターン（拡張子ごと）
  *
  * キャプチャ部分が`user_jvm_args.txt`以外の実行時引数（例：`@libraries/.../win_args.txt`）
+ *
+ * NeoForge 26.x 以降の`run.sh`は`exec java ...`の形式で書き出されるため，`exec`の有無を問わない
  */
 const SCRIPT_JAVA_LINE_PATTERNS: Record<ScriptExt, RegExp> = {
   '.bat': /^\s*java @user_jvm_args\.txt (.+) %\*\s*$/,
-  '.sh': /^\s*java @user_jvm_args\.txt (.+) "\$@"\s*$/,
+  '.sh': /^\s*(?:exec\s+)?java @user_jvm_args\.txt (.+) "\$@"\s*$/,
 };
 
 /**
