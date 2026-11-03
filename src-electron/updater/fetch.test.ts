@@ -171,6 +171,51 @@ describe('getLatestRelease', () => {
     }
   );
 
+  test('Draftのリリースを含む一覧（Personal Access Tokenで取得した場合）でも、最新版を取得できる', async () => {
+    // Draftは未公開のため、公開日時やソースコードのURLがnullで返される
+    const draft = {
+      ...release(170000000, 'v2.4.0', [
+        asset(180000001, 'ServerStarter-v2.4.0.msi', ''),
+      ]),
+      draft: true,
+      published_at: null,
+      tarball_url: null,
+      zipball_url: null,
+    };
+    const releases = [draft, ...RELEASES];
+    mockReleasesResponse(releases);
+
+    const latest = await getLatestRelease('windows-x64', 'dummy-token');
+
+    expect(latest).toEqual({
+      platform: 'windows-x64',
+      version: 'v2.4.0',
+      url: assetUrl(releases, 'v2.4.0', 'ServerStarter-v2.4.0.msi'),
+    });
+  });
+
+  test('名前や本文が未設定のリリースを含む一覧でも、最新版を取得できる', async () => {
+    const releases = [
+      {
+        ...release(170000000, 'v2.4.0', [
+          asset(180000001, 'ServerStarter-v2.4.0.msi', ''),
+        ]),
+        name: null,
+        body: null,
+      },
+      ...RELEASES,
+    ];
+    mockReleasesResponse(releases);
+
+    const latest = await getLatestRelease('windows-x64', undefined);
+
+    expect(latest).toEqual({
+      platform: 'windows-x64',
+      version: 'v2.4.0',
+      url: assetUrl(releases, 'v2.4.0', 'ServerStarter-v2.4.0.msi'),
+    });
+  });
+
   test('取得したリリース一覧が想定外の形式の場合はエラーを返す', async () => {
     mockReleasesResponse({ message: 'Not Found' });
 
