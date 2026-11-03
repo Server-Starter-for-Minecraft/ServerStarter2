@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
-import { DonationOption, donationOptions, formatYen } from './donationOptions';
+import {
+  DonationService,
+  donationServices,
+  getDonationPageUrl,
+} from './donationServices';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 
+/** 寄付ダイアログに表示する（受付中の）寄付サービス */
+const visibleServices = donationServices.filter((s) => s.visible);
+
 /**
- * 選択された金額の寄付ページをブラウザで開き，ダイアログを閉じる
+ * 選択された寄付サービスの寄付ページ（公式ホームページ経由でサービスのページへ移動する）をブラウザで開き，ダイアログを閉じる
  *
- * @param option 選択された寄付の選択肢
+ * @param service 選択された寄付サービス
  */
-function openDonationPage(option: DonationOption) {
-  window.API.sendOpenBrowser(option.url);
+function openDonationPage(service: DonationService) {
+  window.API.sendOpenBrowser(getDonationPageUrl(service));
   onDialogOK();
 }
 </script>
@@ -35,38 +42,35 @@ function openDonationPage(option: DonationOption) {
         <div class="desc">{{ $t('mainLayout.donation.desc') }}</div>
       </div>
 
-      <div class="text-subtitle2 q-mb-sm">
-        {{ $t('mainLayout.donation.select') }}
-      </div>
-      <div class="option-grid">
+      <div class="column q-gutter-y-sm">
         <q-card
-          v-for="option in donationOptions"
-          :key="option.id"
+          v-for="service in visibleServices"
+          :key="service.id"
           flat
           bordered
-          class="option-card"
+          class="service-card"
         >
-          <q-item
-            clickable
-            class="column items-center justify-center q-pa-md fit"
-            @click="openDonationPage(option)"
-          >
-            <q-icon :name="option.icon" color="primary" size="2.2rem" />
-            <div v-if="option.amount !== void 0" class="amount q-mt-xs">
-              {{ formatYen(option.amount) }}
-            </div>
-            <div v-else class="amount amount--text q-mt-xs">
-              {{ $t(`mainLayout.donation.options.${option.id}.title`) }}
-            </div>
-            <div class="caption text-center">
-              {{ $t(`mainLayout.donation.options.${option.id}.desc`) }}
-            </div>
+          <q-item clickable class="q-pa-md" @click="openDonationPage(service)">
+            <q-item-section avatar>
+              <q-icon :name="service.icon" color="primary" size="2.2rem" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="service-title">
+                {{ $t(`mainLayout.donation.services.${service.id}.title`) }}
+              </q-item-label>
+              <q-item-label caption>
+                {{ $t(`mainLayout.donation.services.${service.id}.desc`) }}
+              </q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-icon name="open_in_new" />
+            </q-item-section>
           </q-item>
         </q-card>
       </div>
 
       <div class="row items-center no-wrap q-mt-md note">
-        <q-icon name="lock" size="1rem" class="q-mr-xs" />
+        <q-icon name="open_in_browser" size="1rem" class="q-mr-xs" />
         <span>{{ $t('mainLayout.donation.note') }}</span>
       </div>
     </BaseDialogCard>
@@ -84,13 +88,7 @@ function openDonationPage(option: DonationOption) {
   white-space: pre-line;
 }
 
-.option-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-.option-card {
+.service-card {
   border-radius: 12px;
   overflow: hidden;
   transition:
@@ -105,20 +103,9 @@ function openDonationPage(option: DonationOption) {
   }
 }
 
-.amount {
-  font-size: 1.4rem;
-  line-height: 2.2rem;
+.service-title {
+  font-size: 1.1rem;
   font-weight: bold;
-
-  // 金額以外の文言（「金額を指定」など）は金額と見た目の大きさを揃えるため小さめにする
-  &--text {
-    font-size: 1.15rem;
-  }
-}
-
-.caption {
-  font-size: 0.75rem;
-  opacity: 0.7;
 }
 
 .note {
