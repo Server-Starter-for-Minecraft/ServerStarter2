@@ -86,7 +86,11 @@ function mockReleasesResponse(body: unknown) {
 }
 
 /** 指定したリリースに含まれる、指定したファイル名のアセットのURLを返す */
-function assetUrl(releases: typeof RELEASES, tag: string, name: string) {
+function assetUrl(
+  releases: { tag_name: string; assets: { name: string; url: string }[] }[],
+  tag: string,
+  name: string
+) {
   return releases
     .find((r) => r.tag_name === tag)
     ?.assets.find((a) => a.name === name)?.url;
