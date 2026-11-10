@@ -4,7 +4,16 @@ import { errorMessage } from '../util/error/construct';
 import { isError } from '../util/error/error';
 import { listReleases, ReleaseAsset } from '../util/github/schema/release';
 
-/** githubからリリース番号を取得 */
+/**
+ * GitHubのリリース一覧から，指定したOS向けのインストーラーがある最新のリリースを取得する
+ *
+ * Personal Access Tokenを指定した場合はDraftのリリースも一覧に含まれ，更新対象となる。
+ * これはリリース前の動作確認でDraftのインストーラーを使うための意図した挙動である
+ *
+ * @param osPLatform 対象のOS
+ * @param pat GitHubのPersonal Access Token（動作確認用。通常は未指定）
+ * @returns 最新のリリースの情報（取得に失敗した場合や，対象のアセットがない場合はエラー）
+ */
 export async function getLatestRelease(
   osPLatform: OsPlatform,
   pat: string | undefined
