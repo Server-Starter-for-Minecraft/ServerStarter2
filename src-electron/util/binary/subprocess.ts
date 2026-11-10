@@ -104,6 +104,7 @@ function promissifyProcess(
  * @param cwd 作業ディレクトリ
  * @param beforeKill プロセスをkillする前に実行する処理
  * @param beforeKillTimeout `beforeKill`の完了を待つ最大時間（ミリ秒）
+ * @param env 子プロセスの環境変数（未指定の場合は親プロセスの環境変数を引き継ぐ）
  */
 export const interactiveProcess = (
   process: Path,
@@ -112,10 +113,12 @@ export const interactiveProcess = (
   onerr: ((chunk: string) => void) | undefined,
   cwd: Path | undefined = undefined,
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
-  beforeKillTimeout = 1000
+  beforeKillTimeout = 1000,
+  env: NodeJS.ProcessEnv | undefined = undefined
 ): ChildProcessPromise => {
   const child = child_process.spawn(process.path, args, {
     cwd: cwd?.path,
+    env,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
   });
 
