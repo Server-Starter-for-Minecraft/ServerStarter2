@@ -140,17 +140,26 @@ export function getUniversalConfig(
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
 
-  describe('getUniversalConfig', async () => {
+  describe('getUniversalConfig', { tags: ['network'] }, async () => {
     const { BytesData } = await import('../../util/binary/bytesData');
     const { isError } = await import('../../util/error/error');
     const { minecraftRuntimeManifestUrl } = await import('./minecraft');
 
-    const bytesManifest = await BytesData.fromURL(minecraftRuntimeManifestUrl);
-    if (isError(bytesManifest)) return;
-    const mcRuntimeManifest = await bytesManifest.json(McRuntimeManifest);
-    if (isError(mcRuntimeManifest)) return;
+    // テスト収集時ではなく各テストの中で取得する
+    // (取得に失敗した場合にテストが失敗として扱われ，`network`タグの再試行の対象になるようにする)
+    const loadManifest = async () => {
+      const bytesManifest = await BytesData.fromURL(
+        minecraftRuntimeManifestUrl
+      );
+      if (isError(bytesManifest)) return bytesManifest;
+      return bytesManifest.json(McRuntimeManifest);
+    };
 
     test('getUniversalConfig', async () => {
+      const mcRuntimeManifest = await loadManifest();
+      expect(isError(mcRuntimeManifest)).toBe(false);
+      if (isError(mcRuntimeManifest)) return;
+
       // get Java17
       const runtime1 = await getUniversalConfig(
         'windows-x64',
@@ -177,6 +186,9 @@ if (import.meta.vitest) {
 
     test('check runtime universal versions', async () => {
       const { fromEntries } = await import('../../util/obj/obj');
+      const mcRuntimeManifest = await loadManifest();
+      expect(isError(mcRuntimeManifest)).toBe(false);
+      if (isError(mcRuntimeManifest)) return;
 
       // 検証用データに整形
       const cleanConfig = (obj: Record<string, any>) => {

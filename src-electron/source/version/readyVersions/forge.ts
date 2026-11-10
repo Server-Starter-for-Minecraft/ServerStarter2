@@ -138,7 +138,7 @@ export class RemoveForgeVersion extends RemoveVersion<ForgeVersion> {
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
 
-  describe('forge version', async () => {
+  describe('forge version', { tags: ['network'] }, async () => {
     const path = await import('path');
 
     // 一時使用フォルダを初期化

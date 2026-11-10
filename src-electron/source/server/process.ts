@@ -1,15 +1,26 @@
 import { Failable } from 'app/src-electron/schema/error';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
-import { interactiveProcess } from 'app/src-electron/util/binary/subprocess';
 import { decoratePromise } from 'app/src-electron/util/promise/promiseDecorator';
+import { interactiveJavaProcess } from '../runtime/process';
 
 export type ServerProcess = Promise<Failable<undefined>> & {
   runCommand: (command: string) => Promise<void>;
   kill: () => Promise<void>;
 };
 
-/** javaのサブプロセスを起動 */
+/**
+ * サーバー本体（javaのサブプロセス）を起動
+ *
+ * @param cwdPath サーバーの作業ディレクトリ
+ * @param id 起動するワールドのID
+ * @param javaPath ServerStarterが用意したJavaの実行ファイルのパス
+ * @param args Javaに渡す実行時引数
+ * @param console サーバーのコンソール出力を受け取るコールバック
+ * @param onStart サーバーの起動直後に呼ばれるコールバック
+ * @param onFinish サーバーの終了時に呼ばれるコールバック
+ * @returns サーバーの終了を待つPromise（コマンドの送信・強制終了が可能）
+ */
 export function serverProcess(
   cwdPath: Path,
   id: WorldID,
@@ -25,7 +36,7 @@ export function serverProcess(
   const stdout = (chunk: string) => splitLine(chunk, false, console);
   const stderr = (chunk: string) => splitLine(chunk, true, console);
 
-  const process = interactiveProcess(
+  const process = interactiveJavaProcess(
     javaPath,
     args,
     stdout,

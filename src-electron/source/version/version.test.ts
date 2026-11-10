@@ -1,31 +1,28 @@
-import { describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { VersionType } from '../../schema/version';
+import { createFromURLMock, DummyFileRule } from './test/fromURLMock.fixtures';
 import { VersionContainer } from './version';
 
-// 実際にはUrlにアクセスせず、事前に用意されたテスト用ファイルを返す
+// Mojangの配布APIとJarのダウンロードは，事前に用意されたテスト用ファイルを返す
+const originalFromURL = BytesData.fromURL.bind(BytesData);
 const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
-  const dummyAssets = new Path(__dirname).child('test');
-  const verManifestURL =
-    'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
-  if (url === verManifestURL) {
-    return BytesData.fromPath(dummyAssets.child('version_manifest_v2.json'));
-  } else if (url.endsWith('.xml')) {
-    return BytesData.fromPath(dummyAssets.child('sample.xml'));
-  } else if (url.endsWith('.jar')) {
-    return BytesData.fromPath(dummyAssets.child('sample.jar'));
-  }
+const dummyFileRules: DummyFileRule[] = [
+  { suffix: '.xml', fileName: 'sample.xml' },
+  { suffix: '.jar', fileName: 'sample.jar' },
+];
 
-  const res = await fetch(url);
-  const buffer = await res.arrayBuffer();
-  return BytesData.fromBuffer(Buffer.from(buffer));
-});
+describe('listupVersions', { tags: ['network'] }, async () => {
+  // 各サーバー種別のバージョン一覧APIには実際にアクセスする(APIの仕様変更の検知を兼ねる)
+  beforeEach(() => {
+    urlCreateReadStreamSpy.mockImplementation(
+      createFromURLMock(dummyFileRules, originalFromURL)
+    );
+  });
 
-describe('listupVersions', async () => {
   // 一時使用フォルダを初期化
   const workPath = new Path(__dirname).child('getVersions/work/versions');
   await workPath.emptyDir();
@@ -106,6 +103,13 @@ describe('listupVersions', async () => {
 describe(
   'eula生成テスト',
   async () => {
+    // 外部サービスにはアクセスしない
+    beforeEach(() => {
+      urlCreateReadStreamSpy.mockImplementation(
+        createFromURLMock(dummyFileRules)
+      );
+    });
+
     const { VanillaVersion } = await import('../../schema/version');
 
     const workPath = new Path(__dirname).child('work', 'version');

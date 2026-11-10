@@ -70,7 +70,7 @@ export async function getVersionMainfest(
 if (import.meta.vitest) {
   const { test, expect, describe } = import.meta.vitest;
 
-  describe('runtime-manifest', async () => {
+  describe('runtime-manifest', { tags: ['network'] }, async () => {
     const path = await import('path');
 
     // 一時使用フォルダを初期化

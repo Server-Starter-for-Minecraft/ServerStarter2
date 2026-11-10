@@ -138,24 +138,14 @@ if (import.meta.vitest) {
 
     const JVM_ARGS = ['JVM', 'ARGUMENT'];
 
-    const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-    urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
-      const dummyAssets = new Path(__dirname).parent().child('test');
-      const verManifestURL =
-        'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
-      if (url === verManifestURL) {
-        return BytesData.fromPath(
-          dummyAssets.child('version_manifest_v2.json')
-        );
-      } else if (url.endsWith('/download') || url.endsWith('-installer.jar')) {
-        // `installer.jar`は実際には実行しないため，ダミーのJarを返す
-        return BytesData.fromPath(dummyAssets.child('sample.jar'));
-      }
-
-      const res = await fetch(url);
-      const buffer = await res.arrayBuffer();
-      return BytesData.fromBuffer(Buffer.from(buffer));
-    });
+    const { createFromURLMock } = await import('../test/fromURLMock.fixtures');
+    // `installer.jar`は実際には実行しないため，ダミーのJarを返す
+    vi.spyOn(BytesData, 'fromURL').mockImplementation(
+      createFromURLMock([
+        { suffix: '/download', fileName: 'sample.jar' },
+        { suffix: '-installer.jar', fileName: 'sample.jar' },
+      ])
+    );
 
     test('getDownloadUrl', () => {
       expect(getDownloadUrl(ver20)).toBe(

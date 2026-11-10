@@ -115,7 +115,7 @@ export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
 
-  describe('papermc version', async () => {
+  describe('papermc version', { tags: ['network'] }, async () => {
     const path = await import('path');
 
     // 一時使用フォルダを初期化
@@ -134,25 +134,19 @@ if (import.meta.vitest) {
       build: 40,
     };
 
+    const { createFromURLMock } = await import('../test/fromURLMock.fixtures');
+    const originalFromURL = BytesData.fromURL.bind(BytesData);
     const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-    urlCreateReadStreamSpy.mockImplementation(async (url: string) => {
-      const dummyAssets = new Path(__dirname).parent().child('test');
-      const verManifestURL =
-        'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
-      if (url === verManifestURL) {
-        return BytesData.fromPath(
-          dummyAssets.child('version_manifest_v2.json')
-        );
-      } else if (url.endsWith('.xml')) {
-        return BytesData.fromPath(dummyAssets.child('sample.xml'));
-      } else if (url.endsWith('.jar')) {
-        return BytesData.fromPath(dummyAssets.child('sample.jar'));
-      }
-
-      const res = await fetch(url);
-      const buffer = await res.arrayBuffer();
-      return BytesData.fromBuffer(Buffer.from(buffer));
-    });
+    urlCreateReadStreamSpy.mockImplementation(
+      createFromURLMock(
+        [
+          { suffix: '.xml', fileName: 'sample.xml' },
+          { suffix: '.jar', fileName: 'sample.jar' },
+        ],
+        // PaperMCのビルド情報APIは実際にアクセスする(APIの仕様変更の検知を兼ねる)
+        originalFromURL
+      )
+    );
 
     test('setPaperJar', { timeout: 1000 * 60 }, async () => {
       const outputPath = serverFolder.child(ver21.id);

@@ -1,0 +1,2 @@
+# 配布元のバイト列のまま保存し，URL中のSHA1で照合するテスト用の固定レスポンス(整形すると照合に失敗する)
+src-electron/source/version/test/piston-meta/

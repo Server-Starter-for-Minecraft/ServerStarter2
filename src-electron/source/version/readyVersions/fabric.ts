@@ -81,7 +81,7 @@ export class RemoveFabricVersion extends RemoveVersion<FabricVersion> {
 if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
 
-  describe('fabric version', async () => {
+  describe('fabric version', { tags: ['network'] }, async () => {
     const path = await import('path');
 
     // 一時使用フォルダを初期化
