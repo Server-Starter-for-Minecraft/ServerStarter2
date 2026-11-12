@@ -43,7 +43,7 @@ function openDonationPage(service: DonationService) {
     -->
     <q-card flat class="donation-card row no-wrap">
       <div class="logo-panel column flex-center">
-        <q-icon :name="logo" size="9rem" />
+        <q-icon :name="logo" size="10.5rem" />
       </div>
 
       <div class="content col column no-wrap">
@@ -111,12 +111,12 @@ function openDonationPage(service: DonationService) {
 // ロゴの面は本文と区別するため，ページの背景に近い色を敷いて区切り線を引く
 .body--light .logo-panel {
   background-color: #f2f2f2;
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  border-right: 3px solid var(--q-primary);
 }
 
 .body--dark .logo-panel {
   background-color: #262626;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 2px solid var(--q-primary);
 }
 
 .content {
