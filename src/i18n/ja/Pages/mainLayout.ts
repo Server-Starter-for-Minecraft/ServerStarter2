@@ -3,18 +3,17 @@ export const jaMainLayout = {
   systemSetting: 'システム設定',
   donation: {
     btn: 'プロジェクトを応援！',
-    title: 'ServerStarter2の開発を応援する',
+    title: 'ServerStarter2 を応援！',
     desc: '\
-      ServerStarterは広告を表示せず，非営利で開発・運営しています\n\
-      いただいたご寄付は，今後の開発や運営に大切に使わせていただきます',
-    note: '寄付ページがブラウザで開きます',
+      広告を表示せず，非営利で開発・運営しています\n\
+      これからもより便利で快適なマルチプレイ環境をお届け！\n\
+      皆様の応援を心よりお待ちしております',
+    openBtn: '{name}で応援する',
     services: {
       ofuse: {
-        title: 'OFUSEで応援する',
         desc: 'お好きな金額で，メッセージを添えて応援できます',
       },
       githubSponsors: {
-        title: 'GitHub Sponsorsで応援する',
         desc: 'GitHubアカウントで，毎月または1回限りの応援ができます',
       },
     },
