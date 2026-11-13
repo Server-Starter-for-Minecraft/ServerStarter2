@@ -7,10 +7,13 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     btn: 'Support us!',
     title: 'Support ServerStarter2!',
     desc: '\
-      ServerStarter is developed and run as a non-profit project, with no ads.\n\
-      We will keep making multiplayer more convenient and comfortable!\n\
-      We sincerely appreciate your support.',
-    openBtn: 'Support us on {name}',
+      ServerStarter is a non-profit project with no ads.\n\
+      We will keep it free while making multiplayer even easier and more comfortable!\n\
+      Our goal is for as many people as possible to enjoy it casually.\n\
+      We would be glad if you could support us to keep it going!',
+    servicesLabel: 'Ways to support',
+    openBtn: 'Support',
+    openBtnAria: 'Support us on {name}',
     services: {
       ofuse: {
         desc: 'Donate any amount you like, along with a message',

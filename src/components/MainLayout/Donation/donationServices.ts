@@ -29,7 +29,7 @@ const DONATE_PAGE_URL =
 export interface DonationService {
   /** サービスの識別子（i18n の `mainLayout.donation.services.{id}` の参照にも使う） */
   id: DonationServiceId;
-  /** サービス名（固有名詞のため翻訳せず，ボタンの文言にも埋め込む） */
+  /** サービス名（固有名詞のため翻訳せず，ボタンの読み上げ用の名前（aria-label）にも埋め込む） */
   name: string;
   /**
    * サービスのアイコン画像
