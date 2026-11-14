@@ -5,17 +5,22 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
   systemSetting: 'System Settings',
   donation: {
     btn: 'Support us!',
-    title: 'Support the development of ServerStarter2',
+    title: 'Support ServerStarter2!',
     desc: '\
-      ServerStarter is developed and run as a non-profit project without any ads.\n\
-      Your donation will be used for future development and operation.',
-    select: 'Choose an amount to donate',
-    note: 'The Square payment page will open in your browser (credit cards, Apple Pay and Google Pay are accepted)',
-    options: {
-      small: { desc: 'Buy us a coffee' },
-      medium: { desc: 'Buy us a lunch' },
-      large: { desc: 'Give development a big boost' },
-      custom: { title: 'Custom amount', desc: 'Donate any amount you like' },
+      ServerStarter is a non-profit project with no ads.\n\
+      We will keep it free while making multiplayer even easier and more comfortable!\n\
+      Our goal is for as many people as possible to enjoy it casually.\n\
+      We would be glad if you could support us to keep it going!',
+    servicesLabel: 'Ways to support',
+    openBtn: 'Support',
+    openBtnAria: 'Support us on {name}',
+    services: {
+      ofuse: {
+        desc: 'Donate any amount you like, along with a message',
+      },
+      githubSponsors: {
+        desc: 'Sponsor us monthly or once with your GitHub account',
+      },
     },
   },
   searchWorld: 'Search world',

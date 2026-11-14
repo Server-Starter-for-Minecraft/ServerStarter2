@@ -3,17 +3,22 @@ export const jaMainLayout = {
   systemSetting: 'システム設定',
   donation: {
     btn: 'プロジェクトを応援！',
-    title: 'ServerStarter2の開発を応援する',
+    title: 'ServerStarter2 を応援！',
     desc: '\
-      ServerStarterは広告を表示せず，非営利で開発・運営しています\n\
-      いただいたご寄付は，今後の開発や運営に大切に使わせていただきます',
-    select: '応援する金額を選んでください',
-    note: 'Squareの決済ページがブラウザで開きます（クレジットカード・Apple Pay・Google Pay に対応）',
-    options: {
-      small: { desc: 'コーヒー1杯分の応援' },
-      medium: { desc: 'ランチ1回分の応援' },
-      large: { desc: '開発を大きく後押し' },
-      custom: { title: '金額を指定', desc: 'お好きな金額で応援' },
+      広告なし・非営利で開発運営しています\n\
+      これからも有料化せず，より便利で快適なマルチプレイ環境をお届けします！\n\
+      たくさんの方に気軽に使っていただくことが，このプロジェクトの目標です\n\
+      今後も続けていけるよう，応援いただけるとうれしいです！',
+    servicesLabel: '応援の方法',
+    openBtn: '応援する',
+    openBtnAria: '{name}で応援する',
+    services: {
+      ofuse: {
+        desc: 'お好きな金額で，メッセージを添えて応援できます',
+      },
+      githubSponsors: {
+        desc: 'GitHubアカウントで，毎月または1回限りの応援ができます',
+      },
     },
   },
   searchWorld: 'ワールドを検索',
