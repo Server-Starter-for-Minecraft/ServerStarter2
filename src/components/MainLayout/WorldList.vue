@@ -22,7 +22,7 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 
 /**
- * 寄付の金額を選択するダイアログを開く
+ * 寄付サービスを選んで寄付ページを開く寄付ダイアログを開く
  */
 function openDonationDialog() {
   $q.dialog({ component: DonationDialog });
