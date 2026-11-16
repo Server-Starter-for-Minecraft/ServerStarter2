@@ -76,11 +76,20 @@ export type PropertyGroupV1 = z.infer<typeof PropertyGroupV1>;
 /** 外部リソース `serverProperties.json`（v1）の厳格なスキーマ（JSON Schema の生成・検証に使う） */
 export const ServerPropertiesResourceV1 = z.object({
   /**
-   * プロパティ画面のタブの一覧（表示順。どのタブにも属さないプロパティを表示する「その他」はアプリが末尾に加える）
+   * プロパティ画面のタブの一覧（表示順。識別子は重複させない）
    *
+   * 「その他」（`other`）は予約されたタブで，どのタブにも属さないプロパティを表示するためにアプリが末尾に加える。
    * 省略した場合はアプリ内のタブを使う
    */
-  groups: z.array(PropertyGroupV1).optional(),
+  groups: z
+    .array(PropertyGroupV1)
+    .refine(
+      (groups) => new Set(groups.map((g) => g.id)).size === groups.length,
+      {
+        message: 'group ids must be unique',
+      }
+    )
+    .optional(),
   /** プロパティ名と定義の組 */
   properties: z.record(z.string(), ServerPropertyEntryV1),
 });
@@ -90,7 +99,12 @@ export type ServerPropertiesResourceV1 = z.infer<
 
 /** 外部リソース `serverProperties.json`（v1）の読み込み用パーサー（不正な定義だけを除いて読み込む） */
 export const ServerPropertiesResourceV1Parser = z.object({
-  groups: lenientArray(PropertyGroupV1).optional(),
+  // 識別子が重複したタブは，最初のものだけを使う
+  groups: lenientArray(PropertyGroupV1)
+    .transform((groups) =>
+      groups.filter((g, idx) => groups.findIndex((x) => x.id === g.id) === idx)
+    )
+    .optional(),
   properties: lenientRecord(
     z.object({
       ...entryFields,

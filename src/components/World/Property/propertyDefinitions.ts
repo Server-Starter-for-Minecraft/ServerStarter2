@@ -195,7 +195,8 @@ export type PropertyGroup = {
 /**
  * プロパティ画面のタブの一覧を返す（末尾は「その他」）
  *
- * 外部リソースでタブを定義している場合はその定義を使い，なければアプリ内のタブを使う
+ * 外部リソースでタブを定義している場合はその定義を使い，なければアプリ内のタブを使う。
+ * 「その他」（`other`）は予約されたタブで，常にアプリの表示名で末尾に表示する（外部リソースの `other` の定義は使わない）
  *
  * @param resource サーバープロパティの外部リソース
  * @param locale 表示中の言語
@@ -252,8 +253,11 @@ export function getGroupProperties(
   targetKeys: string[]
 ): string[] {
   if (groupId === OTHER_GROUP_ID) {
+    // 「その他」は予約されたタブのため，`groups` に `other` を指定したプロパティも「その他」に表示する
     const groupIds = new Set(
-      getPropertyGroups(resource, '', () => '').map((g) => g.id)
+      getPropertyGroups(resource, '', () => '')
+        .map((g) => g.id)
+        .filter((id) => id !== OTHER_GROUP_ID)
     );
     return targetKeys.filter(
       (key) => !groupsOf(resource, key).some((g) => groupIds.has(g))

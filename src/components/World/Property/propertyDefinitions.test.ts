@@ -242,6 +242,34 @@ describe('タブ', () => {
   });
 });
 
+describe('予約された「その他」タブ', () => {
+  const resource: ServerPropertiesResource = {
+    groups: [
+      { id: 'chat', label: { ja: 'チャット' } },
+      { id: OTHER_GROUP_ID, label: { ja: '外部で定義したその他' } },
+    ],
+    properties: {
+      'to-other': {
+        groups: [OTHER_GROUP_ID],
+        definitions: [{ type: 'boolean', default: false }],
+      },
+    },
+  };
+
+  test('外部リソースの other の定義は使わず，アプリの表示名で末尾に表示する', () => {
+    expect(getPropertyGroups(resource, 'ja', (id) => `label:${id}`)).toEqual([
+      { id: 'chat', label: 'チャット' },
+      { id: OTHER_GROUP_ID, label: `label:${OTHER_GROUP_ID}` },
+    ]);
+  });
+
+  test('groups に other を指定したプロパティは「その他」に表示する', () => {
+    expect(getGroupProperties(resource, OTHER_GROUP_ID, ['to-other'])).toEqual([
+      'to-other',
+    ]);
+  });
+});
+
 describe('プロパティの説明文', () => {
   const builtIn = (key: string) => (key === 'known' ? 'アプリ内' : undefined);
 

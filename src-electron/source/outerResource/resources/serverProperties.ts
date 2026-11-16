@@ -16,7 +16,7 @@ import type {
  * 同梱のサーバープロパティの定義
  *
  * アプリ内のプロパティの定義（`DefaultServerProperties`）から作るため，バージョンの範囲や説明文は持たない
- * （説明文とタブの分類はフロントエンドのアプリ内の定義を使う）
+ * （外部リソース（同梱データを含む）に説明文やタブの指定がないプロパティは，フロントエンドのアプリ内の定義を使う）
  */
 const bundledEntries: ServerPropertyDefinitions = Object.fromEntries(
   Object.entries(DefaultServerPropertiesAnnotation).map(([key, annotation]) => [

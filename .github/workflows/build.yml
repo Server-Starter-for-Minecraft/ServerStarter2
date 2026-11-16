@@ -158,19 +158,14 @@ jobs:
           git clean -f
           git checkout release/v${{ steps.get_version.outputs.next-version }}
           git merge origin/main
-          git push
-
-      # 外部リソース（OuterResources）の最新の内容をアプリの同梱データに取り込む [リリースブランチがある場合]
-      # 内容に変更がある場合のみコミットする
-      - name: Update bundled outer resources (Release Branch)
-        if: env.BRANCH_EXISTS == 'true'
-        run: |
+          # 外部リソース（OuterResources）の最新の内容をアプリの同梱データに取り込み，内容に変更がある場合のみコミットする
+          # 取得や検証に失敗した場合は，マージを含めて何も push せずに中断する
           bun run outer-resources pull
           git add src-electron/source/outerResource/bundled
           if ! git diff --cached --quiet; then
             git commit -m "📦 外部リソースの同梱データを更新"
-            git push
           fi
+          git push
 
       # 動作確認に使う最新のビルドの実行結果をPRに通知 [リリースブランチがある場合]
       - name: Comment on Pull Request

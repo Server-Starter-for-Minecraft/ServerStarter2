@@ -7,11 +7,13 @@ const PORT_MAX = 2 ** 16 - 2;
 export type ServerPropertyType = 'string' | 'boolean' | 'number';
 
 /**
- * 10進数の表記
+ * 数値として扱える表記か
  *
- * `0x10`・`1e3`・`007` などを数値として扱うと，保存時にユーザーの表記が書き換わるため受け付けない
+ * 数値に変換して文字列に戻したときに元の表記と一致するもののみを数値として扱う
+ * （`0x10`・`1e3`・`007`・`+5`・`1.50`・精度を超える整数などを数値にすると，保存時にユーザーの表記が書き換わるため）
  */
-const DECIMAL_REGEX = /^[+-]?(0|[1-9]\d*)(\.\d+)?$/;
+const isRoundTripNumber = (text: string) =>
+  text !== '' && String(Number(text)) === text;
 
 /**
  * server.properties の値（文字列）を，プロパティの型に変換する
@@ -33,7 +35,7 @@ export function coercePropertyValue(
       if (trimmed.toLowerCase() === 'false') return false;
       return value;
     case 'number':
-      return DECIMAL_REGEX.test(trimmed) ? Number(trimmed) : value;
+      return isRoundTripNumber(trimmed) ? Number(trimmed) : value;
     default:
       return value;
   }

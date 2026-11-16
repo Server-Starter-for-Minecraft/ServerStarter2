@@ -63,6 +63,21 @@ describe('同梱と外部リソースのサーバープロパティの定義の�
   });
 });
 
+describe('タブの一覧の読み込み', () => {
+  test('識別子が重複したタブは最初のものだけを読み込む', () => {
+    const parsed = serverPropertiesDefinition.parser.safeParse({
+      groups: [
+        { id: 'a', label: { ja: '1' } },
+        { id: 'a', label: { ja: '2' } },
+      ],
+      properties: {},
+    });
+    expect(parsed.success && parsed.data.groups).toEqual([
+      { id: 'a', label: { ja: '1' } },
+    ]);
+  });
+});
+
 describe('バージョンによらないプロパティの型', () => {
   test('すべての定義の型が同じ場合はその型を返す', () => {
     expect(

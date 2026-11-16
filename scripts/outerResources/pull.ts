@@ -75,8 +75,9 @@ export async function buildBundledContent<W>(
       if (/^[a-z]+:/i.test(source) || mimeType === undefined) {
         throw new Error(`unsupported image: ${source}`);
       }
+      // 相対パスを配布元の `serverstarter2/` からのパスに直す（URL のエンコードは元に戻す）
       const imagePath = new URL(source, `https://base/${path}`).pathname;
-      const image = await read(imagePath.slice(1));
+      const image = await read(decodeURIComponent(imagePath.slice(1)));
       return `data:${mimeType};base64,${image.toString('base64')}` as ImageURI;
     })
   );

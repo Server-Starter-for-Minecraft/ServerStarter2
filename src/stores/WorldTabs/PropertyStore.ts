@@ -7,6 +7,7 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import {
   getGroupProperties,
   getPropertyDescription,
+  getPropertyGroups,
   isNotYetIntroduced,
 } from 'src/components/World/Property/propertyDefinitions';
 
@@ -19,6 +20,23 @@ export const usePropertyStore = defineStore('propertyStore', {
       /** 選択中のタブの識別子 */
       selectTab: 'base',
     };
+  },
+  getters: {
+    /**
+     * 表示するタブの識別子
+     *
+     * 選択中のタブが無い場合（外部リソースの更新でタブが無くなった場合など）は先頭のタブとする
+     */
+    activeTab(state): string {
+      const groups = getPropertyGroups(
+        useSystemStore().outerResources.serverProperties,
+        '',
+        () => ''
+      );
+      return groups.some((g) => g.id === state.selectTab)
+        ? state.selectTab
+        : groups[0].id;
+    },
   },
   actions: {
     /**
@@ -68,14 +86,14 @@ export const usePropertyStore = defineStore('propertyStore', {
       };
 
       return uniqueArray(
-        getPropertyList(this.searchName, this.selectTab)
+        getPropertyList(this.searchName, this.activeTab)
       ).filter((prop) => !isHidden(prop));
     },
     /**
      * 引数で指定したグループが選択（フォーカス）されているか否か
      */
     selectPropertyTab(groupName: string) {
-      return this.selectTab === groupName;
+      return this.activeTab === groupName;
     },
   },
 });

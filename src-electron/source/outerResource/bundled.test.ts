@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
+import { ImageURI } from 'app/src-electron/schema/brands';
 import { Path } from 'app/src-electron/util/binary/path';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isValid } from 'app/src-electron/util/error/error';
 import { distributionPath } from './definition';
 import { outerResourceDefinitions } from './definitions';
@@ -26,9 +28,14 @@ describe('同梱の外部リソース', () => {
 
   test.each(Object.values(outerResourceDefinitions))(
     '$fileName はネットワークから取得する画像を参照しない',
-    (def) => {
-      const urls = JSON.stringify(def.bundled).match(/"(icon|image)":"[^"]*"/g);
-      for (const url of urls ?? []) expect(url).toMatch(/:"data:image\//);
+    async (def) => {
+      if (def.embedAssets === undefined) return;
+      // data URI 以外の画像を読み込もうとした場合は失敗させ，同梱データが画像を取り込み済みであることを確かめる
+      const loadImage = async (source: string) =>
+        source.startsWith('data:image/')
+          ? (source as ImageURI)
+          : errorMessage.data.url.unsupported({ url: source });
+      expect(isValid(await def.embedAssets(def.bundled, loadImage))).toBe(true);
     }
   );
 });
