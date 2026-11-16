@@ -14,14 +14,6 @@ export const enUSMainLayout: MessageSchema['mainLayout'] = {
     servicesLabel: 'Ways to support',
     openBtn: 'Support',
     openBtnAria: 'Support us on {name}',
-    services: {
-      ofuse: {
-        desc: 'Donate any amount you like, along with a message',
-      },
-      githubSponsors: {
-        desc: 'Sponsor us monthly or once with your GitHub account',
-      },
-    },
   },
   searchWorld: 'Search world',
   openList: 'Open the world list',

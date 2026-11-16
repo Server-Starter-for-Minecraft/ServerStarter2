@@ -7,6 +7,7 @@ import {
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
+import { OuterResources } from 'app/src-electron/schema/outerResource';
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
@@ -21,6 +22,8 @@ export const useSystemStore = defineStore('systemStore', {
       publicIP: '取得できませんでした',
       serverVersions: new Map<VersionType, AllVersion<VersionType>>(),
       staticResouces: {} as StaticResouce,
+      /** 外部リソース（配布元の最新の内容に更新されると差し替わる） */
+      outerResources: {} as OuterResources,
       cacheContents: {
         datapacks: [] as CacheFileData<DatapackData>[],
         plugins: [] as CacheFileData<PluginData>[],

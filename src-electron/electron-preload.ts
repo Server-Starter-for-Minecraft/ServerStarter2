@@ -91,6 +91,7 @@ const api: FrontAPI = {
   onUpdateOnlinePlayers: on('UpdateOnlinePlayers'),
   onError: on('Error'),
   onNotifySystemUpdate: on('NotifySystemUpdate'),
+  onUpdateOuterResources: on('UpdateOuterResources'),
 
   // HANDLE
   handleAgreeEula: handle('AgreeEula'),
@@ -106,6 +107,7 @@ const api: FrontAPI = {
   invokeOpenFolder: invoke('OpenFolder'),
 
   invokeGetStaticResouce: invoke('GetStaticResouce'),
+  invokeGetOuterResources: invoke('GetOuterResources'),
 
   invokeGetSystemSettings: invoke('GetSystemSettings'),
   invokeSetSystemSettings: invoke('SetSystemSettings'),

@@ -7,6 +7,7 @@ import {
   getAllLocalSaveData,
   getDetectedLocalSaveContainers,
 } from '../source/launcher/localSave';
+import { getOuterResources } from '../source/outerResource/registry';
 import { getPlayer, researchPlayer } from '../source/player/main';
 import {
   deleteRemoteWorld,
@@ -52,6 +53,7 @@ export const getBackListener = (
     OpenFolder: openFolder,
 
     GetStaticResouce: getStaticResoure,
+    GetOuterResources: getOuterResources,
 
     GetSystemSettings: getSystemSettings,
     SetSystemSettings: setSystemSettings,

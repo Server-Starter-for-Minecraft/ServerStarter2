@@ -10,6 +10,7 @@ import path from 'node:path';
 import { setupIPC } from './ipc/setup';
 import { setServerStarterApp } from './lifecycle/exit';
 import { onQuit } from './lifecycle/lifecycle';
+import { refreshOuterResources } from './source/outerResource/registry';
 import { getSystemSettings, setSystemSettings } from './source/stores/system';
 import { update } from './updater/updater';
 import { getCurrentTimestamp } from './util/timestamp';
@@ -85,6 +86,8 @@ async function createWindow() {
 
   // フロントエンドとバックエンドの呼び出し処理をリンク
   setupIPC(() => mainWindow);
+  // 外部リソースを配布元の最新の内容に更新する（画面の表示を待たせないよう完了を待たない）
+  void refreshOuterResources();
   // SCPへの警告を無視（今回はソフトウェアのためXSS対策は実施しない）
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 }

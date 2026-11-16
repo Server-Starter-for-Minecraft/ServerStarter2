@@ -69,6 +69,10 @@ window.API.onUpdateOnlinePlayers((_event, worldID, players) => {
   // 参加したプレイヤーが未登録の場合はプレイヤー一覧(ホワイトリスト)に登録する
   registerJoinedPlayersToWorld(worldID, joined);
 });
+// 外部リソースが配布元の最新の内容に更新された際に，表示中の内容を差し替える
+window.API.onUpdateOuterResources((_event, resources) => {
+  sysStore.outerResources = resources;
+});
 // アップデートを実行するときに確認のダイアログを表示する
 window.API.onNotifySystemUpdate((_event, os, newVer) => {
   $q.dialog({

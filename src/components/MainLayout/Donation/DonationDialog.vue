@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
+import type { DonationService } from 'app/src-electron/schema/outerResource/donation';
 import { assets } from 'src/assets/assets';
+import { resolveLocalizedText } from 'src/i18n/utils/localizedText';
+import { useSystemStore } from 'src/stores/SystemStore';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
-import {
-  DonationService,
-  donationServices,
-  getDonationPageUrl,
-} from './donationServices';
+import { getVisibleDonationServices } from './donationServices';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 const $q = useQuasar();
+const { locale } = useI18n();
+const sysStore = useSystemStore();
 
-/** 寄付ダイアログに表示する（受付中の）寄付サービス */
-const visibleServices = donationServices.filter((s) => s.visible);
+/**
+ * 寄付ダイアログに表示する（受付中の）寄付サービス
+ *
+ * 外部リソースが配布元の最新の内容に更新されると，表示も切り替わる
+ */
+const visibleServices = computed(() =>
+  getVisibleDonationServices(sysStore.outerResources.donation)
+);
 
 /** 上部の帯に表示するアプリのロゴ（帯の明暗に合わせて文字色の異なるロゴを使い分ける） */
 const logo = computed(() =>
@@ -30,12 +38,12 @@ const bannerStyle = {
 };
 
 /**
- * 選択された寄付サービスの寄付ページ（公式ホームページ経由でサービスのページへ移動する）をブラウザで開き，ダイアログを閉じる
+ * 選択された寄付サービスの寄付ページをブラウザで開き，ダイアログを閉じる
  *
  * @param service 選択された寄付サービス
  */
 function openDonationPage(service: DonationService) {
-  window.API.sendOpenBrowser(getDonationPageUrl(service));
+  window.API.sendOpenBrowser(service.url);
   onDialogOK();
 }
 </script>
@@ -87,7 +95,7 @@ function openDonationPage(service: DonationService) {
                   {{ service.name }}
                 </span>
                 <span class="service-desc">
-                  {{ $t(`mainLayout.donation.services.${service.id}.desc`) }}
+                  {{ resolveLocalizedText(service.description, locale) }}
                 </span>
               </div>
               <SsBtn
