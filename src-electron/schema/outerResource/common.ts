@@ -21,8 +21,8 @@ export const LocalizedText = z
   .meta({ description: '言語ごとの文言（キーは ja / en-US）' });
 export type LocalizedText = z.infer<typeof LocalizedText>;
 
-/** https の URL */
-export const HttpsUrl = z.url({ protocol: /^https$/ });
+/** https の URL（JSON Schema でも検証できるよう，形式に加えて先頭の文字列も指定する） */
+export const HttpsUrl = z.url({ protocol: /^https$/ }).regex(/^https:\/\//);
 
 /**
  * 画像の参照先

@@ -10,6 +10,7 @@ import {
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
+import { getPropertyAnnotation } from './propertyDefinitions';
 
 const { t } = useI18n();
 
@@ -18,6 +19,8 @@ interface Prop {
   autofocus?: boolean;
   /** 入力を無効化する（編集不可なプロパティに指定する） */
   disable?: boolean;
+  /** ワールドの Minecraft のバージョン（ワールドに依らない設定では指定しない） */
+  versionId?: string;
 }
 const prop = defineProps<Prop>();
 const model = defineModel<ServerProperties>({ required: true });
@@ -27,21 +30,32 @@ const propertyValue = computed({
 });
 
 const sysStore = useSystemStore();
-const defaultProperty = sysStore.staticResouces.properties[
-  prop.propertyName
-] ?? { type: 'string', default: '' };
+/**
+ * ワールドのバージョンに合うプロパティの注釈（型・既定値・選択肢など）
+ *
+ * 外部リソースが配布元の最新の内容に更新されると，入力欄も切り替わる
+ */
+const defaultProperty = computed(() =>
+  getPropertyAnnotation(
+    sysStore.outerResources.serverProperties,
+    prop.propertyName,
+    prop.versionId,
+    sysStore.vanillaVersionOrder
+  )
+);
 
 if (propertyValue.value === void 0) {
-  propertyValue.value = defaultProperty.default;
+  propertyValue.value = defaultProperty.value.default;
 }
 
 /**
  * Propertyの編集に使用するEditerを指定
  */
 function selectEditer() {
-  if (defaultProperty === void 0) return 'undefined';
-  if ('enum' in defaultProperty) return 'enum';
-  return defaultProperty.type;
+  if ('enum' in defaultProperty.value && defaultProperty.value.enum) {
+    return 'enum';
+  }
+  return defaultProperty.value.type;
 }
 
 /**

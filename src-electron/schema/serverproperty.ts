@@ -323,12 +323,3 @@ export const ServerPropertyAnnotation = StringServerPropertyAnnotation.or(
   BooleanServerPropertyAnnotation
 ).or(NumberServerPropertyAnnotation);
 export type ServerPropertyAnnotation = z.infer<typeof ServerPropertyAnnotation>;
-
-/** サーバープロパティのアノテーション */
-export const ServerPropertiesAnnotation = z.record(
-  z.string(),
-  ServerPropertyAnnotation
-);
-export type ServerPropertiesAnnotation = z.infer<
-  typeof ServerPropertiesAnnotation
->;

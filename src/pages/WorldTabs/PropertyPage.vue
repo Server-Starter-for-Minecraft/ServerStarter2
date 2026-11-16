@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
-import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
+import { fromEntries, keys } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
@@ -10,6 +10,10 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { getLockedProperties } from 'src/components/World/Property/lockedProperties';
+import {
+  getPropertyAnnotation,
+  isRemovedProperty,
+} from 'src/components/World/Property/propertyDefinitions';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -22,13 +26,30 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const propertyStore = usePropertyStore();
 
-// システムが規定するデフォルトプロパティ
-const initProperty: ServerProperties = fromEntries(
-  toEntries(sysStore.staticResouces.properties).map((keyVal) => [
-    keyVal[0],
-    keyVal[1].default,
-  ])
-);
+/** ワールドの Minecraft のバージョン（バージョンが不明なワールドでは `undefined`） */
+const versionId = computed(() => {
+  const version = mainStore.world?.version;
+  return version && 'id' in version ? version.id : undefined;
+});
+
+/**
+ * システムが規定するデフォルトプロパティ
+ *
+ * ワールドのバージョンに合う定義の既定値とし，ワールドのバージョンで廃止されたプロパティは含めない
+ */
+const initProperty = computed<ServerProperties>(() => {
+  const definitions = sysStore.outerResources.serverProperties;
+  const order = sysStore.vanillaVersionOrder;
+  const activeKeys = keys(definitions).filter(
+    (key) => !isRemovedProperty(definitions[key], versionId.value, order)
+  );
+  return fromEntries(
+    activeKeys.map((key) => [
+      key,
+      getPropertyAnnotation(definitions, key, versionId.value, order).default,
+    ])
+  );
+});
 
 // 入力領域のスクロールバーの制御
 const scrollAreaRef = ref();
@@ -113,6 +134,7 @@ function scrollTop() {
             <SettingsView
               v-model="mainStore.world.properties"
               :locked-properties="lockedProperties"
+              :version-id="versionId"
             />
           </q-scroll-area>
         </div>
@@ -126,7 +148,7 @@ function scrollTop() {
           v-if="mainStore.world"
           :label="$t('property.reset')"
           color="primary"
-          @click="mainStore.world.properties = initProperty"
+          @click="mainStore.world.properties = { ...initProperty }"
           class="full-width"
         />
       </div>

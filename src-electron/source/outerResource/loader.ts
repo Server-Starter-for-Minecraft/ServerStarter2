@@ -129,6 +129,11 @@ export class OuterResource<W, R> {
     return this.loading;
   }
 
+  /** 読み込み済みの内容を返す（まだ読み込んでいない場合は `undefined`） */
+  current(): R | undefined {
+    return this.value;
+  }
+
   /**
    * 配布元から最新の内容を取得して更新する
    *

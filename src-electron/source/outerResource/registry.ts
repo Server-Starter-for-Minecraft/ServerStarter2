@@ -4,6 +4,7 @@ import { isValid } from 'app/src-electron/util/error/error';
 import { cachePath, OUTER_RESOURCE_BASE_URL } from '../const';
 import { OuterResource, OuterResourceOptions } from './loader';
 import { donationDefinition } from './resources/donation';
+import { serverPropertiesDefinition } from './resources/serverProperties';
 
 const options: OuterResourceOptions = {
   baseUrl: OUTER_RESOURCE_BASE_URL,
@@ -19,6 +20,7 @@ const outerResources: {
   [K in keyof OuterResources]: OuterResource<unknown, OuterResources[K]>;
 } = {
   donation: new OuterResource(donationDefinition, options),
+  serverProperties: new OuterResource(serverPropertiesDefinition, options),
 };
 
 /** 外部リソースの名前の一覧 */
@@ -34,6 +36,18 @@ export async function getOuterResources(): Promise<OuterResources> {
     keys.map(async (key) => [key, await outerResources[key].get()] as const)
   );
   return Object.fromEntries(entries) as OuterResources;
+}
+
+/**
+ * 読み込み済みの外部リソースを返す（同期処理の中で使う）
+ *
+ * @param key 外部リソースの名前
+ * @returns 外部リソースの内容（まだ読み込んでいない場合は `undefined`）
+ */
+export function getLoadedOuterResource<K extends keyof OuterResources>(
+  key: K
+): OuterResources[K] | undefined {
+  return outerResources[key].current();
 }
 
 /**

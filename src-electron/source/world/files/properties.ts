@@ -1,13 +1,69 @@
-import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { ServerPropertyDefinitions } from 'app/src-electron/schema/outerResource/serverProperties';
+import {
+  DefaultServerPropertiesAnnotation,
+  ServerProperties,
+} from 'app/src-electron/schema/serverproperty';
 import { isError } from 'app/src-electron/util/error/error';
 import { properties } from 'app/src-electron/util/format/properties';
 import { objValueMap } from 'app/src-electron/util/obj/objmap';
+import { getLoadedOuterResource } from '../../outerResource/registry';
+import { getStablePropertyType } from '../../outerResource/resources/serverProperties';
 import { ServerSettingFile } from './base';
 
-/** server.propertiesの中身(string)をパースする */
-const parse = (text: string) => {
-  return ServerProperties.parse(properties.parse(text));
+/**
+ * server.propertiesの値(文字列)を，定義された型に変換する
+ *
+ * 変換できない値は文字列のまま残す（既定値への置き換えや範囲での丸めは行わず，ユーザーの値を失わない）
+ */
+const coerceValue = (
+  value: string,
+  type: 'string' | 'boolean' | 'number'
+): string | boolean | number => {
+  switch (type) {
+    case 'boolean': {
+      const lower = value.trim().toLowerCase();
+      if (lower === 'true') return true;
+      if (lower === 'false') return false;
+      return value;
+    }
+    case 'number': {
+      const num = Number(value.trim());
+      return value.trim() !== '' && Number.isFinite(num) ? num : value;
+    }
+    default:
+      return value;
+  }
 };
+
+/**
+ * server.propertiesの中身(string)をパースする
+ *
+ * アプリ内で定義したプロパティはアプリ内の定義で読み込み，
+ * 外部リソースでのみ定義されたプロパティは外部リソースの定義の型に変換する
+ *
+ * @param text server.propertiesの中身
+ * @param definitions 外部リソースのサーバープロパティの定義（未指定の場合は外部リソースの型に変換しない）
+ */
+export const parseServerProperties = (
+  text: string,
+  definitions: ServerPropertyDefinitions = {}
+) => {
+  const raw = properties.parse(text);
+  const parsed = ServerProperties.parse(raw);
+  for (const [key, value] of Object.entries(raw)) {
+    const entry = definitions[key];
+    if (entry === undefined || key in DefaultServerPropertiesAnnotation) {
+      continue;
+    }
+    const type = getStablePropertyType(entry);
+    if (type !== undefined) parsed[key] = coerceValue(value, type);
+  }
+  return parsed;
+};
+
+/** server.propertiesの中身(string)を，読み込み済みの外部リソースの定義も使ってパースする */
+const parse = (text: string) =>
+  parseServerProperties(text, getLoadedOuterResource('serverProperties'));
 
 const stringify = (record: ServerProperties) => {
   const converted = objValueMap(record, (value) => {

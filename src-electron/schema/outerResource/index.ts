@@ -1,4 +1,5 @@
 import { DonationResource } from './donation';
+import { ServerPropertyDefinitions } from './serverProperties';
 
 /**
  * フロントエンドへ渡す外部リソースの一覧
@@ -9,4 +10,6 @@ import { DonationResource } from './donation';
 export type OuterResources = {
   /** 寄付サービスの一覧 */
   donation: DonationResource;
+  /** サーバープロパティの定義 */
+  serverProperties: ServerPropertyDefinitions;
 };
