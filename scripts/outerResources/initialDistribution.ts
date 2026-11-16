@@ -9,10 +9,7 @@ import { ServerPropertiesResourceV1 } from 'app/src-electron/schema/outerResourc
 import { DefaultServerPropertiesAnnotation } from 'app/src-electron/schema/serverproperty';
 import { distributionPath } from 'app/src-electron/source/outerResource/definition';
 import { schemaPath } from 'app/src-electron/source/outerResource/distribution';
-import {
-  bundledDonation,
-  donationDefinition,
-} from 'app/src-electron/source/outerResource/resources/donation';
+import { donationDefinition } from 'app/src-electron/source/outerResource/resources/donation';
 import { serverPropertiesDefinition } from 'app/src-electron/source/outerResource/resources/serverProperties';
 
 /** 配布ファイルの初期データ（配布元でのパスと内容の組。画像も配布元でのパスとバイト列の組） */
@@ -32,7 +29,7 @@ export type InitialDistribution = {
 export function buildInitialDistribution(): InitialDistribution {
   const images: Record<string, Buffer> = {};
   const donation: DonationResourceV1 = {
-    services: bundledDonation.services.map((service) => {
+    services: donationDefinition.bundled.services.map((service) => {
       const match = service.icon?.match(/^data:image\/png;base64,(.+)$/);
       if (match === undefined || match === null) return service;
       const icon = `icons/${service.id}.png`;

@@ -1,0 +1,1224 @@
+{
+  "groups": [
+    {
+      "id": "base",
+      "label": {
+        "ja": "基本設定",
+        "en-US": "base settings"
+      }
+    },
+    {
+      "id": "player",
+      "label": {
+        "ja": "プレイヤー",
+        "en-US": "player settings"
+      }
+    },
+    {
+      "id": "server",
+      "label": {
+        "ja": "サーバー",
+        "en-US": "server settings"
+      }
+    },
+    {
+      "id": "generator",
+      "label": {
+        "ja": "ワールド設定",
+        "en-US": "world settings"
+      }
+    },
+    {
+      "id": "spawning",
+      "label": {
+        "ja": "ワールドスポーン",
+        "en-US": "world spawn"
+      }
+    },
+    {
+      "id": "world",
+      "label": {
+        "ja": "ワールド本体",
+        "en-US": "world"
+      }
+    },
+    {
+      "id": "network",
+      "label": {
+        "ja": "ネットワーク",
+        "en-US": "network"
+      }
+    },
+    {
+      "id": "rcon-query",
+      "label": {
+        "ja": "RCON / Query",
+        "en-US": "RCON / Query"
+      }
+    },
+    {
+      "id": "command",
+      "label": {
+        "ja": "コマンド",
+        "en-US": "command"
+      }
+    },
+    {
+      "id": "resourcepack",
+      "label": {
+        "ja": "リソースパック",
+        "en-US": "resourcepack"
+      }
+    },
+    {
+      "id": "security",
+      "label": {
+        "ja": "セキュリティ",
+        "en-US": "security"
+      }
+    }
+  ],
+  "properties": {
+    "accepts-transfers": {
+      "description": {
+        "ja": "プレイヤーが転送されたパケットを用いてサーバーにアクセスすることを許可する",
+        "en-US": "Allow servers to access them via transfer packets"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "allow-flight": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "5秒以上の飛行を許可",
+        "en-US": "Allowed to fly for more than 5 seconds"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "allow-nether": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "ネザーに移動可能",
+        "en-US": "Possible to move to the Nether"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "broadcast-console-to-ops": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "サーバーコンソールからコマンドが入力された際に，OP権限を有するプレイヤーに通知する",
+        "en-US": "Notifies the player with OP authority when a command is entered from the server console"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "broadcast-rcon-to-ops": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "リモートコントロールからコマンドが入力された際に，OP権限を有するプレイヤーに通知する",
+        "en-US": "Notifies the player with OP when a command is input from a remote control"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "bug-report-link": {
+      "description": {
+        "ja": "プレイヤーに「バグを報告」の案内先として提示するURL（空欄の場合は案内しない）",
+        "en-US": "URL presented to players as the place to report bugs (not presented when empty)"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "chat-spam-threshold-seconds": {
+      "description": {
+        "ja": "チャットを短時間に送りすぎたプレイヤーを自動でキックする際の判定基準（0でキックしない）",
+        "en-US": "Threshold for automatically kicking players who send too many chat messages in a short time (0 to never kick)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 10,
+          "step": 1,
+          "min": 0
+        }
+      ]
+    },
+    "command-spam-threshold-seconds": {
+      "description": {
+        "ja": "コマンドを短時間に実行しすぎたプレイヤーを自動でキックする際の判定基準（0でキックしない）",
+        "en-US": "Threshold for automatically kicking players who run too many commands in a short time (0 to never kick)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 10,
+          "step": 1,
+          "min": 0
+        }
+      ]
+    },
+    "difficulty": {
+      "groups": [
+        "base",
+        "player"
+      ],
+      "description": {
+        "ja": "ゲーム難易度",
+        "en-US": "Game difficulty"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "easy",
+          "enum": [
+            "peaceful",
+            "easy",
+            "normal",
+            "hard"
+          ]
+        }
+      ]
+    },
+    "enable-code-of-conduct": {
+      "description": {
+        "ja": "サーバーの行動規範をプレイヤーに表示する（codeofconductフォルダに「言語コード.txt」の形式で配置した文章を使用）",
+        "en-US": "Show the server code of conduct to players (uses \"<language code>.txt\" files placed in the codeofconduct folder)"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "enable-command-block": {
+      "groups": [
+        "command"
+      ],
+      "description": {
+        "ja": "コマンドブロックの実行を許可",
+        "en-US": "Allow command block execution"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "enable-jmx-monitoring": {
+      "description": {
+        "ja": "JMXによるモニターを有効化",
+        "en-US": "Enable monitoring by JMX"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "enable-query": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "GameSpy4の接続を許可",
+        "en-US": "GameSpy4 connection allowed"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "enable-rcon": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "リモートコントロールを許可",
+        "en-US": "Allow remote control"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "enable-status": {
+      "groups": [
+        "server"
+      ],
+      "description": {
+        "ja": "サーバーの選択画面でオンライン状態の表示をする",
+        "en-US": "Display online status on the server selection screen"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "enforce-secure-profile": {
+      "groups": [
+        "security"
+      ],
+      "description": {
+        "ja": "Mojang署名の公開鍵を持っているプレイヤーにのみ接続を許可する",
+        "en-US": "Allow connections only to players who have Mojang-signed public keys"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "enforce-whitelist": {
+      "groups": [
+        "security"
+      ],
+      "description": {
+        "ja": "ホワイトリストによる管理を強制する",
+        "en-US": "Deny participation to non-whitelisted players"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "entity-broadcast-range-percentage": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "初期値を100とした際にエンティティの描画をどの範囲で行うかを割合で設定する",
+        "en-US": "Sets the range of entities to be drawn as a percentage when the initial value is 100"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 100,
+          "step": 1,
+          "min": 10,
+          "max": 1000
+        }
+      ]
+    },
+    "force-gamemode": {
+      "groups": [
+        "player"
+      ],
+      "description": {
+        "ja": "ゲームモードをログイン時に強制する",
+        "en-US": "Enforce game mode at login"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "function-permission-level": {
+      "groups": [
+        "command"
+      ],
+      "description": {
+        "ja": "コマンドの利用レベル（1~4で指定）",
+        "en-US": "Function permission level (set between 1 to 4)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 2,
+          "step": 1,
+          "min": 1,
+          "max": 4
+        }
+      ]
+    },
+    "gamemode": {
+      "groups": [
+        "base",
+        "player"
+      ],
+      "description": {
+        "ja": "ゲーム内でのゲームモード",
+        "en-US": "Gamemode in the game"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "survival",
+          "enum": [
+            "survival",
+            "creative",
+            "adventure",
+            "spectator"
+          ]
+        }
+      ]
+    },
+    "generate-structures": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "構造物（村など）の生成をする",
+        "en-US": "Generate structures(such as villages)"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "generator-settings": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "ワールド生成のカスタマイズ(JSON)",
+        "en-US": "Customize world generation. (JSON)"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "{}"
+        }
+      ]
+    },
+    "hardcore": {
+      "groups": [
+        "player"
+      ],
+      "description": {
+        "ja": "ハードコアに設定する",
+        "en-US": "Set gamemode to hardcore"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "hide-online-players": {
+      "groups": [
+        "player"
+      ],
+      "description": {
+        "ja": "オンラインのプレイヤーを隠す",
+        "en-US": "Hide online players"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "level-seed": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "ワールドのシード値",
+        "en-US": "World seed value"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "level-type": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "ワールドの生成タイプ",
+        "en-US": "World generation value"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "default",
+          "enum": [
+            "default",
+            "flat",
+            "largeBiomes",
+            "amplified",
+            "buffet"
+          ]
+        }
+      ]
+    },
+    "log-ips": {
+      "description": {
+        "ja": "Falseに設定すると、プレイヤーがゲームに参加したときに、プレイヤーのIPがログに含まれないようにする",
+        "en-US": "When set to false, will prevent player IPs from being included in the log when players join the game"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "management-server-allowed-origins": {
+      "description": {
+        "ja": "管理用プロトコルへの接続を許可するオリジンの一覧をカンマ区切りで指定（空欄の場合はどこからも接続できない）",
+        "en-US": "Origins (comma-separated) that may open a Management Protocol connection (no client can connect when empty)"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "management-server-enabled": {
+      "description": {
+        "ja": "外部ツールからサーバーを管理・監視するための管理用プロトコル（Management Protocol）を有効化する",
+        "en-US": "Enable the Management Protocol, which lets external tools manage and monitor the server"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "management-server-host": {
+      "description": {
+        "ja": "管理用プロトコルが待ち受けるホスト名",
+        "en-US": "Host name the Management Protocol listens on"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "localhost"
+        }
+      ]
+    },
+    "management-server-port": {
+      "description": {
+        "ja": "管理用プロトコルが待ち受けるポート番号（0の場合は起動時にランダムなポートを割り当てる）",
+        "en-US": "Port number the Management Protocol listens on (0 to assign a random port at startup)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 0,
+          "step": 1,
+          "min": 0,
+          "max": 65535
+        }
+      ]
+    },
+    "management-server-secret": {
+      "description": {
+        "ja": "管理用プロトコルに接続する際の認証に使う40文字の英数字（空欄の場合は自動生成）",
+        "en-US": "40-character alphanumeric secret used to authenticate Management Protocol clients (generated automatically when empty)"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "management-server-tls-enabled": {
+      "description": {
+        "ja": "管理用プロトコルの通信をTLSで暗号化する",
+        "en-US": "Encrypt Management Protocol communication with TLS"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "management-server-tls-keystore": {
+      "description": {
+        "ja": "TLSで使用するキーストアファイルのパス（TLSを有効にしたまま未指定にするとサーバーが起動しない）",
+        "en-US": "Location of the TLS keystore file (required while TLS is on, otherwise the server fails to start)"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "management-server-tls-keystore-password": {
+      "description": {
+        "ja": "TLSで使用するキーストアファイルのパスワード",
+        "en-US": "Password for opening the TLS keystore file"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "max-build-height": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "建築限界の高さ",
+        "en-US": "Max height of buildings"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 256,
+          "step": 8
+        }
+      ]
+    },
+    "max-chained-neighbor-updates": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "スキップが発生する前に連続する隣接更新の数を制限する",
+        "en-US": "Limiting the amount of consecutive neighbor updates before skipping"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 1000000,
+          "step": 1
+        }
+      ]
+    },
+    "max-players": {
+      "groups": [
+        "player"
+      ],
+      "description": {
+        "ja": "プレイヤーの最大人数",
+        "en-US": "Number of people who can play on the server at the same time"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 20,
+          "step": 1,
+          "min": 0,
+          "max": 2147483647
+        }
+      ]
+    },
+    "max-tick-time": {
+      "groups": [
+        "command"
+      ],
+      "description": {
+        "ja": "サーバーが動作不能になってから強制終了するまでの時間をミリ秒で指定（-1で強制終了を無効化）",
+        "en-US": "Time in milliseconds between server inoperability and forced shutdown (-1 to disable forced shutdown)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 60000,
+          "step": 1,
+          "min": -1,
+          "max": 9007199254740991
+        }
+      ]
+    },
+    "max-world-size": {
+      "groups": [
+        "generator"
+      ],
+      "description": {
+        "ja": "ワールドのサイズを半径で指定",
+        "en-US": "World size specified by radius"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 29999984,
+          "step": 1,
+          "min": 1,
+          "max": 29999984
+        }
+      ]
+    },
+    "motd": {
+      "groups": [
+        "server"
+      ],
+      "description": {
+        "ja": "サーバーの選択画面で表示される説明文",
+        "en-US": "Description displayed on the server selection screen"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "A Minecraft Server"
+        }
+      ]
+    },
+    "network-compression-threshold": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "ネットワークの圧縮度合いを整数で指定",
+        "en-US": "Specifies the degree of network compression as an integer"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 256,
+          "step": 1,
+          "min": -1
+        }
+      ]
+    },
+    "online-mode": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "接続してきたプレイヤーが正規のアカウントを持ったプレイヤーか照合する",
+        "en-US": "Verify that the connecting player is a legitimate account holder"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "op-permission-level": {
+      "groups": [
+        "command"
+      ],
+      "description": {
+        "ja": "OP権限のレベル（0~4で指定）",
+        "en-US": "OP permission level (set between 0 to 4)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 4,
+          "step": 1,
+          "min": 0,
+          "max": 4
+        }
+      ]
+    },
+    "pause-when-empty-seconds": {
+      "description": {
+        "ja": "オンラインのプレイヤーがいない状態が指定した秒数続いたら，サーバーの処理を一時停止する（0以下で無効化）",
+        "en-US": "Pause the server after no players have been online for the specified number of seconds (0 or less to disable)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 60,
+          "step": 1
+        }
+      ]
+    },
+    "player-idle-timeout": {
+      "groups": [
+        "player"
+      ],
+      "description": {
+        "ja": "指定した秒数（＝整数値）放置するとサーバーからキックされる",
+        "en-US": "If left unattended for a specified number of seconds (= an integer value), the server will kick the user"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 0,
+          "step": 1,
+          "min": 0
+        }
+      ]
+    },
+    "prevent-proxy-connections": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "falseの時にVPNやプロキシからの接続を許可する",
+        "en-US": "Allow connection from VPN or Proxy when set to False"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "previews-chat": {
+      "description": {
+        "ja": "チャット送信時に表示するプレビューを有効にする",
+        "en-US": "Enable preview to display when sending chat"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "pvp": {
+      "groups": [
+        "player"
+      ],
+      "description": {
+        "ja": "プレイヤー同士の戦闘を許可する",
+        "en-US": "Allow players to fight each other"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "query.port": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "クエリサーバーで使用するポート番号",
+        "en-US": "Query port used for the query server"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 25565,
+          "step": 1,
+          "min": 1,
+          "max": 65534
+        }
+      ]
+    },
+    "rate-limit": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "クライアントが１秒間に送信できる最大パケット量を指定",
+        "en-US": "Specifies the maximum amount of packets a client can send per second"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 0,
+          "step": 1,
+          "min": 0
+        }
+      ]
+    },
+    "rcon.password": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "リモートコントロールで使用するパスワード",
+        "en-US": "Password used for remote control"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "rcon.port": {
+      "groups": [
+        "rcon-query"
+      ],
+      "description": {
+        "ja": "リモートコントロールで使用するポート番号",
+        "en-US": "Port number used for remote control"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 25575,
+          "step": 1,
+          "min": 1,
+          "max": 65534
+        }
+      ]
+    },
+    "region-file-compression": {
+      "description": {
+        "ja": "チャンクデータを圧縮する際に使用するアルゴリズム",
+        "en-US": "Algorithm used to compress chunks in regions"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": "deflate",
+          "enum": [
+            "deflate",
+            "lz4",
+            "none"
+          ]
+        }
+      ]
+    },
+    "resource-pack": {
+      "groups": [
+        "resourcepack"
+      ],
+      "description": {
+        "ja": "サーバーリソースパックのURL",
+        "en-US": "URL of the server resource pack"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "resource-pack-id": {
+      "groups": [
+        "resourcepack"
+      ],
+      "description": {
+        "ja": "クライアントがリソースパックを識別するために指定するUUID",
+        "en-US": "UUID specified by the resource pack for the client to identify it"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "resource-pack-prompt": {
+      "groups": [
+        "resourcepack"
+      ],
+      "description": {
+        "ja": "サーバーリソースパックのプロンプト",
+        "en-US": "Prompt of server resource pack"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "resource-pack-sha1": {
+      "groups": [
+        "resourcepack"
+      ],
+      "description": {
+        "ja": "サーバーリソースパックのハッシュ値",
+        "en-US": "Hash value of the server resource pack"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "require-resource-pack": {
+      "groups": [
+        "resourcepack"
+      ],
+      "description": {
+        "ja": "サーバーリソースパックの導入を強制し，導入しない場合はワールドに接続できない",
+        "en-US": "Force players to install server resource packs, otherwise they will not be able to connect to the world"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "server-ip": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "サーバーを立てるIPアドレス",
+        "en-US": "IP address to set up a server"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "server-port": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "サーバーを公開する際に使用するポート番号",
+        "en-US": "Port number used for opening my server"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 25565,
+          "step": 1,
+          "min": 1,
+          "max": 65534
+        }
+      ]
+    },
+    "simulation-distance": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "サーバー上でエンティティをシミュレーションする範囲を設定する",
+        "en-US": "Sets the range of entities to be simulated"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 10,
+          "step": 1,
+          "min": 3,
+          "max": 32
+        }
+      ]
+    },
+    "snooper-enabled": {
+      "description": {
+        "ja": "サーバーが定期的にスヌープデータをhttp://snoop.minecraft.netに送信するか設定する",
+        "en-US": "Sets whether the server sends snoop data regularly to http://snoop.minecraft.net"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "spawn-animals": {
+      "groups": [
+        "spawning"
+      ],
+      "description": {
+        "ja": "動物が出現する",
+        "en-US": "Animals appear"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "spawn-monsters": {
+      "groups": [
+        "spawning"
+      ],
+      "description": {
+        "ja": "敵MOBが出現する",
+        "en-US": "Hostile MOB appear"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "spawn-npcs": {
+      "groups": [
+        "spawning"
+      ],
+      "description": {
+        "ja": "村人が出現する",
+        "en-US": "Villagers appear"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "spawn-protection": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "      ブロック・オブジェクトの設置・破壊が禁止される範囲をスポーン中心からの半径で指定（整数値）      ただし，OP権限を有するプレイヤーには無効",
+        "en-US": "Specifies the radius from the center of the spawn (integer value) within which blocks and objects are prohibited from being placed or destroyed.      However, this is not valid for players with OP."
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 16,
+          "step": 1,
+          "min": 0
+        }
+      ]
+    },
+    "status-heartbeat-interval": {
+      "description": {
+        "ja": "管理用プロトコルの接続先へ稼働状況の通知（ハートビート）を送る間隔を秒単位で指定（0で送信しない）",
+        "en-US": "Interval in seconds for sending status notifications (heartbeats) to Management Protocol clients (0 to disable)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 0,
+          "step": 1,
+          "min": 0
+        }
+      ]
+    },
+    "sync-chunk-writes": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "チャンクの書き込みを同期的に処理する",
+        "en-US": "Process chunk writes synchronously"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "text-filtering-config": {
+      "description": {
+        "ja": "不適切なチャットのフィルタリング設定",
+        "en-US": "Filtering configuration of inappropriate chat"
+      },
+      "definitions": [
+        {
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "text-filtering-version": {
+      "description": {
+        "ja": "text-filtering-configに記述する設定の書式バージョン（0または1）",
+        "en-US": "Format version of the settings written in text-filtering-config (0 or 1)"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 0,
+          "step": 1,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    "use-native-transport": {
+      "groups": [
+        "network"
+      ],
+      "description": {
+        "ja": "Linuxで稼働するサーバーのパケット通信の最適化を行う",
+        "en-US": "Optimize packet communication for servers running on Linux"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    "view-distance": {
+      "groups": [
+        "world"
+      ],
+      "description": {
+        "ja": "チャンク単位の描画距離",
+        "en-US": "View distance by a chunk"
+      },
+      "definitions": [
+        {
+          "type": "number",
+          "default": 10,
+          "step": 1,
+          "min": 2,
+          "max": 32
+        }
+      ]
+    },
+    "white-list": {
+      "groups": [
+        "security"
+      ],
+      "description": {
+        "ja": "ホワイトリストによるプレイヤーのログイン管理を行う",
+        "en-US": "Manage player login by the white list"
+      },
+      "definitions": [
+        {
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    }
+  }
+}

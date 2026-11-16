@@ -4,43 +4,19 @@ import {
   DonationResourceV1Parser,
   DonationService,
 } from 'app/src-electron/schema/outerResource/donation';
-import { isValid } from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import bundledJson from '../bundled/v1/donation.json';
 import type { OuterResourceDefinition } from '../definition';
-import { OFUSE_ICON } from './bundledImages';
 
 /**
  * 同梱の寄付サービスの一覧（配布元から取得できず，キャッシュもない場合に表示する）
  *
- * 配布元（OuterResources の `serverstarter2/v1/donation.json`）の内容に合わせておく
+ * リリース時のビルドで配布元の最新の内容に更新される（`bun run outer-resources pull`）。
+ * 同梱データの正しさはテストで厳格に検証しているため，ここでは読み込めない場合にサービスなしとする
  */
-export const bundledDonation: DonationResourceV1 = {
-  services: [
-    {
-      id: 'ofuse',
-      name: 'OFUSE',
-      url: 'https://ofuse.me/civiltt/letter',
-      icon: OFUSE_ICON,
-      // OFUSE KIT（https://ofuse.me/kit/about）のブランドカラー（OFUSE BLUE）
-      color: '#2882A7',
-      description: {
-        ja: 'お好きな金額で，メッセージを添えて応援できます',
-        'en-US': 'Donate any amount you like, along with a message',
-      },
-      visible: true,
-    },
-    {
-      id: 'githubSponsors',
-      name: 'GitHub Sponsors',
-      url: 'https://github.com/sponsors/CivilTT',
-      color: '#BF3989',
-      description: {
-        ja: 'GitHubアカウントで，毎月または1回限りの応援ができます',
-        'en-US': 'Sponsor us monthly or once with your GitHub account',
-      },
-      visible: false,
-    },
-  ],
-};
+const bundledDonation: DonationResourceV1 = DonationResourceV1Parser.safeParse(
+  bundledJson
+).data ?? { services: [] };
 
 /**
  * 寄付サービスの一覧の外部リソース定義
@@ -58,6 +34,17 @@ export const donationDefinition: OuterResourceDefinition<
   schema: DonationResourceV1,
   parser: DonationResourceV1Parser,
   bundled: bundledDonation,
+  async embedAssets(wire, loadImage) {
+    const services = await Promise.all(
+      wire.services.map(async (service) => {
+        if (service.icon === undefined) return service;
+        const icon = await loadImage(service.icon);
+        return isError(icon) ? icon : { ...service, icon };
+      })
+    );
+    const error = services.find(isError);
+    return error ?? { services: services.filter(isValid) };
+  },
   async resolve(wire, ctx) {
     const services = await Promise.all(
       wire.services.map(async ({ icon, ...service }) => {

@@ -5,6 +5,7 @@ import { app } from 'electron';
 import { MemorySettings } from '../schema/memory';
 import { Locale } from '../schema/system';
 import { Path } from '../util/binary/path';
+import { DEFAULT_OUTER_RESOURCE_BASE_URL } from './outerResource/definition';
 
 const userDataPath = (
   import.meta.env.QUASAR_DEBUG || !app
@@ -59,7 +60,7 @@ export const getDefaultLocale = (): Locale => {
  */
 export const OUTER_RESOURCE_BASE_URL =
   (import.meta.env?.QUASAR_DEV && process.env.SS_OUTER_RESOURCE_BASE_URL) ||
-  'https://raw.githubusercontent.com/Server-Starter-for-Minecraft/OuterResources/main/serverstarter2';
+  DEFAULT_OUTER_RESOURCE_BASE_URL;
 
 export const NEW_WORLD_NAME = 'NewWorld';
 

@@ -9,6 +9,8 @@ import { safeExec } from 'app/src-electron/util/error/failable';
 import { sourceLoggers } from '../sourceLogger';
 import {
   distributionPath,
+  IMAGE_DATA_URI_REGEX,
+  IMAGE_MIME_TYPES,
   type OuterResourceContext,
   type OuterResourceDefinition,
   type OuterResourceFetcher,
@@ -24,19 +26,6 @@ export type OuterResourceOptions = {
   cacheDir: Path;
   /** URL からデータを取得する関数（既定は `BytesData.fromURL`） */
   fetcher?: OuterResourceFetcher;
-};
-
-/** data URI として受け付ける画像の形式 */
-const IMAGE_DATA_URI_REGEX =
-  /^data:image\/(png|webp|svg\+xml|jpeg);base64,[A-Za-z0-9+/]+=*$/;
-
-/** URL から読み込む画像の拡張子と MIME タイプの対応 */
-const IMAGE_MIME_TYPES: Record<string, string> = {
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.svg': 'image/svg+xml',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
 };
 
 /**

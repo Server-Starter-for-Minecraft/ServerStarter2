@@ -9,6 +9,23 @@ import type { BytesData } from 'app/src-electron/util/binary/bytesData';
  * Electron に依存しないため，スクリプト（`scripts/outerResources`）からも読み込める
  */
 
+/** 外部リソースの配布元（OuterResources リポジトリの main）の URL */
+export const DEFAULT_OUTER_RESOURCE_BASE_URL =
+  'https://raw.githubusercontent.com/Server-Starter-for-Minecraft/OuterResources/main/serverstarter2';
+
+/** 画像の data URI として受け付ける形式 */
+export const IMAGE_DATA_URI_REGEX =
+  /^data:image\/(png|webp|svg\+xml|jpeg);base64,[A-Za-z0-9+/]+=*$/;
+
+/** URL から読み込む画像の拡張子と MIME タイプの対応 */
+export const IMAGE_MIME_TYPES: Readonly<Record<string, string>> = {
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+};
+
 /** URL からデータを取得する関数（テストではローカルサーバーやモックに差し替える） */
 export type OuterResourceFetcher = (
   url: string
@@ -55,8 +72,25 @@ export interface OuterResourceDefinition<W, R> {
   schema: z.ZodType<W>;
   /** 配布ファイルの読み込み用パーサー（不正な要素だけを除いて読み込む） */
   parser: z.ZodType<W, any>;
-  /** 同梱の内容（配布ファイルもキャッシュも読めない場合に使う） */
+  /**
+   * 同梱の内容（配布ファイルもキャッシュも読めない場合に使う）
+   *
+   * リリース時のビルドで配布元の最新の内容に更新される（`bun run outer-resources pull`）
+   */
   bundled: W;
+  /**
+   * 同梱する際に，配布ファイルが参照する画像などをファイル内に取り込む（オフラインの初回起動でも表示できるようにする）
+   *
+   * 画像を参照しない外部リソースでは省略する
+   *
+   * @param wire 配布ファイルの内容
+   * @param loadImage 画像を読み込み data URI にして返す関数
+   * @returns 画像を data URI に置き換えた配布ファイルの内容
+   */
+  embedAssets?(
+    wire: W,
+    loadImage: OuterResourceContext['loadImage']
+  ): Promise<Failable<W>>;
   /**
    * 配布ファイルの内容をフロントエンドへ渡す形に解決する
    *

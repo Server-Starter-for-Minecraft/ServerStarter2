@@ -4,7 +4,9 @@ import { locales } from 'app/src-electron/schema/system';
 import { Path } from 'app/src-electron/util/binary/path';
 import { genUUID } from 'app/src-electron/util/random/uuid';
 import { OuterResource } from '../loader';
-import { bundledDonation, donationDefinition } from './donation';
+import { donationDefinition } from './donation';
+
+const bundledDonation = donationDefinition.bundled;
 
 /**
  * 同梱の寄付サービスの一覧は，配布元に到達できない初回起動時に表示されるため，

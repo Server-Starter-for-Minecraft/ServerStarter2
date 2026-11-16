@@ -26,7 +26,10 @@
             "description": "言語ごとの文言（キーは ja / en-US）"
           }
         },
-        "required": ["id", "label"],
+        "required": [
+          "id",
+          "label"
+        ],
         "additionalProperties": false
       }
     },
@@ -91,7 +94,10 @@
                       "additionalProperties": false
                     }
                   },
-                  "required": ["type", "default"],
+                  "required": [
+                    "type",
+                    "default"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -119,7 +125,10 @@
                       "additionalProperties": false
                     }
                   },
-                  "required": ["type", "default"],
+                  "required": [
+                    "type",
+                    "default"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -156,18 +165,25 @@
                       "additionalProperties": false
                     }
                   },
-                  "required": ["type", "default"],
+                  "required": [
+                    "type",
+                    "default"
+                  ],
                   "additionalProperties": false
                 }
               ]
             }
           }
         },
-        "required": ["definitions"],
+        "required": [
+          "definitions"
+        ],
         "additionalProperties": false
       }
     }
   },
-  "required": ["properties"],
+  "required": [
+    "properties"
+  ],
   "additionalProperties": false
 }

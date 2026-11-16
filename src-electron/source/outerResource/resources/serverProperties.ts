@@ -6,6 +6,7 @@ import {
   ServerPropertyEntryV1,
 } from 'app/src-electron/schema/outerResource/serverProperties';
 import { DefaultServerPropertiesAnnotation } from 'app/src-electron/schema/serverproperty';
+import bundledJson from '../bundled/v1/serverProperties.json';
 import type {
   OuterResourceContext,
   OuterResourceDefinition,
@@ -99,9 +100,11 @@ export const serverPropertiesDefinition: OuterResourceDefinition<
   fileName: 'serverProperties.json',
   schema: ServerPropertiesResourceV1,
   parser: ServerPropertiesResourceV1Parser,
-  // 同梱の定義は `resolve` で必ず合わせるため，ここでは外部リソースの定義がない状態とする
-  // （タブも未定義とし，フロントエンドのアプリ内のタブを使う）
-  bundled: { properties: {} },
+  // リリース時のビルドで配布元の最新の内容に更新される同梱データ（`bun run outer-resources pull`）
+  // アプリ内の定義は `resolve` で必ず合わせるため，読み込めない場合は外部リソースの定義がない状態とする
+  bundled: ServerPropertiesResourceV1Parser.safeParse(bundledJson).data ?? {
+    properties: {},
+  },
   async resolve(wire, ctx) {
     return {
       groups: wire.groups,

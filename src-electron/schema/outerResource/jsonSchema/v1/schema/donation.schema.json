@@ -46,11 +46,20 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "name", "url", "color", "description", "visible"],
+        "required": [
+          "id",
+          "name",
+          "url",
+          "color",
+          "description",
+          "visible"
+        ],
         "additionalProperties": false
       }
     }
   },
-  "required": ["services"],
+  "required": [
+    "services"
+  ],
   "additionalProperties": false
 }

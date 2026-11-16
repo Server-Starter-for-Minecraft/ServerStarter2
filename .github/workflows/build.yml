@@ -52,6 +52,16 @@ jobs:
           echo "current-version=${current}" >> "$GITHUB_OUTPUT"
           echo "next-version=${next}" >> "$GITHUB_OUTPUT"
 
+      # 外部リソースの同梱データの更新（scripts/outerResources）に使う
+      # 同梱データの更新に必要なパッケージのみを使うため，postinstall（Electron 側の依存関係の準備）は実行しない
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
       # git config
       - name: git config
         run: |
@@ -68,6 +78,13 @@ jobs:
             echo false
           )
           echo "BRANCH_EXISTS=${branch_exists}" >> $GITHUB_ENV
+
+      # 外部リソース（OuterResources）の最新の内容をアプリの同梱データに取り込む [リリースブランチがない場合]
+      # 配布元から取得できない初回起動時にも，リリース時点の内容を表示するため
+      # 取得や検証に失敗した場合は，古い・不正な同梱データでリリースしないよう中断する
+      - name: Update bundled outer resources
+        if: env.BRANCH_EXISTS == 'false'
+        run: bun run outer-resources pull
 
       # git commit [リリースブランチがない場合]
       - name: git add & git commit
@@ -142,6 +159,18 @@ jobs:
           git checkout release/v${{ steps.get_version.outputs.next-version }}
           git merge origin/main
           git push
+
+      # 外部リソース（OuterResources）の最新の内容をアプリの同梱データに取り込む [リリースブランチがある場合]
+      # 内容に変更がある場合のみコミットする
+      - name: Update bundled outer resources (Release Branch)
+        if: env.BRANCH_EXISTS == 'true'
+        run: |
+          bun run outer-resources pull
+          git add src-electron/source/outerResource/bundled
+          if ! git diff --cached --quiet; then
+            git commit -m "📦 外部リソースの同梱データを更新"
+            git push
+          fi
 
       # 動作確認に使う最新のビルドの実行結果をPRに通知 [リリースブランチがある場合]
       - name: Comment on Pull Request

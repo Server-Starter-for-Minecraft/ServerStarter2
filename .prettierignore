@@ -1,2 +1,5 @@
 # 配布元のバイト列のまま保存し，URL中のSHA1で照合するテスト用の固定レスポンス(整形すると照合に失敗する)
 src-electron/source/version/test/piston-meta/
+# `bun run outer-resources` が書き出す外部リソースの同梱データ・JSON Schema（生成物のため整形しない）
+src-electron/source/outerResource/bundled/
+src-electron/schema/outerResource/jsonSchema/
