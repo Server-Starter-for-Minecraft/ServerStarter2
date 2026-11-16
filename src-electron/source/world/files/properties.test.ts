@@ -42,6 +42,23 @@ describe('外部リソースの定義を使った server.properties の読み込
     expect(parsed['changing-type']).toBe('3');
   });
 
+  test.each(['0x10', '1e3', '007', '1.'])(
+    '10進数でない数値の表記 %s はユーザーの表記のまま残す',
+    (value) => {
+      const parsed = parseServerProperties(`new-limit=${value}`, definitions);
+      expect(parsed['new-limit']).toBe(value);
+    }
+  );
+
+  test('継承したキー（constructor など）があっても読み込める', () => {
+    const parsed = parseServerProperties(
+      ['constructor=1', 'toString=x'].join('\n'),
+      definitions
+    );
+    expect(parsed['constructor']).toBe('1');
+    expect(parsed['toString']).toBe('x');
+  });
+
   test('定義のないプロパティは文字列のまま読み込む', () => {
     const parsed = parseServerProperties('unknown-prop=true', definitions);
     expect(parsed['unknown-prop']).toBe('true');

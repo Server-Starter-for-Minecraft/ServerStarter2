@@ -1,5 +1,4 @@
 import { createHash } from 'crypto';
-import { z } from 'zod';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
@@ -8,57 +7,14 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { safeExec } from 'app/src-electron/util/error/failable';
 import { sourceLoggers } from '../sourceLogger';
+import {
+  distributionPath,
+  type OuterResourceContext,
+  type OuterResourceDefinition,
+  type OuterResourceFetcher,
+} from './definition';
 
 const loggers = () => sourceLoggers().outerResource;
-
-/** URL からデータを取得する関数（テストではローカルサーバーやモックに差し替える） */
-export type OuterResourceFetcher = (
-  url: string
-) => Promise<Failable<BytesData>>;
-
-/** 外部リソースを解決する（フロントエンドへ渡す形にする）際に使える機能 */
-export type OuterResourceContext = {
-  /**
-   * 画像を読み込み，data URI にして返す
-   *
-   * @param source 配布ファイルからの相対パス・https の URL・画像の data URI のいずれか
-   * @returns 画像の data URI（読み込めない場合はエラー）
-   */
-  loadImage(source: string): Promise<Failable<ImageURI>>;
-};
-
-/**
- * 外部リソースの定義
- *
- * 新しい外部リソースを追加する場合は，この定義を作成して `registry.ts` に登録する
- *
- * @template W 配布ファイル（JSON）の型
- * @template R フロントエンドへ渡す，解決後の型
- */
-export interface OuterResourceDefinition<W, R> {
-  /** リソースの名前（ログに使う） */
-  key: string;
-  /**
-   * 配布ファイルのスキーマのバージョン（配布元の `v{schemaVersion}/` ディレクトリから取得する）
-   *
-   * 旧バージョンのアプリが読めなくなる変更（項目の削除・意味の変更）をする場合にのみ上げる
-   */
-  schemaVersion: number;
-  /** 配布ファイルの名前（例：`donation.json`） */
-  fileName: string;
-  /** 配布ファイルの厳格なスキーマ（JSON Schema の生成や配布ファイルの検証に使う） */
-  schema: z.ZodType<W>;
-  /** 配布ファイルの読み込み用パーサー（不正な要素だけを除いて読み込む） */
-  parser: z.ZodType<W, any>;
-  /** 同梱の内容（配布ファイルもキャッシュも読めない場合に使う） */
-  bundled: W;
-  /**
-   * 配布ファイルの内容をフロントエンドへ渡す形に解決する
-   *
-   * 付属ファイルの読み込みなどに失敗しても，その部分を省くなどして必ず値を返すこと
-   */
-  resolve(wire: W, ctx: OuterResourceContext): Promise<R>;
-}
 
 /** 外部リソースの取得先・保存先の設定 */
 export type OuterResourceOptions = {
@@ -110,12 +66,12 @@ export class OuterResource<W, R> {
 
   /** 配布ファイルの URL */
   get fileUrl() {
-    return `${this.baseUrl}/v${this.def.schemaVersion}/${this.def.fileName}`;
+    return `${this.baseUrl}/${distributionPath(this.def)}`;
   }
 
   /** 配布ファイルのキャッシュの保存先 */
   private get cacheFile() {
-    return this.cacheDir.child(`v${this.def.schemaVersion}`, this.def.fileName);
+    return this.cacheDir.child(distributionPath(this.def));
   }
 
   /**
@@ -155,8 +111,10 @@ export class OuterResource<W, R> {
       return wire;
     }
 
+    // 検証に合格した配布ファイルをそのまま保存する（不正な要素は読み込み時に除く）
+    // （読み込み後の内容を保存すると，同じスキーマのバージョンでアプリを更新した際に，新しい項目が失われるため）
     // キャッシュに保存できなくても，取得した内容は使う
-    const writeRes = await this.cacheFile.writeJson(wire);
+    const writeRes = await this.cacheFile.write(data);
     if (isError(writeRes)) logger.warn(writeRes);
 
     this.value = await this.def.resolve(wire, this.context());
@@ -178,7 +136,13 @@ export class OuterResource<W, R> {
   }
 
   private context(): OuterResourceContext {
-    return { loadImage: (source) => this.loadImage(source) };
+    return {
+      loadImage: (source) => this.loadImage(source),
+      warn: (message, detail) =>
+        loggers()
+          .resolve({ key: this.def.key, ...detail })
+          .warn(message),
+    };
   }
 
   /**
@@ -195,9 +159,11 @@ export class OuterResource<W, R> {
 
     const url = safeExec(() => new URL(source, this.fileUrl));
     if (isError(url)) return url;
+    const fileUrl = safeExec(() => new URL(this.fileUrl));
+    if (isError(fileUrl)) return fileUrl;
 
     // 配布元と同じ場所（相対パス）か https の URL のみ許可する
-    const isSameOrigin = url.origin === new URL(this.fileUrl).origin;
+    const isSameOrigin = url.origin === fileUrl.origin;
     if (!isSameOrigin && url.protocol !== 'https:') {
       return errorMessage.data.url.unsupported({ url: url.href });
     }

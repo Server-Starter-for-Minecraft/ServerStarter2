@@ -12,7 +12,7 @@ import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { getLockedProperties } from 'src/components/World/Property/lockedProperties';
 import {
   getPropertyAnnotation,
-  isRemovedProperty,
+  isNotYetIntroduced,
 } from 'src/components/World/Property/propertyDefinitions';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -35,18 +35,18 @@ const versionId = computed(() => {
 /**
  * システムが規定するデフォルトプロパティ
  *
- * ワールドのバージョンに合う定義の既定値とし，ワールドのバージョンで廃止されたプロパティは含めない
+ * ワールドのバージョンに合う定義の既定値とし，ワールドのバージョンにまだ存在しないプロパティは含めない
  */
 const initProperty = computed<ServerProperties>(() => {
-  const definitions = sysStore.outerResources.serverProperties;
+  const resource = sysStore.outerResources.serverProperties;
   const order = sysStore.vanillaVersionOrder;
-  const activeKeys = keys(definitions).filter(
-    (key) => !isRemovedProperty(definitions[key], versionId.value, order)
+  const activeKeys = keys(resource.properties).filter(
+    (key) => !isNotYetIntroduced(resource, key, versionId.value, order)
   );
   return fromEntries(
     activeKeys.map((key) => [
       key,
-      getPropertyAnnotation(definitions, key, versionId.value, order).default,
+      getPropertyAnnotation(resource, key, versionId.value, order).default,
     ])
   );
 });

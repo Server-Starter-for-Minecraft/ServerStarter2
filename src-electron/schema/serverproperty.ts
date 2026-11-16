@@ -3,86 +3,91 @@ import { toEntries } from '../util/obj/obj';
 
 const PORT_MAX = 2 ** 16 - 2;
 
-// z.coerce.boolean() を使うと，'false' を true に変換してしまうので，自前で実装する
+/** サーバープロパティの値の型 */
+export type ServerPropertyType = 'string' | 'boolean' | 'number';
+
+/**
+ * 10進数の表記
+ *
+ * `0x10`・`1e3`・`007` などを数値として扱うと，保存時にユーザーの表記が書き換わるため受け付けない
+ */
+const DECIMAL_REGEX = /^[+-]?(0|[1-9]\d*)(\.\d+)?$/;
+
+/**
+ * server.properties の値（文字列）を，プロパティの型に変換する
+ *
+ * 変換できない値は文字列のまま返す（呼び出し元で既定値にするか，そのまま残すかを決める）
+ *
+ * @param value server.properties の値
+ * @param type プロパティの型
+ * @returns 変換した値（変換できない場合は元の値）
+ */
+export function coercePropertyValue(
+  value: string,
+  type: ServerPropertyType
+): string | boolean | number {
+  const trimmed = value.trim();
+  switch (type) {
+    case 'boolean':
+      if (trimmed.toLowerCase() === 'true') return true;
+      if (trimmed.toLowerCase() === 'false') return false;
+      return value;
+    case 'number':
+      return DECIMAL_REGEX.test(trimmed) ? Number(trimmed) : value;
+    default:
+      return value;
+  }
+}
+
+/** 文字列を型に変換してから検証するスキーマを作る（文字列以外はそのまま検証する） */
+const coerced = <T extends z.ZodType>(type: ServerPropertyType, schema: T) =>
+  z.preprocess(
+    (value) =>
+      typeof value === 'string' ? coercePropertyValue(value, type) : value,
+    schema
+  );
+
+/** 読み込み用のスキーマのメタデータで，プロパティ画面で使う注釈を保持するキー */
+const ANNOTATION_META_KEY = 'serverPropertyAnnotation';
+
+/**
+ * プロパティの読み込み用のスキーマに，プロパティ画面で使う注釈を付ける
+ *
+ * 読み込み時は型の変換のみを行い（型が合わない値は既定値にする），範囲や選択肢による値の書き換えは行わない。
+ * 範囲や選択肢は注釈としてプロパティ画面の入力チェックに使う（外部リソースで範囲を変えても値が失われないようにするため）
+ */
+const withAnnotation = <T extends z.ZodType>(
+  schema: T,
+  annotation: ServerPropertyAnnotation
+) => schema.meta({ [ANNOTATION_META_KEY]: annotation });
+
 const boolSetter = (def: boolean) =>
-  z
-    .preprocess(
-      (txt) =>
-        typeof txt === 'string' ? txt.toLowerCase() === 'true' : undefined,
-      z.boolean()
-    )
-    .default(def)
-    .catch(def);
-const stringSetter = (def: string) => z.string().default(def).catch(def);
+  withAnnotation(coerced('boolean', z.boolean()).default(def).catch(def), {
+    type: 'boolean',
+    default: def,
+  });
+const stringSetter = (def: string) =>
+  withAnnotation(z.string().default(def).catch(def), {
+    type: 'string',
+    default: def,
+  });
 const enumSetter = <U extends string, T extends Readonly<[U, ...U[]]>>(
   values: T,
   def: T[number]
-) => z.enum(values).or(z.string()).default(def).catch(def);
-const numberSetter = (
-  def: number,
-  min?: number,
-  max?: number,
-  step?: number
-) => {
-  const checksPattern =
-    2 ** 0 * Number(min !== undefined) +
-    2 ** 1 * Number(max !== undefined) +
-    2 ** 2 * Number(step !== undefined);
-
-  switch (checksPattern) {
-    case 0:
-      return z.coerce.number().default(def).catch(def);
-    case 1:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .default(def)
-        .catch(def);
-    case 2:
-      return z.coerce
-        .number()
-        .max(max ?? Infinity)
-        .default(def)
-        .catch(def);
-    case 3:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .max(max ?? Infinity)
-        .default(def)
-        .catch(def);
-    case 4:
-      return z.coerce
-        .number()
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    case 5:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    case 6:
-      return z.coerce
-        .number()
-        .max(max ?? Infinity)
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    case 7:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .max(max ?? Infinity)
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    default:
-      return z.coerce.number().default(def).catch(def);
-  }
-};
+) =>
+  withAnnotation(z.string().default(def).catch(def), {
+    type: 'string',
+    default: def,
+    enum: [...values],
+  });
+const numberSetter = (def: number, min?: number, max?: number, step?: number) =>
+  withAnnotation(coerced('number', z.number()).default(def).catch(def), {
+    type: 'number',
+    default: def,
+    ...(min !== undefined ? { min } : {}),
+    ...(max !== undefined ? { max } : {}),
+    ...(step !== undefined ? { step } : {}),
+  });
 
 /**
  * 標準登録のサーバープロパティ
@@ -195,58 +200,15 @@ const DefaultServerProperties = z
   .catchall(z.string().or(z.number()).or(z.boolean()));
 
 /**
- * DefaultServerPropertiesで設定した型情報をもとに，フロントエンドに渡すプロパティ情報を生成する
+ * DefaultServerPropertiesで設定した注釈をもとに，フロントエンドに渡すプロパティ情報を生成する
  */
 function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
-  const anotations: Record<string, ServerPropertyAnnotation> = {};
-
+  const annotations: Record<string, ServerPropertyAnnotation> = {};
   for (const [key, schema] of toEntries(prop.shape)) {
-    // catch > default > String | Number | Boolean の順でネストされた型情報を取得する
-    const defaultSchema = schema.unwrap();
-    const innerType = defaultSchema.unwrap();
-    const defaultValue = defaultSchema.def.defaultValue;
-
-    if (innerType instanceof z.ZodPipe) {
-      anotations[key] = {
-        type: 'boolean',
-        default: defaultValue as boolean,
-      };
-    } else if (innerType instanceof z.ZodString) {
-      anotations[key] = {
-        type: 'string',
-        default: defaultValue as string,
-      };
-    } else if (innerType instanceof z.ZodNumber) {
-      const tmpObj: NumberServerPropertyAnnotation = {
-        type: 'number',
-        default: defaultValue as number,
-      };
-      if (innerType.minValue !== null && innerType.minValue !== -Infinity) {
-        tmpObj.min = innerType.minValue;
-      }
-      if (innerType.maxValue !== null && innerType.maxValue !== Infinity) {
-        tmpObj.max = innerType.maxValue;
-      }
-      innerType.def.checks?.forEach((check) => {
-        const checkDef = check._zod.def;
-        if (checkDef.check === 'multiple_of') {
-          tmpObj.step = Number(
-            (checkDef as z.core.$ZodCheckMultipleOfDef).value
-          );
-        }
-      });
-      anotations[key] = tmpObj;
-    } else if (innerType instanceof z.ZodUnion) {
-      const enumType = innerType.options[0];
-      anotations[key] = {
-        type: 'string',
-        default: defaultValue as string,
-        enum: enumType instanceof z.ZodEnum ? enumType.options : undefined,
-      };
-    }
+    const annotation = schema.meta()?.[ANNOTATION_META_KEY];
+    if (annotation) annotations[key] = annotation as ServerPropertyAnnotation;
   }
-
-  return anotations;
+  return annotations;
 }
 
 export const DefaultServerPropertiesAnnotation = extractPropertyAnnotation(

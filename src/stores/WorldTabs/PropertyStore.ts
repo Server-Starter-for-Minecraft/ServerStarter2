@@ -4,12 +4,10 @@ import { uniqueArray } from 'app/src-public/scripts/obj/objFillter';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { $T, $TE } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { pGroupKey } from 'src/components/World/Property/classifications';
 import {
   getGroupProperties,
   getPropertyDescription,
-  isClassifiedProperty,
-  isRemovedProperty,
+  isNotYetIntroduced,
 } from 'src/components/World/Property/propertyDefinitions';
 
 const disableProperties = ['level-name'];
@@ -18,7 +16,8 @@ export const usePropertyStore = defineStore('propertyStore', {
   state: () => {
     return {
       searchName: '',
-      selectTab: 'base' as pGroupKey,
+      /** 選択中のタブの識別子 */
+      selectTab: 'base',
     };
   },
   actions: {
@@ -30,16 +29,20 @@ export const usePropertyStore = defineStore('propertyStore', {
      */
     searchProperties(targetProps: ServerProperties, versionId?: string) {
       const sysStore = useSystemStore();
-      const definitions = sysStore.outerResources.serverProperties;
+      const resource = sysStore.outerResources.serverProperties;
       const order = sysStore.vanillaVersionOrder;
 
-      /** 表示しないプロパティか（廃止されたプロパティは，値が無い場合に既定値で補わないよう表示しない） */
+      /**
+       * 表示しないプロパティか
+       *
+       * ワールドのバージョンにまだ存在しないプロパティは，値が無い場合に既定値で補わないよう表示しない
+       */
       const isHidden = (prop: string) =>
         disableProperties.includes(prop) ||
-        (targetProps[prop] === undefined &&
-          isRemovedProperty(definitions?.[prop], versionId, order));
+        (!Object.hasOwn(targetProps, prop) &&
+          isNotYetIntroduced(resource, prop, versionId, order));
 
-      function getPropertyList(searchName: string, selectTab: pGroupKey) {
+      const getPropertyList = (searchName: string, selectTab: string) => {
         // 検索欄に文字が入った場合は該当するプロパティ全てを返す
         if (searchName !== '') {
           // タイトルの検索
@@ -49,7 +52,7 @@ export const usePropertyStore = defineStore('propertyStore', {
           // 説明文の検索（外部リソースの説明文を優先し，なければアプリ内の説明文）
           const searchDescs = keys(targetProps).filter((prop) =>
             getPropertyDescription(
-              definitions,
+              resource,
               prop,
               sysStore.systemSettings.user.language,
               (key) => {
@@ -60,17 +63,9 @@ export const usePropertyStore = defineStore('propertyStore', {
           );
           return searchTitles.concat(searchDescs);
         }
-        // グループごとのプロパティを返す
-        else {
-          if (selectTab === 'other') {
-            return keys(targetProps).filter(
-              (k) => !isClassifiedProperty(definitions, k)
-            );
-          } else {
-            return getGroupProperties(definitions, selectTab);
-          }
-        }
-      }
+        // タブごとのプロパティを返す
+        return getGroupProperties(resource, selectTab, keys(targetProps));
+      };
 
       return uniqueArray(
         getPropertyList(this.searchName, this.selectTab)
@@ -79,7 +74,7 @@ export const usePropertyStore = defineStore('propertyStore', {
     /**
      * 引数で指定したグループが選択（フォーカス）されているか否か
      */
-    selectPropertyTab(groupName: pGroupKey) {
+    selectPropertyTab(groupName: string) {
       return this.selectTab === groupName;
     },
   },

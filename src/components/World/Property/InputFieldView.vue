@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  coercePropertyValue,
   isValidNumberProperty,
   NumberServerPropertyAnnotation,
   ServerProperties,
@@ -46,6 +47,16 @@ const defaultProperty = computed(() =>
 
 if (propertyValue.value === void 0) {
   propertyValue.value = defaultProperty.value.default;
+} else if (typeof propertyValue.value === 'string') {
+  // バージョンによって型が異なるプロパティなどは文字列のまま読み込まれるため，
+  // 入力欄（トグルや数値欄）に合うよう，変換できる場合は選んだ定義の型に変換する
+  const converted = coercePropertyValue(
+    propertyValue.value,
+    defaultProperty.value.type
+  );
+  if (typeof converted === defaultProperty.value.type) {
+    propertyValue.value = converted;
+  }
 }
 
 /**

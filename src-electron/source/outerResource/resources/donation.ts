@@ -5,7 +5,7 @@ import {
   DonationService,
 } from 'app/src-electron/schema/outerResource/donation';
 import { isValid } from 'app/src-electron/util/error/error';
-import { OuterResourceDefinition } from '../loader';
+import type { OuterResourceDefinition } from '../definition';
 import { OFUSE_ICON } from './bundledImages';
 
 /**

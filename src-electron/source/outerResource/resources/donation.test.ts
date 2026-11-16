@@ -48,6 +48,13 @@ describe('同梱の寄付サービス', () => {
 describe('寄付サービスの配布ファイルの検証', () => {
   const valid = bundledDonation.services[0];
 
+  test('識別子が重複したサービスは最初のものだけを読み込む', () => {
+    const parsed = donationDefinition.parser.safeParse({
+      services: [valid, { ...valid, name: 'duplicated' }],
+    });
+    expect(parsed.success && parsed.data.services).toEqual([valid]);
+  });
+
   test.each([
     ['http の寄付ページ', { url: 'http://example.com' }],
     ['URL でない寄付ページ', { url: 'javascript:alert(1)' }],

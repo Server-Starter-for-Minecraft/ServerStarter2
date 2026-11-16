@@ -27,13 +27,25 @@ export type DonationServiceV1 = z.infer<typeof DonationServiceV1>;
 
 /** 外部リソース `donation.json`（v1）の厳格なスキーマ（JSON Schema の生成・検証に使う） */
 export const DonationResourceV1 = z.object({
-  services: z.array(DonationServiceV1),
+  services: z
+    .array(DonationServiceV1)
+    .refine(
+      (services) => new Set(services.map((s) => s.id)).size === services.length,
+      {
+        message: 'service ids must be unique',
+      }
+    ),
 });
 export type DonationResourceV1 = z.infer<typeof DonationResourceV1>;
 
 /** 外部リソース `donation.json`（v1）の読み込み用パーサー（不正なサービスだけを除いて読み込む） */
 export const DonationResourceV1Parser = z.object({
-  services: lenientArray(DonationServiceV1),
+  // 識別子が重複したサービスは，最初のものだけを使う
+  services: lenientArray(DonationServiceV1).transform((services) =>
+    services.filter(
+      (service, idx) => services.findIndex((s) => s.id === service.id) === idx
+    )
+  ),
 });
 
 /** フロントエンドへ渡す寄付サービス（アイコンを画像データへ解決したもの） */

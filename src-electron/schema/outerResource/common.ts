@@ -61,12 +61,15 @@ export function lenientArray<T extends z.ZodType>(item: T) {
  * @returns 不正な値のキーを除いたレコードを返すパーサー
  */
 export function lenientRecord<T extends z.ZodType>(value: T) {
-  return z.record(z.string(), z.unknown()).transform((record) => {
-    const result: Record<string, z.output<T>> = {};
-    for (const [key, raw] of Object.entries(record)) {
-      const parsed = value.safeParse(raw);
-      if (parsed.success) result[key] = parsed.data as z.output<T>;
-    }
-    return result;
-  });
+  return z
+    .record(z.string(), z.unknown())
+    .transform((record): Record<string, z.output<T>> =>
+      // `__proto__` などのキーでもプロトタイプを書き換えないよう，代入ではなく Object.fromEntries で作る
+      Object.fromEntries(
+        Object.entries(record).flatMap(([key, raw]) => {
+          const parsed = value.safeParse(raw);
+          return parsed.success ? [[key, parsed.data as z.output<T>]] : [];
+        })
+      )
+    );
 }

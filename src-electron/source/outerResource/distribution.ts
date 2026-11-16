@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { DonationResourceV1 } from 'app/src-electron/schema/outerResource/donation';
-import { ServerPropertiesResourceV1 } from 'app/src-electron/schema/outerResource/serverProperties';
+import { distributionPath } from './definition';
+import { outerResourceDefinitions } from './definitions';
 
 /**
  * 外部リソースの配布元（OuterResources リポジトリ）へ置くファイルを作る
@@ -8,14 +8,19 @@ import { ServerPropertiesResourceV1 } from 'app/src-electron/schema/outerResourc
  * `scripts/outerResources` から配布ファイルの JSON Schema の更新に使い，契約テストでは配布元のスキーマと比較する
  */
 
-/** 配布するスキーマのバージョン（配布元のディレクトリ名 `v{n}`） */
-export const DISTRIBUTION_SCHEMA_VERSION = 1;
-
-/** 配布ファイルの名前と厳格なスキーマの組（外部リソースを追加したらここにも追加する） */
-const distributedSchemas: Record<string, z.ZodType> = {
-  'donation.json': DonationResourceV1,
-  'serverProperties.json': ServerPropertiesResourceV1,
-};
+/**
+ * 配布ファイルの JSON Schema の配布元でのパス（例：`v1/schema/donation.schema.json`）
+ *
+ * 配布ファイル（`v1/donation.json`）から `./schema/donation.schema.json` で参照できる場所に置く
+ *
+ * @param distribution 配布ファイルのパス（例：`v1/donation.json`）
+ */
+export function schemaPath(distribution: string) {
+  return distribution.replace(
+    /([^/]+)\.json$/,
+    (_, name: string) => `schema/${name}.schema.json`
+  );
+}
 
 /**
  * 配布ファイルの先頭に，エディタの補完用の JSON Schema の参照（`$schema`）を書けるようにする
@@ -34,13 +39,15 @@ function withSchemaReference(schema: z.core.JSONSchema.JSONSchema) {
  *
  * 配布元のリポジトリで，公開前に配布ファイルを検証するために使う
  *
- * @returns JSON Schema のファイル名（例：`donation.schema.json`）と内容の組
+ * @returns JSON Schema の配布元でのパス（例：`v1/schema/donation.schema.json`）と内容の組
  */
 export function generateJsonSchemas(): Record<string, object> {
   return Object.fromEntries(
-    Object.entries(distributedSchemas).map(([fileName, schema]) => [
-      fileName.replace(/\.json$/, '.schema.json'),
-      withSchemaReference(z.toJSONSchema(schema, { target: 'draft-2020-12' })),
+    Object.values(outerResourceDefinitions).map((def) => [
+      schemaPath(distributionPath(def)),
+      withSchemaReference(
+        z.toJSONSchema(def.schema, { target: 'draft-2020-12' })
+      ),
     ])
   );
 }

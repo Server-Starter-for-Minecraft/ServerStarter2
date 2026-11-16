@@ -2,12 +2,12 @@
 import { resolveLocalizedText } from 'app/src/i18n/utils/localizedText';
 import type {
   MinecraftVersionRange,
-  ServerPropertyDefinitions,
+  ServerPropertiesResource,
   ServerPropertyDefinitionV1,
   ServerPropertyEntryV1,
 } from 'app/src-electron/schema/outerResource/serverProperties';
 import type { ServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
-import { pGroupKey, propertyClasses } from './classifications';
+import { builtInGroupKeys, propertyClasses } from './classifications';
 
 /**
  * Minecraft のバージョンの前後関係を判定するための，新しい順に並べたバージョン ID の一覧
@@ -22,23 +22,63 @@ const FALLBACK_ANNOTATION: ServerPropertyAnnotation = {
   default: '',
 };
 
+/** どのタブにも属さないプロパティを表示するタブの識別子（常に末尾に表示する） */
+export const OTHER_GROUP_ID = 'other';
+
 /**
- * バージョンの新しさを表す順位を返す（0 が最新。値が大きいほど古い）
+ * プロパティの定義を返す
  *
- * 一覧に無いバージョンは，一覧の更新より後に公開された新しいバージョンとみなして最新より新しい順位（-1）を返す
+ * `constructor` などの継承したキーを定義とみなさないよう `Object.hasOwn` で判定する
  */
-function versionRank(order: VersionOrder, versionId: string): number {
-  return order.indexOf(versionId);
+function entryOf(
+  resource: ServerPropertiesResource | undefined,
+  key: string
+): ServerPropertyEntryV1 | undefined {
+  const properties = resource?.properties;
+  return properties && Object.hasOwn(properties, key)
+    ? properties[key]
+    : undefined;
 }
 
-/** 範囲の新しい側の端の順位（上限がない場合は -∞） */
+/** バージョンの新しさを表す順位（0 が最新で，値が大きいほど古い。一覧に無い場合は `undefined`） */
+function versionRank(order: VersionOrder, versionId: string) {
+  const rank = order.indexOf(versionId);
+  return rank < 0 ? undefined : rank;
+}
+
+/**
+ * 範囲の新しい側の端の順位
+ *
+ * 上限がない場合と，上限がアプリの知らない（一覧の更新より後の）バージョンの場合は，上限なしとして -∞ を返す
+ */
 function upperRank(order: VersionOrder, range?: MinecraftVersionRange) {
-  return range?.to === undefined ? -Infinity : versionRank(order, range.to);
+  if (range?.to === undefined) return -Infinity;
+  return versionRank(order, range.to) ?? -Infinity;
 }
 
-/** 範囲の古い側の端の順位（下限がない場合は +∞） */
+/**
+ * 範囲の古い側の端の順位
+ *
+ * 下限がない場合は +∞ を返す。下限がアプリの知らないバージョンの場合は，
+ * 一覧の更新より後に公開されたバージョンとみなし，一覧のどのバージョンよりも新しい -1 を返す
+ */
 function lowerRank(order: VersionOrder, range?: MinecraftVersionRange) {
-  return range?.from === undefined ? Infinity : versionRank(order, range.from);
+  if (range?.from === undefined) return Infinity;
+  return versionRank(order, range.from) ?? -1;
+}
+
+/** 最新の定義（範囲の新しい側の端が最も新しいもの。同じ場合は古い側の端が新しいもの） */
+function latestDefinition(
+  definitions: ServerPropertyDefinitionV1[],
+  order: VersionOrder
+) {
+  return [...definitions].sort(
+    (a, b) =>
+      upperRank(order, a.minecraftVersion) -
+        upperRank(order, b.minecraftVersion) ||
+      lowerRank(order, a.minecraftVersion) -
+        lowerRank(order, b.minecraftVersion)
+  )[0];
 }
 
 /**
@@ -51,8 +91,10 @@ function lowerRank(order: VersionOrder, range?: MinecraftVersionRange) {
  *    （新しいバージョンへの対応が遅れている場合や，範囲の間のバージョンでは，直前の定義を使い続ける）
  * 3. それもなければ（すべての範囲より古いバージョン），最も古い定義
  *
+ * ワールドのバージョンが不明な場合（バージョン一覧に無い場合を含む）は，最新のバージョンとみなして最新の定義を使う
+ *
  * @param entry プロパティの定義
- * @param versionId ワールドの Minecraft のバージョン（不明な場合やワールドに依らない場合は `undefined` とし，最新の定義を使う）
+ * @param versionId ワールドの Minecraft のバージョン（ワールドに依らない場合は `undefined`）
  * @param order 新しい順に並べたバージョン ID の一覧
  * @returns 使う定義
  */
@@ -61,9 +103,10 @@ export function selectPropertyDefinition(
   versionId: string | undefined,
   order: VersionOrder
 ): ServerPropertyDefinitionV1 {
-  // バージョンが不明な場合は，どのバージョンよりも新しいものとして扱う
-  const rank = versionId === undefined ? -1 : versionRank(order, versionId);
   const { definitions } = entry;
+  const rank =
+    versionId === undefined ? undefined : versionRank(order, versionId);
+  if (rank === undefined) return latestDefinition(definitions, order);
 
   const matched = definitions.find(
     (def) =>
@@ -91,93 +134,139 @@ export function selectPropertyDefinition(
 /**
  * プロパティ画面で使うプロパティの注釈（型・既定値・選択肢など）を返す
  *
- * @param definitions サーバープロパティの定義
+ * @param resource サーバープロパティの外部リソース
  * @param key プロパティ名
  * @param versionId ワールドの Minecraft のバージョン（ワールドに依らない場合は `undefined`）
  * @param order 新しい順に並べたバージョン ID の一覧
  * @returns 注釈（定義のないプロパティは自由入力の文字列）
  */
 export function getPropertyAnnotation(
-  definitions: ServerPropertyDefinitions | undefined,
+  resource: ServerPropertiesResource | undefined,
   key: string,
   versionId: string | undefined,
   order: VersionOrder
 ): ServerPropertyAnnotation {
-  const entry = definitions?.[key];
+  const entry = entryOf(resource, key);
   if (entry === undefined) return FALLBACK_ANNOTATION;
-  // バージョンの範囲は注釈に含めない
   const { minecraftVersion, ...annotation } = selectPropertyDefinition(
     entry,
     versionId,
     order
   );
+  // バージョンの範囲は注釈に含めない
+  void minecraftVersion;
   return annotation;
 }
 
 /**
- * ワールドのバージョンでは廃止されたプロパティか
+ * ワールドのバージョンにまだ存在しないプロパティか
  *
- * 廃止されたプロパティは，server.properties に無い場合に既定値で補わない
+ * すべての定義に対応バージョンの下限（`from`）があり，ワールドがそのどれよりも古い場合に `true` を返す。
+ * このようなプロパティは，server.properties に無い場合に既定値で補わない
  *
- * @param entry プロパティの定義
- * @param versionId ワールドの Minecraft のバージョン（ワールドに依らない場合は `undefined` とし，廃止とはみなさない）
+ * @param resource サーバープロパティの外部リソース
+ * @param key プロパティ名
+ * @param versionId ワールドの Minecraft のバージョン（ワールドに依らない場合は `undefined` とし，存在するものとみなす）
  * @param order 新しい順に並べたバージョン ID の一覧
  */
-export function isRemovedProperty(
-  entry: ServerPropertyEntryV1 | undefined,
+export function isNotYetIntroduced(
+  resource: ServerPropertiesResource | undefined,
+  key: string,
   versionId: string | undefined,
   order: VersionOrder
 ): boolean {
-  if (entry?.removedIn === undefined || versionId === undefined) return false;
-  return versionRank(order, versionId) <= versionRank(order, entry.removedIn);
+  const entry = entryOf(resource, key);
+  const rank =
+    versionId === undefined ? undefined : versionRank(order, versionId);
+  if (entry === undefined || rank === undefined) return false;
+  return entry.definitions.every(
+    (def) => rank > lowerRank(order, def.minecraftVersion)
+  );
 }
 
-/** アプリが知っているタブか */
-function isGroupKey(group: string): group is pGroupKey {
-  return group in propertyClasses;
+/** プロパティ画面のタブ */
+export type PropertyGroup = {
+  /** タブの識別子 */
+  id: string;
+  /** タブの表示名 */
+  label: string;
+};
+
+/**
+ * プロパティ画面のタブの一覧を返す（末尾は「その他」）
+ *
+ * 外部リソースでタブを定義している場合はその定義を使い，なければアプリ内のタブを使う
+ *
+ * @param resource サーバープロパティの外部リソース
+ * @param locale 表示中の言語
+ * @param builtInLabel アプリ内のタブの表示名を返す関数（「その他」の表示名にも使う）
+ * @returns タブの一覧（表示順）
+ */
+export function getPropertyGroups(
+  resource: ServerPropertiesResource | undefined,
+  locale: string,
+  builtInLabel: (id: string) => string
+): PropertyGroup[] {
+  const groups =
+    resource?.groups !== undefined && resource.groups.length > 0
+      ? resource.groups.map(({ id, label }) => ({
+          id,
+          label: resolveLocalizedText(label, locale),
+        }))
+      : builtInGroupKeys.map((id) => ({ id, label: builtInLabel(id) }));
+  return [
+    ...groups.filter((g) => g.id !== OTHER_GROUP_ID),
+    { id: OTHER_GROUP_ID, label: builtInLabel(OTHER_GROUP_ID) },
+  ];
+}
+
+/**
+ * プロパティを表示するタブの識別子を返す
+ *
+ * 外部リソースでタブを指定したプロパティはその指定に従い，指定のないプロパティはアプリ内の分類に従う
+ */
+function groupsOf(
+  resource: ServerPropertiesResource | undefined,
+  key: string
+): string[] {
+  return (
+    entryOf(resource, key)?.groups ??
+    builtInGroupKeys.filter((g) => propertyClasses[g].includes(key))
+  );
 }
 
 /**
  * タブに表示するプロパティの一覧を返す
  *
- * 外部リソースでタブが指定されたプロパティはその指定に従い，指定のないプロパティはアプリ内の分類に従う。
- * 並び順はアプリ内の分類の順とし，外部リソースで追加されたプロパティはその後ろに並べる
+ * 並び順はアプリ内の分類の順とし，それ以外のプロパティは外部リソースでの定義順に後ろへ並べる。
+ * 「その他」には，表示中のプロパティのうち，表示中のどのタブにも属さないものを表示する
  *
- * @param definitions サーバープロパティの定義
- * @param group タブ（「その他」は分類されていないプロパティを表示するため対象外）
+ * @param resource サーバープロパティの外部リソース
+ * @param groupId タブの識別子
+ * @param targetKeys 表示するワールド（または標準設定）のプロパティ名（「その他」の対象）
  * @returns タブに表示するプロパティ名
  */
 export function getGroupProperties(
-  definitions: ServerPropertyDefinitions | undefined,
-  group: Exclude<pGroupKey, 'other'>
+  resource: ServerPropertiesResource | undefined,
+  groupId: string,
+  targetKeys: string[]
 ): string[] {
-  /** 外部リソースで指定された，アプリが知っているタブ（指定がなければ `undefined`） */
-  const remoteGroups = (key: string) =>
-    definitions?.[key]?.groups?.filter(isGroupKey);
+  if (groupId === OTHER_GROUP_ID) {
+    const groupIds = new Set(
+      getPropertyGroups(resource, '', () => '').map((g) => g.id)
+    );
+    return targetKeys.filter(
+      (key) => !groupsOf(resource, key).some((g) => groupIds.has(g))
+    );
+  }
 
-  const builtIn = propertyClasses[group].filter(
-    (key) => remoteGroups(key)?.includes(group) ?? true
-  );
-  const added = Object.keys(definitions ?? {}).filter(
-    (key) => !builtIn.includes(key) && remoteGroups(key)?.includes(group)
+  const builtIn = (
+    Object.hasOwn(propertyClasses, groupId) ? propertyClasses[groupId] : []
+  ).filter((key) => groupsOf(resource, key).includes(groupId));
+  const added = Object.keys(resource?.properties ?? {}).filter(
+    (key) => !builtIn.includes(key) && groupsOf(resource, key).includes(groupId)
   );
   return [...builtIn, ...added];
-}
-
-/**
- * いずれかのタブ（「その他」を除く）に分類されたプロパティか
- *
- * @param definitions サーバープロパティの定義
- * @param key プロパティ名
- */
-export function isClassifiedProperty(
-  definitions: ServerPropertyDefinitions | undefined,
-  key: string
-): boolean {
-  const groups = Object.keys(propertyClasses).filter(
-    (g): g is Exclude<pGroupKey, 'other'> => g !== 'other'
-  );
-  return groups.some((g) => getGroupProperties(definitions, g).includes(key));
 }
 
 /**
@@ -185,19 +274,19 @@ export function isClassifiedProperty(
  *
  * 外部リソースの説明文を優先し，なければアプリ内（i18n）の説明文を使う
  *
- * @param definitions サーバープロパティの定義
+ * @param resource サーバープロパティの外部リソース
  * @param key プロパティ名
  * @param locale 表示中の言語
  * @param builtIn アプリ内の説明文を返す関数（説明文がない場合は `undefined`）
  * @returns 説明文（どこにもなければ `undefined`）
  */
 export function getPropertyDescription(
-  definitions: ServerPropertyDefinitions | undefined,
+  resource: ServerPropertiesResource | undefined,
   key: string,
   locale: string,
   builtIn: (key: string) => string | undefined
 ): string | undefined {
-  const remote = definitions?.[key]?.description;
+  const remote = entryOf(resource, key)?.description;
   if (remote !== undefined) return resolveLocalizedText(remote, locale);
   return builtIn(key);
 }

@@ -41,20 +41,13 @@ export type ServerPropertyDefinitionV1 = z.infer<
 
 const entryFields = {
   /**
-   * プロパティ画面で表示するタブ（`base`・`player` など。アプリが知らないタブは無視する）
+   * プロパティを表示するタブの識別子（`groups` で定義したタブ。複数のタブに表示できる）
    *
-   * 省略した場合はアプリ内の分類に従い，どこにも分類されなければ「その他」に表示する
+   * 省略した場合はアプリ内の分類に従い，どのタブにも属さなければ「その他」に表示する
    */
   groups: z.array(z.string()).optional(),
   /** プロパティの説明文（省略した場合はアプリ内の説明文を表示する） */
   description: LocalizedText.optional(),
-  /**
-   * プロパティが廃止された Minecraft のバージョン
-   *
-   * このバージョン以降のワールドでは，server.properties に無いプロパティを既定値で補わない
-   * （server.properties にあるプロパティは表示する）
-   */
-  removedIn: z.string().min(1).optional(),
 };
 
 /** サーバープロパティ1件の定義（外部リソース `serverProperties.json` の1要素） */
@@ -63,14 +56,31 @@ export const ServerPropertyEntryV1 = z.object({
   /**
    * バージョンごとの値の定義
    *
-   * ワールドのバージョンに合う最初の定義を使い，合う定義がなければ最も近い範囲の定義を使う
+   * ワールドのバージョンに合う最初の定義を使い，合う定義がなければ最も近い範囲の定義を使う。
+   * すべての定義に `from` を指定した場合，最も古い `from` より前のバージョンのワールドでは，
+   * server.properties に無いこのプロパティを既定値で補わない（そのバージョンに存在しないプロパティのため）
    */
   definitions: z.array(ServerPropertyDefinitionV1).min(1),
 });
 export type ServerPropertyEntryV1 = z.infer<typeof ServerPropertyEntryV1>;
 
+/** プロパティ画面のタブ */
+export const PropertyGroupV1 = z.object({
+  /** タブの識別子（プロパティの `groups` で指定する） */
+  id: z.string().min(1),
+  /** タブの表示名 */
+  label: LocalizedText,
+});
+export type PropertyGroupV1 = z.infer<typeof PropertyGroupV1>;
+
 /** 外部リソース `serverProperties.json`（v1）の厳格なスキーマ（JSON Schema の生成・検証に使う） */
 export const ServerPropertiesResourceV1 = z.object({
+  /**
+   * プロパティ画面のタブの一覧（表示順。どのタブにも属さないプロパティを表示する「その他」はアプリが末尾に加える）
+   *
+   * 省略した場合はアプリ内のタブを使う
+   */
+  groups: z.array(PropertyGroupV1).optional(),
   /** プロパティ名と定義の組 */
   properties: z.record(z.string(), ServerPropertyEntryV1),
 });
@@ -80,6 +90,7 @@ export type ServerPropertiesResourceV1 = z.infer<
 
 /** 外部リソース `serverProperties.json`（v1）の読み込み用パーサー（不正な定義だけを除いて読み込む） */
 export const ServerPropertiesResourceV1Parser = z.object({
+  groups: lenientArray(PropertyGroupV1).optional(),
   properties: lenientRecord(
     z.object({
       ...entryFields,
@@ -90,9 +101,17 @@ export const ServerPropertiesResourceV1Parser = z.object({
   ),
 });
 
-/**
- * フロントエンドへ渡すサーバープロパティの定義
- *
- * 同梱の定義と外部リソースの定義を合わせたもの（プロパティ名と定義の組）
- */
+/** サーバープロパティの定義（プロパティ名と定義の組） */
 export type ServerPropertyDefinitions = Record<string, ServerPropertyEntryV1>;
+
+/**
+ * フロントエンドへ渡すサーバープロパティの外部リソース
+ *
+ * プロパティの定義は，同梱の定義と外部リソースの定義を合わせたもの
+ */
+export type ServerPropertiesResource = {
+  /** プロパティ画面のタブの一覧（未定義の場合はアプリ内のタブを使う） */
+  groups?: PropertyGroupV1[];
+  /** プロパティの定義 */
+  properties: ServerPropertyDefinitions;
+};

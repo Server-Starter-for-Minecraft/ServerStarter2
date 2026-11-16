@@ -5,6 +5,31 @@
     "$schema": {
       "type": "string"
     },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "言語ごとの文言（キーは ja / en-US）"
+          }
+        },
+        "required": ["id", "label"],
+        "additionalProperties": false
+      }
+    },
     "properties": {
       "type": "object",
       "propertyNames": {
@@ -29,10 +54,6 @@
               "minLength": 1
             },
             "description": "言語ごとの文言（キーは ja / en-US）"
-          },
-          "removedIn": {
-            "type": "string",
-            "minLength": 1
           },
           "definitions": {
             "minItems": 1,

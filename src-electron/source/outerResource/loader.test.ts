@@ -5,7 +5,8 @@ import { lenientArray } from 'app/src-electron/schema/outerResource/common';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { genUUID } from 'app/src-electron/util/random/uuid';
-import { OuterResource, OuterResourceDefinition } from './loader';
+import type { OuterResourceDefinition } from './definition';
+import { OuterResource } from './loader';
 
 /** テスト用の外部リソース（文字列の一覧） */
 const Item = z.object({ name: z.string(), image: z.string().optional() });

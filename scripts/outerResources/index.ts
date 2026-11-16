@@ -3,17 +3,14 @@
  *
  * 使い方
  * - `bun run outer-resources schema`
- *     配布ファイルの JSON Schema を `src-electron/schema/outerResource/jsonSchema/` に書き出す
- *     （スキーマを変更したら実行してコミットし，OuterResources リポジトリの `schema/` にもコピーする）
+ *     配布ファイルの JSON Schema を `src-electron/schema/outerResource/jsonSchema/v{n}/schema/` に書き出す
+ *     （スキーマを変更したら実行してコミットし，OuterResources リポジトリの `serverstarter2/v{n}/schema/` にもコピーする）
  * - `bun run outer-resources export <OuterResources リポジトリのパス>`
- *     JSON Schema と配布ファイルの初期データ（アプリ内の定義から作ったもの）を `serverstarter2/v{n}/` に書き出す
+ *     JSON Schema と配布ファイルの初期データ（アプリ内の定義から作ったもの）を `serverstarter2/` に書き出す
  */
 import { mkdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
-import {
-  DISTRIBUTION_SCHEMA_VERSION,
-  generateJsonSchemas,
-} from '../../src-electron/source/outerResource/distribution';
+import { generateJsonSchemas } from '../../src-electron/source/outerResource/distribution';
 import { buildInitialDistribution } from './initialDistribution';
 
 /** JSON をファイルに書き出す（Prettier の書式に合わせて2スペースで字下げし，末尾に改行を付ける） */
@@ -22,22 +19,18 @@ function writeJson(path: string, content: object) {
   writeFileSync(path, `${JSON.stringify(content, null, 2)}\n`);
 }
 
-/** JSON Schema を指定したディレクトリに書き出す */
+/** JSON Schema を指定したディレクトリに（配布元と同じ構成で）書き出す */
 function writeSchemas(dir: string) {
-  for (const [fileName, schema] of Object.entries(generateJsonSchemas())) {
-    writeJson(join(dir, fileName), schema);
+  for (const [path, schema] of Object.entries(generateJsonSchemas())) {
+    writeJson(join(dir, path), schema);
   }
 }
 
 const [command, target] = process.argv.slice(2);
-const versionDir = `v${DISTRIBUTION_SCHEMA_VERSION}`;
 
 switch (command) {
   case 'schema': {
-    const dir = join(
-      'src-electron/schema/outerResource/jsonSchema',
-      versionDir
-    );
+    const dir = 'src-electron/schema/outerResource/jsonSchema';
     writeSchemas(dir);
     console.log(`wrote JSON Schemas to ${dir}`);
     break;
@@ -47,9 +40,9 @@ switch (command) {
       console.error('usage: bun run outer-resources export <dir>');
       process.exit(1);
     }
-    const dir = join(target, 'serverstarter2', versionDir);
+    const dir = join(target, 'serverstarter2');
     const { files, images } = buildInitialDistribution();
-    writeSchemas(join(dir, 'schema'));
+    writeSchemas(dir);
     for (const [fileName, content] of Object.entries(files)) {
       writeJson(join(dir, fileName), content);
     }

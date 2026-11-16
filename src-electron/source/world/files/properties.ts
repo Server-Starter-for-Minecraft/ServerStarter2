@@ -1,5 +1,6 @@
 import { ServerPropertyDefinitions } from 'app/src-electron/schema/outerResource/serverProperties';
 import {
+  coercePropertyValue,
   DefaultServerPropertiesAnnotation,
   ServerProperties,
 } from 'app/src-electron/schema/serverproperty';
@@ -9,31 +10,6 @@ import { objValueMap } from 'app/src-electron/util/obj/objmap';
 import { getLoadedOuterResource } from '../../outerResource/registry';
 import { getStablePropertyType } from '../../outerResource/resources/serverProperties';
 import { ServerSettingFile } from './base';
-
-/**
- * server.propertiesの値(文字列)を，定義された型に変換する
- *
- * 変換できない値は文字列のまま残す（既定値への置き換えや範囲での丸めは行わず，ユーザーの値を失わない）
- */
-const coerceValue = (
-  value: string,
-  type: 'string' | 'boolean' | 'number'
-): string | boolean | number => {
-  switch (type) {
-    case 'boolean': {
-      const lower = value.trim().toLowerCase();
-      if (lower === 'true') return true;
-      if (lower === 'false') return false;
-      return value;
-    }
-    case 'number': {
-      const num = Number(value.trim());
-      return value.trim() !== '' && Number.isFinite(num) ? num : value;
-    }
-    default:
-      return value;
-  }
-};
 
 /**
  * server.propertiesの中身(string)をパースする
@@ -51,19 +27,26 @@ export const parseServerProperties = (
   const raw = properties.parse(text);
   const parsed = ServerProperties.parse(raw);
   for (const [key, value] of Object.entries(raw)) {
-    const entry = definitions[key];
-    if (entry === undefined || key in DefaultServerPropertiesAnnotation) {
+    // アプリ内で定義したプロパティは読み込み済み（`Object.hasOwn` で `constructor` などの継承したキーを除く）
+    if (
+      Object.hasOwn(DefaultServerPropertiesAnnotation, key) ||
+      !Object.hasOwn(definitions, key)
+    ) {
       continue;
     }
-    const type = getStablePropertyType(entry);
-    if (type !== undefined) parsed[key] = coerceValue(value, type);
+    // 変換できない値は文字列のまま残す（既定値への置き換えや範囲での丸めは行わず，ユーザーの値を失わない）
+    const type = getStablePropertyType(definitions[key]);
+    if (type !== undefined) parsed[key] = coercePropertyValue(value, type);
   }
   return parsed;
 };
 
 /** server.propertiesの中身(string)を，読み込み済みの外部リソースの定義も使ってパースする */
 const parse = (text: string) =>
-  parseServerProperties(text, getLoadedOuterResource('serverProperties'));
+  parseServerProperties(
+    text,
+    getLoadedOuterResource('serverProperties')?.properties
+  );
 
 const stringify = (record: ServerProperties) => {
   const converted = objValueMap(record, (value) => {
@@ -148,14 +131,9 @@ if (import.meta.vitest) {
     expect(numberValue).toBe(60000);
     expect(typeof numberValue).toBe('number');
 
-    // number checks test (if it doesn't use Zod, this test is ineffective)
-    const numberCheckTest = parse('function-permission-level=5'); // invalid setting
-    expect(Object.hasOwn(numberCheckTest, 'function-permission-level')).toBe(
-      true
-    );
-    const numberCheckValue = numberCheckTest['function-permission-level'];
-    expect(numberCheckValue).toBe(2); // overwrote default value
-    expect(typeof numberCheckValue).toBe('number');
+    // 範囲外の値も書き換えずに読み込む（範囲はプロパティ画面の入力チェックにのみ使う）
+    const numberCheckTest = parse('function-permission-level=5');
+    expect(numberCheckTest['function-permission-level']).toBe(5);
 
     // unsupported prop test
     const unsupportedTest = parse('unsupported-prop=test_value');

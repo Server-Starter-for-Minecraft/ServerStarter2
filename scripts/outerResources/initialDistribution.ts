@@ -1,12 +1,21 @@
-import { propertyClasses } from 'app/src/components/World/Property/classifications';
+import {
+  builtInGroupKeys,
+  propertyClasses,
+} from 'app/src/components/World/Property/classifications';
 import { enUSproperty } from 'app/src/i18n/en-US/Pages/World/property';
 import { jaProperty } from 'app/src/i18n/ja/Pages/World/property';
 import { DonationResourceV1 } from 'app/src-electron/schema/outerResource/donation';
 import { ServerPropertiesResourceV1 } from 'app/src-electron/schema/outerResource/serverProperties';
 import { DefaultServerPropertiesAnnotation } from 'app/src-electron/schema/serverproperty';
-import { bundledDonation } from 'app/src-electron/source/outerResource/resources/donation';
+import { distributionPath } from 'app/src-electron/source/outerResource/definition';
+import { schemaPath } from 'app/src-electron/source/outerResource/distribution';
+import {
+  bundledDonation,
+  donationDefinition,
+} from 'app/src-electron/source/outerResource/resources/donation';
+import { serverPropertiesDefinition } from 'app/src-electron/source/outerResource/resources/serverProperties';
 
-/** 配布ファイルの初期データ（ファイル名と内容の組，画像は配布ファイルからの相対パスとバイト列の組） */
+/** 配布ファイルの初期データ（配布元でのパスと内容の組。画像も配布元でのパスとバイト列の組） */
 export type InitialDistribution = {
   files: Record<string, object>;
   images: Record<string, Buffer>;
@@ -26,22 +35,36 @@ export function buildInitialDistribution(): InitialDistribution {
     services: bundledDonation.services.map((service) => {
       const match = service.icon?.match(/^data:image\/png;base64,(.+)$/);
       if (match === undefined || match === null) return service;
-      const path = `icons/${service.id}.png`;
-      images[path] = Buffer.from(match[1], 'base64');
-      return { ...service, icon: path };
+      const icon = `icons/${service.id}.png`;
+      images[`v${donationDefinition.schemaVersion}/${icon}`] = Buffer.from(
+        match[1],
+        'base64'
+      );
+      return { ...service, icon };
     }),
   };
 
   const groupsOf = (key: string) =>
-    Object.entries(propertyClasses)
-      .filter(([, keys]) => keys.includes(key))
-      .map(([group]) => group);
+    builtInGroupKeys.filter((group) => propertyClasses[group].includes(key));
+  const groupLabels: Record<string, Record<string, string>> = {
+    ja: jaProperty.group,
+    'en-US': enUSproperty.group,
+  };
   const descriptions: Record<string, Record<string, string>> = {
     ja: jaProperty.description,
     'en-US': enUSproperty.description,
   };
 
   const serverProperties: ServerPropertiesResourceV1 = {
+    groups: builtInGroupKeys.map((id) => ({
+      id,
+      label: Object.fromEntries(
+        Object.entries(groupLabels).map(([locale, labels]) => [
+          locale,
+          labels[id],
+        ])
+      ),
+    })),
     properties: Object.fromEntries(
       Object.entries(DefaultServerPropertiesAnnotation).map(
         ([key, annotation]) => {
@@ -65,16 +88,21 @@ export function buildInitialDistribution(): InitialDistribution {
   };
 
   return {
-    files: {
-      'donation.json': {
-        $schema: './schema/donation.schema.json',
-        ...donation,
-      },
-      'serverProperties.json': {
-        $schema: './schema/serverProperties.schema.json',
-        ...serverProperties,
-      },
-    },
+    files: Object.fromEntries(
+      (
+        [
+          [distributionPath(donationDefinition), donation],
+          [distributionPath(serverPropertiesDefinition), serverProperties],
+        ] as const
+      ).map(([path, content]) => [
+        path,
+        // 配布ファイルからの相対パスで JSON Schema を参照し，エディタで入力補完と検証を効かせる
+        {
+          $schema: `./${schemaPath(path).split('/').slice(1).join('/')}`,
+          ...content,
+        },
+      ])
+    ),
     images,
   };
 }

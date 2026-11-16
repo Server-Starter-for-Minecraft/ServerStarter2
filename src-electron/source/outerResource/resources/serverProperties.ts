@@ -1,14 +1,15 @@
 import {
+  ServerPropertiesResource,
   ServerPropertiesResourceV1,
   ServerPropertiesResourceV1Parser,
   ServerPropertyDefinitions,
   ServerPropertyEntryV1,
 } from 'app/src-electron/schema/outerResource/serverProperties';
 import { DefaultServerPropertiesAnnotation } from 'app/src-electron/schema/serverproperty';
-import { sourceLoggers } from '../../sourceLogger';
-import { OuterResourceDefinition } from '../loader';
-
-const loggers = () => sourceLoggers().outerResource.serverProperties;
+import type {
+  OuterResourceContext,
+  OuterResourceDefinition,
+} from '../definition';
 
 /**
  * 同梱のサーバープロパティの定義
@@ -31,32 +32,42 @@ const bundledEntries: ServerPropertyDefinitions = Object.fromEntries(
  * - ただし同梱のプロパティの値はアプリ内の定義で読み込むため，同梱と型が異なる定義は使わない
  *
  * @param remote 外部リソースのプロパティの定義
+ * @param warn 使わなかった定義を記録する関数
  * @returns 合わせた定義
  */
 export function mergeServerPropertyDefinitions(
-  remote: ServerPropertyDefinitions
+  remote: ServerPropertyDefinitions,
+  warn: OuterResourceContext['warn'] = () => {}
 ): ServerPropertyDefinitions {
-  const merged: ServerPropertyDefinitions = { ...bundledEntries };
-  for (const [key, entry] of Object.entries(remote)) {
-    const bundledType = DefaultServerPropertiesAnnotation[key]?.type;
-    if (bundledType === undefined) {
-      merged[key] = entry;
-      continue;
+  /** 外部リソースの定義のうち，使える定義に絞ったもの */
+  const usable = Object.entries(remote).map(([key, entry]) => {
+    // `constructor` などの継承したキーを同梱のプロパティとみなさないよう Object.hasOwn で判定する
+    if (!Object.hasOwn(DefaultServerPropertiesAnnotation, key)) {
+      return [key, entry] as const;
     }
-
+    const bundledType = DefaultServerPropertiesAnnotation[key].type;
     const definitions = entry.definitions.filter(
       (def) => def.type === bundledType
     );
     if (definitions.length < entry.definitions.length) {
-      loggers().merge({ key, bundledType }).warn('ignored type mismatch');
+      warn('ignored definitions whose type differs from the bundled one', {
+        property: key,
+        bundledType,
+      });
     }
-    merged[key] = {
-      ...entry,
-      definitions:
-        definitions.length > 0 ? definitions : bundledEntries[key].definitions,
-    };
-  }
-  return merged;
+    return [
+      key,
+      {
+        ...entry,
+        definitions:
+          definitions.length > 0
+            ? definitions
+            : bundledEntries[key].definitions,
+      },
+    ] as const;
+  });
+  // `__proto__` などのキーでもプロトタイプを書き換えないよう，代入ではなく Object.fromEntries で作る
+  return Object.fromEntries([...Object.entries(bundledEntries), ...usable]);
 }
 
 /**
@@ -81,7 +92,7 @@ export function getStablePropertyType(
  */
 export const serverPropertiesDefinition: OuterResourceDefinition<
   ServerPropertiesResourceV1,
-  ServerPropertyDefinitions
+  ServerPropertiesResource
 > = {
   key: 'serverProperties',
   schemaVersion: 1,
@@ -89,8 +100,12 @@ export const serverPropertiesDefinition: OuterResourceDefinition<
   schema: ServerPropertiesResourceV1,
   parser: ServerPropertiesResourceV1Parser,
   // 同梱の定義は `resolve` で必ず合わせるため，ここでは外部リソースの定義がない状態とする
+  // （タブも未定義とし，フロントエンドのアプリ内のタブを使う）
   bundled: { properties: {} },
-  async resolve(wire) {
-    return mergeServerPropertyDefinitions(wire.properties);
+  async resolve(wire, ctx) {
+    return {
+      groups: wire.groups,
+      properties: mergeServerPropertyDefinitions(wire.properties, ctx.warn),
+    };
   },
 };

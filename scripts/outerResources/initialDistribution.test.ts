@@ -7,21 +7,21 @@ describe('配布ファイルの初期データ', () => {
   const { files, images } = buildInitialDistribution();
 
   test('配布ファイルのスキーマを満たす', () => {
-    expect(DonationResourceV1.safeParse(files['donation.json']).success).toBe(
-      true
-    );
     expect(
-      ServerPropertiesResourceV1.safeParse(files['serverProperties.json'])
+      DonationResourceV1.safeParse(files['v1/donation.json']).success
+    ).toBe(true);
+    expect(
+      ServerPropertiesResourceV1.safeParse(files['v1/serverProperties.json'])
         .success
     ).toBe(true);
   });
 
   test('寄付サービスのアイコンは画像ファイルとして書き出す', () => {
-    const { services } = DonationResourceV1.parse(files['donation.json']);
+    const { services } = DonationResourceV1.parse(files['v1/donation.json']);
     for (const { icon } of services) {
       if (icon === undefined) continue;
       expect(icon).not.toMatch(/^data:/);
-      expect(images[icon]?.length).toBeGreaterThan(0);
+      expect(images[`v1/${icon}`]?.length).toBeGreaterThan(0);
     }
   });
 });

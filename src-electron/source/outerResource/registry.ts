@@ -2,29 +2,34 @@ import { api } from 'app/src-electron/core/api';
 import { OuterResources } from 'app/src-electron/schema/outerResource';
 import { isValid } from 'app/src-electron/util/error/error';
 import { cachePath, OUTER_RESOURCE_BASE_URL } from '../const';
+import type { OuterResourceDefinition } from './definition';
+import {
+  outerResourceKeys as keys,
+  outerResourceDefinitions,
+} from './definitions';
 import { OuterResource, OuterResourceOptions } from './loader';
-import { donationDefinition } from './resources/donation';
-import { serverPropertiesDefinition } from './resources/serverProperties';
 
 const options: OuterResourceOptions = {
   baseUrl: OUTER_RESOURCE_BASE_URL,
   cacheDir: cachePath.child('outerResources'),
 };
 
-/**
- * アプリで使う外部リソースの一覧
- *
- * 外部リソースを追加する場合は，`OuterResources` 型に追加したうえで，ここに定義を登録する
- */
-const outerResources: {
+/** アプリで使う外部リソース（定義は `definitions.ts` に登録する） */
+const outerResources = Object.fromEntries(
+  keys.map((key) => [
+    key,
+    // 定義と外部リソースの型の対応は `outerResourceDefinitions` の型で保証している
+    new OuterResource(
+      outerResourceDefinitions[key] as OuterResourceDefinition<
+        unknown,
+        unknown
+      >,
+      options
+    ),
+  ])
+) as unknown as {
   [K in keyof OuterResources]: OuterResource<unknown, OuterResources[K]>;
-} = {
-  donation: new OuterResource(donationDefinition, options),
-  serverProperties: new OuterResource(serverPropertiesDefinition, options),
 };
-
-/** 外部リソースの名前の一覧 */
-const keys = Object.keys(outerResources) as (keyof OuterResources)[];
 
 /**
  * 現在の外部リソースをすべて返す（フロントエンドからの要求に応じる）
@@ -32,10 +37,11 @@ const keys = Object.keys(outerResources) as (keyof OuterResources)[];
  * 配布元の取得は待たず，キャッシュまたは同梱の内容を返す
  */
 export async function getOuterResources(): Promise<OuterResources> {
-  const entries = await Promise.all(
-    keys.map(async (key) => [key, await outerResources[key].get()] as const)
-  );
-  return Object.fromEntries(entries) as OuterResources;
+  await Promise.all(keys.map((key) => outerResources[key].get()));
+  // 通知（UpdateOuterResources）と内容が前後しないよう，すべての外部リソースを同時点の内容で返す
+  return Object.fromEntries(
+    keys.map((key) => [key, outerResources[key].current()])
+  ) as OuterResources;
 }
 
 /**
