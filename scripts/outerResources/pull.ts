@@ -5,7 +5,7 @@
  * スクリプトのため，失敗は例外として呼び出し元（コマンドの実行）まで伝え，処理を中断する
  */
 import { readFile } from 'fs/promises';
-import { extname, join } from 'path';
+import { extname, isAbsolute, relative, resolve } from 'path';
 import type { ImageURI } from 'app/src-electron/schema/brands';
 import {
   distributionPath,
@@ -19,10 +19,17 @@ import { safeExecAsync } from 'app/src-electron/util/error/failable';
 /**
  * 配布元から配布ファイルや画像を読み込む関数
  *
- * @param path 配布元の `serverstarter2/` からのパス（例：`v1/donation.json`）
+ * @param path 配布元の `serverstarter2/` からのパス（例：`v1/donation.json`）。URL と同じくパーセントエンコードした表記で渡す
  * @returns 内容（読み込めない場合は例外を投げる）
  */
 export type DistributionReader = (path: string) => Promise<Buffer>;
+
+/** URL から取得する（取得できない場合は例外を投げる） */
+async function fetchBytes(url: string): Promise<Buffer> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`failed to fetch ${url} (${res.status})`);
+  return Buffer.from(await res.arrayBuffer());
+}
 
 /**
  * 配布元の読み込み方を作る
@@ -32,14 +39,19 @@ export type DistributionReader = (path: string) => Promise<Buffer>;
  */
 export function createDistributionReader(source: string): DistributionReader {
   if (/^https?:\/\//.test(source)) {
-    return async (path) => {
-      const url = `${source.replace(/\/+$/, '')}/${path}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`failed to fetch ${url} (${res.status})`);
-      return Buffer.from(await res.arrayBuffer());
-    };
+    // エンコードした表記のまま URL に連結する（`%23` などを復号すると別の URL になるため）
+    return (path) => fetchBytes(`${source.replace(/\/+$/, '')}/${path}`);
   }
-  return (path) => readFile(join(source, path));
+  const root = resolve(source);
+  return (path) => {
+    // ローカルのファイルとして読むためにエンコードを戻し，配布元のディレクトリの外を指すパスは読まない
+    const file = resolve(root, decodeURIComponent(path));
+    const rel = relative(root, file);
+    if (rel.startsWith('..') || isAbsolute(rel)) {
+      return Promise.reject(new Error(`outside of the distribution: ${path}`));
+    }
+    return readFile(file);
+  };
 }
 
 /**
@@ -70,14 +82,20 @@ export async function buildBundledContent<W>(
   const embedded = await def.embedAssets(parsed.data, (source) =>
     safeExecAsync(async () => {
       if (IMAGE_DATA_URI_REGEX.test(source)) return source as ImageURI;
-      // 画像は配布ファイルからの相対パス（配布元の同じ場所）のみ取り込む
-      const mimeType = IMAGE_MIME_TYPES[extname(source).toLowerCase()];
-      if (/^[a-z]+:/i.test(source) || mimeType === undefined) {
+      // 画像の参照先は，配布ファイルからの相対パスか https の URL（アプリの読み込みと同じ）
+      const url = new URL(source, `https://base/${path}`);
+      const isRelative = url.host === 'base' && !/^[a-z]+:/i.test(source);
+      const mimeType = IMAGE_MIME_TYPES[extname(url.pathname).toLowerCase()];
+      if (
+        (!isRelative && url.protocol !== 'https:') ||
+        mimeType === undefined
+      ) {
         throw new Error(`unsupported image: ${source}`);
       }
-      // 相対パスを配布元の `serverstarter2/` からのパスに直す（URL のエンコードは元に戻す）
-      const imagePath = new URL(source, `https://base/${path}`).pathname;
-      const image = await read(decodeURIComponent(imagePath.slice(1)));
+      const image = isRelative
+        ? // 配布元の `serverstarter2/` からのパス（エンコードした表記のまま渡す）
+          await read(url.pathname.slice(1))
+        : await fetchBytes(url.href);
       return `data:${mimeType};base64,${image.toString('base64')}` as ImageURI;
     })
   );

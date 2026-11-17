@@ -5,6 +5,7 @@ import type {
 } from 'app/src-electron/schema/outerResource/serverProperties';
 import { builtInGroupKeys, propertyClasses } from './classifications';
 import {
+  convertPropertyValue,
   getGroupProperties,
   getPropertyAnnotation,
   getPropertyDescription,
@@ -268,6 +269,41 @@ describe('予約された「その他」タブ', () => {
       'to-other',
     ]);
   });
+});
+
+describe('「その他」に表示するプロパティ', () => {
+  test('ワールドに値の無い外部リソースのプロパティも，どのタブにも属さなければ表示する', () => {
+    const resource: ServerPropertiesResource = {
+      properties: {
+        'no-group': { definitions: [{ type: 'boolean', default: false }] },
+      },
+    };
+    expect(getGroupProperties(resource, OTHER_GROUP_ID, [])).toContain(
+      'no-group'
+    );
+  });
+});
+
+describe('定義の型に合わせた値の変換', () => {
+  test.each([
+    ['true', 'boolean', true],
+    ['20', 'number', 20],
+    [true, 'string', 'true'],
+    [20, 'string', '20'],
+  ] as const)('%s を %s の定義に合わせる', (value, type, expected) => {
+    expect(convertPropertyValue(value, type)).toBe(expected);
+  });
+
+  test.each([
+    ['maybe', 'boolean'],
+    ['abc', 'number'],
+    [true, 'number'],
+  ] as const)(
+    '変換できない %s は %s の定義でも元の値のまま残す',
+    (value, type) => {
+      expect(convertPropertyValue(value, type)).toBe(value);
+    }
+  );
 });
 
 describe('プロパティの説明文', () => {

@@ -119,6 +119,17 @@ describe('サーバープロパティの許容値', () => {
 
 describe('サーバープロパティの型', () => {
   test.each([
+    ['max-players', '007', 7],
+    ['max-players', '+5', 5],
+  ])(
+    '10進数の表記の %s=%s は数値 %d として読み込む',
+    (key, value, expected) => {
+      const props = ServerProperties.parse({ [key]: value });
+      expect(props[key]).toBe(expected);
+    }
+  );
+
+  test.each([
     ['max-players', 'abc'],
     ['max-players', '0x10'],
     ['max-players', '1e3'],

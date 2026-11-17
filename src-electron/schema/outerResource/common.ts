@@ -18,11 +18,22 @@ export const LocalizedText = z
   .refine((text) => Object.keys(text).length > 0, {
     message: 'at least one locale is required',
   })
-  .meta({ description: '言語ごとの文言（キーは ja / en-US）' });
+  // JSON Schema では refine を表現できないため，同じ制約（空の辞書を拒否）を minProperties で指定する
+  .meta({
+    description: '言語ごとの文言（キーは ja / en-US）',
+    minProperties: 1,
+  });
 export type LocalizedText = z.infer<typeof LocalizedText>;
 
-/** https の URL（JSON Schema でも検証できるよう，形式に加えて先頭の文字列も指定する） */
-export const HttpsUrl = z.url({ protocol: /^https$/ }).regex(/^https:\/\//);
+/**
+ * https の URL
+ *
+ * JSON Schema でも検証できるよう，URL の形式（`format: uri`）と，ホスト名を含む https の URL であること（`pattern`）を指定する
+ */
+export const HttpsUrl = z
+  .url({ protocol: /^https$/ })
+  .regex(/^https:\/\/[^\s/?#]+/)
+  .meta({ format: 'uri' });
 
 /**
  * 画像の参照先

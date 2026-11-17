@@ -9,11 +9,15 @@ export type ServerPropertyType = 'string' | 'boolean' | 'number';
 /**
  * 数値として扱える表記か
  *
- * 数値に変換して文字列に戻したときに元の表記と一致するもののみを数値として扱う
- * （`0x10`・`1e3`・`007`・`+5`・`1.50`・精度を超える整数などを数値にすると，保存時にユーザーの表記が書き換わるため）
+ * Minecraft と同じく10進数の表記（`007`・`+5`・`1.50` を含む）を数値として扱う。
+ * `0x10`・`1e3` など Minecraft が数値として読まない表記と，精度を超えて値が変わる整数は数値として扱わない
+ * （数値にすると保存時にユーザーの値が変わるため）
  */
-const isRoundTripNumber = (text: string) =>
-  text !== '' && String(Number(text)) === text;
+const isDecimalNumber = (text: string) => {
+  if (!/^[+-]?\d+(\.\d+)?$/.test(text)) return false;
+  const num = Number(text);
+  return text.includes('.') ? Number.isFinite(num) : Number.isSafeInteger(num);
+};
 
 /**
  * server.properties の値（文字列）を，プロパティの型に変換する
@@ -35,7 +39,7 @@ export function coercePropertyValue(
       if (trimmed.toLowerCase() === 'false') return false;
       return value;
     case 'number':
-      return isRoundTripNumber(trimmed) ? Number(trimmed) : value;
+      return isDecimalNumber(trimmed) ? Number(trimmed) : value;
     default:
       return value;
   }

@@ -178,6 +178,23 @@ describe('OuterResource', () => {
       expect((await offline.get()).images).toEqual([expected]);
     });
 
+    test('起動時の読み込みは，キャッシュに無い画像の取得を待たない（取得は配布元の更新時に行う）', async () => {
+      const PATH = 'icons/not-cached.png';
+      const resource = new OuterResource(
+        { ...definition, bundled: { items: [{ name: 'a', image: PATH }] } },
+        {
+          baseUrl: baseUrl(),
+          cacheDir: newCacheDir(),
+          // 応答の返らない配布元（取得を待つと読み込みが終わらない）
+          fetcher: () => new Promise(() => {}),
+        }
+      );
+      expect(await resource.get()).toEqual({
+        names: ['a'],
+        images: [undefined],
+      });
+    });
+
     test('画像の data URI はそのまま使う', async () => {
       const uri = `data:image/png;base64,${PNG.toString('base64')}`;
       const resource = new OuterResource(

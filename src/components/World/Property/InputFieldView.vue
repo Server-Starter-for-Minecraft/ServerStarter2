@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
-  coercePropertyValue,
   isValidNumberProperty,
   NumberServerPropertyAnnotation,
   ServerProperties,
@@ -11,7 +10,10 @@ import {
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
-import { getPropertyAnnotation } from './propertyDefinitions';
+import {
+  convertPropertyValue,
+  getPropertyAnnotation,
+} from './propertyDefinitions';
 
 const { t } = useI18n();
 
@@ -30,6 +32,19 @@ const propertyValue = computed({
   set: (newVal) => (model.value[prop.propertyName] = newVal),
 });
 
+/**
+ * トグル以外の入力欄で編集する値
+ *
+ * 入力欄は定義の型に合わせて選ぶため，真偽値の値はトグル以外では文字列として扱う
+ */
+const textValue = computed({
+  get: () => {
+    const value = propertyValue.value;
+    return typeof value === 'boolean' ? String(value) : value;
+  },
+  set: (newVal) => (propertyValue.value = newVal),
+});
+
 const sysStore = useSystemStore();
 /**
  * ワールドのバージョンに合うプロパティの注釈（型・既定値・選択肢など）
@@ -45,19 +60,21 @@ const defaultProperty = computed(() =>
   )
 );
 
-if (propertyValue.value === void 0) {
-  propertyValue.value = defaultProperty.value.default;
-} else if (typeof propertyValue.value === 'string') {
-  // バージョンによって型が異なるプロパティなどは文字列のまま読み込まれるため，
-  // 入力欄（トグルや数値欄）に合うよう，変換できる場合は選んだ定義の型に変換する
-  const converted = coercePropertyValue(
-    propertyValue.value,
-    defaultProperty.value.type
-  );
-  if (typeof converted === defaultProperty.value.type) {
-    propertyValue.value = converted;
-  }
-}
+// 値が無い場合は既定値を入れ，値の型が定義と異なる場合は定義の型に合わせる
+// （バージョンによって型が異なるプロパティや，外部リソースの更新で定義の型が変わった場合に，入力欄で編集できるようにする）
+watch(
+  () => defaultProperty.value.type,
+  (type) => {
+    const value = propertyValue.value;
+    if (value === void 0) {
+      propertyValue.value = defaultProperty.value.default;
+      return;
+    }
+    const converted = convertPropertyValue(value, type);
+    if (converted !== value) propertyValue.value = converted;
+  },
+  { immediate: true }
+);
 
 /**
  * Propertyの編集に使用するEditerを指定
@@ -96,7 +113,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
 
 <template>
   <q-toggle
-    v-if="typeof propertyValue === 'boolean' || selectEditer() === 'boolean'"
+    v-if="selectEditer() === 'boolean'"
     v-model="propertyValue"
     :label="propertyValue?.toString()"
     :disable="disable"
@@ -106,7 +123,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
   <!-- 半角数字、バリデーションを強制 -->
   <ss-input
     v-else-if="selectEditer() === 'number'"
-    v-model.number="propertyValue"
+    v-model.number="textValue"
     dense
     type="number"
     :autofocus="autofocus"
@@ -130,7 +147,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
     v-else-if="selectEditer() === 'enum'"
     dense
     enable-other
-    v-model="propertyValue"
+    v-model="textValue"
     :options="(defaultProperty as StringServerPropertyAnnotation)?.enum"
     :disable="disable"
     style="padding-bottom: 18px"
@@ -138,7 +155,7 @@ function validationMessage(min?: number, max?: number, step?: number) {
 
   <SsInput
     v-else
-    v-model="propertyValue"
+    v-model="textValue"
     dense
     :autofocus="autofocus"
     :disable="disable"

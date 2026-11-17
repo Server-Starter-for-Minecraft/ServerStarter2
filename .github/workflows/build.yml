@@ -62,6 +62,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile --ignore-scripts
 
+      # スクリプトが使う `app/...` のエイリアスの設定（.quasar/tsconfig.json）を生成する
+      # （postinstall を実行しないため，ここで生成する。生成先は Git の管理対象外のためコミットには含まれない）
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+
       # git config
       - name: git config
         run: |

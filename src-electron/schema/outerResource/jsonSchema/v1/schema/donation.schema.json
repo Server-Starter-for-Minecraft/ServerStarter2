@@ -20,7 +20,8 @@
           },
           "url": {
             "type": "string",
-            "pattern": "^https:\\/\\/"
+            "pattern": "^https:\\/\\/[^\\s/?#]+",
+            "format": "uri"
           },
           "icon": {
             "type": "string",
@@ -40,7 +41,8 @@
               "type": "string",
               "minLength": 1
             },
-            "description": "言語ごとの文言（キーは ja / en-US）"
+            "description": "言語ごとの文言（キーは ja / en-US）",
+            "minProperties": 1
           },
           "visible": {
             "type": "boolean"

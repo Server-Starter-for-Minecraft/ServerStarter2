@@ -5,6 +5,7 @@ import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { $T, $TE } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import {
+  getCandidateProperties,
   getGroupProperties,
   getPropertyDescription,
   getPropertyGroups,
@@ -63,12 +64,17 @@ export const usePropertyStore = defineStore('propertyStore', {
       const getPropertyList = (searchName: string, selectTab: string) => {
         // 検索欄に文字が入った場合は該当するプロパティ全てを返す
         if (searchName !== '') {
+          // タブに表示しうるプロパティ（値の無い定義済みのプロパティを含む）を検索する
+          const candidates = getCandidateProperties(
+            resource,
+            keys(targetProps)
+          );
           // タイトルの検索
-          const searchTitles = keys(targetProps).filter((prop) =>
+          const searchTitles = candidates.filter((prop) =>
             prop.match(searchName)
           );
           // 説明文の検索（外部リソースの説明文を優先し，なければアプリ内の説明文）
-          const searchDescs = keys(targetProps).filter((prop) =>
+          const searchDescs = candidates.filter((prop) =>
             getPropertyDescription(
               resource,
               prop,

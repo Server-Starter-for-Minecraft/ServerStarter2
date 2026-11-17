@@ -6,7 +6,11 @@ import type {
   ServerPropertyDefinitionV1,
   ServerPropertyEntryV1,
 } from 'app/src-electron/schema/outerResource/serverProperties';
-import type { ServerPropertyAnnotation } from 'app/src-electron/schema/serverproperty';
+import {
+  coercePropertyValue,
+  type ServerPropertyAnnotation,
+  type ServerPropertyType,
+} from 'app/src-electron/schema/serverproperty';
 import { builtInGroupKeys, propertyClasses } from './classifications';
 
 /**
@@ -259,7 +263,7 @@ export function getGroupProperties(
         .map((g) => g.id)
         .filter((id) => id !== OTHER_GROUP_ID)
     );
-    return targetKeys.filter(
+    return getCandidateProperties(resource, targetKeys).filter(
       (key) => !groupsOf(resource, key).some((g) => groupIds.has(g))
     );
   }
@@ -271,6 +275,44 @@ export function getGroupProperties(
     (key) => !builtIn.includes(key) && groupsOf(resource, key).includes(groupId)
   );
   return [...builtIn, ...added];
+}
+
+/**
+ * プロパティ画面に表示しうるプロパティ（表示中の値と，定義のあるプロパティ）を返す
+ *
+ * 値の無いプロパティも，入力欄を表示した時点で既定値が入る（タブや検索の対象を揃えるために使う）
+ *
+ * @param resource サーバープロパティの外部リソース
+ * @param targetKeys 表示するワールド（または標準設定）のプロパティ名
+ * @returns プロパティ名（表示中の値の順，その後ろに定義の順）
+ */
+export function getCandidateProperties(
+  resource: ServerPropertiesResource | undefined,
+  targetKeys: string[]
+): string[] {
+  const keys = [...targetKeys, ...Object.keys(resource?.properties ?? {})];
+  return keys.filter((key, idx) => keys.indexOf(key) === idx);
+}
+
+/**
+ * プロパティの値を，プロパティ画面で選んだ定義の型に合わせる
+ *
+ * バージョンによって型が異なるプロパティや，外部リソースの更新で型が変わったプロパティを，
+ * 入力欄（トグル・数値欄・選択式など）で編集できるようにするために使う
+ *
+ * @param value 現在の値
+ * @param type 選んだ定義の型
+ * @returns 型に合わせた値（変換できない場合は元の値）
+ */
+export function convertPropertyValue(
+  value: string | number | boolean,
+  type: ServerPropertyType
+): string | number | boolean {
+  if (typeof value === type) return value;
+  if (type === 'string') return String(value);
+  if (typeof value !== 'string') return value;
+  const converted = coercePropertyValue(value, type);
+  return typeof converted === type ? converted : value;
 }
 
 /**

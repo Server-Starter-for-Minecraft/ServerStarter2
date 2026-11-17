@@ -106,7 +106,7 @@ export class OuterResource<W, R> {
     const writeRes = await this.cacheFile.write(data);
     if (isError(writeRes)) logger.warn(writeRes);
 
-    this.value = await this.def.resolve(wire, this.context());
+    this.value = await this.def.resolve(wire, this.context(true));
     logger.info('updated');
     return this.value;
   }
@@ -120,13 +120,19 @@ export class OuterResource<W, R> {
       else loggers().loadLocal({ key: this.def.key }).warn(cached);
     }
 
-    this.value = await this.def.resolve(wire, this.context());
+    // 起動を遅らせないよう，ローカルの読み込みでは画像も配布元から取得しない（取得は refresh で行う）
+    this.value = await this.def.resolve(wire, this.context(false));
     return this.value;
   }
 
-  private context(): OuterResourceContext {
+  /**
+   * 解決処理に渡す機能を作る
+   *
+   * @param allowNetwork 画像を配布元から取得してよいか（`false` の場合はキャッシュにある画像のみ使う）
+   */
+  private context(allowNetwork: boolean): OuterResourceContext {
     return {
-      loadImage: (source) => this.loadImage(source),
+      loadImage: (source) => this.loadImage(source, allowNetwork),
       warn: (message, detail) =>
         loggers()
           .resolve({ key: this.def.key, ...detail })
@@ -138,8 +144,14 @@ export class OuterResource<W, R> {
    * 画像を読み込み，data URI にして返す
    *
    * URL の画像は一度取得したらキャッシュから読み込む（画像を差し替える場合はファイル名を変える）
+   *
+   * @param source 配布ファイルからの相対パス・https の URL・画像の data URI のいずれか
+   * @param allowNetwork キャッシュに無い画像を配布元から取得してよいか
    */
-  private async loadImage(source: string): Promise<Failable<ImageURI>> {
+  private async loadImage(
+    source: string,
+    allowNetwork: boolean
+  ): Promise<Failable<ImageURI>> {
     if (source.startsWith('data:')) {
       return IMAGE_DATA_URI_REGEX.test(source)
         ? (source as ImageURI)
@@ -175,6 +187,12 @@ export class OuterResource<W, R> {
       if (isValid(cached)) return cached.encodeURI(mimeType);
     }
 
+    if (!allowNetwork) {
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: cachePath.path,
+      });
+    }
     const data = await this.fetcher(url.href);
     if (isError(data)) return data;
     const writeRes = await cachePath.write(data);

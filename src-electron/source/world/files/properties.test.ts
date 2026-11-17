@@ -42,8 +42,17 @@ describe('外部リソースの定義を使った server.properties の読み込
     expect(parsed['changing-type']).toBe('3');
   });
 
-  test.each(['0x10', '1e3', '007', '1.', '+5', '1.50', '9007199254740993'])(
-    '10進数でない数値の表記 %s はユーザーの表記のまま残す',
+  test.each([
+    ['007', 7],
+    ['+5', 5],
+    ['1.50', 1.5],
+  ])('10進数の表記 %s は数値 %d として読み込む', (value, expected) => {
+    const parsed = parseServerProperties(`new-limit=${value}`, definitions);
+    expect(parsed['new-limit']).toBe(expected);
+  });
+
+  test.each(['0x10', '1e3', '1.', '9007199254740993'])(
+    '数値として読むと値が変わる表記 %s はユーザーの表記のまま残す',
     (value) => {
       const parsed = parseServerProperties(`new-limit=${value}`, definitions);
       expect(parsed['new-limit']).toBe(value);

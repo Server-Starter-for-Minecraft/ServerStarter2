@@ -23,7 +23,8 @@
               "type": "string",
               "minLength": 1
             },
-            "description": "言語ごとの文言（キーは ja / en-US）"
+            "description": "言語ごとの文言（キーは ja / en-US）",
+            "minProperties": 1
           }
         },
         "required": [
@@ -56,7 +57,8 @@
               "type": "string",
               "minLength": 1
             },
-            "description": "言語ごとの文言（キーは ja / en-US）"
+            "description": "言語ごとの文言（キーは ja / en-US）",
+            "minProperties": 1
           },
           "definitions": {
             "minItems": 1,
