@@ -10,7 +10,7 @@ import {
   getPropertyAnnotation,
   getPropertyDescription,
   getPropertyGroups,
-  isNotYetIntroduced,
+  isUnavailableInVersion,
   OTHER_GROUP_ID,
   selectPropertyDefinition,
 } from './propertyDefinitions';
@@ -134,35 +134,84 @@ describe('プロパティ画面で使う注釈', () => {
   });
 });
 
-describe('ワールドのバージョンにまだ存在しないプロパティ', () => {
+describe('ワールドのバージョンで存在しないプロパティ', () => {
   const resource = resourceOf({
     'added-in-1.20': {
       definitions: [
         { type: 'boolean', default: true, minecraftVersion: { from: '1.20' } },
       ],
     },
+    'removed-after-1.19': {
+      definitions: [
+        { type: 'boolean', default: true, minecraftVersion: { to: '1.19' } },
+      ],
+    },
+    'unknown-end': {
+      definitions: [
+        { type: 'boolean', default: true, minecraftVersion: { to: '99.0' } },
+      ],
+    },
+    'limited-1.19-1.20': {
+      definitions: [
+        {
+          type: 'boolean',
+          default: true,
+          minecraftVersion: { from: '1.19', to: '1.20' },
+        },
+      ],
+    },
     'level-type': levelType,
   });
+  const unavailable = (
+    key: string,
+    version: string | undefined,
+    versions: readonly string[] = order
+  ) => isUnavailableInVersion(resource, key, version, versions);
 
-  test('すべての定義の対応バージョンより古いワールドでは存在しない', () => {
-    expect(isNotYetIntroduced(resource, 'added-in-1.20', '1.19', order)).toBe(
-      true
-    );
-    expect(isNotYetIntroduced(resource, 'added-in-1.20', '1.20', order)).toBe(
-      false
-    );
+  test('すべての定義の下限より古いワールドでは存在しない（下限のバージョンからは存在する）', () => {
+    expect(unavailable('added-in-1.20', '1.19')).toBe(true);
+    expect(unavailable('added-in-1.20', '1.20')).toBe(false);
   });
 
-  test('下限のない定義がある場合や，ワールドのバージョンが分からない場合は存在するとみなす', () => {
-    expect(isNotYetIntroduced(resource, 'level-type', '1.18', order)).toBe(
-      false
-    );
-    expect(
-      isNotYetIntroduced(resource, 'added-in-1.20', undefined, order)
-    ).toBe(false);
-    expect(isNotYetIntroduced(resource, 'added-in-1.20', '1.19', [])).toBe(
-      false
-    );
+  test('すべての定義の上限より新しいワールドでは存在しない（上限のバージョンまでは存在する）', () => {
+    expect(unavailable('removed-after-1.19', '1.19')).toBe(false);
+    expect(unavailable('removed-after-1.19', '1.20')).toBe(true);
+  });
+
+  test('バージョン一覧に無い新しいバージョンのワールドは，上限を過ぎたものとみなす', () => {
+    expect(unavailable('removed-after-1.19', '99.0')).toBe(true);
+  });
+
+  test('定義が切り替わるだけのプロパティは，どのバージョンでも存在する', () => {
+    for (const version of order) {
+      expect(unavailable('level-type', version)).toBe(false);
+    }
+  });
+
+  test('上限がアプリの知らない（一覧より新しい）バージョンの場合は，上限なしとみなす', () => {
+    expect(unavailable('unknown-end', '1.21')).toBe(false);
+  });
+
+  test('期間を限定したプロパティは，その期間のワールドでのみ存在する', () => {
+    expect(unavailable('limited-1.19-1.20', '1.18.2')).toBe(true);
+    expect(unavailable('limited-1.19-1.20', '1.19')).toBe(false);
+    expect(unavailable('limited-1.19-1.20', '1.20')).toBe(false);
+    expect(unavailable('limited-1.19-1.20', '1.20.1')).toBe(true);
+  });
+
+  test('バージョン一覧に無い新しいワールドでも，下限だけのプロパティは存在する', () => {
+    expect(unavailable('added-in-1.20', '99.0')).toBe(false);
+  });
+
+  test('定義の無いプロパティは，どのバージョンでも存在する', () => {
+    expect(unavailable('custom-key', '1.18')).toBe(false);
+  });
+
+  test('ワールドに依らない場合や，バージョン一覧を読み込めていない場合は存在するとみなす', () => {
+    expect(unavailable('added-in-1.20', undefined)).toBe(false);
+    expect(unavailable('removed-after-1.19', undefined)).toBe(false);
+    expect(unavailable('added-in-1.20', '1.19', [])).toBe(false);
+    expect(unavailable('removed-after-1.19', '1.20', [])).toBe(false);
   });
 });
 

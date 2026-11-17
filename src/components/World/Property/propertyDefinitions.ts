@@ -163,29 +163,37 @@ export function getPropertyAnnotation(
 }
 
 /**
- * ワールドのバージョンにまだ存在しないプロパティか
+ * ワールドのバージョンでは存在しないプロパティか（プロパティ画面に表示しない）
  *
- * すべての定義に対応バージョンの下限（`from`）があり，ワールドがそのどれよりも古い場合に `true` を返す。
- * このようなプロパティは，server.properties に無い場合に既定値で補わない
+ * 対応バージョンの範囲は，存在期間が確認できた場合にのみ明示する前提のため，明示された範囲の外では存在しないものとみなす。
+ * 範囲を明示していない側（上限なし・下限なし）は存在し続けるものとみなし，アプリの対応が遅れてもプロパティが消えないようにする。
+ *
+ * - 未導入：すべての定義に下限（`from`）があり，ワールドがそのどれよりも古い
+ * - 終了：すべての定義に上限（`to`）があり，ワールドがそのどれよりも新しい
+ *   （上限がアプリの知らない（一覧より新しい）バージョンの場合は上限なしとみなす）
  *
  * @param resource サーバープロパティの外部リソース
  * @param key プロパティ名
- * @param versionId ワールドの Minecraft のバージョン（ワールドに依らない場合は `undefined` とし，存在するものとみなす）
+ * @param versionId ワールドの Minecraft のバージョン（ワールドに依らない場合は `undefined` とし，存在するものとみなす。
+ *                  バージョン一覧に無い場合は，一覧より新しいバージョンとみなす）
  * @param order 新しい順に並べたバージョン ID の一覧
  */
-export function isNotYetIntroduced(
+export function isUnavailableInVersion(
   resource: ServerPropertiesResource | undefined,
   key: string,
   versionId: string | undefined,
   order: VersionOrder
 ): boolean {
   const entry = entryOf(resource, key);
-  const rank =
-    versionId === undefined ? undefined : versionRank(order, versionId);
-  if (entry === undefined || rank === undefined) return false;
-  return entry.definitions.every(
+  if (entry === undefined || versionId === undefined) return false;
+  const rank = versionRank(order, versionId) ?? -1;
+  const notYetIntroduced = entry.definitions.every(
     (def) => rank > lowerRank(order, def.minecraftVersion)
   );
+  const ended = entry.definitions.every(
+    (def) => rank < upperRank(order, def.minecraftVersion)
+  );
+  return notYetIntroduced || ended;
 }
 
 /** プロパティ画面のタブ */

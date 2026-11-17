@@ -10,7 +10,8 @@ import { lenientArray, lenientRecord, LocalizedText } from './common';
  * 定義が対応する Minecraft のバージョンの範囲（両端を含む）
  *
  * バージョンは Minecraft のバージョン ID（例：`1.19`・`24w14a`）で指定し，前後関係はバニラの配布一覧の並び順で判定する。
- * 省略した側は範囲の制限がないものとする
+ * 省略した側は範囲の制限がないものとする。
+ * 明示した範囲は存在期間が確認されたものとして扱うため，根拠のある場合にのみ指定する
  */
 export const MinecraftVersionRange = z.object({
   /** この定義を使い始めるバージョン */
@@ -57,8 +58,10 @@ export const ServerPropertyEntryV1 = z.object({
    * バージョンごとの値の定義
    *
    * ワールドのバージョンに合う最初の定義を使い，合う定義がなければ最も近い範囲の定義を使う。
-   * すべての定義に `from` を指定した場合，最も古い `from` より前のバージョンのワールドでは，
-   * server.properties に無いこのプロパティを既定値で補わない（そのバージョンに存在しないプロパティのため）
+   * 範囲は存在期間が確認できた場合にのみ明示する。明示した範囲の外では，プロパティ画面に表示しない
+   * （server.properties の値は残す）。
+   * - すべての定義に `from` を指定した場合：最も古い `from` より前のバージョン
+   * - すべての定義に `to` を指定した場合：最も新しい `to` より後のバージョン（上限なしの定義があれば表示し続ける）
    */
   definitions: z.array(ServerPropertyDefinitionV1).min(1),
 });

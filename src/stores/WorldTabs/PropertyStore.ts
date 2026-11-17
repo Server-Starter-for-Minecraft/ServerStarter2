@@ -9,7 +9,7 @@ import {
   getGroupProperties,
   getPropertyDescription,
   getPropertyGroups,
-  isNotYetIntroduced,
+  isUnavailableInVersion,
 } from 'src/components/World/Property/propertyDefinitions';
 
 const disableProperties = ['level-name'];
@@ -54,12 +54,12 @@ export const usePropertyStore = defineStore('propertyStore', {
       /**
        * 表示しないプロパティか
        *
-       * ワールドのバージョンにまだ存在しないプロパティは，値が無い場合に既定値で補わないよう表示しない
+       * ワールドのバージョンで存在しないプロパティは，server.properties に値があっても表示しない（値はファイルに残す）
+       * （新規ワールドは標準プロパティをすべて持ち，入力欄の表示時にも既定値が入るため，値の有無では判定しない）
        */
       const isHidden = (prop: string) =>
         disableProperties.includes(prop) ||
-        (!Object.hasOwn(targetProps, prop) &&
-          isNotYetIntroduced(resource, prop, versionId, order));
+        isUnavailableInVersion(resource, prop, versionId, order);
 
       const getPropertyList = (searchName: string, selectTab: string) => {
         // 検索欄に文字が入った場合は該当するプロパティ全てを返す
