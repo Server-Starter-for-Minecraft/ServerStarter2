@@ -13,6 +13,7 @@ import {
   PluginData,
 } from '../schema/filedata';
 import { OsPlatform } from '../schema/os';
+import { OuterResources } from '../schema/outerResource';
 import { Player } from '../schema/player';
 import { GroupProgress } from '../schema/progress';
 import {
@@ -87,6 +88,9 @@ export interface API extends IAPI {
 
     /** アップデートがある際の通知 */
     NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
+
+    /** 外部リソースを配布元の最新の内容に更新できた際に，すべての外部リソースを通知する */
+    UpdateOuterResources: (resources: OuterResources) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
@@ -128,6 +132,9 @@ export interface API extends IAPI {
 
     /** Backend側から静的なデータを取得する */
     GetStaticResouce: () => Promise<StaticResouce>;
+
+    /** 現在の外部リソース（キャッシュまたは同梱の内容）を取得する */
+    GetOuterResources: () => Promise<OuterResources>;
 
     /** SystemSettingsを(再)取得 */
     GetSystemSettings: () => Promise<SystemSettings>;

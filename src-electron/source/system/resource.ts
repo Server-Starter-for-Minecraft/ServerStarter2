@@ -14,26 +14,6 @@ if (import.meta.vitest) {
     // colors
     expect(staticResources.minecraftColors.light_blue).toBe('#3AB3DA');
 
-    // properties
-    expect(staticResources.properties['white-list']).toMatchObject({
-      default: false,
-      type: 'boolean',
-    });
-    expect(
-      staticResources.properties['function-permission-level']
-    ).toMatchObject({
-      default: 2,
-      max: 4,
-      min: 1,
-      step: 1,
-      type: 'number',
-    });
-    expect(staticResources.properties['difficulty']).toMatchObject({
-      default: 'easy',
-      enum: ['peaceful', 'easy', 'normal', 'hard'],
-      type: 'string',
-    });
-
     // paths
     expect(staticResources.paths.log.endsWith('log')).toBe(true);
   });

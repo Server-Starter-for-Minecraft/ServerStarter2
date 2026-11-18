@@ -30,6 +30,9 @@ export const enUSError: MessageSchema['error'] = {
         title: 'To many requests have sent',
         desc: 'Wait a few moments and do again',
       },
+      unsupported: {
+        title: 'Cannot get data from {url}',
+      },
     },
     zip: {
       invalidZipFile: {

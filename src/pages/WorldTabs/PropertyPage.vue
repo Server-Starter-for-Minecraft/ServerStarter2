@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
-import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
+import { fromEntries, keys } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
@@ -10,6 +10,10 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { getLockedProperties } from 'src/components/World/Property/lockedProperties';
+import {
+  getPropertyAnnotation,
+  isUnavailableInVersion,
+} from 'src/components/World/Property/propertyDefinitions';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -22,13 +26,44 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const propertyStore = usePropertyStore();
 
-// システムが規定するデフォルトプロパティ
-const initProperty: ServerProperties = fromEntries(
-  toEntries(sysStore.staticResouces.properties).map((keyVal) => [
-    keyVal[0],
-    keyVal[1].default,
-  ])
-);
+/** ワールドの Minecraft のバージョン（バージョンが不明なワールドでは `undefined`） */
+const versionId = computed(() => {
+  const version = mainStore.world?.version;
+  return version && 'id' in version ? version.id : undefined;
+});
+
+/**
+ * ワールドのバージョンで存在しない（未導入・終了した）プロパティか
+ *
+ * このようなプロパティは画面に表示せず，リセットでも値を変更しない（server.properties の値は残す）
+ */
+function isUnavailable(key: string) {
+  return isUnavailableInVersion(
+    sysStore.outerResources.serverProperties,
+    key,
+    versionId.value,
+    sysStore.vanillaVersionOrder
+  );
+}
+
+/**
+ * システムが規定するデフォルトプロパティ
+ *
+ * ワールドのバージョンに合う定義の既定値とし，ワールドのバージョンで存在しないプロパティは含めない
+ */
+const initProperty = computed<ServerProperties>(() => {
+  const resource = sysStore.outerResources.serverProperties;
+  const order = sysStore.vanillaVersionOrder;
+  const activeKeys = keys(resource.properties).filter(
+    (key) => !isUnavailable(key)
+  );
+  return fromEntries(
+    activeKeys.map((key) => [
+      key,
+      getPropertyAnnotation(resource, key, versionId.value, order).default,
+    ])
+  );
+});
 
 // 入力領域のスクロールバーの制御
 const scrollAreaRef = ref();
@@ -44,7 +79,9 @@ const lockedProperties = computed(() =>
 );
 
 /**
- * 全てのServer Propertyを基本設定に戻す（編集できないプロパティは変更しない）
+ * 全てのServer Propertyを基本設定に戻す
+ *
+ * 編集できないプロパティと，ワールドのバージョンで存在しない（画面に表示しない）プロパティは変更しない
  */
 function resetAll() {
   $q.dialog({
@@ -56,7 +93,9 @@ function resetAll() {
     } as dangerDialogProp,
   }).onOk(() => {
     Object.keys(sysStore.systemSettings.world.properties).map((key) => {
-      if (lockedProperties.value[key] !== undefined) return;
+      if (lockedProperties.value[key] !== undefined || isUnavailable(key)) {
+        return;
+      }
       if (mainStore.world && isValid(mainStore.world.properties)) {
         mainStore.world.properties[key] =
           sysStore.systemSettings.world.properties[key];
@@ -113,6 +152,7 @@ function scrollTop() {
             <SettingsView
               v-model="mainStore.world.properties"
               :locked-properties="lockedProperties"
+              :version-id="versionId"
             />
           </q-scroll-area>
         </div>
@@ -126,7 +166,7 @@ function scrollTop() {
           v-if="mainStore.world"
           :label="$t('property.reset')"
           color="primary"
-          @click="mainStore.world.properties = initProperty"
+          @click="mainStore.world.properties = { ...initProperty }"
           class="full-width"
         />
       </div>

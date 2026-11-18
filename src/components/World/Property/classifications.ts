@@ -1,18 +1,28 @@
-export type pGroupKey =
-  | 'base'
-  | 'player'
-  | 'server'
-  | 'generator'
-  | 'spawning'
-  | 'world'
-  | 'network'
-  | 'rcon-query'
-  | 'command'
-  | 'resourcepack'
-  | 'security'
-  | 'other';
+/**
+ * アプリ内のプロパティ画面のタブ（表示順。「その他」は除く）
+ *
+ * 外部リソースでタブを定義していない場合（配布元から取得できない場合など）に使う
+ */
+export const builtInGroupKeys = [
+  'base',
+  'player',
+  'server',
+  'generator',
+  'spawning',
+  'world',
+  'network',
+  'rcon-query',
+  'command',
+  'resourcepack',
+  'security',
+] as const;
 
-export const propertyClasses: Record<pGroupKey, string[]> = {
+/**
+ * アプリ内のタブごとのプロパティの分類
+ *
+ * 外部リソースでタブを指定していないプロパティはこの分類に従う
+ */
+export const propertyClasses: Readonly<Record<string, readonly string[]>> = {
   base: ['difficulty', 'gamemode'],
   player: [
     'difficulty',
@@ -78,5 +88,4 @@ export const propertyClasses: Record<pGroupKey, string[]> = {
     'require-resource-pack',
   ],
   security: ['enforce-secure-profile', 'enforce-whitelist', 'white-list'],
-  other: [],
 };
