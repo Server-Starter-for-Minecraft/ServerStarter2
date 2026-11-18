@@ -10,13 +10,19 @@ export type ServerPropertyType = 'string' | 'boolean' | 'number';
  * 数値として扱える表記か
  *
  * Minecraft と同じく10進数の表記（`007`・`+5`・`1.50` を含む）を数値として扱う。
- * `0x10`・`1e3` など Minecraft が数値として読まない表記と，精度を超えて値が変わる整数は数値として扱わない
+ * `0x10`・`1e3` など Minecraft が数値として読まない表記と，精度を超えて値が変わる表記
+ * （`9007199254740993`・`9007199254740993.0` など）は数値として扱わない
  * （数値にすると保存時にユーザーの値が変わるため）
  */
 const isDecimalNumber = (text: string) => {
-  if (!/^[+-]?\d+(\.\d+)?$/.test(text)) return false;
-  const num = Number(text);
-  return text.includes('.') ? Number.isFinite(num) : Number.isSafeInteger(num);
+  const match = /^[+-]?(\d+)(?:\.(\d+))?$/.exec(text);
+  if (!match) return false;
+  // 符号・整数部の先頭の0・小数部の末尾の0を除いた表記が，数値に変換して書き出した表記と一致すれば値は変わらない
+  // （精度を超えると丸められて一致せず，指数表記になる大きさの値も一致しない）
+  const integer = match[1]!.replace(/^0+(?=\d)/, '');
+  const fraction = (match[2] ?? '').replace(/0+$/, '');
+  const normalized = fraction ? `${integer}.${fraction}` : integer;
+  return String(Math.abs(Number(text))) === normalized;
 };
 
 /**
