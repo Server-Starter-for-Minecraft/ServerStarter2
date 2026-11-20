@@ -41,7 +41,11 @@ export const serverAllAdditionalFiles = {
       files: ServerAdditionalFiles<T>,
       values: AllFileData<T>[] | ErrorMessage
     ): Promise<void> {
-      if (isError(values)) return;
+      // 読み込めなかった種類のファイルは保存しない（読み込みのエラーは呼び出し元へ返す）
+      if (isError(values)) {
+        errors.push(values);
+        return;
+      }
       const result = await files.save(cwdPath, values);
       errors.push(...result.errors);
       if (isError(result.value)) errors.push(result.value);

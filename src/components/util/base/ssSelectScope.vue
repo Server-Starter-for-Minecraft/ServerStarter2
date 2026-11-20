@@ -9,7 +9,7 @@ interface Prop {
   loading?: boolean;
 }
 
-const prop = defineProps<Prop>();
+defineProps<Prop>();
 const model = defineModel();
 </script>
 

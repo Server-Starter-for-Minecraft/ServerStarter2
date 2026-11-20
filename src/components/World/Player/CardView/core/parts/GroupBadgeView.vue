@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { showUnexpectedError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { UUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {

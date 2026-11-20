@@ -3,6 +3,8 @@ import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { setOpenDialogFunc } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T, setI18nFunc } from './i18n/utils/tFunc';
@@ -22,8 +24,6 @@ import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
-import { showUnexpectedError } from 'src/components/Error/Error';
-import { setOpenDialogFunc } from 'src/components/Error/Error';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 

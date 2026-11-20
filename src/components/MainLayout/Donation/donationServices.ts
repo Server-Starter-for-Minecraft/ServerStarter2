@@ -79,7 +79,6 @@ export const donationServices: readonly DonationService[] = [
  * @returns `?service={識別子}` 付きの公式ホームページの URL
  */
 export function getDonationPageUrl(service: DonationService): string {
-  const url = new URL(DONATE_PAGE_URL);
-  url.searchParams.set('service', service.id);
-  return url.toString();
+  const query = new URLSearchParams({ service: service.id });
+  return `${DONATE_PAGE_URL}?${query.toString()}`;
 }

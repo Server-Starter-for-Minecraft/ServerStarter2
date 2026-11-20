@@ -27,7 +27,7 @@ export class ReadyNeoForgeVersion extends ReadyVersion<NeoForgeVersion> {
     super(version, cacheFolder);
   }
 
-  protected async generateVersionJson(progress?: GroupProgressor) {
+  protected async generateVersionJson(_progress?: GroupProgressor) {
     // バニラの情報をもとにNeoForgeのversionJsonを生成
     const vanillaVerJson = await getVanillaVersionJson(
       this._version.id,

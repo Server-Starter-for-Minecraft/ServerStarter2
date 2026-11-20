@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onBeforeMount, Ref, ref } from 'vue';
+import { checkError } from 'src/error/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { OpLevel, Player } from 'app/src-electron/schema/player';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 import OnlineBadge from 'src/components/World/Player/utils/OnlineBadge.vue';
 import OpPanel from './OpPanel.vue';

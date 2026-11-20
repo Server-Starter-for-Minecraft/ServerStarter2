@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { Failable } from '../schema/error';
 import { mainPath } from '../source/const';
 import { Path } from '../util/binary/path';
@@ -60,7 +61,9 @@ export async function loadUpdateAttempt(
 ): Promise<UpdateAttempt | undefined> {
   if (!(await path.exists())) return undefined;
   const attempt = await path.readJson(UpdateAttempt);
-  return isError(attempt) ? undefined : attempt;
+  return isError(attempt)
+    ? ignoreError(attempt, '読み込めない実行記録は，記録が無いものとして扱う')
+    : attempt;
 }
 
 /**

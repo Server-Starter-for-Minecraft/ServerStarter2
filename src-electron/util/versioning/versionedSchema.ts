@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { isError } from '../error/error';
+import { safeExec } from '../error/failable';
 
 /** 設定ファイルにスキーマのバージョンを記録するキー */
 export const SCHEMA_VERSION_KEY = 'schemaVersion';
@@ -88,11 +90,9 @@ export class VersionedSchema<T extends object> {
    * @returns 検証の結果（zodのsafeParseと同じ形式）
    */
   safeParse(raw: unknown): z.ZodSafeParseResult<T> {
-    let migrated: RawSettings;
-    try {
-      migrated = this.migrate(raw);
-    } catch (e) {
-      const reason = e instanceof Error ? e.message : String(e);
+    const migrated = safeExec(() => this.migrate(raw));
+    if (isError(migrated)) {
+      const reason = JSON.stringify(migrated.arg);
       return {
         success: false,
         // 変換に失敗した時点では最新のスキーマとして検証していないため、キャストでエラーの型を合わせる

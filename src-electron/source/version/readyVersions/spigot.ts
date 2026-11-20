@@ -8,6 +8,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { javaEncodingToUtf8, VersionJson } from './utils/versionJson';
@@ -236,8 +237,10 @@ async function getServerJarFromBuildTools(
   }
 
   // 余計なファイルを削除
-  // 削除に失敗しても次回のビルド開始時に改めて削除するため，結果は無視する
-  await buildToolsPath.parent().remove();
+  const removed = await buildToolsPath.parent().remove();
+  if (isError(removed)) {
+    ignoreError(removed, '削除に失敗しても次回のビルド開始時に改めて削除する');
+  }
 
   p?.delete();
   if (!(await targetJarPath.exists())) {

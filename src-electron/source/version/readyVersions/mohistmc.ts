@@ -126,7 +126,7 @@ if (import.meta.vitest) {
 
       const res = await readyOperator.completeReady4VersionFiles(
         outputPath,
-        async (runtime) => {}
+        async (_runtime) => {}
       );
       expect(isError(res)).toBe(false);
       if (isError(res)) return res;

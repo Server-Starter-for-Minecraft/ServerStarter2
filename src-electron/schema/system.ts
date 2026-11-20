@@ -126,3 +126,6 @@ export const SystemSettings = z.object({
   system: SystemSystemSetting,
 });
 export type SystemSettings = z.infer<typeof SystemSettings>;
+
+/** システム設定の既定値（設定ファイルが読み込めない場合に使う） */
+export const DEFAULT_SYSTEM_SETTINGS: SystemSettings = SystemSettings.parse({});

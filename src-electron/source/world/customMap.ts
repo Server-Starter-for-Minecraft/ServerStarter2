@@ -10,12 +10,15 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import { versionContainer } from '../../core/setup';
+import { ServerAdditionalFiles } from '../additionalContents/base';
 import { datapackFiles } from '../additionalContents/datapack/datapack';
 import { modFiles } from '../additionalContents/mod/mod';
 import { pluginFiles } from '../additionalContents/plugin/plugin';
 import { LEVEL_NAME, unzipPath } from '../const';
+import { sourceLoggers } from '../sourceLogger';
 import { WorldSettings } from './files/json';
 import {
   SERVER_PROPERTIES_PATH,
@@ -93,7 +96,9 @@ export async function loadCustomMap(
     // /icon.pngを読み込み
     const iconPath = path.child('icon.png');
     const iconData = await iconPath.read();
-    icon = isValid(iconData) ? iconData : undefined;
+    icon = isValid(iconData)
+      ? iconData
+      : ignoreError(iconData, 'アイコンが無いワールドはアイコンなしで取り込む');
   } else {
     // zipの場合
     if (path.extname() !== '.zip') {
@@ -111,9 +116,9 @@ export async function loadCustomMap(
 
     // /icon.pngを読み込み
     const iconFile = await findIconPngInZip(zip);
-    if (isValid(iconFile)) {
-      icon = iconFile;
-    }
+    icon = isValid(iconFile)
+      ? iconFile
+      : ignoreError(iconFile, 'アイコンが無いワールドはアイコンなしで取り込む');
   }
 
   if (isError(dat)) return dat;
@@ -198,7 +203,13 @@ async function resolveCustomMapVersion(
 ): Promise<VanillaVersion | undefined> {
   for (const useCache of [true, false]) {
     const versions = await versionContainer.listVersions('vanilla', useCache);
-    if (isError(versions)) continue;
+    if (isError(versions)) {
+      ignoreError(
+        versions,
+        'バージョン一覧を取得できない場合は，次の取得方法で探す'
+      );
+      continue;
+    }
     const found = findVanillaVersion(versionName, versions);
     if (found) return found;
   }
@@ -225,53 +236,57 @@ function findVanillaVersion(
 async function importCustomMapDir(
   sourcePath: Path,
   worldPath: Path
-): Promise<ServerProperties | undefined> {
-  await Promise.all([
+): Promise<Failable<ServerProperties | undefined>> {
+  const [copied] = await Promise.all([
     // ディレクトリをコピー
     sourcePath.copyTo(worldPath),
     // シングルプレイで使用していたmod/plugin/datapackをキャッシュに追加
-    cacheLocalMods(sourcePath),
-    cacheLocalPlugins(sourcePath),
-    cacheLocalDatapacks(sourcePath),
+    cacheLocalContents(modFiles, sourcePath.parent(2).child('mods')),
+    cacheLocalContents(pluginFiles, sourcePath.parent(2).child('plugins')),
+    cacheLocalContents(datapackFiles, sourcePath.child('datapacks')),
   ]);
+  if (isError(copied)) return copied;
 
   if (!(await sourcePath.child(SERVER_PROPERTIES_PATH).exists())) return;
 
   // ワールドデータ内部にserver.propertiesが存在する場合
   const props = await serverPropertiesFile.load(sourcePath);
-  if (isError(props)) return;
-
-  return props;
+  return isError(props)
+    ? ignoreError(
+        props,
+        '読めない server.properties は使わずにワールドを取り込む'
+      )
+    : props;
 }
 
-/** ローカルで使われていたであろうMOD一覧をキャッシュにコピー */
-async function cacheLocalMods(sourcePath: Path): Promise<void> {
-  const paths = await sourcePath.parent(2).child('mods').iter();
-  if (isError(paths)) return;
+/**
+ * ローカルで使われていたであろうMOD・Plugin・Datapackの一覧をキャッシュにコピーする
+ *
+ * キャッシュへの追加は取り込みを補助するもののため，失敗してもワールドの取り込みは続ける（失敗はログに残す）
+ *
+ * @param files 追加するコンテンツの種類
+ * @param dir コンテンツが置かれているディレクトリ
+ */
+async function cacheLocalContents<T extends Record<string, any>>(
+  files: ServerAdditionalFiles<T>,
+  dir: Path
+): Promise<void> {
+  const paths = await dir.iter();
+  if (isError(paths)) {
+    ignoreError(
+      paths,
+      'シングルプレイで使っていない種類のコンテンツはフォルダが無い'
+    );
+    return;
+  }
 
-  const load = async (path: Path) => modFiles.loadNew(path);
-  const mods = (await asyncMap(paths, load)).filter(isValid);
-  await asyncMap(mods, async (data) => modFiles.appendCache(data));
-}
-
-/** ローカルで使われていたであろうPlugin一覧をキャッシュにコピー */
-async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
-  const paths = await sourcePath.parent(2).child('plugins').iter();
-  if (isError(paths)) return;
-
-  const load = async (path: Path) => pluginFiles.loadNew(path);
-  const plugins = (await asyncMap(paths, load)).filter(isValid);
-  await asyncMap(plugins, async (data) => pluginFiles.appendCache(data));
-}
-
-/** ローカルで使われていたであろうDatapack一覧をキャッシュにコピー */
-async function cacheLocalDatapacks(sourcePath: Path): Promise<void> {
-  const paths = await sourcePath.child('datapacks').iter();
-  if (isError(paths)) return;
-
-  const load = async (path: Path) => datapackFiles.loadNew(path);
-  const datapacks = (await asyncMap(paths, load)).filter(isValid);
-  await asyncMap(datapacks, async (data) => datapackFiles.appendCache(data));
+  const loaded = await asyncMap(paths, async (path) => files.loadNew(path));
+  const cached = await asyncMap(loaded.filter(isValid), async (data) =>
+    files.appendCache(data)
+  );
+  for (const error of [...loaded, ...cached].filter(isError)) {
+    sourceLoggers().world.customMap({ dir: dir.path }).warn(error);
+  }
 }
 
 /** CustomMapのデータでワールドを上書きする */
@@ -286,8 +301,11 @@ async function importCustomMapZip(
   if (isError(datFile)) return datFile;
   const innerPath = datFile[0];
 
-  // 一時ディレクトリを削除（削除失敗がユーザーに影響しないため無視）
-  await unzipPath.remove();
+  // 前回の一時ディレクトリが残っていれば削除する
+  const cleaned = await unzipPath.remove();
+  if (isError(cleaned)) {
+    ignoreError(cleaned, '一時ディレクトリの削除の失敗はユーザーに影響しない');
+  }
 
   // zipを一時パスに展開
   const extracted = await zip.extract(unzipPath);
@@ -301,7 +319,12 @@ async function importCustomMapZip(
 
   if (await serverPropertiesPath.exists()) {
     const newProps = await serverPropertiesFile.load(unzipPath);
-    if (isValid(newProps)) props = newProps;
+    props = isValid(newProps)
+      ? newProps
+      : ignoreError(
+          newProps,
+          '読めない server.properties は使わずにワールドを取り込む'
+        );
   }
   // ワールドデータ内部にserver.propertiesが存在する場合
 
@@ -313,12 +336,24 @@ async function importCustomMapZip(
   if (await unzipPath.exists()) {
     const targetPath = worldPath.parent().child(zipPath.stemname());
     if (!(await targetPath.exists())) {
-      await unzipPath.moveTo(targetPath);
+      const moved = await unzipPath.moveTo(targetPath);
+      if (isError(moved)) {
+        ignoreError(
+          moved,
+          'ワールド以外のデータは，移動できなくても取り込みに影響しない'
+        );
+      }
     }
   }
 
-  // 一時ディレクトリを削除（削除失敗がユーザーに影響しないため無視）
-  await unzipPath.remove();
+  // 一時ディレクトリを削除
+  const removed = await unzipPath.remove();
+  if (isError(removed)) {
+    ignoreError(
+      removed,
+      '一時ディレクトリの削除の失敗はユーザーに影響しない（次回の取り込み時にも削除する）'
+    );
+  }
 
   return props;
 }

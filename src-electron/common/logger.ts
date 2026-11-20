@@ -1,4 +1,3 @@
-import { randomInt } from 'crypto';
 import dayjs, { type Dayjs } from 'dayjs';
 // Electron外(スクリプト・テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
 import * as electron from 'electron';
@@ -9,14 +8,15 @@ import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { onQuit } from '../lifecycle/lifecycle';
 import { logDir } from '../source/const';
 import { Path } from '../util/binary/path';
-import { isError } from '../util/error/error';
+import { isError, isValid } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
 import { isValidIP } from '../util/network/ip';
+import { randomInt } from '../util/random/random';
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
 const LATEST = 'latest';
 const EXTs = ['.log', '.truncate.log'];
-const TMP_LOG = `tmp_${randomInt(2 ** 31)}`;
+const TMP_LOG = `tmp_${randomInt(0, 2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
 
 const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
@@ -169,10 +169,17 @@ async function archiveLog(...logPaths: Path[]) {
         const firstColonIndex = path.basename().indexOf('.');
         const newExt = path.basename().substring(firstColonIndex);
         const newLogPath = path.parent().child(`${newlogName}${newExt}`);
-        await path.rename(newLogPath);
-        return newLogPath;
+        const renamed = await path.rename(newLogPath);
+        // 名前を変更できなかったログはアーカイブしない（次回の起動時に再度アーカイブを試みる）
+        return isError(renamed) ? renamed : newLogPath;
       })
     );
+    const renameError = newPaths.find(isError);
+    if (renameError !== undefined) {
+      rootLogger.logger.archive().warn(renameError);
+      return;
+    }
+    const archivedPaths = newPaths.filter(isValid);
     // utils/gzを使うと，GzipクラスとPathクラスが循環参照となるため使用しない
     await c(
       {
@@ -180,23 +187,42 @@ async function archiveLog(...logPaths: Path[]) {
         file: archivePath.path,
         cwd: logPaths[0].parent().path,
       },
-      newPaths.map((path) => path.basename())
+      archivedPaths.map((path) => path.basename())
     );
-    await Promise.all(newPaths.map(async (path) => path.remove()));
+    await removeLogFiles(archivedPaths);
   }
 
   // 一週間前のログファイルとTMPファイルを削除
   const thresholdDate = dayjs().subtract(7, 'd');
   const paths = await logDir.iter();
-  if (isError(paths)) return;
+  if (isError(paths)) {
+    rootLogger.logger.archive().warn(paths);
+    return;
+  }
+  const expired: Path[] = [];
   for (const path of paths) {
     if (!path.path.endsWith(ARCHIVE_EXT)) continue;
     if (path.basename().startsWith('tmp')) {
-      await path.remove();
+      expired.push(path);
       continue;
     }
     const updateDate = await path.lastUpdateTime();
-    if (updateDate.isBefore(thresholdDate)) await path.remove();
+    if (updateDate.isBefore(thresholdDate)) expired.push(path);
+  }
+  await removeLogFiles(expired);
+}
+
+/**
+ * ログのファイルを削除する
+ *
+ * 削除できなくても次回の起動時に再度削除を試みるため，失敗はログに残すのみとする
+ *
+ * @param paths 削除するファイル
+ */
+async function removeLogFiles(paths: Path[]) {
+  const results = await Promise.all(paths.map(async (path) => path.remove()));
+  for (const result of results.filter(isError)) {
+    rootLogger.logger.archive().warn(result);
   }
 }
 

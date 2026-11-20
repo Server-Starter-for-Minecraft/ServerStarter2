@@ -1,7 +1,8 @@
-import { z, ZodType } from 'zod';
+import { ZodType } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isError, isValid } from 'app/src-electron/util/error/error';
+import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 import { AllVersion, Version, VersionType } from '../../../schema/version';
 import { getVersionMainfest } from './manifest';
@@ -60,7 +61,11 @@ export abstract class VersionListLoader<T extends VersionType> {
    */
   protected async sortIds(ids: string[]) {
     const manifest = await getVersionMainfest(this.cachePath, true);
-    if (isError(manifest)) return;
+    if (isError(manifest)) {
+      // 並び替えできなくても一覧は使えるため，取得した順のままとする
+      ignoreError(manifest, 'Manifest を取得できない場合は並び替えない');
+      return;
+    }
 
     // Manifest掲載のバージョン順を取得
     const entries: [string, number][] = manifest.versions.map(
@@ -86,7 +91,8 @@ export async function getVersionlist<T extends VersionType>(
 ): Promise<Failable<AllVersion<T>>> {
   if (useCache) {
     const cacheRes = await loader.getFromCache();
-    if (isValid(cacheRes)) return cacheRes;
+    if (!isError(cacheRes)) return cacheRes;
+    ignoreError(cacheRes, 'キャッシュを読み込めない場合は URL から取得する');
   }
 
   // cacheを利用しなかった or cacheの読み取りに失敗した 場合はURLからデータを取得

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { safeExec } from 'app/src-electron/util/error/failable';
 import {
   WorldSettings,
   worldSettingsSchema,
@@ -117,7 +118,7 @@ export class GithubBlob {
     let data: Failable<unknown>;
     switch (blobRes.encoding) {
       case 'utf-8':
-        data = JSON.parse(blobRes.content);
+        data = safeExec((): unknown => JSON.parse(blobRes.content));
         break;
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);

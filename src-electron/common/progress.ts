@@ -1,7 +1,7 @@
 import { UUID } from 'app/src-electron/schema/brands';
 import { ProgressMessage } from 'app/src-electron/schema/progressMessage';
 import { WorldID } from 'app/src-electron/schema/world';
-import { genUUID } from 'app/src-electron/util/random/uuid';
+import { genUUIDOf } from 'app/src-electron/util/random/uuid';
 import { api } from '../core/api';
 import {
   ConsoleProgress,
@@ -19,7 +19,7 @@ export abstract class Progressor<T extends Progress> {
 
   constructor(parent?: GroupProgressor) {
     this.parent = parent;
-    this.uuid = UUID.parse(genUUID());
+    this.uuid = genUUIDOf(UUID);
   }
 
   protected update() {

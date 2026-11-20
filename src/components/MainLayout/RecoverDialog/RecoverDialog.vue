@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { checkError } from 'src/error/error';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import {
@@ -8,7 +9,6 @@ import {
   updateBackWorld,
   updateWorld,
 } from 'src/stores/WorldStore';
-import { checkError } from 'src/components/Error/Error';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import { RecoverDialogProp } from './iRecoverDialog';
 

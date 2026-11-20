@@ -2,6 +2,7 @@
 import { ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent } from 'quasar';
+import { ignoreError } from 'src/error/error';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import SsI18nT from 'src/components/util/base/ssI18nT.vue';
@@ -28,6 +29,7 @@ async function validateWorldName(name: string) {
     name
   );
   if (isError(res)) {
+    ignoreError(res, '使えない名前であることを入力欄に表示する');
     isValidName.value = false;
     return t('shareWorld.newRemote.unavailName');
   } else {
@@ -53,7 +55,8 @@ async function setRemote() {
     false
   );
 
-  if (isValid(res)) {
+  // 失敗した場合は setRemoteWorld の中でエラーを表示するため，ダイアログを開いたままにする
+  if (res !== undefined && isValid(res.value)) {
     onDialogOK();
   }
 }

@@ -2,7 +2,8 @@ import * as child_process from 'child_process';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { onQuit } from '../../lifecycle/lifecycle';
 import { errorMessage } from '../error/construct';
-import { fromRuntimeError } from '../error/error';
+import { fromRuntimeError, isError } from '../error/error';
+import { safeExec } from '../error/failable';
 import { sleep } from '../promise/sleep';
 import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
@@ -69,11 +70,8 @@ function promissifyProcess(
     if (process.exitCode === null) {
       // killの前処理
       await Promise.any([beforeKill(promise), sleep(beforeKillTimeout)]);
-      try {
-        process.kill(signal);
-      } catch (e) {
-        logger.warn('failed to kill process');
-      }
+      const killed = safeExec(() => process.kill(signal));
+      if (isError(killed)) logger.warn('failed to kill process', killed);
     }
   };
 

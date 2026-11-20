@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { checkError } from 'src/error/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { checkError } from 'src/components/Error/Error';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 
 interface Prop {

@@ -20,7 +20,7 @@ interface Prop {
   onRegisterClick?: (remoteData: RemoteFolder) => void;
   worldName?: string;
 }
-const prop = defineProps<Prop>();
+defineProps<Prop>();
 const remote = defineModel<GithubRemoteSetting>({ required: true });
 
 const $q = useQuasar();

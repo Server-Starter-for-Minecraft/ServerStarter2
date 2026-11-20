@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
-import { Runtime } from 'app/src-electron/schema/runtime';
 import { PapermcVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData, Hash } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
@@ -160,7 +159,7 @@ if (import.meta.vitest) {
 
       const res = await readyOperator.completeReady4VersionFiles(
         outputPath,
-        async (runtime) => {}
+        async (_runtime) => {}
       );
       expect(isError(res)).toBe(false);
       if (isError(res)) return;

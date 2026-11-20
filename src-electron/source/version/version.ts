@@ -142,7 +142,8 @@ export class VersionContainer {
       const newEula = await eulaAgreementAction(currentEula.url);
       if (isError(newEula)) return newEula;
       const newEulaValue = newEula;
-      await setEulaAgreement(eulaPath, newEulaValue, progress);
+      const saved = await setEulaAgreement(eulaPath, newEulaValue, progress);
+      if (isError(saved)) return saved;
       if (newEulaValue === false)
         return errorMessage.core.minecraftEULANotAccepted();
     }
