@@ -21,7 +21,7 @@ export async function getBackUpPath(
 ): Promise<Path> {
   const time = new Date(getCurrentTimestamp());
   const dateString = formatDate(time);
-  const directory = (await worldContainerToPath(container)).child(
+  const directory = worldContainerToPath(container).child(
     BACKUP_DIRECTORY_NAME
   );
 

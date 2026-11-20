@@ -59,7 +59,7 @@ export class ReadyFabricVersion extends ReadyVersion<FabricVersion> {
 
     // Jarをキャッシュ先に書き出して終了
     p?.delete();
-    return (await getJarPath(this.cachePath)).write(downloadJar);
+    return getJarPath(this.cachePath).write(downloadJar);
   }
 
   get serverID(): string {
@@ -120,12 +120,10 @@ if (import.meta.vitest) {
       if (isError(res)) return;
 
       // 戻り値の検証
-      expect((await res.getCommand({ jvmArgs: ['replaceArg'] }))[0]).toBe(
-        'replaceArg'
-      );
+      expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
 
       // ファイルの設置状況の検証
-      expect(await (await getJarPath(outputPath)).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
       // expect((await outputPath.child('libraries').exists())).toBe(true);
 
@@ -134,10 +132,8 @@ if (import.meta.vitest) {
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(await (await getJarPath(outputPath)).exists()).toBe(false);
-      expect(cachePath && (await (await getJarPath(cachePath)).exists())).toBe(
-        true
-      );
+      expect(await getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && (await getJarPath(cachePath).exists())).toBe(true);
     });
   });
 }

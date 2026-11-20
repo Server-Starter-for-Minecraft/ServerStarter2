@@ -84,7 +84,7 @@ export class RuntimeContainer {
     useJavaw: boolean,
     progress?: GroupProgressor
   ): Promise<Failable<Path>> {
-    const metaPath = await this.metaPath(runtime, osPlatform);
+    const metaPath = this.metaPath(runtime, osPlatform);
 
     // すでにインストール済み
     const current = await this.checkExists(metaPath, useJavaw);
@@ -143,9 +143,9 @@ export class RuntimeContainer {
     if (isError(refInstallResult)) return refInstallResult;
 
     // 参照しているメタファイルの内容をコピー
-    const copied = await (
-      await this.metaPath(refRuntime, osPlatform)
-    ).copyTo(await this.metaPath(runtime, osPlatform));
+    const copied = await this.metaPath(refRuntime, osPlatform).copyTo(
+      this.metaPath(runtime, osPlatform)
+    );
     if (isError(copied)) return copied;
 
     return refInstallResult;
@@ -158,7 +158,7 @@ export class RuntimeContainer {
     runtime: Runtime,
     osPlatform: OsPlatform
   ): Promise<Failable<void>> {
-    const metapath = await this.metaPath(runtime, osPlatform);
+    const metapath = this.metaPath(runtime, osPlatform);
     if (!(await metapath.exists())) return;
 
     const _metaJson = await metapath.readJson(RuntimeMeta);
@@ -204,10 +204,7 @@ export class RuntimeContainer {
     return binPath;
   }
 
-  private async metaPath(
-    runtime: Runtime,
-    osPlatform: OsPlatform
-  ): Promise<Path> {
+  private metaPath(runtime: Runtime, osPlatform: OsPlatform): Path {
     const segments: string[] = [];
     switch (osPlatform) {
       case 'windows-x64':
@@ -231,7 +228,7 @@ export class RuntimeContainer {
       const installer = this.installerMap[runtime.type];
       segments.push(
         runtime.type,
-        `${await installer.getRuntimeVersion(runtime)}.json`
+        `${installer.getRuntimeVersion(runtime)}.json`
       );
     }
 

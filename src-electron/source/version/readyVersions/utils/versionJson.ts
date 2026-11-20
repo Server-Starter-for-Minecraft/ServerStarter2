@@ -37,7 +37,7 @@ export type VersionJson = z.infer<typeof VersionJsonZod>;
 /**
  * サーバーJarに関する情報をもつJSONのパスを返す
  */
-export async function getVersionJsonPath(cwdPath: Path) {
+export function getVersionJsonPath(cwdPath: Path) {
   return cwdPath.child('version.json');
 }
 
@@ -46,13 +46,13 @@ export async function getVersionJsonPath(cwdPath: Path) {
  *
  * @param childDirs VersionID以下にビルド番号のようなさらに細かいフォルダ分けが必要な時，仕分け順にフォルダ名のリストを渡す
  */
-export async function generateVersionJsonHandler(
+export function generateVersionJsonHandler(
   cacheFolder: Path,
   verType: Version['type'],
   serverID: string
 ) {
   return JsonSourceHandler.fromPath(
-    await getVersionJsonPath(cacheFolder.child(`${verType}/${serverID}`)),
+    getVersionJsonPath(cacheFolder.child(`${verType}/${serverID}`)),
     VersionJsonZod
   );
 }
@@ -112,7 +112,7 @@ export function javaEncodingToUtf8() {
 /**
  * versionJsonの`embed`を置換する処理
  */
-export async function replaceEmbedArgs(
+export function replaceEmbedArgs(
   args: VerJsonArg[],
   replaceValue: Record<EmbedType, string[]>
 ) {
@@ -134,7 +134,7 @@ export async function replaceEmbedArgs(
 /** In Source Testing */
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
-  test('versionJson_replaceEmbedArgs', async () => {
+  test('versionJson_replaceEmbedArgs', () => {
     const baseVerJsonDummy: VersionJson = {
       download: {
         url: 'https://piston-data.mojang.com/v1/objects/8dd1a28015f51b1803213892b50b7b4fc76e594d/server.jar',
@@ -150,7 +150,7 @@ if (import.meta.vitest) {
       ],
     };
 
-    const replacedArgs = await replaceEmbedArgs(baseVerJsonDummy.arguments, {
+    const replacedArgs = replaceEmbedArgs(baseVerJsonDummy.arguments, {
       JAR_PATH: ['dummyPath'],
       JVM_ARGUMENT: ['replaceTest'],
       LOG4J_ARG: ['log4J_ARG'],

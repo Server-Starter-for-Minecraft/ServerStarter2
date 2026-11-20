@@ -8,7 +8,6 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import {
   ALLOWED_EXTERNAL_PACKAGES,
-  ALLOWED_SYNC_EXPORTS,
   BACKEND_FILES,
   BACKEND_LAYERS,
   BLOCKING_MODULES,
@@ -19,10 +18,11 @@ import {
   FAILABLE_HANDLERS,
   FRONTEND_FILES,
   FRONTEND_LAYERS,
+  IPC_HANDLER_FILES,
   MOCKABLE_BOUNDARIES,
   RESTRICTED_BUILTIN_MODULES,
+  restrictedPackagePattern,
   SCRIPT_FILES,
-  SOURCE_FILES,
   TEST_FILES,
   THROWING_APIS,
 } from './eslint-rules/config.js';
@@ -167,17 +167,13 @@ export default tseslint.config(
     },
   },
 
-  // バックエンドの処理（source/）が公開する関数・メソッドは Promise を返す（非同期にする）
-  // （ログ・進捗・IPC・ライフサイクルなどの基盤や util は対象外とする。
-  //   それらでのブロッキングする I/O は no-blocking-call で，非同期処理の放置は no-floating-promises で検出する）
+  // フロントエンドから呼ばれる IPC の API の処理は Promise を返す（非同期にする）
+  // （計算のみの関数まで非同期にする必要はないため，IPC の API の処理に限る。
+  //   処理の中のブロッキングする I/O は no-blocking-call で，非同期処理の放置は no-floating-promises で検出する）
   {
-    files: SOURCE_FILES,
-    ignores: [...TEST_FILES],
+    files: IPC_HANDLER_FILES,
     rules: {
-      'serverstarter/require-async-export': [
-        'error',
-        { allowed: ALLOWED_SYNC_EXPORTS },
-      ],
+      'serverstarter/require-async-ipc-handler': 'error',
     },
   },
 
@@ -334,9 +330,7 @@ export default tseslint.config(
           patterns: [
             {
               // 相対パス・プロジェクト内のエイリアス・許可したパッケージ以外に一致する
-              regex: `^(?!\.|app/|src-electron/|src/|(${ALLOWED_EXTERNAL_PACKAGES.map(
-                (name) => name.replace('/*', '(/.*)?')
-              ).join('|')})$)`,
+              regex: restrictedPackagePattern(ALLOWED_EXTERNAL_PACKAGES),
               allowTypeImports: true,
               message:
                 '外部パッケージは util の中で扱い，Failable を返す関数として提供してください（eslint-rules/config.js の ALLOWED_EXTERNAL_PACKAGES を参照）',

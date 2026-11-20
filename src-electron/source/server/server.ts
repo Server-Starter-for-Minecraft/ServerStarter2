@@ -47,7 +47,7 @@ export function runServer(
 
     const onStart = () => api.send.StartServer(id, notification);
     const onFinish = () => {
-      runDetached(onlinePlayers.reset(), (e) => loggers().reset().error(e));
+      onlinePlayers.reset();
       api.send.FinishServer(id);
     };
     const console = (value: string, isError: boolean) => {
@@ -59,10 +59,8 @@ export function runServer(
       runDetached(loghandler.append({ text: value, isError }), (e) =>
         loggers().appendLog().warn(e)
       );
-      // オンラインプレイヤーの情報をログから抽出する
-      runDetached(onlinePlayers.push(value, isError), (e) =>
-        loggers().onlinePlayers().error(e)
-      );
+      // オンラインプレイヤーの情報をログから抽出する（出力された順に処理するため同期で行う）
+      onlinePlayers.push(value, isError);
     };
 
     // サーバーの実行を待機

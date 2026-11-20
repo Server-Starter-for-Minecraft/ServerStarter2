@@ -96,7 +96,7 @@ export abstract class JavaRuntimeInstaller<
   /**
    * Runtimeのバージョン（`java-runtime-alpha`など）を指定する
    */
-  abstract getRuntimeVersion(runtime: R): Promise<string>;
+  abstract getRuntimeVersion(runtime: R): string;
 
   /**
    * Runtime特有のManifestから標準的な表現である`ManifestContent`に整形する
@@ -127,14 +127,14 @@ export abstract class JavaRuntimeInstaller<
   /**
    * JavaRuntimeをダウンロードしておく場所
    */
-  protected async getInstallPath(
+  protected getInstallPath(
     installBasePath: Path,
     runtime: R,
     osPlatform: OsPlatform
-  ): Promise<Path> {
+  ): Path {
     return installBasePath.child(
       runtime.type,
-      await this.getRuntimeVersion(runtime),
+      this.getRuntimeVersion(runtime),
       osPlatform
     );
   }
@@ -199,7 +199,7 @@ export abstract class JavaRuntimeInstaller<
     logger.info('Get a manifest for target OS successfully');
 
     // 取得したManifestから必要なファイル類を生成する
-    const installPath = await this.getInstallPath(
+    const installPath = this.getInstallPath(
       installBasePath,
       runtime,
       osPlatform
@@ -214,7 +214,7 @@ export abstract class JavaRuntimeInstaller<
       return errorMessage.core.runtime.installFailed({
         runtimeType: runtime.type,
         targetOs: osPlatform,
-        version: await this.getRuntimeVersion(runtime),
+        version: this.getRuntimeVersion(runtime),
       });
     }
     logger.info('Extract files from manifest successfully');
