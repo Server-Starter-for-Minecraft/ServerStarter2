@@ -82,12 +82,11 @@ if (import.meta.vitest) {
 
   describe('minecraft runtime', async () => {
     const { Path } = await import('src-electron/util/binary/path');
-    const path = await import('path');
 
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 

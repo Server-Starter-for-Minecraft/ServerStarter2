@@ -150,11 +150,11 @@ export const interactiveProcess = (
  * @param args 実行ファイルに渡す引数（1要素が1つの引数となる）
  * @param cwd 作業ディレクトリ
  */
-export async function execProcess(
+export function execProcess(
   process: Path,
   args: string[],
   cwd: Path | undefined = undefined
-) {
+): ChildProcessPromise {
   const child = child_process.spawn(process.path, args, {
     cwd: cwd?.path,
   });

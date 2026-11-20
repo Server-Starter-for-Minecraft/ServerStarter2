@@ -55,7 +55,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 2
+      "count": 1
     }
   },
   "src-electron/logger/logger.ts": {

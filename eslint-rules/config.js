@@ -80,6 +80,12 @@ export const EXCEPTION_ALLOWED_FUNCTIONS = [
     reason: '例外を Failable へ変換する最下層の関数',
   },
   {
+    file: 'src-electron/ipc/util.ts',
+    functions: ['ipcHandle'],
+    reason:
+      'API の戻り値の型が Failable でないものもあるため，予期しない例外はログに残したうえで reject としてフロントエンドへ伝える（API を Failable に揃える件は Issue で検討する）',
+  },
+  {
     file: 'src-electron/electron-preload.ts',
     functions: ['listener'],
     reason:

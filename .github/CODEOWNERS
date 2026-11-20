@@ -4,3 +4,4 @@
 /eslint-rules/ @CivilTT
 /eslint-suppressions.json @CivilTT
 /.github/workflows/linter.yml @CivilTT
+/scripts/lint/ @CivilTT

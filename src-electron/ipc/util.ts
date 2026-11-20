@@ -2,8 +2,7 @@ import { BrowserWindow, ipcMain } from 'electron';
 import { assertComplete } from '../lifecycle/lifecycle';
 import { rootLogger } from '../logger/logger';
 import { WithError } from '../schema/error';
-import { isError } from '../util/error/error';
-import { safeExecAsync } from '../util/error/failable';
+import { fromRuntimeError, isError } from '../util/error/error';
 
 export const ipcLoggers = () => rootLogger.ipc;
 
@@ -50,12 +49,16 @@ export const ipcHandle = <C extends string>(
   ipcMain.handle(channel, async (_, ...args: any[]) => {
     const logger = ipcLoggers().handle[channel](args);
     logger.info('start');
-    // 処理中に例外が発生した場合も，フロントエンドへは Failable のエラーとして返す
-    const result = await assertComplete(
-      safeExecAsync(async () => listener(...args))
-    );
-    logResult(logger, result);
-    return result;
+    // 処理中に予期しない例外が発生した場合は，ログに残したうえで従来どおり reject としてフロントエンドへ伝える
+    // （API の戻り値の型が Failable でないものもあるため，例外を Failable の値として返すことはしない）
+    try {
+      const result = await assertComplete(listener(...args));
+      logResult(logger, result);
+      return result;
+    } catch (e) {
+      logger.error(fromRuntimeError(e));
+      throw e;
+    }
   });
 
 export const ipcOn = <C extends string>(

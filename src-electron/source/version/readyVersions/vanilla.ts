@@ -126,12 +126,10 @@ if (import.meta.vitest) {
   const { describe, test, expect } = import.meta.vitest;
 
   describe('vanilla version', async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
