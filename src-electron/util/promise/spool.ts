@@ -35,15 +35,15 @@ export class PromiseSpooler {
           return;
         }
         started.then(
-            (value) => {
-              resolve(value);
-              invokeNext();
-            },
-            (e: unknown) => {
-              reject(e);
-              invokeNext();
-            }
-          );
+          (value) => {
+            resolve(value);
+            invokeNext();
+          },
+          (e: unknown) => {
+            reject(e);
+            invokeNext();
+          }
+        );
       };
 
       // 待機列の最後にlazeInvokeを追加
