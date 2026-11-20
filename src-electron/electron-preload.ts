@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/no-explicit-any: 0 */
 /**
  * This file is used specifically for security reasons.
  * Here you can access Nodejs stuff and inject functionality into
