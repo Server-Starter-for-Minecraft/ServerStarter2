@@ -6,7 +6,7 @@ import {
 import { Runtime } from 'app/src-electron/schema/runtime';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isError, isValid } from 'app/src-electron/util/error/error';
+import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { osPlatform } from 'app/src-electron/util/os/os';
 import { GroupProgressor } from '../../common/progress';

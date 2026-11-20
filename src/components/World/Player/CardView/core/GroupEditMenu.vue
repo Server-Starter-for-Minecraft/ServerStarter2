@@ -37,8 +37,8 @@ const isValidGroup = computed(
 function validateGroupName(gName: string) {
   // 自分以外のグループ名一覧を取得
   const groupNames = toEntries(sysStore.systemSettings.player.groups)
-    .filter(([gId, g]) => gId !== playerStore.selectedGroupId)
-    .map(([gId, g]) => g.name);
+    .filter(([gId]) => gId !== playerStore.selectedGroupId)
+    .map(([, g]) => g.name);
   isValidName.value =
     gName !== '' && !groupNames.some((name) => name === gName);
 

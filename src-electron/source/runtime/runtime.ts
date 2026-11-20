@@ -8,6 +8,7 @@ import {
   UniversalRuntime,
 } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { isError, isValid } from '../../util/error/error';
@@ -88,6 +89,10 @@ export class RuntimeContainer {
     // すでにインストール済み
     const current = await this.checkExists(metaPath, useJavaw);
     if (isValid(current)) return current;
+    ignoreError(
+      current,
+      'インストールされていない場合は，これからインストールする'
+    );
 
     // universalの場合はそれに対応するほかのランタイムをインストール
     const mcRuntimeManifest = await this.installerMap.minecraft.getCache();
@@ -138,9 +143,10 @@ export class RuntimeContainer {
     if (isError(refInstallResult)) return refInstallResult;
 
     // 参照しているメタファイルの内容をコピー
-    await (
+    const copied = await (
       await this.metaPath(refRuntime, osPlatform)
     ).copyTo(await this.metaPath(runtime, osPlatform));
+    if (isError(copied)) return copied;
 
     return refInstallResult;
   }
@@ -159,8 +165,9 @@ export class RuntimeContainer {
     if (isError(_metaJson)) return _metaJson;
     else metaJson = _metaJson;
 
-    await new Path(metaJson.base.path).remove();
-    await metapath.remove();
+    const removed = await new Path(metaJson.base.path).remove();
+    if (isError(removed)) return removed;
+    return metapath.remove();
   }
 
   private async checkExists(

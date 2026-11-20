@@ -5,6 +5,7 @@ import { ForgeVersion, NeoForgeVersion } from 'app/src-electron/schema/version';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { ExecRuntime, getJarPath } from '../base';
 import {
   constructExecPath,
@@ -152,7 +153,11 @@ async function getArgFilePaths(
     if (!(await scriptPath.exists())) continue;
 
     const args = await readScriptArgs(scriptPath, ext);
-    if (isError(args)) continue;
+    if (isError(args)) {
+      // 読めないスクリプトの引数ファイルは対象外とする（必要なファイルが無い場合は起動時に検出される）
+      ignoreError(args, '読めない実行スクリプトの引数ファイルは対象外とする');
+      continue;
+    }
 
     argFiles.push(
       ...args
@@ -222,7 +227,10 @@ export async function hasMissingJarReference(
 
   for (const argFile of await getArgFilePaths(cachePath, version)) {
     const txt = await argFile.readText();
-    if (isError(txt)) continue;
+    if (isError(txt)) {
+      ignoreError(txt, '読めない引数ファイルは確認の対象外とする');
+      continue;
+    }
 
     const jarNames = txt.split(/\s+/).filter((token) => jarPattern.test(token));
     const existences = await Promise.all(

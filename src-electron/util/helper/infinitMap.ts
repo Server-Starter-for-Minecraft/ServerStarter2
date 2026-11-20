@@ -1,8 +1,3 @@
-type DymanicRecordOptions<K, V> = {
-  /** valueの初期値コンストラクタ */
-  init: () => V;
-};
-
 /**
  * 任意のキーにアクセスして常に必ず値を返すMap
  *

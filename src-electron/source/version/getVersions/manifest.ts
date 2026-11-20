@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { VersionId } from 'app/src-electron/schema/version';
+import { sourceLoggers } from 'app/src-electron/source/sourceLogger';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
-import { isValid } from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
 
 const MANIFEST_URL =
@@ -48,6 +50,10 @@ export async function getVersionMainfest(
   if (useCache) {
     const cachedManifest = await manifestHandler.read();
     if (isValid(cachedManifest)) return cachedManifest;
+    ignoreError(
+      cachedManifest,
+      'キャッシュを読み込めない場合は URL から取得する'
+    );
   }
 
   // URLからデータを取得
@@ -55,12 +61,13 @@ export async function getVersionMainfest(
 
   if (isValid(response)) {
     const resJson = await response.json(ManifestJsonZod);
-    if (isValid(resJson)) {
-      // 取得したJsonを`version_manifest_v2.json`に保存する
-      await manifestHandler.write(resJson);
-    } else {
-      return resJson;
-    }
+    if (isError(resJson)) return resJson;
+    // 取得したJsonを`version_manifest_v2.json`に保存する
+    const written = await manifestHandler.write(resJson);
+    if (isError(written)) return written;
+  } else {
+    // 取得できない場合は保存済みの内容を使う（取得の失敗はログに残す）
+    sourceLoggers().version.manifest().warn(response);
   }
 
   return manifestHandler.read();

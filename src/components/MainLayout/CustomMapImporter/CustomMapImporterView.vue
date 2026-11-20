@@ -2,11 +2,11 @@
 import { onMounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { tError } from 'src/i18n/utils/tFunc';
-import { showUnexpectedError } from 'src/components/Error/Error';
-import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';

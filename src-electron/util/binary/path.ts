@@ -3,10 +3,9 @@ import fs from 'fs-extra';
 import * as path from 'path';
 import { z } from 'zod';
 import { errorMessage } from '../error/construct';
-import { isError } from '../error/error';
-import { Failable } from '../error/failable';
+import { fromRuntimeError, isError } from '../error/error';
+import { Failable, safeExecAsync } from '../error/failable';
 import { InfinitMap } from '../helper/infinitMap';
-import { asyncForEach } from '../obj/objmap';
 import { sleep } from '../promise/sleep';
 import { PromiseSpooler } from '../promise/spool';
 import type { BytesData } from './bytesData';
@@ -53,6 +52,14 @@ export class Path {
   absolute() {
     return new Path(path.resolve(this._path));
   }
+
+  /** 絶対パスかを返す */
+  isAbsolute() {
+    return path.isAbsolute(this._path);
+  }
+
+  /** 環境変数 PATH などで複数のパスを区切る文字（Windows は `;`，それ以外は `:`） */
+  static readonly delimiter = path.delimiter;
 
   /** このpathを起点にしたtargetの相対パスを返す */
   relativeto(target: Path) {
@@ -101,12 +108,14 @@ export class Path {
 
   stat = exclusive(this._stat);
   private async _stat(): Promise<Failable<fs.Stats>> {
-    return fs.stat(this.absolute().path).catch(async () => {
+    const stat = await safeExecAsync(async () => fs.stat(this.absolute().path));
+    if (isError(stat)) {
       return errorMessage.data.path.loadingFailed({
         type: 'file', // 存在しないパスはファイルとして扱う
         path: this.path,
       });
-    });
+    }
+    return stat;
   }
 
   isDirectory = exclusive(this._isDirectory);
@@ -128,12 +137,15 @@ export class Path {
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
-    return fs.rename(this._path, newpath.absolute().path).catch(async () => {
+    const renamed = await safeExecAsync(async () =>
+      fs.rename(this._path, newpath.absolute().path)
+    );
+    if (isError(renamed)) {
       return errorMessage.data.path.renameFailed({
         type: isDir ? 'directory' : 'file',
         path: this.path,
       });
-    });
+    }
   }
 
   mkdir = exclusive(this._mkdir);
@@ -211,9 +223,10 @@ export class Path {
     encoding: BufferEncoding = 'utf8'
   ) {
     await this.parent().mkdir();
-    try {
-      await fs.appendFile(this._path, content, { encoding });
-    } catch {
+    const appended = await safeExecAsync(async () =>
+      fs.appendFile(this._path, content, { encoding })
+    );
+    if (isError(appended)) {
       return errorMessage.data.path.creationFailed({
         type: 'file',
         path: this.path,
@@ -263,15 +276,16 @@ export class Path {
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
-    try {
-      // 他プロセスによる一時的なファイルロック(EBUSY等)の場合は再試行する
-      await fs.rm(this._path, {
+    // 他プロセスによる一時的なファイルロック(EBUSY等)の場合は再試行する
+    const removed = await safeExecAsync(async () =>
+      fs.rm(this._path, {
         recursive: true,
         force: true,
         maxRetries: BUSY_RETRY_COUNT,
         retryDelay: BUSY_RETRY_DELAY_MS,
-      });
-    } catch {
+      })
+    );
+    if (isError(removed)) {
       return errorMessage.data.path.deletionFailed({
         type: isDir ? 'directory' : 'file',
         path: this.path,
@@ -283,10 +297,12 @@ export class Path {
   private async _copyTo(target: Path) {
     if (!(await this.exists())) return;
     await target.parent().mkdir(true);
-    await target.remove();
-    try {
-      await retryOnBusy(async () => fs.copy(this.path, target.path));
-    } catch {
+    const removed = await target.remove();
+    if (isError(removed)) return removed;
+    const copied = await retryOnBusy(async () =>
+      fs.copy(this.path, target.path)
+    );
+    if (isError(copied)) {
       const isDir = await this._isDirectory();
       if (isError(isDir)) return isDir;
       return errorMessage.data.path.copyFailed({
@@ -307,7 +323,10 @@ export class Path {
     if (isError(isSuccessRemove)) return isSuccessRemove;
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
-    async function recursiveMove(path: Path, target: Path) {
+    async function recursiveMove(
+      path: Path,
+      target: Path
+    ): Promise<Failable<void>> {
       const isDir = await path._isDirectory();
       if (isError(isDir)) return isDir;
 
@@ -316,13 +335,19 @@ export class Path {
         const allPaths = await path.iter();
         if (isError(allPaths)) return allPaths;
 
-        await asyncForEach(allPaths, async (child) => {
-          await recursiveMove(child, target.child(child.basename()));
-        });
+        // 1つでも移動できなかった場合はエラーを返す
+        for (const child of allPaths) {
+          const moved = await recursiveMove(
+            child,
+            target.child(child.basename())
+          );
+          if (isError(moved)) return moved;
+        }
       } else {
-        try {
-          await fs.move(path.path, target.path, options);
-        } catch {
+        const moved = await safeExecAsync(async () =>
+          fs.move(path.path, target.path, options)
+        );
+        if (isError(moved)) {
           return errorMessage.data.path.moveFailed({
             type: 'file',
             path: path.path,
@@ -381,17 +406,22 @@ const BUSY_ERROR_CODES = new Set(['EBUSY', 'EPERM']);
  * サーバー終了直後などは、Javaプロセスやウイルス対策ソフトがファイルを掴んだままの場合があるため、
  * 少し待ってから再試行することで、ファイル操作の失敗を回避する
  *
+ * 再試行するかどうかを例外のエラーコードで判定するため，safeExecAsync を使わずに例外を直接扱う
+ * （lint の例外として eslint-rules/config.js に登録している）
+ *
  * @param operation 再試行するファイル操作
- * @returns ファイル操作の戻り値（再試行しても失敗した場合はその例外を投げる）
+ * @returns ファイル操作の戻り値（再試行しても失敗した場合はエラー）
  */
-async function retryOnBusy<T>(operation: () => Promise<T>): Promise<T> {
+async function retryOnBusy<T>(
+  operation: () => Promise<T>
+): Promise<Failable<T>> {
   for (let retried = 0; ; retried++) {
     try {
       return await operation();
     } catch (e) {
       const code = (e as NodeJS.ErrnoException)?.code;
       const isBusy = code !== undefined && BUSY_ERROR_CODES.has(code);
-      if (!isBusy || retried >= BUSY_RETRY_COUNT) throw e;
+      if (!isBusy || retried >= BUSY_RETRY_COUNT) return fromRuntimeError(e);
       await sleep(BUSY_RETRY_DELAY_MS);
     }
   }
@@ -399,7 +429,7 @@ async function retryOnBusy<T>(operation: () => Promise<T>): Promise<T> {
 
 /** パスに関する処理を同期的に処理するために各命令をプールする */
 const spoolers = InfinitMap.primitiveKeyWeakValue(
-  (key: string) => new PromiseSpooler()
+  (_key: string) => new PromiseSpooler()
 );
 /**
  * 各関数の実行時に当該処理をプールする

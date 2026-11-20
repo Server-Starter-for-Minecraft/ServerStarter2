@@ -3,6 +3,7 @@ import { Path } from '../binary/path';
 import { CacheableAccessor } from '../cache';
 import { isError } from '../error/error';
 import { Failable } from '../error/failable';
+import { utilLoggers } from '../utilLogger';
 
 /**
  * JSON文字列を扱うクラス
@@ -34,7 +35,11 @@ export class JsonSourceHandler<T> {
       const defaultVal = validator.safeParse({});
       if (!defaultVal.success) return res;
 
-      await setter(defaultVal.data);
+      // 既定値を保存できなくても既定値で動作を続ける（保存の失敗はログに残す）
+      const written = await setter(defaultVal.data);
+      if (isError(written)) {
+        utilLoggers().JsonSourceHandler({ path: path.path }).warn(written);
+      }
       return defaultVal.data;
     };
 

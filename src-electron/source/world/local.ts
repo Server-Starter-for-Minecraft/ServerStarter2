@@ -14,8 +14,9 @@ import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
+import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import {
   LEVEL_NAME,
   PLUGIN_NETHER_LEVEL_NAME,
@@ -121,7 +122,12 @@ export async function loadLocalFiles(
   }
 
   // avater_pathが読み込めなかった場合は未設定にする
-  const avater_path = isValid(_avater_path) ? _avater_path : undefined;
+  const avater_path = isValid(_avater_path)
+    ? _avater_path
+    : ignoreError(
+        _avater_path,
+        'アイコンが無いワールドはアイコンなしで表示する'
+      );
 
   // worldオブジェクトを生成
   const world: World = {
@@ -236,7 +242,10 @@ export async function saveLocalFiles(
   }
 
   // world.playersが正常値の場合ファイル(ops.json,whitelist.json)に保存
-  if (isValid(world.players)) {
+  // （読み込みに失敗していた場合は，ファイルを上書きしないよう保存しない）
+  if (isError(world.players)) {
+    ignoreError(world.players, '読み込めなかったプレイヤーの設定は保存しない');
+  } else {
     const [ops, whitelist] = fromPlayers(world.players);
     promisses.push(
       serverOpsFile.save(savePath, ops),
@@ -245,7 +254,10 @@ export async function saveLocalFiles(
   }
 
   // world.propertiesが正常値の場合ファイル(server.properties)に保存
-  if (isValid(world.properties)) {
+  // （読み込みに失敗していた場合は，ファイルを上書きしないよう保存しない）
+  if (isError(world.properties)) {
+    ignoreError(world.properties, '読み込めなかったサーバーの設定は保存しない');
+  } else {
     promisses.push(serverPropertiesFile.save(savePath, world.properties));
   }
 
@@ -337,8 +349,11 @@ export async function formatWorldDirectory(
       );
       return withError(undefined, moveP2V.filter(isError));
     default:
-      throw new Error(
-        `not implemanted worldDirectoryType conversion: ${current} to ${next}`
-      );
+      // 新しいディレクトリ構造を追加した場合に，変換を実装し忘れていないかを示す
+      return withError(undefined, [
+        errorMessage.system.assertion({
+          message: `not implemanted worldDirectoryType conversion: ${current} to ${next}`,
+        }),
+      ]);
   }
 }

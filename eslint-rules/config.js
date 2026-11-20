@@ -139,3 +139,253 @@ export const ALLOWED_SYNC_EXPORTS = [
       'コンストラクタの中で使うインスタンスのファクトリ（作成時には処理を行わない）',
   },
 ];
+
+/**
+ * 例外を Failable へ変換する関数（`serverstarter/no-exception`・`no-unsafe-throwing-call` で使う）
+ *
+ * 例外を投げる・捕まえる処理は，原則としてこの一覧の関数の中だけで行う。
+ * 外部ライブラリなどの例外は，ここにある `safeExec` / `safeExecAsync` に渡して Failable に変換する
+ */
+export const EXCEPTION_CONVERTERS = [
+  'safeExec',
+  'safeExecAsync',
+  'failabilify',
+];
+
+/**
+ * 例外を扱ってよい関数（`serverstarter/no-exception`・`no-unsafe-throwing-call` で使う）
+ *
+ * 追加する場合は，safeExec / safeExecAsync を使えない理由を `reason` に必ず書く
+ *
+ * @type {import('./utils/scope.js').AllowedFunctions[]}
+ */
+export const EXCEPTION_ALLOWED_FUNCTIONS = [
+  {
+    file: 'src-electron/util/error/failable.ts',
+    functions: ['safeExec', 'safeExecAsync', 'failabilify'],
+    reason: '例外を Failable へ変換する最下層の関数',
+  },
+  {
+    file: 'src-electron/electron-preload.ts',
+    functions: ['listener'],
+    reason:
+      'プリロードは util を読み込まずに最小限の依存で動かすため，フロントエンドの処理の失敗（reject）を直接受け取ってバックエンドへ返す',
+  },
+  {
+    file: 'src-electron/util/promise/spool.ts',
+    functions: ['spool'],
+    reason:
+      'Promise を直列に実行する基盤であり，各処理の結果・失敗（reject）をそのまま呼び出し元へ伝える',
+  },
+  {
+    file: 'src-electron/source/world/handler.ts',
+    functions: ['start'],
+    reason:
+      'ワールドの操作を直列に実行する基盤（PromiseSpooler）であり，各処理の失敗をそのまま呼び出し元へ伝える',
+  },
+  {
+    file: 'src-electron/source/server/setup/ngrok.ts',
+    functions: ['runNgrok'],
+    reason:
+      'Ngrok の失敗の種類（予約されていないアドレスなど）を例外のエラーコードで判定するため（safeExecAsync ではエラーコードが失われる）',
+  },
+  {
+    file: 'src-electron/util/os/os.ts',
+    functions: ['getOsPlatform'],
+    reason:
+      '起動時に一度だけ実行し，対応していない OS では処理を続行できないため，例外で起動を中止する',
+  },
+  {
+    file: 'src/error/error.ts',
+    functions: ['safeExec', 'safeExecAsync'],
+    reason: '例外を Failable へ変換するフロントエンドの最下層の関数',
+  },
+  {
+    file: 'src-electron/util/versioning/versionedSchema.ts',
+    functions: ['parse'],
+    reason:
+      'zod の parse と同じく失敗時に例外を投げる版（本番のコードでは THROWING_APIS により safeParse の利用を強制する）',
+  },
+  {
+    file: 'src-electron/util/binary/path.ts',
+    functions: ['retryOnBusy'],
+    reason:
+      '一時的なファイルロックかどうかを例外のエラーコードで判定して再試行するため（safeExecAsync ではエラーコードが失われる）',
+  },
+];
+
+/**
+ * 例外を投げる API（`serverstarter/no-unsafe-throwing-call` で使う）
+ *
+ * 宣言元のファイル・所属する型・名前で特定する（呼び出し側の名前では判定しない）
+ *
+ * @type {import('./rules/no-unsafe-throwing-call.js').ThrowingApi[]}
+ */
+export const THROWING_APIS = [
+  {
+    name: 'parse',
+    owner: 'JSON',
+    kind: 'call',
+    declarationFile: /\/typescript\/lib\/lib\.[\w.]+\.d\.ts$/,
+    alternative:
+      'BytesData#json(スキーマ) を使うか，safeExec(() => JSON.parse(...)) で Failable に変換してください',
+  },
+  {
+    name: 'parse',
+    kind: 'call',
+    declarationFile: /\/zod\//,
+    alternative: 'safeParse を使い，失敗した場合はエラーを返してください',
+  },
+  {
+    name: 'parseAsync',
+    kind: 'call',
+    declarationFile: /\/zod\//,
+    alternative: 'safeParseAsync を使い，失敗した場合はエラーを返してください',
+  },
+  {
+    name: 'parse',
+    owner: 'VersionedSchema',
+    kind: 'call',
+    declarationFile: /\/src-electron\/util\/versioning\/versionedSchema\.ts$/,
+    alternative: 'safeParse を使い，失敗した場合はエラーを返してください',
+  },
+  {
+    name: 'URL',
+    kind: 'new',
+    declarationFile:
+      /(\/typescript\/lib\/lib\.[\w.]+\.d\.ts|\/@types\/node\/url\.d\.ts)$/,
+    alternative: 'safeExec(() => new URL(...)) で Failable に変換してください',
+  },
+  {
+    name: 'decodeURIComponent',
+    kind: 'call',
+    declarationFile: /\/typescript\/lib\/lib\.[\w.]+\.d\.ts$/,
+    alternative:
+      'safeExec(() => decodeURIComponent(...)) で Failable に変換してください',
+  },
+  {
+    name: 'decodeURI',
+    kind: 'call',
+    declarationFile: /\/typescript\/lib\/lib\.[\w.]+\.d\.ts$/,
+    alternative:
+      'safeExec(() => decodeURI(...)) で Failable に変換してください',
+  },
+];
+
+/**
+ * エラーの判定関数（`serverstarter/no-silent-error` で使う）
+ *
+ * @type {import('./rules/no-silent-error.js').ErrorGuard[]}
+ */
+export const ERROR_GUARDS = [
+  {
+    name: 'isError',
+    kind: 'error',
+    declarationFile:
+      /\/(src-electron\/util\/error\/error|src-public\/scripts\/error)\.ts$/,
+  },
+  {
+    name: 'isValid',
+    kind: 'valid',
+    declarationFile:
+      /\/(src-electron\/util\/error\/error|src-public\/scripts\/error)\.ts$/,
+  },
+];
+
+/**
+ * util を使わずに扱うことを禁止する Node.js の組み込みモジュールと，代わりに使う util
+ * （`no-restricted-imports` で使う。util 以外の src-electron と scripts が対象）
+ */
+export const RESTRICTED_BUILTIN_MODULES = [
+  {
+    name: 'fs',
+    message: 'util の Path（src-electron/util/binary/path）を使ってください',
+  },
+  {
+    name: 'fs/promises',
+    message: 'util の Path（src-electron/util/binary/path）を使ってください',
+  },
+  {
+    name: 'fs-extra',
+    message: 'util の Path（src-electron/util/binary/path）を使ってください',
+  },
+  {
+    name: 'path',
+    message: 'util の Path（src-electron/util/binary/path）を使ってください',
+  },
+  {
+    name: 'child_process',
+    message:
+      'util の execProcess / interactiveProcess（src-electron/util/binary/subprocess）を使ってください',
+  },
+  {
+    name: 'crypto',
+    message:
+      'util の乱数（src-electron/util/random）・ハッシュ（BytesData）を使ってください',
+  },
+  {
+    name: 'os',
+    message: 'util の osPlatform（src-electron/util/os/os）を使ってください',
+  },
+].flatMap((m) => [m, { ...m, name: `node:${m.name}` }]);
+
+/**
+ * 失敗しうる値を受け取り，エラーを処理する関数（`serverstarter/no-ignored-failable` で使う）
+ *
+ * これらの関数の戻り値（成功した場合の値）は，捨ててもエラーの見落としにならない
+ *
+ * @type {{ name: string; declarationFile: RegExp }[]}
+ */
+export const FAILABLE_HANDLERS = [
+  { name: 'checkError', declarationFile: /\/src\/error\/error\.ts$/ },
+];
+
+/**
+ * util 以外（src-electron と scripts）で import してよい外部パッケージ
+ *
+ * 外部パッケージは例外を投げうるため，原則として util の中でのみ扱い，Failable を返す関数として提供する。
+ * 例外を投げない・型のみを使うパッケージに限り，ここに追加する
+ */
+export const ALLOWED_EXTERNAL_PACKAGES = [
+  'zod',
+  'dayjs',
+  'dayjs/*',
+  'electron',
+  'type-fest',
+  'vitest',
+];
+
+/**
+ * 外部パッケージを直接扱ってよい，util 以外のファイル（外部パッケージのラッパー）
+ *
+ * いずれも外部パッケージの例外を Failable へ変換して提供している。util へ移動する候補
+ *
+ * @type {{ file: string; reason: string }[]}
+ */
+export const EXTERNAL_PACKAGE_WRAPPERS = [
+  {
+    file: 'src-electron/common/logger.ts',
+    reason: 'ログの出力（log4js）とアーカイブ（tar）を行う基盤のため',
+  },
+  {
+    file: 'src-electron/source/remote/github/sync.ts',
+    reason:
+      'Git の操作（simple-git）の失敗を safeExecAsync で Failable に変換している',
+  },
+  {
+    file: 'src-electron/source/server/setup/ngrok.ts',
+    reason: 'Ngrok の操作の失敗を Failable に変換している',
+  },
+  {
+    file: 'src-electron/source/stores/config.ts',
+    reason: '設定の保存（electron-store）を扱う',
+  },
+  {
+    file: 'src-electron/source/version/getVersions/forge.ts',
+    reason: 'バージョン一覧の HTML の解析（cheerio）を扱う',
+  },
+  {
+    file: 'src-electron/source/version/getVersions/spigot.ts',
+    reason: 'バージョン一覧の HTML の解析（cheerio）を扱う',
+  },
+];

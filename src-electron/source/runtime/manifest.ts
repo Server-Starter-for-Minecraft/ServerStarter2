@@ -58,8 +58,14 @@ export abstract class JavaRuntimeInstaller<
    *
    * このメソッドを呼び出すことで、RuntimeManifestのインスタンスを生成する
    */
-  static setRuntimeManifest(manifestPath: Path, manifestUrl: string): unknown {
-    throw new Error('setRuntimeManifest() not implemented');
+  static setRuntimeManifest(
+    _manifestPath: Path,
+    _manifestUrl: string
+  ): unknown {
+    // 継承先で実装する（基底クラスのものを呼んだ場合は実装漏れであることを示す）
+    return errorMessage.system.assertion({
+      message: 'setRuntimeManifest() not implemented',
+    });
   }
 
   /**
@@ -307,8 +313,9 @@ async function _extractFilesFromManifest(
           key: 'server.readyJava.file',
           args: { path: path.path },
         });
-        await path.mklink(path.child(entry.target));
+        const linked = await path.mklink(path.child(entry.target));
         numeric?.setValue(processed++);
+        return linked;
       })
     );
     const err = results.find(isError);

@@ -9,7 +9,7 @@ import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from '../error/construct';
 import { fromRuntimeError } from '../error/error';
-import { Failable } from '../error/failable';
+import { Failable, safeExec, safeExecAsync } from '../error/failable';
 import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
 import { Png } from './png';
@@ -45,41 +45,44 @@ export class BytesData {
     const logger = loggers().fromURL({ url, hash });
     logger.trace('start');
 
-    try {
-      const res = await fetchURL(url, { headers });
-      if (res.status !== 200) {
-        logger.error({ status: res.status, statusText: res.statusText });
-        return errorMessage.data.url.fetch({
-          url: url,
-          status: res.status,
-          statusText: res.statusText,
-        });
-      }
-      const buffer = await res.arrayBuffer();
-      const result = new BytesData(Buffer.from(buffer));
-
-      if (hash === undefined) {
-        logger.trace('success');
-        return result;
-      }
-      const calcHash = await result.hash(hash.type);
-      if (hash.value === calcHash) {
-        logger.trace('success');
-        return result;
-      }
-
-      const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
-      logger.error(msg);
-      return errorMessage.data.hashNotMatch({
-        hashtype: hash.type,
-        type: 'url',
-        path: url,
-      });
-    } catch (e) {
-      const em = fromRuntimeError(e);
-      logger.error(em);
-      return em;
+    // 通信の失敗（例外）は Failable に変換する
+    const res = await safeExecAsync(async () => fetchURL(url, { headers }));
+    if (isError(res)) {
+      logger.error(res);
+      return res;
     }
+    if (res.status !== 200) {
+      logger.error({ status: res.status, statusText: res.statusText });
+      return errorMessage.data.url.fetch({
+        url: url,
+        status: res.status,
+        statusText: res.statusText,
+      });
+    }
+    const buffer = await safeExecAsync(async () => res.arrayBuffer());
+    if (isError(buffer)) {
+      logger.error(buffer);
+      return buffer;
+    }
+    const result = new BytesData(Buffer.from(buffer));
+
+    if (hash === undefined) {
+      logger.trace('success');
+      return result;
+    }
+    const calcHash = await result.hash(hash.type);
+    if (hash.value === calcHash) {
+      logger.trace('success');
+      return result;
+    }
+
+    const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
+    logger.error(msg);
+    return errorMessage.data.hashNotMatch({
+      hashtype: hash.type,
+      type: 'url',
+      path: url,
+    });
   }
 
   static async fromPath(
@@ -99,32 +102,32 @@ export class BytesData {
         path: path.path,
       });
 
-    try {
-      const buffer = await promises.readFile(path.path);
-      const data = new BytesData(buffer);
-      if (hash === undefined) {
-        logger.trace('success');
-        return data;
-      }
-
-      const calcHash = await data.hash(hash.type);
-      if (hash.value === calcHash) {
-        logger.trace('success');
-        return data;
-      }
-      const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
-      logger.error(msg);
-      return errorMessage.data.hashNotMatch({
-        hashtype: hash.type,
-        type: 'file',
-        path: path.path,
-      });
-    } catch (e) {
-      const em = fromRuntimeError(e);
-      logger.error(em);
-      // TODO:黒魔術の解消
-      return fromRuntimeError(e);
+    // 読み込みの失敗（例外）は Failable に変換する
+    const buffer = await safeExecAsync(async () =>
+      promises.readFile(path.path)
+    );
+    if (isError(buffer)) {
+      logger.error(buffer);
+      return buffer;
     }
+    const data = new BytesData(buffer);
+    if (hash === undefined) {
+      logger.trace('success');
+      return data;
+    }
+
+    const calcHash = await data.hash(hash.type);
+    if (hash.value === calcHash) {
+      logger.trace('success');
+      return data;
+    }
+    const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
+    logger.error(msg);
+    return errorMessage.data.hashNotMatch({
+      hashtype: hash.type,
+      type: 'file',
+      path: path.path,
+    });
   }
 
   /** utf-8の形式でByteDataに変換 */
@@ -160,17 +163,17 @@ export class BytesData {
     if (encoding) {
       settings.encoding = encoding;
     }
-    try {
-      await promises.writeFile(path, new Uint8Array(this.data), settings);
-      logger.trace('success');
-    } catch (e) {
-      const em = fromRuntimeError(e);
-      logger.error(em);
+    const written = await safeExecAsync(async () =>
+      promises.writeFile(path, new Uint8Array(this.data), settings)
+    );
+    if (isError(written)) {
+      logger.error(written);
       return errorMessage.data.path.creationFailed({
         type: 'file',
         path: path,
       });
     }
+    logger.trace('success');
   }
   /**
    * 非推奨
@@ -205,8 +208,11 @@ export class BytesData {
       return data;
     }
 
+    // 取得したデータをローカルに保存する（保存できなくても取得したデータは使えるため，失敗はログに残すのみとする）
     await path.parent().mkdir(true);
-    await data.write(path.path, executable);
+    const written = await data.write(path.path, executable);
+    if (isError(written))
+      loggers().fromPathOrUrl({ path: path.path }).warn(written);
     return data;
   }
 
@@ -221,10 +227,16 @@ export class BytesData {
     const remoteHash = compareHashOnFetch ? hash : undefined;
     const data = await BytesData.fromURL(url, remoteHash, headers);
     if (isValid(data)) {
+      // 取得したデータをローカルに保存する（保存できなくても取得したデータは使えるため，失敗はログに残すのみとする）
       await path.parent().mkdir(true);
-      await data.write(path.path, executable);
+      const written = await data.write(path.path, executable);
+      if (isError(written)) {
+        loggers().fromUrlOrPath({ path: path.path }).warn(written);
+      }
       return data;
     }
+    // 取得できなかった場合はローカルのデータを使う（取得の失敗はログに残す）
+    loggers().fromUrlOrPath({ url }).warn(data);
     const result = await BytesData.fromPath(path, hash);
     return result;
   }
@@ -279,33 +291,26 @@ export class BytesData {
     validator: z.ZodType<T, any>,
     encoding = 'utf-8'
   ): Promise<Failable<T>> {
-    try {
-      return await new Promise((resolve) => {
-        const text = new TextDecoder(encoding).decode(this.data);
-        resolve(validator.parse(JSON.parse(text)));
-      });
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
+    const parsed = safeExec((): unknown =>
+      JSON.parse(new TextDecoder(encoding).decode(this.data))
+    );
+    if (isError(parsed)) return parsed;
+    const result = validator.safeParse(parsed);
+    if (!result.success) return fromRuntimeError(result.error);
+    return result.data;
   }
 
   async png(): Promise<Failable<Png>> {
-    try {
-      return new Png(sharp(this.data));
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
+    return safeExec(() => new Png(sharp(this.data)));
   }
 
   /** バイト列をjava NBTに変換 */
   async nbt<T extends object>(): Promise<Failable<T>> {
-    try {
+    return safeExecAsync(async () => {
       const nbt = prismarineNbt;
       const result = await nbt.parse(this.data, 'big');
       return nbt.simplify(result.parsed);
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
+    });
   }
 
   /** data:{mimetype};base64,... の形式でエンコード

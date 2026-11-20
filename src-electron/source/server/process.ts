@@ -1,6 +1,8 @@
 import { Failable } from 'app/src-electron/schema/error';
 import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
+import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { decoratePromise } from 'app/src-electron/util/promise/promiseDecorator';
 import { interactiveJavaProcess } from '../runtime/process';
 
@@ -45,7 +47,13 @@ export function serverProcess(
     // アプリケーション終了時/stopコマンドを実行 (実行から10秒のタイムアウトでプロセスキル)
     async (process) => {
       await process.write('stop');
-      await process;
+      const finished = await process;
+      if (isError(finished)) {
+        ignoreError(
+          finished,
+          '終了を待つのみ（実行の結果はサーバーの実行の呼び出し元で扱う）'
+        );
+      }
     },
     10000
   );

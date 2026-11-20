@@ -1,5 +1,21 @@
+import type { z } from 'zod';
+
 /**UUIDの生成関数(フォーマット済み) */
 export const genUUID = () => globalThis.crypto.randomUUID();
+
+/**
+ * UUID を生成し，UUID のブランド型（UUID・WorldID など）の値として返す
+ *
+ * randomUUID は常に正しい形式の UUID を返すため，例外を投げうる parse で検証せずにブランド型とする
+ *
+ * @param _schema 値の型を決める UUID のブランド型のスキーマ
+ * @returns 生成した UUID
+ */
+export function genUUIDOf<S extends z.ZodType<string, unknown>>(
+  _schema: S
+): z.output<S> {
+  return genUUID() as z.output<S>;
+}
 
 /**
  * uuidの文字列を正規化する

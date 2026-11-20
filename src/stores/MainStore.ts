@@ -1,5 +1,7 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
@@ -14,8 +16,6 @@ import {
   WorldID,
 } from 'app/src-electron/schema/world';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { showUnexpectedError } from 'src/components/Error/Error';
-import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from './SystemStore';
 import { filterWorldContainer, sortWorldList } from './worldListUtils';
 import { __getWorldList, __getWorldListBack, WorldList } from './WorldStore';

@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { checkError } from 'src/error/error';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import RunningBtn from '../HOME/RunningBtn.vue';
 

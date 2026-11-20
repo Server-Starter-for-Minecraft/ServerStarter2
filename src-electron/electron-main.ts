@@ -3,8 +3,6 @@ import {
   resolveElectronAssetsPath,
 } from '#q-app/electron/main';
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import os from 'node:os';
-import path from 'node:path';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { rootLogger } from './common/logger';
 import { setupIPC } from './ipc/setup';
@@ -15,6 +13,7 @@ import { update } from './updater/updater';
 import { Path } from './util/binary/path';
 import { isError } from './util/error/error';
 import { safeExecAsync } from './util/error/failable';
+import { osPlatform } from './util/os/os';
 import { getCurrentTimestamp } from './util/timestamp';
 
 const loggers = () => rootLogger.main;
@@ -22,12 +21,12 @@ const loggers = () => rootLogger.main;
 // 多重起動していたらすでに起動済みの場合即時終了
 if (!app.requestSingleInstanceLock()) app.quit();
 
-// needed in case process is undefined under Linux
-const platform = process.platform || os.platform();
-
 /** ダークモードの Windows で DevTools の拡張機能の設定を削除する */
 async function removeDevToolsExtensions() {
-  if (platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
+  if (
+    osPlatform === 'windows-x64' &&
+    nativeTheme.shouldUseDarkColors === true
+  ) {
     return new Path(app.getPath('userData'))
       .child('DevTools Extensions')
       .remove();
@@ -61,7 +60,7 @@ async function createWindow() {
     webPreferences: {
       contextIsolation: true,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
-      preload: path.join(import.meta.dirname, 'electron-preload.cjs'),
+      preload: new Path(import.meta.dirname).child('electron-preload.cjs').path,
     },
   });
 

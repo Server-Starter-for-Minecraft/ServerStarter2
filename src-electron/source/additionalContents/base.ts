@@ -221,14 +221,18 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
 
       // ソースが有効なデータかどうかを確認
       const loaded = await this.load(srcPath, '' as WorldID);
-      if (isError(loaded.value)) return;
+      if (isError(loaded.value)) {
+        errors.push(loaded.value);
+        return;
+      }
 
       // インストール処理
       const result = await this.installer(srcPath, tgtPath);
 
       // 新規ファイルだった場合キャッシュにコピー
       if (source.type === 'new') {
-        await this.installCache(srcPath, source);
+        const cached = await this.installCache(srcPath, source);
+        if (isError(cached)) errors.push(cached);
       }
 
       if (isError(result)) errors.push(result);

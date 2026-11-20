@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, Ref, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { checkError } from 'src/error/error';
 import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import { RecoverDialogProp } from 'src/components/MainLayout/RecoverDialog/iRecoverDialog';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import RecoverDialog from 'src/components/MainLayout/RecoverDialog/RecoverDialog.vue';
@@ -21,14 +21,21 @@ async function backupWorld() {
   // ボタンをローディング状態にする
   loading.value = true;
 
-  // ワールドを複製
-  await window.API.invokeBackupWorld(mainStore.selectedWorldID);
+  // ワールドをバックアップ
+  const res = await window.API.invokeBackupWorld(mainStore.selectedWorldID);
 
   // ボタンの状態をリセット
   loading.value = false;
-  showingMessage.value = $T('others.backup.madeBackup', {
-    world: mainStore.world?.name,
-  });
+  // バックアップに失敗した場合は，完了のメッセージを表示せずにエラーを表示する
+  checkError(
+    res.value,
+    () => {
+      showingMessage.value = $T('others.backup.madeBackup', {
+        world: mainStore.world?.name,
+      });
+    },
+    (e) => tError(e)
+  );
 }
 
 async function recoverWorld() {
