@@ -556,3 +556,76 @@ export const FRONTEND_LAYERS = [
     description: 'フロントエンドとバックエンドで共有する処理と型',
   },
 ];
+
+/**
+ * テストで差し替えてよい，外部との境界のモジュール（`serverstarter/no-internal-mock` で使う）
+ *
+ * ネットワーク・OS・Electron・外部のプロセスなど，テストの環境では実物を使えない・使うべきでない境界のみを登録する。
+ * 追加する場合は，差し替える必要がある理由を `reason` に必ず書く
+ *
+ * @type {{ file: string; reason: string }[]}
+ */
+export const MOCKABLE_BOUNDARIES = [
+  {
+    file: 'src-electron/util/binary/bytesData.ts',
+    reason: 'ネットワーク・ファイルの読み込み',
+  },
+  { file: 'src-electron/util/os/os.ts', reason: '実行している OS の種類' },
+  {
+    file: 'src-electron/util/tempPath.ts',
+    reason: '一時フォルダの場所（テストの作業フォルダに置き換える）',
+  },
+  {
+    file: 'src-electron/source/const.ts',
+    reason: 'アプリのデータの保存先（テストの作業フォルダに置き換える）',
+  },
+  {
+    file: 'src-electron/source/stores/system.ts',
+    reason:
+      'Electron の safeStorage で暗号化する設定ファイル（テストの環境では使えない）',
+  },
+  {
+    file: 'src-electron/core/api.ts',
+    reason: 'フロントエンド（レンダラー）への IPC の送信',
+  },
+  {
+    file: 'src-electron/source/containers.ts',
+    reason: '外部サービスから取得するバージョンの一覧',
+  },
+  {
+    file: 'src-electron/source/server/server.ts',
+    reason: 'Minecraft サーバー（Java のプロセス）の起動',
+  },
+  {
+    file: 'src-electron/source/server/setup/ngrok.ts',
+    reason: '外部サービス（Ngrok）への接続',
+  },
+  {
+    file: 'src-electron/source/launcher/launcherProfile.ts',
+    reason: 'ユーザーの環境にある Minecraft ランチャーの設定',
+  },
+  {
+    file: 'src-electron/source/version/readyVersions/utils/forgeInstaller.ts',
+    reason: 'Forge のインストーラーのダウンロード（ネットワーク）',
+  },
+  {
+    file: 'src-electron/updater/version.ts',
+    reason: 'Electron から取得するアプリのバージョン',
+  },
+  {
+    file: 'src-electron/updater/fetch.ts',
+    reason: 'リリース情報の取得（ネットワーク）',
+  },
+  {
+    file: 'src-electron/updater/installer/windows.ts',
+    reason: 'インストーラー（外部のプロセス）の起動',
+  },
+  {
+    file: 'src-electron/updater/installer/mac.ts',
+    reason: 'インストーラー（外部のプロセス）の起動',
+  },
+  {
+    file: 'src-electron/updater/notify.ts',
+    reason: 'フロントエンドへの通知（IPC）',
+  },
+];

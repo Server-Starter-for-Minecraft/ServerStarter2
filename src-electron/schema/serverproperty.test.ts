@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   DefaultServerPropertiesAnnotation,
   isValidNumberProperty,
+  NumberServerPropertyAnnotation,
   ServerProperties,
 } from './serverproperty';
 
@@ -95,9 +96,9 @@ describe('サーバープロパティの許容値', () => {
   test.each(numberKeys)(
     '%s に小数を指定すると既定値に戻され，プロパティ画面でも入力できない',
     (key) => {
-      const annotation = DefaultServerPropertiesAnnotation[key];
-      if (annotation?.type !== 'number')
-        throw new Error(`${key} is not number`);
+      const annotation = NumberServerPropertyAnnotation.parse(
+        DefaultServerPropertiesAnnotation[key]
+      );
       // 範囲外として弾かれないよう，範囲内に収まる小数を選ぶ
       const fractional =
         annotation.max !== undefined &&
@@ -111,10 +112,9 @@ describe('サーバープロパティの許容値', () => {
   );
 
   test('プロパティ画面で入力できる最大値はJavaのlong型に収まり，正確に保存できる', () => {
-    const annotation = DefaultServerPropertiesAnnotation['max-tick-time'];
-    if (annotation?.type !== 'number' || annotation.max === undefined) {
-      throw new Error('max-tick-time must be a number property with max');
-    }
+    const annotation = NumberServerPropertyAnnotation.required({
+      max: true,
+    }).parse(DefaultServerPropertiesAnnotation['max-tick-time']);
 
     // 保存時の文字列がJavaのlong型の最大値を超えない
     expect(BigInt(annotation.max.toString())).toBeLessThanOrEqual(

@@ -336,14 +336,13 @@ if (import.meta.vitest) {
       expect(execRuntime).toHaveBeenCalledTimes(1);
       expect(execRuntime).toHaveBeenCalledWith(
         expect.objectContaining({
+          args: expect.arrayContaining(['--rev', '1.19']),
           runtime: {
             type: 'universal',
             majorVersion: 18,
           },
         })
       );
-      const buildArgs = vi.mocked(execRuntime).mock.calls[0][0].args;
-      expect(buildArgs[buildArgs.indexOf('--rev') + 1]).toBe('1.19');
 
       // ファイルの設置状況の検証
       expect(await (await getJarPath(outputPath)).exists()).toBe(true);
