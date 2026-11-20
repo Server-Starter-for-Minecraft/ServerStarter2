@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { isContentsExists } from 'src/logic/contents/contentsPage';
 import { useMainStore } from 'src/stores/MainStore';
 import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
-import { isContentsExists } from './Contents/contentsPage';
 import IconTabDropdownView from './utils/IconTabDropdownView.vue';
 import IconTabView from './utils/IconTabView.vue';
 

@@ -364,7 +364,7 @@ export const ALLOWED_EXTERNAL_PACKAGES = [
  */
 export const EXTERNAL_PACKAGE_WRAPPERS = [
   {
-    file: 'src-electron/common/logger.ts',
+    file: 'src-electron/logger/logger.ts',
     reason: 'ログの出力（log4js）とアーカイブ（tar）を行う基盤のため',
   },
   {
@@ -387,5 +387,172 @@ export const EXTERNAL_PACKAGE_WRAPPERS = [
   {
     file: 'src-electron/source/version/getVersions/spigot.ts',
     reason: 'バージョン一覧の HTML の解析（cheerio）を扱う',
+  },
+];
+
+/**
+ * @typedef {object} Layer
+ * @property {string} name 層の名前
+ * @property {string[]} files 層に含まれるファイル（リポジトリのルートからの glob）
+ * @property {string[]} allowed import してよい層の名前（`*` はすべて）
+ * @property {string} description 層の役割
+ */
+
+/**
+ * バックエンド（src-electron）の層構造（上ほど上位）
+ *
+ * 各層は `allowed` に書いた層だけを import できる（下位の層のみを書く。上位の層・同じ階層の層は書かない）。
+ * 層の中のファイル同士は自由に import できる。
+ * 層を追加する場合は，この一覧に追加し，上位の層の `allowed` に新しい層を追加する
+ *
+ * @type {Layer[]}
+ */
+export const BACKEND_LAYERS = [
+  {
+    name: 'entry',
+    files: ['src-electron/electron-main.ts'],
+    allowed: ['*'],
+    description: 'アプリのエントリーポイント',
+  },
+  {
+    name: 'preload',
+    files: ['src-electron/electron-preload.ts'],
+    allowed: ['api', 'base'],
+    description: 'プリロード（レンダラーへ API を公開する）',
+  },
+  {
+    name: 'ipc-api',
+    files: ['src-electron/ipc/back.ts'],
+    allowed: ['source', 'api', 'ipc', 'ipc-link', 'base'],
+    description:
+      'IPC の API とバックエンドの処理の対応付け（バックエンドの処理は source のみを呼ぶ）',
+  },
+  {
+    name: 'ipc',
+    files: ['src-electron/ipc/!(back|link).ts'],
+    allowed: ['ipc-api', 'ipc-link', 'core', 'api', 'base'],
+    description: 'IPC の接続',
+  },
+  {
+    name: 'updater',
+    files: ['src-electron/updater/**'],
+    allowed: ['source', 'common', 'core', 'api', 'base'],
+    description: '自動アップデート',
+  },
+  {
+    name: 'source',
+    files: ['src-electron/source/**'],
+    allowed: ['common', 'core', 'api', 'base'],
+    description: 'バックエンドの処理（ドメインの処理）',
+  },
+  {
+    name: 'common',
+    files: ['src-electron/common/**'],
+    allowed: ['core', 'api', 'base'],
+    description: '進捗の通知などの共通処理',
+  },
+  {
+    name: 'core',
+    files: ['src-electron/core/**'],
+    allowed: ['api', 'ipc-link', 'base'],
+    description: 'バックエンドから使う API の送信口（source を呼ばない）',
+  },
+  {
+    name: 'ipc-link',
+    files: ['src-electron/ipc/link.ts'],
+    allowed: ['api', 'base'],
+    description: 'IPC の型と接続の土台',
+  },
+  {
+    name: 'api',
+    files: ['src-electron/api/**'],
+    allowed: ['base'],
+    description: 'IPC の API の型定義',
+  },
+  {
+    name: 'base',
+    files: [
+      'src-electron/util/**',
+      'src-electron/schema/**',
+      'src-electron/lifecycle/**',
+      'src-electron/logger/**',
+      'src-public/**',
+    ],
+    allowed: [],
+    description:
+      '共通基盤（汎用処理・スキーマ・アプリのライフサイクル・ロガー）。互いに依存するため同じ層とする',
+  },
+];
+
+/**
+ * フロントエンド（src）の層構造（上ほど上位）
+ *
+ * 考え方はバックエンドと同じ。src-electron は schema と api（型）のみ import できる
+ *
+ * @type {Layer[]}
+ */
+export const FRONTEND_LAYERS = [
+  {
+    name: 'front-entry',
+    files: ['src/App.vue'],
+    allowed: ['*'],
+    description: 'フロントエンドのエントリーポイント',
+  },
+  {
+    name: 'router',
+    files: ['src/router/**'],
+    allowed: ['layouts', 'pages', 'front-base', 'shared'],
+    description: '画面の遷移',
+  },
+  {
+    name: 'layouts',
+    files: ['src/layouts/**'],
+    allowed: ['pages', 'components', 'init', 'stores', 'front-base', 'shared'],
+    description: '画面の枠組み',
+  },
+  {
+    name: 'pages',
+    files: ['src/pages/**'],
+    allowed: ['components', 'init', 'stores', 'front-base', 'shared'],
+    description: '画面',
+  },
+  {
+    name: 'components',
+    files: ['src/components/**'],
+    allowed: ['init', 'stores', 'front-base', 'shared'],
+    description: '画面の部品（pages・layouts は使わない）',
+  },
+  {
+    name: 'init',
+    files: ['src/init.ts'],
+    allowed: ['stores', 'front-base', 'shared'],
+    description: '起動時の処理',
+  },
+  {
+    name: 'stores',
+    files: ['src/stores/**'],
+    allowed: ['front-base', 'shared'],
+    description: '状態の管理（components・pages・layouts は使わない）',
+  },
+  {
+    name: 'front-base',
+    files: [
+      'src/error/**',
+      'src/logic/**',
+      'src/i18n/**',
+      'src/assets/**',
+      'src/color/**',
+      'src/boot/**',
+      'src/schema/**',
+    ],
+    allowed: ['shared'],
+    description:
+      'フロントエンドの共通基盤（エラー処理・stores と components で共有する処理・翻訳・素材など）',
+  },
+  {
+    name: 'shared',
+    files: ['src-public/**', 'src-electron/schema/**', 'src-electron/api/**'],
+    allowed: [],
+    description: 'フロントエンドとバックエンドで共有する処理と型',
   },
 ];

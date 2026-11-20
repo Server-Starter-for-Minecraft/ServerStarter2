@@ -4,7 +4,7 @@ import {
   logDir,
   MOD_CACHE_PATH,
   PLUGIN_CACHE_PATH,
-} from '../source/const';
+} from '../lifecycle/paths';
 import {
   DefaultServerPropertiesAnnotation,
   ServerPropertiesAnnotation,

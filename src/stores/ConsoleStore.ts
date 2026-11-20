@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia';
 import { checkError } from 'src/error/error';
+import {
+  ConsoleOutputParser,
+  replayConsoleOutputs,
+} from 'src/logic/console/consoleLine';
 import { ConsoleData, WorldStatus } from 'src/schema/console';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
@@ -7,10 +11,6 @@ import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { WorldID } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import {
-  ConsoleOutputParser,
-  replayConsoleOutputs,
-} from 'src/components/World/Console/consoleLine';
 import { useMainStore } from './MainStore';
 import { useProgressStore } from './ProgressStore';
 import { updateBackWorld, updateWorld } from './WorldStore';
