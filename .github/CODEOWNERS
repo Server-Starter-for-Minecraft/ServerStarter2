@@ -1,0 +1,6 @@
+# lint の設定・独自ルール・抑制ファイルの変更は，規約の例外の追加にあたるためメンテナーのレビューを必須にする
+# （有効にするには，ブランチ保護で「Require review from Code Owners」を設定する）
+/eslint.config.js @CivilTT
+/eslint-rules/ @CivilTT
+/eslint-suppressions.json @CivilTT
+/.github/workflows/linter.yml @CivilTT

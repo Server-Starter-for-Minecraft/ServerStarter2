@@ -1,6 +1,7 @@
 import { randomInt } from 'crypto';
 import dayjs, { type Dayjs } from 'dayjs';
-import { app } from 'electron';
+// Electron外(スクリプト・テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
+import * as electron from 'electron';
 import fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
@@ -23,7 +24,7 @@ const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
 // LATASTの上書き前にアーカイブファイルを作成
 // Testの時には下記のコードは実行しない
-if (app && logPaths.every((path) => path.exists())) {
+if (electron.app && logPaths.every((path) => path.exists())) {
   logPaths.forEach((path, idx) =>
     fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
   );
