@@ -12,7 +12,11 @@ import { Path } from 'src-electron/util/binary/path';
 import { deepcopy } from 'src-electron/util/deepcopy';
 import { errorMessage } from 'src-electron/util/error/construct';
 import { fromRuntimeError, isError } from 'src-electron/util/error/error';
-import { Failable, safeExec } from 'src-electron/util/error/failable';
+import {
+  Failable,
+  safeExec,
+  safeExecAsync,
+} from 'src-electron/util/error/failable';
 import { settingPath } from '../const';
 import { sourceLoggers } from '../sourceLogger';
 import { systemSettingsSchema } from './systemSchema';
@@ -20,8 +24,10 @@ import { systemSettingsSchema } from './systemSchema';
 const loggers = () => sourceLoggers().stores.system;
 
 // 設定ファイルの書き込み
-async function write(settings: SystemSettings) {
+async function write(settings: SystemSettings): Promise<Failable<void>> {
   systemSettingsValue = settings;
+  // 読み込めなかった設定ファイルを残すため，書き込みを止めている場合はメモリ上の設定のみ更新する
+  if (isWriteBlocked) return;
 
   // スキーマのバージョンを付与して文字列化
   const stringified = JSON.stringify(systemSettingsSchema.serialize(settings));
@@ -94,7 +100,13 @@ async function removeExpiredBackups() {
   const threshold = dayjs().subtract(BROKEN_BACKUP_RETENTION_DAYS, 'd');
   for (const path of paths) {
     if (!path.basename().startsWith(BROKEN_BACKUP_PREFIX)) continue;
-    if (!(await path.lastUpdateTime()).isBefore(threshold)) continue;
+    // 更新日時を取得できない場合は，この起動では削除しない（設定の読み込みを止めない）
+    const updated = await safeExecAsync(async () => path.lastUpdateTime());
+    if (isError(updated)) {
+      loggers().removeExpiredBackups().warn(updated);
+      continue;
+    }
+    if (!updated.isBefore(threshold)) continue;
     const removed = await path.remove();
     // 削除できなくても次回の起動時に再度削除を試みる
     if (isError(removed)) loggers().removeExpiredBackups().warn(removed);
@@ -104,7 +116,8 @@ async function removeExpiredBackups() {
 /**
  * 設定ファイルを読み込めなかった場合の処理
  *
- * 読み込めなかったファイルをバックアップしてから既定値で起動し，画面の準備ができたらユーザーへ通知する
+ * 読み込めなかったファイルをバックアップしてから既定値で起動し，画面の準備ができたらユーザーへ通知する。
+ * バックアップできなかった場合は，ユーザーの設定を失わないよう，このセッションでは設定ファイルを上書きしない
  *
  * @param error 読み込めなかった原因
  * @returns 起動に使う設定（既定値）
@@ -114,16 +127,28 @@ async function recoverFromBrokenSettings(
 ): Promise<SystemSettings> {
   loggers().read().error(error);
   const backup = await backupBrokenSettings();
-  let backupPath = '';
-  if (isError(backup)) loggers().backup().error(backup);
-  else backupPath = backup.path;
-
-  const notification = errorMessage.core.brokenSystemSettings({ backupPath });
+  let notification: ErrorMessage;
+  if (isError(backup)) {
+    loggers().backup().error(backup);
+    isWriteBlocked = true;
+    notification = errorMessage.core.brokenSystemSettingsWithoutBackup();
+  } else {
+    notification = errorMessage.core.brokenSystemSettings({
+      backupPath: backup.path,
+    });
+  }
   // 起動直後は画面の準備ができていないため，準備ができた時点で通知する
   onReadyWindow(() => api.send.Error(notification), true);
 
   return deepcopy(DEFAULT_SYSTEM_SETTINGS);
 }
+
+/**
+ * 設定ファイルへの書き込みを止めているか
+ *
+ * 読み込めなかった設定ファイルをバックアップできなかった場合に，元のファイルを上書きしないために使う
+ */
+let isWriteBlocked = false;
 
 let systemSettingsValue: SystemSettings | undefined;
 /** 起動後最初の読み込み（同時に呼ばれても読み込みは一度だけ行う） */

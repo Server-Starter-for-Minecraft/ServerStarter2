@@ -263,6 +263,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
       title: 'システム設定を読み込めなかったため，初期設定で起動しました',
       desc: '読み込めなかった設定ファイルは {backupPath} に保存しました（7日後に削除されます）',
     },
+    brokenSystemSettingsWithoutBackup: {
+      title: 'システム設定を読み込めなかったため，初期設定で起動しました',
+      desc: '読み込めなかった設定ファイルを保存できなかったため，このまま終了するまで設定の変更は保存されません',
+    },
     update: {
       missingAppSource: {
         title: '最新のリリースにアップデート用ファイルが見つかりません',

@@ -1,4 +1,4 @@
-import { ErrorMessage } from 'app/src-electron/schema/error';
+import type { ErrorMessage } from 'app/src-electron/schema/error';
 import { isError } from '../error';
 
 /**

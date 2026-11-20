@@ -29,6 +29,24 @@ import {
 import pluginServerStarter from './eslint-rules/index.js';
 
 /**
+ * util の迂回（Node.js の組み込みモジュール・外部パッケージの直接利用）の制限の対象外とするファイル
+ *
+ * 静的な import と動的な import の制限で同じ対象外のファイルを使う
+ */
+const UTIL_BYPASS_IGNORES = [
+  'src-electron/util/**',
+  // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
+  ...TEST_FILES,
+  // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
+  'src-electron/logger/logger.ts',
+  // 例外：外部パッケージのラッパー（理由は eslint-rules/config.js を参照）
+  ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
+  // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
+  // （標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）
+  'scripts/electronNode.ts',
+];
+
+/**
  * 構文の制限（no-restricted-syntax）の共通の設定
  *
  * no-restricted-syntax は後の設定で上書きされるため，ファイルによって制限を追加する場合もこの一覧を含める
@@ -336,18 +354,7 @@ export default tseslint.config(
   // util を使わずに OS の機能を直接扱うこと（迂回）を禁止する
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    ignores: [
-      'src-electron/util/**',
-      // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
-      ...TEST_FILES,
-      // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
-      'src-electron/logger/logger.ts',
-      // 例外：外部パッケージのラッパー（理由は eslint-rules/config.js を参照）
-      ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
-      // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
-      // （標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）
-      'scripts/electronNode.ts',
-    ],
+    ignores: UTIL_BYPASS_IGNORES,
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',

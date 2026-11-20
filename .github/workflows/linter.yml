@@ -46,7 +46,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          changed=$(git diff --name-only "${BASE_SHA}...HEAD" -- eslint.config.js eslint-rules/ scripts/lint/ .github/workflows/linter.yml ':!eslint-rules/**/*.test.js')
+          changed=$(git diff --name-only "${BASE_SHA}...HEAD" -- eslint.config.js eslint-rules/ scripts/lint/ .github/workflows/linter.yml ':!*.test.js' ':!*.test.ts')
           if [ -n "${changed}" ]; then
             echo "lint の設定が変更されています。例外の追加が妥当かをメンテナーが確認し，ラベル lint-exception を付けてください:"
             echo "${changed}"
