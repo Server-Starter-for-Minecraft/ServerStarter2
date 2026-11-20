@@ -1,4 +1,5 @@
 import pluginQuasar from '@quasar/app-vite/eslint';
+import pluginVitest from '@vitest/eslint-plugin';
 import prettierConfig from 'eslint-config-prettier';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import pluginImportX from 'eslint-plugin-import-x';
@@ -18,6 +19,7 @@ import {
   FAILABLE_HANDLERS,
   FRONTEND_FILES,
   FRONTEND_LAYERS,
+  MOCKABLE_BOUNDARIES,
   RESTRICTED_BUILTIN_MODULES,
   SCRIPT_FILES,
   SOURCE_FILES,
@@ -219,6 +221,28 @@ export default tseslint.config(
     rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
   },
 
+  // ---- テスト（振る舞いを検証し，実装の内部構造に依存しないテストにする） ----
+  // （in-source テストも対象とするため，テストの関数の呼び出しを検査する vitest のルールは全体に適用する）
+  {
+    files: ['**/*.ts'],
+    plugins: { vitest: pluginVitest },
+    rules: {
+      'vitest/no-focused-tests': 'error',
+      'vitest/no-disabled-tests': 'error',
+      'vitest/expect-expect': 'error',
+      'vitest/no-conditional-expect': 'error',
+      'vitest/no-conditional-in-test': 'error',
+      'vitest/no-standalone-expect': 'error',
+      'vitest/valid-title': 'error',
+      // describe に async の関数を渡すと，テストの収集時に処理が走る（ファイル操作など）ため禁止する
+      'vitest/valid-describe-callback': 'error',
+      'serverstarter/no-internal-mock': [
+        'error',
+        { boundaries: MOCKABLE_BOUNDARIES.map(({ file }) => file) },
+      ],
+    },
+  },
+
   // ---- エラーハンドリング（失敗は Failable / WithError で扱い，握りつぶさない） ----
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES, ...FRONTEND_FILES],
@@ -253,15 +277,6 @@ export default tseslint.config(
           caughtErrors: 'all',
         },
       ],
-      // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            "BinaryExpression[operator=/^[!=]==?$/][right.value='error'][left.property.name='type']",
-          message: 'エラーの判定は isError / isValid を使ってください',
-        },
-      ],
       // ログは必ず正規の経路（ロガー）で latest.log に書き込む
       'no-console': 'error',
     },
@@ -288,11 +303,6 @@ export default tseslint.config(
       'serverstarter/no-silent-error': 'off',
       'serverstarter/no-failable-cast': 'off',
     },
-  },
-  // エラーの判定関数そのものの実装は対象外とする
-  {
-    files: ['src-electron/util/error/error.ts', 'src-public/scripts/error.ts'],
-    rules: { 'no-restricted-syntax': 'off' },
   },
   // 例外：CLI の出力（ログではなく利用者への表示）は console を使う
   {
@@ -342,6 +352,45 @@ export default tseslint.config(
         },
       ],
     },
+  },
+
+  // ---- 構文の制限（no-restricted-syntax は後の設定で上書きされるため，1 か所にまとめる） ----
+  {
+    files: ['**/*.ts', '**/*.vue'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
+        {
+          selector:
+            "BinaryExpression[operator=/^[!=]==?$/][right.value='error'][left.property.name='type']",
+          message: 'エラーの判定は isError / isValid を使ってください',
+        },
+        // テストで内部の呼び出し順序・呼び出しの記録を検証すると，実装の内部構造に依存したテストになる
+        {
+          selector:
+            'CallExpression[callee.property.name=/^(toHaveBeenNthCalledWith|nthCalledWith)$/]',
+          message:
+            '内部の呼び出し順序を検証せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
+        },
+        {
+          selector:
+            "MemberExpression[object.property.name='mock'][property.name='calls']",
+          message:
+            'モックの呼び出しの記録を直接参照せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
+        },
+      ],
+    },
+  },
+  // テストの共通の準備（setupFiles）は，テストの関数の外で後処理の検証を行う
+  {
+    files: ['test/setup/**'],
+    rules: { 'vitest/no-standalone-expect': 'off' },
+  },
+  // エラーの判定関数そのものの実装は，エラーの判定の制限の対象外とする
+  {
+    files: ['src-electron/util/error/error.ts', 'src-public/scripts/error.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
   },
 
   {

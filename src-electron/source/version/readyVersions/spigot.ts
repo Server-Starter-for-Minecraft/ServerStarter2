@@ -308,7 +308,7 @@ if (import.meta.vitest) {
 
       // execRuntime が正しい引数で呼ばれている
       expect(execRuntime).toHaveBeenCalledTimes(1);
-      expect(execRuntime).toHaveBeenNthCalledWith(1, {
+      expect(execRuntime).toHaveBeenCalledWith({
         args: [
           '-Dfile.encoding=UTF-8',
           '-jar',

@@ -13,7 +13,7 @@ vi.mock('app/src-electron/source/containers', () => ({
   versionContainer: { readyVersion: vi.fn() },
 }));
 vi.mock('app/src-electron/core/api', () => ({ api: {} }));
-vi.mock('../../stores/system', () => ({
+vi.mock('../stores/system', () => ({
   getSystemSettings: vi.fn(async () => ({
     world: { memory: { size: 2, unit: 'GB' } },
   })),
