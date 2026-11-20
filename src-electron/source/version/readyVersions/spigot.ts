@@ -222,8 +222,8 @@ async function getServerJarFromBuildTools(
   const sourceJarPath = buildToolsPath
     .parent()
     .child(`spigot-${versionId}.jar`);
-  const targetJarPath = getJarPath(serverCachePath);
-  if (!sourceJarPath.exists()) {
+  const targetJarPath = await getJarPath(serverCachePath);
+  if (!(await sourceJarPath.exists())) {
     p?.delete();
     return errorMessage.core.version.failSpigotBuild.missingJar({
       spigotVersion: versionId,
@@ -240,7 +240,7 @@ async function getServerJarFromBuildTools(
   await buildToolsPath.parent().remove();
 
   p?.delete();
-  if (!targetJarPath.exists()) {
+  if (!(await targetJarPath.exists())) {
     return errorMessage.core.version.failSpigotBuild.missingJar({
       spigotVersion: versionId,
     });
@@ -295,7 +295,9 @@ if (import.meta.vitest) {
       if (isError(res)) return;
 
       // 戻り値の検証
-      expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
+      expect((await res.getCommand({ jvmArgs: ['replaceArg'] }))[0]).toBe(
+        'replaceArg'
+      );
       expect(res.runtime).toMatchObject({
         type: 'universal',
         majorVersion: 18,
@@ -320,17 +322,19 @@ if (import.meta.vitest) {
       });
 
       // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+      // expect((await outputPath.child('libraries').exists())).toBe(true);
 
       // 実行後にファイル削除
       const remover = new RemoveSpigotVersion(ver19, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(false);
+      expect(cachePath && (await (await getJarPath(cachePath)).exists())).toBe(
+        true
+      );
     });
 
     test(
@@ -341,7 +345,7 @@ if (import.meta.vitest) {
         const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
         const cachePath = readyOperator.cachePath;
         await outputPath.remove();
-        await getJarPath(cachePath).remove();
+        await (await getJarPath(cachePath)).remove();
 
         // 中断されたビルド等による残骸を再現する
         // （`generateCachedJar()`がBuildToolsを実行する作業フォルダと一致させること）
@@ -357,7 +361,9 @@ if (import.meta.vitest) {
         const execRuntime: ExecRuntime = vi.fn(async (options) => {
           for (const repo of repos) {
             const repoPath = options.currentDir.child(repo);
-            const children = repoPath.exists() ? await repoPath.iter() : [];
+            const children = (await repoPath.exists())
+              ? await repoPath.iter()
+              : [];
             if (!isError(children) && children.length > 0) {
               return errorMessage.system.subprocess({
                 processPath: 'java',
@@ -377,7 +383,7 @@ if (import.meta.vitest) {
         );
         expect(isError(res)).toBe(false);
         // 今回ビルドしたJarが設置されているはず
-        expect(await getJarPath(outputPath).readText()).toBe('new jar');
+        expect(await (await getJarPath(outputPath)).readText()).toBe('new jar');
       }
     );
   });

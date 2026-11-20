@@ -24,7 +24,7 @@ export function getCacheContents(
 export function getCacheContents(
   type: 'mod'
 ): Promise<WithError<CacheFileData<ModData>[]>>;
-export function getCacheContents(
+export async function getCacheContents(
   type: 'datapack' | 'plugin' | 'mod'
 ): Promise<WithError<CacheFileData<DatapackData | PluginData | ModData>[]>> {
   return filesMap[type].loadCache();

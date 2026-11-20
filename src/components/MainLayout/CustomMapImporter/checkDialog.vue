@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import LoadingLogo from 'src/assets/animation/LoadingLogo.vue';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import { CustomMapImporterProp } from './iCustomMapImporter';
@@ -11,7 +13,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 const prop = defineProps<CustomMapImporterProp>();
 
 // Dialogの表示と同時に導入を始める
-importProcess();
+runDetached(importProcess(), showUnexpectedError);
 
 async function importProcess() {
   try {

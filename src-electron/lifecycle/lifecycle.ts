@@ -20,6 +20,6 @@ export async function assertComplete<T>(promise: Promise<T>) {
   return result;
 }
 
-export function readyWindow() {
-  onReadyWindow.invoke();
+export async function readyWindow() {
+  await onReadyWindow.invoke();
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { UUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
@@ -13,7 +15,7 @@ const prop = defineProps<Prop>();
 const playerStore = usePlayerStore();
 
 async function onCardClicked() {
-  playerStore.selectGroup(prop.groupId);
+  runDetached(playerStore.selectGroup(prop.groupId), showUnexpectedError);
 }
 </script>
 

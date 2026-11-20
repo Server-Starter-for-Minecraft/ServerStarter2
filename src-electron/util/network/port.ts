@@ -19,5 +19,5 @@ export async function portInUse(port: number): Promise<boolean> {
 
     server.listen(port, '127.0.0.1');
   });
-  return await p;
+  return p;
 }

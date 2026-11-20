@@ -27,7 +27,7 @@ class ZipHandler {
   > {
     const data = await path.read();
     if (isError(data)) return data;
-    const zipData = await safeExecAsync(() =>
+    const zipData = await safeExecAsync(async () =>
       JSZip.loadAsync(new Uint8Array(data.data), {
         // TODO:shift-jis 固定で大丈夫？
         decodeFileName: (name) =>
@@ -76,7 +76,7 @@ export class ZipFile {
         type: 'file',
         path: `${this.path.path}(${path})`,
       });
-    return await file();
+    return file();
   }
 
   async hasFile(path: string): Promise<Failable<boolean>> {

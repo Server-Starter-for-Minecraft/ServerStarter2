@@ -86,7 +86,9 @@ function removeGroup() {
   });
 }
 
-onMounted(() => playerStore.selectGroup(playerStore.selectedGroupId, false));
+onMounted(async () =>
+  playerStore.selectGroup(playerStore.selectedGroupId, false)
+);
 </script>
 
 <template>

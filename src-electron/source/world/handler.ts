@@ -1,5 +1,6 @@
 import { Listener } from '@ngrok/ngrok';
 import { randomInt } from 'crypto';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { api } from 'app/src-electron/core/api';
 import { closeServerStarterAndShutDown } from 'app/src-electron/lifecycle/exit';
@@ -71,7 +72,7 @@ class PromiseSpooler {
     this.running = false;
   }
 
-  async pushItem<T>(
+  pushItem<T>(
     spoolingQueue: [
       () => Promise<any>,
       (value: any) => void,
@@ -113,7 +114,10 @@ class PromiseSpooler {
     const resultPromise = new Promise<T>((resolve) => {
       pushItem(spollingItem, resolve, channel);
     });
-    this.start();
+    // 処理の失敗は各処理の呼び出し元へ返すため，ここでは実行の基盤の異常のみをログに残す
+    runDetached(this.start(), (e) =>
+      sourceLoggers().world.promiseSpooler().error(e)
+    );
     return resultPromise;
   }
 
@@ -329,19 +333,19 @@ export class WorldHandler {
   }
 
   // worldIDからWorldHandlerを取得する
-  static get(
+  static async get(
     id: WorldID,
     name?: WorldName,
     container?: WorldContainer
-  ): Failable<WorldHandler> {
+  ): Promise<Failable<WorldHandler>> {
     if (!(id in WorldHandler.worldHandlerMap))
       return errorMessage.core.world.invalidWorldId({ id, container, name });
     return WorldHandler.worldHandlerMap[id];
   }
 
   /** 現在のワールドの保存場所を返す */
-  getSavePath() {
-    return worldContainerToPath(this.container).child(this.name);
+  async getSavePath() {
+    return (await worldContainerToPath(this.container)).child(this.name);
   }
 
   /** セーブデータを移動する*/
@@ -350,9 +354,9 @@ export class WorldHandler {
     container: WorldContainer
   ): Promise<Failable<void>> {
     // 現在のワールドの保存場所
-    const currentPath = this.getSavePath();
+    const currentPath = await this.getSavePath();
     // 変更される保存先
-    const targetPath = worldContainerToPath(container).child(name);
+    const targetPath = (await worldContainerToPath(container)).child(name);
 
     // パスに変化がない場合はなにもしない
     if (currentPath.path === targetPath.path) return;
@@ -368,14 +372,14 @@ export class WorldHandler {
 
   /** ローカルに保存されたワールド設定Jsonを読み込む */
   private async loadLocalServerJson() {
-    const savePath = this.getSavePath();
-    return await serverJsonFile.load(savePath);
+    const savePath = await this.getSavePath();
+    return serverJsonFile.load(savePath);
   }
 
   /** ワールド設定Jsonをローカルに保存 */
   private async saveLocalServerJson(settings: WorldSettings) {
-    const savePath = this.getSavePath();
-    return await serverJsonFile.save(savePath, settings);
+    const savePath = await this.getSavePath();
+    return serverJsonFile.save(savePath, settings);
   }
 
   /** リモートがあるかをチェックして、ある場合はpull */
@@ -391,7 +395,7 @@ export class WorldHandler {
     // リモートが存在する場合Pull
     if (worldSettings.remote) {
       const remote = worldSettings.remote;
-      const savePath = this.getSavePath();
+      const savePath = await this.getSavePath();
 
       const pull = await pullRemoteWorld(
         savePath,
@@ -417,7 +421,7 @@ export class WorldHandler {
     if (remote) {
       const pushProgress = progress?.subGroup();
 
-      const savePath = this.getSavePath();
+      const savePath = await this.getSavePath();
       const prog = pushProgress?.subGroup();
       const push = await pushRemoteWorld(savePath, remote, prog);
       pushProgress?.delete();
@@ -428,17 +432,17 @@ export class WorldHandler {
   }
 
   private async loadLocal() {
-    const savePath = this.getSavePath();
+    const savePath = await this.getSavePath();
     // ローカルの設定ファイルを読み込む
-    return await loadLocalFiles(savePath, this.id, this.name, this.container);
+    return loadLocalFiles(savePath, this.id, this.name, this.container);
   }
 
   async save(
     world: WorldEdited,
     progress?: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
-    const func = () => this.saveExec(world, progress);
-    return await this.promiseSpooler.spool(func, 'SAVE');
+    const func = async () => this.saveExec(world, progress);
+    return this.promiseSpooler.spool(func, 'SAVE');
   }
   /** サーバーのデータを保存 */
   private async saveExec(
@@ -481,13 +485,13 @@ export class WorldHandler {
       }
     }
 
-    const savePath = this.getSavePath();
+    const savePath = await this.getSavePath();
 
     // リモートからpull
     const pullResult = await this.pull(progress);
     if (isError(pullResult)) return withError(pullResult);
 
-    const loadLocalServerJson = () => this.loadLocalServerJson();
+    const loadLocalServerJson = async () => this.loadLocalServerJson();
 
     // ローカルに保存されたワールド設定Jsonを読み込む(使用中かどうかを確認するため)
     const sub = progress?.subtitle({ key: 'server.load.loadLocalSetting' });
@@ -546,7 +550,7 @@ export class WorldHandler {
       );
     }
 
-    const savePath = this.getSavePath();
+    const savePath = await this.getSavePath();
 
     // 現状のサーバー設定データ
     const current = await this.loadLocal();
@@ -572,12 +576,12 @@ export class WorldHandler {
       isValid(current.value.players) &&
       isValid(world.players)
     ) {
-      const [diff, sameMember] = getOpDiff(
+      const [diff, sameMember] = await getOpDiff(
         current.value.players,
         world.players
       );
       // op権限レベルが0になったプレイヤーに対してdeopを実行
-      await asyncMap(diff[0], (x) => this.runCommand(`deop ${x}`));
+      await asyncMap(diff[0], async (x) => this.runCommand(`deop ${x}`));
 
       if (isValid(current.value.properties)) {
         const opPermissionLevel =
@@ -586,7 +590,7 @@ export class WorldHandler {
         if (includes([1, 2, 3, 4] as const, opPermissionLevel)) {
           const diffs = diff[opPermissionLevel];
           // op権限レベルがop-permission-levelになったプレイヤーに対してopを実行
-          await asyncMap(diffs, (x) => this.runCommand(`op ${x}`));
+          await asyncMap(diffs, async (x) => this.runCommand(`op ${x}`));
           ([1, 2, 3, 4] as const).forEach((i) => {
             if (i !== opPermissionLevel && diff[i].length > 0) {
               errorMessage.core.world.failedChangingOp({
@@ -642,8 +646,8 @@ export class WorldHandler {
     // フラグを折ってjsonに保存
     world.using = false;
     const saveJson = await serverJsonFile.save(
-      this.getSavePath(),
-      constructWorldSettings(world)
+      await this.getSavePath(),
+      await constructWorldSettings(world)
     );
     if (isError(saveJson)) return withError(saveJson);
 
@@ -690,7 +694,7 @@ export class WorldHandler {
     ) {
       // フラグを折ってPush
       progress?.subtitle({ key: 'server.remote.fixing' });
-      return await this.fix();
+      return this.fix();
     }
     // リモートからpull
     const group = progress?.subGroup();
@@ -705,8 +709,8 @@ export class WorldHandler {
   }
 
   async create(world: WorldEdited): Promise<WithError<Failable<World>>> {
-    const func = () => this.createExec(world);
-    return await this.promiseSpooler.spool(func);
+    const func = async () => this.createExec(world);
+    return this.promiseSpooler.spool(func);
   }
 
   /** サーバーのデータを新規作成して保存 */
@@ -715,7 +719,7 @@ export class WorldHandler {
   ): Promise<WithError<Failable<World>>> {
     this.container = world.container;
     this.name = world.name;
-    const savePath = this.getSavePath();
+    const savePath = await this.getSavePath();
 
     const errors: ErrorMessage[] = [];
 
@@ -732,7 +736,7 @@ export class WorldHandler {
     await savePath.mkdir(true);
 
     // ワールド設定Jsonをローカルに保存(これがないとエラーが出るため)
-    const worldSettings = constructWorldSettings(world);
+    const worldSettings = await constructWorldSettings(world);
     // リモートの設定だけは消しておく(存在しないブランチからPullしないように)
     // 新規作成時にPull元を指定する場合はworld.remote_sourceを指定することで可能
     delete worldSettings.remote;
@@ -743,17 +747,19 @@ export class WorldHandler {
     world.last_date = getCurrentTimestamp();
 
     // データを保存
-    return await this.saveExec(world);
+    return this.saveExec(world);
   }
 
   async delete(): Promise<WithError<Failable<undefined>>> {
-    const func = () => this.deleteExec();
-    return await this.promiseSpooler.spool(func);
+    const func = async () => this.deleteExec();
+    return this.promiseSpooler.spool(func);
   }
 
   /** ワールドを削除(リモ－トは削除しない) */
   private async deleteExec(): Promise<WithError<Failable<undefined>>> {
-    const result = await failabilify(() => this.getSavePath().remove())();
+    const result = await failabilify(async () =>
+      (await this.getSavePath()).remove()
+    )();
     if (isError(result)) return withError(result);
 
     delete WorldHandler.worldHandlerMap[this.id];
@@ -768,8 +774,8 @@ export class WorldHandler {
    * @returns 保存先にある追加コンテンツの一覧
    */
   async loadContents() {
-    return await this.promiseSpooler.spool(() =>
-      serverAllAdditionalFiles.load(this.getSavePath(), this.id)
+    return this.promiseSpooler.spool(async () =>
+      serverAllAdditionalFiles.load(await this.getSavePath(), this.id)
     );
   }
 
@@ -782,7 +788,7 @@ export class WorldHandler {
    * @param handler 破棄するワールドのハンドラ
    */
   private static async discardIncompleteWorld(handler: WorldHandler) {
-    const removed = await handler.getSavePath().remove();
+    const removed = await (await handler.getSavePath()).remove();
     if (isError(removed)) {
       sourceLoggers()
         .world.discardIncompleteWorld({
@@ -796,8 +802,8 @@ export class WorldHandler {
 
   /** ワールドを複製 */
   async duplicate(name?: WorldName): Promise<WithError<Failable<World>>> {
-    const func = () => this.duplicateExec(name);
-    return await this.promiseSpooler.spool(func);
+    const func = async () => this.duplicateExec(name);
+    return this.promiseSpooler.spool(func);
   }
 
   /** ワールドを複製 */
@@ -838,7 +844,9 @@ export class WorldHandler {
     } while (isError(newHandler) && name === undefined);
     if (isError(newHandler)) return withError(newHandler);
 
-    const copied = await this.getSavePath().copyTo(newHandler.getSavePath());
+    const copied = await (
+      await this.getSavePath()
+    ).copyTo(await newHandler.getSavePath());
     if (isError(copied)) {
       await WorldHandler.discardIncompleteWorld(newHandler);
       return withError(copied);
@@ -860,13 +868,13 @@ export class WorldHandler {
 
   /** ワールドをバックアップ */
   async backup(): Promise<WithError<Failable<BackupData>>> {
-    const func = () => this.backupExec();
-    return await this.promiseSpooler.spool(func);
+    const func = async () => this.backupExec();
+    return this.promiseSpooler.spool(func);
   }
 
   /** ワールドをバックアップ */
   private async backupExec(): Promise<WithError<Failable<BackupData>>> {
-    const backupPath = getBackUpPath(this.container, this.name);
+    const backupPath = await getBackUpPath(this.container, this.name);
 
     // リモートのデータを一時的に削除
     const localJson = await this.loadLocalServerJson();
@@ -878,7 +886,7 @@ export class WorldHandler {
     localJson.remote = remote;
 
     // tarファイルを生成
-    const tar = await createTar(this.getSavePath(), true);
+    const tar = await createTar(await this.getSavePath(), true);
     if (isError(tar)) return withError(tar);
 
     // リモートのデータを復旧
@@ -895,8 +903,8 @@ export class WorldHandler {
 
   /** ワールドにバックアップを復元 */
   async restore(backup: BackupData): Promise<WithError<Failable<World>>> {
-    const func = () => this.restoreExec(backup);
-    return await this.promiseSpooler.spool(func);
+    const func = async () => this.restoreExec(backup);
+    return this.promiseSpooler.spool(func);
   }
 
   /** ワールドにバックアップを復元 */
@@ -908,7 +916,7 @@ export class WorldHandler {
     const remote = beforeLocalJson.remote;
 
     const tarPath = new Path(backup.path);
-    if (!tarPath.exists()) {
+    if (!(await tarPath.exists())) {
       return withError(
         errorMessage.data.path.notFound({
           type: 'file',
@@ -916,7 +924,7 @@ export class WorldHandler {
         })
       );
     }
-    const savePath = this.getSavePath();
+    const savePath = await this.getSavePath();
 
     // 展開先の一時フォルダ
     const tempDir = await allocateTempDir();
@@ -971,14 +979,19 @@ export class WorldHandler {
     if (!doShutDown) return;
 
     // アプリケーションを終了
-    closeServerStarterAndShutDown();
+    await closeServerStarterAndShutDown();
   }
 
   async run(progress: GroupProgressor): Promise<WithError<Failable<World>>> {
     const result = await this.runExec(progress);
 
     // サーバーの実行に成功した場合のみシャットダウン(シャットダウンしないこともある)
-    if (isValid(result)) this.shutdown();
+    // （シャットダウンの確認を待たずに実行結果を返す）
+    if (isValid(result)) {
+      runDetached(this.shutdown(), (e) =>
+        sourceLoggers().world.shutdown({ id: this.id }).error(e)
+      );
+    }
 
     return result;
   }
@@ -1050,7 +1063,7 @@ export class WorldHandler {
   private async runExec(
     progress: GroupProgressor
   ): Promise<WithError<Failable<World>>> {
-    const ready = await this.promiseSpooler.spool(() =>
+    const ready = await this.promiseSpooler.spool(async () =>
       this.readyRunExec(progress)
     );
     const context = ready.value;
@@ -1065,7 +1078,7 @@ export class WorldHandler {
       serverResult = toRuntimeError(e);
     }
 
-    const after = await this.promiseSpooler.spool(() =>
+    const after = await this.promiseSpooler.spool(async () =>
       this.afterRunExec(progress, context, serverResult)
     );
     after.errors.unshift(...ready.errors);
@@ -1120,8 +1133,8 @@ export class WorldHandler {
         errors
       );
 
-    const settings = constructWorldSettings(beforeWorld);
-    const savePath = this.getSavePath();
+    const settings = await constructWorldSettings(beforeWorld);
+    const savePath = await this.getSavePath();
 
     // ポート番号を取得
     const port = await this.definePortNumber(
@@ -1242,7 +1255,7 @@ export class WorldHandler {
     serverResult: Failable<undefined>
   ): Promise<WithError<Failable<World>>> {
     const { ngrokListener, settings } = context;
-    const savePath = this.getSavePath();
+    const savePath = await this.getSavePath();
     const userPorts = this.userPorts;
     const errors: ErrorMessage[] = [];
 
@@ -1299,7 +1312,7 @@ export class WorldHandler {
   ): Promise<Failable<void>> {
     const properties = await serverPropertiesFile.load(savePath);
     if (isError(properties)) return properties;
-    return await serverPropertiesFile.save(
+    return serverPropertiesFile.save(
       savePath,
       withServerPorts(properties, userPorts)
     );

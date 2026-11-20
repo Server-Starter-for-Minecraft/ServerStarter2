@@ -94,8 +94,9 @@ export class Path {
     return path.extname(this._path);
   }
 
-  exists() {
-    return fs.existsSync(this._path);
+  /** ファイル・ディレクトリが存在するかを返す */
+  async exists(): Promise<boolean> {
+    return fs.pathExists(this._path);
   }
 
   stat = exclusive(this._stat);
@@ -137,7 +138,7 @@ export class Path {
 
   mkdir = exclusive(this._mkdir);
   private async _mkdir(recursive = true) {
-    if (!this.exists()) await fs.mkdir(this._path, { recursive });
+    if (!(await this.exists())) await fs.mkdir(this._path, { recursive });
   }
 
   /** ディレクトリが無かったら作成する */
@@ -155,11 +156,6 @@ export class Path {
   emptyDir = exclusive(this._emptyDir);
   private async _emptyDir() {
     await fs.emptyDir(this._path);
-  }
-
-  /** @deprecated 同期ディレクトリ生成(非推奨) */
-  mkdirSync(recursive = false) {
-    if (!this.exists()) fs.mkdirSync(this._path, { recursive });
   }
 
   mklink = exclusive(this._mklink);
@@ -198,12 +194,6 @@ export class Path {
     const bytes = await (await loadBytesData()).fromText(content);
     if (isError(bytes)) return bytes;
     return this._write(bytes, encoding);
-  }
-
-  /** @deprecated 同期書き込み(非推奨) */
-  writeTextSync(content: string) {
-    this.parent().mkdirSync(true);
-    fs.writeFileSync(this._path, content);
   }
 
   writeJson = exclusive(this._writeJson);
@@ -255,16 +245,11 @@ export class Path {
     return data.text(encoding);
   }
 
-  /** @deprecated 非推奨 */
-  readBufferSync(): Buffer {
-    return fs.readFileSync(this.path);
-  }
-
   async iter(): Promise<Failable<Path[]>> {
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
-    if (this.exists() && isDir)
+    if ((await this.exists()) && isDir)
       return (await fs.readdir(this._path)).map((p) => this.child(p));
     return [];
   }
@@ -274,7 +259,7 @@ export class Path {
    */
   remove = exclusive(this._remove);
   private async _remove(): Promise<Failable<void>> {
-    if (!this.exists()) return;
+    if (!(await this.exists())) return;
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
@@ -296,11 +281,11 @@ export class Path {
 
   copyTo = exclusive(this._copyTo);
   private async _copyTo(target: Path) {
-    if (!this.exists()) return;
+    if (!(await this.exists())) return;
     await target.parent().mkdir(true);
     await target.remove();
     try {
-      await retryOnBusy(() => fs.copy(this.path, target.path));
+      await retryOnBusy(async () => fs.copy(this.path, target.path));
     } catch {
       const isDir = await this._isDirectory();
       if (isError(isDir)) return isDir;
@@ -316,7 +301,7 @@ export class Path {
     target: Path,
     options?: fs.MoveOptions
   ): Promise<Failable<void>> {
-    if (!this.exists()) return;
+    if (!(await this.exists())) return;
     await target.parent().mkdir(true);
     const isSuccessRemove = await target._remove();
     if (isError(isSuccessRemove)) return isSuccessRemove;
@@ -365,7 +350,7 @@ export class Path {
 
 /** 再帰的にファイルの権限を書き換える */
 async function changePermissionsRecursively(basePath: string, mode: number) {
-  if (fs.existsSync(basePath)) {
+  if (await fs.pathExists(basePath)) {
     await fs.chmod(basePath, mode);
     if ((await fs.lstat(basePath)).isDirectory()) {
       const files = await fs.readdir(basePath);
@@ -425,9 +410,9 @@ const spoolers = InfinitMap.primitiveKeyWeakValue(
 function exclusive<P extends any[], R>(
   target: (this: Path, ...args: P) => Promise<R>
 ) {
-  return function (this: Path, ...args: P) {
+  return async function (this: Path, ...args: P) {
     const key = this.absolute().path;
-    return spoolers.get(key).spool(() => target.bind(this)(...args));
+    return spoolers.get(key).spool(async () => target.bind(this)(...args));
   };
 }
 
@@ -443,7 +428,7 @@ if (import.meta.vitest) {
       'work',
       path.basename(__filename, '.ts')
     );
-    workPath.mkdir();
+    await workPath.mkdir();
 
     test('path', () => {
       // パス操作のテスト
@@ -496,15 +481,15 @@ if (import.meta.vitest) {
 
       // ディレクトリの生成/削除
       const a = testdir.child('a');
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
       await a.mkdir();
       // 存在するディレクトリを生成しても何も起こらない
       await a.mkdir();
-      expect(a.exists()).toBe(true);
+      expect(await a.exists()).toBe(true);
       await a.remove();
       // 存在しないディレクトリを削除しても何も起こらない
       await a.remove();
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
 
       // ファイルの生成/削除
       await a.mkdir();
@@ -512,19 +497,19 @@ if (import.meta.vitest) {
       await b.writeText('hello');
       expect(await b.readText()).toBe('hello');
       await b.remove();
-      expect(b.exists()).toBe(false);
+      expect(await b.exists()).toBe(false);
       await a.remove();
 
       // ディレクトリの再帰的な作成/削除
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
       await b.mkdir();
-      expect(b.exists()).toBe(true);
+      expect(await b.exists()).toBe(true);
       await a.remove();
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
 
       // ensureDirはディレクトリが存在しない場合のみ作成する
       await a.ensureDir();
-      expect(a.exists()).toBe(true);
+      expect(await a.exists()).toBe(true);
 
       // emptyDirはディレクトリが空であることを保証する
       await a.child('sample.txt').writeText('hello');
@@ -581,15 +566,15 @@ if (import.meta.vitest) {
       expect(isError(renameSuccessResult)).toBe(false);
 
       // リネーム後のファイルが存在することを確認
-      expect(renameFile.exists()).toBe(false);
-      expect(testdir.child('renameFile2.txt').exists()).toBe(true);
+      expect(await renameFile.exists()).toBe(false);
+      expect(await testdir.child('renameFile2.txt').exists()).toBe(true);
 
       // リネーム（ディレクトリ）
       const renameDir = testdir.child('renameDir');
       await renameDir.mkdir();
       await renameDir.rename(testdir.child('renameDir2'));
-      expect(renameDir.exists()).toBe(false);
-      expect(testdir.child('renameDir2').exists()).toBe(true);
+      expect(await renameDir.exists()).toBe(false);
+      expect(await testdir.child('renameDir2').exists()).toBe(true);
     });
 
     test('file operations', async () => {
@@ -603,17 +588,17 @@ if (import.meta.vitest) {
       const copyTargetDir = testdir.child('copyTarget');
       const copyRes = await sourceDir.copyTo(copyTargetDir);
       expect(isError(copyRes)).toBe(false);
-      expect(sourceDir.exists()).toBe(true);
-      expect(copyTargetDir.child('a.txt').exists()).toBe(true);
-      expect(copyTargetDir.child('dir', 'b.txt').exists()).toBe(true);
+      expect(await sourceDir.exists()).toBe(true);
+      expect(await copyTargetDir.child('a.txt').exists()).toBe(true);
+      expect(await copyTargetDir.child('dir', 'b.txt').exists()).toBe(true);
 
       // check move
       const moveTargetDir = testdir.child('moveTarget');
       const moveRes = await sourceDir.moveTo(moveTargetDir);
       expect(isError(moveRes)).toBe(false);
-      expect(sourceDir.exists()).toBe(false);
-      expect(moveTargetDir.child('a.txt').exists()).toBe(true);
-      expect(moveTargetDir.child('dir', 'b.txt').exists()).toBe(true);
+      expect(await sourceDir.exists()).toBe(false);
+      expect(await moveTargetDir.child('a.txt').exists()).toBe(true);
+      expect(await moveTargetDir.child('dir', 'b.txt').exists()).toBe(true);
     });
 
     test('json files', async () => {
@@ -651,7 +636,7 @@ if (import.meta.vitest) {
 
       if (!isError(allPaths)) {
         const fileTxts = await Promise.all(
-          allPaths.map((file) => file.readText())
+          allPaths.map(async (file) => file.readText())
         );
         expect(fileTxts).toEqual(['hello', 'world']);
       }

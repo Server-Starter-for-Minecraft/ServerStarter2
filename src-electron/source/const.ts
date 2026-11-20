@@ -48,7 +48,7 @@ export const DEFAULT_MEMORY: MemorySettings = {
 } as const;
 
 // システムの言語設定がjaだった場合ja、それ以外の場合en-USに
-export const getDefaultLocale = (): Locale => {
+export const getDefaultLocale = async (): Promise<Locale> => {
   if (import.meta.env?.QUASAR_DEV) return 'ja';
   return electron.app.getLocale() === 'ja' ? 'ja' : 'en-US';
 };

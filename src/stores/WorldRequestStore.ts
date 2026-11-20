@@ -55,7 +55,7 @@ export const useWorldRequestStore = defineStore('worldRequestStore', {
      * @param payload 要求の内容
      * @returns ユーザーの回答
      */
-    request<K extends WorldRequestKind>(
+    async request<K extends WorldRequestKind>(
       worldID: WorldID,
       kind: K,
       payload: Payload<K>

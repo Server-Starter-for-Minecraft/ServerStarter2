@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T, setI18nFunc } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
@@ -21,6 +22,7 @@ import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import { setOpenDialogFunc } from 'src/components/Error/Error';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
@@ -67,7 +69,10 @@ window.API.onAddConsole((_event, worldID, chunk, isError) => {
 window.API.onUpdateOnlinePlayers((_event, worldID, players) => {
   const joined = consoleStore.setOnlinePlayers(worldID, players);
   // 参加したプレイヤーが未登録の場合はプレイヤー一覧(ホワイトリスト)に登録する
-  registerJoinedPlayersToWorld(worldID, joined);
+  runDetached(
+    registerJoinedPlayersToWorld(worldID, joined),
+    showUnexpectedError
+  );
 });
 // アップデートを実行するときに確認のダイアログを表示する
 window.API.onNotifySystemUpdate((_event, os, newVer) => {
@@ -86,9 +91,8 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
 
 // Eulaの同意処理
 // （同意を求める画面は、該当するワールドを表示している間だけ表示する）
-window.API.handleAgreeEula(
-  async (_: Electron.IpcRendererEvent, worldID, url) =>
-    await worldRequestStore.request(worldID, 'eula', { url })
+window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) =>
+  worldRequestStore.request(worldID, 'eula', { url })
 );
 // Progressがバックエンドからやってきたときの処理
 window.API.onProgress((_event, worldID, progress) => {
@@ -103,7 +107,7 @@ setOpenDialogFunc((args) => {
 });
 
 // Windowの起動時処理
-firstProcess();
+runDetached(firstProcess(), showUnexpectedError);
 setSubscribe();
 setShutdownHandler();
 
@@ -134,7 +138,7 @@ async function firstProcess() {
   await setUserSettings();
 
   // 起動時処理の開始
-  router.replace('/init');
+  runDetached(router.replace('/init'), showUnexpectedError);
 }
 
 /**

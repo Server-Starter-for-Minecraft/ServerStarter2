@@ -2,7 +2,7 @@ import { exec, ExecException } from 'child_process';
 import { osPlatform } from './os/os';
 
 // PCをシャットダウン
-export function shutdown() {
+export async function shutdown() {
   switch (osPlatform) {
     case 'windows-x64':
       return shutdownWindows();
@@ -15,7 +15,7 @@ export function shutdown() {
   }
 }
 
-function promiseProcess(command: string) {
+async function promiseProcess(command: string) {
   return new Promise<ExecException | null>((resolve) => {
     exec(command, (error) => {
       resolve(error);
@@ -23,17 +23,17 @@ function promiseProcess(command: string) {
   });
 }
 
-function shutdownWindows() {
+async function shutdownWindows() {
   return promiseProcess('shutdown /s /t 0');
 }
 
-function shutdownMac() {
+async function shutdownMac() {
   return promiseProcess(
     'osascript -e \'tell app "System Events" to shut down\''
   );
 }
 
-function shutdownLinux() {
+async function shutdownLinux() {
   // Linuxのディストリビューションによって効果ないこともある
   return promiseProcess('systemctl poweroff');
 }

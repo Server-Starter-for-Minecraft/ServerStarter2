@@ -21,7 +21,7 @@ const loggers = () => utilLoggers().BytesData;
  * (ホストごとの同時接続数制限やシステムのプロキシ設定が適用される)
  * テスト環境などElectron外で実行される場合は標準のfetchを使用する
  */
-const fetchURL = (url: string, init?: RequestInit) =>
+const fetchURL = async (url: string, init?: RequestInit) =>
   electron.net?.fetch ? electron.net.fetch(url, init) : fetch(url, init);
 
 export type Hash = {
@@ -93,7 +93,7 @@ export class BytesData {
     logger.trace('start');
 
     // ファイルが存在しない場合はエラー
-    if (!path.exists())
+    if (!(await path.exists()))
       return errorMessage.data.path.notFound({
         type: 'file',
         path: path.path,
@@ -268,7 +268,7 @@ export class BytesData {
   }
 
   async text(encoding = 'utf-8'): Promise<string> {
-    return await new Promise((resolve) => {
+    return new Promise((resolve) => {
       const text = new TextDecoder(encoding).decode(this.data);
       resolve(text);
     });
@@ -367,7 +367,7 @@ if (import.meta.vitest) {
       '/text': { body: 'test' },
       '/server-error': { status: 500, body: 'error' },
     });
-    afterAll(() => server.close());
+    afterAll(async () => server.close());
     const url = server.url('/todos/1');
 
     test('from', async () => {

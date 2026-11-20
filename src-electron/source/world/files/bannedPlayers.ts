@@ -27,10 +27,10 @@ export type BannedPlayers = z.infer<typeof BannedPlayers>;
 const FILENAME = 'banned-players.json';
 
 export const bannedPlayersHandler: ServerSettingFile<BannedPlayers> = {
-  load(cwdPath) {
+  async load(cwdPath) {
     return cwdPath.child(FILENAME).readJson(BannedPlayers);
   },
-  save(cwdPath, value) {
+  async save(cwdPath, value) {
     return cwdPath.child(FILENAME).writeText(JSON.stringify(value));
   },
   path(cwdPath) {

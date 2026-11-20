@@ -40,7 +40,7 @@ export abstract class VersionListLoader<T extends VersionType> {
   /**
    * キャッシュデータからバージョン一覧を取得する
    */
-  getFromCache(): Promise<Failable<AllVersion<T>>> {
+  async getFromCache(): Promise<Failable<AllVersion<T>>> {
     return this.allVersHandler.read();
   }
   /**
@@ -50,7 +50,7 @@ export abstract class VersionListLoader<T extends VersionType> {
   /**
    * 与えたオブジェクトをキャッシュに記録する
    */
-  write4Cache(obj: AllVersion<T>): Promise<Failable<void>> {
+  async write4Cache(obj: AllVersion<T>): Promise<Failable<void>> {
     return this.allVersHandler.write(obj);
   }
   /**

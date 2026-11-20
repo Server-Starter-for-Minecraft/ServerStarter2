@@ -2,8 +2,10 @@
 import { computed, onMounted, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
@@ -94,7 +96,9 @@ function filterPlayer(pId?: PlayerUUID) {
 }
 
 // イベント類
-onMounted(() => prop.players.forEach(loadPlayer));
+onMounted(() =>
+  runDetached(Promise.all(prop.players.map(loadPlayer)), showUnexpectedError)
+);
 
 function onOkClick() {
   onDialogOK({

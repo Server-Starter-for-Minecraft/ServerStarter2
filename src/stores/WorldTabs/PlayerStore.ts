@@ -62,7 +62,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // グループメンバーのUUIDからPlayerオブジェクトを取得
       const groupMembers = await Promise.all(
-        groupObj.players.map((pId) => {
+        groupObj.players.map(async (pId) => {
           const player = __playerFromId[pId];
           if (player !== void 0) return Promise.resolve(player);
           return window.API.invokeGetPlayer(pId, 'uuid');

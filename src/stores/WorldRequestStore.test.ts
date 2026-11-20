@@ -12,12 +12,16 @@ beforeEach(() => {
 });
 
 describe('ワールドごとのユーザーへの要求（EULAへの同意）', () => {
-  test('回答されるまで、ワールドごとに回答待ちの状態になる', () => {
+  test('回答されるまで、ワールドごとに回答待ちの状態になる', async () => {
     const store = useWorldRequestStore();
-    store.request(world1, 'eula', eula);
+    const request = store.request(world1, 'eula', eula);
 
     expect(store.pending(world1)).toEqual({ kind: 'eula', payload: eula });
     expect(store.pending(world2)).toBeUndefined();
+
+    // 回答すると要求が終わる
+    store.answer(world1, 'eula', true);
+    await expect(request).resolves.toBe(true);
   });
 
   test('同意・不同意の回答がバックエンドへの戻り値になり、回答後は回答待ちが解除される', async () => {
@@ -34,13 +38,17 @@ describe('ワールドごとのユーザーへの要求（EULAへの同意）', 
     expect(store.pending(world2)).toBeUndefined();
   });
 
-  test('他のワールドへの回答は、回答待ちのワールドに影響しない', () => {
+  test('他のワールドへの回答は、回答待ちのワールドに影響しない', async () => {
     const store = useWorldRequestStore();
-    store.request(world1, 'eula', eula);
+    const request = store.request(world1, 'eula', eula);
 
     store.answer(world2, 'eula', true);
 
     expect(store.pending(world1)).toBeDefined();
+
+    // 回答待ちのワールド自身への回答で要求が終わる
+    store.answer(world1, 'eula', false);
+    await expect(request).resolves.toBe(false);
   });
 
   test('同じワールドに再度要求された場合は、以前の要求を不同意として終わらせ、バックエンドが待ち続けないようにする', async () => {

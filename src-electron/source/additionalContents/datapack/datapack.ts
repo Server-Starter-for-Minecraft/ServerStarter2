@@ -28,7 +28,7 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
     // ディレクトリの場合
     const metaPath = path.child(MCMETA_FILE);
     // pack.mcmetaが存在しない場合エラー
-    if (!metaPath.exists())
+    if (!(await metaPath.exists()))
       return errorMessage.data.path.notFound({
         type: 'file',
         path: metaPath.str(),
