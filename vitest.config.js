@@ -10,7 +10,8 @@ process.env.ELECTRON_OVERRIDE_DIST_PATH ??= `${import.meta.dirname}/src-electron
 
 export default defineConfig({
   test: {
-    include: ['**/*.test.ts'],
+    // 独自 ESLint ルール(eslint-rules/)は eslint.config.js から直接読み込むため JS で記述しており，テストも JS とする
+    include: ['**/*.test.ts', 'eslint-rules/**/*.test.js'],
     includeSource: ['{src,src-electron,src-public,test}/**/*.ts'],
     globals: true,
     // VITEST_BLOCK_NETWORK=1 のとき，ローカル以外への通信を禁止する(詳細はファイル内のコメントを参照)

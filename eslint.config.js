@@ -5,6 +5,7 @@ import pluginImportX from 'eslint-plugin-import-x';
 import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import pluginServerStarter from './eslint-rules/index.js';
 
 export default tseslint.config(
   pluginQuasar.configs.recommended(),
@@ -13,13 +14,30 @@ export default tseslint.config(
     ignores: [
       '**/node_modules/**',
       'coverage/**',
+      'dist/**',
+      '.quasar/**',
       'userData/**',
       '**/work/**',
       '__mocks__/**',
       'src/assets/assets.ts',
       '*.config.js',
       '*.config.ts',
+      // 独自ルールのテストで解析させるための置き場所（中身はテストごとに差し替えられる）
+      'eslint-rules/fixtures/**',
     ],
+  },
+
+  {
+    linterOptions: {
+      // ソースコード内のコメント（`eslint-disable` など）による設定の変更を禁止する
+      // 例外はこのファイルと `eslint-suppressions.json` にのみ記述し，CI とレビューで増加を検出する
+      // （無視されたコメントは警告となり，`--max-warnings 0` で CI が失敗する）
+      noInlineConfig: true,
+      reportUnusedDisableDirectives: 'error',
+    },
+    plugins: {
+      serverstarter: pluginServerStarter,
+    },
   },
 
   // https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/eslint-plugin#usage
