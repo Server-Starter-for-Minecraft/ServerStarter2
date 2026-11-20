@@ -4,10 +4,10 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { showUnexpectedError } from 'src/error/error';
-import { setOpenDialogFunc } from 'src/error/error';
+import { checkError, setOpenDialogFunc } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
-import { $T, setI18nFunc } from './i18n/utils/tFunc';
+import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
   initSystemSettings,
@@ -94,6 +94,10 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
 window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) =>
   worldRequestStore.request(worldID, 'eula', { url })
 );
+// バックエンドで発生したエラー（API の戻り値以外で伝えられるもの）を表示
+window.API.onError((_event, error) => {
+  checkError(error, undefined, (e) => tError(e));
+});
 // Progressがバックエンドからやってきたときの処理
 window.API.onProgress((_event, worldID, progress) => {
   progressStore.setProgress(worldID, progress);

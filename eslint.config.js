@@ -29,6 +29,33 @@ import {
 import pluginServerStarter from './eslint-rules/index.js';
 
 /**
+ * 構文の制限（no-restricted-syntax）の共通の設定
+ *
+ * no-restricted-syntax は後の設定で上書きされるため，ファイルによって制限を追加する場合もこの一覧を含める
+ */
+const RESTRICTED_SYNTAX = [
+  // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
+  {
+    selector:
+      "BinaryExpression[operator=/^[!=]==?$/][right.value='error'][left.property.name='type']",
+    message: 'エラーの判定は isError / isValid を使ってください',
+  },
+  // テストで内部の呼び出し順序・呼び出しの記録を検証すると，実装の内部構造に依存したテストになる
+  {
+    selector:
+      'CallExpression[callee.property.name=/^(toHaveBeenNthCalledWith|nthCalledWith)$/]',
+    message:
+      '内部の呼び出し順序を検証せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
+  },
+  {
+    selector:
+      "MemberExpression[object.property.name='mock'][property.name='calls']",
+    message:
+      'モックの呼び出しの記録を直接参照せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
+  },
+];
+
+/**
  * 層の定義から，import を禁止する組（import-x/no-restricted-paths の zones）を作る
  *
  * 各層は，`allowed` に書いた層と自身の層以外を import できない
@@ -352,34 +379,37 @@ export default tseslint.config(
   {
     files: ['**/*.ts', '**/*.vue'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
-        {
-          selector:
-            "BinaryExpression[operator=/^[!=]==?$/][right.value='error'][left.property.name='type']",
-          message: 'エラーの判定は isError / isValid を使ってください',
-        },
-        // テストで内部の呼び出し順序・呼び出しの記録を検証すると，実装の内部構造に依存したテストになる
-        {
-          selector:
-            'CallExpression[callee.property.name=/^(toHaveBeenNthCalledWith|nthCalledWith)$/]',
-          message:
-            '内部の呼び出し順序を検証せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
-        },
-        {
-          selector:
-            "MemberExpression[object.property.name='mock'][property.name='calls']",
-          message:
-            'モックの呼び出しの記録を直接参照せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX],
     },
   },
   // テストの共通の準備（setupFiles）は，テストの関数の外で後処理の検証を行う
   {
     files: ['test/setup/**'],
     rules: { 'vitest/no-standalone-expect': 'off' },
+  },
+  // util 以外では，Node.js の組み込みモジュールの動的な import も禁止する（静的な import は no-restricted-imports で禁止している）
+  {
+    files: [...BACKEND_FILES, ...SCRIPT_FILES],
+    ignores: [
+      'src-electron/util/**',
+      ...TEST_FILES,
+      'src-electron/logger/logger.ts',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...RESTRICTED_SYNTAX,
+        {
+          selector: `ImportExpression[source.value=/^(node:)?(${RESTRICTED_BUILTIN_MODULES.filter(
+            ({ name }) => !name.startsWith('node:')
+          )
+            .map(({ name }) => name.replace('/', '\\/'))
+            .join('|')})$/]`,
+          message:
+            'Node.js の組み込みモジュールは util を通して扱ってください（eslint-rules/config.js の RESTRICTED_BUILTIN_MODULES を参照）',
+        },
+      ],
+    },
   },
   // エラーの判定関数そのものの実装は，エラーの判定の制限の対象外とする
   {

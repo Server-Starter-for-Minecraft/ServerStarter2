@@ -115,6 +115,11 @@ export type CoreErrors = {
 
   failGetGlobalIP: ErrorMessageContent;
 
+  // システム設定のファイルを読み込めず，既定値で起動した（読み込めなかったファイルはバックアップした）
+  brokenSystemSettings: ErrorMessageContent<{
+    backupPath: string;
+  }>;
+
   update: {
     // 最新のリリースに実行可能ファイルが見つからない
     missingAppSource: ErrorMessageContent;
