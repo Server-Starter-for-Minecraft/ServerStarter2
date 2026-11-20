@@ -62,7 +62,7 @@ export class ReadyMohistMCVersion extends ReadyVersion<MohistmcVersion> {
 
     // Jarをキャッシュ先に書き出して終了
     p?.delete();
-    return getJarPath(this.cachePath).write(downloadJar);
+    return (await getJarPath(this.cachePath)).write(downloadJar);
   }
 
   get serverID(): string {
@@ -132,20 +132,24 @@ if (import.meta.vitest) {
       if (isError(res)) return res;
 
       // 戻り値の検証
-      expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
+      expect((await res.getCommand({ jvmArgs: ['replaceArg'] }))[0]).toBe(
+        'replaceArg'
+      );
 
       // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+      // expect((await outputPath.child('libraries').exists())).toBe(true);
 
       // 実行後にファイル削除
       const remover = new RemoveMohistMCVersion(ver20, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(false);
+      expect(cachePath && (await (await getJarPath(cachePath)).exists())).toBe(
+        true
+      );
     });
   });
 }

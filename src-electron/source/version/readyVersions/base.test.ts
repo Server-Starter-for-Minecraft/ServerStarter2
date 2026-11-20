@@ -54,7 +54,7 @@ class SlowReadyVersion extends ReadyVersion<VanillaVersion> {
     );
     try {
       await sleep(300);
-      await getJarPath(this.cachePath).writeText('jar');
+      await (await getJarPath(this.cachePath)).writeText('jar');
     } finally {
       this.record.running--;
     }
@@ -77,7 +77,7 @@ describe('ReadyVersion', async () => {
 
     // 複数のワールドを同時に起動した状況を再現する
     const results = await Promise.all(
-      serverPaths.map((serverPath) =>
+      serverPaths.map(async (serverPath) =>
         new SlowReadyVersion(
           version,
           cacheFolder,
@@ -89,7 +89,7 @@ describe('ReadyVersion', async () => {
     // どちらの準備も成功し，それぞれにJarが設置されるはず
     for (const res of results) expect(isError(res)).toBe(false);
     for (const serverPath of serverPaths) {
-      expect(getJarPath(serverPath).exists()).toBe(true);
+      expect(await (await getJarPath(serverPath)).exists()).toBe(true);
     }
     // キャッシュの生成は重ならず，2回目は生成済みのキャッシュを利用するはず
     expect(record.maxRunning).toBe(1);

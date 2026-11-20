@@ -58,14 +58,14 @@ export abstract class JavaRuntimeInstaller<
    *
    * このメソッドを呼び出すことで、RuntimeManifestのインスタンスを生成する
    */
-  static setRuntimeManifest(manifestPath: Path, manifestUrl: string) {
+  static setRuntimeManifest(manifestPath: Path, manifestUrl: string): unknown {
     throw new Error('setRuntimeManifest() not implemented');
   }
 
   /**
    * キャッシュに指定したデータを取得する
    */
-  getCache(): Promise<Failable<RM>> {
+  async getCache(): Promise<Failable<RM>> {
     return this.accessor.get();
   }
 
@@ -90,7 +90,7 @@ export abstract class JavaRuntimeInstaller<
   /**
    * Runtimeのバージョン（`java-runtime-alpha`など）を指定する
    */
-  abstract getRuntimeVersion(runtime: R): string;
+  abstract getRuntimeVersion(runtime: R): Promise<string>;
 
   /**
    * Runtime特有のManifestから標準的な表現である`ManifestContent`に整形する
@@ -121,14 +121,14 @@ export abstract class JavaRuntimeInstaller<
   /**
    * JavaRuntimeをダウンロードしておく場所
    */
-  protected getInstallPath(
+  protected async getInstallPath(
     installBasePath: Path,
     runtime: R,
     osPlatform: OsPlatform
-  ): Path {
+  ): Promise<Path> {
     return installBasePath.child(
       runtime.type,
-      this.getRuntimeVersion(runtime),
+      await this.getRuntimeVersion(runtime),
       osPlatform
     );
   }
@@ -193,7 +193,7 @@ export abstract class JavaRuntimeInstaller<
     logger.info('Get a manifest for target OS successfully');
 
     // 取得したManifestから必要なファイル類を生成する
-    const installPath = this.getInstallPath(
+    const installPath = await this.getInstallPath(
       installBasePath,
       runtime,
       osPlatform
@@ -208,7 +208,7 @@ export abstract class JavaRuntimeInstaller<
       return errorMessage.core.runtime.installFailed({
         runtimeType: runtime.type,
         targetOs: osPlatform,
-        version: this.getRuntimeVersion(runtime),
+        version: await this.getRuntimeVersion(runtime),
       });
     }
     logger.info('Extract files from manifest successfully');
@@ -329,7 +329,7 @@ if (import.meta.vitest) {
 
     // 実際にはUrlにアクセスせず、url文字列を結果として返す
     const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-    urlCreateReadStreamSpy.mockImplementation(function (url: string) {
+    urlCreateReadStreamSpy.mockImplementation(async function (url: string) {
       return BytesData.fromText(url);
     });
 

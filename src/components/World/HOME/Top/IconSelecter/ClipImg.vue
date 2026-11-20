@@ -28,7 +28,7 @@ const CROPPER_TEMPLATE =
  */
 let generation = 0;
 
-function readAsDataURL(blob: Blob) {
+async function readAsDataURL(blob: Blob) {
   return new Promise<ImageURI>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as ImageURI);

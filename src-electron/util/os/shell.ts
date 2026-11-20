@@ -5,8 +5,13 @@ import { errorMessage } from '../error/construct';
 import { isError } from '../error/error';
 import { safeExecAsync } from '../error/failable';
 
-export function openBrowser(url: string) {
-  shell.openExternal(url);
+/**
+ * URL を既定のブラウザで開く
+ *
+ * @param url 開く URL
+ */
+export async function openBrowser(url: string): Promise<Failable<void>> {
+  return safeExecAsync(async () => shell.openExternal(url));
 }
 
 /**
@@ -23,14 +28,14 @@ export async function openFolder(
   const dirpath = new Path(path);
 
   // autocreate === false && ディレクトリが存在しない場合にエラー
-  if (!autocreate && !dirpath.exists()) {
+  if (!autocreate && !(await dirpath.exists())) {
     return errorMessage.data.path.notFound({
       type: 'directory',
       path: path,
     });
   }
 
-  const mkdirResult = await safeExecAsync(() => dirpath.mkdir(true));
+  const mkdirResult = await safeExecAsync(async () => dirpath.mkdir(true));
   if (isError(mkdirResult)) {
     return errorMessage.data.path.creationFailed({
       type: 'directory',
@@ -38,7 +43,7 @@ export async function openFolder(
     });
   }
 
-  const openResult = await safeExecAsync(() => shell.openPath(path));
+  const openResult = await safeExecAsync(async () => shell.openPath(path));
   if (isError(openResult)) return openResult;
   if (openResult !== '') {
     return errorMessage.data.path.shellError({

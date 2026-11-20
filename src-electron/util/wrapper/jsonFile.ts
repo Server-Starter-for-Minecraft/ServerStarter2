@@ -45,14 +45,14 @@ export class JsonSourceHandler<T> {
   /**
    * JSONを読み込む
    */
-  read = (
+  read = async (
     options: { useCache: boolean } = { useCache: false }
   ): Promise<Failable<T>> => this.accessor.get(options);
 
   /**
    * JSONを書き込む
    */
-  write = (content: T): Promise<void> => this.accessor.set(content);
+  write = async (content: T): Promise<void> => this.accessor.set(content);
 }
 
 /** In Source Testing */

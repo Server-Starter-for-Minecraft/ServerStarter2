@@ -30,15 +30,15 @@ import {
 export async function getWorldAbbrs(
   worldContainer: WorldContainer
 ): Promise<WithError<WorldAbbr[]>> {
-  const dir = worldContainerToPath(worldContainer);
+  const dir = await worldContainerToPath(worldContainer);
   const subdir = await dir.iter();
   if (isError(subdir)) return withError([], [subdir]);
 
-  const results = await asyncMap(subdir, (x) =>
+  const results = await asyncMap(subdir, async (x) =>
     getWorldAbbr(x, worldContainer)
   );
   // ワールドが一つもない場合はディレクトリを削除(設定からは削除しない)
-  if (subdir.length === 0) dir.remove();
+  if (subdir.length === 0) await dir.remove();
 
   return withError(results.filter(isValid), results.filter(isError));
 }
@@ -57,7 +57,7 @@ async function getWorldAbbr(
     });
   const jsonpath = serverJsonFile.path(path);
 
-  if (!jsonpath.exists())
+  if (!(await jsonpath.exists()))
     return errorMessage.data.path.notFound({
       type: 'file',
       path: jsonpath.path,
@@ -82,18 +82,18 @@ async function getWorldAbbr(
 export async function getWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.load();
+  return handler.load();
 }
 
 /** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
 export async function setWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(world.id, world.name, world.container);
+  const handler = await WorldHandler.get(world.id, world.name, world.container);
   if (isError(handler)) return withError(handler);
-  return await handler.save(world);
+  return handler.save(world);
 }
 
 /**
@@ -112,7 +112,9 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
     throw new Error('Assertion: This error cannot occur');
 
   // ワールドを配置するデフォルトのコンテナを指定
-  const containerSetting = selectNewWorldContainer(systemSettings.container);
+  const containerSetting = await selectNewWorldContainer(
+    systemSettings.container
+  );
   if (containerSetting === undefined) {
     return withError(errorMessage.core.container.noContainerSubscribed());
   }
@@ -170,9 +172,9 @@ async function getDefaultWorldName(container: WorldContainer) {
 export async function createWorld(
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(world.id, world.name, world.container);
+  const handler = await WorldHandler.get(world.id, world.name, world.container);
   if (isError(handler)) return withError(handler);
-  return await handler.create(world);
+  return handler.create(world);
 }
 
 /**
@@ -181,9 +183,9 @@ export async function createWorld(
 export async function deleteWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<undefined>>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.delete();
+  return handler.delete();
 }
 
 /**
@@ -193,9 +195,9 @@ export async function duplicateWorld(
   worldID: WorldID,
   name?: WorldName
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.duplicate(name);
+  return handler.duplicate(name);
 }
 
 /**
@@ -204,9 +206,9 @@ export async function duplicateWorld(
 export async function backupWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<BackupData>>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.backup();
+  return handler.backup();
 }
 
 /**
@@ -216,9 +218,9 @@ export async function restoreWorld(
   worldID: WorldID,
   backup: BackupData
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.restore(backup);
+  return handler.restore(backup);
 }
 
 /**
@@ -227,7 +229,7 @@ export async function restoreWorld(
 export async function runWorld(
   worldID: WorldID
 ): Promise<WithError<Failable<World>>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
 
   const progressor = new WorldProgressor(worldID);
@@ -240,17 +242,20 @@ export async function runWorld(
 /**
  * コマンドを実行する
  */
-export function runCommand(worldID: WorldID, command: string): void {
-  const handler = WorldHandler.get(worldID);
+export async function runCommand(
+  worldID: WorldID,
+  command: string
+): Promise<void> {
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return;
-  handler.runCommand(command);
+  await handler.runCommand(command);
 }
 
 /**
  * サーバーを再起動
  */
 export async function reboot(worldID: WorldID): Promise<void> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
   if (isError(handler)) return;
   await handler.reboot();
 }
@@ -261,11 +266,13 @@ export async function reboot(worldID: WorldID): Promise<void> {
 export async function fetchLatestWorldLog(
   worldID: WorldID
 ): Promise<Failable<ConsoleOutput[]>> {
-  const handler = WorldHandler.get(worldID);
+  const handler = await WorldHandler.get(worldID);
 
   if (isError(handler)) return handler;
 
-  const log = await new WorldLogHandler(handler.getSavePath()).loadLatest();
+  const log = await new WorldLogHandler(
+    await handler.getSavePath()
+  ).loadLatest();
 
   if (isError(log)) {
     return errorMessage.core.world.missingLatestLog({

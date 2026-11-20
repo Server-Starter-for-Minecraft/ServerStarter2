@@ -5,6 +5,7 @@ import * as electron from 'electron';
 import fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { onQuit } from '../lifecycle/lifecycle';
 import { logDir } from '../source/const';
 import { Path } from '../util/binary/path';
@@ -18,17 +19,21 @@ const EXTs = ['.log', '.truncate.log'];
 const TMP_LOG = `tmp_${randomInt(2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
 
-fs.ensureDirSync(logDir.path);
 const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
 const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
 // LATASTの上書き前にアーカイブファイルを作成
 // Testの時には下記のコードは実行しない
-if (electron.app && logPaths.every((path) => path.exists())) {
+// （下の log4js の設定で latest.log が上書きされる前に退避する必要があるため，起動時に一度だけ同期 API を使う。
+//   画面の表示前であり操作を止めることはない。eslint.config.js で no-blocking-call の対象から除外している）
+fs.ensureDirSync(logDir.path);
+if (electron.app && logPaths.every((path) => fs.existsSync(path.path))) {
   logPaths.forEach((path, idx) =>
     fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
   );
-  archiveLog(...beforeArchivePaths);
+  runDetached(archiveLog(...beforeArchivePaths), (e) =>
+    rootLogger.logger.archive().error(e)
+  );
 }
 
 // #region log4jsの設定
@@ -154,9 +159,10 @@ onQuit(log4js.shutdown, true);
 /** パスにあるログをアーカイブする */
 async function archiveLog(...logPaths: Path[]) {
   // .latestを圧縮してアーカイブ
-  if (logPaths.length > 0 && logPaths.every((path) => path.exists())) {
+  const existences = await Promise.all(logPaths.map(async (p) => p.exists()));
+  if (logPaths.length > 0 && existences.every((exists) => exists)) {
     const lastUpdateTime = await logPaths[0].lastUpdateTime();
-    const [newlogName, archivePath] = getNextArchivePath(lastUpdateTime);
+    const [newlogName, archivePath] = await getNextArchivePath(lastUpdateTime);
     // アーカイブ時に利用する名前に変更
     const newPaths = await Promise.all(
       logPaths.map(async (path) => {
@@ -176,7 +182,7 @@ async function archiveLog(...logPaths: Path[]) {
       },
       newPaths.map((path) => path.basename())
     );
-    await Promise.all(newPaths.map((path) => path.remove()));
+    await Promise.all(newPaths.map(async (path) => path.remove()));
   }
 
   // 一週間前のログファイルとTMPファイルを削除
@@ -194,12 +200,12 @@ async function archiveLog(...logPaths: Path[]) {
   }
 }
 
-function getNextArchivePath(time: Dayjs): [string, Path] {
+async function getNextArchivePath(time: Dayjs): Promise<[string, Path]> {
   let i = 0;
   const prefix = time.format('YYYY-MM-DD-HH');
   while (true) {
     const path = logDir.child(`${prefix}-${i}${ARCHIVE_EXT}`);
-    if (!path.exists()) return [`${prefix}-${i}`, path];
+    if (!(await path.exists())) return [`${prefix}-${i}`, path];
     i += 1;
   }
 }

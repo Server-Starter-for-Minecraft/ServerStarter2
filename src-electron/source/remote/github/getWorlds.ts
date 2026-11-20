@@ -33,7 +33,7 @@ export async function getWorlds(
   );
   if (isError(branches)) return withError(branches);
 
-  const worlds = await asyncMap(branches, (branch) =>
+  const worlds = await asyncMap(branches, async (branch) =>
     getWorld(remoteFolder.owner, remoteFolder.repo, branch, pat)
   );
   return withError(worlds.filter(isValid), worlds.filter(isError));

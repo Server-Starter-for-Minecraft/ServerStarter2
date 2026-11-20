@@ -12,7 +12,7 @@ export async function searchPlayerFromName(
 ): Promise<Failable<Player>> {
   const res = await UsernameToUUID(name);
   if (isError(res)) return res;
-  return await searchPlayerFromUUID(res.uuid);
+  return searchPlayerFromUUID(res.uuid);
 }
 
 const steveB64 =

@@ -18,11 +18,11 @@ export async function createTar(
     },
   });
 
-  await new Promise<Failable<undefined>>(async (resolve) => {
-    const path = directoryPath.path;
-    const inner = await directoryPath.iter();
-    if (isError(inner)) return resolve(inner);
+  const path = directoryPath.path;
+  const inner = await directoryPath.iter();
+  if (isError(inner)) return inner;
 
+  const result = await new Promise<Failable<undefined>>((resolve) => {
     c(
       {
         gzip,
@@ -33,9 +33,10 @@ export async function createTar(
       inner.map((x) => x.basename())
     )
       .pipe(bufferStream)
-      .on('finish', resolve)
+      .on('finish', () => resolve(undefined))
       .on('error', (e) => resolve(fromRuntimeError(e)));
   });
+  if (isError(result)) return result;
   return BytesData.fromBuffer(
     Buffer.concat(buffers.map((buff) => Uint8Array.from(buff)))
   );
@@ -45,7 +46,7 @@ export async function decompressTar(
   tarPath: Path,
   targetPath: Path
 ): Promise<Failable<void>> {
-  return await safeExecAsync(() =>
+  return safeExecAsync(async () =>
     x({
       file: tarPath.path,
       cwd: targetPath.path,

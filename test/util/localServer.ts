@@ -39,7 +39,7 @@ export async function startLocalServer(routes: Record<string, LocalResponse>) {
 
   return {
     url: (path: string) => `http://127.0.0.1:${port}${path}`,
-    close: () =>
+    close: async () =>
       new Promise<void>((resolve, reject) =>
         server.close((err) => (err ? reject(err) : resolve()))
       ),

@@ -62,9 +62,9 @@ const CONNECTION_PATTERNS: {
  * @param line サーバーログの1行 (ANSIエスケープシーケンスは除去済みであること)
  * @returns 入退室に関するログであればそのイベント，それ以外はundefined
  */
-export function parsePlayerConnection(
+export async function parsePlayerConnection(
   line: string
-): PlayerConnectionEvent | undefined {
+): Promise<PlayerConnectionEvent | undefined> {
   const trimmed = line.trim();
   const header = LOG_HEADERS.map((h) => trimmed.match(h)).find((m) => m);
   if (!header) return undefined;
@@ -107,21 +107,21 @@ export class OnlinePlayersTracker {
    * @param chunk サーバーの出力から受け取った文字列 (複数行や行の断片を含んでもよい)
    * @param isError 標準エラー出力から受け取った場合はtrue
    */
-  push(chunk: string, isError = false) {
+  async push(chunk: string, isError = false) {
     const stream = isError ? 'stderr' : 'stdout';
     const lines = (this.buffers[stream] + chunk).split(/\r?\n/);
     this.buffers[stream] = lines.pop() ?? '';
 
     let changed = false;
     for (const line of lines) {
-      const event = parsePlayerConnection(trimAnsi(line));
+      const event = await parsePlayerConnection(trimAnsi(line));
       if (event) changed = this.apply(event) || changed;
     }
     if (changed) this.onChange(this.onlinePlayers);
   }
 
   /** サーバー終了時などに参加中のプレイヤー一覧を空にする */
-  reset() {
+  async reset() {
     this.buffers = { stdout: '', stderr: '' };
     if (this.players.size === 0) return;
     this.players.clear();

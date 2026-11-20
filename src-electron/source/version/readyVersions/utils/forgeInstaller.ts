@@ -25,7 +25,7 @@ export async function downloadInstaller(
   if (isError(downloadJar)) return downloadJar;
 
   // `installer.jar`を書き出し
-  return await installFilePath.write(downloadJar);
+  return installFilePath.write(downloadJar);
 }
 
 /**
@@ -115,7 +115,7 @@ export async function renameFilesFromInstaller(
     if (scriptExt === undefined) continue;
 
     const renameScriptRes = await file.rename(
-      constructExecPath(cachePath, version, scriptExt)
+      await constructExecPath(cachePath, version, scriptExt)
     );
     if (isError(renameScriptRes)) return renameScriptRes;
   }
@@ -129,7 +129,7 @@ export async function renameFilesFromInstaller(
   );
   if (isError(replaceRes)) return replaceRes;
 
-  return await generatedJar.rename(getJarPath(cachePath));
+  return generatedJar.rename(await getJarPath(cachePath));
 }
 
 /**
@@ -148,8 +148,8 @@ async function getArgFilePaths(
 ): Promise<Path[]> {
   const argFiles: Path[] = [];
   for (const ext of RUN_SCRIPTS.values()) {
-    const scriptPath = constructExecPath(cachePath, version, ext);
-    if (!scriptPath.exists()) continue;
+    const scriptPath = await constructExecPath(cachePath, version, ext);
+    if (!(await scriptPath.exists())) continue;
 
     const args = await readScriptArgs(scriptPath, ext);
     if (isError(args)) continue;
@@ -180,7 +180,7 @@ async function replaceJarNameInArgFiles(
   version: ForgeVersion | NeoForgeVersion,
   originalJarName: string
 ): Promise<Failable<void>> {
-  const jarName = getJarPath(cachePath).basename();
+  const jarName = (await getJarPath(cachePath)).basename();
 
   for (const argFile of await getArgFilePaths(cachePath, version)) {
     const txt = await argFile.readText();
@@ -224,11 +224,11 @@ export async function hasMissingJarReference(
     const txt = await argFile.readText();
     if (isError(txt)) continue;
 
-    const missing = txt
-      .split(/\s+/)
-      .filter((token) => jarPattern.test(token))
-      .some((jarName) => !cachePath.child(jarName).exists());
-    if (missing) return true;
+    const jarNames = txt.split(/\s+/).filter((token) => jarPattern.test(token));
+    const existences = await Promise.all(
+      jarNames.map(async (jarName) => cachePath.child(jarName).exists())
+    );
+    if (existences.some((exists) => !exists)) return true;
   }
   return false;
 }

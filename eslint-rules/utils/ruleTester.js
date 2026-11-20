@@ -31,7 +31,7 @@ export function createRuleTester() {
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.ts', 'src/*.ts', 'src/*/*.ts'],
+          allowDefaultProject: ['*/*.ts', '*/*/*.ts', '*/*/*/*.ts'],
           defaultProject: 'tsconfig.json',
         },
         tsconfigRootDir: fixturesDir,

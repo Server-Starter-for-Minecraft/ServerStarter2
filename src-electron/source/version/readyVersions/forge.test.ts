@@ -60,7 +60,9 @@ async function seedVersionJson(cachePath: Path, args?: string[]) {
     undefined,
     args
   );
-  await getVersionJsonPath(cachePath).writeText(JSON.stringify(verJson));
+  await (
+    await getVersionJsonPath(cachePath)
+  ).writeText(JSON.stringify(verJson));
 }
 
 /** 準備したサーバーを起動したときに`-jar`で指定されるjarのパスを求める */
@@ -68,7 +70,7 @@ async function resolveServerLaunchJar(
   ready: Awaited<ReturnType<ReadyForgeVersion['completeReady4VersionFiles']>>
 ) {
   if (isError(ready)) throw new Error('failed to ready version');
-  const args = ready.getCommand({ jvmArgs: [] });
+  const args = await ready.getCommand({ jvmArgs: [] });
   return findLaunchJar(serverPath, await expandArgFiles(serverPath, args));
 }
 
@@ -101,7 +103,7 @@ describe('Forgeのサーバーデータの準備', () => {
       mockExecRuntime()
     );
 
-    expect((await resolveServerLaunchJar(res)).exists()).toBe(true);
+    expect(await (await resolveServerLaunchJar(res)).exists()).toBe(true);
   });
 
   test.each([
@@ -133,7 +135,7 @@ describe('Forgeのサーバーデータの準備', () => {
       ).completeReady4VersionFiles(serverPath, second);
 
       expect(second).not.toHaveBeenCalled();
-      expect((await resolveServerLaunchJar(res)).exists()).toBe(true);
+      expect(await (await resolveServerLaunchJar(res)).exists()).toBe(true);
     }
   );
 });

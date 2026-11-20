@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isError } from 'app/src-public/scripts/error';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -54,7 +55,11 @@ async function removeWorld_Clicked() {
   }
 
   const res = await window.API.invokeDeleteWorld(mainStore.selectedWorldID);
-  checkError(res.value, updateView, (e) => tError(e));
+  if (isError(res.value)) {
+    checkError(res.value, undefined, (e) => tError(e));
+    return;
+  }
+  await updateView();
 }
 
 function splitName(name: string) {

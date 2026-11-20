@@ -1,5 +1,6 @@
-import { isValid } from 'app/src-public/scripts/error';
+import { isError, isValid } from 'app/src-public/scripts/error';
 import { ErrorMessage, Failable } from 'app/src-electron/schema/error';
+import { tError } from 'src/i18n/utils/tFunc';
 
 let _openDialogFunc: (args: iErrorDialogProps) => void;
 export function setOpenDialogFunc(func: (args: iErrorDialogProps) => void) {
@@ -53,4 +54,24 @@ export function sendError(title: string, desc?: string) {
     title: title,
     desc: desc,
   });
+}
+
+/**
+ * 完了を待たずに実行した処理（`runDetached`）などで発生した，予期しない失敗をエラー表示する
+ *
+ * @param error Failable のエラー，または発生した例外
+ */
+export function showUnexpectedError(error: unknown) {
+  const message: ErrorMessage = isError(error)
+    ? error
+    : {
+        type: 'error',
+        key: 'system.runtime',
+        level: 'error',
+        arg: {
+          type: error instanceof Error ? error.constructor.name : typeof error,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      };
+  checkError(message, undefined, (e) => tError(e));
 }

@@ -176,7 +176,7 @@ export async function pushWorld(
       numeric.value = x.processed;
     });
   }
-  await safeExecAsync(() =>
+  await safeExecAsync(async () =>
     git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.name}`, '-f'])
   );
 }
@@ -202,7 +202,9 @@ export async function deleteWorld(
   await git.init();
 
   // リモートのブランチを削除
-  const push = await safeExecAsync(() => git.push(url, `:${remote.name}`));
+  const push = await safeExecAsync(async () =>
+    git.push(url, `:${remote.name}`)
+  );
 
   // 一時フォルダを削除（削除失敗がユーザーに影響しないため無視）
   await gitTempPath.remove();

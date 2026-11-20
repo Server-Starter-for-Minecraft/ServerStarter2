@@ -1,6 +1,7 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import {
   CacheFileData,
   DatapackData,
@@ -10,6 +11,7 @@ import {
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import { version } from '../../package.json';
 import { setBackSys, setFrontSys } from './SystemStore/converter';
 import { FrontPlayerGroup } from './SystemStore/converters/playerGroup';
@@ -83,8 +85,11 @@ export function initSystemSettings(sysSettings: SystemSettings) {
 export function setSysSettingsSubscriber() {
   const sysSettingsStore = useSystemSettingsStore();
   sysSettingsStore.$subscribe((mutation, state) => {
-    window.API.invokeSetSystemSettings(
-      deepcopy(setBackSys(deepcopy(state.backSystemSettings)))
+    runDetached(
+      window.API.invokeSetSystemSettings(
+        deepcopy(setBackSys(deepcopy(state.backSystemSettings)))
+      ),
+      showUnexpectedError
     );
   });
 }

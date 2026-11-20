@@ -99,7 +99,7 @@ export class VersionContainer {
   ): Promise<
     Failable<{
       runtime: Runtime;
-      getCommand: (option: { jvmArgs: string[] }) => string[];
+      getCommand: (option: { jvmArgs: string[] }) => Promise<string[]>;
     }>
   > {
     const getRedeayVersionInstance = (version: Version) => {

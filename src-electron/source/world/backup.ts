@@ -15,17 +15,20 @@ import {
 } from '../../source/const';
 import { worldContainerToPath } from './worldContainer';
 
-export function getBackUpPath(container: WorldContainer, name: WorldName) {
+export async function getBackUpPath(
+  container: WorldContainer,
+  name: WorldName
+): Promise<Path> {
   const time = new Date(getCurrentTimestamp());
   const dateString = formatDate(time);
-  const directory = worldContainerToPath(container).child(
+  const directory = (await worldContainerToPath(container)).child(
     BACKUP_DIRECTORY_NAME
   );
 
   // {container}/#backups/{name}-YYYY-MM-DD-HH({i})
   let path = directory.child(`${name}-${dateString}.${BACKUP_EXT}`);
   let i = 1;
-  while (path.exists()) {
+  while (await path.exists()) {
     path = directory.child(`${name}-${dateString}(${i}).${BACKUP_EXT}`);
     i++;
   }

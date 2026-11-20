@@ -1,4 +1,5 @@
 import { keys, values } from 'app/src-public/scripts/obj/obj';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { versionTypes } from 'app/src-electron/schema/version';
 import { WorldID } from 'app/src-electron/schema/world';
 import { tError } from './i18n/utils/tFunc';
@@ -13,6 +14,7 @@ import {
 } from './stores/WorldStore';
 import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
 import { checkError } from './components/Error/Error';
+import { showUnexpectedError } from 'src/components/Error/Error';
 
 export async function initWindow() {
   // storeの初期化
@@ -29,7 +31,7 @@ export async function initWindow() {
   // world読み込み
   const paths = sysStore.systemSettings.container.map((c) => c.container);
   const worldAbbrFailables = await Promise.all(
-    paths.map((path) => window.API.invokeGetWorldAbbrs(path))
+    paths.map(async (path) => window.API.invokeGetWorldAbbrs(path))
   );
 
   // ワールドの概略情報を取得
@@ -59,16 +61,19 @@ export async function initWindow() {
 export async function afterWindow() {
   // ワールドの詳細情報を取得
   const mainStore = useMainStore();
-  getWorlds(keys(mainStore.allWorlds.readonlyWorlds));
+  runDetached(
+    getWorlds(keys(mainStore.allWorlds.readonlyWorlds)),
+    showUnexpectedError
+  );
 
   // GlobalIPを取得
-  getIP();
+  runDetached(getIP(), showUnexpectedError);
 
   // バージョンの読み込み
-  getAllVersion(false);
+  runDetached(getAllVersion(false), showUnexpectedError);
 
   // datapackなどのCacheコンテンツの取得
-  getCacheContents();
+  runDetached(getCacheContents(), showUnexpectedError);
 }
 
 /**
@@ -79,7 +84,7 @@ export async function getWorlds(wIds: WorldID[]) {
 
   // Worldの詳細情報
   const worlds = await Promise.all(
-    wIds.map((wId) => window.API.invokeGetWorld(wId))
+    wIds.map(async (wId) => window.API.invokeGetWorld(wId))
   );
 
   // 詳細情報を正常に取得できたワールドを抽出
@@ -112,7 +117,7 @@ async function getAllVersion(useCache: boolean) {
   const sysStore = useSystemStore();
 
   const versions = await Promise.allSettled(
-    versionTypes.map((type) => {
+    versionTypes.map(async (type) => {
       return window.API.invokeGetVersions(type, useCache);
     })
   );

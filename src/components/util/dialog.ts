@@ -17,7 +17,7 @@ export type DialogResult<T> = { ok: true; payload: T } | { ok: false };
  * @param dialog `$q.dialog()`の戻り値
  * @returns ダイアログが閉じられた結果
  */
-export function waitDialogClosed<T = unknown>(
+export async function waitDialogClosed<T = unknown>(
   dialog: DialogChainObject
 ): Promise<DialogResult<T>> {
   return new Promise((resolve) => {

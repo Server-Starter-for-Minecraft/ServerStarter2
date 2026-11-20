@@ -1,9 +1,14 @@
 // GZIP圧縮に関するutil
+import { promisify } from 'util';
 import * as zlib from 'zlib';
 import { Failable } from '../../../schema/error';
 import { isError } from '../../error/error';
+import { safeExecAsync } from '../../error/failable';
 import { BytesData } from '../bytesData';
 import { Path } from '../path';
+
+const gzipAsync = promisify(zlib.gzip);
+const gunzipAsync = promisify(zlib.gunzip);
 
 export class gzip {
   // ファイルからgzipを生成
@@ -24,28 +29,16 @@ export class gzip {
 
   // BytesDataからgzipを生成
   static async fromData(content: BytesData): Promise<Failable<BytesData>> {
-    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
-      const bytesData = await BytesData.fromBuffer(content.data);
-      if (isError(bytesData)) return reject(bytesData);
-
-      zlib.gzip(bytesData.arrayBuffer(), (err, binary) => {
-        if (err !== null) reject(err);
-        resolve(BytesData.fromBuffer(binary));
-      });
-    });
+    const binary = await safeExecAsync(async () => gzipAsync(content.data));
+    if (isError(binary)) return binary;
+    return BytesData.fromBuffer(binary);
   }
 
   // gzipから元のデータを生成
   static async unpackData(content: BytesData): Promise<Failable<BytesData>> {
-    return new Promise<Failable<BytesData>>(async (resolve, reject) => {
-      const bytesData = await BytesData.fromBuffer(content.data);
-      if (isError(bytesData)) return reject(bytesData);
-
-      zlib.gunzip(bytesData.arrayBuffer(), (err, binary) => {
-        if (err !== null) reject(err);
-        resolve(BytesData.fromBuffer(binary));
-      });
-    });
+    const binary = await safeExecAsync(async () => gunzipAsync(content.data));
+    if (isError(binary)) return binary;
+    return BytesData.fromBuffer(binary);
   }
 }
 

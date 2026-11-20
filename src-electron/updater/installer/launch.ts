@@ -14,7 +14,7 @@ import { spawn } from 'child_process';
  * @param cwd 作業ディレクトリ
  * @returns プロセスを起動できた場合はtrue
  */
-export function launchDetached(
+export async function launchDetached(
   command: string,
   args: string[],
   cwd: string
@@ -33,7 +33,7 @@ export function launchDetached(
  * @param cwd 作業ディレクトリ
  * @returns プロセスを起動できた場合はtrue
  */
-export function launchDetachedInShell(
+export async function launchDetachedInShell(
   commandLine: string,
   cwd: string
 ): Promise<boolean> {
@@ -41,7 +41,7 @@ export function launchDetachedInShell(
 }
 
 /** プロセスを切り離して起動し、起動の成否を返す */
-function spawnDetached(
+async function spawnDetached(
   command: string,
   args: string[],
   cwd: string,
