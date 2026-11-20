@@ -17,7 +17,7 @@ export type ScriptExt = '.bat' | '.sh';
  * @param version 対象のバージョン
  * @param ext 起動スクリプトの拡張子
  */
-export async function constructExecPath(
+export function constructExecPath(
   cwdPath: Path,
   version: ForgeVersion | NeoForgeVersion,
   ext: ScriptExt
@@ -35,7 +35,7 @@ export async function getNewForgeArgs(
   // `osPlatform`はv1から引用
   if (osPlatform == 'windows-x64') {
     // windows
-    runPath = await constructExecPath(serverCwdPath, version, '.bat');
+    runPath = constructExecPath(serverCwdPath, version, '.bat');
     if (await runPath.exists()) {
       // 1.17.1以降
       return getProgramArgumentsFromScript(
@@ -47,7 +47,7 @@ export async function getNewForgeArgs(
     }
   } else {
     // UNIX(macOS,linux)
-    runPath = await constructExecPath(serverCwdPath, version, '.sh');
+    runPath = constructExecPath(serverCwdPath, version, '.sh');
     if (await runPath.exists()) {
       // 1.17.1以降
       return getProgramArgumentsFromScript(
@@ -60,7 +60,7 @@ export async function getNewForgeArgs(
   }
 
   // batやshといったファイルが存在しないときには`version.json`を更新する必要なし
-  const jarpath = await getJarPath(serverCwdPath);
+  const jarpath = getJarPath(serverCwdPath);
   if (await jarpath.exists()) return oldVerJson;
 
   return errorMessage.data.path.notFound({

@@ -119,7 +119,7 @@ const USER_PORT = 25570;
 async function createWorld(useNgrok: boolean) {
   const name = WorldName.parse(`world${worldIdx++}`);
   const id = WorldHandler.register(name, container);
-  const handler = await WorldHandler.get(id);
+  const handler = WorldHandler.get(id);
   if (isError(handler)) throw new Error('failed to register world');
 
   const world: WorldEdited = {
@@ -161,7 +161,7 @@ async function waitServerLaunched(count: number) {
 
 /** ワールドのserver.propertiesを読み込む */
 async function loadProperties(handler: WorldHandler) {
-  const props = await serverPropertiesFile.load(await handler.getSavePath());
+  const props = await serverPropertiesFile.load(handler.getSavePath());
   if (isError(props)) throw new Error('failed to load server.properties');
   return props;
 }
@@ -479,7 +479,7 @@ describe('WorldHandler ワールドの複製', () => {
     expect(isError(result.value)).toBe(true);
     expect(await workPath.child(newName).exists()).toBe(false);
     // 複製元のワールドはそのまま残る
-    expect(await (await handler.getSavePath()).exists()).toBe(true);
+    expect(await handler.getSavePath().exists()).toBe(true);
   });
 
   test('既存のワールドと同じ名前を指定した場合は複製せず、既存のワールドを変更しない', async () => {
@@ -493,9 +493,9 @@ describe('WorldHandler ワールドの複製', () => {
 
     expect(isError(result.value)).toBe(true);
     expect(
-      await (await existing.getSavePath()).child('server.properties').exists()
+      await existing.getSavePath().child('server.properties').exists()
     ).toBe(true);
-    expect(isError(await WorldHandler.get(existing.id))).toBe(false);
+    expect(isError(WorldHandler.get(existing.id))).toBe(false);
   });
 
   test('異なるワールドから同じ名前へ同時に複製しても、複製に成功したワールドを削除しない', async () => {
@@ -526,7 +526,7 @@ describe('WorldHandler ワールドの複製', () => {
       expect(
         await workPath.child(world.name, 'server.properties').exists()
       ).toBe(true);
-      expect(isError(await WorldHandler.get(world.id))).toBe(false);
+      expect(isError(WorldHandler.get(world.id))).toBe(false);
     }
   });
 

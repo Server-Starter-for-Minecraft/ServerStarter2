@@ -26,7 +26,7 @@ const cacheSpoolers = InfinitMap.primitiveKeyWeakValue(
 /**
  * サーバーJarファイルのパスを返す
  */
-export async function getJarPath(cwdPath: Path) {
+export function getJarPath(cwdPath: Path) {
   return cwdPath.child('version.jar');
 }
 
@@ -39,7 +39,7 @@ export type ExecRuntime = (options: {
 
 export type ReadyReturnInfo = {
   runtime: Runtime;
-  getCommand: (option: { jvmArgs: string[] }) => Promise<string[]>;
+  getCommand: (option: { jvmArgs: string[] }) => string[];
 };
 
 /**
@@ -119,7 +119,7 @@ export abstract class ReadyVersion<
     // STEP1: `version.json`の生成
     if (!this.handler) {
       // handlerを生成
-      this.handler = await generateVersionJsonHandler(
+      this.handler = generateVersionJsonHandler(
         this._cacheFolder,
         this._version.type,
         this.serverID
@@ -181,7 +181,7 @@ export abstract class ReadyVersion<
     progress?: GroupProgressor
   ): Promise<Failable<Path[]>> {
     // Jarの生成
-    const cachedJarPath = await getJarPath(this.cachePath);
+    const cachedJarPath = getJarPath(this.cachePath);
     if (!(await this.isCacheReady())) {
       // Jarのダウンロードとファイルへの書き出し
       const generateJarRes = await this.generateCachedJar(
@@ -194,8 +194,10 @@ export abstract class ReadyVersion<
     const paths = [cachedJarPath];
 
     // Log4J対応
-    const log4JPatchPath = await (
-      await saveLog4JPatch(this._version.id, this.cachePath, progress)
+    const log4JPatchPath = await saveLog4JPatch(
+      this._version.id,
+      this.cachePath,
+      progress
     )();
     if (isError(log4JPatchPath)) return log4JPatchPath;
     if (log4JPatchPath !== null) paths.push(log4JPatchPath);
@@ -219,7 +221,7 @@ export abstract class ReadyVersion<
    * @returns 準備済みで`generateCachedJar()`を実行する必要がなければ`true`
    */
   protected async isCacheReady(): Promise<boolean> {
-    return (await getJarPath(this.cachePath)).exists();
+    return getJarPath(this.cachePath).exists();
   }
 
   /**
@@ -294,10 +296,10 @@ export abstract class ReadyVersion<
 
     return {
       runtime: runtime,
-      getCommand: async (option: { jvmArgs: string[] }) => {
-        const log4jArg = await getLog4jArg(this._version.id);
+      getCommand: (option: { jvmArgs: string[] }) => {
+        const log4jArg = getLog4jArg(this._version.id);
         return replaceEmbedArgs(verJson.arguments, {
-          JAR_PATH: [(await getJarPath(targetPath)).path],
+          JAR_PATH: [getJarPath(targetPath).path],
           JVM_ARGUMENT: option.jvmArgs,
           LOG4J_ARG: log4jArg ? [log4jArg] : [],
         });
@@ -317,12 +319,10 @@ export abstract class RemoveVersion<
    */
   async completeRemoveVersion(targetPath: Path) {
     // server.jarを登録
-    const paths = [await getJarPath(targetPath)];
+    const paths = [getJarPath(targetPath)];
 
     // Log4J対応（対象ファイル名取得のみのため，`saveLog4JPatch()`にprogressは設定しない）
-    const log4JPatchPath = await (
-      await saveLog4JPatch(this._version.id, targetPath)
-    )();
+    const log4JPatchPath = await saveLog4JPatch(this._version.id, targetPath)();
     if (isValid(log4JPatchPath) && log4JPatchPath !== null) {
       paths.push(log4JPatchPath);
     }

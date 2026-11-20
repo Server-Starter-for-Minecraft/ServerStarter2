@@ -158,7 +158,7 @@ export async function saveLocalFiles(
   savePath: Path,
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  let worldSettings = await constructWorldSettings(world);
+  let worldSettings = constructWorldSettings(world);
 
   const errors: ErrorMessage[] = [];
 
@@ -268,7 +268,7 @@ export async function saveLocalFiles(
   return constructResult();
 }
 
-export async function constructWorldSettings(world: World | WorldEdited) {
+export function constructWorldSettings(world: World | WorldEdited) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     javaArguments: world.javaArguments,

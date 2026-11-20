@@ -4,9 +4,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { mainPath } from '../../source/const';
 
 // world.containerが相対パスの場合mainpathからの相対パスとして処理
-export async function worldContainerToPath(
-  worldContainer: WorldContainer
-): Promise<Path> {
+export function worldContainerToPath(worldContainer: WorldContainer): Path {
   const path = new Path(worldContainer);
   return path.isAbsolute() ? path : mainPath.child(worldContainer);
 }
@@ -20,8 +18,8 @@ export async function worldContainerToPath(
  * @param containers システム設定に登録されたコンテナ一覧(登録順)
  * @returns 配置先のコンテナ設定(コンテナが1つも登録されていない場合はundefined)
  */
-export async function selectNewWorldContainer(
+export function selectNewWorldContainer(
   containers: WorldContainerSetting[]
-): Promise<WorldContainerSetting | undefined> {
+): WorldContainerSetting | undefined {
   return containers.find((c) => c.visible) ?? containers[0];
 }

@@ -26,7 +26,7 @@ const splitPath = (value: string | undefined) =>
   (value ?? '').split(path.delimiter);
 
 describe('javaProcessEnv', () => {
-  test('用意したJavaのbinフォルダがPATHの先頭になり，元のPATHも引き継がれる', async () => {
+  test('用意したJavaのbinフォルダがPATHの先頭になり，元のPATHも引き継がれる', () => {
     const env = javaProcessEnv(javaPath, {
       PATH: ['/usr/bin', '/opt/java/bin'].join(path.delimiter),
     });
@@ -38,19 +38,19 @@ describe('javaProcessEnv', () => {
     ]);
   });
 
-  test('JAVA_HOMEが用意したJavaを指す', async () => {
+  test('JAVA_HOMEが用意したJavaを指す', () => {
     const env = javaProcessEnv(javaPath, { JAVA_HOME: '/opt/java' });
 
     expect(env.JAVA_HOME).toBe(javaHome.path);
   });
 
-  test('PATH・JAVA_HOME以外の環境変数はそのまま引き継がれる', async () => {
+  test('PATH・JAVA_HOME以外の環境変数はそのまま引き継がれる', () => {
     const env = javaProcessEnv(javaPath, { PATH: '/usr/bin', LANG: 'ja_JP' });
 
     expect(env.LANG).toBe('ja_JP');
   });
 
-  test('PATHのキー名の大文字小文字が異なる場合（Windowsの`Path`など）も，PATHは1つにまとめられる', async () => {
+  test('PATHのキー名の大文字小文字が異なる場合（Windowsの`Path`など）も，PATHは1つにまとめられる', () => {
     const env = javaProcessEnv(javaPath, { Path: '/usr/bin' });
 
     const pathKeys = Object.keys(env).filter((k) => k.toUpperCase() === 'PATH');
@@ -61,13 +61,13 @@ describe('javaProcessEnv', () => {
     ]);
   });
 
-  test('PATHが未設定の場合は，用意したJavaのbinフォルダのみがPATHになる', async () => {
+  test('PATHが未設定の場合は，用意したJavaのbinフォルダのみがPATHになる', () => {
     const env = javaProcessEnv(javaPath, {});
 
     expect(env.PATH).toBe(javaPath.parent().path);
   });
 
-  test('元の環境変数を書き換えない', async () => {
+  test('元の環境変数を書き換えない', () => {
     const baseEnv = { PATH: '/usr/bin' };
 
     javaProcessEnv(javaPath, baseEnv);

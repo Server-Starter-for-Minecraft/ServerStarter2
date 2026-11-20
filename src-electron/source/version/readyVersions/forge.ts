@@ -229,7 +229,7 @@ if (import.meta.vitest) {
       if (isError(res)) return;
 
       // 戻り値の検証
-      expect(await res.getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
+      expect(res.getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
       // ファイルの設置状況の検証
       for (const { path } of genfiles) {

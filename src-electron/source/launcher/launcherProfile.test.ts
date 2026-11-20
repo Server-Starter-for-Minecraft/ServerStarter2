@@ -129,22 +129,22 @@ describe('loadLocalSaveContainers (複数の起動構成ファイル)', () => {
 });
 
 describe('uniquePaths', () => {
-  test('同じ場所を指すパスは最初のものだけを残す', async () => {
+  test('同じ場所を指すパスは最初のものだけを残す', () => {
     const a = workPath.child('a');
     const b = workPath.child('b');
 
-    expect(
-      toStrs(await uniquePaths([a, b, workPath.child('b', '..', 'a')]))
-    ).toEqual(toStrs([a, b]));
+    expect(toStrs(uniquePaths([a, b, workPath.child('b', '..', 'a')]))).toEqual(
+      toStrs([a, b])
+    );
   });
 
   test.runIf(osPlatform === 'windows-x64')(
     'Windowsでは大文字・小文字だけが異なるパスを同じ場所として扱う',
-    async () => {
+    () => {
       const path = workPath.child('Saves');
       const lower = new Path(path.absolute().str().toLowerCase());
 
-      expect(await uniquePaths([path, lower])).toHaveLength(1);
+      expect(uniquePaths([path, lower])).toHaveLength(1);
     }
   );
 });

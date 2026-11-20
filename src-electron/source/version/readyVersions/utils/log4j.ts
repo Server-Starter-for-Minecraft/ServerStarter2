@@ -577,9 +577,7 @@ function processSwitcher<T, U>(
 /**
  * Log4J対応で必要なJarに渡す引数を取得する
  */
-export async function getLog4jArg(
-  versionID: VersionId
-): Promise<string | null> {
+export function getLog4jArg(versionID: VersionId): string | null {
   return processSwitcher(
     versionID,
     '-Dlog4j2.formatMsgNoLookups=true',
@@ -595,11 +593,11 @@ type PatchReturnType = () => Promise<Failable<Path | null>>;
  *
  * @param savePath ファイルを保存するフォルダパス（キャッシュフォルダを想定）
  */
-export async function saveLog4JPatch(
+export function saveLog4JPatch(
   versionID: VersionId,
   savePath: Path,
   progress?: GroupProgressor
-): Promise<PatchReturnType> {
+): PatchReturnType {
   // log4jの脆弱性に対応
   // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
   return processSwitcher<PatchReturnType, PatchReturnType>(

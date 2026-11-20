@@ -10,8 +10,8 @@
 /** バックエンド（Electron のメインプロセス）のファイル */
 export const BACKEND_FILES = ['src-electron/**/*.ts'];
 
-/** バックエンドの処理（ドメインの処理）のファイル */
-export const SOURCE_FILES = ['src-electron/source/**/*.ts'];
+/** IPC の API と処理の対応付けのファイル（`serverstarter/require-async-ipc-handler` で使う） */
+export const IPC_HANDLER_FILES = ['src-electron/ipc/back.ts'];
 
 /** ビルド・開発用のスクリプト */
 export const SCRIPT_FILES = ['scripts/**/*.ts'];
@@ -51,92 +51,6 @@ export const BLOCKING_MODULES = [
     name: 'Electron',
     declarationFile: /\/electron\/electron\.d\.ts$/,
     blockingName: /Sync$/,
-  },
-];
-
-/**
- * 構造上同期のままとする，バックエンドの処理（source/）の公開関数（`serverstarter/require-async-export` で使う）
- *
- * 追加する場合は，非同期にできない理由を `reason` に必ず書く
- *
- * @type {import('./rules/require-async-export.js').AllowedExport[]}
- */
-export const ALLOWED_SYNC_EXPORTS = [
-  {
-    file: 'src-electron/source/sourceLogger.ts',
-    name: 'sourceLoggers',
-    reason: 'ロガーのカテゴリの定義（ロガーは同期で呼び出す設計）',
-  },
-  {
-    file: 'src-electron/source/runtime/base.ts',
-    name: 'runtimeLoggers',
-    reason: 'ロガーのカテゴリの定義（ロガーは同期で呼び出す設計）',
-  },
-  {
-    file: 'src-electron/source/version/versionLogger.ts',
-    name: 'versionLogger',
-    reason: 'ロガーのカテゴリの定義（ロガーは同期で呼び出す設計）',
-  },
-  {
-    file: 'src-electron/source/world/dialog.ts',
-    name: 'pickDialog',
-    reason:
-      'IPC へ渡すダイアログの関数（非同期）を作るファクトリ（作成時には処理を行わない）',
-  },
-  {
-    file: 'src-electron/source/runtime/process.ts',
-    name: 'javaProcessEnv',
-    reason:
-      '操作用のメソッドを付け足した Promise（ChildProcessPromise）を同期で返す関数の中で使う，環境変数の計算のみの関数',
-  },
-  {
-    file: 'src-electron/source/version/getVersions/base.ts',
-    name: 'getVersionCacheFilePath',
-    reason: 'コンストラクタの中で使う，パスの計算のみの関数',
-  },
-  {
-    file: 'src-electron/source/version/getVersions/neoForge.ts',
-    name: 'getSpecificMCver',
-    reason: '同期の groupBy のキーとして使う，文字列の解析のみの関数',
-  },
-  {
-    file: 'src-electron/source/stores/migrations/groupColor.ts',
-    name: 'migrateGroupColorToDye',
-    reason: 'util の VersionedSchema に渡す，同期で行う設定の変換処理',
-  },
-  {
-    file: 'src-electron/source/world/handler.ts',
-    name: 'register',
-    reason:
-      '名前の確認と登録を同期で（間に await を挟まずに）行い，並行する操作が同じ名前を確保しないようにするため',
-  },
-  {
-    file: 'src-electron/source/world/handler.ts',
-    name: 'isRegistered',
-    reason:
-      '名前の確認と登録を同期で（間に await を挟まずに）行い，並行する操作が同じ名前を確保しないようにするため',
-  },
-  {
-    file: 'src-electron/source/version/readyVersions/utils/versionJson.ts',
-    name: 'getVersionJsonObj',
-    reason: 'zod の transform（同期）の中で使う，値の生成のみの関数',
-  },
-  {
-    file: 'src-electron/source/version/readyVersions/utils/versionJson.ts',
-    name: 'javaEncodingToUtf8',
-    reason: 'getVersionJsonObj（同期）の中で使う，定数を返すのみの関数',
-  },
-  {
-    file: 'src-electron/source/runtime/manifest.ts',
-    name: 'setRuntimeManifest',
-    reason:
-      'コンストラクタの中で使うインスタンスのファクトリ（作成時には処理を行わない）',
-  },
-  {
-    file: 'src-electron/source/runtime/minecraft.ts',
-    name: 'setRuntimeManifest',
-    reason:
-      'コンストラクタの中で使うインスタンスのファクトリ（作成時には処理を行わない）',
   },
 ];
 
@@ -356,6 +270,22 @@ export const ALLOWED_EXTERNAL_PACKAGES = [
 ];
 
 /**
+ * util 以外で import を禁止するモジュールの指定に一致する正規表現の文字列を作る
+ *
+ * 相対パス・プロジェクト内のエイリアス（`app/`・`src-electron/`・`src/`）・許可したパッケージ以外に一致する。
+ * 許可したパッケージの `name/*` は，そのパッケージの配下のモジュールも許可する
+ *
+ * @param {string[]} allowed 許可するパッケージの一覧
+ * @returns {string} no-restricted-imports の patterns の regex に渡す正規表現
+ */
+export function restrictedPackagePattern(allowed) {
+  const packages = allowed.map((name) =>
+    name.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\/\*$/, '(/.*)?')
+  );
+  return String.raw`^(?!\.|app/|src-electron/|src/|(${packages.join('|')})$)`;
+}
+
+/**
  * 外部パッケージを直接扱ってよい，util 以外のファイル（外部パッケージのラッパー）
  *
  * いずれも外部パッケージの例外を Failable へ変換して提供している。util へ移動する候補
@@ -363,6 +293,11 @@ export const ALLOWED_EXTERNAL_PACKAGES = [
  * @type {{ file: string; reason: string }[]}
  */
 export const EXTERNAL_PACKAGE_WRAPPERS = [
+  {
+    file: 'src-electron/electron-main.ts',
+    reason:
+      'アプリのエントリーポイントとして Quasar の実行環境（#q-app）を読み込むため',
+  },
   {
     file: 'src-electron/logger/logger.ts',
     reason: 'ログの出力（log4js）とアーカイブ（tar）を行う基盤のため',
