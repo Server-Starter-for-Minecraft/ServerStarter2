@@ -6,7 +6,7 @@ import log4js from 'log4js';
 import { c } from 'tar';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { onQuit } from '../lifecycle/lifecycle';
-import { logDir } from '../source/const';
+import { logDir } from '../lifecycle/paths';
 import { Path } from '../util/binary/path';
 import { isError, isValid } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';

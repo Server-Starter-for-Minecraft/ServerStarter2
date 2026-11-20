@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { rootLogger } from 'app/src-electron/common/logger';
+import { rootLogger } from 'app/src-electron/logger/logger';
 import { ErrorMessage } from 'app/src-electron/schema/error';
 import { mainPath } from 'app/src-electron/source/const';
 import { getSystemSettings } from 'app/src-electron/source/stores/system';

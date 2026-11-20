@@ -9,6 +9,7 @@ import {
   ALLOWED_EXTERNAL_PACKAGES,
   ALLOWED_SYNC_EXPORTS,
   BACKEND_FILES,
+  BACKEND_LAYERS,
   BLOCKING_MODULES,
   ERROR_GUARDS,
   EXCEPTION_ALLOWED_FUNCTIONS,
@@ -16,6 +17,7 @@ import {
   EXTERNAL_PACKAGE_WRAPPERS,
   FAILABLE_HANDLERS,
   FRONTEND_FILES,
+  FRONTEND_LAYERS,
   RESTRICTED_BUILTIN_MODULES,
   SCRIPT_FILES,
   SOURCE_FILES,
@@ -23,6 +25,27 @@ import {
   THROWING_APIS,
 } from './eslint-rules/config.js';
 import pluginServerStarter from './eslint-rules/index.js';
+
+/**
+ * 層の定義から，import を禁止する組（import-x/no-restricted-paths の zones）を作る
+ *
+ * 各層は，`allowed` に書いた層と自身の層以外を import できない
+ *
+ * @param {import('./eslint-rules/config.js').Layer[]} layers 層の一覧
+ * @returns 禁止する import の組
+ */
+function layerZones(layers) {
+  return layers.flatMap((target) => {
+    if (target.allowed.includes('*')) return [];
+    return layers
+      .filter((from) => from !== target && !target.allowed.includes(from.name))
+      .map((from) => ({
+        target: target.files.map((f) => `./${f}`),
+        from: from.files.map((f) => `./${f}`),
+        message: `${target.name}（${target.description}）から ${from.name}（${from.description}）は import できません。層構造は eslint-rules/config.js を参照してください`,
+      }));
+  });
+}
 
 export default tseslint.config(
   pluginQuasar.configs.recommended(),
@@ -130,7 +153,7 @@ export default tseslint.config(
     ignores: [
       ...TEST_FILES,
       // 例外：起動時に一度だけ，log4js が latest.log を上書きする前に同期で退避する必要がある（画面の表示前で操作を止めない）
-      'src-electron/common/logger.ts',
+      'src-electron/logger/logger.ts',
       // 例外：起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）
       'src-electron/util/os/os.ts',
     ],
@@ -245,7 +268,7 @@ export default tseslint.config(
       // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
       ...TEST_FILES,
       // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
-      'src-electron/common/logger.ts',
+      'src-electron/logger/logger.ts',
       // 例外：外部パッケージのラッパー（理由は eslint-rules/config.js を参照）
       ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
       // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
@@ -340,17 +363,25 @@ export default tseslint.config(
         { allowShortCircuit: true, allowTernary: true },
       ],
 
+      // 層構造（import の方向）。層の定義は eslint-rules/config.js を参照
       'import-x/no-restricted-paths': [
         'error',
         {
           zones: [
+            ...layerZones(BACKEND_LAYERS),
+            ...layerZones(FRONTEND_LAYERS),
+            // フロントエンドからは，バックエンドの共有部分（schema・api の型）以外を import しない
             {
-              from: './src/**/*',
-              target: './src-electron/**/*',
-            },
-            {
-              from: './src-electron/!(schema|api)/**/*',
               target: './src/**/*',
+              from: './src-electron/!(schema|api)/**/*',
+              message:
+                'フロントエンドからは src-electron の schema・api（型）のみ import できます',
+            },
+            // バックエンドからはフロントエンドを import しない
+            {
+              target: './src-electron/**/*',
+              from: './src/**/*',
+              message: 'バックエンドからフロントエンドは import できません',
             },
           ],
         },

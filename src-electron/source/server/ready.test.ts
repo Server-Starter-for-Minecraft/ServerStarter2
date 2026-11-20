@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { GroupProgressor } from 'app/src-electron/common/progress';
-import { versionContainer } from 'app/src-electron/core/setup';
 import { WorldID } from 'app/src-electron/schema/world';
+import { versionContainer } from 'app/src-electron/source/containers';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { WorldSettings } from '../world/files/json';
 import { readyRunServer } from './ready';
 
 // サーバーデータ・Javaの準備（ダウンロード等）は行わず，呼び出されたかどうかのみを確認する
-vi.mock('app/src-electron/core/setup', () => ({
+vi.mock('app/src-electron/source/containers', () => ({
   runtimeContainer: { ready: vi.fn() },
   versionContainer: { readyVersion: vi.fn() },
 }));

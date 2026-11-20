@@ -1,16 +1,18 @@
 // import { datapackSourcePath, serverSourcePath } from '../common/paths';
 import { Failable } from '../schema/error';
 import { AllVersion, VersionType } from '../schema/version';
-import { runtimePath, versionsCachePath } from '../source/const';
-import { getUniversalConfig } from '../source/runtime/getUnivConfig';
-import { RuntimeContainer } from '../source/runtime/runtime';
-import { VersionContainer } from '../source/version/version';
+import { runtimePath, versionsCachePath } from './const';
+import { getUniversalConfig } from './runtime/getUnivConfig';
+import { RuntimeContainer } from './runtime/runtime';
+import { VersionContainer } from './version/version';
 
 // import { DatapackContainer } from '../source/datapack/datapack';
 // import { ServerContainer } from '../source/server/server';
 
 /**
- * coreが必要とするsourceの初期化を行う
+ * バックエンドの処理（source）で共有するインスタンスを作る
+ *
+ * （以前は core に置いていたが，core は source から呼ばれる層のため source に置く）
  */
 
 // export const datapackContainer = new DatapackContainer(datapackSourcePath);

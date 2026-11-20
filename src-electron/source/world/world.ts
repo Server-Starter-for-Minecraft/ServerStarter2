@@ -5,10 +5,10 @@ import {
   WorldEdited,
   WorldID,
 } from 'src-electron/schema/world';
-import { versionContainer } from 'app/src-electron/core/setup';
 import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
+import { versionContainer } from 'app/src-electron/source/containers';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { ignoreError } from 'app/src-electron/util/error/ignore';

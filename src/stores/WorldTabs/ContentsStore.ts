@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { isContentsExists } from 'src/logic/contents/contentsPage';
 import {
   AllFileData,
   DatapackData,
@@ -7,7 +8,6 @@ import {
   PluginData,
 } from 'app/src-electron/schema/filedata';
 import { VersionType } from 'app/src-electron/schema/version';
-import { isContentsExists } from 'src/components/World/Contents/contentsPage';
 import { useMainStore } from '../MainStore';
 
 type Contents = DatapackData | ModData | PluginData;
