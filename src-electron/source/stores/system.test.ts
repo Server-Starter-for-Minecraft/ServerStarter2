@@ -1,3 +1,4 @@
+import { utimes } from 'node:fs/promises';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Path } from 'app/src-electron/util/binary/path';
 
@@ -83,5 +84,40 @@ describe('システム設定の読み込み', () => {
     settings.user.language = settings.user.language === 'ja' ? 'en-US' : 'ja';
 
     expect(DEFAULT_SYSTEM_SETTINGS).toEqual(before);
+  });
+
+  test('設定ファイルが無い場合（初回起動）は，バックアップも通知もせずに既定値で起動する', async () => {
+    const { getSystemSettings } = await import('./system');
+    const { DEFAULT_SYSTEM_SETTINGS } =
+      await import('app/src-electron/schema/system');
+    const { readyWindow } =
+      await import('app/src-electron/lifecycle/lifecycle');
+    const { api } = await import('app/src-electron/core/api');
+    vi.mocked(api.send.Error).mockClear();
+
+    expect(await getSystemSettings()).toEqual(DEFAULT_SYSTEM_SETTINGS);
+
+    const files = await workPath.iter();
+    const names = Array.isArray(files) ? files.map((f) => f.basename()) : [];
+    expect(names.some((n) => n.startsWith('settings.ssconfig.broken-'))).toBe(
+      false
+    );
+    await readyWindow();
+    expect(api.send.Error).not.toHaveBeenCalled();
+  });
+
+  test('保存期間（7日）を過ぎたバックアップは削除し，期間内のものは残す', async () => {
+    const expired = workPath.child('settings.ssconfig.broken-expired');
+    const recent = workPath.child('settings.ssconfig.broken-recent');
+    await expired.writeText('old');
+    await recent.writeText('new');
+    const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+    await utimes(expired.path, eightDaysAgo, eightDaysAgo);
+
+    const { getSystemSettings } = await import('./system');
+    await getSystemSettings();
+
+    expect(await expired.exists()).toBe(false);
+    expect(await recent.exists()).toBe(true);
   });
 });

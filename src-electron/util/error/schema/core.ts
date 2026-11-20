@@ -120,6 +120,9 @@ export type CoreErrors = {
     backupPath: string;
   }>;
 
+  // システム設定のファイルを読み込めず，バックアップもできなかったため，設定ファイルを上書きせずに既定値で起動した
+  brokenSystemSettingsWithoutBackup: ErrorMessageContent;
+
   update: {
     // 最新のリリースに実行可能ファイルが見つからない
     missingAppSource: ErrorMessageContent;
