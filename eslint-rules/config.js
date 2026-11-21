@@ -139,15 +139,63 @@ export const BLOCKING_MODULES = [
 ];
 
 /**
+ * メインプロセスを止める同期 API を使ってよい関数（`serverstarter/no-blocking-call` の例外）
+ *
+ * 画面の表示前に一度だけ実行する処理など，操作を止めないことが明らかな場合に限る。
+ * 追加する場合は，同期 API が必要な理由を `reason` に必ず書く
+ *
+ * @type {import('./utils/scope.js').AllowedFunctions[]}
+ */
+export const BLOCKING_CALL_ALLOWED_FUNCTIONS = [
+  {
+    file: 'src-electron/util/os/os.ts',
+    functions: ['readOsRelease'],
+    reason:
+      '起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）',
+  },
+];
+
+/**
+ * メインプロセスを止める同期 API を使ってよいファイル（`serverstarter/no-blocking-call` の例外）
+ *
+ * 関数の外（モジュールの読み込み時）で使う必要がある場合のみ，ファイル単位で許可する
+ *
+ * @type {{ file: string; reason: string }[]}
+ */
+export const BLOCKING_CALL_ALLOWED_FILES = [
+  {
+    file: 'src-electron/logger/logger.ts',
+    reason:
+      '起動時に一度だけ，log4js が latest.log を上書きする前に，モジュールの読み込み時に同期で退避する必要がある（画面の表示前で操作を止めない）',
+  },
+];
+
+/**
  * 例外を Failable へ変換する関数（`serverstarter/no-exception`・`no-unsafe-throwing-call` で使う）
  *
  * 例外を投げる・捕まえる処理は，原則としてこの一覧の関数の中だけで行う。
- * 外部ライブラリなどの例外は，ここにある `safeExec` / `safeExecAsync` に渡して Failable に変換する
+ * 外部ライブラリなどの例外は，ここにある `safeExec` / `safeExecAsync` に渡して Failable に変換する。
+ * 関数名だけで判定すると同名の自作の関数でも許可されてしまうため，宣言元のファイルでも判定する。
+ * `async: false` の関数（同期の try/catch）に非同期の関数を渡すと，reject は変換されないため報告する
+ *
+ * @type {import('./rules/no-unsafe-throwing-call.js').ExceptionConverter[]}
  */
 export const EXCEPTION_CONVERTERS = [
-  'safeExec',
-  'safeExecAsync',
-  'failabilify',
+  {
+    name: 'safeExec',
+    declarationFile: /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    async: false,
+  },
+  {
+    name: 'safeExecAsync',
+    declarationFile: /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    async: true,
+  },
+  {
+    name: 'failabilify',
+    declarationFile: /\/src-electron\/util\/error\/failable\.ts$/,
+    async: true,
+  },
 ];
 
 /**

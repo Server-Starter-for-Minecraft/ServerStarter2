@@ -648,7 +648,17 @@ export class WorldHandler {
    */
   private replaceWithUserPorts(world: Failable<World>) {
     if (this.userPorts === undefined) return;
-    if (isError(world) || isError(world.properties)) return;
+    if (isError(world)) {
+      ignoreError(world, 'ワールドの失敗は呼び出し元が結果として返す');
+      return;
+    }
+    if (isError(world.properties)) {
+      ignoreError(
+        world.properties,
+        'server.properties を読み込めない場合は，置き換えるポート番号が無い'
+      );
+      return;
+    }
     Object.assign(world.properties, this.userPorts);
   }
 
