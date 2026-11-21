@@ -1,10 +1,10 @@
 import { api } from 'app/src-electron/core/api';
+import { Runtime } from 'app/src-electron/schema/runtime';
+import { WorldID } from 'app/src-electron/schema/world';
 import {
   runtimeContainer,
   versionContainer,
-} from 'app/src-electron/core/setup';
-import { Runtime } from 'app/src-electron/schema/runtime';
-import { WorldID } from 'app/src-electron/schema/world';
+} from 'app/src-electron/source/containers';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';

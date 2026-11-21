@@ -2,7 +2,7 @@
 
 更新 2024-08-01
 
-# v2/common/logger の使い方
+# v2/logger の使い方
 
 setWorldMeta で使用する場合の例
 

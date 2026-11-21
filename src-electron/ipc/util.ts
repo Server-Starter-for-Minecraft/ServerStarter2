@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import { rootLogger } from '../common/logger';
 import { assertComplete } from '../lifecycle/lifecycle';
+import { rootLogger } from '../logger/logger';
 import { WithError } from '../schema/error';
 import { isError } from '../util/error/error';
 import { safeExecAsync } from '../util/error/failable';

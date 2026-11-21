@@ -2,8 +2,7 @@ import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
-import { getVersions } from '../core/setup';
-import { readyWindow } from '../lifecycle/lifecycle';
+import { getVersions } from '../source/containers';
 import {
   getAllLocalSaveData,
   getDetectedLocalSaveContainers,
@@ -17,7 +16,9 @@ import {
 } from '../source/remote/remote';
 import { getCacheContents } from '../source/stores/cache';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
+import { getGlobalIP, openBrowser, openFolder } from '../source/system/os';
 import { getStaticResoure } from '../source/system/resource';
+import { readyWindow } from '../source/system/window';
 import { getWorldContents } from '../source/world/contents';
 import { pickDialog } from '../source/world/dialog';
 import { validateNewWorldName } from '../source/world/name';
@@ -37,8 +38,6 @@ import {
   runWorld,
   setWorld,
 } from '../source/world/world';
-import { getGlobalIP } from '../util/network/ip';
-import { openBrowser, openFolder } from '../util/os/shell';
 import { ipcLoggers } from './util';
 
 export const getBackListener = (

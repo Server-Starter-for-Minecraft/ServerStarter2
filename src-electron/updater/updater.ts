@@ -1,4 +1,4 @@
-import { rootLogger } from '../common/logger';
+import { rootLogger } from '../logger/logger';
 import { OsPlatform } from '../schema/os';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
 import { isError } from '../util/error/error';

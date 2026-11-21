@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
+import { ansiStyleToCss } from 'src/logic/console/ansi';
+import { overlayMatches } from 'src/logic/console/consoleLine';
 import { ConsoleData, MatchedConsoleData } from 'src/schema/console';
-import { ansiStyleToCss } from './ansi';
-import { overlayMatches } from './consoleLine';
 
 interface Prop {
   /** 表示する行のデータ（検索中は検索結果を反映したデータ） */

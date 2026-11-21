@@ -4,10 +4,10 @@ import {
 } from '#q-app/electron/main';
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
-import { rootLogger } from './common/logger';
 import { setupIPC } from './ipc/setup';
 import { setServerStarterApp } from './lifecycle/exit';
 import { onQuit } from './lifecycle/lifecycle';
+import { rootLogger } from './logger/logger';
 import { getSystemSettings, setSystemSettings } from './source/stores/system';
 import { update } from './updater/updater';
 import { Path } from './util/binary/path';

@@ -1,10 +1,7 @@
 <script setup lang="ts">
+import { pGroupKey, propertyClasses } from 'src/logic/property/classifications';
 import { keys } from 'app/src-public/scripts/obj/obj';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
-import {
-  pGroupKey,
-  propertyClasses,
-} from 'src/components/World/Property/classifications';
 import { thumbStyle } from '../scrollBar';
 
 interface Prop {

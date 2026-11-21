@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { AllVanillaVersion, VersionId } from 'app/src-electron/schema/version';
 import { Path } from 'app/src-electron/util/binary/path';
 import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
-import { versionContainer } from '../../core/setup';
 import { CustomMapData } from '../../schema/filedata';
+import { versionContainer } from '../containers';
 import { importCustomMap } from './customMap';
 import { WorldSettings } from './files/json';
 
 // バージョン一覧はネットワークに依存するため，テストごとに内容を指定する
-vi.mock('../../core/setup', () => ({
+vi.mock('../containers', () => ({
   versionContainer: { listVersions: vi.fn() },
 }));
 
