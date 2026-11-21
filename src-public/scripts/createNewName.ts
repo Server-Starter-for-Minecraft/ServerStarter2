@@ -28,7 +28,6 @@ export function createNewName(names: string[], targetName: string) {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('createNewName', () => {
     const names = ['NewName', 'HelloWorld'];
     expect(createNewName(names, 'NewName')).toEqual('NewName_1');

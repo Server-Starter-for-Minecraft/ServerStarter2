@@ -10,14 +10,98 @@
 /** バックエンド（Electron のメインプロセス）のファイル */
 export const BACKEND_FILES = ['src-electron/**/*.ts'];
 
-/** IPC の API と処理の対応付けのファイル（`serverstarter/require-async-ipc-handler` で使う） */
-export const IPC_HANDLER_FILES = ['src-electron/ipc/back.ts'];
-
 /** ビルド・開発用のスクリプト */
 export const SCRIPT_FILES = ['scripts/**/*.ts'];
 
 /** フロントエンドのファイル */
 export const FRONTEND_FILES = ['src/**/*.ts', 'src/**/*.vue'];
+
+/** バックエンドとフロントエンドの両方から使う処理（`src-public/`） */
+export const SHARED_FILES = ['src-public/**/*.ts'];
+
+/**
+ * 型アサーション（`as`）を使ってよいファイル（`@typescript-eslint/consistent-type-assertions` の例外）
+ *
+ * 値を検証せずに型を付けることになるため，型を作る汎用処理（ジェネリクス・ブランド型の生成）に限る。
+ * 外部の入力（JSON・HTTP の応答・例外など）を扱う処理は，zod の safeParse や型ガードで検証すること。
+ * 追加する場合は，型アサーションが必要な理由を `reason` に必ず書く
+ *
+ * @type {{ file: string; reason: string }[]}
+ */
+export const TYPE_ASSERTION_ALLOWED_FILES = [
+  {
+    file: 'src-electron/util/zod/brand.ts',
+    reason: '形式に制約のない文字列にブランド型を付ける',
+  },
+  {
+    file: 'src-electron/util/random/uuid.ts',
+    reason: '生成した UUID にブランド型を付ける',
+  },
+  {
+    file: 'src-public/scripts/uuid.ts',
+    reason: '生成した UUID にブランド型を付ける',
+  },
+  {
+    file: 'src-electron/util/timestamp.ts',
+    reason: '現在時刻にブランド型（Timestamp）を付ける',
+  },
+  {
+    file: 'src-electron/util/error/construct.ts',
+    reason: 'エラーの種類の定義から ErrorMessage を組み立てる',
+  },
+  {
+    file: 'src-electron/util/error/error.ts',
+    reason: 'エラーの判定（isError）の実装',
+  },
+  {
+    file: 'src-public/scripts/error.ts',
+    reason: 'エラーの判定（isError）の実装',
+  },
+  {
+    file: 'src-electron/util/error/failable.ts',
+    reason: '関数の戻り値の型から Failable の型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/versioning/versionedSchema.ts',
+    reason: '旧スキーマからの変換に失敗した結果を，最新のスキーマの結果の型に合わせる',
+  },
+  {
+    file: 'src-electron/util/deepcopy.ts',
+    reason: '任意の型の値を複製し，元の型として返す',
+  },
+  {
+    file: 'src-public/scripts/deepcopy.ts',
+    reason: '任意の型の値を複製し，元の型として返す',
+  },
+  {
+    file: 'src-electron/util/obj/obj.ts',
+    reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
+  },
+  {
+    file: 'src-public/scripts/obj/obj.ts',
+    reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
+  },
+  {
+    file: 'src-public/scripts/obj/objFlatten.ts',
+    reason: '入れ子のオブジェクトを平らにした型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/object/groupBy.ts',
+    reason: '空のオブジェクトから，キーごとに分けた結果の型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/helper/infinitMap.ts',
+    reason: '空のオブジェクトから，任意のキーで値を返す型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/awaitOnce.ts',
+    reason: '一度だけ取得した値を，取得前の型（undefined を含まない型）として返す',
+  },
+  {
+    file: 'src-electron/util/promise/promiseDecorator.ts',
+    reason: 'Promise にメソッドを付け足した型を組み立てる',
+  },
+];
 
 /** テストのファイル（テスト専用の補助ファイルを含む） */
 export const TEST_FILES = [
@@ -74,6 +158,12 @@ export const EXCEPTION_CONVERTERS = [
  * @type {import('./utils/scope.js').AllowedFunctions[]}
  */
 export const EXCEPTION_ALLOWED_FUNCTIONS = [
+  {
+    file: 'src-public/scripts/promise/runDetached.ts',
+    functions: ['runDetached'],
+    reason:
+      '完了を待たない Promise の失敗を onError に渡す最下層の関数（待たれない Promise は safeExecAsync で待てないため，Promise の失敗を直接受け取る）',
+  },
   {
     file: 'src-electron/util/error/failable.ts',
     functions: ['safeExec', 'safeExecAsync', 'failabilify'],
@@ -499,6 +589,33 @@ export const FRONTEND_LAYERS = [
 ];
 
 /**
+ * 層の単位では許可しているが，個別に禁止する import（層構造の補足）
+ *
+ * 共通基盤（base）は互いに依存するため 1 つの層としているが，その中にも守るべき方向がある。
+ * 層を分けられない依存の方向は，ここに追加する
+ *
+ * @type {{ target: string[]; from: string[]; reason: string }[]}
+ */
+export const RESTRICTED_LAYER_IMPORTS = [
+  {
+    target: ['src-electron/ipc/back.ts'],
+    from: [
+      'src-electron/util/**',
+      'src-electron/lifecycle/**',
+      'src-electron/logger/**',
+    ],
+    reason:
+      'IPC の API の処理は source の窓口（OS・画面の機能は source/system）を通して呼ぶ',
+  },
+  {
+    target: ['src-electron/schema/**', 'src-public/**'],
+    from: ['src-electron/lifecycle/**', 'src-electron/logger/**'],
+    reason:
+      'schema・src-public はフロントエンドからも読み込むため，Electron・log4js に依存するアプリのライフサイクル・ロガーを使わない',
+  },
+];
+
+/**
  * テストで差し替えてよい，外部との境界のモジュール（`serverstarter/no-internal-mock` で使う）
  *
  * ネットワーク・OS・Electron・外部のプロセスなど，テストの環境では実物を使えない・使うべきでない境界のみを登録する。
@@ -519,6 +636,11 @@ export const MOCKABLE_BOUNDARIES = [
   {
     file: 'src-electron/source/const.ts',
     reason: 'アプリのデータの保存先（テストの作業フォルダに置き換える）',
+  },
+  {
+    file: 'src-electron/lifecycle/paths.ts',
+    reason:
+      'アプリのデータの保存先（source/const.ts の元の定義。util・ロガーはこちらを直接読むため，同じ理由で置き換える）',
   },
   {
     file: 'src-electron/source/stores/system.ts',

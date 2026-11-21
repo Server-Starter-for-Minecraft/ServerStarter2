@@ -8,6 +8,12 @@ export interface IAPI {
   sendWindowToMain: {
     [key in string]: (...args: any[]) => void;
   };
+  /**
+   * フロントエンドから呼び出して結果を待つ API
+   *
+   * 処理は Promise を返す（非同期にする）。IPC の API の処理（ipc/back.ts）を同期の関数にすると，
+   * この型の制約により型チェックで検出される（lint の独自ルールでは検査しない）
+   */
   invokeWindowToMain: {
     [key in string]: (...args: any[]) => Promise<any>;
   };

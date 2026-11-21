@@ -1,4 +1,3 @@
-// import { datapackSourcePath, serverSourcePath } from '../common/paths';
 import { Failable } from '../schema/error';
 import { AllVersion, VersionType } from '../schema/version';
 import { runtimePath, versionsCachePath } from './const';
@@ -6,17 +5,11 @@ import { getUniversalConfig } from './runtime/getUnivConfig';
 import { RuntimeContainer } from './runtime/runtime';
 import { VersionContainer } from './version/version';
 
-// import { DatapackContainer } from '../source/datapack/datapack';
-// import { ServerContainer } from '../source/server/server';
-
 /**
- * バックエンドの処理（source）で共有するインスタンスを作る
+ * バックエンドの処理（source）で共有するインスタンス
  *
- * （以前は core に置いていたが，core は source から呼ばれる層のため source に置く）
+ * Java のランタイムとサーバーのバージョンの一覧は，取得したものをキャッシュして使い回す
  */
-
-// export const datapackContainer = new DatapackContainer(datapackSourcePath);
-// export const serverContainer = new ServerContainer(serverSourcePath);
 export const runtimeContainer = new RuntimeContainer(
   runtimePath,
   getUniversalConfig

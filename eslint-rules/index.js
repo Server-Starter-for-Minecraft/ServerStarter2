@@ -7,7 +7,6 @@ import noIgnoredFailable from './rules/no-ignored-failable.js';
 import noInternalMock from './rules/no-internal-mock.js';
 import noSilentError from './rules/no-silent-error.js';
 import noUnsafeThrowingCall from './rules/no-unsafe-throwing-call.js';
-import requireAsyncIpcHandler from './rules/require-async-ipc-handler.js';
 
 /**
  * ServerStarter2 の独自 ESLint ルール（プラグイン `serverstarter`）
@@ -26,7 +25,6 @@ const rules = {
   'no-internal-mock': noInternalMock,
   'no-silent-error': noSilentError,
   'no-unsafe-throwing-call': noUnsafeThrowingCall,
-  'require-async-ipc-handler': requireAsyncIpcHandler,
 };
 
 export default {

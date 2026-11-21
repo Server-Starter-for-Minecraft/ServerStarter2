@@ -325,8 +325,6 @@ async function _extractFilesFromManifest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect, vi } = import.meta.vitest;
-
   describe('runtime manifest base', async () => {
     const { Path } = await import('src-electron/util/binary/path');
 

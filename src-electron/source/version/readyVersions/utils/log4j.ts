@@ -611,8 +611,6 @@ export function saveLog4JPatch(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-
   const cases = ['17-18', '12-16', '7-11', 'other'] as const;
 
   test.each([

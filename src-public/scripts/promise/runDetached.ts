@@ -10,7 +10,8 @@ import { isError } from '../error';
  * WithError の errors（成功扱いの内部のエラー）は，処理の呼び出し元の方針に従うため渡さない
  *
  * @param task 実行中の非同期処理
- * @param onError 失敗したときの処理（バックエンドではロガー，フロントエンドではエラー表示に渡す）
+ * @param onError 失敗したときの処理（バックエンドではロガー，フロントエンドではエラー表示に渡す）。
+ *   この処理が例外を投げると，その失敗は誰にも処理されないため，例外を投げない処理（ロガー・エラー表示）を渡すこと
  */
 export function runDetached(
   task: Promise<unknown>,

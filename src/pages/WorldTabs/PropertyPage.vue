@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { QScrollArea, useQuasar } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
@@ -31,7 +31,7 @@ const initProperty: ServerProperties = fromEntries(
 );
 
 // 入力領域のスクロールバーの制御
-const scrollAreaRef = ref();
+const scrollAreaRef = ref<QScrollArea | null>(null);
 
 // ワールドの設定（ポート開放不要化の利用など）によって編集できないプロパティ
 const lockedProperties = computed(() =>
@@ -69,7 +69,7 @@ function resetAll() {
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.setScrollPosition('vertical', 0);
+  scrollAreaRef.value?.setScrollPosition('vertical', 0);
 }
 </script>
 

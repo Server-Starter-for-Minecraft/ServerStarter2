@@ -133,7 +133,6 @@ export function replaceEmbedArgs(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('versionJson_replaceEmbedArgs', () => {
     const baseVerJsonDummy: VersionJson = {
       download: {

@@ -136,7 +136,9 @@ export class RemoveForgeVersion extends RemoveVersion<ForgeVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('forge version', { tags: ['network'] }, async () => {
     // 一時使用フォルダを初期化
@@ -223,34 +225,28 @@ if (import.meta.vitest) {
         outputPath,
         execRuntime
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
       // ファイルの設置状況の検証
-      for (const { path } of genfiles) {
-        const targetPath = outputPath.child(path);
-        if (targetPath.extname() === '.jar') {
-          expect(await outputPath.child('version.jar').exists()).toBe(true);
-        } else {
-          expect(await outputPath.child(path).exists()).toBe(true);
-        }
+      // （生成された jar は起動用の名前（version.jar）で，それ以外は生成された場所に設置される）
+      const hasJar = genfiles.some(({ path }) => path.endsWith('.jar'));
+      const otherFiles = genfiles.filter(({ path }) => !path.endsWith('.jar'));
+      expect(await outputPath.child('version.jar').exists()).toBe(hasJar);
+      for (const { path } of otherFiles) {
+        expect(await outputPath.child(path).exists()).toBe(true);
       }
 
       // 実行後にファイル削除
       const remover = new RemoveForgeVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
-      // 削除後の状態を確認
-      for (const { path } of genfiles) {
-        const targetPath = outputPath.child(path);
-        if (targetPath.extname() === '.jar') {
-          expect(await outputPath.child('version.jar').exists()).toBe(false);
-        } else {
-          expect(await readyOperator.cachePath.child(path).exists()).toBe(true);
-        }
+      // 削除後の状態を確認（jar は削除され，それ以外はキャッシュに残る）
+      expect(await outputPath.child('version.jar').exists()).toBe(false);
+      for (const { path } of otherFiles) {
+        expect(await readyOperator.cachePath.child(path).exists()).toBe(true);
       }
     });
   });

@@ -31,7 +31,12 @@ class ZipHandler {
       JSZip.loadAsync(new Uint8Array(data.data), {
         // TODO:shift-jis 固定で大丈夫？
         decodeFileName: (name) =>
-          iconv.decode(Buffer.from(name as Uint8Array), 'shift-jis'),
+          iconv.decode(
+            Array.isArray(name)
+              ? Buffer.from(name.join(''))
+              : Buffer.from(name),
+            'shift-jis'
+          ),
       })
     );
     if (isError(zipData))
@@ -118,7 +123,9 @@ export class ZipFile {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('zipFile', async () => {
     const { Path } = await import('../path');
@@ -132,12 +139,11 @@ if (import.meta.vitest) {
       const zip = new ZipFile(testPath);
       const extractRes = await zip.extract(tgtPath);
 
-      expect(isError(extractRes)).toBe(false);
-      if (isError(extractRes)) return;
+      assertOk(extractRes);
 
       // 解凍結果のファイル数を確認
       const paths = await tgtPath.iter();
-      if (isError(paths)) return;
+      assertOk(paths);
 
       expect(paths.length).toBe(3);
     });
@@ -148,18 +154,17 @@ if (import.meta.vitest) {
       // 指定したZipの中身を確認
       const zip = new ZipFile(testPath);
       const isFileExists = await zip.hasFile('sample2.txt');
-      if (isError(isFileExists)) return;
       expect(isFileExists).toBe(true);
 
       // Zipの中から特定のファイルの情報を取得
       const file = await zip.getFile('sample2.txt');
-      if (isError(file)) return;
+      assertOk(file);
       expect(await file.text()).toBe('Hello World!');
 
       // 正規表現で一覧を絞る
       const matched = await zip.match(/sample\d\.txt/);
-      if (isError(matched) || values(matched).filter(isError).length > 0)
-        return;
+      assertOk(matched);
+      expect(values(matched).filter(isError)).toEqual([]);
       expect(new Set(keys(matched))).toEqual(
         new Set(['sample1.txt', 'sample2.txt', 'sample3.txt'])
       );

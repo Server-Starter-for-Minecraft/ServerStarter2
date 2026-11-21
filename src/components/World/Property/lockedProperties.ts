@@ -41,8 +41,6 @@ export function getLockedProperties(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('getLockedProperties', () => {
     const portKeys = ['server-port', 'query.port'];
 

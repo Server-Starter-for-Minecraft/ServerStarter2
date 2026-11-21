@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, ComputedRef, nextTick, ref } from 'vue';
 import { ignoreError, safeExec } from 'src/error/error';
 import { showUnexpectedError } from 'src/error/error';
 import {
@@ -12,6 +12,7 @@ import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import type { ConsoleSearchExpose } from './consoleSearch';
 
 /** 検索結果として表示する最大件数 */
 const LIMIT_SEARCH_RESULTS = 10000;
@@ -213,7 +214,14 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 // 公開メソッド
-defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
+// 公開する処理の型は consoleSearch.ts の ConsoleSearchExpose と一致させる（ref はインスタンス上で値に展開される）
+defineExpose({
+  getMatchedLines,
+  handleKeyDown,
+  currentFocusLineIdx,
+} satisfies Omit<ConsoleSearchExpose, 'currentFocusLineIdx'> & {
+  currentFocusLineIdx: ComputedRef<ConsoleSearchExpose['currentFocusLineIdx']>;
+});
 </script>
 
 <template>

@@ -115,7 +115,9 @@ export class RemoveNeoForgeVersion extends RemoveVersion<NeoForgeVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('neoforge version', async () => {
     // 一時使用フォルダを初期化
@@ -164,6 +166,9 @@ if (import.meta.vitest) {
       {
         // jarが生成されるバージョン
         genfiles: [{ path: 'neoforge-20.2.86-universal.jar', content: 'foo' }],
+        // jar を起動するコマンドになり，jar は起動用の名前で設置される
+        commandArg: '-jar',
+        placed: [{ dir: 'output', name: 'version.jar' }],
       },
       {
         // run.bat / run.sh が生成されるバージョン
@@ -179,59 +184,57 @@ if (import.meta.vitest) {
               'java @user_jvm_args.txt @path/to/args.txt "$@"\n# COMMENT',
           },
         ],
+        // 引数のファイルを読み込むコマンドになり，リネームされた実行ファイルはキャッシュに残る
+        commandArg: '@path/to/args.txt',
+        placed: [
+          { dir: 'cache', name: 'version.bat' },
+          { dir: 'cache', name: 'version.sh' },
+        ],
       },
-    ])('setNeoForgeJar', { timeout: 1000 * 60 }, async ({ genfiles }) => {
-      const outputPath = serverFolder.child(ver20.id);
-      const readyOperator = new ReadyNeoForgeVersion(ver20, cacheFolder);
+    ] as const)(
+      'setNeoForgeJar',
+      { timeout: 1000 * 60 },
+      async ({ genfiles, commandArg, placed }) => {
+        const outputPath = serverFolder.child(ver20.id);
+        const readyOperator = new ReadyNeoForgeVersion(ver20, cacheFolder);
 
-      // 条件をそろえるために，ファイル類を削除する
-      await outputPath.remove();
-      await readyOperator.cachePath.remove();
+        // 条件をそろえるために，ファイル類を削除する
+        await outputPath.remove();
+        await readyOperator.cachePath.remove();
 
-      // `installer.jar`の実行によって必要なファイルが生成された体を再現する
-      const execRuntime: ExecRuntime = vi.fn(async (options) => {
-        for (const { path, content } of genfiles) {
-          await options.currentDir.child(path).writeText(content);
+        // `installer.jar`の実行によって必要なファイルが生成された体を再現する
+        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+          for (const { path, content } of genfiles) {
+            await options.currentDir.child(path).writeText(content);
+          }
+        });
+
+        const res = await readyOperator.completeReady4VersionFiles(
+          outputPath,
+          execRuntime
+        );
+        assertOk(res);
+
+        // `installer.jar`が実行されている
+        expect(execRuntime).toHaveBeenCalledTimes(1);
+
+        // 戻り値の検証
+        const cmd = res.getCommand({ jvmArgs: JVM_ARGS });
+        expect(cmd.slice(0, JVM_ARGS.length)).toEqual(JVM_ARGS);
+        expect(cmd).toContain(commandArg);
+
+        // ファイルの設置状況の検証
+        const dirs = { output: outputPath, cache: readyOperator.cachePath };
+        for (const { dir, name } of placed) {
+          expect(await dirs[dir].child(name).exists()).toBe(true);
         }
-      });
 
-      const res = await readyOperator.completeReady4VersionFiles(
-        outputPath,
-        execRuntime
-      );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return;
-
-      // `installer.jar`が実行されている
-      expect(execRuntime).toHaveBeenCalledTimes(1);
-
-      // 戻り値の検証
-      const cmd = res.getCommand({ jvmArgs: JVM_ARGS });
-      expect(cmd.slice(0, JVM_ARGS.length)).toEqual(JVM_ARGS);
-      if (genfiles.some(({ path }) => path.endsWith('.jar'))) {
-        expect(cmd).toContain('-jar');
-      } else {
-        expect(cmd).toContain('@path/to/args.txt');
+        // 実行後にファイル削除
+        const remover = new RemoveNeoForgeVersion(ver20, cacheFolder);
+        await remover.completeRemoveVersion(outputPath);
+        expect(await getJarPath(outputPath).exists()).toBe(false);
       }
-
-      // ファイルの設置状況の検証
-      for (const { path } of genfiles) {
-        if (path.endsWith('.jar')) {
-          expect(await getJarPath(outputPath).exists()).toBe(true);
-        } else {
-          const ext = path.endsWith('.bat') ? '.bat' : '.sh';
-          // リネームされた実行ファイルはキャッシュに残る
-          expect(
-            await readyOperator.cachePath.child(`version${ext}`).exists()
-          ).toBe(true);
-        }
-      }
-
-      // 実行後にファイル削除
-      const remover = new RemoveNeoForgeVersion(ver20, cacheFolder);
-      await remover.completeRemoveVersion(outputPath);
-      expect(await getJarPath(outputPath).exists()).toBe(false);
-    });
+    );
 
     test('setNeoForgeJar (installer generates no files)', async () => {
       const outputPath = serverFolder.child(ver20.id);

@@ -7,12 +7,13 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import ConsoleLineView from './ConsoleLineView.vue';
 import { consoleScrollMemory } from './consoleScroll';
+import type { ConsoleSearchExpose } from './consoleSearch';
 import ConsoleSearch from './ConsoleSearch.vue';
 
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
-const consoleSearchRef = ref<InstanceType<typeof ConsoleSearch> | null>(null);
+const consoleSearchRef = ref<ConsoleSearchExpose | null>(null);
 const scrollAreaRef = ref<QScrollArea | null>(null);
 
 /** コンソールのカスタム表示に将来的に対応 */

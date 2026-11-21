@@ -23,6 +23,7 @@ export function deepcopy<T>(obj: T): T {
         deepcopy
       ) as T;
     default:
-      throw Error(`${typeof obj} object is not valid in deepcopy`);
+      // 関数・シンボルなどは複製できないため，そのまま返す（Copyable な値のみを渡す想定。util の deepcopy と同じ扱い）
+      return obj;
   }
 }

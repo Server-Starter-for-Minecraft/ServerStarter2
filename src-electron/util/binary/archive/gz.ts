@@ -44,7 +44,9 @@ export class gzip {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('gzip', async () => {
     const { BytesData } = await import('../bytesData');
@@ -60,14 +62,12 @@ if (import.meta.vitest) {
       // testフォルダからファイルを読込
       const txtFile = await BytesData.fromPath(txtPath);
 
-      expect(isError(txtFile)).toBe(false);
-      if (isError(txtFile)) return;
+      assertOk(txtFile);
 
       // gzip圧縮
       const compressed = await gzip.fromFile(txtPath);
 
-      expect(isError(compressed)).toBe(false);
-      if (isError(compressed)) return;
+      assertOk(compressed);
 
       // gzipを保存
       await compressed.write(compressedPath.path);
@@ -75,8 +75,7 @@ if (import.meta.vitest) {
       // gzip解凍
       const unCompressed = await gzip.unpackFile(compressedPath);
 
-      expect(isError(unCompressed)).toBe(false);
-      if (isError(unCompressed)) return;
+      assertOk(unCompressed);
 
       // 元ファイルと「圧縮->解凍」したファイルが一致するか確認
       expect(await txtFile.text()).toBe(await unCompressed.text());
@@ -87,20 +86,17 @@ if (import.meta.vitest) {
       const sampleBytes = Buffer.from('test');
       const src = await BytesData.fromBuffer(sampleBytes);
 
-      expect(isError(src)).toBe(false);
-      if (isError(src)) return;
+      assertOk(src);
 
       // gzip圧縮
       const compressed = await gzip.fromData(src);
 
-      expect(isError(compressed)).toBe(false);
-      if (isError(compressed)) return;
+      assertOk(compressed);
 
       // gzip解凍
       const unCompressed = await gzip.unpackData(compressed);
 
-      expect(isError(unCompressed)).toBe(false);
-      if (isError(unCompressed)) return;
+      assertOk(unCompressed);
 
       // 元データと「圧縮->解凍」したデータが一致するか確認
       expect(await src.text()).toBe(await unCompressed.text());
