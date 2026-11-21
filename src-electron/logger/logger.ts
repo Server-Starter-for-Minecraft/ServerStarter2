@@ -19,6 +19,13 @@ const EXTs = ['.log', '.truncate.log'];
 const TMP_LOG = `tmp_${randomInt(0, 2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
 
+/**
+ * ログ（アーカイブ・アーカイブできずに残ったログ）を残す期間（日）
+ *
+ * ログ以外にも，診断のために一時的に残すファイル（読み込めなかった設定ファイルのバックアップ等）の保存期間として使う
+ */
+export const LOG_RETENTION_DAYS = 7;
+
 const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
 const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
@@ -170,7 +177,7 @@ async function archiveLog(...logPaths: Path[]) {
         const newExt = path.basename().substring(firstColonIndex);
         const newLogPath = path.parent().child(`${newlogName}${newExt}`);
         const renamed = await path.rename(newLogPath);
-        // 名前を変更できなかったログはアーカイブしない（次回の起動時に再度アーカイブを試みる）
+        // 名前を変更できなかったログはアーカイブせずに残す（保存期間を過ぎたら下の削除の処理で消す）
         return isError(renamed) ? renamed : newLogPath;
       })
     );
@@ -192,8 +199,8 @@ async function archiveLog(...logPaths: Path[]) {
     await removeLogFiles(archivedPaths);
   }
 
-  // 一週間前のログファイルとTMPファイルを削除
-  const thresholdDate = dayjs().subtract(7, 'd');
+  // 保存期間を過ぎたログと，作りかけのアーカイブを削除
+  const thresholdDate = dayjs().subtract(LOG_RETENTION_DAYS, 'd');
   const paths = await logDir.iter();
   if (isError(paths)) {
     rootLogger.logger.archive().warn(paths);
@@ -201,11 +208,17 @@ async function archiveLog(...logPaths: Path[]) {
   }
   const expired: Path[] = [];
   for (const path of paths) {
-    if (!path.path.endsWith(ARCHIVE_EXT)) continue;
-    if (path.basename().startsWith('tmp')) {
+    const name = path.basename();
+    // 記録中のログと，この起動でアーカイブするために退避したログは残す
+    if (name.startsWith(`${LATEST}.`) || name.startsWith(`${TMP_LOG}.`))
+      continue;
+    // 作りかけのアーカイブはすぐに削除する
+    if (name.endsWith(ARCHIVE_EXT) && name.startsWith('tmp')) {
       expired.push(path);
       continue;
     }
+    // アーカイブと，名前の変更・圧縮に失敗して残ったログ（前回までの退避ファイルを含む）は保存期間で削除する
+    if (!name.endsWith(ARCHIVE_EXT) && !name.endsWith('.log')) continue;
     const updateDate = await path.lastUpdateTime();
     if (updateDate.isBefore(thresholdDate)) expired.push(path);
   }

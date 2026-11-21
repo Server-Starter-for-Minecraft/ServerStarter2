@@ -530,6 +530,11 @@ export const MOCKABLE_BOUNDARIES = [
     reason: 'フロントエンド（レンダラー）への IPC の送信',
   },
   {
+    file: 'src-electron/lifecycle/exit.ts',
+    reason:
+      'アプリの終了と PC のシャットダウン（テストの実行環境を終了させない）',
+  },
+  {
     file: 'src-electron/source/containers.ts',
     reason: '外部サービスから取得するバージョンの一覧',
   },

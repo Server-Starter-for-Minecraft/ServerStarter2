@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { safeStorage } from 'electron';
 import { api } from 'src-electron/core/api';
 import { onReadyWindow } from 'src-electron/lifecycle/lifecycle';
+import { LOG_RETENTION_DAYS } from 'src-electron/logger/logger';
 import { ErrorMessage } from 'src-electron/schema/error';
 import {
   DEFAULT_SYSTEM_SETTINGS,
@@ -12,11 +13,7 @@ import { Path } from 'src-electron/util/binary/path';
 import { deepcopy } from 'src-electron/util/deepcopy';
 import { errorMessage } from 'src-electron/util/error/construct';
 import { fromRuntimeError, isError } from 'src-electron/util/error/error';
-import {
-  Failable,
-  safeExec,
-  safeExecAsync,
-} from 'src-electron/util/error/failable';
+import { Failable, safeExec } from 'src-electron/util/error/failable';
 import { settingPath } from '../const';
 import { sourceLoggers } from '../sourceLogger';
 import { systemSettingsSchema } from './systemSchema';
@@ -32,10 +29,12 @@ async function write(settings: SystemSettings): Promise<Failable<void>> {
   // スキーマのバージョンを付与して文字列化
   const stringified = JSON.stringify(systemSettingsSchema.serialize(settings));
 
-  // 暗号化
-  const encrypted = await BytesData.fromBuffer(
+  // 暗号化（暗号化できない環境では例外になるため，Failable に変換する）
+  const encryptedBuffer = safeExec(() =>
     safeStorage.encryptString(stringified)
   );
+  if (isError(encryptedBuffer)) return encryptedBuffer;
+  const encrypted = await BytesData.fromBuffer(encryptedBuffer);
   if (isError(encrypted)) return encrypted;
 
   // ファイルに保存
@@ -46,11 +45,11 @@ async function write(settings: SystemSettings): Promise<Failable<void>> {
 const BROKEN_BACKUP_PREFIX = `${settingPath.basename()}.broken-`;
 
 /**
- * 読み込めなかった設定ファイルのバックアップを残す期間（日）
+ * バックアップの名前に付ける作成日時の書式
  *
- * 読み込みの失敗が繰り返されてもバックアップが増え続けないよう，ログのアーカイブと同じ期間で削除する
+ * 保存期間の判定にも使う（ファイルのコピーは更新日時を引き継ぐ場合があるため，更新日時では判定しない）
  */
-const BROKEN_BACKUP_RETENTION_DAYS = 7;
+const BROKEN_BACKUP_DATE_FORMAT = 'YYYYMMDD-HHmmss';
 
 /**
  * 設定ファイルを読み込む
@@ -84,29 +83,37 @@ async function read(): Promise<Failable<SystemSettings>> {
 async function backupBrokenSettings(): Promise<Failable<Path>> {
   const backupPath = settingPath
     .parent()
-    .child(`${BROKEN_BACKUP_PREFIX}${dayjs().format('YYYYMMDD-HHmmss')}`);
+    .child(
+      `${BROKEN_BACKUP_PREFIX}${dayjs().format(BROKEN_BACKUP_DATE_FORMAT)}`
+    );
   const copied = await settingPath.copyTo(backupPath);
   if (isError(copied)) return copied;
   return backupPath;
 }
 
-/** 保存期間を過ぎた，読み込めなかった設定ファイルのバックアップを削除する */
+/**
+ * 保存期間を過ぎた，読み込めなかった設定ファイルのバックアップを削除する
+ *
+ * 読み込みの失敗が繰り返されてもバックアップが増え続けないよう，ログのアーカイブと同じ期間で削除する。
+ * 作成日時は名前に含めた日時で判定する（Windows のファイルのコピーは元のファイルの更新日時を引き継ぐため，
+ * 更新日時で判定すると，長く起動していなかった場合に作成直後のバックアップを消してしまう）
+ */
 async function removeExpiredBackups() {
   const paths = await settingPath.parent().iter();
   if (isError(paths)) {
     loggers().removeExpiredBackups().warn(paths);
     return;
   }
-  const threshold = dayjs().subtract(BROKEN_BACKUP_RETENTION_DAYS, 'd');
+  // 書式の日時は辞書順と時刻順が一致するため，文字列のまま比較する
+  const threshold = dayjs()
+    .subtract(LOG_RETENTION_DAYS, 'd')
+    .format(BROKEN_BACKUP_DATE_FORMAT);
   for (const path of paths) {
-    if (!path.basename().startsWith(BROKEN_BACKUP_PREFIX)) continue;
-    // 更新日時を取得できない場合は，この起動では削除しない（設定の読み込みを止めない）
-    const updated = await safeExecAsync(async () => path.lastUpdateTime());
-    if (isError(updated)) {
-      loggers().removeExpiredBackups().warn(updated);
-      continue;
-    }
-    if (!updated.isBefore(threshold)) continue;
+    const name = path.basename();
+    if (!name.startsWith(BROKEN_BACKUP_PREFIX)) continue;
+    const created = name.slice(BROKEN_BACKUP_PREFIX.length);
+    // 名前の日時が書式と異なるファイル（ユーザーが名前を変えたもの等）は削除しない
+    if (!/^\d{8}-\d{6}$/.test(created) || created >= threshold) continue;
     const removed = await path.remove();
     // 削除できなくても次回の起動時に再度削除を試みる
     if (isError(removed)) loggers().removeExpiredBackups().warn(removed);
@@ -159,8 +166,6 @@ export async function getSystemSettings(): Promise<SystemSettings> {
   loading ??= (async () => {
     await removeExpiredBackups();
     const loaded = await read();
-    // 読み込み中に設定が保存された場合は，保存された内容を優先する（古い内容で上書きしない）
-    if (systemSettingsValue !== undefined) return systemSettingsValue;
     const result = isError(loaded)
       ? await recoverFromBrokenSettings(loaded)
       : loaded;
@@ -175,6 +180,9 @@ export async function getSystemSettings(): Promise<SystemSettings> {
 export async function setSystemSettings(
   settings: SystemSettings
 ): Promise<SystemSettings> {
+  // 最初の読み込みの途中で保存すると，読み込めなかったファイルのバックアップより先に上書きしたり，
+  // 保存した内容を読み込みの結果（既定値）で上書きされたりするため，読み込みが済んでから保存する
+  if (loading !== undefined) await loading;
   // 保存に失敗しても，アプリの動作中は変更後の設定を使う（保存の失敗はログに残す）
   const written = await write(settings);
   if (isError(written)) loggers().write().error(written);

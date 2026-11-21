@@ -958,12 +958,15 @@ export class WorldHandler {
       return withError(afterLocalJson);
     }
 
-    // 一時フォルダの中身をこのパスに移動
+    // 一時フォルダの中身をこのパスに移動（失敗した場合も展開した一時フォルダは削除する）
     const removedSavePath = await savePath.remove();
-    if (isError(removedSavePath)) return withError(removedSavePath);
+    if (isError(removedSavePath)) {
+      await removeTempDir(tempDir);
+      return withError(removedSavePath);
+    }
     const moveSavePath = await tempDir.moveTo(savePath);
-    if (isError(moveSavePath)) return withError(moveSavePath);
     await removeTempDir(tempDir);
+    if (isError(moveSavePath)) return withError(moveSavePath);
 
     // remoteをrestore前のデータで上書き
     afterLocalJson.remote = remote;
@@ -987,6 +990,12 @@ export class WorldHandler {
 
     // フロントエンドにシャットダウンするかどうかを問い合わせる
     const doShutDown = await api.invoke.CheckShutdown();
+
+    // 問い合わせに失敗した時（画面が無い・画面の処理が失敗した等）は，確認が取れていないため安全側に倒してシャットダウンしない
+    if (isError(doShutDown)) {
+      sourceLoggers().world.shutdown({ id: this.id }).warn(doShutDown);
+      return;
+    }
 
     // シャットダウンがキャンセルされた時何もせずに終了
     if (!doShutDown) return;
@@ -1211,6 +1220,10 @@ export class WorldHandler {
         progress
       );
       errors.push(...directoryFormatResult.errors);
+      // ディレクトリ構造を変換できない場合は，ワールドの読み込み位置を誤るため起動しない
+      if (isError(directoryFormatResult.value)) {
+        return directoryFormatResult.value;
+      }
 
       const notification: ServerStartNotification = { port };
 
