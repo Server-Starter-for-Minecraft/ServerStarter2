@@ -2,6 +2,7 @@ import { THROWING_APIS } from '../config.js';
 import { createRuleTester } from '../utils/ruleTester.js';
 import noException from './no-exception.js';
 import noFailableCast from './no-failable-cast.js';
+import noFailableCondition from './no-failable-condition.js';
 import noIgnoredFailable from './no-ignored-failable.js';
 import noSilentError from './no-silent-error.js';
 import noUnsafeThrowingCall from './no-unsafe-throwing-call.js';
@@ -173,6 +174,55 @@ ruleTester.run('no-failable-cast', noFailableCast, {
     {
       code: `${PRELUDE} export async function f() { return (await load()) as unknown as number; }`,
       errors: [{ messageId: 'cast' }],
+    },
+  ],
+});
+
+ruleTester.run('no-failable-condition', noFailableCondition, {
+  valid: [
+    // エラーかどうかを確認してから値を判定する
+    `${PRELUDE} export async function f() { const v = await load(); if (isError(v) || !v) return 0; return v; }`,
+    // エラーを含まない値の判定
+    `${PRELUDE} export function f(v: number | undefined) { return v ? v : 0; }`,
+    // ?? は真偽値の判定ではない
+    `${PRELUDE} export function f(v: Failable<number> | undefined) { return v ?? 0; }`,
+    // 配列（errors など）の判定は対象外
+    `${PRELUDE} export async function f() { const r = await loadWithError(); return r.errors.length > 0 && r.errors ? 1 : 0; }`,
+    // エラーか undefined の値の判定は「エラーがあるか」の確認になる
+    `${PRELUDE} export async function f() { const err = [await load()].find(isError); if (err) return err; return 0; }`,
+  ],
+  invalid: [
+    // エラーが返ると true と判定され，成功として扱われる
+    {
+      code: `${PRELUDE} declare function ask(): Promise<Failable<boolean>>; export async function f() { const ok = await ask(); if (!ok) return; return 1; }`,
+      errors: [{ messageId: 'condition' }],
+    },
+    {
+      code: `${PRELUDE} export function f() { const v = loadSync(); if (v) return v; return 0; }`,
+      errors: [{ messageId: 'condition' }],
+    },
+    {
+      code: `${PRELUDE} export function f() { const v = loadSync(); return v ? 1 : 0; }`,
+      errors: [{ messageId: 'condition' }],
+    },
+    {
+      code: `${PRELUDE} export function f() { let v = loadSync(); while (v) { v = loadSync(); } }`,
+      errors: [{ messageId: 'condition' }],
+    },
+    // 条件の外の || / && でも，エラーのときに既定値にならない
+    {
+      code: `${PRELUDE} export function f() { return loadSync() || 0; }`,
+      errors: [{ messageId: 'condition' }],
+    },
+    // 条件の中の && の右辺・undefined を含む Failable
+    {
+      code: `${PRELUDE} export function f(c: boolean, v: Failable<number> | undefined) { if (c && v) return 1; return 0; }`,
+      errors: [{ messageId: 'condition' }],
+    },
+    // WithError の value がエラーかどうかを真偽値で判定する
+    {
+      code: `${PRELUDE} declare function ask(): Promise<WithError<Failable<boolean>>>; export async function f() { const r = await ask(); if (r.value) return 1; return 0; }`,
+      errors: [{ messageId: 'condition' }],
     },
   ],
 });

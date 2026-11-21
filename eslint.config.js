@@ -305,6 +305,7 @@ export default tseslint.config(
         { handlers: FAILABLE_HANDLERS },
       ],
       'serverstarter/no-failable-cast': 'error',
+      'serverstarter/no-failable-condition': 'error',
       'serverstarter/no-silent-error': ['error', { guards: ERROR_GUARDS }],
       // 結果を変数に入れて使わない形で，失敗の確認を回避することも防ぐ
       // （位置で受け取る引数のみ `_` 始まりで未使用を許可する。変数は `_` 始まりでも未使用を許可しない）
@@ -343,6 +344,7 @@ export default tseslint.config(
       'serverstarter/no-ignored-failable': 'off',
       'serverstarter/no-silent-error': 'off',
       'serverstarter/no-failable-cast': 'off',
+      'serverstarter/no-failable-condition': 'off',
     },
   },
   // 例外：CLI の出力（ログではなく利用者への表示）は console を使う

@@ -6,27 +6,38 @@ import { fromRuntimeError, isError } from '../util/error/error';
 
 export const ipcLoggers = () => rootLogger.ipc;
 
+/** API の結果を記録するロガー（API の呼び出しごとのロガーのうち，結果の記録に使う部分） */
+type ResultLogger = Pick<
+  ReturnType<ReturnType<typeof ipcLoggers>['handle'][string]>,
+  'error' | 'warn' | 'info'
+>;
+
 /**
  * API の結果を，結果に応じたレベルでログに残す
  *
- * ログは原則として API の監視で取るため，エラーを見つけやすいよう
- * Failable のエラーは error，WithError の内部エラー（成功扱いだがエラーを含む）は warn で記録する
+ * ログは原則として API の監視で取るため，エラーを見つけやすいよう次のレベルで記録する
+ * - 失敗（Failable のエラー，または value がエラーの WithError）：error
+ *   （`withError(エラー)` のように errors が空の失敗も含む）
+ * - 成功したが内部エラーを含む（value が成功で errors がある WithError）：warn
+ * - それ以外の成功：info
  *
  * @param logger API の呼び出しごとのロガー
  * @param result API の結果
  */
-function logResult(
-  logger: ReturnType<ReturnType<typeof ipcLoggers>['handle'][string]>,
-  result: unknown
-) {
+export function logResult(logger: ResultLogger, result: unknown) {
   if (isError(result)) {
-    logger.error(result);
+    logger.error(['failed', result]);
     return;
   }
-  if (isWithError(result) && result.errors.length > 0) {
-    if (isError(result.value)) logger.error(['failed', result]);
-    else logger.warn(['success with errors', result]);
-    return;
+  if (isWithError(result)) {
+    if (isError(result.value)) {
+      logger.error(['failed', result]);
+      return;
+    }
+    if (result.errors.length > 0) {
+      logger.warn(['success with errors', result]);
+      return;
+    }
   }
   logger.info(['success', result]);
 }
