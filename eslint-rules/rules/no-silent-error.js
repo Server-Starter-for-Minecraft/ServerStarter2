@@ -1,5 +1,9 @@
 // @ts-check
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
+import {
+  AST_NODE_TYPES,
+  ASTUtils,
+  ESLintUtils,
+} from '@typescript-eslint/utils';
 import { createRule } from '../utils/createRule.js';
 import { reportOutsideInSourceTest } from '../utils/scope.js';
 import { containsError, resolveSymbol } from '../utils/types.js';
@@ -17,10 +21,12 @@ import { containsError, resolveSymbol } from '../utils/types.js';
  * - `isValid(x)`（`!isError(x)`）が偽の分岐（else）で x を参照しない場合に報告する。
  *   else が無い場合は，if 文の後で x を参照しなければ報告する（エラーの経路で x が失われるため）
  * - 三項演算子も同様に判定する
+ * - `isError(a) || isError(b)` のように `||`・`&&` で組み合わせた場合は，判定ごとに検査する
  * - エラーの分岐で別のエラー（errorMessage で作ったものなど）を返す・代入する・関数に渡す場合は，
  *   エラーを変換して伝えているため報告しない
  * - エラーの分岐が処理を抜けない（return などで終わらない）場合は，if 文の後で参照していれば報告しない
  * - `res.value` のように判定した場合は，`res` を丸ごと渡す・返す場合も参照とみなす
+ * - 参照は変数の解決（スコープ解析）で判定する（コメント・文字列・同名の別の変数・プロパティ名は参照とみなさない）
  *
  * エラーの判定関数は，型チェッカーで解決した宣言（名前と宣言元のファイル）で特定する（設定 `guards`）
  */
@@ -60,6 +66,55 @@ export default createRule({
     const services = ESLintUtils.getParserServices(context);
     const checker = services.program.getTypeChecker();
     const sourceCode = context.sourceCode;
+
+    /**
+     * 条件式に含まれるエラーの判定を返す（`&&`・`||` で組み合わせた場合はそれぞれの判定）
+     *
+     * 組み合わせた判定は，その分岐を通るときにエラーの経路となるものを検査する
+     * - `isError(a) || ...`・`isError(a) && ...`：真の分岐は a がエラーの経路
+     * - `isValid(a) || ...`・`isValid(a) && isValid(b)`：偽の分岐は a（・b）がエラーの経路
+     * - `x && isValid(x.y)`・`(isValid(a) || isValid(b)) && ready` の偽の分岐は，エラーの判定以外の条件
+     *   （x が無い・ready でない）でも通るため，その中の正常の判定（isValid）は対象外とする
+     *
+     * @param {Expression} test 条件式
+     * @param {boolean} [elseByOtherCondition] 偽の分岐が，エラーの判定以外の条件でも通るか
+     * @returns {{ errorWhenTrue: boolean; target: Node }[]} 判定の内容
+     */
+    function parseGuards(test, elseByOtherCondition = false) {
+      if (
+        test.type === AST_NODE_TYPES.LogicalExpression &&
+        test.operator !== '??'
+      ) {
+        // `&&` の項にエラーの判定以外の条件があれば，偽の分岐はその条件でも通る
+        const inherited =
+          elseByOtherCondition ||
+          (test.operator === '&&' &&
+            (!isGuardOnly(test.left) || !isGuardOnly(test.right)));
+        return [
+          ...parseGuards(test.left, inherited),
+          ...parseGuards(test.right, inherited),
+        ];
+      }
+      const guard = parseGuard(test);
+      if (guard === undefined) return [];
+      if (elseByOtherCondition && !guard.errorWhenTrue) return [];
+      return [guard];
+    }
+
+    /**
+     * 条件式が，エラーの判定（とその `&&`・`||` の組み合わせ）だけでできているか
+     *
+     * @param {Expression} test 条件式
+     */
+    function isGuardOnly(test) {
+      if (
+        test.type === AST_NODE_TYPES.LogicalExpression &&
+        test.operator !== '??'
+      ) {
+        return isGuardOnly(test.left) && isGuardOnly(test.right);
+      }
+      return parseGuard(test) !== undefined;
+    }
 
     /**
      * 条件式がエラーの判定であれば，判定の種類と判定対象の式を返す
@@ -103,39 +158,90 @@ export default createRule({
     }
 
     /**
-     * 判定対象の式を参照している記述に一致する正規表現を作る
+     * 判定対象の式の参照を判定する関数を作る
      *
-     * `res.value` の場合は，`res.value` と，`res` を丸ごと使う記述（`res` の後にプロパティが続かないもの）に一致する
+     * 判定対象の式の根の変数（`res.value` の `res`）をスコープから解決し，その変数の参照のうち，
+     * 判定対象と同じ式（`res.value`）か，変数を丸ごと使うもの（`res` の後にプロパティが続かないもの）を参照とみなす
      *
-     * @param {string} targetText 判定対象の式の記述
-     * @returns {RegExp[]} 参照に一致する正規表現
+     * @param {Node} target 判定対象の式
+     * @returns {((ref: import('@typescript-eslint/utils').TSESLint.Scope.Reference) => boolean) | undefined} 参照かを判定する関数（変数を解決できない場合は undefined）
      */
-    function referencePatterns(targetText) {
-      /** @param {string} t */
-      const escape = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // 識別子の一部（`result` に対する `results` など）に一致しないよう，前後が識別子の文字でないことを確認する
-      const patterns = [
-        new RegExp(`(^|[^\\w$.])${escape(targetText)}([^\\w$]|$)`),
-      ];
-      const root = targetText.match(/^[\w$]+(?=\.)/)?.[0];
-      if (root !== undefined) {
-        patterns.push(
-          new RegExp(`(^|[^\\w$.])${escape(root)}(?![\\w$.]|\\?\\.)`)
-        );
+    function referenceMatcher(target) {
+      /** @type {string[]} */
+      const properties = [];
+      let root = target;
+      while (
+        root.type === AST_NODE_TYPES.MemberExpression &&
+        !root.computed &&
+        root.property.type === AST_NODE_TYPES.Identifier
+      ) {
+        properties.unshift(root.property.name);
+        root = root.object;
       }
-      return patterns;
+      if (root.type !== AST_NODE_TYPES.Identifier) return undefined;
+      const variable = ASTUtils.findVariable(
+        sourceCode.getScope(root),
+        root.name
+      );
+      if (variable === null) return undefined;
+      const variableRefs = new Set(variable.references);
+      return (ref) => {
+        if (!variableRefs.has(ref) || ref.identifier === root) return false;
+        /** @type {Node} */
+        let expr = ref.identifier;
+        for (const property of properties) {
+          const parent = expr.parent;
+          if (
+            parent?.type !== AST_NODE_TYPES.MemberExpression ||
+            parent.object !== expr
+          ) {
+            // 変数を丸ごと使う（渡す・返すなど）
+            return true;
+          }
+          if (
+            parent.computed ||
+            parent.property.type !== AST_NODE_TYPES.Identifier ||
+            parent.property.name !== property
+          ) {
+            // 別のプロパティ（`res.errors` など）
+            return false;
+          }
+          expr = parent;
+        }
+        return true;
+      };
     }
 
     /**
-     * ノードの中で，判定対象の式（と同じ記述）を参照しているか
+     * 判定対象の式を，範囲の中で参照しているか
      *
-     * @param {Node | null | undefined} node 探すノード
-     * @param {string} targetText 判定対象の式の記述
+     * @param {Node} target 判定対象の式
+     * @param {(ref: import('@typescript-eslint/utils').TSESLint.Scope.Reference) => boolean} isReference 参照かを判定する関数
+     * @param {(position: number) => boolean} inRange 範囲の中の位置か
      */
-    function references(node, targetText) {
-      if (node === null || node === undefined) return false;
-      const text = sourceCode.getText(node);
-      return referencePatterns(targetText).some((re) => re.test(text));
+    function referencedIn(target, isReference, inRange) {
+      const variable = ASTUtils.findVariable(
+        sourceCode.getScope(target),
+        rootName(target)
+      );
+      return (
+        variable !== null &&
+        variable.references.some(
+          (ref) => inRange(ref.identifier.range[0]) && isReference(ref)
+        )
+      );
+    }
+
+    /**
+     * 判定対象の式の根の変数名を返す
+     *
+     * @param {Node} target 判定対象の式
+     * @returns {string} 根の変数名（変数でない場合は空文字列）
+     */
+    function rootName(target) {
+      let root = target;
+      while (root.type === AST_NODE_TYPES.MemberExpression) root = root.object;
+      return root.type === AST_NODE_TYPES.Identifier ? root.name : '';
     }
 
     /**
@@ -216,9 +322,10 @@ export default createRule({
      * if 文の後（同じ関数の中）で判定対象の式を参照しているか
      *
      * @param {Node} statement if 文
-     * @param {string} targetText 判定対象の式の記述
+     * @param {Node} target 判定対象の式
+     * @param {(ref: import('@typescript-eslint/utils').TSESLint.Scope.Reference) => boolean} isReference 参照かを判定する関数
      */
-    function referencedAfter(statement, targetText) {
+    function referencedAfter(statement, target, isReference) {
       /** @type {Node | undefined} */
       let fn = statement.parent;
       while (
@@ -231,8 +338,12 @@ export default createRule({
         fn = fn.parent;
       }
       if (fn == null) return false;
-      const after = sourceCode.text.slice(statement.range[1], fn.range[1]);
-      return referencePatterns(targetText).some((re) => re.test(after));
+      const end = fn.range[1];
+      return referencedIn(
+        target,
+        isReference,
+        (position) => position >= statement.range[1] && position < end
+      );
     }
 
     /**
@@ -245,22 +356,31 @@ export default createRule({
      * @param {boolean} isStatement if 文か（三項演算子でないか）
      */
     function check(node, test, consequent, alternate, isStatement) {
-      const guard = parseGuard(test);
-      if (guard === undefined) return;
-      const targetText = sourceCode.getText(guard.target);
-      const errorBranch = guard.errorWhenTrue ? consequent : alternate;
+      for (const guard of parseGuards(test)) {
+        const isReference = referenceMatcher(guard.target);
+        // 変数として解決できない式（関数の呼び出しの結果など）は判定できないため対象外
+        if (isReference === undefined) continue;
+        const targetText = sourceCode.getText(guard.target);
+        const errorBranch = guard.errorWhenTrue ? consequent : alternate;
 
-      const handled =
-        errorBranch === null
-          ? // エラーの分岐が無い場合は，その後で参照していればよい
-            isStatement && referencedAfter(node, targetText)
-          : references(errorBranch, targetText) ||
-            (isStatement && returnsError(errorBranch)) ||
-            (isStatement &&
-              !exits(errorBranch) &&
-              referencedAfter(node, targetText));
-      if (!handled) {
-        report({ node, messageId: 'silent', data: { name: targetText } });
+        const handled =
+          errorBranch === null
+            ? // エラーの分岐が無い場合は，その後で参照していればよい
+              isStatement && referencedAfter(node, guard.target, isReference)
+            : referencedIn(
+                guard.target,
+                isReference,
+                (position) =>
+                  position >= errorBranch.range[0] &&
+                  position < errorBranch.range[1]
+              ) ||
+              (isStatement && returnsError(errorBranch)) ||
+              (isStatement &&
+                !exits(errorBranch) &&
+                referencedAfter(node, guard.target, isReference));
+        if (!handled) {
+          report({ node, messageId: 'silent', data: { name: targetText } });
+        }
       }
     }
 

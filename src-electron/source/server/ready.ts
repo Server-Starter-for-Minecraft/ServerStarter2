@@ -125,7 +125,7 @@ export async function readyRunServer(
   // JVM引数のまとめ
   // （当該サーバー起動時に必ず必要となる引数`server.getCommand()`に，カスタム要素`{jvmArgs: customJvmArgs}`を追加している）
   const customJvmArgs = [...memory, ...user];
-  const javaArgs = await server.getCommand({ jvmArgs: customJvmArgs });
+  const javaArgs = server.getCommand({ jvmArgs: customJvmArgs });
 
   return { javaArgs, javaPath };
 }

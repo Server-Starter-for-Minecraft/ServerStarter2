@@ -110,7 +110,11 @@ async function loadEachVersion(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
+  const assertDefined: typeof assertions.assertDefined =
+    assertions.assertDefined;
   test(
     'mohist correct jar download',
     { tags: ['network'], timeout: 60 * 10 ** 3 },
@@ -120,13 +124,11 @@ if (import.meta.vitest) {
 
       // バージョンの中のビルド一覧を取得
       const allVers = await loadEachVersion(ver);
-      expect(isError(allVers)).toBe(false);
-      if (isError(allVers)) return;
+      assertOk(allVers);
 
       // ビルド一覧から対象のビルドを取得
       const targetVer = allVers.builds.find((b) => b.id === build);
-      expect(targetVer).toBeDefined();
-      if (!targetVer) return;
+      assertDefined(targetVer, `build ${build} not found`);
 
       // ビルドのjarをダウンロード（テスト対象は必ずHashを有しているため，Undefinedを握りつぶす）
       const hash = {

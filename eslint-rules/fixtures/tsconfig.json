@@ -6,7 +6,14 @@
     "moduleResolution": "Bundler",
     "lib": ["ES2022"],
     "types": ["node"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      // プロジェクト内のエイリアス（本体の tsconfig の `app/*` に相当）
+      "app/*": ["./*"],
+      // バックエンドの依存（src-electron/node_modules にあり，fixtures からは解決できないため指定する）
+      "electron": ["../../src-electron/node_modules/electron/electron.d.ts"],
+      "fs-extra": ["../../src-electron/node_modules/@types/fs-extra/index.d.ts"]
+    }
   },
   "include": ["file.ts"]
 }

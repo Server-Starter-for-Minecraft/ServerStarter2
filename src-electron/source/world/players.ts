@@ -3,10 +3,7 @@ import { OpLevel, PlayerSetting } from 'app/src-electron/schema/player';
 import { fromEntries } from 'app/src-electron/util/obj/obj';
 
 /** Opレベルに変更のあるプレイヤーだけを抜き出す */
-export async function getOpDiff(
-  current: PlayerSetting[],
-  next: PlayerSetting[]
-) {
+export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
   const currentUUIDs = new Set(current.map((x) => x.uuid));
   const nextUUIDs = new Set(next.map((x) => x.uuid));
 

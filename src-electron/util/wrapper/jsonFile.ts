@@ -62,7 +62,9 @@ export class JsonSourceHandler<T> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
   test('json handler', async () => {
     const { Path } = await import('../binary/path');
     const path = await import('path');
@@ -86,14 +88,12 @@ if (import.meta.vitest) {
     const jsonHandler = JsonSourceHandler.fromPath(jsonPath, A);
 
     const content = await jsonHandler.read();
-    expect(isError(content)).toBe(false);
-    if (isError(content)) return;
+    assertOk(content);
     expect(content).toEqual({ a: 1, b: 'hello' });
 
     await jsonHandler.write({ a: 2, b: 'world' });
     const readTxt = await jsonPath.readText();
-    expect(isError(readTxt)).toBe(false);
-    if (isError(readTxt)) return;
+    assertOk(readTxt);
     expect(readTxt).toBe('{"a":2,"b":"world"}');
   });
 }

@@ -100,9 +100,9 @@ runDetached(
   (async () => {
     await app.whenReady();
     registerQuasarRuntime();
-    runDetached(removeDevToolsExtensions(), (e) =>
-      loggers().removeDevToolsExtensions().warn(e)
-    );
+    // DevTools の読み込みと競合しないよう，画面を作る前に済ませる（削除できなくても起動は続ける）
+    const removed = await removeDevToolsExtensions();
+    if (isError(removed)) loggers().removeDevToolsExtensions().warn(removed);
     await createWindow();
   })(),
   (e) => loggers().whenReady().error(e)

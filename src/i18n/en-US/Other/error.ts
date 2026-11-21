@@ -258,6 +258,16 @@ export const enUSError: MessageSchema['error'] = {
     failGetGlobalIP: {
       title: 'Failed to get global IP address',
     },
+    brokenSystemSettings: {
+      title:
+        'Started with the default settings because the system settings could not be loaded',
+      desc: 'The unreadable settings file was saved to {backupPath} (it will be deleted after 7 days)',
+    },
+    brokenSystemSettingsWithoutBackup: {
+      title:
+        'Started with the default settings because the system settings could not be loaded',
+      desc: 'The unreadable settings file could not be backed up, so changes to the settings will not be saved until the app is closed',
+    },
     update: {
       missingAppSource: {
         title: 'Update file not found in latest release',

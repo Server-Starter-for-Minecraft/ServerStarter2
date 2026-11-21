@@ -116,7 +116,7 @@ export async function renameFilesFromInstaller(
     if (scriptExt === undefined) continue;
 
     const renameScriptRes = await file.rename(
-      await constructExecPath(cachePath, version, scriptExt)
+      constructExecPath(cachePath, version, scriptExt)
     );
     if (isError(renameScriptRes)) return renameScriptRes;
   }
@@ -130,7 +130,7 @@ export async function renameFilesFromInstaller(
   );
   if (isError(replaceRes)) return replaceRes;
 
-  return generatedJar.rename(await getJarPath(cachePath));
+  return generatedJar.rename(getJarPath(cachePath));
 }
 
 /**
@@ -149,7 +149,7 @@ async function getArgFilePaths(
 ): Promise<Path[]> {
   const argFiles: Path[] = [];
   for (const ext of RUN_SCRIPTS.values()) {
-    const scriptPath = await constructExecPath(cachePath, version, ext);
+    const scriptPath = constructExecPath(cachePath, version, ext);
     if (!(await scriptPath.exists())) continue;
 
     const args = await readScriptArgs(scriptPath, ext);
@@ -185,7 +185,7 @@ async function replaceJarNameInArgFiles(
   version: ForgeVersion | NeoForgeVersion,
   originalJarName: string
 ): Promise<Failable<void>> {
-  const jarName = (await getJarPath(cachePath)).basename();
+  const jarName = getJarPath(cachePath).basename();
 
   for (const argFile of await getArgFilePaths(cachePath, version)) {
     const txt = await argFile.readText();

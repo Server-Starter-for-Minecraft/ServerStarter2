@@ -100,7 +100,6 @@ export class InfinitMap<K, V> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
   describe('InfinitMap', () => {
     test('key:primitive value:primitive', () => {
       const map = InfinitMap.primitiveKeyPrimitiveValue<string, string>(

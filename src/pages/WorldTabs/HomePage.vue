@@ -10,13 +10,13 @@ import WorldIconView from 'src/components/World/HOME/Top/WorldIconView.vue';
 import WorldNameView from 'src/components/World/HOME/Top/WorldNameView.vue';
 
 const sysStore = useSystemStore();
-const scrollAreaRef = ref();
+const scrollAreaRef = ref<HTMLDivElement | null>(null);
 
 /**
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.scrollTop = 0;
+  if (scrollAreaRef.value) scrollAreaRef.value.scrollTop = 0;
 }
 setScrollTop(scrollTop);
 </script>

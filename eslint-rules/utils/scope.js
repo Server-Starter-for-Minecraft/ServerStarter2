@@ -56,11 +56,42 @@ export function enclosingFunctionNames(node) {
  * @returns {string} リポジトリのルートからのパス
  */
 export function relativeFilename(filename, cwd) {
-  const normalized = filename.replaceAll('\\', '/');
-  const root = `${cwd.replaceAll('\\', '/').replace(/\/$/, '')}/`;
+  // 区切り文字とドライブ文字の大小（エディタは `e:\\` のように小文字で渡す場合がある）をそろえて比べる
+  /** @param {string} p パス */
+  const normalize = (p) =>
+    p.replaceAll('\\', '/').replace(/^[a-z]:/, (drive) => drive.toUpperCase());
+  const normalized = normalize(filename);
+  const root = `${normalize(cwd).replace(/\/$/, '')}/`;
   return normalized.startsWith(root)
     ? normalized.slice(root.length)
     : normalized;
+}
+
+/**
+ * プロジェクトのルート（型情報の tsconfig.json のあるディレクトリ）を返す（区切り文字は `/`）
+ *
+ * ESLint の実行ディレクトリ（cwd）はサブディレクトリからの実行やエディタの拡張機能で変わるため，
+ * 読み込んだ tsconfig.json の位置をルートとする（型情報が無い場合のみ cwd を使う）
+ *
+ * @param {import('@typescript-eslint/utils').TSESLint.RuleContext<string, unknown[]>} context ルールのコンテキスト
+ * @returns {string} プロジェクトのルートの絶対パス
+ */
+export function projectRoot(context) {
+  const program = context.sourceCode.parserServices?.program;
+  const configFile = program?.getCompilerOptions().configFilePath;
+  if (typeof configFile !== 'string') return context.cwd.replaceAll('\\', '/');
+  const normalized = configFile.replaceAll('\\', '/');
+  return normalized.slice(0, normalized.lastIndexOf('/'));
+}
+
+/**
+ * プロジェクトのルートからの，検査しているファイルのパスを返す（区切り文字は `/`）
+ *
+ * @param {import('@typescript-eslint/utils').TSESLint.RuleContext<string, unknown[]>} context ルールのコンテキスト
+ * @returns {string} プロジェクトのルートからのパス
+ */
+export function projectFilename(context) {
+  return relativeFilename(context.filename, projectRoot(context));
 }
 
 /**

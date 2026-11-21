@@ -2,11 +2,11 @@
 import noBlockingCall from './rules/no-blocking-call.js';
 import noException from './rules/no-exception.js';
 import noFailableCast from './rules/no-failable-cast.js';
+import noFailableCondition from './rules/no-failable-condition.js';
 import noIgnoredFailable from './rules/no-ignored-failable.js';
 import noInternalMock from './rules/no-internal-mock.js';
 import noSilentError from './rules/no-silent-error.js';
 import noUnsafeThrowingCall from './rules/no-unsafe-throwing-call.js';
-import requireAsyncExport from './rules/require-async-export.js';
 
 /**
  * ServerStarter2 の独自 ESLint ルール（プラグイン `serverstarter`）
@@ -20,11 +20,11 @@ const rules = {
   'no-blocking-call': noBlockingCall,
   'no-exception': noException,
   'no-failable-cast': noFailableCast,
+  'no-failable-condition': noFailableCondition,
   'no-ignored-failable': noIgnoredFailable,
   'no-internal-mock': noInternalMock,
   'no-silent-error': noSilentError,
   'no-unsafe-throwing-call': noUnsafeThrowingCall,
-  'require-async-export': requireAsyncExport,
 };
 
 export default {

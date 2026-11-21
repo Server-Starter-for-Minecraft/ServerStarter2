@@ -11,11 +11,11 @@ export async function getWorldPaths(
   world: WorldID,
   type: WorldPathTypes
 ): Promise<Failable<string>> {
-  const worldHandler = await WorldHandler.get(world);
+  const worldHandler = WorldHandler.get(world);
 
   if (isError(worldHandler)) return worldHandler;
 
-  const path = await worldHandler.getSavePath();
+  const path = worldHandler.getSavePath();
 
   switch (type) {
     case 'server':

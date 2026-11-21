@@ -44,7 +44,7 @@ export async function searchPlayerFromUUID(
       });
       const data = await crop.toBeyesData();
       if (isError(data)) return data;
-      return (await data.encodeURI('image/png')) as ImageURI;
+      return data.encodeURI('image/png');
     }
 
     const avatarPromise = crop(8);
@@ -71,19 +71,18 @@ export async function searchPlayerFromUUID(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  test('searchPlayerFromName', { tags: ['network'] }, async () => {
-    const { isValid } = await import('app/src-electron/util/error/error');
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
+  test('searchPlayerFromName', { tags: ['network'] }, async () => {
     const res = await searchPlayerFromName('Notch');
 
-    expect(isValid(res)).toBe(true);
-    if (isValid(res)) {
-      expect(res).not.toBeNull();
-      expect(res.name).toBe('Notch');
-      expect(res.uuid).toBe('069a79f4-44e9-4726-a5be-fca90e38aaf5');
-      expect(res.avatar).not.toBeNull();
-      expect(res.avatar_overlay).not.toBeNull();
-    }
+    // 失敗した場合は，返ったエラーの内容が表示される
+    assertOk(res);
+    expect(res.name).toBe('Notch');
+    expect(res.uuid).toBe('069a79f4-44e9-4726-a5be-fca90e38aaf5');
+    expect(res.avatar).toMatch(/^data:image\/png;base64,/);
+    expect(res.avatar_overlay).toMatch(/^data:image\/png;base64,/);
   });
 }

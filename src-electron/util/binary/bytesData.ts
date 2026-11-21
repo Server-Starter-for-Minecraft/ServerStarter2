@@ -11,6 +11,7 @@ import { errorMessage } from '../error/construct';
 import { fromRuntimeError } from '../error/error';
 import { Failable, safeExec, safeExecAsync } from '../error/failable';
 import { utilLoggers } from '../utilLogger';
+import { asBrand } from '../zod/brand';
 import { Path } from './path';
 import { Png } from './png';
 
@@ -320,7 +321,7 @@ export class BytesData {
   async encodeURI(mimetype: string): Promise<ImageURI> {
     // Bufferからbase64に変換
     const base64uri = this.data.toString('base64');
-    return `data:${mimetype};base64,${base64uri}` as ImageURI;
+    return asBrand(ImageURI, `data:${mimetype};base64,${base64uri}`);
   }
 
   arrayBuffer() {
@@ -335,7 +336,9 @@ export class BytesData {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect, afterAll } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('BytesData', async () => {
     const { Path } = await import('./path');
@@ -379,23 +382,20 @@ if (import.meta.vitest) {
       // テキスト
       const text = 'test';
       const data = await BytesData.fromText(text);
-      expect(isError(data)).toBe(false);
-      if (isError(data)) return;
+      assertOk(data);
       await expect(data.text()).resolves.toBe(text);
 
       // Base64
       const base64 = 'dGVzdA==';
       const data2 = await BytesData.fromBase64(base64);
-      expect(isError(data2)).toBe(false);
-      if (isError(data2)) return;
+      assertOk(data2);
       await expect(data2.text()).resolves.toBe(text);
 
       // Base64(Png)
       const base64uri =
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsTAAALEwEAmpwYAAAARElEQVR4nGNI9rT5jw3vZRAG0wz4JFEUfNgwAYxBkiAaRQG6JAyDFcAkkCVjwv////XrF5iNUwEIgBWgG4uOwSbgUwAA9rumUIV0HXQAAAAASUVORK5CYII=';
       const data4 = await BytesData.fromBase64URI(base64uri);
-      expect(isError(data4)).toBe(false);
-      if (isError(data4)) return;
+      assertOk(data4);
       expect(isError(await data4.png())).toBe(false);
       expect(
         isError(await data4.write(workPath.child('sample.png').path))
@@ -404,8 +404,7 @@ if (import.meta.vitest) {
 
       // URL
       const data3 = await BytesData.fromURL(url);
-      expect(isError(data3)).toBe(false);
-      if (isError(data3)) return;
+      assertOk(data3);
       await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
 
       // ステータスコードが200以外の場合はエラー
@@ -421,14 +420,12 @@ if (import.meta.vitest) {
 
       // Pathがある場合はURLよりもPathが優先される
       const data = await BytesData.fromPathOrUrl(testPath, url);
-      expect(isError(data)).toBe(false);
-      if (isError(data)) return;
+      assertOk(data);
       await expect(data.text()).resolves.toBe('Hello World!');
 
       // Pathがない場合はPathよりもURLが優先され，PathにURLの内容が書き込まれる
       const data2 = await BytesData.fromPathOrUrl(invalidPath, url);
-      expect(isError(data2)).toBe(false);
-      if (isError(data2)) return;
+      assertOk(data2);
       await expect(data2.json(ReturnType)).resolves.toMatchObject(returnObj);
       await expect(invalidPath.readJson(ReturnType)).resolves.toMatchObject(
         returnObj
@@ -436,8 +433,7 @@ if (import.meta.vitest) {
 
       // URLから優先して情報を取得し，ない場合はPathから取得する
       const data3 = await BytesData.fromUrlOrPath(invalidPath2, url);
-      expect(isError(data3)).toBe(false);
-      if (isError(data3)) return;
+      assertOk(data3);
       await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
       await expect(invalidPath2.readJson(ReturnType)).resolves.toMatchObject(
         returnObj
@@ -445,8 +441,7 @@ if (import.meta.vitest) {
 
       // URLが無効な場合はPathから取得する
       const data4 = await BytesData.fromUrlOrPath(testPath, 'invalid.url.com');
-      expect(isError(data4)).toBe(false);
-      if (isError(data4)) return;
+      assertOk(data4);
       await expect(data4.text()).resolves.toBe('Hello World!');
     });
 
@@ -454,8 +449,7 @@ if (import.meta.vitest) {
       const text = 'test';
       const sha1 = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3';
       const data = await BytesData.fromText(text);
-      expect(isError(data)).toBe(false);
-      if (isError(data)) return;
+      assertOk(data);
       await expect(data.hash('sha256')).resolves.toBe(
         '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
       );

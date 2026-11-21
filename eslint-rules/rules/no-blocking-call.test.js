@@ -21,6 +21,18 @@ ruleTester.run('no-blocking-call', rule, {
       code: 'function loadSync() { return 1; } loadSync();',
       options,
     },
+    // 例外として許可した関数の中では使える
+    {
+      code: "import { execSync } from 'child_process'; function readOsRelease() { return execSync('ls'); } readOsRelease();",
+      options: [
+        {
+          blockingModules: BLOCKING_MODULES,
+          allowed: [
+            { file: 'file.ts', functions: ['readOsRelease'], reason: '' },
+          ],
+        },
+      ],
+    },
   ],
   invalid: [
     {
@@ -43,6 +55,30 @@ ruleTester.run('no-blocking-call', rule, {
       // 自作の関数の名前を Async にしても，中のブロッキングする呼び出しで検出する
       code: "import { readFileSync } from 'fs'; export async function loadAsync() { return readFileSync('a'); }",
       options,
+      errors: [{ messageId: 'blocking' }],
+    },
+    // 分割代入・別名・要素アクセス・call / apply を通した呼び出しも検出する
+    ...[
+      "import fs from 'fs'; const { statSync } = fs; statSync('a');",
+      "import fs from 'fs'; const st = fs.statSync; st('a');",
+      "import fs from 'fs'; fs['statSync']('a');",
+      "import fs from 'fs'; fs.statSync.call(fs, 'a');",
+      "import fs from 'fs'; fs.statSync.apply(fs, ['a']);",
+      // 設定に登録した各モジュール（fs-extra・Electron）の同期 API
+      "import fs from 'fs-extra'; fs.ensureDirSync('a');",
+      "import { dialog } from 'electron'; dialog.showMessageBoxSync({ message: 'a' });",
+    ].map((code) => ({ code, options, errors: [{ messageId: 'blocking' }] })),
+    // 例外として許可した関数の外では報告する
+    {
+      code: "import { execSync } from 'child_process'; function other() { return execSync('ls'); } other();",
+      options: [
+        {
+          blockingModules: BLOCKING_MODULES,
+          allowed: [
+            { file: 'file.ts', functions: ['readOsRelease'], reason: '' },
+          ],
+        },
+      ],
       errors: [{ messageId: 'blocking' }],
     },
   ],

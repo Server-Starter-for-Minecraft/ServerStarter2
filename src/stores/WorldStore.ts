@@ -255,7 +255,14 @@ export async function registerJoinedPlayersToWorld(
   let added: PlayerSetting[] = [];
   updateWithoutSaving((state) => {
     const latest = state.worldList[worldID];
-    if (latest?.type !== 'edited' || !isValid(latest.world.players)) return;
+    if (latest?.type !== 'edited') return;
+    if (!isValid(latest.world.players)) {
+      ignoreError(
+        latest.world.players,
+        'プレイヤーの一覧を読み込めていないワールドには，取得したプレイヤーを追加しない'
+      );
+      return;
+    }
 
     // プレイヤー情報の取得中にユーザーが同じプレイヤーを追加した場合に備え，最新の一覧と重複するプレイヤーを除外する
     const players = latest.world.players;

@@ -34,8 +34,8 @@ async function resolveLaunchArgs(
   );
   if (isError(verJson)) throw new Error('failed to analyze args');
 
-  const args = await replaceEmbedArgs(verJson.arguments, {
-    JAR_PATH: [(await getJarPath(cwd)).basename()],
+  const args = replaceEmbedArgs(verJson.arguments, {
+    JAR_PATH: [getJarPath(cwd).basename()],
     JVM_ARGUMENT: [],
     LOG4J_ARG: [],
   });
@@ -77,9 +77,7 @@ describe('installer.jarが書き出したファイルの整理', () => {
 
     await renameFilesFromInstaller(workPath, version);
 
-    expect(await listJars(workPath)).toEqual([
-      (await getJarPath(workPath)).basename(),
-    ]);
+    expect(await listJars(workPath)).toEqual([getJarPath(workPath).basename()]);
   });
 
   test.each([

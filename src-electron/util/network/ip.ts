@@ -69,8 +69,6 @@ export function isValidIP(ip: string): boolean {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-
   test('ip validation', async () => {
     const ipv4Samples = [
       '192.168.1.1',
