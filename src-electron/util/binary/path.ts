@@ -170,21 +170,36 @@ export class Path {
     await fs.emptyDir(this._path);
   }
 
+  /**
+   * このパスに，target へのリンクを作る
+   *
+   * - target がファイルの場合はハードリンクを作る
+   * - target がフォルダの場合は，ハードリンクを作れないため，シンボリックリンクを作る
+   *   （Windows ではジャンクションとし，管理者の権限なしに作れるようにする）
+   *
+   * 既にこのパスにファイルがある場合（以前に作ったリンクなど）は，置き換える
+   *
+   * @param target リンク先（存在するファイル・フォルダ）
+   * @returns 失敗した場合（リンク先が存在しない場合を含む）はエラー
+   */
   mklink = exclusive(this._mklink);
   private async _mklink(target: Path): Promise<Failable<void>> {
     await this.parent().mkdir();
-    return new Promise<Failable<void>>((resolve) =>
-      fs.link(target._path, this._path, (e) => {
-        e
-          ? resolve(
-              errorMessage.data.path.loadingFailed({
-                type: 'directory',
-                path: this.path,
-              })
-            )
-          : resolve();
-      })
+    const removed = await this._remove();
+    if (isError(removed)) return removed;
+    const isDirectory = await target._isDirectory();
+    if (isError(isDirectory)) return isDirectory;
+    const linked = await safeExecAsync(async () =>
+      isDirectory
+        ? fs.symlink(target._path, this._path, 'junction')
+        : fs.link(target._path, this._path)
     );
+    if (isError(linked)) {
+      return errorMessage.data.path.loadingFailed({
+        type: isDirectory ? 'directory' : 'file',
+        path: this.path,
+      });
+    }
   }
 
   write = exclusive(this._write);
