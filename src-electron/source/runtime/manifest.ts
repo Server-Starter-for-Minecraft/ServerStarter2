@@ -313,7 +313,8 @@ async function _extractFilesFromManifest(
           key: 'server.readyJava.file',
           args: { path: path.path },
         });
-        const linked = await path.mklink(path.child(entry.target));
+        // リンク先はリンクのあるフォルダからの相対パス（シンボリックリンクと同じ）
+        const linked = await path.mklink(path.parent().child(entry.target));
         numeric?.setValue(processed++);
         return linked;
       })
@@ -325,6 +326,10 @@ async function _extractFilesFromManifest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
+
   describe('runtime manifest base', async () => {
     const { Path } = await import('src-electron/util/binary/path');
 
@@ -368,12 +373,32 @@ if (import.meta.vitest) {
         dirs: [{ path: 'foo' }, { path: 'buz' }],
       },
       {
+        // リンク先は，リンクのあるフォルダからの相対パスで指定される（Java のランタイムのライセンスのファイルなど）
         explain: 'link',
         manifest: {
-          'a.txt': file('https://a.com/'),
-          'foo.lnk': { type: 'link', target: '../a.txt' },
+          legal: directory,
+          'legal/java.base': directory,
+          'legal/java.base/LICENSE': file('https://a.com/'),
+          'legal/java.compiler': directory,
+          'legal/java.compiler/LICENSE': {
+            type: 'link',
+            target: '../java.base/LICENSE',
+          },
         },
-        links: [{ path: 'foo.lnk', target: 'hello' }],
+        links: [
+          { path: 'legal/java.compiler/LICENSE', value: 'https://a.com/' },
+        ],
+      },
+      {
+        // フォルダへのリンク（Linux の jre-legacy の man/ja など）
+        explain: 'directory link',
+        manifest: {
+          man: directory,
+          'man/ja_JP.UTF-8': directory,
+          'man/ja_JP.UTF-8/java.1': file('https://man.com/'),
+          'man/ja': { type: 'link', target: 'ja_JP.UTF-8' },
+        },
+        files: [{ path: 'man/ja/java.1', value: 'https://man.com/' }],
       },
     ];
 
@@ -394,10 +419,12 @@ if (import.meta.vitest) {
       for (const file of testCase.files ?? []) {
         expect(await dirPath.child(file.path).readText()).toBe(file.value);
       }
+      // リンクはリンク先と同じ内容を持つ（ハードリンクのため，リンクの数が 2 以上になる）
       for (const link of testCase.links ?? []) {
+        expect(await dirPath.child(link.path).readText()).toBe(link.value);
         const stat = await dirPath.child(link.path).stat();
-        if (isError(stat)) continue;
-        expect(stat.nlink).greaterThan(1); // symlinkではなく、ハードリンクなのでリンクの数が1以上かどうかで判断
+        assertOk(stat);
+        expect(stat.nlink).toBeGreaterThan(1);
       }
       for (const dir of testCase.dirs ?? []) {
         expect(await dirPath.child(dir.path).isDirectory()).toBe(true);
@@ -408,7 +435,7 @@ if (import.meta.vitest) {
       explain: string;
       manifest: ManifestContent['files'];
       files?: { path: string; value: string }[];
-      links?: { path: string; target: string }[];
+      links?: { path: string; value: string }[];
       dirs?: { path: string }[];
     };
   });
