@@ -497,6 +497,42 @@ if (import.meta.vitest) {
         ])
       );
     });
+
+    test('保存期間を過ぎたログは，アーカイブできずに残ったものも含めて削除し，期間内のものと記録中のログは残す', async () => {
+      const { utimes } = await import('node:fs/promises');
+      const old = new Date(
+        Date.now() - (LOG_RETENTION_DAYS + 1) * 24 * 60 * 60 * 1000
+      );
+      /** 保存期間より前に更新したファイルを作る */
+      const createOld = async (name: string) => {
+        const file = logDir.child(name);
+        await file.writeText('old');
+        await utimes(file.path, old, old);
+        return file;
+      };
+      const expired = await Promise.all(
+        [
+          'tmp_1.log',
+          'tmp_1.truncate.log',
+          '2000-01-01-00-0.log',
+          '2000-01-01-00-1.log.tar.gz',
+        ].map(createOld)
+      );
+      const kept = [
+        // 記録中のログは古くても残す
+        await createOld(`${LATEST}.log`),
+        // 保存期間内のログ・アーカイブ
+        logDir.child('2999-01-01-00-0.log'),
+        logDir.child('2999-01-01-00-1.log.tar.gz'),
+      ];
+      await kept[1].writeText('new');
+      await kept[2].writeText('new');
+
+      await archiveLog();
+
+      for (const file of expired) expect(await file.exists()).toBe(false);
+      for (const file of kept) expect(await file.exists()).toBe(true);
+    });
   });
 
   describe('truncateLog', () => {

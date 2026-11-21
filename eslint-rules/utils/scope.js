@@ -56,8 +56,12 @@ export function enclosingFunctionNames(node) {
  * @returns {string} リポジトリのルートからのパス
  */
 export function relativeFilename(filename, cwd) {
-  const normalized = filename.replaceAll('\\', '/');
-  const root = `${cwd.replaceAll('\\', '/').replace(/\/$/, '')}/`;
+  // 区切り文字とドライブ文字の大小（エディタは `e:\\` のように小文字で渡す場合がある）をそろえて比べる
+  /** @param {string} p パス */
+  const normalize = (p) =>
+    p.replaceAll('\\', '/').replace(/^[a-z]:/, (drive) => drive.toUpperCase());
+  const normalized = normalize(filename);
+  const root = `${normalize(cwd).replace(/\/$/, '')}/`;
   return normalized.startsWith(root)
     ? normalized.slice(root.length)
     : normalized;

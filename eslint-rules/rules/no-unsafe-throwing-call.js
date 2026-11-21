@@ -136,6 +136,18 @@ export default createRule({
     function findThrowingApi(node, kind) {
       const bySymbol = matchThrowingApi(referencedSymbol(node.callee), kind);
       if (bySymbol !== undefined || kind === 'new') return bySymbol;
+      // `JSON.parse.call(JSON, ...)`・`.apply(...)` は，呼び出される関数で判定する
+      if (
+        node.callee.type === AST_NODE_TYPES.MemberExpression &&
+        node.callee.property.type === AST_NODE_TYPES.Identifier &&
+        ['call', 'apply'].includes(node.callee.property.name)
+      ) {
+        const byCall = matchThrowingApi(
+          referencedSymbol(node.callee.object),
+          'call'
+        );
+        if (byCall !== undefined) return byCall;
+      }
       const tsNode = services.esTreeNodeToTSNodeMap.get(node);
       const declaration = checker.getResolvedSignature(tsNode)?.declaration;
       if (
@@ -225,11 +237,17 @@ export default createRule({
      */
     function checkReference(node) {
       const parent = node.parent;
-      // 呼び出し・new の対象は，呼び出しの検査で扱う
+      // 呼び出し・new の対象と，.call / .apply の対象は，呼び出しの検査で扱う
       if (
         (parent?.type === AST_NODE_TYPES.CallExpression ||
           parent?.type === AST_NODE_TYPES.NewExpression) &&
         parent.callee === node
+      ) {
+        return;
+      }
+      if (
+        parent?.type === AST_NODE_TYPES.MemberExpression &&
+        parent.object === node
       ) {
         return;
       }
@@ -239,7 +257,14 @@ export default createRule({
         (parent?.type === AST_NODE_TYPES.VariableDeclarator &&
           parent.init === node) ||
         (parent?.type === AST_NODE_TYPES.AssignmentExpression &&
-          parent.right === node);
+          parent.right === node) ||
+        // オブジェクトのプロパティの値・配列の要素・関数の戻り値として渡す
+        (parent?.type === AST_NODE_TYPES.Property && parent.value === node) ||
+        parent?.type === AST_NODE_TYPES.ArrayExpression ||
+        (parent?.type === AST_NODE_TYPES.ReturnStatement &&
+          parent.argument === node) ||
+        (parent?.type === AST_NODE_TYPES.ArrowFunctionExpression &&
+          parent.body === node);
       if (!isPassedAsValue) return;
       reportUnsafe(node, matchThrowingApi(referencedSymbol(node), 'call'));
     }

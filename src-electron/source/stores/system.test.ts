@@ -141,16 +141,18 @@ describe('システム設定の読み込み', () => {
     expect(await renamed.exists()).toBe(true);
   });
 
-  test('長く更新されていなかった設定ファイルのバックアップも，次の起動で削除せずに残す', async () => {
-    // ファイルのコピーは元の更新日時を引き継ぐ場合があるため，元のファイルを 8 日前に更新したことにする
+  test('作成直後のバックアップは，更新日時が古くても次の起動で削除せずに残す', async () => {
     const settingPath = workPath.child('settings.ssconfig');
     await settingPath.writeText(BROKEN_CONTENT);
-    const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
-    await utimes(settingPath.path, eightDaysAgo, eightDaysAgo);
 
     const first = await import('./system');
     await first.getSystemSettings();
-    expect(await listBackups()).toHaveLength(1);
+    const created = await listBackups();
+    expect(created).toHaveLength(1);
+    // Windows のファイルのコピーは元の更新日時を引き継ぐため，長く起動していなかった場合はバックアップの更新日時も古くなる
+    // （OS によらず同じ状況を再現するため，バックアップの更新日時を 8 日前にする）
+    const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+    await utimes(created[0].path, eightDaysAgo, eightDaysAgo);
 
     // アプリを再起動する（設定を読み込み直す）
     vi.resetModules();

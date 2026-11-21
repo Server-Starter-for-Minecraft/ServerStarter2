@@ -616,7 +616,9 @@ describe('WorldHandler サーバー終了後の自動シャットダウン', () 
 
     await runAndStopServer();
 
-    expect(closeServerStarterAndShutDown).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() =>
+      expect(closeServerStarterAndShutDown).toHaveBeenCalledTimes(1)
+    );
   });
 
   test('シャットダウンがキャンセルされた場合はシャットダウンしない', async () => {

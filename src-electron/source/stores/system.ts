@@ -50,6 +50,8 @@ const BROKEN_BACKUP_PREFIX = `${settingPath.basename()}.broken-`;
  * 保存期間の判定にも使う（ファイルのコピーは更新日時を引き継ぐ場合があるため，更新日時では判定しない）
  */
 const BROKEN_BACKUP_DATE_FORMAT = 'YYYYMMDD-HHmmss';
+/** `BROKEN_BACKUP_DATE_FORMAT` の書式の日時に一致する正規表現（書式を変える場合は合わせて変える） */
+const BROKEN_BACKUP_DATE_PATTERN = /^\d{8}-\d{6}$/;
 
 /**
  * 設定ファイルを読み込む
@@ -113,7 +115,9 @@ async function removeExpiredBackups() {
     if (!name.startsWith(BROKEN_BACKUP_PREFIX)) continue;
     const created = name.slice(BROKEN_BACKUP_PREFIX.length);
     // 名前の日時が書式と異なるファイル（ユーザーが名前を変えたもの等）は削除しない
-    if (!/^\d{8}-\d{6}$/.test(created) || created >= threshold) continue;
+    if (!BROKEN_BACKUP_DATE_PATTERN.test(created) || created >= threshold) {
+      continue;
+    }
     const removed = await path.remove();
     // 削除できなくても次回の起動時に再度削除を試みる
     if (isError(removed)) loggers().removeExpiredBackups().warn(removed);
@@ -180,9 +184,9 @@ export async function getSystemSettings(): Promise<SystemSettings> {
 export async function setSystemSettings(
   settings: SystemSettings
 ): Promise<SystemSettings> {
-  // 最初の読み込みの途中で保存すると，読み込めなかったファイルのバックアップより先に上書きしたり，
-  // 保存した内容を読み込みの結果（既定値）で上書きされたりするため，読み込みが済んでから保存する
-  if (loading !== undefined) await loading;
+  // 最初の読み込みより先に保存すると，読み込めなかったファイルのバックアップより先に上書きしたり，
+  // 保存した内容を読み込みの結果（既定値）で上書きされたりするため，読み込み（とバックアップ）が済んでから保存する
+  if (systemSettingsValue === undefined) await getSystemSettings();
   // 保存に失敗しても，アプリの動作中は変更後の設定を使う（保存の失敗はログに残す）
   const written = await write(settings);
   if (isError(written)) loggers().write().error(written);

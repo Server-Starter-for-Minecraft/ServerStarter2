@@ -70,29 +70,50 @@ export default createRule({
     /**
      * 条件式に含まれるエラーの判定を返す（`&&`・`||` で組み合わせた場合はそれぞれの判定）
      *
-     * 組み合わせた判定は，その分岐を通るときに必ずエラーであるものに限る
+     * 組み合わせた判定は，その分岐を通るときにエラーの経路となるものを検査する
      * - `isError(a) || ...`・`isError(a) && ...`：真の分岐は a がエラーの経路
-     * - `isValid(a) || ...`：偽の分岐は a がエラーの経路
-     * - `x && isValid(x.y)` の偽の分岐は，x が無い場合にも通るため対象外とする
+     * - `isValid(a) || ...`・`isValid(a) && isValid(b)`：偽の分岐は a（・b）がエラーの経路
+     * - `x && isValid(x.y)`・`(isValid(a) || isValid(b)) && ready` の偽の分岐は，エラーの判定以外の条件
+     *   （x が無い・ready でない）でも通るため，その中の正常の判定（isValid）は対象外とする
      *
      * @param {Expression} test 条件式
-     * @param {'&&' | '||'} [operator] 組み合わせている演算子（組み合わせていない場合は undefined）
+     * @param {boolean} [elseByOtherCondition] 偽の分岐が，エラーの判定以外の条件でも通るか
      * @returns {{ errorWhenTrue: boolean; target: Node }[]} 判定の内容
      */
-    function parseGuards(test, operator) {
+    function parseGuards(test, elseByOtherCondition = false) {
       if (
         test.type === AST_NODE_TYPES.LogicalExpression &&
         test.operator !== '??'
       ) {
+        // `&&` の項にエラーの判定以外の条件があれば，偽の分岐はその条件でも通る
+        const inherited =
+          elseByOtherCondition ||
+          (test.operator === '&&' &&
+            (!isGuardOnly(test.left) || !isGuardOnly(test.right)));
         return [
-          ...parseGuards(test.left, test.operator),
-          ...parseGuards(test.right, test.operator),
+          ...parseGuards(test.left, inherited),
+          ...parseGuards(test.right, inherited),
         ];
       }
       const guard = parseGuard(test);
       if (guard === undefined) return [];
-      if (operator === '&&' && !guard.errorWhenTrue) return [];
+      if (elseByOtherCondition && !guard.errorWhenTrue) return [];
       return [guard];
+    }
+
+    /**
+     * 条件式が，エラーの判定（とその `&&`・`||` の組み合わせ）だけでできているか
+     *
+     * @param {Expression} test 条件式
+     */
+    function isGuardOnly(test) {
+      if (
+        test.type === AST_NODE_TYPES.LogicalExpression &&
+        test.operator !== '??'
+      ) {
+        return isGuardOnly(test.left) && isGuardOnly(test.right);
+      }
+      return parseGuard(test) !== undefined;
     }
 
     /**

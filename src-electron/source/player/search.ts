@@ -44,7 +44,7 @@ export async function searchPlayerFromUUID(
       });
       const data = await crop.toBeyesData();
       if (isError(data)) return data;
-      return (await data.encodeURI('image/png')) as ImageURI;
+      return data.encodeURI('image/png');
     }
 
     const avatarPromise = crop(8);

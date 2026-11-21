@@ -570,9 +570,16 @@ export class WorldHandler {
     // (server.propertiesのポート番号は実行中のものを維持し，ユーザーが設定した値はサーバー終了後に反映する)
     const result = await saveLocalFiles(savePath, this.pinRunningPorts(world));
     result.errors.push(...errors);
-    if (isValid(result.value) && isValid(world.properties)) {
-      // 保存したポート番号はユーザーの設定値としてサーバー終了後に復元する
-      this.userPorts = pickServerPorts(world.properties);
+    if (isValid(result.value)) {
+      if (isValid(world.properties)) {
+        // 保存したポート番号はユーザーの設定値としてサーバー終了後に復元する
+        this.userPorts = pickServerPorts(world.properties);
+      } else {
+        ignoreError(
+          world.properties,
+          'server.properties が不正な場合は，サーバー終了後に復元するポート番号を更新しない'
+        );
+      }
     }
     this.replaceWithUserPorts(result.value);
 
@@ -580,49 +587,74 @@ export class WorldHandler {
     await this.runCommand('reload');
 
     // プレイヤー周りの設定を反映
-    // TODO: どこかに実装を移動
-    if (
-      isValid(current.value) &&
-      isValid(current.value.players) &&
-      isValid(world.players)
-    ) {
-      const [diff, sameMember] = getOpDiff(
-        current.value.players,
-        world.players
+    await this.reflectPlayerSettings(current.value, world, result.errors);
+
+    return result;
+  }
+
+  /**
+   * 実行中のサーバーに，プレイヤーの設定（op 権限・ホワイトリスト）の変更をコマンドで反映する
+   *
+   * TODO: どこかに実装を移動
+   *
+   * @param before 保存前のワールド
+   * @param world 保存したワールド
+   * @param errors 反映できなかった変更を伝えるエラーの追加先
+   */
+  private async reflectPlayerSettings(
+    before: Failable<World>,
+    world: WorldEdited,
+    errors: ErrorMessage[]
+  ) {
+    // 差分を求められない場合は，次のサーバーの起動時に設定ファイルから反映されるため，ここでは反映しない
+    if (isError(before)) {
+      return ignoreError(
+        before,
+        '保存前のワールドを読み込めない場合は，差分を反映しない'
       );
-      // op権限レベルが0になったプレイヤーに対してdeopを実行
-      await asyncMap(diff[0], async (x) => this.runCommand(`deop ${x}`));
+    }
+    if (isError(before.players)) {
+      return ignoreError(
+        before.players,
+        '保存前のプレイヤーの一覧を読み込めない場合は，差分を反映しない'
+      );
+    }
+    if (isError(world.players)) {
+      return ignoreError(
+        world.players,
+        '保存したプレイヤーの一覧が不正な場合は，差分を反映しない'
+      );
+    }
+    const [diff, sameMember] = getOpDiff(before.players, world.players);
+    // op権限レベルが0になったプレイヤーに対してdeopを実行
+    await asyncMap(diff[0], async (x) => this.runCommand(`deop ${x}`));
 
-      if (isError(current.value.properties)) {
-        ignoreError(
-          current.value.properties,
-          'server.properties を読み込めない場合は，op 権限のレベルを変更しない'
-        );
-      } else {
-        const opPermissionLevel =
-          current.value.properties['op-permission-level'];
+    if (isError(before.properties)) {
+      ignoreError(
+        before.properties,
+        'server.properties を読み込めない場合は，op 権限のレベルを変更しない'
+      );
+    } else {
+      const opPermissionLevel = before.properties['op-permission-level'];
 
-        if (includes([1, 2, 3, 4] as const, opPermissionLevel)) {
-          const diffs = diff[opPermissionLevel];
-          // op権限レベルがop-permission-levelになったプレイヤーに対してopを実行
-          await asyncMap(diffs, async (x) => this.runCommand(`op ${x}`));
-          // op-permission-level 以外のレベルには，コマンドで変更できないため変更できなかったことを伝える
-          for (const i of [1, 2, 3, 4] as const) {
-            if (i !== opPermissionLevel && diff[i].length > 0) {
-              result.errors.push(
-                errorMessage.core.world.failedChangingOp({
-                  users: diff[i],
-                  op: i,
-                })
-              );
-            }
+      if (includes([1, 2, 3, 4] as const, opPermissionLevel)) {
+        const diffs = diff[opPermissionLevel];
+        // op権限レベルがop-permission-levelになったプレイヤーに対してopを実行
+        await asyncMap(diffs, async (x) => this.runCommand(`op ${x}`));
+        // op-permission-level 以外のレベルには，コマンドで変更できないため変更できなかったことを伝える
+        for (const i of [1, 2, 3, 4] as const) {
+          if (i !== opPermissionLevel && diff[i].length > 0) {
+            errors.push(
+              errorMessage.core.world.failedChangingOp({
+                users: diff[i],
+                op: i,
+              })
+            );
           }
         }
       }
-      if (!sameMember) await this.runCommand('whitelist reload');
     }
-
-    return result;
+    if (!sameMember) await this.runCommand('whitelist reload');
   }
 
   /**

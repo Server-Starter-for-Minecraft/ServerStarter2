@@ -33,21 +33,30 @@ import {
 import pluginServerStarter from './eslint-rules/index.js';
 
 /**
- * util の迂回（Node.js の組み込みモジュール・外部パッケージの直接利用）の制限の対象外とするファイル
+ * Node.js の組み込みモジュールを直接使ってよい（util の迂回の制限の対象外とする）ファイル
  *
- * 静的な import と動的な import の制限で同じ対象外のファイルを使う
+ * 組み込みモジュールの静的な import と動的な import の制限で同じ対象外のファイルを使う
  */
-const UTIL_BYPASS_IGNORES = [
+const BUILTIN_BYPASS_IGNORES = [
   'src-electron/util/**',
   // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
   ...TEST_FILES,
   // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
   'src-electron/logger/logger.ts',
-  // 例外：外部パッケージのラッパー（理由は eslint-rules/config.js を参照）
-  ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
   // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
   // （標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）
   'scripts/electronNode.ts',
+];
+
+/**
+ * 外部パッケージを直接使ってよいファイル
+ *
+ * 外部パッケージのラッパー（理由は eslint-rules/config.js を参照）は，外部パッケージのみを直接扱う
+ * （組み込みモジュールの制限は外さない）
+ */
+const PACKAGE_BYPASS_IGNORES = [
+  ...BUILTIN_BYPASS_IGNORES,
+  ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
 ];
 
 /**
@@ -259,7 +268,6 @@ export default tseslint.config(
     files: [
       ...TYPE_ASSERTION_ALLOWED_FILES.map(({ file }) => file),
       ...TEST_FILES,
-      'eslint-rules/fixtures/**',
     ],
     rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
   },
@@ -277,7 +285,14 @@ export default tseslint.config(
       // 成功の確認（assertOk・assertDefined）も検証として扱う
       'vitest/expect-expect': [
         'error',
-        { assertFunctionNames: ['expect', 'assertOk', 'assertDefined'] },
+        {
+          assertFunctionNames: [
+            'expect',
+            'assert',
+            'assertOk',
+            'assertDefined',
+          ],
+        },
       ],
       'vitest/no-conditional-expect': 'error',
       'vitest/no-conditional-in-test': 'error',
@@ -369,7 +384,7 @@ export default tseslint.config(
   // util を使わずに OS の機能を直接扱うこと（迂回）を禁止する
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    ignores: UTIL_BYPASS_IGNORES,
+    ignores: BUILTIN_BYPASS_IGNORES,
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -396,6 +411,18 @@ export default tseslint.config(
       ],
     },
   },
+  // 外部パッケージのラッパーは，外部パッケージの制限のみを外す（組み込みモジュールは util を通して扱う）
+  {
+    files: PACKAGE_BYPASS_IGNORES.filter(
+      (file) => !BUILTIN_BYPASS_IGNORES.includes(file)
+    ),
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        { paths: RESTRICTED_BUILTIN_MODULES },
+      ],
+    },
+  },
 
   // ---- 構文の制限（no-restricted-syntax は後の設定で上書きされるため，1 か所にまとめる） ----
   {
@@ -410,10 +437,10 @@ export default tseslint.config(
     rules: { 'vitest/no-standalone-expect': 'off' },
   },
   // util 以外では，Node.js の組み込みモジュールの動的な import も禁止する（静的な import は no-restricted-imports で禁止している）
-  // （対象外のファイルは，静的な import の制限と同じ UTIL_BYPASS_IGNORES を使う）
+  // （対象外のファイルは，組み込みモジュールの静的な import の制限と同じ BUILTIN_BYPASS_IGNORES を使う）
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    ignores: UTIL_BYPASS_IGNORES,
+    ignores: BUILTIN_BYPASS_IGNORES,
     rules: {
       'no-restricted-syntax': [
         'error',

@@ -32,9 +32,8 @@ class ZipHandler {
         // TODO:shift-jis 固定で大丈夫？
         decodeFileName: (name) =>
           iconv.decode(
-            Array.isArray(name)
-              ? Buffer.from(name.join(''))
-              : Buffer.from(name),
+            // 型定義は string[] だが，JSZip が配列で渡すのはバイト値の配列（Uint8Array を使えない環境の場合）
+            Buffer.from(Array.isArray(name) ? name.map(Number) : name),
             'shift-jis'
           ),
       })
