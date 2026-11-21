@@ -81,8 +81,6 @@ export function getSpecificMCver(neoVer: string): VersionId {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('getSpecificMCver', () => {
     test.each([
       // 旧形式

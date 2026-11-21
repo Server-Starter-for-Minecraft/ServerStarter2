@@ -46,7 +46,6 @@ export const properties = {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('parsetest', () => {
     expect(properties.parse('a=b')).toEqual({ a: 'b' });
     expect(properties.parse('a=b\nc=d')).toEqual({ a: 'b', c: 'd' });

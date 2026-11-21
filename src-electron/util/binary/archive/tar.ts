@@ -56,7 +56,9 @@ export async function decompressTar(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('gzip', async () => {
     const { BytesData } = await import('../bytesData');
@@ -72,14 +74,12 @@ if (import.meta.vitest) {
       // testフォルダからファイルを読込
       const txtFile = await BytesData.fromPath(txtPath);
 
-      expect(isError(txtFile)).toBe(false);
-      if (isError(txtFile)) return;
+      assertOk(txtFile);
 
       // tar圧縮
       const compressed = await createTar(txtPath.parent());
 
-      expect(isError(compressed)).toBe(false);
-      if (isError(compressed)) return;
+      assertOk(compressed);
 
       // tarを保存
       await compressed.write(compressedPath.path);
@@ -90,8 +90,7 @@ if (import.meta.vitest) {
         workPath.child('sample.txt')
       );
 
-      expect(isError(decompressedFile)).toBe(false);
-      if (isError(decompressedFile)) return;
+      assertOk(decompressedFile);
 
       // 元ファイルと「圧縮->解凍」したファイルが一致するか確認
       expect(await txtFile.text()).toBe(await decompressedFile.text());

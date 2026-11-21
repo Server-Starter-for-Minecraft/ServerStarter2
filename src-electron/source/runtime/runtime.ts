@@ -238,8 +238,6 @@ export class RuntimeContainer {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('runtime installer', { tags: ['network'] }, async () => {
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(

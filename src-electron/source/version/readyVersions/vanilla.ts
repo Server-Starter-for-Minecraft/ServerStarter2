@@ -123,7 +123,9 @@ export async function getVanillaVersionJson(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('vanilla version', async () => {
     // 一時使用フォルダを初期化
@@ -158,8 +160,7 @@ if (import.meta.vitest) {
         cacheFolder,
         false
       );
-      expect(isError(res)).toBeFalsy();
-      if (isError(res)) return res;
+      assertOk(res);
 
       expect(res.javaVersion?.component).toEqual('java-runtime-delta');
     });
@@ -174,8 +175,7 @@ if (import.meta.vitest) {
             workPath.child('apiCache'),
             false
           );
-          expect(isError(res)).toBe(false);
-          if (isError(res)) return;
+          assertOk(res);
 
           expect(res.javaVersion?.component).toEqual('java-runtime-delta');
         }
@@ -196,8 +196,7 @@ if (import.meta.vitest) {
         outputPath,
         async (_runtime) => {}
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return res;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
@@ -220,33 +219,40 @@ if (import.meta.vitest) {
     // 上記に関連して，各バージョンのgetCommand()が正しいArgsを返すことを確認する
     const log4JCaseVers: {
       ver: VersionId;
-      log4JFile?: string;
-      command?: string;
+      /** 設置される Log4J の設定ファイル */
+      log4JFiles: string[];
+      /** 起動のコマンドに含まれる引数 */
+      commands: string[];
     }[] = [
       {
         ver: VersionId.parse('1.21'),
+        log4JFiles: [],
+        commands: [],
       },
       {
         ver: VersionId.parse('1.17'),
-        command: '-Dlog4j2.formatMsgNoLookups=true',
+        log4JFiles: [],
+        commands: ['-Dlog4j2.formatMsgNoLookups=true'],
       },
       {
         ver: VersionId.parse('1.16'),
-        command: '-Dlog4j.configurationFile=log4j2_112-116.xml',
-        log4JFile: 'log4j2_112-116.xml',
+        log4JFiles: ['log4j2_112-116.xml'],
+        commands: ['-Dlog4j.configurationFile=log4j2_112-116.xml'],
       },
       {
         ver: VersionId.parse('1.9'),
-        command: '-Dlog4j.configurationFile=log4j2_17-111.xml',
-        log4JFile: 'log4j2_17-111.xml',
+        log4JFiles: ['log4j2_17-111.xml'],
+        commands: ['-Dlog4j.configurationFile=log4j2_17-111.xml'],
       },
       {
         ver: VersionId.parse('1.5'),
+        log4JFiles: [],
+        commands: [],
       },
     ];
     test.each(log4JCaseVers)(
       'log4Jcheck ($ver)',
-      async ({ ver, command, log4JFile }) => {
+      async ({ ver, commands, log4JFiles }) => {
         const outputPath = serverFolder.child(`log4Jtest/ver${ver}`);
         const readyOperator = new ReadyVanillaVersion(
           {
@@ -266,18 +272,15 @@ if (import.meta.vitest) {
           outputPath,
           async (_runtime) => {}
         );
-        expect(isError(res)).toBe(false);
-        if (isError(res)) return;
+        assertOk(res);
 
         // 戻り値の検証
-        if (command) {
-          expect(
-            res.getCommand({ jvmArgs: ['replaceArg'] }).includes(command)
-          ).toBe(true);
-        }
+        expect(res.getCommand({ jvmArgs: ['replaceArg'] })).toEqual(
+          expect.arrayContaining(commands)
+        );
 
         // ファイルの存在確認
-        if (log4JFile) {
+        for (const log4JFile of log4JFiles) {
           expect(await outputPath.child(log4JFile).exists()).toBe(true);
         }
       },

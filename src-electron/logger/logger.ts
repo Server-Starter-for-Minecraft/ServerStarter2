@@ -362,7 +362,9 @@ export const rootLogger = loggerHierarchies.get('');
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('logger', async () => {
     const path = await import('path');
@@ -479,8 +481,7 @@ if (import.meta.vitest) {
 
       // アーカイブチェック
       const logPaths = await logDir.iter();
-      expect(isError(logPaths)).toBe(false);
-      if (isError(logPaths)) return;
+      assertOk(logPaths);
       for (const path of logPaths) {
         if (logPaths.some((p) => p.basename() === path.basename())) continue;
         await path.remove();
@@ -489,8 +490,7 @@ if (import.meta.vitest) {
 
       // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
       const logPaths2 = await logDir.iter();
-      expect(isError(logPaths2)).toBe(false);
-      if (isError(logPaths2)) return;
+      assertOk(logPaths2);
       expect(logPaths2.map((p) => p.basename())).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.tar.gz/),

@@ -82,7 +82,9 @@ export class RemoveMohistMCVersion extends RemoveVersion<MohistmcVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('mohistmc version', async () => {
     // 一時使用フォルダを初期化
@@ -126,8 +128,7 @@ if (import.meta.vitest) {
         outputPath,
         async (_runtime) => {}
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return res;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');

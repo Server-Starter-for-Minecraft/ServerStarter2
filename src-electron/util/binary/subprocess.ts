@@ -4,6 +4,7 @@ import { onQuit } from '../../lifecycle/lifecycle';
 import { errorMessage } from '../error/construct';
 import { fromRuntimeError, isError } from '../error/error';
 import { safeExec } from '../error/failable';
+import { decoratePromise } from '../promise/promiseDecorator';
 import { sleep } from '../promise/sleep';
 import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
@@ -60,9 +61,7 @@ function promissifyProcess(
     });
   };
 
-  const promise = new Promise(executor) as ChildProcessPromise;
-
-  promise.finished = () => isFinished;
+  const exited = new Promise(executor);
 
   const kill = async (
     signal?: number | NodeJS.Signals | undefined
@@ -83,9 +82,12 @@ function promissifyProcess(
       if (process.stdin) process.stdin.write(`${msg}\n`, () => resolve());
       else resolve();
     });
-  promise.kill = kill;
-  promise.write = write;
-
+  // 終了を待つ Promise に，プロセスを操作するメソッドを付け足す
+  const promise: ChildProcessPromise = decoratePromise(exited, {
+    finished: () => isFinished,
+    kill,
+    write,
+  });
   return promise;
 }
 

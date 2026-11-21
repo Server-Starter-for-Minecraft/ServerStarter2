@@ -45,7 +45,6 @@ export type RemoteWorldName = z.infer<typeof RemoteWorldName>;
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('uuid parse', () => {
     const formattedUUID = '00000000-0000-0000-0000-000000000000';
     const unFormattedUUID = '00000000000000000000000000000000';

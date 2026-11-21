@@ -21,8 +21,9 @@ jobs:
         run: bun install
       # リポジトリ全体を検査し，変更していない行の違反も含めて 1 件でもあれば失敗にする
       # （警告も失敗にする。ソースコード内の無効化コメントは無視されて警告になるため）
+      # （package.json の lint のスクリプトを変えて検査の範囲を狭められないよう，eslint を直接実行する）
       - name: eslint
-        run: bun run lint --max-warnings 0
+        run: bunx eslint . --max-warnings 0
       # 指摘を PR の該当行へコメントする（失敗の判定は上のステップで行う）
       - name: eslint (review comments)
         if: always()

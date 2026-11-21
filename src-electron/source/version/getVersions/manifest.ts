@@ -75,8 +75,6 @@ export async function getVersionMainfest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect, describe } = import.meta.vitest;
-
   describe('runtime-manifest', { tags: ['network'] }, async () => {
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(

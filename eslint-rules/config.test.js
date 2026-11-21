@@ -1,5 +1,42 @@
+import { minimatch } from 'minimatch';
+import { glob } from 'tinyglobby';
 import { describe, expect, test } from 'vitest';
-import { restrictedPackagePattern } from './config.js';
+import {
+  BACKEND_FILES,
+  BACKEND_LAYERS,
+  FRONTEND_FILES,
+  FRONTEND_LAYERS,
+  restrictedPackagePattern,
+} from './config.js';
+
+/** リポジトリのルート */
+const ROOT = new URL('..', import.meta.url);
+
+describe('層の定義', () => {
+  // どの層にも属さないファイルは，import の方向が一切検査されないため，層の一覧への追記漏れを検出する
+  // （層の判定は import-x/no-restricted-paths と同じ minimatch で行う）
+  test.each([
+    ['バックエンド', BACKEND_FILES, BACKEND_LAYERS],
+    ['フロントエンド', FRONTEND_FILES, FRONTEND_LAYERS],
+  ])(
+    '%s のファイルは，すべてちょうど 1 つの層に属する',
+    async (_, files, layers) => {
+      const paths = await glob(files, {
+        cwd: ROOT,
+        ignore: ['**/node_modules/**', '**/work/**', '**/*.d.ts'],
+      });
+      expect(paths.length).toBeGreaterThan(0);
+
+      const misclassified = paths.filter(
+        (path) =>
+          layers.filter((layer) =>
+            layer.files.some((pattern) => minimatch(path, pattern))
+          ).length !== 1
+      );
+      expect(misclassified).toEqual([]);
+    }
+  );
+});
 
 describe('restrictedPackagePattern', () => {
   const pattern = new RegExp(restrictedPackagePattern(['zod', 'dayjs/*']));

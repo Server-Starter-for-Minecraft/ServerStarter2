@@ -95,7 +95,9 @@ window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) =>
   worldRequestStore.request(worldID, 'eula', { url })
 );
 // バックエンドで発生したエラー（API の戻り値以外で伝えられるもの）を表示
+// （info レベルのもの（追加コンテンツのキャッシュの失敗など）は動作に影響しないため表示しない）
 window.API.onError((_event, error) => {
+  if (error.level === 'info') return;
   checkError(error, undefined, (e) => tError(e));
 });
 // Progressがバックエンドからやってきたときの処理
