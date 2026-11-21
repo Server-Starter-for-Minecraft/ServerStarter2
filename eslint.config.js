@@ -10,6 +10,8 @@ import {
   ALLOWED_EXTERNAL_PACKAGES,
   BACKEND_FILES,
   BACKEND_LAYERS,
+  BLOCKING_CALL_ALLOWED_FILES,
+  BLOCKING_CALL_ALLOWED_FUNCTIONS,
   BLOCKING_MODULES,
   ERROR_GUARDS,
   EXCEPTION_ALLOWED_FUNCTIONS,
@@ -207,17 +209,18 @@ export default tseslint.config(
   // （テストはメインプロセスで動かないため対象外とする）
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
+    // 例外は eslint-rules/config.js に理由とともに登録する（関数単位を原則とし，やむを得ない場合のみファイル単位）
     ignores: [
       ...TEST_FILES,
-      // 例外：起動時に一度だけ，log4js が latest.log を上書きする前に同期で退避する必要がある（画面の表示前で操作を止めない）
-      'src-electron/logger/logger.ts',
-      // 例外：起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）
-      'src-electron/util/os/os.ts',
+      ...BLOCKING_CALL_ALLOWED_FILES.map(({ file }) => file),
     ],
     rules: {
       'serverstarter/no-blocking-call': [
         'error',
-        { blockingModules: BLOCKING_MODULES },
+        {
+          blockingModules: BLOCKING_MODULES,
+          allowed: BLOCKING_CALL_ALLOWED_FUNCTIONS,
+        },
       ],
     },
   },

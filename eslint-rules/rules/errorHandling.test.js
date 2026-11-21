@@ -72,44 +72,104 @@ ruleTester.run('no-exception', noException, {
       code: 'export const f = (p: Promise<number>) => p.then((x) => x, () => 0);',
       errors: [{ messageId: 'catch' }],
     },
+    // オプショナルチェーン・要素アクセス・Promise と他の型の union
+    ...[
+      'export const f = (p: Promise<number> | undefined) => p?.catch(() => 0);',
+      "export const f = (p: Promise<number>) => p['catch'](() => 0);",
+      'export const f = (p: Promise<number> | { catch(): void }) => p.catch(() => 0);',
+    ].map((code) => ({ code, errors: [{ messageId: 'catch' }] })),
+    // Promise のコンストラクタを別の書き方で参照する
+    ...[
+      'export const f = async () => globalThis.Promise.reject(1);',
+      'const P = Promise; export const f = async () => P.reject(1);',
+      'declare const executor: (resolve: () => void, reject: () => void) => void; export const p = new Promise(executor);',
+    ].map((code) => ({ code, errors: [{ messageId: 'reject' }] })),
   ],
 });
+
+/** テストのコード（fixtures/file.ts）で宣言した，Failable へ変換する関数 */
+const CONVERTERS = [
+  { name: 'safeExec', declarationFile: /file.ts$/, async: false },
+  { name: 'safeExecAsync', declarationFile: /file.ts$/, async: true },
+];
+const CONVERTER_PRELUDE = `
+declare function safeExec<T>(f: () => T): T;
+declare function safeExecAsync<T>(f: () => Promise<T>): Promise<T>;
+`;
+const throwingOptions = [
+  { throwingApis: THROWING_APIS, converters: CONVERTERS, allowed: [] },
+];
 
 ruleTester.run('no-unsafe-throwing-call', noUnsafeThrowingCall, {
   valid: [
     // Failable へ変換する関数に渡した関数の中では使える
     {
-      code: 'declare function safeExec<T>(f: () => T): T; export const v = safeExec(() => JSON.parse("1"));',
-      options: [
-        { throwingApis: THROWING_APIS, converters: ['safeExec'], allowed: [] },
-      ],
+      code: `${CONVERTER_PRELUDE} export const v = safeExec(() => JSON.parse("1"));`,
+      options: throwingOptions,
+    },
+    {
+      code: `${CONVERTER_PRELUDE} export const v = safeExecAsync(async () => JSON.parse("1"));`,
+      options: throwingOptions,
     },
     // zod の safeParse は例外を投げない
     {
       code: "import { z } from 'zod'; export const v = z.string().safeParse('a');",
-      options: [{ throwingApis: THROWING_APIS, converters: [], allowed: [] }],
+      options: throwingOptions,
     },
     // 自作の parse は対象外（宣言元で判定する）
     {
-      code: 'const p = { parse: (x: string) => x }; export const v = p.parse("a");',
-      options: [{ throwingApis: THROWING_APIS, converters: [], allowed: [] }],
+      code: 'const p = { parse: (x: string) => x }; export const v = p.parse("a"); export const w = [""].map(p.parse);',
+      options: throwingOptions,
     },
   ],
   invalid: [
+    ...[
+      'export const v = JSON.parse("1");',
+      "import { z } from 'zod'; export const v = z.string().parse('a');",
+      "export const v = new URL('a');",
+      'export const v = decodeURIComponent("%");',
+      // 別名・分割代入・要素アクセスを通した呼び出し
+      'const { parse } = JSON; export const v = parse("1");',
+      'export const v = JSON["parse"]("1");',
+      // 呼び出さずに関数として渡す・変数に入れる
+      'export const v = ["1"].map(JSON.parse);',
+      'export const v = ["%"].map(decodeURIComponent);',
+      "import { z } from 'zod'; const s = z.string(); export const p = s.parse;",
+    ].map((code) => ({
+      code: `${CONVERTER_PRELUDE} ${code}`,
+      options: throwingOptions,
+      errors: [{ messageId: 'throwing' }],
+    })),
+    // 変換用の関数の中で作った関数（後で try の外で呼ばれうる）
     {
-      code: 'export const v = JSON.parse("1");',
-      options: [{ throwingApis: THROWING_APIS, converters: [], allowed: [] }],
+      code: `${CONVERTER_PRELUDE} export const v = safeExec(() => () => JSON.parse("1"));`,
+      options: throwingOptions,
       errors: [{ messageId: 'throwing' }],
     },
+    // 同名でも，宣言元が登録したファイルでない関数は変換用の関数とみなさない
     {
-      code: "import { z } from 'zod'; export const v = z.string().parse('a');",
-      options: [{ throwingApis: THROWING_APIS, converters: [], allowed: [] }],
+      code: `${CONVERTER_PRELUDE} export const v = safeExec(() => JSON.parse("1"));`,
+      options: [
+        {
+          throwingApis: THROWING_APIS,
+          converters: [
+            { name: 'safeExec', declarationFile: /other.ts$/, async: false },
+          ],
+          allowed: [],
+        },
+      ],
       errors: [{ messageId: 'throwing' }],
     },
+    // 同期の変換用の関数に非同期の関数を渡すと，reject は変換されない
     {
-      code: "export const v = new URL('a');",
-      options: [{ throwingApis: THROWING_APIS, converters: [], allowed: [] }],
-      errors: [{ messageId: 'throwing' }],
+      code: `${CONVERTER_PRELUDE} export const v = safeExec(async () => JSON.parse("1"));`,
+      options: throwingOptions,
+      errors: [{ messageId: 'asyncInSyncConverter' }],
+    },
+    {
+      code: `${CONVERTER_PRELUDE} declare function load(): Promise<number>; export const v = safeExec(load);`,
+      options: throwingOptions,
+      errors: [{ messageId: 'asyncInSyncConverter' }],
     },
   ],
 });
@@ -153,10 +213,40 @@ ruleTester.run('no-ignored-failable', noIgnoredFailable, {
       code: `${PRELUDE} export async function f() { await Promise.all([load(), load()]); }`,
       errors: [{ messageId: 'ignored' }],
     },
-    // forEach のコールバックの結果は捨てられる
+    // カンマ演算子・論理演算子の右辺・三項演算子で捨てる
+    ...['(loadSync(), 0);', 'c && loadSync();', 'c ? loadSync() : 0;'].map(
+      (statement) => ({
+        code: `${PRELUDE} export function f(c: boolean) { ${statement} }`,
+        errors: [{ messageId: 'ignored' }],
+      })
+    ),
+    // 式文以外の void で捨てる
+    {
+      code: `${PRELUDE} export function f(xs: number[]) { return xs.map(() => void loadSync()); }`,
+      errors: [{ messageId: 'ignored' }],
+    },
+    // 配列の分割代入の穴で捨てる
+    {
+      code: `${PRELUDE} export async function f() { const [, b] = await Promise.all([load(), Promise.resolve(1)]); return b; }`,
+      errors: [{ messageId: 'ignored' }],
+    },
+    // 型パラメータ（制約が Failable）の結果を捨てる
+    {
+      code: `${PRELUDE} export function f<R extends Failable<number>>(g: () => R) { g(); }`,
+      errors: [{ messageId: 'ignored' }],
+    },
+    // 戻り値を使わないコールバック（forEach・setTimeout など）に，結果を返す関数を渡す
     {
       code: `${PRELUDE} export function f(xs: number[]) { xs.forEach(async () => load()); }`,
-      errors: [{ messageId: 'forEach' }],
+      errors: [{ messageId: 'discardedCallback' }],
+    },
+    {
+      code: `${PRELUDE} export function f() { setTimeout(() => loadSync(), 0); }`,
+      errors: [{ messageId: 'discardedCallback' }],
+    },
+    {
+      code: `${PRELUDE} declare function on(cb: () => void): void; export function f() { on(loadSync); }`,
+      errors: [{ messageId: 'discardedCallback' }],
     },
   ],
 });
@@ -165,6 +255,8 @@ ruleTester.run('no-failable-cast', noFailableCast, {
   valid: [
     `${PRELUDE} export async function f() { const v = await load(); if (isError(v)) return v; return v as number; }`,
     `${PRELUDE} export const c = [1] as const;`,
+    // 型パラメータは制約の型で判定する（Failable を制約に持つ型へのアサーションはエラーを消さない）
+    `${PRELUDE} export function f<R extends Failable<number>>(x: Failable<number>) { return x as R; }`,
   ],
   invalid: [
     {
@@ -270,6 +362,27 @@ ruleTester.run('no-silent-error', noSilentError, {
       code: `${PRELUDE} export async function f() { const v = await load(); if (isError(v)) return; return v; }`,
       options: [{ guards }],
       errors: [{ messageId: 'silent' }],
+    },
+    // 参照に見えるだけの記述（コメント・文字列・同名の別の変数・プロパティ名）は参照とみなさない
+    ...[
+      'if (isError(v)) { /* v is ignored */ return; }',
+      "if (isError(v)) { logger.warn('v'); return; }",
+      'if (isError(v)) { [1].forEach((v) => logger.warn(v)); return; }',
+    ].map((branch) => ({
+      code: `${PRELUDE} export async function f() { const v = await load(); ${branch} return v; }`,
+      options: [{ guards }],
+      errors: [{ messageId: 'silent' }],
+    })),
+    {
+      code: `${PRELUDE} export async function f() { const v = await load(); if (isValid(v)) logger.warn(1); return { v: 1 }; }`,
+      options: [{ guards }],
+      errors: [{ messageId: 'silent' }],
+    },
+    // || で組み合わせた判定も，それぞれのエラーを検査する
+    {
+      code: `${PRELUDE} export async function f() { const a = await load(); const b = await load(); if (isError(a) || isError(b)) return; return a + b; }`,
+      options: [{ guards }],
+      errors: [{ messageId: 'silent' }, { messageId: 'silent' }],
     },
     // 既定値への置き換え（エラーをどこにも渡さない）
     {

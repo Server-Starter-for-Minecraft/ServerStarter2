@@ -64,6 +64,33 @@ export function relativeFilename(filename, cwd) {
 }
 
 /**
+ * プロジェクトのルート（型情報の tsconfig.json のあるディレクトリ）を返す（区切り文字は `/`）
+ *
+ * ESLint の実行ディレクトリ（cwd）はサブディレクトリからの実行やエディタの拡張機能で変わるため，
+ * 読み込んだ tsconfig.json の位置をルートとする（型情報が無い場合のみ cwd を使う）
+ *
+ * @param {import('@typescript-eslint/utils').TSESLint.RuleContext<string, unknown[]>} context ルールのコンテキスト
+ * @returns {string} プロジェクトのルートの絶対パス
+ */
+export function projectRoot(context) {
+  const program = context.sourceCode.parserServices?.program;
+  const configFile = program?.getCompilerOptions().configFilePath;
+  if (typeof configFile !== 'string') return context.cwd.replaceAll('\\', '/');
+  const normalized = configFile.replaceAll('\\', '/');
+  return normalized.slice(0, normalized.lastIndexOf('/'));
+}
+
+/**
+ * プロジェクトのルートからの，検査しているファイルのパスを返す（区切り文字は `/`）
+ *
+ * @param {import('@typescript-eslint/utils').TSESLint.RuleContext<string, unknown[]>} context ルールのコンテキスト
+ * @returns {string} プロジェクトのルートからのパス
+ */
+export function projectFilename(context) {
+  return relativeFilename(context.filename, projectRoot(context));
+}
+
+/**
  * @typedef {object} AllowedFunctions
  * @property {string} file 対象のファイル（リポジトリのルートからのパス）
  * @property {string[]} functions 許可する関数・メソッドの名前

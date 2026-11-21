@@ -1,8 +1,8 @@
 // @ts-check
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
-import path from 'node:path';
+import ts from 'typescript';
 import { createRule } from '../utils/createRule.js';
-import { relativeFilename } from '../utils/scope.js';
+import { projectFilename, projectRoot } from '../utils/scope.js';
 import { resolveSymbol } from '../utils/types.js';
 
 /**
@@ -14,16 +14,50 @@ import { resolveSymbol } from '../utils/types.js';
  * それ以外は依存をコンストラクタや引数で渡す形にしてテストする。
  *
  * 検出するもの
- * - `vi.mock(path)`・`vi.doMock(path)`：path が相対パス・プロジェクト内のエイリアス（`app/`・`src-electron/`・`src/`）
- * - `vi.spyOn(target, ...)`：target の宣言元がプロジェクト内のファイル（node_modules 以外）
+ * - `vi.mock(path)`・`vi.doMock(path)`：path を TypeScript のモジュール解決（tsconfig の paths を含む）で
+ *   解決した先がプロジェクト内のファイル（node_modules 以外）。`vi.mock(import(path))` の形も含む
+ *   （解決できないパスは，効かないモックになるため別に報告する）
+ * - `vi.spyOn(target, ...)`：target の宣言元，または target がクラスのインスタンス・prototype の場合は
+ *   そのクラスの宣言元が，プロジェクト内のファイル（node_modules 以外）
  */
 
-/** プロジェクト内のモジュールを指すエイリアス（リポジトリのルートからのパスに置き換える） */
-const ALIASES = [
-  ['app/', ''],
-  ['src-electron/', 'src-electron/'],
-  ['src/', 'src/'],
-];
+/**
+ * ファイルの絶対パスを，プロジェクトのルートからの拡張子なしのパスにする
+ *
+ * @param {string} fileName ファイルの絶対パス
+ * @param {string} root プロジェクトのルートの絶対パス
+ * @returns {string} ルートからの拡張子なしのパス
+ */
+function toModulePath(fileName, root) {
+  const normalized = fileName.replaceAll('\\', '/');
+  const relative = normalized.startsWith(`${root}/`)
+    ? normalized.slice(root.length + 1)
+    : normalized;
+  return relative.replace(/\.(d\.ts|ts|js|vue)$/, '');
+}
+
+/**
+ * vi.mock の第 1 引数から，モジュールの指定（文字列）を取り出す
+ *
+ * @param {import('@typescript-eslint/utils').TSESTree.Node} node 第 1 引数
+ * @returns {string | undefined} モジュールの指定（文字列で指定されていない場合は undefined）
+ */
+function moduleSpecifier(node) {
+  if (node.type === AST_NODE_TYPES.Literal && typeof node.value === 'string') {
+    return node.value;
+  }
+  if (
+    node.type === AST_NODE_TYPES.TemplateLiteral &&
+    node.expressions.length === 0
+  ) {
+    return node.quasis[0]?.value.cooked ?? undefined;
+  }
+  // vi.mock(import('./x'))
+  if (node.type === AST_NODE_TYPES.ImportExpression) {
+    return moduleSpecifier(node.source);
+  }
+  return undefined;
+}
 
 export default createRule({
   name: 'no-internal-mock',
@@ -36,6 +70,10 @@ export default createRule({
     messages: {
       internalMock:
         'プロジェクト自身のモジュール「{{module}}」を差し替えています。外部との境界以外は差し替えず，依存をコンストラクタや引数で渡してテストしてください（境界は eslint-rules/config.js の MOCKABLE_BOUNDARIES に登録する）',
+      unresolvedMock:
+        '差し替えるモジュール「{{module}}」が見つかりません。パスが誤っているとモックが効かず，実物が使われます',
+      dynamicMock:
+        '差し替えるモジュールは文字列（または import(文字列)）で指定してください（差し替えてよい境界かを検査できないため）',
     },
     schema: [
       {
@@ -51,34 +89,89 @@ export default createRule({
     /** @type {{ boundaries: string[] }} */ ({ boundaries: [] }),
   ],
   create(context, [{ boundaries }]) {
-    const services = ESLintUtils.getParserServices(context, true);
-    const checker = services.program?.getTypeChecker();
-    const file = relativeFilename(context.filename, context.cwd);
-    const cwd = context.cwd.replaceAll('\\', '/');
+    const services = ESLintUtils.getParserServices(context);
+    const program = services.program;
+    const checker = program.getTypeChecker();
+    const root = projectRoot(context);
+    const file = projectFilename(context).replace(/\.(ts|js|vue)$/, '');
+    const boundaryModules = boundaries.map((b) =>
+      b.replace(/\.(ts|js|vue)$/, '')
+    );
 
     /**
-     * モジュールの指定（import のパス）を，リポジトリのルートからの拡張子なしのパスにする
+     * 宣言元のファイルが，差し替えてはいけないプロジェクト内のモジュールであれば，そのパスを返す
      *
-     * @param {string} specifier モジュールの指定
-     * @returns {string | undefined} プロジェクト内のモジュールであればそのパス
+     * @param {string | undefined} fileName 宣言元のファイルの絶対パス
+     * @returns {string | undefined} 差し替えてはいけないモジュールのパス
      */
-    function toProjectModule(specifier) {
-      if (specifier.startsWith('.')) {
-        return path.posix
-          .normalize(path.posix.join(path.posix.dirname(file), specifier))
-          .replace(/\.(ts|js|vue)$/, '');
+    function internalModule(fileName) {
+      if (fileName === undefined) return undefined;
+      if (fileName.replaceAll('\\', '/').includes('/node_modules/')) {
+        return undefined;
       }
-      const alias = ALIASES.find(([prefix]) => specifier.startsWith(prefix));
-      if (alias === undefined) return undefined;
-      return (alias[1] + specifier.slice(alias[0].length)).replace(
-        /\.(ts|js|vue)$/,
-        ''
-      );
+      const module = toModulePath(fileName, root);
+      // テストのファイルの中で宣言したもの（テスト用の偽物など）は対象外
+      if (module === file) return undefined;
+      return boundaryModules.includes(module) ? undefined : module;
     }
 
-    /** @param {string} module リポジトリのルートからのパス */
-    const isBoundary = (module) =>
-      boundaries.some((b) => b.replace(/\.(ts|js|vue)$/, '') === module);
+    /** @param {import('@typescript-eslint/utils').TSESTree.CallExpression} node vi.mock の呼び出し */
+    function checkMock(node) {
+      const first = node.arguments[0];
+      if (first === undefined) return;
+      const specifier = moduleSpecifier(first);
+      if (specifier === undefined) {
+        context.report({ node, messageId: 'dynamicMock' });
+        return;
+      }
+      // 相対パスの起点は，TypeScript が扱うファイルの絶対パスとする（ESLint のファイル名は形式が環境で異なる）
+      const containingFile = services.esTreeNodeToTSNodeMap
+        .get(node)
+        .getSourceFile().fileName;
+      const resolved = ts.resolveModuleName(
+        specifier,
+        containingFile,
+        program.getCompilerOptions(),
+        ts.sys
+      ).resolvedModule;
+      if (resolved === undefined) {
+        // 型定義の無い外部パッケージは解決できないため，相対パス・プロジェクト内のパスのみを報告する
+        if (specifier.startsWith('.') || specifier.startsWith('/')) {
+          context.report({
+            node,
+            messageId: 'unresolvedMock',
+            data: { module: specifier },
+          });
+        }
+        return;
+      }
+      if (resolved.isExternalLibraryImport) return;
+      const module = internalModule(resolved.resolvedFileName);
+      if (module !== undefined) {
+        context.report({ node, messageId: 'internalMock', data: { module } });
+      }
+    }
+
+    /** @param {import('@typescript-eslint/utils').TSESTree.CallExpression} node vi.spyOn の呼び出し */
+    function checkSpyOn(node) {
+      const first = node.arguments[0];
+      if (first === undefined) return;
+      const tsNode = services.esTreeNodeToTSNodeMap.get(first);
+      // 対象の値の宣言元
+      const symbol = resolveSymbol(checker, tsNode);
+      const declared = symbol?.declarations?.[0]?.getSourceFile().fileName;
+      // 対象がクラスのインスタンス・prototype の場合は，クラスの宣言元
+      // （テストのファイルで作ったインスタンスでも，差し替えるのはクラスの実装のため）
+      const typeSymbol = checker.getTypeAtLocation(tsNode).getSymbol();
+      const classDeclared =
+        typeSymbol !== undefined && typeSymbol.flags & ts.SymbolFlags.Class
+          ? typeSymbol.declarations?.[0]?.getSourceFile().fileName
+          : undefined;
+      const module = internalModule(declared) ?? internalModule(classDeclared);
+      if (module !== undefined) {
+        context.report({ node, messageId: 'internalMock', data: { module } });
+      }
+    }
 
     return {
       CallExpression(node) {
@@ -91,50 +184,16 @@ export default createRule({
         ) {
           return;
         }
-        const method = callee.property.name;
-        const first = node.arguments[0];
-        if (first === undefined) return;
-
-        if (method === 'mock' || method === 'doMock') {
-          if (
-            first.type !== AST_NODE_TYPES.Literal ||
-            typeof first.value !== 'string'
-          ) {
+        switch (callee.property.name) {
+          case 'mock':
+          case 'doMock':
+            checkMock(node);
             return;
-          }
-          const module = toProjectModule(first.value);
-          if (module !== undefined && !isBoundary(module)) {
-            context.report({
-              node,
-              messageId: 'internalMock',
-              data: { module },
-            });
-          }
-          return;
-        }
-
-        if (method === 'spyOn' && checker !== undefined) {
-          const symbol = resolveSymbol(
-            checker,
-            services.esTreeNodeToTSNodeMap.get(first)
-          );
-          const declFile = symbol?.declarations?.[0]?.getSourceFile().fileName;
-          if (declFile === undefined || declFile.includes('/node_modules/'))
+          case 'spyOn':
+            checkSpyOn(node);
             return;
-          const module = (
-            declFile.startsWith(`${cwd}/`)
-              ? declFile.slice(cwd.length + 1)
-              : declFile
-          ).replace(/\.(d\.ts|ts|js|vue)$/, '');
-          // テストのファイルの中で宣言したもの（テスト用の偽物など）は対象外
-          if (module === file.replace(/\.(ts|js|vue)$/, '')) return;
-          if (!isBoundary(module)) {
-            context.report({
-              node,
-              messageId: 'internalMock',
-              data: { module },
-            });
-          }
+          default:
+            return;
         }
       },
     };
