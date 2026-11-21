@@ -1,5 +1,6 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { showUnexpectedError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import {
@@ -11,7 +12,6 @@ import {
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import { version } from '../../package.json';
 import { setBackSys, setFrontSys } from './SystemStore/converter';
 import { FrontPlayerGroup } from './SystemStore/converters/playerGroup';

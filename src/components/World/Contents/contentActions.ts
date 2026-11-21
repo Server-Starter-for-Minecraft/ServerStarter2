@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { checkError } from 'src/error/error';
 import { getCacheContents } from 'src/init';
 import { keys } from 'app/src-public/scripts/obj/obj';
 import {
@@ -12,7 +13,6 @@ import { $T, tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useContentsStore } from 'src/stores/WorldTabs/ContentsStore';
-import { checkError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
 import { removeContent } from './contentList';

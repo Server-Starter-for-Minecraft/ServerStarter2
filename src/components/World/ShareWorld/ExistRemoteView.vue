@@ -17,17 +17,6 @@ const sysStore = useSystemStore();
 const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 const remoteURL = `https://github.com/${prop.remote.folder.owner}/${prop.remote.folder.repo}/tree/${prop.remote.name}`;
-
-function deleteRemoteSetting() {
-  if (mainStore.world?.remote !== void 0) {
-    sysStore.systemSettings.remote.splice(
-      sysStore.systemSettings.remote
-        .map((r) => r.folder)
-        .indexOf(prop.remote.folder),
-      1
-    );
-  }
-}
 </script>
 
 <template>

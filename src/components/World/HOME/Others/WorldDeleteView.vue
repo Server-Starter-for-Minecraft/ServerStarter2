@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { checkError } from 'src/error/error';
 import { isError } from 'app/src-public/scripts/error';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { createNewWorld, removeWorld } from 'src/stores/WorldStore';
-import { checkError } from 'src/components/Error/Error';
 import DangerView from 'src/components/util/danger/dangerView.vue';
 import { moveScrollTop_Home } from '../scroll';
 import { nextWorldAfterDeletion } from './worldDeletion';

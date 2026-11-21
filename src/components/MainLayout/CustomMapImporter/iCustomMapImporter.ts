@@ -1,4 +1,5 @@
 import { toRaw } from 'vue';
+import { checkError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
@@ -6,7 +7,6 @@ import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { createNewWorld, updateWorld } from 'src/stores/WorldStore';
-import { checkError } from 'src/components/Error/Error';
 
 export interface CustomMapImporterProp {
   icon?: ImageURI;

@@ -3,6 +3,7 @@ import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { AllMohistmcVersion, VersionId } from '../../../schema/version';
 import { VersionListLoader } from './base';
 
@@ -102,7 +103,7 @@ async function loadEachVersion(
     .reverse();
 
   return {
-    id: VersionId.parse(versionName),
+    id: asBrand(VersionId, versionName),
     builds,
   };
 }

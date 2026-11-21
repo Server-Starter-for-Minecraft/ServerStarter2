@@ -1,4 +1,3 @@
-import path from 'path';
 import { Path } from 'app/src-electron/util/binary/path';
 import {
   ChildProcessPromise,
@@ -33,7 +32,7 @@ export function javaProcessEnv(
 
   env[pathKeys[0] ?? 'PATH'] = [binDir.path, currentPath]
     .filter((v) => v)
-    .join(path.delimiter);
+    .join(Path.delimiter);
   env.JAVA_HOME = binDir.parent().path;
   return env;
 }

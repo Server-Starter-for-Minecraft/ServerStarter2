@@ -144,7 +144,8 @@ export abstract class ReadyVersion<
     if (isError(copyFiles)) return copyFiles;
 
     // STEP3: ファイルをキャッシュから移動
-    await this.setFiles(copyFiles, targetPath);
+    const setRes = await this.setFiles(copyFiles, targetPath);
+    if (isError(setRes)) return setRes;
 
     // STEP4: 戻り値を生成
     return this.generateReadyVersionReturns(this.handler, targetPath);
@@ -224,10 +225,14 @@ export abstract class ReadyVersion<
   /**
    * キャッシュをコピーする
    */
-  protected async setFiles(paths: Path[], targetPath: Path): Promise<void> {
-    await Promise.all(
+  protected async setFiles(
+    paths: Path[],
+    targetPath: Path
+  ): Promise<Failable<void>> {
+    const results = await Promise.all(
       paths.map(async (p) => p.copyTo(targetPath.child(p.basename())))
     );
+    return results.find(isError);
   }
 
   /**
@@ -331,19 +336,22 @@ export abstract class RemoveVersion<
     paths.push(...cachedMatchFiles);
 
     // ファイル群を削除してキャッシュに撤退
-    await this.removeFiles(paths);
+    return this.removeFiles(paths);
   }
 
   /**
    * サーバーファイル群をキャッシュに撤退させる
    */
-  protected async removeFiles(paths: Path[]): Promise<void> {
-    // キャッシュに撤退
-    await Promise.all(
+  protected async removeFiles(paths: Path[]): Promise<Failable<void>> {
+    // キャッシュに撤退（撤退できなかったファイルは失わないよう削除しない）
+    const copied = await Promise.all(
       paths.map(async (p) => p.copyTo(this.cachePath.child(p.basename())))
     );
+    const copyError = copied.find(isError);
+    if (copyError !== undefined) return copyError;
     // 元ファイルを削除
-    await Promise.all(paths.map(async (p) => p.remove()));
+    const removed = await Promise.all(paths.map(async (p) => p.remove()));
+    return removed.find(isError);
   }
 }
 

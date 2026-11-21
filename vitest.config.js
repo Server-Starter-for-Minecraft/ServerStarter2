@@ -64,6 +64,8 @@ export default defineConfig({
     alias: {
       'app/': `${import.meta.dirname}/`,
       'src-electron/': `${import.meta.dirname}/src-electron/`,
+      // フロントエンドの `src/` から始まる import（Quasar のエイリアス）をテストでも解決する
+      'src/': `${import.meta.dirname}/src/`,
     },
   },
 });

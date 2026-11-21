@@ -3,7 +3,10 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { debounce } from 'quasar';
 import imageCompression from 'browser-image-compression';
 import Cropper from 'cropperjs';
+import { showUnexpectedError, toErrorMessage } from 'src/error/error';
+import { isError } from 'app/src-public/scripts/error';
 import { ImageURI } from 'app/src-electron/schema/brands';
+import { Failable } from 'app/src-electron/schema/error';
 import { IconImage } from './iIconSelect';
 
 const iconImg = defineModel<IconImage>({ required: true });
@@ -29,10 +32,14 @@ const CROPPER_TEMPLATE =
 let generation = 0;
 
 async function readAsDataURL(blob: Blob) {
-  return new Promise<ImageURI>((resolve, reject) => {
+  return new Promise<Failable<ImageURI>>((resolve) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as ImageURI);
-    reader.onerror = () => reject(reader.error);
+    // 読み込みの失敗は例外にせず，エラーとして返す
+    reader.onerror = () =>
+      resolve(
+        toErrorMessage(reader.error ?? new Error('failed to read the image'))
+      );
     reader.readAsDataURL(blob);
   });
 }
@@ -73,6 +80,10 @@ async function updateImg() {
     // compressedBlobをbase64形式の文字列に変換する
     const data = await readAsDataURL(compressedBlob);
     if (!isLatest()) return;
+    if (isError(data)) {
+      showUnexpectedError(data);
+      return;
+    }
 
     // 画像のサイズとデータをセット
     iconImg.value.width = canvas.width;

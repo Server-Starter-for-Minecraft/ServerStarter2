@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { checkError } from 'src/error/error';
 import {
   AllFileData,
   CacheFileData,
@@ -14,7 +15,6 @@ import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import ViewStyleToggle from 'src/components/util/ViewStyleToggle.vue';

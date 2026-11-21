@@ -31,7 +31,8 @@ async function setRemote() {
     true
   );
 
-  if (isValid(res)) {
+  // 失敗した場合は setRemoteWorld の中でエラーを表示するため，ダイアログを開いたままにする
+  if (res !== undefined && isValid(res.value)) {
     onDialogOK();
   }
 }

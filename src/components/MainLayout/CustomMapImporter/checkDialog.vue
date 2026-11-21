@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
+import { safeExecAsync } from 'src/error/error';
+import { showUnexpectedError } from 'src/error/error';
+import { isError } from 'app/src-public/scripts/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import LoadingLogo from 'src/assets/animation/LoadingLogo.vue';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
 import { CustomMapImporterProp } from './iCustomMapImporter';
@@ -16,14 +18,14 @@ const prop = defineProps<CustomMapImporterProp>();
 runDetached(importProcess(), showUnexpectedError);
 
 async function importProcess() {
-  try {
-    await prop.importFunc();
-    onDialogOK();
-  } catch (e) {
+  const imported = await safeExecAsync(async () => prop.importFunc());
+  if (isError(imported)) {
     // 導入処理が予期せず失敗した場合も、導入中のダイアログが表示され続けないように閉じる
     onDialogCancel();
-    console.error(e);
+    showUnexpectedError(imported);
+    return;
   }
+  onDialogOK();
 }
 </script>
 

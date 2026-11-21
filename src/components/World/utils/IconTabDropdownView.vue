@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import { showUnexpectedError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DropBtnView from './dropBtnView.vue';
 

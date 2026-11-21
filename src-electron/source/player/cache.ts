@@ -5,9 +5,11 @@ import {
   Timestamp,
 } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
-import { isValid } from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { cachePath } from '../const';
+import { sourceLoggers } from '../sourceLogger';
 
 export const PlayerCacheRecord = z.object({
   uuid: PlayerUUID,
@@ -44,6 +46,11 @@ export async function getPlayerCache() {
     if (_result.success) {
       result = _result.data;
     }
+  } else {
+    ignoreError(
+      player_cache_value,
+      'キャッシュが無い・読み込めない場合は，空のキャッシュから始める'
+    );
   }
 
   result = expirePlayers(result);
@@ -78,8 +85,9 @@ export async function pushPlayerCache(player: Player) {
 /**
  * プレイヤー情報をキャッシュに登録する
  *
- * キャッシュへの登録処理でエラーが出てもユーザーには問題がないため握りつぶす
+ * キャッシュへの登録処理でエラーが出てもユーザーには問題がないため，エラーは返さずにログに残す
  */
 async function setPlayerCache(cache: PlayerCache) {
-  await PLAYER_CACHE_PATH.writeJson(cache);
+  const written = await PLAYER_CACHE_PATH.writeJson(cache);
+  if (isError(written)) sourceLoggers().player.cache().warn(written);
 }

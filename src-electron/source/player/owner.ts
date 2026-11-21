@@ -1,4 +1,5 @@
 import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { getSystemSettings } from '../stores/system';
 import { getPlayerFromUUID } from './main';
 
@@ -16,7 +17,15 @@ export async function getSystemOwnerName(): Promise<string | undefined> {
 
   if (uuid !== undefined) {
     const player = await getPlayerFromUUID(uuid);
-    const name = isError(player) ? undefined : player.name;
+    let name: string | undefined;
+    if (isError(player)) {
+      ignoreError(
+        player,
+        'オーナーの名前を取得できない場合は名前なしで表示する'
+      );
+    } else {
+      name = player.name;
+    }
     ownerCache = { uuid, name };
     return name;
   }

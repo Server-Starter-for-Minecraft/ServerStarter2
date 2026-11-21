@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { checkError } from 'src/error/error';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import ClipImg from './ClipImg.vue';
 import IconBtn from './IconBtn.vue';
 import { IconImage, IconSelectProp, IconSelectReturn } from './iIconSelect';

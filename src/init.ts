@@ -1,3 +1,4 @@
+import { showUnexpectedError } from 'src/error/error';
 import { keys, values } from 'app/src-public/scripts/obj/obj';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { versionTypes } from 'app/src-electron/schema/version';
@@ -12,9 +13,7 @@ import {
   updateBackWorld,
   updateWorld,
 } from './stores/WorldStore';
-import { usePlayerStore } from './stores/WorldTabs/PlayerStore';
-import { checkError } from './components/Error/Error';
-import { showUnexpectedError } from 'src/components/Error/Error';
+import { checkError } from './error/error';
 
 export async function initWindow() {
   // storeの初期化

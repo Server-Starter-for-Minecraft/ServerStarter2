@@ -4,6 +4,7 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { decoratePromise } from 'app/src-electron/util/promise/promiseDecorator';
 import { GroupProgressor } from '../../common/progress';
 import { api } from '../../core/api';
@@ -121,7 +122,13 @@ export function runRebootableServer(
   const reboot = async () => {
     needRun = true;
     await promise.runCommand('stop');
-    await promise;
+    const finished = await promise;
+    if (isError(finished)) {
+      ignoreError(
+        finished,
+        '再起動のために終了を待つのみ（実行の結果は resultPromise で扱う）'
+      );
+    }
   };
 
   const runCommand = async (command: string) => promise?.runCommand(command);

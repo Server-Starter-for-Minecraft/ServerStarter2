@@ -2,6 +2,8 @@
 import { Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
@@ -14,8 +16,6 @@ import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { setColor } from 'src/color';
-import { showUnexpectedError } from 'src/components/Error/Error';
-import { checkError } from 'src/components/Error/Error';
 import {
   OwnerDialogProp,
   ReturnOwnerDialog,

@@ -56,3 +56,6 @@ export const StaticResouce = z.object({
     .prefault({}),
 });
 export type StaticResouce = z.infer<typeof StaticResouce>;
+
+/** フロントエンドへ渡す定数（スキーマの既定値から作るため，例外を投げることは無い） */
+export const STATIC_RESOURCE: StaticResouce = StaticResouce.parse({});
