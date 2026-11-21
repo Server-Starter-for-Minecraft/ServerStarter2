@@ -1,5 +1,6 @@
 // @ts-check
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
+import ts from 'typescript';
 import { createRule } from '../utils/createRule.js';
 import { reportOutsideInSourceTest } from '../utils/scope.js';
 import { isErrorMessageType, unionParts } from '../utils/types.js';
@@ -27,7 +28,14 @@ import { isErrorMessageType, unionParts } from '../utils/types.js';
  * @returns {boolean} エラーと成功の値が混在すれば true
  */
 function mixesErrorAndValue(checker, type) {
-  const parts = unionParts(checker.getNonNullableType(type));
+  // 型パラメータ（`R extends Failable<T>` など）は制約の型で判定する
+  const parts = unionParts(checker.getNonNullableType(type)).flatMap((part) => {
+    if (!(part.flags & ts.TypeFlags.TypeParameter)) return [part];
+    const constraint = checker.getBaseConstraintOfType(part);
+    return constraint === undefined || constraint === part
+      ? [part]
+      : unionParts(checker.getNonNullableType(constraint));
+  });
   const errors = parts.filter((part) => isErrorMessageType(checker, part));
   return errors.length > 0 && errors.length < parts.length;
 }

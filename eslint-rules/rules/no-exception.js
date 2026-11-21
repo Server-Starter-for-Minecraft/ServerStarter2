@@ -100,6 +100,29 @@ export default createRule({
     }
 
     /**
+     * 呼び出しが，標準の PromiseConstructor の reject を呼ぶか（解決したシグネチャの宣言で判定する）
+     *
+     * @param {import('@typescript-eslint/utils').TSESTree.CallExpression} node 呼び出し
+     */
+    function isPromiseRejectSignature(node) {
+      if (checker === undefined) return false;
+      const declaration = checker.getResolvedSignature(
+        services.esTreeNodeToTSNodeMap.get(node)
+      )?.declaration;
+      if (declaration === undefined || !('name' in declaration)) return false;
+      const owner = declaration.parent;
+      return (
+        declaration.name?.getText() === 'reject' &&
+        owner !== undefined &&
+        'name' in owner &&
+        owner.name?.getText() === 'PromiseConstructor' &&
+        /\/typescript\/lib\/lib\.[\w.]+\.d\.ts$/.test(
+          declaration.getSourceFile().fileName
+        )
+      );
+    }
+
+    /**
      * メンバーの名前（`a.b` の `b`，`a['b']` の `'b'`）を返す
      *
      * @param {import('@typescript-eslint/utils').TSESTree.MemberExpression} member メンバーの参照
@@ -131,6 +154,12 @@ export default createRule({
         reportUnlessAllowed(node, 'tryCatch');
       },
       CallExpression(node) {
+        // 別名・分割代入を通した Promise.reject（`const { reject } = Promise; reject(1)`）
+        if (node.callee.type === AST_NODE_TYPES.Identifier) {
+          if (isPromiseRejectSignature(node))
+            reportUnlessAllowed(node, 'reject');
+          return;
+        }
         if (node.callee.type !== AST_NODE_TYPES.MemberExpression) return;
         const { object } = node.callee;
         const name = memberName(node.callee);
@@ -138,6 +167,16 @@ export default createRule({
 
         // Promise.reject(...)
         if (name === 'reject' && isPromiseClass(object)) {
+          reportUnlessAllowed(node, 'reject');
+          return;
+        }
+        // Promise.reject.call(...)・.apply(...)
+        if (
+          (name === 'call' || name === 'apply') &&
+          object.type === AST_NODE_TYPES.MemberExpression &&
+          memberName(object) === 'reject' &&
+          isPromiseClass(object.object)
+        ) {
           reportUnlessAllowed(node, 'reject');
           return;
         }

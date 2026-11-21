@@ -83,6 +83,8 @@ ruleTester.run('no-exception', noException, {
       'export const f = async () => globalThis.Promise.reject(1);',
       'const P = Promise; export const f = async () => P.reject(1);',
       'declare const executor: (resolve: () => void, reject: () => void) => void; export const p = new Promise(executor);',
+      'const { reject } = Promise; export const f = async () => reject(1);',
+      'export const f = async () => Promise.reject.call(Promise, 1);',
     ].map((code) => ({ code, errors: [{ messageId: 'reject' }] })),
   ],
 });
@@ -134,6 +136,11 @@ ruleTester.run('no-unsafe-throwing-call', noUnsafeThrowingCall, {
       // 呼び出さずに関数として渡す・変数に入れる
       'export const v = ["1"].map(JSON.parse);',
       'export const v = ["%"].map(decodeURIComponent);',
+      // call / apply・オブジェクトのプロパティ・戻り値として渡す
+      'export const v = JSON.parse.call(JSON, "1");',
+      'export const v = JSON.parse.apply(JSON, ["1"]);',
+      'export const handlers = { p: JSON.parse };',
+      'export function f() { return JSON.parse; }',
       "import { z } from 'zod'; const s = z.string(); export const p = s.parse;",
     ].map((code) => ({
       code: `${CONVERTER_PRELUDE} ${code}`,
@@ -230,6 +237,16 @@ ruleTester.run('no-ignored-failable', noIgnoredFailable, {
       code: `${PRELUDE} export async function f() { const [, b] = await Promise.all([load(), Promise.resolve(1)]); return b; }`,
       errors: [{ messageId: 'ignored' }],
     },
+    // 式文の中の void は 1 回だけ報告する
+    {
+      code: `${PRELUDE} export function f(c: boolean) { c && void loadSync(); }`,
+      errors: [{ messageId: 'ignored' }],
+    },
+    // タプルの，パターンより後ろの要素を捨てる
+    {
+      code: `${PRELUDE} export async function f() { const [x] = await Promise.all([Promise.resolve(1), load()]); return x; }`,
+      errors: [{ messageId: 'ignored' }],
+    },
     // 型パラメータ（制約が Failable）の結果を捨てる
     {
       code: `${PRELUDE} export function f<R extends Failable<number>>(g: () => R) { g(); }`,
@@ -311,6 +328,11 @@ ruleTester.run('no-failable-condition', noFailableCondition, {
       code: `${PRELUDE} export function f(c: boolean, v: Failable<number> | undefined) { if (c && v) return 1; return 0; }`,
       errors: [{ messageId: 'condition' }],
     },
+    // 型パラメータ（制約が Failable）の値を真偽値で判定する
+    {
+      code: `${PRELUDE} export function f<R extends Failable<boolean>>(r: R) { if (r) return 1; return 0; }`,
+      errors: [{ messageId: 'condition' }],
+    },
     // WithError の value がエラーかどうかを真偽値で判定する
     {
       code: `${PRELUDE} declare function ask(): Promise<WithError<Failable<boolean>>>; export async function f() { const r = await ask(); if (r.value) return 1; return 0; }`,
@@ -326,6 +348,11 @@ const guards = [
 
 ruleTester.run('no-silent-error', noSilentError, {
   valid: [
+    // 偽の分岐がエラーの判定以外の条件（x が無い・ready でない）でも通る場合は，正常の判定を検査しない
+    ...[
+      'declare const x: { y: Failable<number> } | undefined; export function f() { if (x && isValid(x.y)) logger.warn(x.y); }',
+      'declare const ready: boolean; export async function f() { const a = await load(); const b = await load(); if ((isValid(a) || isValid(b)) && ready) logger.warn(1); }',
+    ].map((code) => ({ code: `${PRELUDE} ${code}`, options: [{ guards }] })),
     // エラーを返す
     {
       code: `${PRELUDE} export async function f() { const v = await load(); if (isError(v)) return v; return v; }`,
@@ -377,6 +404,12 @@ ruleTester.run('no-silent-error', noSilentError, {
       code: `${PRELUDE} export async function f() { const v = await load(); if (isValid(v)) logger.warn(1); return { v: 1 }; }`,
       options: [{ guards }],
       errors: [{ messageId: 'silent' }],
+    },
+    // && で組み合わせた正常の判定の偽の分岐も，それぞれのエラーを検査する（|| と同じ意味の書き方）
+    {
+      code: `${PRELUDE} export async function f() { const a = await load(); const b = await load(); if (isValid(a) && isValid(b)) { return a + b; } else { return 0; } }`,
+      options: [{ guards }],
+      errors: [{ messageId: 'silent' }, { messageId: 'silent' }],
     },
     // || で組み合わせた判定も，それぞれのエラーを検査する
     {

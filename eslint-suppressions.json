@@ -110,7 +110,7 @@
   },
   "src-electron/source/player/search.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 4
+      "count": 3
     }
   },
   "src-electron/source/remote/github/getWorlds.ts": {

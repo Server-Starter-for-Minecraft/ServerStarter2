@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { QScrollArea, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
+import type { QScrollArea } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';

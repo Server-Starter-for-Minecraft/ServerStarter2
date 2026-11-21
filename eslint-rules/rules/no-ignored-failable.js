@@ -165,6 +165,33 @@ export default createRule({
       );
     }
 
+    /**
+     * 式文の中で値が捨てられる位置（カンマ・論理演算子の右辺・三項演算子の分岐）にあるか
+     * （その場合は式文の検査で報告するため，二重に報告しない）
+     *
+     * @param {Node} node 判定する式
+     */
+    function isDiscardedInStatement(node) {
+      /** @type {Node} */
+      let current = node;
+      while (current.parent !== undefined) {
+        const parent = current.parent;
+        if (parent.type === AST_NODE_TYPES.ExpressionStatement) return true;
+        const passes =
+          parent.type === AST_NODE_TYPES.SequenceExpression ||
+          (parent.type === AST_NODE_TYPES.LogicalExpression &&
+            parent.right === current) ||
+          (parent.type === AST_NODE_TYPES.ConditionalExpression &&
+            parent.test !== current) ||
+          parent.type === AST_NODE_TYPES.AwaitExpression ||
+          parent.type === AST_NODE_TYPES.TSAsExpression ||
+          parent.type === AST_NODE_TYPES.TSSatisfiesExpression;
+        if (!passes) return false;
+        current = parent;
+      }
+      return false;
+    }
+
     return {
       ExpressionStatement(node) {
         for (const expr of discardedExpressions(node.expression)) {
@@ -180,7 +207,7 @@ export default createRule({
       // 式文以外の void（`() => void f()` など）でも結果を捨てる
       UnaryExpression(node) {
         if (node.operator !== 'void') return;
-        if (node.parent.type === AST_NODE_TYPES.ExpressionStatement) return;
+        if (isDiscardedInStatement(node)) return;
         if (hasError(unwrap(node.argument))) {
           report({ node, messageId: 'ignored' });
         }
@@ -232,6 +259,18 @@ export default createRule({
             report({ node, messageId: 'ignored' });
           }
         });
+        // タプルの，パターンより後ろの要素（`const [x] = [a, b]` の b）も捨てられる
+        const hasRest = node.elements.some(
+          (element) => element?.type === AST_NODE_TYPES.RestElement
+        );
+        if (!hasRest && checker.isTupleType(type)) {
+          const rest = checker
+            .getTypeArguments(/** @type {ts.TypeReference} */ (type))
+            .slice(node.elements.length);
+          if (rest.some((t) => containsError(checker, t))) {
+            report({ node, messageId: 'ignored' });
+          }
+        }
       },
     };
   },
