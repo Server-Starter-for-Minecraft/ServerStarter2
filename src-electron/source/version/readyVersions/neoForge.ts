@@ -16,7 +16,7 @@ import {
 import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
 
-export const getDownloadUrl = (version: NeoForgeVersion) => {
+export const getDownloadUrl = async (version: NeoForgeVersion) => {
   const neoVer = version.neoforge_version;
   return `https://maven.neoforged.net/releases/net/neoforged/neoforge/${neoVer}/neoforge-${neoVer}-installer.jar`;
 };
@@ -39,7 +39,7 @@ export class ReadyNeoForgeVersion extends ReadyVersion<NeoForgeVersion> {
     // ダウンロードURLを更新
     const returnVerJson = deepcopy(vanillaVerJson);
     returnVerJson.download = {
-      url: getDownloadUrl(this._version),
+      url: await getDownloadUrl(this._version),
     };
     return returnVerJson;
   }
@@ -95,7 +95,7 @@ export class ReadyNeoForgeVersion extends ReadyVersion<NeoForgeVersion> {
 
     // 引数の更新を反映した`version.json`を書き出して終了
     p?.delete();
-    return await verJsonHandler.write(newVerJson);
+    return verJsonHandler.write(newVerJson);
   }
 
   get serverID(): string {
@@ -147,8 +147,8 @@ if (import.meta.vitest) {
       ])
     );
 
-    test('getDownloadUrl', () => {
-      expect(getDownloadUrl(ver20)).toBe(
+    test('getDownloadUrl', async () => {
+      expect(await getDownloadUrl(ver20)).toBe(
         'https://maven.neoforged.net/releases/net/neoforged/neoforge/20.2.86/neoforge-20.2.86-installer.jar'
       );
     });
@@ -208,7 +208,7 @@ if (import.meta.vitest) {
       expect(execRuntime).toHaveBeenCalledTimes(1);
 
       // 戻り値の検証
-      const cmd = res.getCommand({ jvmArgs: JVM_ARGS });
+      const cmd = await res.getCommand({ jvmArgs: JVM_ARGS });
       expect(cmd.slice(0, JVM_ARGS.length)).toEqual(JVM_ARGS);
       if (genfiles.some(({ path }) => path.endsWith('.jar'))) {
         expect(cmd).toContain('-jar');
@@ -217,22 +217,22 @@ if (import.meta.vitest) {
       }
 
       // ファイルの設置状況の検証
-      genfiles.forEach(({ path }) => {
+      for (const { path } of genfiles) {
         if (path.endsWith('.jar')) {
-          expect(getJarPath(outputPath).exists()).toBe(true);
+          expect(await (await getJarPath(outputPath)).exists()).toBe(true);
         } else {
           const ext = path.endsWith('.bat') ? '.bat' : '.sh';
           // リネームされた実行ファイルはキャッシュに残る
-          expect(readyOperator.cachePath.child(`version${ext}`).exists()).toBe(
-            true
-          );
+          expect(
+            await readyOperator.cachePath.child(`version${ext}`).exists()
+          ).toBe(true);
         }
-      });
+      }
 
       // 実行後にファイル削除
       const remover = new RemoveNeoForgeVersion(ver20, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
-      expect(getJarPath(outputPath).exists()).toBe(false);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(false);
     });
 
     test('setNeoForgeJar (installer generates no files)', async () => {

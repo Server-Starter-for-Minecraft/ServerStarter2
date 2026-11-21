@@ -40,37 +40,37 @@ describe('listupVersions', { tags: ['network'] }, async () => {
   const testCases: TestCase[] = [
     {
       type: 'vanilla',
-      vcList: () => vc.listVersions('vanilla', useCache),
+      vcList: async () => vc.listVersions('vanilla', useCache),
       oldestVersion: '1.3',
     },
     {
       type: 'forge',
-      vcList: () => vc.listVersions('forge', useCache),
+      vcList: async () => vc.listVersions('forge', useCache),
       oldestVersion: '1.5.2',
     },
     {
       type: 'neoforge',
-      vcList: () => vc.listVersions('neoforge', useCache),
+      vcList: async () => vc.listVersions('neoforge', useCache),
       oldestVersion: '25w14craftmine',
     },
     {
       type: 'papermc',
-      vcList: () => vc.listVersions('papermc', useCache),
+      vcList: async () => vc.listVersions('papermc', useCache),
       oldestVersion: '1.7.10',
     },
     {
       type: 'mohistmc',
-      vcList: () => vc.listVersions('mohistmc', useCache),
+      vcList: async () => vc.listVersions('mohistmc', useCache),
       oldestVersion: '1.7.10',
     },
     {
       type: 'fabric',
-      vcList: () => vc.listVersions('fabric', useCache),
+      vcList: async () => vc.listVersions('fabric', useCache),
       oldestVersion: '18w43b',
     },
     {
       type: 'spigot',
-      vcList: () => vc.listVersions('spigot', useCache),
+      vcList: async () => vc.listVersions('spigot', useCache),
       oldestVersion: '1.8',
     },
   ];
@@ -142,7 +142,7 @@ describe(
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
-      expect(serverPath.child('eula.txt').exists()).toBe(false);
+      expect(await serverPath.child('eula.txt').exists()).toBe(false);
     });
 
     // 2回目 (eula=true)
@@ -163,7 +163,7 @@ describe(
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
-      expect(serverPath.child('eula.txt').exists()).toBe(false);
+      expect(await serverPath.child('eula.txt').exists()).toBe(false);
     });
 
     // 3回目 (eula=true)
@@ -184,7 +184,7 @@ describe(
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
-      expect(serverPath.child('eula.txt').exists()).toBe(false);
+      expect(await serverPath.child('eula.txt').exists()).toBe(false);
     });
 
     // バージョンの準備に失敗した場合
@@ -207,7 +207,7 @@ describe(
       expect(isError(readyResult)).toBe(true);
       // 起動できないサーバーのeulaの同意を求めないはず
       expect(eulaAgree).toHaveBeenCalledTimes(0);
-      expect(failServerPath.child('eula.txt').exists()).toBe(false);
+      expect(await failServerPath.child('eula.txt').exists()).toBe(false);
     });
   },
   1000 * 60

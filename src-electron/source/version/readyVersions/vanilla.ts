@@ -46,7 +46,7 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
     super(version, cacheFolder);
   }
 
-  protected generateVersionJson() {
+  protected async generateVersionJson() {
     // `version.json`に書き込めるオブジェクトを生成
     return getVanillaVersionJson(this._version.id, this._cacheFolder, false);
   }
@@ -74,7 +74,7 @@ export class ReadyVanillaVersion extends ReadyVersion<VanillaVersion> {
 
     // Jarをキャッシュ先に書き出して終了
     p?.delete();
-    return getJarPath(this.cachePath).write(downloadJar);
+    return (await getJarPath(this.cachePath)).write(downloadJar);
   }
 
   get serverID(): string {
@@ -202,20 +202,24 @@ if (import.meta.vitest) {
       if (isError(res)) return res;
 
       // 戻り値の検証
-      expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
+      expect((await res.getCommand({ jvmArgs: ['replaceArg'] }))[0]).toBe(
+        'replaceArg'
+      );
 
       // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+      // expect((await outputPath.child('libraries').exists())).toBe(true);
 
       // 実行後にファイル削除
       const remover = new RemoveVanillaVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      expect(await (await getJarPath(outputPath)).exists()).toBe(false);
+      expect(cachePath && (await (await getJarPath(cachePath)).exists())).toBe(
+        true
+      );
     });
 
     // Log4Jのファイルが`outputPath`にコピーされていることを確認する（各Log4Jのバージョンで確認）
@@ -274,13 +278,15 @@ if (import.meta.vitest) {
         // 戻り値の検証
         if (command) {
           expect(
-            res.getCommand({ jvmArgs: ['replaceArg'] }).includes(command)
+            (await res.getCommand({ jvmArgs: ['replaceArg'] })).includes(
+              command
+            )
           ).toBe(true);
         }
 
         // ファイルの存在確認
         if (log4JFile) {
-          expect(outputPath.child(log4JFile).exists()).toBe(true);
+          expect(await outputPath.child(log4JFile).exists()).toBe(true);
         }
       },
       1000 * 100

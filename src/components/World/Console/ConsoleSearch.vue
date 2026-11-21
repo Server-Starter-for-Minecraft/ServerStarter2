@@ -5,8 +5,10 @@ import {
   MatchedConsoleData,
   MatchResult,
 } from 'src/schema/console';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
 /** 検索結果として表示する最大件数 */
@@ -166,9 +168,12 @@ function prevMatch() {
 
 // Emit event to scroll to the current match
 function navigateToCurrentFocusLine(lineIdx: number) {
-  nextTick(() => {
-    emit('scrollToMatch', lineIdx);
-  });
+  runDetached(
+    nextTick(() => {
+      emit('scrollToMatch', lineIdx);
+    }),
+    showUnexpectedError
+  );
 }
 
 // Close the search box

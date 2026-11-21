@@ -152,7 +152,7 @@ export async function saveLocalFiles(
   savePath: Path,
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  let worldSettings = constructWorldSettings(world);
+  let worldSettings = await constructWorldSettings(world);
 
   const errors: ErrorMessage[] = [];
 
@@ -174,7 +174,7 @@ export async function saveLocalFiles(
     // ファイル削除待機
     const removeRes = await asyncMap(
       [PLUGIN_NETHER_LEVEL_NAME, PLUGIN_THE_END_LEVEL_NAME],
-      (path) => savePath.child(path).remove()
+      async (path) => savePath.child(path).remove()
     );
     errors.push(...removeRes.filter(isError));
 
@@ -256,7 +256,7 @@ export async function saveLocalFiles(
   return constructResult();
 }
 
-export function constructWorldSettings(world: World | WorldEdited) {
+export async function constructWorldSettings(world: World | WorldEdited) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     javaArguments: world.javaArguments,
@@ -280,11 +280,13 @@ const PLUGIN_THE_END_DIM = `${LEVEL_NAME}_the_end/DIM1`;
 /** ワールドのディレクトリが vanilla | plugin のどちらかを推定する
  * world_nether/DIM-1, world_the_end/DIM-1 のどちらかが存在する場合は plugin
  * それ以外はvanilla */
-function estimateWorldDirectoryType(savePath: Path): WorldDirectoryTypes {
+async function estimateWorldDirectoryType(
+  savePath: Path
+): Promise<WorldDirectoryTypes> {
   const nether = savePath.child('world_nether/DIM-1');
-  if (nether.exists()) return 'plugin';
+  if (await nether.exists()) return 'plugin';
   const the_end = savePath.child('world_the_end/DIM1');
-  if (the_end.exists()) return 'plugin';
+  if (await the_end.exists()) return 'plugin';
   return 'vanilla';
 }
 
@@ -306,7 +308,7 @@ export async function formatWorldDirectory(
   };
   const next = directoryTypeMap[version.type];
 
-  const current = estimateWorldDirectoryType(savePath);
+  const current = await estimateWorldDirectoryType(savePath);
   if (current === next) return withError(undefined);
 
   const vanillaNether = savePath.child(VANILLA_NETHER_DIM);
@@ -322,7 +324,7 @@ export async function formatWorldDirectory(
           { from: vanillaNether, to: pluginNether },
           { from: vanillaEnd, to: pluginEnd },
         ],
-        ({ from, to }) => from.moveTo(to)
+        async ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined, moveV2P.filter(isError));
     case current === 'plugin' && next === 'vanilla':
@@ -331,7 +333,7 @@ export async function formatWorldDirectory(
           { from: pluginNether, to: vanillaNether },
           { from: pluginEnd, to: vanillaEnd },
         ],
-        ({ from, to }) => from.moveTo(to)
+        async ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined, moveP2V.filter(isError));
     default:

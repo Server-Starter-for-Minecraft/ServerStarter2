@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { Version } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
@@ -10,6 +11,7 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { WorldItem } from 'src/stores/WorldStore';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import { waitingRequestLabel } from 'src/components/Progress/worldRequestPrompt';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
@@ -69,7 +71,7 @@ async function startServer(
 
   // サーバーの起動を開始
   await router.push('/console');
-  runServer();
+  runDetached(runServer(), showUnexpectedError);
 }
 
 const clicked = ref(false);

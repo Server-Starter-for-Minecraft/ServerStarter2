@@ -116,7 +116,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
 
     // 引数の更新を反映した`version.json`を書き出して終了
     p?.delete();
-    return await verJsonHandler.write(newVerJson);
+    return verJsonHandler.write(newVerJson);
   }
 
   get serverID(): string {
@@ -229,31 +229,31 @@ if (import.meta.vitest) {
       if (isError(res)) return;
 
       // 戻り値の検証
-      expect(res.getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
+      expect(await res.getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
       // ファイルの設置状況の検証
-      genfiles.forEach(({ path }) => {
+      for (const { path } of genfiles) {
         const targetPath = outputPath.child(path);
         if (targetPath.extname() === '.jar') {
-          expect(outputPath.child('version.jar').exists()).toBe(true);
+          expect(await outputPath.child('version.jar').exists()).toBe(true);
         } else {
-          expect(outputPath.child(path).exists()).toBe(true);
+          expect(await outputPath.child(path).exists()).toBe(true);
         }
-      });
+      }
 
       // 実行後にファイル削除
       const remover = new RemoveForgeVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      genfiles.forEach(({ path }) => {
+      for (const { path } of genfiles) {
         const targetPath = outputPath.child(path);
         if (targetPath.extname() === '.jar') {
-          expect(outputPath.child('version.jar').exists()).toBe(false);
+          expect(await outputPath.child('version.jar').exists()).toBe(false);
         } else {
-          expect(readyOperator.cachePath.child(path).exists()).toBe(true);
+          expect(await readyOperator.cachePath.child(path).exists()).toBe(true);
         }
-      });
+      }
     });
   });
 }

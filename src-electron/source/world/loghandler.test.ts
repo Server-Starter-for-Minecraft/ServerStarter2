@@ -22,7 +22,9 @@ const worldPath = workPath.child('world');
 async function runServer(outputs: ConsoleOutput[]) {
   const handler = new WorldLogHandler(worldPath);
   await handler.archive();
-  outputs.forEach((o) => handler.append(o));
+  // 出力された順に記録する（サーバーの出力と同様に，書き込みの完了を待たずに追記する）
+  const appended = outputs.map(async (o) => handler.append(o));
+  await Promise.all(appended);
   await handler.flash();
 }
 

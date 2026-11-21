@@ -514,7 +514,7 @@ async function download_xml_12_16(
   const url =
     'https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml';
 
-  if (!xml.exists()) {
+  if (!(await xml.exists())) {
     const p = progress?.subtitle({
       key: 'server.run.before.getLog4jSettingFile',
       args: { path: xml_12_16 },
@@ -533,7 +533,7 @@ async function download_xml_7_11(serverPath: Path, progress?: GroupProgressor) {
   const url =
     'https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml';
 
-  if (!xml.exists()) {
+  if (!(await xml.exists())) {
     const p = progress?.subtitle({
       key: 'server.run.before.getLog4jSettingFile',
       args: { path: xml_7_11 },
@@ -577,7 +577,9 @@ function processSwitcher<T, U>(
 /**
  * Log4J対応で必要なJarに渡す引数を取得する
  */
-export function getLog4jArg(versionID: VersionId): string | null {
+export async function getLog4jArg(
+  versionID: VersionId
+): Promise<string | null> {
   return processSwitcher(
     versionID,
     '-Dlog4j2.formatMsgNoLookups=true',
@@ -593,18 +595,18 @@ type PatchReturnType = () => Promise<Failable<Path | null>>;
  *
  * @param savePath ファイルを保存するフォルダパス（キャッシュフォルダを想定）
  */
-export function saveLog4JPatch(
+export async function saveLog4JPatch(
   versionID: VersionId,
   savePath: Path,
   progress?: GroupProgressor
-): PatchReturnType {
+): Promise<PatchReturnType> {
   // log4jの脆弱性に対応
   // https://www.minecraft.net/ja-jp/article/important-message--security-vulnerability-java-edition-jp
   return processSwitcher<PatchReturnType, PatchReturnType>(
     versionID,
     async () => null,
-    () => download_xml_12_16(savePath, progress),
-    () => download_xml_7_11(savePath, progress),
+    async () => download_xml_12_16(savePath, progress),
+    async () => download_xml_7_11(savePath, progress),
     async () => null
   );
 }

@@ -8,7 +8,7 @@ export const ipcHandle = <C extends string>(
   channel: C,
   listener: (...args: any[]) => Promise<any>
 ) =>
-  ipcMain.handle(channel, (_, ...args: any[]) => {
+  ipcMain.handle(channel, async (_, ...args: any[]) => {
     const logger = ipcLoggers().handle[channel](args);
     logger.info('start');
     const result = listener(...args);
@@ -47,7 +47,7 @@ export const ipcSend = <C extends string>(
 
 let invokeid = -1;
 
-export function ipcInvoke<C extends string, T>(
+export async function ipcInvoke<C extends string, T>(
   window: BrowserWindow,
   channel: C,
   ...args: any[]

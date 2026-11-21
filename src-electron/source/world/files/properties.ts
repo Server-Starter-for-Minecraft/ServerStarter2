@@ -35,7 +35,8 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
     const { getSystemSettings } = await import('../../../source/stores/system');
 
     // ファイルが存在しない場合デフォルト値を返す
-    if (!filePath.exists()) return (await getSystemSettings()).world.properties;
+    if (!(await filePath.exists()))
+      return (await getSystemSettings()).world.properties;
 
     const data = await filePath.readText();
 
@@ -47,7 +48,7 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
   },
   async save(cwdPath, value) {
     const filePath = cwdPath.child(SERVER_PROPERTIES_PATH);
-    return await filePath.writeText(stringify(value));
+    return filePath.writeText(stringify(value));
   },
   path(cwdPath) {
     return cwdPath.child(SERVER_PROPERTIES_PATH);

@@ -67,7 +67,9 @@ describe('ワールドのデータパックの保存', () => {
 
     await datapackFiles.save(savePath, kept);
 
-    expect(datapacks.child('SamePack.zip').exists()).toBe(false);
-    expect(datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(true);
+    expect(await datapacks.child('SamePack.zip').exists()).toBe(false);
+    expect(await datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(
+      true
+    );
   });
 });

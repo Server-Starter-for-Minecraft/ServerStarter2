@@ -10,10 +10,10 @@ const ICON_PATH = `${LEVEL_NAME}/icon.png`;
 export const serverIconFile: ServerSettingFile<ImageURI | undefined> = {
   async load(cwdPath) {
     const iconpath = serverIconFile.path(cwdPath);
-    if (iconpath.exists()) {
+    if (await iconpath.exists()) {
       const data = await BytesData.fromPath(iconpath);
       if (isValid(data)) {
-        return await data.encodeURI('image/png');
+        return data.encodeURI('image/png');
       }
       return errorMessage.data.path.loadingFailed({
         type: 'file',

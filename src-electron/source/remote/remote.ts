@@ -24,7 +24,7 @@ export async function pullRemoteWorld<T extends RemoteFolder>(
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
-  return await loader.pullWorld(local, remote, progress);
+  return loader.pullWorld(local, remote, progress);
 }
 
 // ワールドのデータをpush
@@ -34,11 +34,11 @@ export async function pushRemoteWorld<T extends RemoteFolder>(
   progress?: GroupProgressor
 ): Promise<Failable<undefined>> {
   const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
-  return await loader.pushWorld(local, remote, progress);
+  return loader.pushWorld(local, remote, progress);
 }
 
 // リモートのワールド一覧を取得
-export function getRemoteWorlds<T extends RemoteFolder>(
+export async function getRemoteWorlds<T extends RemoteFolder>(
   remoteFolder: T
 ): Promise<WithError<Failable<RemoteWorld[]>>> {
   const loader = remoteOperators[remoteFolder.type] as RemoteOperator<T>;
@@ -46,7 +46,7 @@ export function getRemoteWorlds<T extends RemoteFolder>(
 }
 
 // リモートのワールド一覧を取得
-export function deleteRemoteWorld<T extends RemoteFolder>(
+export async function deleteRemoteWorld<T extends RemoteFolder>(
   remote: Remote<T>
 ): Promise<Failable<undefined>> {
   const loader = remoteOperators[remote.folder.type] as RemoteOperator<T>;
@@ -54,7 +54,7 @@ export function deleteRemoteWorld<T extends RemoteFolder>(
 }
 
 // リモートのワールド一覧を取得
-export function validateNewRemoteWorldName<T extends RemoteFolder>(
+export async function validateNewRemoteWorldName<T extends RemoteFolder>(
   remoteFolder: T,
   name: string
 ): Promise<Failable<RemoteWorldName>> {
@@ -63,7 +63,7 @@ export function validateNewRemoteWorldName<T extends RemoteFolder>(
 }
 
 // リモートフォルダの存在を確認
-export function validateRemoteSetting(
+export async function validateRemoteSetting(
   remoteSetting: RemoteSetting
 ): Promise<Failable<RemoteSetting>> {
   const loader = remoteOperators[remoteSetting.folder.type];

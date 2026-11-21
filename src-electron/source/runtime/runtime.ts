@@ -83,7 +83,7 @@ export class RuntimeContainer {
     useJavaw: boolean,
     progress?: GroupProgressor
   ): Promise<Failable<Path>> {
-    const metaPath = this.metaPath(runtime, osPlatform);
+    const metaPath = await this.metaPath(runtime, osPlatform);
 
     // すでにインストール済み
     const current = await this.checkExists(metaPath, useJavaw);
@@ -138,9 +138,9 @@ export class RuntimeContainer {
     if (isError(refInstallResult)) return refInstallResult;
 
     // 参照しているメタファイルの内容をコピー
-    await this.metaPath(refRuntime, osPlatform).copyTo(
-      this.metaPath(runtime, osPlatform)
-    );
+    await (
+      await this.metaPath(refRuntime, osPlatform)
+    ).copyTo(await this.metaPath(runtime, osPlatform));
 
     return refInstallResult;
   }
@@ -152,8 +152,8 @@ export class RuntimeContainer {
     runtime: Runtime,
     osPlatform: OsPlatform
   ): Promise<Failable<void>> {
-    const metapath = this.metaPath(runtime, osPlatform);
-    if (!metapath.exists()) return;
+    const metapath = await this.metaPath(runtime, osPlatform);
+    if (!(await metapath.exists())) return;
 
     const _metaJson = await metapath.readJson(RuntimeMeta);
     if (isError(_metaJson)) return _metaJson;
@@ -167,7 +167,7 @@ export class RuntimeContainer {
     metapath: Path,
     useJavaw: boolean
   ): Promise<Failable<Path>> {
-    if (!metapath.exists()) {
+    if (!(await metapath.exists())) {
       return errorMessage.data.path.notFound({
         type: 'file',
         path: metapath.path,
@@ -197,7 +197,10 @@ export class RuntimeContainer {
     return binPath;
   }
 
-  private metaPath(runtime: Runtime, osPlatform: OsPlatform) {
+  private async metaPath(
+    runtime: Runtime,
+    osPlatform: OsPlatform
+  ): Promise<Path> {
     const segments: string[] = [];
     switch (osPlatform) {
       case 'windows-x64':
@@ -221,7 +224,7 @@ export class RuntimeContainer {
       const installer = this.installerMap[runtime.type];
       segments.push(
         runtime.type,
-        `${installer.getRuntimeVersion(runtime)}.json`
+        `${await installer.getRuntimeVersion(runtime)}.json`
       );
     }
 

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { zen2han } from 'app/src-public/scripts/textUtils';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
@@ -13,6 +14,7 @@ import {
   WorldID,
 } from 'app/src-electron/schema/world';
 import { $T, tError } from 'src/i18n/utils/tFunc';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import { checkError } from 'src/components/Error/Error';
 import { useSystemStore } from './SystemStore';
 import { filterWorldContainer, sortWorldList } from './worldListUtils';
@@ -62,9 +64,12 @@ export const useMainStore = defineStore('mainStore', {
 
               // App.vueのSubscriberは表示中のワールドに対する更新を行うため，
               // 非表示ワールドの更新は別途ここで作動させる
-              window.API.invokeSetWorld(toRaw(w.world)).then((v) => {
-                checkError(v.value, undefined, (e) => tError(e));
-              });
+              runDetached(
+                window.API.invokeSetWorld(toRaw(w.world)).then((v) => {
+                  checkError(v.value, undefined, (e) => tError(e));
+                }),
+                showUnexpectedError
+              );
             }
           });
         },

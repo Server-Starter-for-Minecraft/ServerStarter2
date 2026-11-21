@@ -19,7 +19,7 @@ export function setShutdownHandler() {
       component: autoshutdownDialog,
     });
 
-    return await promise;
+    return promise;
   });
 }
 

@@ -12,7 +12,7 @@ export const invoke = <C extends string, T>(
   channel: C,
   window: () => BrowserWindow | undefined
 ) =>
-  ((...args: any[]) => {
+  (async (...args: any[]) => {
     const win = window();
     if (win !== undefined) return ipcInvoke<C, T>(win, channel, ...args);
     else

@@ -80,9 +80,9 @@ export class GithubBlob {
 
     switch (blobRes.encoding) {
       case 'utf-8':
-        return await BytesData.fromText(blobRes.content);
+        return BytesData.fromText(blobRes.content);
       case 'base64':
-        return await BytesData.fromBase64(blobRes.content);
+        return BytesData.fromBase64(blobRes.content);
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
           url: this.url,
@@ -101,7 +101,7 @@ export class GithubBlob {
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
         if (isError(b64data)) return b64data;
-        return await b64data.text();
+        return b64data.text();
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
           url: this.url,

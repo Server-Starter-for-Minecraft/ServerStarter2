@@ -54,7 +54,7 @@ function on<C extends string>(channel: C): FrontOn<C, Func<any[], void>> {
 function invoke<C extends string>(
   channel: C
 ): FrontInvoke<C, Func<any[], Promise<any>>> {
-  return ((...args: any[]) =>
+  return (async (...args: any[]) =>
     ipcRenderer.invoke(channel, ...args)) as FrontInvoke<
     C,
     Func<any[], Promise<any>>
@@ -73,8 +73,24 @@ function handle<C extends string>(
       id: string,
       ...args: any[]
     ) => {
-      handler(event, ...args).then((result) =>
-        ipcRenderer.send(`handle:${channel}`, result, id)
+      // 処理が失敗した場合もバックエンドへ結果を返す（返さないとバックエンドが応答を待ち続けて止まる）
+      handler(event, ...args).then(
+        (result) => ipcRenderer.send(`handle:${channel}`, result, id),
+        (e: unknown) =>
+          ipcRenderer.send(
+            `handle:${channel}`,
+            {
+              type: 'error',
+              key: 'system.ipc',
+              level: 'error',
+              arg: {
+                channel,
+                type: 'invokeMainToWindow',
+                message: e instanceof Error ? e.message : String(e),
+              },
+            },
+            id
+          )
       );
     };
     ipcRenderer.on(channel, listener);
