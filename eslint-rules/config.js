@@ -63,7 +63,8 @@ export const TYPE_ASSERTION_ALLOWED_FILES = [
   },
   {
     file: 'src-electron/util/versioning/versionedSchema.ts',
-    reason: '旧スキーマからの変換に失敗した結果を，最新のスキーマの結果の型に合わせる',
+    reason:
+      '旧スキーマからの変換に失敗した結果を，最新のスキーマの結果の型に合わせる',
   },
   {
     file: 'src-electron/util/deepcopy.ts',
@@ -95,7 +96,8 @@ export const TYPE_ASSERTION_ALLOWED_FILES = [
   },
   {
     file: 'src-electron/util/awaitOnce.ts',
-    reason: '一度だけ取得した値を，取得前の型（undefined を含まない型）として返す',
+    reason:
+      '一度だけ取得した値を，取得前の型（undefined を含まない型）として返す',
   },
   {
     file: 'src-electron/util/promise/promiseDecorator.ts',
@@ -183,12 +185,14 @@ export const BLOCKING_CALL_ALLOWED_FILES = [
 export const EXCEPTION_CONVERTERS = [
   {
     name: 'safeExec',
-    declarationFile: /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    declarationFile:
+      /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
     async: false,
   },
   {
     name: 'safeExecAsync',
-    declarationFile: /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    declarationFile:
+      /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
     async: true,
   },
   {

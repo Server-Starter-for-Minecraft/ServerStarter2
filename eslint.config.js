@@ -510,7 +510,10 @@ export default tseslint.config(
             // （src-electron 直下のファイル（electron-main など）も含める）
             {
               target: './src/**/*',
-              from: ['./src-electron/!(schema|api)/**/*', './src-electron/*.ts'],
+              from: [
+                './src-electron/!(schema|api)/**/*',
+                './src-electron/*.ts',
+              ],
               message:
                 'フロントエンドからは src-electron の schema・api（型）のみ import できます',
             },
