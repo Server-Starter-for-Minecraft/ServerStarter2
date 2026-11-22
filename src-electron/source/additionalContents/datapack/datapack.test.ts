@@ -76,18 +76,57 @@ describe('pack.mcmetaの形式ごとのデータパックの読み込み', () =>
   const formatPath = new Path(__dirname).child('work', 'datapack-format');
 
   /**
+   * 指定した文字列を pack.mcmeta に持つフォルダ形式のデータパックを作成して読み込む
+   *
+   * @param name データパックのフォルダ名
+   * @param text pack.mcmeta に書き込む文字列
+   * @returns 読み込み結果
+   */
+  async function loadWithMcmetaText(name: string, text: string) {
+    const packPath = formatPath.child(name);
+    await packPath.mkdir(true);
+    await packPath.child('pack.mcmeta').writeText(text);
+    return await datapackFiles.loadNew(packPath);
+  }
+
+  /**
    * 指定した内容の pack.mcmeta を持つフォルダ形式のデータパックを作成して読み込む
    *
    * @param name データパックのフォルダ名
-   * @param meta pack.mcmeta の内容
+   * @param meta pack.mcmeta の内容（JSONとして書き込む）
    * @returns 読み込み結果
    */
   async function loadWithMcmeta(name: string, meta: unknown) {
-    const packPath = formatPath.child(name);
-    await packPath.mkdir(true);
-    await packPath.child('pack.mcmeta').writeText(JSON.stringify(meta));
-    return await datapackFiles.loadNew(packPath);
+    return await loadWithMcmetaText(name, JSON.stringify(meta));
   }
+
+  test.each<[string, string, string]>([
+    ['JSONとして読めない', 'BrokenJson', '{ "pack": '],
+    ['packを持たない', 'NoPack', JSON.stringify({ description: 'no pack' })],
+  ])(
+    '%s pack.mcmeta は、データパックとして不適な旨のエラーを返す',
+    async (_, name, text) => {
+      const loaded = await loadWithMcmetaText(name, text);
+      expect(loaded).toMatchObject({
+        key: 'data.path.invalidContent.invalidDatapack',
+      });
+    }
+  );
+
+  test('zip形式で pack.mcmeta が不適な場合も、データパックとして不適な旨のエラーを返す', async () => {
+    const zip = new JSZip();
+    zip.file('pack.mcmeta', JSON.stringify({ description: 'no pack' }));
+    const zipPath = formatPath.child('BrokenZip.zip');
+    await writeFile(
+      zipPath.path,
+      await zip.generateAsync({ type: 'uint8array' })
+    );
+
+    const loaded = await datapackFiles.loadNew(zipPath);
+    expect(loaded).toMatchObject({
+      key: 'data.path.invalidContent.invalidDatapack',
+    });
+  });
 
   beforeAll(async () => {
     await formatPath.emptyDir();

@@ -28,6 +28,20 @@ type Mcmeta = z.infer<typeof Mcmeta>;
 
 const MCMETA_FILE = 'pack.mcmeta';
 
+/**
+ * データパックとして不適である旨のエラーを生成する
+ *
+ * @param path データパックのパス
+ * @param isDirectory データパックがフォルダ形式か
+ * @returns データパックとして不適である旨のエラー
+ */
+function invalidDatapackError(path: Path, isDirectory: boolean) {
+  return errorMessage.data.path.invalidContent.invalidDatapack({
+    type: isDirectory ? 'directory' : 'file',
+    path: path.path,
+  });
+}
+
 async function loader(path: Path): Promise<Failable<DatapackData>> {
   let mcmetaData: Failable<BytesData>;
   const isPathDir = await path.isDirectory();
@@ -46,10 +60,7 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
   } else {
     if (path.extname() !== '.zip') {
       // zipでないファイル場合
-      return errorMessage.data.path.invalidContent.invalidDatapack({
-        type: 'file',
-        path: path.path,
-      });
+      return invalidDatapackError(path, false);
     }
     // zipの場合
     const zip = new ZipFile(path);
@@ -57,16 +68,13 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
   }
   if (isError(mcmetaData)) return mcmetaData;
 
-  const mcmeta = await mcmetaData.json(Mcmeta);
-  if (isError(mcmeta)) return mcmeta;
+  // JSONとして読めない場合も、内容が想定と異なる場合も、データパックとして不適な旨のエラーにまとめる
+  // （json() に Mcmeta を渡すとスキーマ違反が実行時エラーとして返るため、検証は別に行う）
+  const json = await mcmetaData.json(z.unknown());
+  if (isError(json)) return invalidDatapackError(path, isPathDir);
 
-  const fixed = Mcmeta.safeParse(mcmeta);
-  if (!fixed.success) {
-    return errorMessage.data.path.invalidContent.invalidDatapack({
-      type: 'file',
-      path: path.path,
-    });
-  }
+  const fixed = Mcmeta.safeParse(json);
+  if (!fixed.success) return invalidDatapackError(path, isPathDir);
 
   return {
     kind: 'datapack',
