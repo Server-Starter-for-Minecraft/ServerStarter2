@@ -13,6 +13,7 @@ describe('tError', () => {
       type: 'error',
       key: 'core.minecraftEULANotAccepted',
       level: 'error',
+      arg: undefined,
     });
 
     expect(result).toEqual({
