@@ -98,15 +98,20 @@ export function projectFilename(context) {
  * ノードが in-source テスト（`if (import.meta.vitest) { ... }` の中）にあるか
  *
  * in-source テストは実装ファイルの中に書かれるが，テストのコードとして扱う
- * （ファイル名でテストのファイルと区別できないため，構文で判定する）
+ * （ファイル名でテストのファイルと区別できないため，構文で判定する）。
+ * テストとして扱うのは条件を満たした側のみで，else の側は本番で実行されるため対象外としない
+ * （`eslint-rules/config.js` の restrictedDynamicImportSelector も同じ範囲を対象外とする）
  *
  * @param {Node} node 判定するノード
  * @returns {boolean} in-source テストの中にあれば true
  */
 export function isInSourceTest(node) {
+  /** @type {Node} */
+  let child = node;
   for (let current = node.parent; current != null; current = current.parent) {
     if (
       current.type === AST_NODE_TYPES.IfStatement &&
+      current.consequent === child &&
       current.test.type === AST_NODE_TYPES.MemberExpression &&
       current.test.object.type === AST_NODE_TYPES.MetaProperty &&
       current.test.property.type === AST_NODE_TYPES.Identifier &&
@@ -114,6 +119,7 @@ export function isInSourceTest(node) {
     ) {
       return true;
     }
+    child = current;
   }
   return false;
 }

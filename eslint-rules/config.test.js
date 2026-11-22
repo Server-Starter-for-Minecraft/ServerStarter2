@@ -1,3 +1,4 @@
+import { builtinRules } from 'eslint/use-at-your-own-risk';
 import { minimatch } from 'minimatch';
 import { glob } from 'tinyglobby';
 import { describe, expect, test } from 'vitest';
@@ -6,8 +7,11 @@ import {
   BACKEND_LAYERS,
   FRONTEND_FILES,
   FRONTEND_LAYERS,
+  RESTRICTED_BUILTIN_MODULES,
+  restrictedDynamicImportSelector,
   restrictedPackagePattern,
 } from './config.js';
+import { createRuleTester } from './utils/ruleTester.js';
 
 /** リポジトリのルート */
 const ROOT = new URL('..', import.meta.url);
@@ -64,4 +68,45 @@ describe('restrictedPackagePattern', () => {
     expect(pattern.test('src-electron/schema/brands')).toBe(false);
     expect(pattern.test('src/error/error')).toBe(false);
   });
+});
+
+describe('restrictedDynamicImportSelector', () => {
+  const options = [
+    {
+      selector: restrictedDynamicImportSelector(RESTRICTED_BUILTIN_MODULES),
+      message: 'restricted',
+    },
+  ];
+  const errors = [{ messageId: 'restrictedSyntax' }];
+
+  createRuleTester().run(
+    'no-restricted-syntax',
+    builtinRules.get('no-restricted-syntax'),
+    {
+      valid: [
+        // 制限していないモジュール・プロジェクト内のモジュール
+        { code: "export const load = () => import('./local');", options },
+        // in-source テストの中は，テストのファイルと同じく対象外
+        {
+          code: "if (import.meta.vitest) { await import('fs'); }",
+          options,
+        },
+      ],
+      invalid: [
+        { code: "export const load = () => import('fs');", options, errors },
+        // `node:` を付けた名前・パスを含む名前も対象
+        {
+          code: "export const load = () => import('node:fs/promises');",
+          options,
+          errors,
+        },
+        // in-source テストの else の側は本番で実行されるため対象
+        {
+          code: "if (import.meta.vitest) { } else { await import('fs'); }",
+          options,
+          errors,
+        },
+      ],
+    }
+  );
 });

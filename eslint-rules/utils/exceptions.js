@@ -23,7 +23,7 @@ import { enclosingFunctionNames, projectFilename } from './scope.js';
  * @property {string} file 対象のファイル（リポジトリのルートからのパス）
  * @property {string[]} [functions] 許可する関数・メソッドの名前（その中で報告された違反を許可する）
  * @property {boolean} [topLevel] モジュールの読み込み時に実行する処理（どの関数の中にもない処理）を許可する
- * @property {string[]} [modules] import を許可するモジュール（`node:` を付けた名前も同じモジュールとして扱う）
+ * @property {string[]} [modules] import を許可するモジュール（`node:` の有無によらず同じモジュールとして扱う）
  * @property {string} reason 許可する理由
  */
 
@@ -90,7 +90,8 @@ const FUNCTION_TYPES = new Set([
 /**
  * ノードが，モジュールの読み込み時に実行される位置（どの関数の中にもない位置）にあるか
  *
- * 関数の中のほか，インスタンスを作るときに実行されるクラスのフィールドの初期値も対象外とする。
+ * 関数の中のほか，インスタンスを作るときに実行されるクラスのフィールドの初期値も対象外とする
+ * （計算されたフィールド名（`[makeKey()] = 0` の `makeKey()`）は，クラスを定義するときに実行されるため対象とする）。
  * 同期で呼ばれるコールバック（`forEach` など）も関数として扱う（呼ばれる時期を構文から判定できないため）。
  * モジュールの読み込み時の処理として許可する場合は，コールバックではなくループで書く
  *
@@ -98,15 +99,19 @@ const FUNCTION_TYPES = new Set([
  * @returns {boolean} モジュールの読み込み時に実行される位置であれば true
  */
 export function isAtTopLevel(node) {
+  /** @type {Node} */
+  let child = node;
   for (let current = node.parent; current != null; current = current.parent) {
     if (FUNCTION_TYPES.has(current.type)) return false;
     if (
       (current.type === AST_NODE_TYPES.PropertyDefinition ||
         current.type === AST_NODE_TYPES.AccessorProperty) &&
-      !current.static
+      !current.static &&
+      current.value === child
     ) {
       return false;
     }
+    child = current;
   }
   return true;
 }
@@ -145,6 +150,16 @@ function importedModule(node) {
 }
 
 /**
+ * モジュールの指定から `node:` の接頭辞を除く（組み込みモジュールは接頭辞の有無によらず同じモジュールとする）
+ *
+ * @param {string} specifier モジュールの指定
+ * @returns {string} 接頭辞を除いたモジュールの指定
+ */
+function withoutNodePrefix(specifier) {
+  return specifier.replace(/^node:/, '');
+}
+
+/**
  * ノードが例外の範囲の 1 つに含まれるか
  *
  * @param {Node} node 報告されたノード
@@ -155,7 +170,10 @@ function isInScope(node, scope) {
   switch (scope.kind) {
     case 'module': {
       const specifier = importedModule(node);
-      return specifier === scope.name || specifier === `node:${scope.name}`;
+      return (
+        specifier !== undefined &&
+        withoutNodePrefix(specifier) === withoutNodePrefix(scope.name)
+      );
     }
     case 'function':
       return enclosingFunctionNames(node).includes(scope.name);

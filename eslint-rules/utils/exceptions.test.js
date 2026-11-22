@@ -82,6 +82,11 @@ describe('モジュールの読み込み時の例外', () => {
           code: 'declare const x: unknown; export class A { static value = x as string; }',
           options: typeAssertionOptions,
         },
+        // 計算されたフィールド名は，クラスを定義するとき（モジュールの読み込み時）に実行される
+        {
+          code: 'declare const x: unknown; export class A { [x as string] = 0; }',
+          options: typeAssertionOptions,
+        },
       ],
       invalid: [
         // 関数の中は，呼んだときに実行されるため許可しない
@@ -108,19 +113,20 @@ describe('モジュールの読み込み時の例外', () => {
 
 describe('import するモジュールの例外', () => {
   const restrictedImports = tseslint.plugin.rules['no-restricted-imports'];
-  const options = [{ paths: ['fs', 'node:fs', 'path'] }];
+  const options = [{ paths: ['fs', 'node:fs', 'os', 'path'] }];
   const errors = [{ messageId: 'path' }];
 
   ruleTester.run(
     'no-restricted-imports',
     withExceptions(restrictedImports, [
-      { file: 'file.ts', modules: ['fs'], reason: '' },
+      { file: 'file.ts', modules: ['fs', 'node:os'], reason: '' },
     ]),
     {
       valid: [
         { code: "import fs from 'fs'; export default fs;", options },
-        // `node:` を付けた名前も同じモジュールとして扱う
+        // `node:` の有無によらず同じモジュールとして扱う（例外の指定・import のどちらに付けてもよい）
         { code: "import fs from 'node:fs'; export default fs;", options },
+        { code: "import os from 'os'; export default os;", options },
         // export … from・import … = require も import として扱う
         { code: "export { readFile } from 'fs';", options },
         { code: "export * from 'fs';", options },

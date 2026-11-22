@@ -35,6 +35,11 @@ ruleTester.run('no-exception', noException, {
       code: 'export function f() { throw new Error(); }',
       errors: [{ messageId: 'throw' }],
     },
+    // in-source テストの else の側は本番で実行されるため対象
+    {
+      code: 'if (import.meta.vitest) { } else { throw new Error(); }',
+      errors: [{ messageId: 'throw' }],
+    },
     // private な関数・クラスの private メソッドでも例外は使えない
     {
       code: 'function f() { throw new Error(); }',

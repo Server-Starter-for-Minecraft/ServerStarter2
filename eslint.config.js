@@ -20,6 +20,7 @@ import {
   MOCKABLE_BOUNDARIES,
   RESTRICTED_BUILTIN_MODULES,
   RESTRICTED_LAYER_IMPORTS,
+  restrictedDynamicImportSelector,
   restrictedPackagePattern,
   SCRIPT_FILES,
   SHARED_FILES,
@@ -386,7 +387,7 @@ const baseConfig = tseslint.config(
   // util 以外では，Node.js の組み込みモジュールの動的な import も禁止する（静的な import は no-restricted-imports で禁止している）
   // （対象外のファイルは，組み込みモジュールの静的な import の制限と同じ MODULE_RESTRICTION_IGNORES を使う。
   //   in-source テストは，テストのファイルと同じく外部の境界を用意するために直接扱えるよう対象外とする。
-  //   選択子では `if (import.meta.vitest)` の中（else を含む）を対象外とする。else に本番の処理を書かないこと）
+  //   対象外とするのは `if (import.meta.vitest)` の条件を満たした側のみで，else の側は検査する）
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
     ignores: MODULE_RESTRICTION_IGNORES,
@@ -395,11 +396,7 @@ const baseConfig = tseslint.config(
         'error',
         ...RESTRICTED_SYNTAX,
         {
-          selector: `ImportExpression:not(IfStatement[test.object.type='MetaProperty'][test.property.name='vitest'] *)[source.value=/^(node:)?(${RESTRICTED_BUILTIN_MODULES.filter(
-            ({ name }) => !name.startsWith('node:')
-          )
-            .map(({ name }) => name.replace('/', '\\/'))
-            .join('|')})$/]`,
+          selector: restrictedDynamicImportSelector(RESTRICTED_BUILTIN_MODULES),
           message:
             'Node.js の組み込みモジュールは util を通して扱ってください（eslint-rules/config.js の RESTRICTED_BUILTIN_MODULES を参照）',
         },

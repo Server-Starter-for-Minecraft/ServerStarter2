@@ -481,6 +481,28 @@ export const RESTRICTED_BUILTIN_MODULES = [
 ].flatMap((m) => [m, { ...m, name: `node:${m.name}` }]);
 
 /**
+ * 組み込みモジュールの動的な import（`import('fs')`）に一致する選択子（no-restricted-syntax の selector）を作る
+ *
+ * in-source テスト（`if (import.meta.vitest) { ... }` の条件を満たした側）の中は，
+ * テストのファイルと同じく外部の境界を用意するために直接扱えるよう対象外とする（else の側は対象とする）
+ *
+ * @param {{ name: string }[]} modules 禁止するモジュール（`node:` を付けた名前は，付けない名前から作るため無視する）
+ * @returns {string} 選択子
+ */
+export function restrictedDynamicImportSelector(modules) {
+  // 一覧が空の場合は何にも一致しない選択子にならないため，設定の誤りとして止める
+  if (modules.length === 0) {
+    throw new Error('禁止するモジュールを 1 つ以上指定してください');
+  }
+  const names = modules
+    .filter(({ name }) => !name.startsWith('node:'))
+    .map(({ name }) => name.replace(/[.+?^${}()|[\]\\/]/g, '\\$&'));
+  const inSourceTest =
+    "IfStatement[test.object.type='MetaProperty'][test.property.name='vitest'] > .consequent";
+  return `ImportExpression:not(${inSourceTest} *)[source.value=/^(node:)?(${names.join('|')})$/]`;
+}
+
+/**
  * 失敗しうる値を受け取り，エラーを処理する関数（`serverstarter/no-ignored-failable` で使う）
  *
  * これらの関数の戻り値（成功した場合の値）は，捨ててもエラーの見落としにならない
