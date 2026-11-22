@@ -121,7 +121,12 @@ const USER_PORT = 25570;
  * `subtitle` は副題の表示を，`deleteTitle` は表題の表示の削除を，指定したメッセージのときに失敗させる
  */
 class FailingProgressor extends GroupProgressor {
-  constructor(private failOn: { subtitle?: string; deleteTitle?: string }) {
+  constructor(
+    private readonly failOn: {
+      subtitle?: ProgressMessage['key'];
+      deleteTitle?: ProgressMessage['key'];
+    }
+  ) {
     super();
   }
 
@@ -366,8 +371,13 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
       const failed = await handler.run(new GroupProgressor());
       // 起動に失敗した原因（Ngrokのエラー）を返しつつ，書き戻しの失敗も伝える
       expect(failed.value).toEqual(ngrokError);
-      expect(failed.errors).toContainEqual(
-        expect.objectContaining({ key: 'data.path.creationFailed' })
+      const writeErrors = failed.errors.filter(
+        (e) => e.key === 'data.path.creationFailed'
+      );
+      expect(writeErrors).toHaveLength(1);
+      expect(writeErrors[0]?.arg).toHaveProperty(
+        'path',
+        expect.stringContaining('server.properties')
       );
     } finally {
       writeSpy.mockRestore();
@@ -377,7 +387,8 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
   test('起動準備の途中で例外が発生した場合も，Ngrokを終了しポート番号を戻して再度起動できる', async () => {
     const { handler } = await createWorld(true);
     vi.mocked(closeNgrok).mockClear();
-    // Ngrokの起動後に行われる準備処理（設定の保存の進捗の表示）で例外が発生した状況
+    // Ngrokの起動後に行われる準備処理で例外が発生した状況
+    // （Ngrokの起動後のいずれかの処理であればよく，ここでは最初に行う設定の保存の進捗の表示で発生させる）
     const failed = await handler.run(
       new FailingProgressor({ subtitle: 'server.local.savingSettingFiles' })
     );
