@@ -7,6 +7,8 @@
  * （`.github/workflows/linter.yml`・`.github/CODEOWNERS` を参照）
  */
 
+/** @typedef {import('./utils/exceptions.js').ScopedException} ScopedException */
+
 /** バックエンド（Electron のメインプロセス）のファイル */
 export const BACKEND_FILES = ['src-electron/**/*.ts'];
 
@@ -20,87 +22,99 @@ export const FRONTEND_FILES = ['src/**/*.ts', 'src/**/*.vue'];
 export const SHARED_FILES = ['src-public/**/*.ts'];
 
 /**
- * 型アサーション（`as`）を使ってよいファイル（`@typescript-eslint/consistent-type-assertions` の例外）
+ * 型アサーション（`as`）を使ってよい関数（`@typescript-eslint/consistent-type-assertions` の例外）
  *
  * 値を検証せずに型を付けることになるため，型を作る汎用処理（ジェネリクス・ブランド型の生成）に限る。
  * 外部の入力（JSON・HTTP の応答・例外など）を扱う処理は，zod の safeParse や型ガードで検証すること。
  * 追加する場合は，型アサーションが必要な理由を `reason` に必ず書く
  *
- * @type {{ file: string; reason: string }[]}
+ * @type {ScopedException[]}
  */
-export const TYPE_ASSERTION_ALLOWED_FILES = [
+export const TYPE_ASSERTION_EXCEPTIONS = [
   {
     file: 'src-electron/util/zod/brand.ts',
+    functions: ['asBrand'],
     reason: '形式に制約のない文字列にブランド型を付ける',
   },
   {
     file: 'src-electron/util/random/uuid.ts',
+    functions: ['genUUIDOf'],
     reason: '生成した UUID にブランド型を付ける',
   },
   {
     file: 'src-public/scripts/uuid.ts',
-    reason: '生成した UUID にブランド型を付ける',
+    functions: ['genUUID', 'formatUUID'],
+    reason: '生成・整形した UUID にブランド型を付ける',
   },
   {
     file: 'src-electron/util/timestamp.ts',
+    functions: ['getCurrentTimestamp'],
     reason: '現在時刻にブランド型（Timestamp）を付ける',
   },
   {
     file: 'src-electron/util/error/construct.ts',
+    functions: ['getErrorMessageConstructor'],
     reason: 'エラーの種類の定義から ErrorMessage を組み立てる',
   },
   {
-    file: 'src-electron/util/error/error.ts',
-    reason: 'エラーの判定（isError）の実装',
-  },
-  {
-    file: 'src-public/scripts/error.ts',
-    reason: 'エラーの判定（isError）の実装',
-  },
-  {
     file: 'src-electron/util/error/failable.ts',
+    functions: ['failabilify'],
     reason: '関数の戻り値の型から Failable の型を組み立てる',
   },
   {
     file: 'src-electron/util/versioning/versionedSchema.ts',
+    functions: ['safeParse'],
     reason:
-      '旧スキーマからの変換に失敗した結果を，最新のスキーマの結果の型に合わせる',
+      '旧スキーマからの変換に失敗した結果（検証前のエラー）を，最新のスキーマの結果の型に合わせる',
   },
   {
     file: 'src-electron/util/deepcopy.ts',
+    functions: ['deepcopy'],
     reason: '任意の型の値を複製し，元の型として返す',
   },
   {
     file: 'src-public/scripts/deepcopy.ts',
+    functions: ['deepcopy'],
     reason: '任意の型の値を複製し，元の型として返す',
   },
   {
     file: 'src-electron/util/obj/obj.ts',
+    functions: ['toEntries', 'fromEntries'],
     reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
   },
   {
     file: 'src-public/scripts/obj/obj.ts',
+    functions: ['toEntries', 'fromEntries', 'keys', 'values'],
     reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
   },
   {
     file: 'src-public/scripts/obj/objFlatten.ts',
+    functions: ['flattenObj'],
     reason: '入れ子のオブジェクトを平らにした型を組み立てる',
   },
   {
     file: 'src-electron/util/object/groupBy.ts',
+    functions: ['groupBy'],
     reason: '空のオブジェクトから，キーごとに分けた結果の型を組み立てる',
   },
   {
     file: 'src-electron/util/helper/infinitMap.ts',
+    functions: [
+      'primitiveKeyStrongValue',
+      'primitiveKeyWeakValue',
+      'primitiveKeyPrimitiveValue',
+    ],
     reason: '空のオブジェクトから，任意のキーで値を返す型を組み立てる',
   },
   {
     file: 'src-electron/util/awaitOnce.ts',
+    functions: ['get'],
     reason:
       '一度だけ取得した値を，取得前の型（undefined を含まない型）として返す',
   },
   {
     file: 'src-electron/util/promise/promiseDecorator.ts',
+    functions: ['decoratePromise'],
     reason: 'Promise にメソッドを付け足した型を組み立てる',
   },
 ];
@@ -141,36 +155,48 @@ export const BLOCKING_MODULES = [
 ];
 
 /**
- * メインプロセスを止める同期 API を使ってよい関数（`serverstarter/no-blocking-call` の例外）
+ * メインプロセスを止める同期 API を使ってよい範囲（`serverstarter/no-blocking-call` の例外）
  *
  * 画面の表示前に一度だけ実行する処理など，操作を止めないことが明らかな場合に限る。
+ * 関数単位を原則とし，関数の外（モジュールの読み込み時）で使う必要がある場合のみ `topLevel` で許可する。
  * 追加する場合は，同期 API が必要な理由を `reason` に必ず書く
  *
- * @type {import('./utils/scope.js').AllowedFunctions[]}
+ * @type {ScopedException[]}
  */
-export const BLOCKING_CALL_ALLOWED_FUNCTIONS = [
+export const BLOCKING_CALL_EXCEPTIONS = [
   {
     file: 'src-electron/util/os/os.ts',
     functions: ['readOsRelease'],
     reason:
       '起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）',
   },
-];
-
-/**
- * メインプロセスを止める同期 API を使ってよいファイル（`serverstarter/no-blocking-call` の例外）
- *
- * 関数の外（モジュールの読み込み時）で使う必要がある場合のみ，ファイル単位で許可する
- *
- * @type {{ file: string; reason: string }[]}
- */
-export const BLOCKING_CALL_ALLOWED_FILES = [
   {
     file: 'src-electron/logger/logger.ts',
+    topLevel: true,
     reason:
       '起動時に一度だけ，log4js が latest.log を上書きする前に，モジュールの読み込み時に同期で退避する必要がある（画面の表示前で操作を止めない）',
   },
 ];
+
+/**
+ * 宣言元のファイル（リポジトリのルートからのパス）の一覧から，型定義の宣言元のパスに一致する正規表現を作る
+ *
+ * @param {string[]} files 宣言元のファイルの一覧
+ * @returns {RegExp} 宣言元のファイルのパスに一致する正規表現
+ */
+function declarationFilePattern(files) {
+  const escaped = files.map((f) => f.replace(/[.+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`/(${escaped.join('|')})$`);
+}
+
+/**
+ * 例外を Failable へ変換する関数の定義
+ *
+ * @typedef {object} ExceptionConverterDefinition
+ * @property {string} name 関数の名前
+ * @property {string[]} files 関数を定義しているファイル（リポジトリのルートからのパス）
+ * @property {boolean} async 非同期の関数（Promise の reject）を Failable に変換できるか
+ */
 
 /**
  * 例外を Failable へ変換する関数（`serverstarter/no-exception`・`no-unsafe-throwing-call` で使う）
@@ -178,48 +204,65 @@ export const BLOCKING_CALL_ALLOWED_FILES = [
  * 例外を投げる・捕まえる処理は，原則としてこの一覧の関数の中だけで行う。
  * 外部ライブラリなどの例外は，ここにある `safeExec` / `safeExecAsync` に渡して Failable に変換する。
  * 関数名だけで判定すると同名の自作の関数でも許可されてしまうため，宣言元のファイルでも判定する。
- * `async: false` の関数（同期の try/catch）に非同期の関数を渡すと，reject は変換されないため報告する
+ * `async: false` の関数（同期の try/catch）に非同期の関数を渡すと，reject は変換されないため報告する。
+ * これらの関数の実装は，例外を扱ってよい関数（EXCEPTION_ALLOWED_FUNCTIONS）に自動で含める
  *
- * @type {import('./rules/no-unsafe-throwing-call.js').ExceptionConverter[]}
+ * @type {ExceptionConverterDefinition[]}
  */
-export const EXCEPTION_CONVERTERS = [
+const EXCEPTION_CONVERTER_DEFINITIONS = [
   {
     name: 'safeExec',
-    declarationFile:
-      /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    files: ['src-electron/util/error/failable.ts', 'src/error/error.ts'],
     async: false,
   },
   {
     name: 'safeExecAsync',
-    declarationFile:
-      /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    files: ['src-electron/util/error/failable.ts', 'src/error/error.ts'],
     async: true,
   },
   {
     name: 'failabilify',
-    declarationFile: /\/src-electron\/util\/error\/failable\.ts$/,
+    files: ['src-electron/util/error/failable.ts'],
     async: true,
   },
 ];
 
 /**
- * 例外を扱ってよい関数（`serverstarter/no-exception`・`no-unsafe-throwing-call` で使う）
+ * 例外を Failable へ変換する関数（`serverstarter/no-unsafe-throwing-call` の設定の形式）
  *
+ * @type {import('./rules/no-unsafe-throwing-call.js').ExceptionConverter[]}
+ */
+export const EXCEPTION_CONVERTERS = EXCEPTION_CONVERTER_DEFINITIONS.map(
+  ({ name, files, async }) => ({
+    name,
+    declarationFile: declarationFilePattern(files),
+    async,
+  })
+);
+
+/**
+ * 例外を扱ってよい関数（`serverstarter/no-exception` の例外）
+ *
+ * 例外を Failable へ変換する関数（EXCEPTION_CONVERTER_DEFINITIONS）の実装を含む。
  * 追加する場合は，safeExec / safeExecAsync を使えない理由を `reason` に必ず書く
  *
- * @type {import('./utils/scope.js').AllowedFunctions[]}
+ * @type {ScopedException[]}
  */
 export const EXCEPTION_ALLOWED_FUNCTIONS = [
+  ...[
+    ...new Set(EXCEPTION_CONVERTER_DEFINITIONS.flatMap(({ files }) => files)),
+  ].map((file) => ({
+    file,
+    functions: EXCEPTION_CONVERTER_DEFINITIONS.filter(({ files }) =>
+      files.includes(file)
+    ).map(({ name }) => name),
+    reason: '例外を Failable へ変換する最下層の関数',
+  })),
   {
     file: 'src-public/scripts/promise/runDetached.ts',
     functions: ['runDetached'],
     reason:
       '完了を待たない Promise の失敗を onError に渡す最下層の関数（待たれない Promise は safeExecAsync で待てないため，Promise の失敗を直接受け取る）',
-  },
-  {
-    file: 'src-electron/util/error/failable.ts',
-    functions: ['safeExec', 'safeExecAsync', 'failabilify'],
-    reason: '例外を Failable へ変換する最下層の関数',
   },
   {
     file: 'src-electron/ipc/util.ts',
@@ -256,11 +299,6 @@ export const EXCEPTION_ALLOWED_FUNCTIONS = [
     functions: ['getOsPlatform'],
     reason:
       '起動時に一度だけ実行し，対応していない OS では処理を続行できないため，例外で起動を中止する',
-  },
-  {
-    file: 'src/error/error.ts',
-    functions: ['safeExec', 'safeExecAsync'],
-    reason: '例外を Failable へ変換するフロントエンドの最下層の関数',
   },
   {
     file: 'src-electron/util/versioning/versionedSchema.ts',
@@ -335,6 +373,36 @@ export const THROWING_APIS = [
 ];
 
 /**
+ * 例外を投げる API を Failable へ変換せずに呼んでよい範囲（`serverstarter/no-unsafe-throwing-call` の例外）
+ *
+ * 入力が固定で，実行のたびに結果が変わらない（失敗した場合は起動時・テストで直ちに分かる）呼び出しに限る。
+ * 追加する場合は，失敗しない理由を `reason` に必ず書く
+ *
+ * @type {ScopedException[]}
+ */
+export const THROWING_CALL_EXCEPTIONS = [
+  {
+    file: 'src-electron/schema/static.ts',
+    topLevel: true,
+    reason:
+      'スキーマの既定値から定数を作るために parse を使う（入力が固定のため失敗しない）',
+  },
+  {
+    file: 'src-electron/schema/system.ts',
+    topLevel: true,
+    reason:
+      'スキーマの既定値から定数を作るために parse を使う（入力が固定のため失敗しない）',
+  },
+  {
+    file: 'scripts/electronNode.ts',
+    topLevel: true,
+    functions: ['runWithElectronNode'],
+    reason:
+      'ビルド用の CLI のランチャーは，自身のファイルの位置（import.meta.url）から作る固定の URL のみを扱う（失敗しない）',
+  },
+];
+
+/**
  * エラーの判定関数（`serverstarter/no-silent-error` で使う）
  *
  * @type {import('./rules/no-silent-error.js').ErrorGuard[]}
@@ -351,6 +419,27 @@ export const ERROR_GUARDS = [
     kind: 'valid',
     declarationFile:
       /\/(src-electron\/util\/error\/error|src-public\/scripts\/error)\.ts$/,
+  },
+];
+
+/**
+ * エラーの判定の手書き（`x.type === 'error'`）を許可する関数（`serverstarter/no-restricted-syntax` の例外）
+ *
+ * no-restricted-syntax の例外は選択子（selector）ごとに分けられないため，この関数の中では
+ * RESTRICTED_SYNTAX のすべての制限が外れる（判定の実装だけの短い関数に限る）
+ *
+ * @type {ScopedException[]}
+ */
+export const ERROR_GUARD_IMPLEMENTATIONS = [
+  {
+    file: 'src-electron/util/error/error.ts',
+    functions: ['isError'],
+    reason: 'エラーの判定（isError）そのものの実装',
+  },
+  {
+    file: 'src-public/scripts/error.ts',
+    functions: ['isError'],
+    reason: 'エラーの判定（isError）そのものの実装',
   },
 ];
 
@@ -434,42 +523,59 @@ export function restrictedPackagePattern(allowed) {
 }
 
 /**
- * 外部パッケージを直接扱ってよい，util 以外のファイル（外部パッケージのラッパー）
+ * util 以外で，制限しているモジュール（RESTRICTED_BUILTIN_MODULES・外部パッケージ）を直接 import してよい範囲
+ * （静的な import を制限する `@typescript-eslint/no-restricted-imports` の例外）
  *
- * いずれも外部パッケージの例外を Failable へ変換して提供している。util へ移動する候補
+ * ファイルごとに許可するモジュールを指定する（他のモジュールの制限・動的な import の禁止・`fetch` の禁止は残る）。
+ * 外部パッケージのラッパーは，いずれも外部パッケージの例外を Failable へ変換して提供している（util へ移動する候補）。
+ * 追加する場合は，util を通して扱えない理由を `reason` に必ず書く
  *
- * @type {{ file: string; reason: string }[]}
+ * @type {ScopedException[]}
  */
-export const EXTERNAL_PACKAGE_WRAPPERS = [
+export const MODULE_IMPORT_EXCEPTIONS = [
   {
     file: 'src-electron/electron-main.ts',
+    modules: ['#q-app/electron/main'],
     reason:
       'アプリのエントリーポイントとして Quasar の実行環境（#q-app）を読み込むため',
   },
   {
     file: 'src-electron/logger/logger.ts',
-    reason: 'ログの出力（log4js）とアーカイブ（tar）を行う基盤のため',
+    modules: ['fs-extra', 'log4js', 'tar'],
+    reason:
+      'ロガーは util より下の基盤で，ログの出力（log4js）とアーカイブ（tar）を行い，起動時のログの退避に fs-extra を直接使う（BLOCKING_CALL_EXCEPTIONS と同じ理由）',
   },
   {
     file: 'src-electron/source/remote/github/sync.ts',
+    modules: ['simple-git'],
     reason:
       'Git の操作（simple-git）の失敗を safeExecAsync で Failable に変換している',
   },
   {
     file: 'src-electron/source/server/setup/ngrok.ts',
+    modules: ['@ngrok/ngrok'],
     reason: 'Ngrok の操作の失敗を Failable に変換している',
   },
   {
     file: 'src-electron/source/stores/config.ts',
+    modules: ['electron-store'],
     reason: '設定の保存（electron-store）を扱う',
   },
   {
     file: 'src-electron/source/version/getVersions/forge.ts',
+    modules: ['cheerio'],
     reason: 'バージョン一覧の HTML の解析（cheerio）を扱う',
   },
   {
     file: 'src-electron/source/version/getVersions/spigot.ts',
+    modules: ['cheerio'],
     reason: 'バージョン一覧の HTML の解析（cheerio）を扱う',
+  },
+  {
+    file: 'scripts/electronNode.ts',
+    modules: ['child_process', 'module', 'url'],
+    reason:
+      'ビルド用の CLI を Electron の Node.js で起動するランチャー（標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）',
   },
 ];
 
@@ -747,5 +853,41 @@ export const MOCKABLE_BOUNDARIES = [
   {
     file: 'src-electron/updater/notify.ts',
     reason: 'フロントエンドへの通知（IPC）',
+  },
+];
+
+/**
+ * 例外の一覧と，その例外を適用するルールの対応（`eslint.config.js` で `utils/exceptions.js` の仕組みに渡す）
+ *
+ * 例外は，ここに登録したルールの違反のうち，例外の範囲（関数・モジュールの読み込み時・import するモジュール）で
+ * 報告されたものだけを許可する。ルール・例外・範囲の組ごとに，使われていない（違反を 1 件も許可していない）場合は
+ * テスト（lintExceptions.test.js）で検出するため，例外は必要なルールにだけ適用する
+ *
+ * @type {import('./utils/exceptions.js').ExceptionGroup[]}
+ */
+export const LINT_EXCEPTIONS = [
+  {
+    rules: ['@typescript-eslint/consistent-type-assertions'],
+    exceptions: TYPE_ASSERTION_EXCEPTIONS,
+  },
+  {
+    rules: ['serverstarter/no-blocking-call'],
+    exceptions: BLOCKING_CALL_EXCEPTIONS,
+  },
+  {
+    rules: ['serverstarter/no-exception'],
+    exceptions: EXCEPTION_ALLOWED_FUNCTIONS,
+  },
+  {
+    rules: ['serverstarter/no-unsafe-throwing-call'],
+    exceptions: THROWING_CALL_EXCEPTIONS,
+  },
+  {
+    rules: ['serverstarter/no-restricted-syntax'],
+    exceptions: ERROR_GUARD_IMPLEMENTATIONS,
+  },
+  {
+    rules: ['@typescript-eslint/no-restricted-imports'],
+    exceptions: MODULE_IMPORT_EXCEPTIONS,
   },
 ];

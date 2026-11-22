@@ -21,18 +21,6 @@ ruleTester.run('no-blocking-call', rule, {
       code: 'function loadSync() { return 1; } loadSync();',
       options,
     },
-    // 例外として許可した関数の中では使える
-    {
-      code: "import { execSync } from 'child_process'; function readOsRelease() { return execSync('ls'); } readOsRelease();",
-      options: [
-        {
-          blockingModules: BLOCKING_MODULES,
-          allowed: [
-            { file: 'file.ts', functions: ['readOsRelease'], reason: '' },
-          ],
-        },
-      ],
-    },
   ],
   invalid: [
     {
@@ -68,18 +56,5 @@ ruleTester.run('no-blocking-call', rule, {
       "import fs from 'fs-extra'; fs.ensureDirSync('a');",
       "import { dialog } from 'electron'; dialog.showMessageBoxSync({ message: 'a' });",
     ].map((code) => ({ code, options, errors: [{ messageId: 'blocking' }] })),
-    // 例外として許可した関数の外では報告する
-    {
-      code: "import { execSync } from 'child_process'; function other() { return execSync('ls'); } other();",
-      options: [
-        {
-          blockingModules: BLOCKING_MODULES,
-          allowed: [
-            { file: 'file.ts', functions: ['readOsRelease'], reason: '' },
-          ],
-        },
-      ],
-      errors: [{ messageId: 'blocking' }],
-    },
   ],
 });

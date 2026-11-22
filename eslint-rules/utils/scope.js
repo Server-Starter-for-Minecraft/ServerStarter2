@@ -95,29 +95,6 @@ export function projectFilename(context) {
 }
 
 /**
- * @typedef {object} AllowedFunctions
- * @property {string} file 対象のファイル（リポジトリのルートからのパス）
- * @property {string[]} functions 許可する関数・メソッドの名前
- * @property {string} reason 許可する理由
- */
-
-/**
- * ノードが，設定で許可された関数の中にあるか
- *
- * @param {Node} node 判定するノード
- * @param {string} file リポジトリのルートからのファイルのパス
- * @param {AllowedFunctions[]} allowed 許可する関数の一覧
- * @returns {boolean} 許可された関数の中にあれば true
- */
-export function isInAllowedFunction(node, file, allowed) {
-  const names = allowed
-    .filter((a) => a.file === file)
-    .flatMap((a) => a.functions);
-  if (names.length === 0) return false;
-  return enclosingFunctionNames(node).some((name) => names.includes(name));
-}
-
-/**
  * ノードが in-source テスト（`if (import.meta.vitest) { ... }` の中）にあるか
  *
  * in-source テストは実装ファイルの中に書かれるが，テストのコードとして扱う

@@ -32,15 +32,22 @@ const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 // LATASTの上書き前にアーカイブファイルを作成
 // Testの時には下記のコードは実行しない
 // （下の log4js の設定で latest.log が上書きされる前に退避する必要があるため，起動時に一度だけ同期 API を使う。
-//   画面の表示前であり操作を止めることはない。eslint.config.js で no-blocking-call の対象から除外している）
+//   画面の表示前であり操作を止めることはない。eslint-rules/config.js の BLOCKING_CALL_EXCEPTIONS で，
+//   モジュールの読み込み時の処理に限って no-blocking-call の例外としている。関数の中で使うと例外の範囲外になる）
 fs.ensureDirSync(logDir.path);
-if (electron.app && logPaths.every((path) => fs.existsSync(path.path))) {
-  logPaths.forEach((path, idx) =>
-    fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
-  );
-  runDetached(archiveLog(...beforeArchivePaths), (e) =>
-    rootLogger.logger.archive().error(e)
-  );
+if (electron.app) {
+  let existsLatestLogs = true;
+  for (const path of logPaths) {
+    existsLatestLogs &&= fs.existsSync(path.path);
+  }
+  if (existsLatestLogs) {
+    for (const [idx, path] of logPaths.entries()) {
+      fs.copyFileSync(path.path, beforeArchivePaths[idx].path);
+    }
+    runDetached(archiveLog(...beforeArchivePaths), (e) =>
+      rootLogger.logger.archive().error(e)
+    );
+  }
 }
 
 // #region log4jsの設定

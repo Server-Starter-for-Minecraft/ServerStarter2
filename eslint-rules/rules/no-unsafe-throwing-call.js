@@ -2,11 +2,7 @@
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
 import ts from 'typescript';
 import { createRule } from '../utils/createRule.js';
-import {
-  isInAllowedFunction,
-  projectFilename,
-  reportOutsideInSourceTest,
-} from '../utils/scope.js';
+import { reportOutsideInSourceTest } from '../utils/scope.js';
 import { resolveSymbol, returnsThenable } from '../utils/types.js';
 
 /**
@@ -61,24 +57,21 @@ export default createRule({
         properties: {
           throwingApis: { type: 'array' },
           converters: { type: 'array' },
-          allowed: { type: 'array' },
         },
         additionalProperties: false,
       },
     ],
   },
   defaultOptions: [
-    /** @type {{ throwingApis: ThrowingApi[]; converters: ExceptionConverter[]; allowed: import('../utils/scope.js').AllowedFunctions[] }} */ ({
+    /** @type {{ throwingApis: ThrowingApi[]; converters: ExceptionConverter[] }} */ ({
       throwingApis: [],
       converters: [],
-      allowed: [],
     }),
   ],
-  create(context, [{ throwingApis, converters, allowed }]) {
+  create(context, [{ throwingApis, converters }]) {
     const report = reportOutsideInSourceTest(context);
     const services = ESLintUtils.getParserServices(context);
     const checker = services.program.getTypeChecker();
-    const file = projectFilename(context);
 
     /**
      * シンボルの宣言が対象の API に一致すれば，その設定を返す
@@ -219,7 +212,6 @@ export default createRule({
     function reportUnsafe(node, api) {
       if (api === undefined) return;
       if (isInsideConverter(node)) return;
-      if (isInAllowedFunction(node, file, allowed)) return;
       report({
         node,
         messageId: 'throwing',

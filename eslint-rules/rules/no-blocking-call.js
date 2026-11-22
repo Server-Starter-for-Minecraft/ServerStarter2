@@ -2,7 +2,6 @@
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
 import ts from 'typescript';
 import { createRule } from '../utils/createRule.js';
-import { isInAllowedFunction, projectFilename } from '../utils/scope.js';
 import { resolveSymbol } from '../utils/types.js';
 
 /**
@@ -16,7 +15,7 @@ import { resolveSymbol } from '../utils/types.js';
  *   自作の関数の名前に関係なく（`xxxAsync` と名付けても）検出できる
  * - 呼び出し先は，呼び出しの式のシンボルに加えて解決したシグネチャの宣言でも判定するため，
  *   分割代入・別名・`fs['readFileSync']`・`.call` / `.apply` を通した呼び出しも検出できる
- * - 例外として許可する関数は設定（`allowed`）で関数単位に指定する
+ * - 例外として許可する範囲は `eslint-rules/config.js` に登録し，`utils/exceptions.js` の仕組みで適用する
  */
 
 /**
@@ -42,22 +41,19 @@ export default createRule({
         type: 'object',
         properties: {
           blockingModules: { type: 'array' },
-          allowed: { type: 'array' },
         },
         additionalProperties: false,
       },
     ],
   },
   defaultOptions: [
-    /** @type {{ blockingModules: BlockingModule[]; allowed: import('../utils/scope.js').AllowedFunctions[] }} */ ({
+    /** @type {{ blockingModules: BlockingModule[] }} */ ({
       blockingModules: [],
-      allowed: [],
     }),
   ],
-  create(context, [{ blockingModules, allowed }]) {
+  create(context, [{ blockingModules }]) {
     const services = ESLintUtils.getParserServices(context);
     const checker = services.program.getTypeChecker();
-    const file = projectFilename(context);
 
     /**
      * 宣言（とその名前）がブロッキングする API であれば，そのモジュールの設定を返す
@@ -181,7 +177,6 @@ export default createRule({
           found = bySymbol(call.expression.expression);
         }
         if (found === undefined) return;
-        if (isInAllowedFunction(node, file, allowed)) return;
         context.report({
           node,
           messageId: 'blocking',

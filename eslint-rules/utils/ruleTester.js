@@ -1,5 +1,6 @@
 // @ts-check
 import { RuleTester } from '@typescript-eslint/rule-tester';
+import { fileURLToPath } from 'node:url';
 import { afterAll, describe, it } from 'vitest';
 
 /**
@@ -13,10 +14,7 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 /** 型情報を使うルールのテストで読み込む tsconfig.json のあるディレクトリ */
-const fixturesDir = new URL('../fixtures', import.meta.url).pathname.replace(
-  /^\/([A-Za-z]:)/,
-  '$1'
-);
+const fixturesDir = fileURLToPath(new URL('../fixtures', import.meta.url));
 
 /**
  * 独自ルールのテスト用の RuleTester を作る
