@@ -227,7 +227,7 @@ export async function saveLocalFiles(
     if (isError(pull)) errors.push(pull);
   }
 
-  const promisses: Promise<Failable<any>>[] = [
+  const promisses: Promise<Failable<unknown>>[] = [
     serverJsonFile.save(savePath, worldSettings),
     serverIconFile.save(savePath, world.avater_path),
   ];

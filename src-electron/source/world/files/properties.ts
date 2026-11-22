@@ -59,11 +59,15 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
 
 /** In Source Testing */
 if (import.meta.vitest) {
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
+
   /** パースに成功することを確認して，結果を返す */
   const parseOk = (text: string) => {
     const result = parse(text);
-    expect(isError(result)).toBe(false);
-    return result as ServerProperties;
+    assertOk(result);
+    return result;
   };
 
   test('server_property_parse', () => {

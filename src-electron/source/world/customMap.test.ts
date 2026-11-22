@@ -65,7 +65,10 @@ function mockVersions(
   const toResult = (v: AllVanillaVersion | 'error') =>
     v === 'error' ? fromRuntimeError(new Error('offline')) : v;
   vi.mocked(versionContainer.listVersions).mockImplementation(
-    async (_type, useCache) => toResult(useCache ? cached : latest) as any
+    async (_type, useCache) =>
+      // ワールドの取り込みはバニラの一覧のみを使うため，バージョンの種類によらずバニラの一覧を返す
+      // （listVersions はバージョンの種類ごとに戻り値の型が変わるジェネリクスのため，型を合わせる）
+      toResult(useCache ? cached : latest) as never
   );
 }
 

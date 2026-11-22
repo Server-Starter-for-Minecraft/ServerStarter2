@@ -73,16 +73,17 @@ async function getWorldAbbr(
       path: jsonpath.path,
     });
 
+  // 既存のフォルダの名前をワールド名として扱う（名前の形式の検証は新規作成・名前の変更の時に行い，
+  // 形式に合わない名前のフォルダも，これまでどおりワールドとして読み込む）
   const name = path.basename() as WorldName;
-  const container = worldContainer as WorldContainer;
 
   // WorldHandlerに登録
-  const id = WorldHandler.register(name, container);
+  const id = WorldHandler.register(name, worldContainer);
 
   const result: WorldAbbr = {
     id,
     name,
-    container,
+    container: worldContainer,
   };
 
   return result;

@@ -27,7 +27,6 @@ export const getDefaultLocale = (): Locale => {
 export const NEW_WORLD_NAME = 'NewWorld';
 
 export const WORLDNAME_REGEX_STR = '[a-zA-Z0-9_-]+';
-export const WORLDNAME_REGEX = new RegExp(`^${WORLDNAME_REGEX_STR}$`);
 
 export const BACKUP_DIRECTORY_NAME = '#backups';
 export const BACKUP_EXT = 'ssbackup';
