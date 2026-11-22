@@ -7,12 +7,21 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
+import { textComponentToString } from 'app/src-electron/util/format/textComponent';
 import { ServerAdditionalFiles } from '../base';
 
+/**
+ * `pack.mcmeta` のうち、本アプリで利用する項目のスキーマ
+ *
+ * 対応フォーマットバージョンの記述は Minecraft 1.21.9 で `pack_format` から `min_format` / `max_format` に移行しており、
+ * 新形式では `pack_format` が存在しない。本アプリは対応フォーマットバージョンを利用しないため、これらの項目は検証しない。
+ *
+ * `description` は文字列のほか、テキストコンポーネント（`{ "translate": "..." }` や配列など）でも記述できるため、
+ * 表示用の文字列に変換して扱う（記述が無い場合は空文字として扱う）。
+ */
 const Mcmeta = z.object({
   pack: z.object({
-    pack_format: z.number(),
-    description: z.string(),
+    description: z.unknown().transform(textComponentToString),
   }),
 });
 type Mcmeta = z.infer<typeof Mcmeta>;

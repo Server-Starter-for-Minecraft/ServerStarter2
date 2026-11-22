@@ -71,3 +71,60 @@ describe('ワールドのデータパックの保存', () => {
     expect(datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(true);
   });
 });
+
+describe('pack.mcmetaの形式ごとのデータパックの読み込み', () => {
+  const formatPath = new Path(__dirname).child('work', 'datapack-format');
+
+  /**
+   * 指定した内容の pack.mcmeta を持つフォルダ形式のデータパックを作成して読み込む
+   *
+   * @param name データパックのフォルダ名
+   * @param meta pack.mcmeta の内容
+   * @returns 読み込み結果
+   */
+  async function loadWithMcmeta(name: string, meta: unknown) {
+    const packPath = formatPath.child(name);
+    await packPath.mkdir(true);
+    await packPath.child('pack.mcmeta').writeText(JSON.stringify(meta));
+    return await datapackFiles.loadNew(packPath);
+  }
+
+  beforeAll(async () => {
+    await formatPath.emptyDir();
+  });
+
+  test('旧形式（pack_format）のデータパックを読み込める', async () => {
+    const loaded = await loadWithMcmeta('OldFormat', {
+      pack: { pack_format: 48, description: 'old pack' },
+    });
+    expect(loaded).toMatchObject({ kind: 'datapack', description: 'old pack' });
+  });
+
+  test('1.21.9以降の形式（pack_formatが無く、min_format / max_formatを持つ）のデータパックを読み込める', async () => {
+    const loaded = await loadWithMcmeta('NewFormat', {
+      pack: {
+        description: 'new pack',
+        min_format: [101, 1],
+        max_format: 101,
+      },
+    });
+    expect(loaded).toMatchObject({ kind: 'datapack', description: 'new pack' });
+  });
+
+  test('テキストコンポーネントで記述された説明を文字列として読み込める', async () => {
+    const loaded = await loadWithMcmeta('ComponentDesc', {
+      pack: {
+        description: [
+          { text: 'Data pack ', extra: [{ text: 'for ', bold: true }] },
+          { translate: 'pack.key', fallback: 'Bukkit' },
+        ],
+        min_format: 101,
+        max_format: 101,
+      },
+    });
+    expect(loaded).toMatchObject({
+      kind: 'datapack',
+      description: 'Data pack for Bukkit',
+    });
+  });
+});
