@@ -122,7 +122,7 @@ const baseConfig = tseslint.config(
   {
     linterOptions: {
       // ソースコード内のコメント（`eslint-disable` など）による設定の変更を禁止する
-      // 例外はこのファイルと `eslint-suppressions.json` にのみ記述し，CI とレビューで増加を検出する
+      // 例外はこのファイルと eslint-rules/config.js（LINT_EXCEPTIONS）にのみ記述し，CI とレビューで増加を検出する
       // （無視されたコメントは警告となり，`--max-warnings 0` で CI が失敗する）
       noInlineConfig: true,
       reportUnusedDisableDirectives: 'error',
