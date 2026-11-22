@@ -5,6 +5,7 @@ import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { VersionListLoader } from './base';
 
 const ForgeURL = 'https://files.minecraftforge.net/net/minecraftforge/forge/';
@@ -28,7 +29,7 @@ export class ForgeVersionLoader extends VersionListLoader<'forge'> {
     $('ul.section-content li.li-version-list ul li a').each((_, elem) => {
       const path = elem.attribs['href'];
       const match = path.match(/^index_([a-z0-9_\.-]+)\.html$/);
-      if (match) ids.push(match[1] as VersionId);
+      if (match) ids.push(asBrand(VersionId, match[1]));
     });
 
     // 各バージョンごとの全ビルドを並列取得してflat化

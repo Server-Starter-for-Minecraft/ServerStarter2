@@ -19,7 +19,7 @@ const paperEachVersionURL = (versionName: string) =>
   `https://fill.papermc.io/v3/projects/paper/versions/${versionName}`;
 const paperEachVersionZod = z.object({
   version: z.object({
-    id: z.string().transform((val) => val as VersionId),
+    id: VersionId,
   }),
   // 新しい順
   builds: z.number().array(),

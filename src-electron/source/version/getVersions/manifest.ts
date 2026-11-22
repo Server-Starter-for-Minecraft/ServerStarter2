@@ -14,7 +14,7 @@ const MANIFEST_PATH = (cachePath: Path) =>
   cachePath.child('version_manifest_v2.json');
 
 const ManifestRecordZod = z.object({
-  id: z.string().transform((val) => val as VersionId),
+  id: VersionId,
   type: z.enum(['release', 'snapshot', 'old_beta', 'old_alpha']),
   url: z.string(),
   time: z.string(),

@@ -313,7 +313,7 @@ if (import.meta.vitest) {
       // `BuildTools.jar`の実行によって必要なファイルが生成された体を再現する
       // （BuildToolsに渡された引数は，ビルドするバージョンの検証のために記録する）
       let buildArgs: string[] = [];
-      const execRuntime: ExecRuntime = vi.fn(async (options) => {
+      const execRuntime = vi.fn<ExecRuntime>(async (options) => {
         buildArgs = options.args;
         await writeBuiltJar(options, ver19.id, `spigot-${ver19.id}.jar`);
       });
@@ -379,7 +379,7 @@ if (import.meta.vitest) {
 
         // BuildToolsと同様に，cloneすべきリポジトリのフォルダが空でなければ失敗する
         const repos = ['Bukkit', 'CraftBukkit', 'Spigot'];
-        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+        const execRuntime = vi.fn<ExecRuntime>(async (options) => {
           for (const repo of repos) {
             const repoPath = options.currentDir.child(repo);
             const children = (await repoPath.exists())
@@ -417,7 +417,7 @@ if (import.meta.vitest) {
         await getJarPath(cachePath).remove();
 
         // `--rev 1.19`に対して1.19.4がビルドされた場合を再現する
-        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+        const execRuntime = vi.fn<ExecRuntime>(async (options) => {
           await writeBuiltJar(options, '1.19.4', 'patched jar');
         });
 

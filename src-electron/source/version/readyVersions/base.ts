@@ -4,7 +4,11 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { InfinitMap } from 'app/src-electron/util/helper/infinitMap';
 import { PromiseSpooler } from 'app/src-electron/util/promise/spool';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
-import { Runtime } from '../../../schema/runtime';
+import {
+  JavaComponent,
+  JavaMajorVersion,
+  Runtime,
+} from '../../../schema/runtime';
 import { UnknownVersion, Version } from '../../../schema/version';
 import { Path } from '../../../util/binary/path';
 import { getLog4jArg, saveLog4JPatch } from './utils/log4j';
@@ -255,6 +259,9 @@ export abstract class ReadyVersion<
 
   /**
    * 当該サーバーにおけるRuntimeオブジェクトを生成する
+   *
+   * @param verJsonHandler version.json
+   * @returns サーバーの起動に使うランタイム（version.json に指定が無い場合は jre-legacy）
    */
   protected async getRuntime(
     verJsonHandler: JsonSourceHandler<VersionJson>
@@ -262,16 +269,16 @@ export abstract class ReadyVersion<
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
-    if (verJson.javaVersion?.component) {
-      return {
-        type: 'minecraft',
-        version: verJson.javaVersion?.component,
-      } as Runtime;
-    } else if (verJson.javaVersion?.majorVersion) {
-      return {
-        type: 'universal',
-        majorVersion: verJson.javaVersion.majorVersion,
-      } as Runtime;
+    // Minecraft が配布するランタイムの名前（component）を優先し，component が無い・未知の名前の場合は Java のバージョンで指定する
+    const component = JavaComponent.safeParse(verJson.javaVersion?.component);
+    if (component.success) {
+      return { type: 'minecraft', version: component.data };
+    }
+    const majorVersion = JavaMajorVersion.safeParse(
+      verJson.javaVersion?.majorVersion
+    );
+    if (majorVersion.success) {
+      return { type: 'universal', majorVersion: majorVersion.data };
     }
 
     // fall back

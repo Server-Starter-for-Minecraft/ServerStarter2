@@ -6,6 +6,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
@@ -99,7 +100,7 @@ if (import.meta.vitest) {
 
     const ver20: MohistmcVersion = {
       type: 'mohistmc',
-      id: '1.20.1' as VersionId,
+      id: asBrand(VersionId, '1.20.1'),
       buildId: 157,
       buildName: '2c49e69c7d50fa5ba8210c8648cc8d0f9135fe22',
       jar: {
