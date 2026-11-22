@@ -19,6 +19,14 @@ jobs:
           bun-version-file: package.json
       - name: Install Deps
         run: bun install
+      # 違反の一括抑制（eslint-suppressions.json）は使わない（ESLint は置かれていると自動で読み込むため，置かれていないことを確認する）
+      # 例外は eslint-rules/config.js に理由とともに範囲を絞って登録する
+      - name: check no lint suppressions file
+        run: |
+          if [ -e eslint-suppressions.json ]; then
+            echo "eslint-suppressions.json は使いません。違反を修正するか，やむを得ない場合は eslint-rules/config.js の LINT_EXCEPTIONS に理由とともに登録してください"
+            exit 1
+          fi
       # リポジトリ全体を検査し，変更していない行の違反も含めて 1 件でもあれば失敗にする
       # （警告も失敗にする。ソースコード内の無効化コメントは無視されて警告になるため）
       # （package.json の lint のスクリプトを変えて検査の範囲を狭められないよう，eslint を直接実行する）
@@ -33,14 +41,6 @@ jobs:
           reporter: github-pr-review
           eslint_flags: '.'
           fail_level: none
-      # 違反の一括抑制（eslint-suppressions.json）は使わない（ESLint は置かれていると自動で読み込むため，置かれていないことを確認する）
-      # 例外は eslint-rules/config.js に理由とともに範囲を絞って登録する
-      - name: check no lint suppressions file
-        run: |
-          if [ -e eslint-suppressions.json ]; then
-            echo "eslint-suppressions.json は使いません。違反を修正するか，やむを得ない場合は eslint-rules/config.js の LINT_EXCEPTIONS に理由とともに登録してください"
-            exit 1
-          fi
       # lint の設定（例外の追加にあたる変更）を変えた PR は，ラベル lint-exception でメンテナーが明示的に許可する
       - name: check lint config changes
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'lint-exception') }}

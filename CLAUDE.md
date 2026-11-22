@@ -46,7 +46,7 @@
 4. **lint による静的検査を活用・維持しているか**
    - テストだけでは防げない規約違反（エラーハンドリング・非同期処理・層構造など）は lint で機械的に検査している（独自ルールは `eslint-rules/`、設定値は `eslint-rules/config.js`）。
    - 新しい規約違反を見つけたら、テストを追加する前に、まず lint で検出できないかを検討する。
-   - ソースコード内の `eslint-disable` などのコメントは無効化されている。例外は `eslint-rules/config.js` の `LINT_EXCEPTIONS`（理由の `reason` 必須。関数・モジュールの読み込み時・import するモジュールの単位に範囲を絞る）と `eslint.config.js`（理由のコメント必須）にのみ置ける（違反の一括抑制（`eslint-suppressions.json`）は使わない）。例外を追加・変更する場合は、正規の書き方で解決できないかを確認し、理由を PR に記載する（CI はラベル `lint-exception` がない限り失敗する）。
+   - ソースコード内の `eslint-disable` などのコメントは無効化されている。例外は `eslint-rules/config.js` の `LINT_EXCEPTIONS`（理由の `reason` 必須。関数・モジュールの読み込み時・import するモジュールの単位に範囲を絞る）と `eslint.config.js`（理由のコメント必須）にのみ置ける。違反の一括抑制（`eslint-suppressions.json`）は使わず、置かれていると CI が失敗する。例外を追加・変更する場合は、正規の書き方で解決できないかを確認し、理由を PR に記載する（CI はラベル `lint-exception` がない限り失敗する）。
    - 登録した例外は、例外の範囲で実際に違反を許可していることをテスト（`eslint-rules/lintExceptions.test.js`）で確認している。違反を直して例外が不要になったら、例外を削除する。
 5. **システムの設計思想・既存の規約から外れていないか**
    - 失敗系は Result 型（`Failable` / `WithError`）で扱い、例外（try/catch）は外部ライブラリや OS・Electron の API を呼ぶ最下層でのみ Result 型へ変換しているか（`safeExec` / `fromRuntimeError` など）。
