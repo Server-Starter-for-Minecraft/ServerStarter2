@@ -28,73 +28,103 @@
  * }
  */
 import { contextBridge, ipcRenderer } from 'electron';
-import { FrontAPI } from './api/api';
-import { FrontHandle, FrontInvoke, FrontOn, FrontSend } from './api/types';
+import { API, FrontAPI } from './api/api';
+import { fromIPC } from './api/boundary';
+import { AnyFunc } from './api/types';
 
-type Func<A extends any[], R> = (..._: A) => R;
+/**
+ * 関数に，API の名前（チャンネル）を付ける
+ *
+ * `FrontAPI` の型（`FrontSend` など）はチャンネルを持つため，API の名前とチャンネルの対応の誤りを型チェックで検出できる
+ *
+ * @param channel チャンネル
+ * @param func 関数
+ * @returns チャンネルを付けた関数
+ */
+function withChannel<C extends string, F extends AnyFunc<unknown>>(
+  channel: C,
+  func: F
+) {
+  return Object.assign(func, { __channel__: channel });
+}
 
 // WindowからMainのイベントを発火
-function send<C extends string>(channel: C): FrontSend<C, Func<any[], void>> {
-  return ((...args: any[]) => ipcRenderer.send(channel, ...args)) as FrontSend<
-    C,
-    Func<any[], void>
-  >;
+function send<C extends string>(channel: C) {
+  return withChannel(channel, (...args: unknown[]) =>
+    ipcRenderer.send(channel, ...args)
+  );
 }
 
 // MainからWindowのイベントを発火
-function on<C extends string>(channel: C): FrontOn<C, Func<any[], void>> {
-  return ((
-    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
-  ) => {
-    ipcRenderer.on(channel, listener);
-  }) as FrontOn<C, Func<any[], void>>;
+function on<C extends string>(channel: C) {
+  return withChannel(
+    channel,
+    (
+      listener: (event: Electron.IpcRendererEvent, ...args: never[]) => void
+    ) => {
+      ipcRenderer.on(channel, (event, ...args: unknown[]) =>
+        listener(event, ...fromIPC<never[]>(args))
+      );
+    }
+  );
 }
 
-// WindowでMainの処理を非同期で待機
-function invoke<C extends string>(
-  channel: C
-): FrontInvoke<C, Func<any[], Promise<any>>> {
-  return (async (...args: any[]) =>
-    ipcRenderer.invoke(channel, ...args)) as FrontInvoke<
-    C,
-    Func<any[], Promise<any>>
-  >;
+/** フロントエンドから呼び出して結果を待つ API の定義 */
+type WindowToMain = API['invokeWindowToMain'];
+
+/**
+ * フロントエンドからバックエンドの処理を呼び出して結果を待つ関数を作る
+ *
+ * API の関数の型はオーバーロード・ジェネリクスを含むため，処理を転送する関数をチャンネルの API の型として扱う
+ * （型はチャンネルから引くため，`FrontAPI` の項目とチャンネルの対応の誤りは型チェックで検出される）
+ *
+ * @param channel チャンネル（API の名前）
+ * @returns チャンネルの API の型の関数
+ */
+function invoke<C extends keyof WindowToMain & string>(channel: C) {
+  const forward = async (...args: unknown[]): Promise<unknown> =>
+    ipcRenderer.invoke(channel, ...args);
+  return withChannel(channel, fromIPC<WindowToMain[C]>(forward));
 }
 
 // MainでWindowの処理を非同期で待機
-function handle<C extends string>(
-  channel: C
-): FrontHandle<C, Func<any[], Promise<any>>> {
-  return ((
-    handler: (event: Electron.IpcRendererEvent, ...args: any[]) => Promise<any>
-  ) => {
-    const listener = (
-      event: Electron.IpcRendererEvent,
-      id: string,
-      ...args: any[]
+function handle<C extends string>(channel: C) {
+  return withChannel(
+    channel,
+    (
+      handler: (
+        event: Electron.IpcRendererEvent,
+        ...args: never[]
+      ) => Promise<unknown>
     ) => {
-      // 処理が失敗した場合もバックエンドへ結果を返す（返さないとバックエンドが応答を待ち続けて止まる）
-      handler(event, ...args).then(
-        (result) => ipcRenderer.send(`handle:${channel}`, result, id),
-        (e: unknown) =>
-          ipcRenderer.send(
-            `handle:${channel}`,
-            {
-              type: 'error',
-              key: 'system.ipc',
-              level: 'error',
-              arg: {
-                channel,
-                type: 'invokeMainToWindow',
-                message: e instanceof Error ? e.message : String(e),
+      const listener = (
+        event: Electron.IpcRendererEvent,
+        id: string,
+        ...args: unknown[]
+      ) => {
+        // 処理が失敗した場合もバックエンドへ結果を返す（返さないとバックエンドが応答を待ち続けて止まる）
+        handler(event, ...fromIPC<never[]>(args)).then(
+          (result) => ipcRenderer.send(`handle:${channel}`, result, id),
+          (e: unknown) =>
+            ipcRenderer.send(
+              `handle:${channel}`,
+              {
+                type: 'error',
+                key: 'system.ipc',
+                level: 'error',
+                arg: {
+                  channel,
+                  type: 'invokeMainToWindow',
+                  message: e instanceof Error ? e.message : String(e),
+                },
               },
-            },
-            id
-          )
-      );
-    };
-    ipcRenderer.on(channel, listener);
-  }) as FrontHandle<C, Func<any[], Promise<any>>>;
+              id
+            )
+        );
+      };
+      ipcRenderer.on(channel, listener);
+    }
+  );
 }
 
 const api: FrontAPI = {

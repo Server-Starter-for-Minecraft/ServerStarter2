@@ -1,7 +1,9 @@
 import { BrowserWindow, ipcMain } from 'electron';
+import { fromIPC } from '../api/boundary';
+import { AnyFunc } from '../api/types';
 import { assertComplete } from '../lifecycle/lifecycle';
 import { rootLogger } from '../logger/logger';
-import { WithError } from '../schema/error';
+import { Failable, WithError } from '../schema/error';
 import { fromRuntimeError, isError } from '../util/error/error';
 
 export const ipcLoggers = () => rootLogger.ipc;
@@ -55,15 +57,15 @@ function isWithError(value: unknown): value is WithError<unknown> {
 
 export const ipcHandle = <C extends string>(
   channel: C,
-  listener: (...args: any[]) => Promise<any>
+  listener: AnyFunc<Promise<unknown>>
 ) =>
-  ipcMain.handle(channel, async (_, ...args: any[]) => {
+  ipcMain.handle(channel, async (_, ...args: unknown[]) => {
     const logger = ipcLoggers().handle[channel](args);
     logger.info('start');
     // 処理中に予期しない例外が発生した場合は，ログに残したうえで従来どおり reject としてフロントエンドへ伝える
     // （API の戻り値の型が Failable でないものもあるため，例外を Failable の値として返すことはしない）
     try {
-      const result = await assertComplete(listener(...args));
+      const result = await assertComplete(listener(...fromIPC<never[]>(args)));
       logResult(logger, result);
       return result;
     } catch (e) {
@@ -72,20 +74,17 @@ export const ipcHandle = <C extends string>(
     }
   });
 
-export const ipcOn = <C extends string>(
-  channel: C,
-  listener: (...args: any[]) => void
-) =>
-  ipcMain.on(channel, (_, ...args: any[]) => {
+export const ipcOn = <C extends string>(channel: C, listener: AnyFunc<void>) =>
+  ipcMain.on(channel, (_, ...args: unknown[]) => {
     const logger = ipcLoggers().on[channel](args);
-    listener(...args);
+    listener(...fromIPC<never[]>(args));
     logger.info('success');
   });
 
 export const ipcSend = <C extends string>(
   window: BrowserWindow,
   channel: C,
-  ...args: any[]
+  ...args: unknown[]
 ) => {
   const logger = ipcLoggers().send[channel](args);
   logger.info('success');
@@ -97,9 +96,10 @@ let invokeid = -1;
 export async function ipcInvoke<C extends string, T>(
   window: BrowserWindow,
   channel: C,
-  ...args: any[]
+  ...args: unknown[]
 ) {
-  return new Promise<T>((resolve) => {
+  // フロントエンドの処理が失敗した場合は，プリロードがエラー（ErrorMessage）を返す
+  return new Promise<Failable<T>>((resolve) => {
     const logger = ipcLoggers().invoke[channel](args);
 
     invokeid++;
@@ -107,13 +107,13 @@ export async function ipcInvoke<C extends string, T>(
     const handleChannel = `handle:${channel}`;
     const listener = (
       _: Electron.IpcMainEvent,
-      result: any,
+      result: unknown,
       resultId: string
     ) => {
       if (sendId === resultId) {
         ipcMain.removeListener(handleChannel, listener);
         logger.info(['success', result]);
-        resolve(result);
+        resolve(fromIPC<Failable<T>>(result));
       }
     };
 
