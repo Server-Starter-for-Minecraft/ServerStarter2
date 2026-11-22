@@ -43,9 +43,14 @@ describe('VersionedSchema', () => {
 
   test('保存した設定ファイルを読み込むと、保存前の値に戻る', () => {
     const value = { displayName: 'world', port: 30000 };
-    const saved = JSON.parse(JSON.stringify(settingsSchema.serialize(value)));
+    const saved: unknown = JSON.parse(
+      JSON.stringify(settingsSchema.serialize(value))
+    );
 
-    expect(saved[SCHEMA_VERSION_KEY]).toBe(settingsSchema.latestVersion);
+    expect(saved).toHaveProperty(
+      SCHEMA_VERSION_KEY,
+      settingsSchema.latestVersion
+    );
     const result = settingsSchema.safeParse(saved);
     expect(result.success && result.data).toEqual(value);
   });

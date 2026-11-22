@@ -20,7 +20,7 @@ export class JsonSourceHandler<T> {
    */
   static fromPath<T>(
     path: Path,
-    validator: z.ZodType<T, any>,
+    validator: z.ZodType<T>,
     options?: { encoding?: BufferEncoding }
   ) {
     const setter = async (value: T): Promise<Failable<void>> => {

@@ -11,7 +11,7 @@ type RequestHeader = {
 
 export async function getJsonResponse<T>(
   url: string,
-  validator: z.ZodType<T, any>,
+  validator: z.ZodType<T>,
   pat?: string,
   accept = 'application/vnd.github+json'
 ): Promise<Failable<T>> {

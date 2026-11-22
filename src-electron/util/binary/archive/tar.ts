@@ -12,7 +12,7 @@ export async function createTar(
 ): Promise<Failable<BytesData>> {
   const buffers: Buffer[] = [];
   const bufferStream = new Writable({
-    write(chunk, _, callback) {
+    write(chunk: Buffer, _, callback) {
       buffers.push(chunk);
       callback();
     },

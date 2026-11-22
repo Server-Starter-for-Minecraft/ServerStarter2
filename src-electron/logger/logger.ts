@@ -55,7 +55,7 @@ if (electron.app) {
 /**
  * 与えられたログオブジェクトを省略して，人間が見やすい文字列に出力する
  */
-function truncateValue(value: any, depth = 0): string {
+function truncateValue(value: unknown, depth = 0): string {
   const MAX_ARRAY_ITEMS = 1;
   const MAX_OBJECT_FIELDS = 3;
   const MAX_STRING_LENGTH = 50;
@@ -110,14 +110,9 @@ log4js.addLayout('fullLog', () => {
     const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
-    const param = logEvent.data[0];
-    const json = {
-      t: time,
-      lv: level,
-      on: category,
-      param,
-      msg: logEvent.data[1],
-    };
+    const param: unknown = logEvent.data[0];
+    const msg: unknown = logEvent.data[1];
+    const json = { t: time, lv: level, on: category, param, msg };
     return JSON.stringify(json);
   };
 });
@@ -126,8 +121,8 @@ log4js.addLayout('truncateLog', () => {
     const level = logEvent.level.levelStr.padEnd(5);
     const category = logEvent.categoryName;
     const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
-    const param = logEvent.data[0];
-    const msg = logEvent.data[1];
+    const param: unknown = logEvent.data[0];
+    const msg: unknown = logEvent.data[1];
 
     let output = `[${level} ${time}] ${category}`;
     if (param !== undefined) {
@@ -262,18 +257,18 @@ const CATEGORY = Symbol();
 
 class LoggerWrapper {
   private logger: log4js.Logger;
-  private arg: any;
-  constructor(logger: log4js.Logger, arg: any) {
+  private arg: unknown;
+  constructor(logger: log4js.Logger, arg: unknown) {
     this.logger = logger;
     this.arg = arg;
   }
 
   private log =
     (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal') =>
-    (...message: any[]) =>
+    (...message: unknown[]) =>
       this.logger[level](
         applyOmission(this.arg),
-        simplifyArgs(...applyOmission(message))
+        simplifyArgs(...message.map((m, i) => applyOmission(m, [i])))
       ); // 伏字処理を施してログを吐く
 
   trace = this.log('trace');
@@ -287,18 +282,29 @@ class LoggerWrapper {
 export interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
   [CATEGORY]: string | undefined;
   /** ワールド名やサーバーid等,実行コンテクストを過不足なく提供するとよい */
-  (...args: any[]): LoggerWrapper;
+  (...args: unknown[]): LoggerWrapper;
+}
+
+/**
+ * カテゴリのロガーを作る
+ *
+ * 子のカテゴリのロガー（`logger.ipc` など）は Proxy（`handler`）で参照したときに作るため，
+ * 呼び出せる関数に子のロガーを持つ型（LoggerHierarchy）を付ける
+ *
+ * @param category カテゴリ（`.` 区切り。ルートは空文字列）
+ * @returns カテゴリのロガー
+ */
+function createLoggerHierarchy(category: string): LoggerHierarchy {
+  const logger = log4js.getLogger(category || undefined);
+  const loggerHierarchy = Object.assign(
+    (...args: unknown[]) => new LoggerWrapper(logger, simplifyArgs(...args)),
+    { [CATEGORY]: category }
+  ) as LoggerHierarchy;
+  return new Proxy<LoggerHierarchy>(loggerHierarchy, handler);
 }
 
 const loggerHierarchies = InfinitMap.primitiveKeyStrongValue(
-  (category: string) => {
-    const logger = log4js.getLogger(category || undefined);
-    const loggerHierarchy: LoggerHierarchy = ((...args: any[]) => {
-      return new LoggerWrapper(logger, simplifyArgs(...args));
-    }) as LoggerHierarchy;
-    loggerHierarchy[CATEGORY] = category;
-    return new Proxy<LoggerHierarchy>(loggerHierarchy, handler);
-  }
+  createLoggerHierarchy
 );
 
 /**
@@ -307,7 +313,7 @@ const loggerHierarchies = InfinitMap.primitiveKeyStrongValue(
  * - argsが1この場合 - args[0]
  * - argsが2この場合 - args
  */
-function simplifyArgs(...args: any[]): any {
+function simplifyArgs(...args: unknown[]): unknown {
   const params =
     args.length === 0 ? undefined : args.length === 1 ? args[0] : args;
   return params;
@@ -321,26 +327,36 @@ const omissions: Set<LogOmission> = new Set([
   (v, p) => (p[p.length - 1] === 'ngrokToken' ? ':NgrokToken:' : v),
 ]);
 
-/** オブジェクトに伏字を適用する */
-function applyOmission<T>(value: T, path: (string | number)[] = []): T {
+/**
+ * ログに出す値に伏字を適用する（値は変更せず，伏字を適用した複製を返す）
+ *
+ * @param value ログに出す値
+ * @param path ログに出す値の全体の中での位置（伏字のルールの判定に使う）
+ * @returns 伏字を適用した値
+ */
+function applyOmission(
+  value: unknown,
+  path: (string | number)[] = []
+): unknown {
   switch (typeof value) {
-    case 'string':
+    case 'string': {
       let val: string = value;
       for (const omission of omissions) {
         val = omission(val, path);
       }
-      return val as T;
+      return val;
+    }
     case 'object': {
-      if (value === null) return null as T;
+      if (value === null) return null;
       if (Array.isArray(value)) {
-        return value.map((v, i) => applyOmission(v, [...path, i])) as T;
+        return value.map((v: unknown, i) => applyOmission(v, [...path, i]));
       }
       return Object.fromEntries(
-        Object.entries(value).map(([k, v]) => [
+        Object.entries(value).map(([k, v]: [string, unknown]) => [
           k,
           applyOmission(v, [...path, k]),
         ])
-      ) as T;
+      );
     }
     default:
       return value;
@@ -543,7 +559,7 @@ if (import.meta.vitest) {
   });
 
   describe('truncateLog', () => {
-    type Source = any[] | Record<string, any>;
+    type Source = unknown[] | Record<string, unknown>;
     const testCases: { sourceParam: Source; expectStr: string }[] = [
       // 通常の出力
       {
