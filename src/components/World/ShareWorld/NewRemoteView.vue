@@ -26,7 +26,7 @@ async function registerRemoteAccount(remoteData: RemoteFolder) {
     component: GitHubSelecterDialog,
     componentProps: {
       remoteData: remoteData,
-    } as GitHubSelecterProp,
+    } satisfies GitHubSelecterProp,
   });
 }
 </script>

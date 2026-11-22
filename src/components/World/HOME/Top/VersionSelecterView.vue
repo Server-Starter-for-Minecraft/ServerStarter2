@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  AllFabricVersion,
-  AllForgeVersion,
-  AllMohistmcVersion,
-  AllNeoForgeVersion,
-  AllPapermcVersion,
-  AllSpigotVersion,
-  AllVanillaVersion,
-  versionTypes,
-} from 'app/src-electron/schema/version';
+import { versionTypes } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
@@ -33,30 +24,9 @@ const mainStore = useMainStore();
 const consoleStore = useConsoleStore();
 
 // エラーが発生してバージョン一覧の取得ができなかったバージョンを選択させない
-// validVersionTypesを通過したバージョンのみ選択できるようにするため，getでは値を必ず取得できる
-const vanillas = () => {
-  return sysStore.serverVersions.get('vanilla') as AllVanillaVersion;
-};
-const spigots = () => {
-  return sysStore.serverVersions.get('spigot') as AllSpigotVersion;
-};
-const papermcs = () => {
-  return sysStore.serverVersions.get('papermc') as AllPapermcVersion;
-};
-const forges = () => {
-  return sysStore.serverVersions.get('forge') as AllForgeVersion;
-};
-const neoforges = () => {
-  return sysStore.serverVersions.get('neoforge') as AllNeoForgeVersion;
-};
-const mohistmcs = () => {
-  return sysStore.serverVersions.get('mohistmc') as AllMohistmcVersion;
-};
-const fabrics = () => {
-  return sysStore.serverVersions.get('fabric') as AllFabricVersion;
-};
+// （一覧を取得できた種類のみ選択でき，画面は一覧がある場合にのみ表示する）
 const validVersionTypes = versionTypes.filter(
-  (serverType) => sysStore.serverVersions.get(serverType) !== void 0
+  (serverType) => sysStore.serverVersions[serverType] !== void 0
 );
 
 function createServerMap(serverType: (typeof versionTypes)[number]) {
@@ -100,31 +70,51 @@ const selectedVerType = computed({
 
   <!-- バージョンの一覧を取得できていないときには、編集ができないようにする -->
   <Vanilla
-    v-if="mainStore.selectedVersionType === 'vanilla'"
-    :version-data="vanillas()"
+    v-if="
+      mainStore.selectedVersionType === 'vanilla' &&
+      sysStore.serverVersions.vanilla
+    "
+    :version-data="sysStore.serverVersions.vanilla"
   />
   <Spigot
-    v-else-if="mainStore.selectedVersionType === 'spigot'"
-    :version-data="spigots()"
+    v-else-if="
+      mainStore.selectedVersionType === 'spigot' &&
+      sysStore.serverVersions.spigot
+    "
+    :version-data="sysStore.serverVersions.spigot"
   />
   <PaperMC
-    v-else-if="mainStore.selectedVersionType === 'papermc'"
-    :version-data="papermcs()"
+    v-else-if="
+      mainStore.selectedVersionType === 'papermc' &&
+      sysStore.serverVersions.papermc
+    "
+    :version-data="sysStore.serverVersions.papermc"
   />
   <Forge
-    v-else-if="mainStore.selectedVersionType === 'forge'"
-    :version-data="forges()"
+    v-else-if="
+      mainStore.selectedVersionType === 'forge' && sysStore.serverVersions.forge
+    "
+    :version-data="sysStore.serverVersions.forge"
   />
   <NeoForge
-    v-else-if="mainStore.selectedVersionType === 'neoforge' && neoforges()"
-    :version-data="neoforges()"
+    v-else-if="
+      mainStore.selectedVersionType === 'neoforge' &&
+      sysStore.serverVersions.neoforge
+    "
+    :version-data="sysStore.serverVersions.neoforge"
   />
   <MohistMC
-    v-else-if="mainStore.selectedVersionType === 'mohistmc'"
-    :version-data="mohistmcs()"
+    v-else-if="
+      mainStore.selectedVersionType === 'mohistmc' &&
+      sysStore.serverVersions.mohistmc
+    "
+    :version-data="sysStore.serverVersions.mohistmc"
   />
   <Fabric
-    v-else-if="mainStore.selectedVersionType === 'fabric'"
-    :version-data="fabrics()"
+    v-else-if="
+      mainStore.selectedVersionType === 'fabric' &&
+      sysStore.serverVersions.fabric
+    "
+    :version-data="sysStore.serverVersions.fabric"
   />
 </template>

@@ -15,7 +15,12 @@ import DangerDialog from 'src/components/util/danger/DangerDialog.vue';
  * - `ver1`が新しい場合，戻り値は`1`
  * - 両者が同じ場合，戻り値は`0`
  */
-function newerVerIdx<T>(ops: any[], ver_1: T, ver1: T, prop?: keyof T) {
+function newerVerIdx<T>(
+  ops: readonly unknown[],
+  ver_1: T,
+  ver1: T,
+  prop?: keyof T
+) {
   const idx_1 = ops.indexOf(prop === void 0 ? ver_1 : ver_1[prop]);
   const idx1 = ops.indexOf(prop === void 0 ? ver1 : ver1[prop]);
 
@@ -55,7 +60,7 @@ export function openVerTypeWarningDialog<T extends Version['type']>(
  */
 export function openWarningDialog<T extends Version>(
   $q: QVueGlobals,
-  ops: any[],
+  ops: readonly unknown[],
   currentVer: T,
   newVer: T,
   prop: keyof T
@@ -78,7 +83,7 @@ export function openWarningDialog<T extends Version>(
 
 function __openWarningDialog<T>(
   $q: QVueGlobals,
-  ops: any[],
+  ops: readonly unknown[],
   currentVal: T,
   newVal: T,
   successFunc: () => void,
@@ -93,7 +98,7 @@ function __openWarningDialog<T>(
         dialogTitle: $T(`home.${dialogTextKey}.title`),
         dialogDesc: $T(`home.${dialogTextKey}.desc`),
         okBtnTxt: $T(`home.${dialogTextKey}.okbtn`),
-      } as dangerDialogProp,
+      } satisfies dangerDialogProp,
     }).onOk(() => {
       successFunc();
     });

@@ -15,7 +15,12 @@ defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 
-const iconImg: Ref<IconImage> = ref({ data: prop.img, width: 64, height: 64 });
+// アイコンの無いワールドは，アイコンを戻した場合と同じく未設定の画像から始める
+const iconImg: Ref<IconImage> = ref({
+  data: prop.img ?? assets.png.unset,
+  width: 64,
+  height: 64,
+});
 const isImgClipper = ref(false);
 const customImgReload = ref(false);
 const mainStore = useMainStore();

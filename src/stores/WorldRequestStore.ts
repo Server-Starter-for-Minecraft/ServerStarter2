@@ -39,9 +39,9 @@ type StoredRequest = PendingWorldRequest & {
  * 回答を求める画面は該当するワールドを表示している場合にのみ表示するため、回答されるまで要求を保持する
  */
 export const useWorldRequestStore = defineStore('worldRequestStore', {
-  state: () => {
+  state: (): { _requests: Record<WorldID, StoredRequest> } => {
     return {
-      _requests: {} as Record<WorldID, StoredRequest>,
+      _requests: {},
     };
   },
   actions: {

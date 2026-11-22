@@ -107,7 +107,7 @@ function onOkClick() {
   onDialogOK({
     addPlayers: new Set(addPlayers.value),
     delPlayers: new Set(delPlayers.value),
-  } as GroupMemberReturns);
+  } satisfies GroupMemberReturns);
 }
 </script>
 

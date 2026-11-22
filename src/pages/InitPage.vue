@@ -30,7 +30,7 @@ if (!sysStore.systemSettings.user.eula) {
             component: OwnerDialog,
             componentProps: {
               persistent: true,
-            } as OwnerDialogProp,
+            } satisfies OwnerDialogProp,
           })
         ),
     }).then(async () => {

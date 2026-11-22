@@ -63,7 +63,7 @@ function showCheckDialog(customMap: CustomMapData) {
       worldName: customMap.levelName,
       versionName: customMap.versionName,
       importFunc: async () => importCustomMap(customMap),
-    } as CustomMapImporterProp,
+    } satisfies CustomMapImporterProp,
   }).onOk(() => {
     onDialogOK();
   });

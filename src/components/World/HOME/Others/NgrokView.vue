@@ -19,7 +19,7 @@ function onClick() {
     component: NgrokSettingDialog,
     componentProps: {
       token: sysStore.systemSettings.user.ngrokToken ?? '',
-    } as NgrokDialogProp,
+    } satisfies NgrokDialogProp,
   }).onOk((p: NgrokDialogReturns) => {
     sysStore.systemSettings.user.ngrokToken = p.token;
     if (p.isAllUesNgrok) {

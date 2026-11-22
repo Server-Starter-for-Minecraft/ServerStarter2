@@ -1,18 +1,2 @@
-import { z } from 'zod';
-
-/**
- * 文字列を，文字列のブランド型（`z.string().brand(...)` で定義したもの）の値として扱う
- *
- * zod の parse は失敗時に例外を投げるため，形式に制約のない文字列のブランド型を付けるだけの用途ではこの関数を使う
- * （形式に制約のあるブランド型（UUID など）には使わず，safeParse で検証すること）
- *
- * @param _schema 値の型を決めるブランド型のスキーマ
- * @param value ブランド型にする文字列
- * @returns ブランド型の値
- */
-export function asBrand<S extends z.ZodType<string, string>>(
-  _schema: S,
-  value: string
-): z.output<S> {
-  return value as z.output<S>;
-}
+// 文字列にブランド型を付ける処理は，フロントエンドからも使うため src-public に置いている
+export { asBrand } from 'app/src-public/scripts/brand';

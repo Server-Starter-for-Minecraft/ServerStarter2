@@ -73,7 +73,7 @@ function removeFolder(folder: LocalSaveFolder) {
       dialogTitle: t('systemsetting.folder.unregistTitle', { name }),
       dialogDesc: t('systemsetting.folder.localSave.unregistDialog', { name }),
       okBtnTxt: t('systemsetting.folder.unregist'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() =>
     unregisterLocalSaveFolder(sysStore.systemSettings.localSave, folder)
   );

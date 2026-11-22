@@ -19,7 +19,7 @@ function openIconSelecter() {
     component: IconSelectView,
     componentProps: {
       img: mainStore.world?.avater_path,
-    } as IconSelectProp,
+    } satisfies IconSelectProp,
   }).onOk((p: IconSelectReturn) => {
     if (mainStore.world?.avater_path) {
       mainStore.world.avater_path = p.img;

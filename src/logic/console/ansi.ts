@@ -5,6 +5,7 @@
  * SGR（Select Graphic Rendition）のみを解釈して装飾情報に変換し、それ以外の制御シーケンスは取り除く
  */
 import { AnsiColor, AnsiStyle, StyledText } from 'app/src/schema/console';
+import { keys } from 'app/src-public/scripts/obj/obj';
 
 /**
  * 制御シーケンスに一致する正規表現
@@ -121,7 +122,7 @@ const FLAG_STYLES: Record<
   italic: { on: 3, off: 23, css: ['font-style', 'italic'] },
   underline: { on: 4, off: 24, css: ['text-decoration', 'underline'] },
 };
-const FLAG_KEYS = Object.keys(FLAG_STYLES) as FlagStyle[];
+const FLAG_KEYS = keys(FLAG_STYLES);
 
 /** 2つの装飾が同一か */
 export function isSameStyle(a: AnsiStyle, b: AnsiStyle) {

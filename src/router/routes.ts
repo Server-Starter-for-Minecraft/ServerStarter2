@@ -2,7 +2,10 @@ import { RouteRecordRaw } from 'vue-router';
 import ConsolePage from 'src/pages/WorldTabs/ConsolePage.vue';
 
 // preLoadをすることでHOMEの表示中にコンポーネントの読み込みを並列する
-const preLoad = (module: any) => () => module;
+const preLoad =
+  <T>(module: T) =>
+  () =>
+    module;
 
 const routes: RouteRecordRaw[] = [
   {

@@ -20,8 +20,9 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 
 const sysStore = useSystemStore();
 const inputName = ref(prop.containerSettings?.name ?? '');
-const pickPath = ref(
-  prop.containerSettings?.container ?? ('' as WorldContainer)
+// フォルダを選んでいない間は空文字列とする
+const pickPath = ref<WorldContainer | ''>(
+  prop.containerSettings?.container ?? ''
 );
 
 async function pickFolder() {

@@ -32,7 +32,7 @@ function openPatEditor() {
     component: UpdatePatDialog,
     componentProps: {
       oldPat: remote.value.pat,
-    } as updatePatProp,
+    } satisfies updatePatProp,
   }).onOk((payload: updatePatDialogReturns) => {
     remote.value.pat = payload.newPat;
   });
@@ -51,7 +51,7 @@ function checkUnlinkRepo() {
         repo: remote.value.folder.repo,
       }),
       okBtnTxt: t('shareWorld.githubCard.unregister.decide'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     deleteFromValue(sysStore.systemSettings.remote, remote.value);
   });

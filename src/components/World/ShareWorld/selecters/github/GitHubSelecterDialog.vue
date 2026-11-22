@@ -35,7 +35,7 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
       rIcon: selectedRemote.avater_path,
       rVersionName: getVersionId(selectedRemote.version),
       rLastPlayed: selectedRemote.last_date,
-    } as GithubCheckDialogProp,
+    } satisfies GithubCheckDialogProp,
   }).onOk(() => {
     if (mainStore.world) {
       mainStore.world.version = selectedRemote.version;
@@ -58,7 +58,7 @@ function checkSetNewRemote() {
       rIcon: mainStore.world.avater_path,
       rVersionName: getVersionId(mainStore.world.version),
       rLastPlayed: mainStore.world.last_date,
-    } as GithubCheckDialogProp,
+    } satisfies GithubCheckDialogProp,
   }).onOk(onDialogOK);
 }
 

@@ -4,14 +4,14 @@ import { IconSelectReturn } from './iIconSelect';
 
 interface Prop {
   logo: ImageURI;
-  onCloseEvent: (payload?: any) => void;
+  onCloseEvent: (payload?: IconSelectReturn) => void;
 }
 const prop = defineProps<Prop>();
 
 const btnSize = 4;
 
 function setIcon() {
-  prop.onCloseEvent({ img: prop.logo } as IconSelectReturn);
+  prop.onCloseEvent({ img: prop.logo });
 }
 </script>
 

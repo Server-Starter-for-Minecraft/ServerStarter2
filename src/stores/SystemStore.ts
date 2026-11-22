@@ -13,20 +13,36 @@ import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
 import { version } from '../../package.json';
+import { unloadedStaticResource, unloadedSystemSettings } from './placeholders';
 import { setBackSys, setFrontSys } from './SystemStore/converter';
 import { FrontPlayerGroup } from './SystemStore/converters/playerGroup';
 
+/**
+ * サーバーの種類ごとのバージョンの一覧（取得できた種類のみを持つ）
+ */
+export type VersionLists = { [K in VersionType]?: AllVersion<K> };
+
 export const useSystemStore = defineStore('systemStore', {
-  state: () => {
+  state: (): {
+    systemVersion: string;
+    publicIP: string;
+    serverVersions: VersionLists;
+    staticResouces: StaticResouce;
+    cacheContents: {
+      datapacks: CacheFileData<DatapackData>[];
+      plugins: CacheFileData<PluginData>[];
+      mods: CacheFileData<ModData>[];
+    };
+  } => {
     return {
       systemVersion: version,
       publicIP: '取得できませんでした',
-      serverVersions: new Map<VersionType, AllVersion<VersionType>>(),
-      staticResouces: {} as StaticResouce,
+      serverVersions: {},
+      staticResouces: unloadedStaticResource(),
       cacheContents: {
-        datapacks: [] as CacheFileData<DatapackData>[],
-        plugins: [] as CacheFileData<PluginData>[],
-        mods: [] as CacheFileData<ModData>[],
+        datapacks: [],
+        plugins: [],
+        mods: [],
       },
     };
   },
@@ -42,10 +58,13 @@ export const useSystemStore = defineStore('systemStore', {
  * SystemSettings専用のStore
  */
 const useSystemSettingsStore = defineStore('systemSettingsStore', {
-  state: () => {
+  state: (): {
+    backSystemSettings: SystemSettings;
+    playerGroups: FrontPlayerGroup;
+  } => {
     return {
-      backSystemSettings: {} as SystemSettings,
-      playerGroups: {} as FrontPlayerGroup,
+      backSystemSettings: unloadedSystemSettings(),
+      playerGroups: {},
     };
   },
   getters: {

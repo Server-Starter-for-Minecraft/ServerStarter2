@@ -112,7 +112,7 @@ async function duplicateWorld(world?: WorldEdited) {
           // ワールドの複製は新規ワールドとみなさない
           if (newWorldID) updateBackWorld(newWorldID);
         },
-      } as CustomMapImporterProp,
+      } satisfies CustomMapImporterProp,
     }).onOk(() => {
       move2HomeTop();
     });
@@ -138,7 +138,7 @@ async function introduceBackup() {
           component: RecoverDialog,
           componentProps: {
             backupData: b,
-          } as RecoverDialogProp,
+          } satisfies RecoverDialogProp,
         })
         .onOk(() => {
           move2HomeTop();

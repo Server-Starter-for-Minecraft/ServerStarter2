@@ -31,7 +31,7 @@ function editFolder() {
     component: AddFolderDialog,
     componentProps: {
       containerSettings: folder.value,
-    } as AddFolderDialogProps,
+    } satisfies AddFolderDialogProps,
   }).onOk((payload: AddFolderDialogReturns) => {
     folder.value.name = payload.name;
     folder.value.container = payload.container;
@@ -49,7 +49,7 @@ function removeFolder() {
         name: folder.value.name,
       }),
       okBtnTxt: t('systemsetting.folder.unregist'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     sysStore.systemSettings.container.splice(
       sysStore.systemSettings.container

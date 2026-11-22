@@ -32,7 +32,7 @@ export const SHARED_FILES = ['src-public/**/*.ts'];
  */
 export const TYPE_ASSERTION_EXCEPTIONS = [
   {
-    file: 'src-electron/util/zod/brand.ts',
+    file: 'src-public/scripts/brand.ts',
     functions: ['asBrand'],
     reason: '形式に制約のない文字列にブランド型を付ける',
   },
@@ -88,11 +88,6 @@ export const TYPE_ASSERTION_EXCEPTIONS = [
     reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
   },
   {
-    file: 'src-public/scripts/obj/objFlatten.ts',
-    functions: ['flattenObj'],
-    reason: '入れ子のオブジェクトを平らにした型を組み立てる',
-  },
-  {
     file: 'src-electron/util/object/groupBy.ts',
     functions: ['groupBy'],
     reason: '空のオブジェクトから，キーごとに分けた結果の型を組み立てる',
@@ -134,6 +129,37 @@ export const TYPE_ASSERTION_EXCEPTIONS = [
     functions: ['createLoggerHierarchy'],
     reason:
       '子のカテゴリのロガーは Proxy で参照したときに作るため，呼び出せる関数に子のロガーを持つ型を付ける',
+  },
+  {
+    file: 'src/stores/placeholders.ts',
+    topLevel: true,
+    functions: ['unloadedStaticResource', 'unloadedSystemSettings'],
+    reason:
+      'Store の状態の，値が決まる前の仮の値（選択していないことを表す空の ID・起動時に読み込むまでの空の値）を，型の上では有効な値として扱う',
+  },
+  {
+    file: 'src/init.ts',
+    functions: ['loadVersions'],
+    reason:
+      'サーバーの種類ごとに型が変わるバージョンの一覧を，種類をキーとして保存する（種類の型引数で引いた型へ代入できない）',
+  },
+  {
+    file: 'src/stores/WorldRequestStore.ts',
+    functions: ['request'],
+    reason:
+      '要求の種類（型引数）ごとに型が決まる要求を，種類によらない回答待ちの要求の一覧に保存する（型引数で絞り込めない）',
+  },
+  {
+    file: 'src/i18n/utils/tFunc.ts',
+    functions: ['tError'],
+    reason:
+      'エラーのキーから作る翻訳のキーを，翻訳の定義（MessageSchema）のキーの型として扱う（キーの文字列から翻訳のキーの型を導けない）',
+  },
+  {
+    file: 'src/components/util/base/ssSelect.vue',
+    functions: ['otherAsModel'],
+    reason:
+      '「その他」の選択肢は，モデルが文字列の場合にのみ表示するため，「その他」を表す文字列をモデルの型として扱う（ジェネリクスの型を文字列に絞り込めない）',
   },
   {
     file: 'src-electron/api/boundary.ts',

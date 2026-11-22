@@ -79,7 +79,7 @@ function removeGroup() {
         groupname: tmpGroupSettings.name,
       }),
       okBtnTxt: $T('player.deleteGroup.okBtn'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     playerStore.removeGroup(playerStore.selectedGroupId);
     closeMenu();

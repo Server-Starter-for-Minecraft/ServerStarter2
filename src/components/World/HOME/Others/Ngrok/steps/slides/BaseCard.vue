@@ -21,7 +21,7 @@ function onImgClick() {
     componentProps: {
       img: prop.img,
       imgWidth: prop.imgWidth * 2.5,
-    } as ImgDialogProp,
+    } satisfies ImgDialogProp,
   });
 }
 </script>

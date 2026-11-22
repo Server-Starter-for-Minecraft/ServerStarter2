@@ -57,7 +57,7 @@ async function recoverWorld() {
           component: RecoverDialog,
           componentProps: {
             backupData: b,
-          } as RecoverDialogProp,
+          } satisfies RecoverDialogProp,
         })
         .onOk(() => {
           showingMessage.value = $T('others.backup.recovered');
