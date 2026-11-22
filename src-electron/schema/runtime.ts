@@ -24,8 +24,11 @@ export const MinecraftRuntime = z.object({
    * 'java-runtime-beta'
    * 'java-runtime-gamma'
    * 'java-runtime-delta';
+   *
+   * 既知の名前のほか，Mojang が新しく配布を始めたランタイムの名前も扱う（ランタイムの一覧に含まれていれば導入できる）。
+   * そのため型は string となり，JavaComponent は既知の名前を示すためのもの
    */
-  version: JavaComponent,
+  version: z.union([JavaComponent, z.string()]),
 });
 export type MinecraftRuntime = z.infer<typeof MinecraftRuntime>;
 

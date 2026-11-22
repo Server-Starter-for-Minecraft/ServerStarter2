@@ -148,3 +148,13 @@ describe('サーバープロパティの型', () => {
     expect(DefaultServerPropertiesAnnotation[key]?.type).toBe('boolean');
   });
 });
+
+describe('サーバープロパティの画面に渡す情報', () => {
+  test('既定のサーバープロパティのすべての項目に，画面に渡す情報がある', () => {
+    // 既定値で埋めたサーバープロパティの項目
+    const keys = Object.keys(ServerProperties.parse({}));
+    expect(
+      keys.filter((key) => DefaultServerPropertiesAnnotation[key] === undefined)
+    ).toEqual([]);
+  });
+});

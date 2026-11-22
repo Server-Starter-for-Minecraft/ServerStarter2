@@ -178,7 +178,7 @@ export class GroupProgressor extends Progressor<GroupProgress> {
     };
   }
 
-  private push<T extends Progressor<any>>(sub: T): T {
+  private push<T extends Progressor<Progress>>(sub: T): T {
     this.subs.push(sub);
     return sub;
   }

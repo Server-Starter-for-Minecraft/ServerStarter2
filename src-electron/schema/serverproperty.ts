@@ -206,20 +206,27 @@ function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
     const innerType = defaultSchema.unwrap();
     const defaultValue = defaultSchema.def.defaultValue;
 
-    if (innerType instanceof z.ZodPipe) {
+    // 既定値の型は，各型の設定（boolSetter など）で型に合わせて指定している
+    if (innerType instanceof z.ZodPipe && typeof defaultValue === 'boolean') {
       anotations[key] = {
         type: 'boolean',
-        default: defaultValue as boolean,
+        default: defaultValue,
       };
-    } else if (innerType instanceof z.ZodString) {
+    } else if (
+      innerType instanceof z.ZodString &&
+      typeof defaultValue === 'string'
+    ) {
       anotations[key] = {
         type: 'string',
-        default: defaultValue as string,
+        default: defaultValue,
       };
-    } else if (innerType instanceof z.ZodNumber) {
+    } else if (
+      innerType instanceof z.ZodNumber &&
+      typeof defaultValue === 'number'
+    ) {
       const tmpObj: NumberServerPropertyAnnotation = {
         type: 'number',
-        default: defaultValue as number,
+        default: defaultValue,
       };
       if (innerType.minValue !== null && innerType.minValue !== -Infinity) {
         tmpObj.min = innerType.minValue;
@@ -229,18 +236,19 @@ function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
       }
       innerType.def.checks?.forEach((check) => {
         const checkDef = check._zod.def;
-        if (checkDef.check === 'multiple_of') {
-          tmpObj.step = Number(
-            (checkDef as z.core.$ZodCheckMultipleOfDef).value
-          );
+        if (checkDef.check === 'multiple_of' && 'value' in checkDef) {
+          tmpObj.step = Number(checkDef.value);
         }
       });
       anotations[key] = tmpObj;
-    } else if (innerType instanceof z.ZodUnion) {
+    } else if (
+      innerType instanceof z.ZodUnion &&
+      typeof defaultValue === 'string'
+    ) {
       const enumType = innerType.options[0];
       anotations[key] = {
         type: 'string',
-        default: defaultValue as string,
+        default: defaultValue,
         enum: enumType instanceof z.ZodEnum ? enumType.options : undefined,
       };
     }

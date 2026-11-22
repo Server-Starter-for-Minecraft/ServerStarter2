@@ -6,7 +6,7 @@ import { ImageURI, Timestamp } from './brands';
 import { WorldID } from './world';
 
 /** ワールドに保存されたmod/plugin/datapackのデータを表す */
-export type WorldFileData<T extends Record<string, any>> = T & {
+export type WorldFileData<T extends Record<string, unknown>> = T & {
   type: 'world';
   id: WorldID;
   name: string;
@@ -15,7 +15,7 @@ export type WorldFileData<T extends Record<string, any>> = T & {
 };
 
 /** 新しく導入する際のmod/plugin/datapackのデータを表す */
-export type NewFileData<T extends Record<string, any>> = T & {
+export type NewFileData<T extends Record<string, unknown>> = T & {
   type: 'new';
   // 拡張子のないファイル名称
   name: string;
@@ -28,14 +28,14 @@ export type NewFileData<T extends Record<string, any>> = T & {
 };
 
 /** システムにキャッシュされたmod/plugin/datapackのデータ */
-export type CacheFileData<T extends Record<string, any>> = T & {
+export type CacheFileData<T extends Record<string, unknown>> = T & {
   type: 'system';
   name: string;
   ext: string;
   isFile: boolean;
 };
 
-export type AllFileData<T extends Record<string, any>> =
+export type AllFileData<T extends Record<string, unknown>> =
   WorldFileData<T> | NewFileData<T> | CacheFileData<T>;
 
 /**

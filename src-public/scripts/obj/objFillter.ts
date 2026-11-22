@@ -34,7 +34,7 @@ export async function asyncFilter<T>(
   return array.filter((_, i) => bits[i]);
 }
 
-export function uniqueArrayDict<T extends Record<string, any>>(
+export function uniqueArrayDict<T extends Record<string, unknown>>(
   dicts: T[],
   key: keyof T
 ) {

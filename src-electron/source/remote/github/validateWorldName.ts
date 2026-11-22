@@ -3,6 +3,7 @@ import { Failable } from 'app/src-electron/schema/error';
 import { GithubRemoteFolder } from 'app/src-electron/schema/remote';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { getGithubBranches } from './githubApi';
 import { getGitPat } from './pat';
 
@@ -35,5 +36,5 @@ export async function validateWorldName(
     });
   }
 
-  return name as RemoteWorldName;
+  return asBrand(RemoteWorldName, name);
 }

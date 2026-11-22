@@ -143,7 +143,7 @@ export class GithubBlob {
 }
 
 async function get<T>(
-  validator: z.ZodType<T, any>,
+  validator: z.ZodType<T>,
   url: string,
   pat: string
 ): Promise<Failable<T>> {

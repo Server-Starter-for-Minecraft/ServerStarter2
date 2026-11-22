@@ -12,7 +12,15 @@ import { fileURLToPath } from 'node:url';
 const requireFromElectronDir = createRequire(
   new URL('../src-electron/package.json', import.meta.url)
 );
-const electronPath: string = requireFromElectronDir('electron');
+// electron のパッケージは，Node.js から読み込むと実行ファイルのパス（文字列）を返す
+const electronModule: unknown = requireFromElectronDir('electron');
+if (typeof electronModule !== 'string') {
+  console.error(
+    'Failed to resolve the Electron executable path (run this script with Node.js or Bun, not Electron)'
+  );
+  process.exit(1);
+}
+const electronPath: string = electronModule;
 
 const unsetRunAsNode = fileURLToPath(
   new URL('./unset-electron-run-as-node.cjs', import.meta.url)

@@ -19,8 +19,9 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
+import { genUUIDOf } from 'app/src-electron/util/random/uuid';
 
-export class ServerAdditionalFiles<T extends Record<string, any>> {
+export class ServerAdditionalFiles<T extends Record<string, unknown>> {
   constructor(
     type: 'datapack' | 'plugin' | 'mod',
     cachePath: Path,
@@ -220,8 +221,8 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       const tgtPath = dirPath.child(fileDataKey(source));
       if (tgtPath.path === srcPath.path) return;
 
-      // ソースが有効なデータかどうかを確認
-      const loaded = await this.load(srcPath, '' as WorldID);
+      // ソースが有効なデータかどうかを確認（読み込みの成否のみを使うため，ワールドの ID は仮のものを渡す）
+      const loaded = await this.load(srcPath, genUUIDOf(WorldID));
       if (isError(loaded.value)) {
         errors.push(loaded.value);
         return;
@@ -239,8 +240,8 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       if (isError(result)) errors.push(result);
     });
 
-    // 現状のファイル一覧を取得
-    const loaded = await this.load(cwdPath, '' as WorldID);
+    // 現状のファイル一覧を取得（ファイル名のみを使うため，ワールドの ID は仮のものを渡す）
+    const loaded = await this.load(cwdPath, genUUIDOf(WorldID));
     errors.push(...loaded.errors);
 
     // 削除すべきファイル一覧

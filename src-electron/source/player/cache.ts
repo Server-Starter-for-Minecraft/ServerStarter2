@@ -7,7 +7,10 @@ import {
 import { Player } from 'app/src-electron/schema/player';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { ignoreError } from 'app/src-electron/util/error/ignore';
-import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import {
+  getCurrentTimestamp,
+  toTimestamp,
+} from 'app/src-electron/util/timestamp';
 import { cachePath } from '../const';
 import { sourceLoggers } from '../sourceLogger';
 
@@ -74,7 +77,7 @@ export async function pushPlayerCache(player: Player) {
 
   const record: PlayerCacheRecord = {
     ...player,
-    expire: (getCurrentTimestamp() + EXPIRATION_SPAN) as Timestamp,
+    expire: toTimestamp(new Date(getCurrentTimestamp() + EXPIRATION_SPAN)),
   };
 
   cache[player.uuid] = record;
