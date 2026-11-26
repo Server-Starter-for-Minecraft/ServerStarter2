@@ -1,8 +1,12 @@
+import { assertOk } from 'app/test/util/assert';
+import JSZip from 'jszip';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { AllVanillaVersion, VersionId } from 'app/src-electron/schema/version';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
 import { CustomMapData } from '../../schema/filedata';
+import { LEVEL_NAME } from '../const';
 import { versionContainer } from '../containers';
 import { importCustomMap } from './customMap';
 import { WorldSettings } from './files/json';
@@ -11,6 +15,15 @@ import { WorldSettings } from './files/json';
 vi.mock('../containers', () => ({
   versionContainer: { listVersions: vi.fn() },
 }));
+// zip の展開先（一時フォルダ）を開発用のデータではなく作業フォルダにする
+vi.mock('../const', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../const')>();
+  const { Path } = await import('app/src-electron/util/binary/path');
+  return {
+    ...original,
+    unzipPath: new Path(__dirname).child('work', 'customMap-unzip'),
+  };
+});
 
 const workPath = new Path(__dirname).child('work', 'customMap');
 const sourcePath = workPath.child('source', 'saves', 'MyWorld');
@@ -135,5 +148,41 @@ describe('importCustomMap のサーバーバージョン', () => {
     mockVersions('error');
 
     expect(await importAndGetVersion('1.17.1')).toEqual(defaultVersion);
+  });
+});
+
+describe('importCustomMap の zip 形式のワールド', () => {
+  const zipPath = workPath.child('source', 'MyMap.zip');
+
+  beforeEach(async () => {
+    await workPath.emptyDir();
+    mockVersions(cachedVersions);
+  });
+
+  test('フォルダの項目を含む zip のワールドを導入できる', async () => {
+    // 一般的なツールで作った zip と同様に，フォルダの項目（`MyMap/`など）を含める
+    const zip = new JSZip();
+    zip.folder('MyMap');
+    zip.folder('MyMap/region');
+    zip.file('MyMap/level.dat', 'dummy');
+    zip.file('MyMap/region/r.0.0.mca', 'region');
+    const bytes = await BytesData.fromBuffer(
+      await zip.generateAsync({ type: 'nodebuffer' })
+    );
+    assertOk(bytes);
+    await zipPath.write(bytes);
+
+    const result = await importCustomMap(
+      { ...customMap('1.17.1'), path: zipPath.path, isFile: true },
+      serverPath,
+      newWorldSettings()
+    );
+
+    assertOk(result);
+    const worldPath = serverPath.child(LEVEL_NAME);
+    expect(await worldPath.child('level.dat').readText()).toBe('dummy');
+    expect(await worldPath.child('region', 'r.0.0.mca').readText()).toBe(
+      'region'
+    );
   });
 });

@@ -9,22 +9,24 @@ import { asyncMap, objMap } from '../../obj/objmap';
 import { BytesData } from '../bytesData';
 import { Path } from '../path';
 
+/** Zip 内の1項目（ファイルまたはフォルダ） */
+type ZipEntry = {
+  /** フォルダの項目（例: `MyMap/`）かどうか */
+  isDir: boolean;
+  /** 項目の内容を読み込む（フォルダの項目の場合はエラー） */
+  read: () => Promise<Failable<BytesData>>;
+};
+
 class ZipHandler {
-  files: Promise<
-    Failable<{
-      [key: string]: () => Promise<Failable<BytesData>>;
-    }>
-  >;
+  files: Promise<Failable<Record<string, ZipEntry>>>;
 
   constructor(path: Path) {
     this.files = this.getfiles(path);
   }
 
-  private async getfiles(path: Path): Promise<
-    Failable<{
-      [key: string]: () => Promise<Failable<BytesData>>;
-    }>
-  > {
+  private async getfiles(
+    path: Path
+  ): Promise<Failable<Record<string, ZipEntry>>> {
     const data = await path.read();
     if (isError(data)) return data;
     const zipData = await safeExecAsync(async () =>
@@ -57,7 +59,10 @@ class ZipHandler {
         return dat;
       };
     };
-    const result = objMap(zipData.files, (k, v) => [k, getBytesData(k, v)]);
+    const result = objMap(zipData.files, (k, v) => [
+      k,
+      { isDir: v.dir, read: getBytesData(k, v) },
+    ]);
     return result;
   }
 }
@@ -80,7 +85,7 @@ export class ZipFile {
         type: 'file',
         path: `${this.path.path}(${path})`,
       });
-    return file();
+    return file.read();
   }
 
   async hasFile(path: string): Promise<Failable<boolean>> {
@@ -100,18 +105,39 @@ export class ZipFile {
     );
     const awaited = await asyncMap(
       zipObjectsEntries,
-      async ([k, v]): Promise<[string, Failable<BytesData>]> => [k, await v()]
+      async ([k, v]): Promise<[string, Failable<BytesData>]> => [
+        k,
+        await v.read(),
+      ]
     );
     return fromEntries<Record<string, Failable<BytesData>>>(awaited);
   }
 
-  /** zipを展開 */
+  /**
+   * zipを展開
+   *
+   * フォルダの項目（例: `MyMap/`）は，中身が空のフォルダも残るようにフォルダとして作成する
+   *
+   * @param path 展開先のフォルダ
+   * @returns 1つでも展開できない項目があった場合はエラー
+   */
   async extract(path: Path): Promise<Failable<void>> {
     const files = await this.handler.files;
     if (isError(files)) return files;
     const ents = toEntries(files);
     const results = await asyncMap(ents, async ([k, v]) => {
-      const data = await v();
+      if (v.isDir) {
+        // Path.mkdir は失敗時に例外を投げるため，Result 型へ変換する（os/shell.ts の openFolder と同じ扱い）
+        const dirPath = path.child(k);
+        const made = await safeExecAsync(async () => dirPath.mkdir());
+        if (isError(made))
+          return errorMessage.data.path.creationFailed({
+            type: 'directory',
+            path: dirPath.path,
+          });
+        return;
+      }
+      const data = await v.read();
       if (isError(data)) return data;
       return path.child(k).write(data);
     });
@@ -145,6 +171,33 @@ if (import.meta.vitest) {
       assertOk(paths);
 
       expect(paths.length).toBe(3);
+    });
+
+    test('フォルダの項目を含むzipを展開できる', async () => {
+      const { default: JSZip } = await import('jszip');
+      const workPath = new Path(__dirname).child('work', 'zipWithDir');
+      await workPath.emptyDir();
+
+      // 一般的なツールで作った zip と同様に，フォルダの項目（`MyMap/`など）を含める
+      const zipData = new JSZip();
+      zipData.folder('MyMap');
+      zipData.folder('MyMap/empty');
+      zipData.file('MyMap/level.dat', 'level');
+      const zipPath = workPath.child('MyMap.zip');
+      const bytes = await BytesData.fromBuffer(
+        await zipData.generateAsync({ type: 'nodebuffer' })
+      );
+      assertOk(bytes);
+      await zipPath.write(bytes);
+
+      const tgtPath = workPath.child('extracted');
+      const extractRes = await new ZipFile(zipPath).extract(tgtPath);
+      assertOk(extractRes);
+
+      const level = await tgtPath.child('MyMap', 'level.dat').readText();
+      expect(level).toBe('level');
+      // 中身が空のフォルダも展開される
+      expect(await tgtPath.child('MyMap', 'empty').isDirectory()).toBe(true);
     });
 
     test('iterateZip', async () => {
