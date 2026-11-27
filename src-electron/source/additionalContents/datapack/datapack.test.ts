@@ -150,6 +150,13 @@ describe('pack.mcmetaの形式ごとのデータパックの読み込み', () =>
     expect(loaded).toMatchObject({ kind: 'datapack', description: 'new pack' });
   });
 
+  test('説明が無いデータパックは、説明を空文字として読み込める', async () => {
+    const loaded = await loadWithMcmeta('NoDescription', {
+      pack: { min_format: 101, max_format: 101 },
+    });
+    expect(loaded).toMatchObject({ kind: 'datapack', description: '' });
+  });
+
   test('テキストコンポーネントで記述された説明を文字列として読み込める', async () => {
     const loaded = await loadWithMcmeta('ComponentDesc', {
       pack: {

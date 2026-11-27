@@ -21,7 +21,8 @@ import { ServerAdditionalFiles } from '../base';
  */
 const Mcmeta = z.object({
   pack: z.object({
-    description: z.unknown().transform(textComponentToString),
+    // Zod 4 では `z.unknown().transform()` のみだとキーの省略を許容しないため、`optional()` で省略を許可する
+    description: z.unknown().optional().transform(textComponentToString),
   }),
 });
 type Mcmeta = z.infer<typeof Mcmeta>;
