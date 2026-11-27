@@ -71,3 +71,106 @@ describe('ワールドのデータパックの保存', () => {
     expect(datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(true);
   });
 });
+
+describe('pack.mcmetaの形式ごとのデータパックの読み込み', () => {
+  const formatPath = new Path(__dirname).child('work', 'datapack-format');
+
+  /**
+   * 指定した文字列を pack.mcmeta に持つフォルダ形式のデータパックを作成して読み込む
+   *
+   * @param name データパックのフォルダ名
+   * @param text pack.mcmeta に書き込む文字列
+   * @returns 読み込み結果
+   */
+  async function loadWithMcmetaText(name: string, text: string) {
+    const packPath = formatPath.child(name);
+    await packPath.mkdir(true);
+    await packPath.child('pack.mcmeta').writeText(text);
+    return await datapackFiles.loadNew(packPath);
+  }
+
+  /**
+   * 指定した内容の pack.mcmeta を持つフォルダ形式のデータパックを作成して読み込む
+   *
+   * @param name データパックのフォルダ名
+   * @param meta pack.mcmeta の内容（JSONとして書き込む）
+   * @returns 読み込み結果
+   */
+  async function loadWithMcmeta(name: string, meta: unknown) {
+    return await loadWithMcmetaText(name, JSON.stringify(meta));
+  }
+
+  test.each<[string, string, string]>([
+    ['JSONとして読めない', 'BrokenJson', '{ "pack": '],
+    ['packを持たない', 'NoPack', JSON.stringify({ description: 'no pack' })],
+  ])(
+    '%s pack.mcmeta は、データパックとして不適な旨のエラーを返す',
+    async (_, name, text) => {
+      const loaded = await loadWithMcmetaText(name, text);
+      expect(loaded).toMatchObject({
+        key: 'data.path.invalidContent.invalidDatapack',
+      });
+    }
+  );
+
+  test('zip形式で pack.mcmeta が不適な場合も、データパックとして不適な旨のエラーを返す', async () => {
+    const zip = new JSZip();
+    zip.file('pack.mcmeta', JSON.stringify({ description: 'no pack' }));
+    const zipPath = formatPath.child('BrokenZip.zip');
+    await writeFile(
+      zipPath.path,
+      await zip.generateAsync({ type: 'uint8array' })
+    );
+
+    const loaded = await datapackFiles.loadNew(zipPath);
+    expect(loaded).toMatchObject({
+      key: 'data.path.invalidContent.invalidDatapack',
+    });
+  });
+
+  beforeAll(async () => {
+    await formatPath.emptyDir();
+  });
+
+  test('旧形式（pack_format）のデータパックを読み込める', async () => {
+    const loaded = await loadWithMcmeta('OldFormat', {
+      pack: { pack_format: 48, description: 'old pack' },
+    });
+    expect(loaded).toMatchObject({ kind: 'datapack', description: 'old pack' });
+  });
+
+  test('1.21.9以降の形式（pack_formatが無く、min_format / max_formatを持つ）のデータパックを読み込める', async () => {
+    const loaded = await loadWithMcmeta('NewFormat', {
+      pack: {
+        description: 'new pack',
+        min_format: [101, 1],
+        max_format: 101,
+      },
+    });
+    expect(loaded).toMatchObject({ kind: 'datapack', description: 'new pack' });
+  });
+
+  test('説明が無いデータパックは、説明を空文字として読み込める', async () => {
+    const loaded = await loadWithMcmeta('NoDescription', {
+      pack: { min_format: 101, max_format: 101 },
+    });
+    expect(loaded).toMatchObject({ kind: 'datapack', description: '' });
+  });
+
+  test('テキストコンポーネントで記述された説明を文字列として読み込める', async () => {
+    const loaded = await loadWithMcmeta('ComponentDesc', {
+      pack: {
+        description: [
+          { text: 'Data pack ', extra: [{ text: 'for ', bold: true }] },
+          { translate: 'pack.key', fallback: 'Bukkit' },
+        ],
+        min_format: 101,
+        max_format: 101,
+      },
+    });
+    expect(loaded).toMatchObject({
+      kind: 'datapack',
+      description: 'Data pack for Bukkit',
+    });
+  });
+});
