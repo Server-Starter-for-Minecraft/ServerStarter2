@@ -242,14 +242,17 @@
     }
   },
   "src-electron/source/version/readyVersions/spigot.ts": {
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 3
+    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 7
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 7
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 10
+      "count": 5
     }
   },
   "src-electron/source/version/readyVersions/utils/log4j.ts": {
