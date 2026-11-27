@@ -23,13 +23,22 @@ export function textComponentToString(component: unknown): string {
   if (Array.isArray(component)) {
     return component.map(textComponentToString).join('');
   }
-  if (typeof component !== 'object' || component === null) return '';
+  if (!isComponentObject(component)) return '';
 
-  const obj = component as Record<string, unknown>;
-  const extra = Array.isArray(obj.extra)
-    ? obj.extra.map(textComponentToString).join('')
+  const extra = Array.isArray(component.extra)
+    ? component.extra.map(textComponentToString).join('')
     : '';
-  return `${componentBody(obj)}${extra}`;
+  return `${componentBody(component)}${extra}`;
+}
+
+/**
+ * 値がテキストコンポーネントのオブジェクト（`null` を除くオブジェクト）であるかを判定する
+ *
+ * @param value 判定する値
+ * @returns オブジェクトであれば true
+ */
+function isComponentObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 /**
