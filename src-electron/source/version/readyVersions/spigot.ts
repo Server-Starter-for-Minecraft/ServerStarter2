@@ -190,6 +190,12 @@ async function getServerJarFromBuildTools(
   execRuntime: ExecRuntime,
   progress?: GroupProgressor
 ): Promise<Failable<void>> {
+  // BuildToolsが書き出すJarのファイル名
+  // `--rev`で指定したバージョンとビルドされるMinecraftのバージョンが一致するとは限らない
+  // （例：`--rev 26.1`で26.1.2がビルドされ，既定では`spigot-26.1.2.jar`となる）ため，
+  // `--final-name`で出力名を固定する
+  const builtJarName = `spigot-${versionId}.jar`;
+
   // `BuildTools.jar`の実行引数（普通の`server.jar`の実行引数とは異なるため，決め打ちで下記に実装）
   const args = [
     javaEncodingToUtf8(),
@@ -197,6 +203,8 @@ async function getServerJarFromBuildTools(
     buildToolsPath.absolute().path,
     '--rev',
     versionId,
+    '--final-name',
+    builtJarName,
   ];
 
   // BuildToolsを実行して，Jarファイルを生成
@@ -219,9 +227,7 @@ async function getServerJarFromBuildTools(
   const p = progress?.subtitle({
     key: 'server.readyVersion.spigot.moving',
   });
-  const sourceJarPath = buildToolsPath
-    .parent()
-    .child(`spigot-${versionId}.jar`);
+  const sourceJarPath = buildToolsPath.parent().child(builtJarName);
   const targetJarPath = getJarPath(serverCachePath);
   if (!sourceJarPath.exists()) {
     p?.delete();
@@ -269,6 +275,28 @@ if (import.meta.vitest) {
       type: 'spigot',
     };
 
+    /**
+     * BuildToolsがJarを書き出す挙動を再現する
+     *
+     * 実際のBuildToolsと同様に，`--final-name`の指定があればその名前で，
+     * 無ければ実際にビルドしたMinecraftのバージョンをもとにした名前でJarを書き出す
+     *
+     * @param options BuildToolsの実行時に渡された引数
+     * @param builtVersion `--rev`の指定に対して実際にビルドされるMinecraftのバージョン
+     * @param content 書き出すJarの中身
+     */
+    async function writeBuiltJar(
+      options: Parameters<ExecRuntime>[0],
+      builtVersion: string,
+      content: string
+    ) {
+      const finalNameIdx = options.args.indexOf('--final-name');
+      const finalName =
+        finalNameIdx >= 0 ? options.args.at(finalNameIdx + 1) : undefined;
+      const jarName = finalName ?? `spigot-${builtVersion}.jar`;
+      await options.currentDir.child(jarName).writeText(content);
+    }
+
     test('setSpigotJar', { timeout: 1000 * 60 }, async () => {
       const outputPath = serverFolder.child(ver19.id);
       const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
@@ -281,9 +309,7 @@ if (import.meta.vitest) {
 
       // `BuildTools.jar`の実行によって必要なファイルが生成された体を再現する
       const execRuntime: ExecRuntime = vi.fn(async (options) => {
-        const versionId = options.args[4];
-        const tgtJarPath = options.currentDir.child(`spigot-${versionId}.jar`);
-        await tgtJarPath.writeText(`spigot-${versionId}.jar`);
+        await writeBuiltJar(options, ver19.id, `spigot-${ver19.id}.jar`);
       });
 
       // テスト対象の関数
@@ -301,23 +327,18 @@ if (import.meta.vitest) {
         majorVersion: 18,
       });
 
-      // execRuntime が正しい引数で呼ばれている
+      // 指定したバージョンをビルドするよう，適切なランタイムでBuildToolsが実行されている
       expect(execRuntime).toHaveBeenCalledTimes(1);
-      expect(execRuntime).toHaveBeenNthCalledWith(1, {
-        args: [
-          '-Dfile.encoding=UTF-8',
-          '-jar',
-          expect.any(String),
-          '--rev',
-          '1.19',
-        ],
-        currentDir: expect.any(Path),
-        onOut: expect.any(Function),
-        runtime: {
-          type: 'universal',
-          majorVersion: 18,
-        },
-      });
+      expect(execRuntime).toHaveBeenCalledWith(
+        expect.objectContaining({
+          runtime: {
+            type: 'universal',
+            majorVersion: 18,
+          },
+        })
+      );
+      const buildArgs = vi.mocked(execRuntime).mock.calls[0][0].args;
+      expect(buildArgs[buildArgs.indexOf('--rev') + 1]).toBe('1.19');
 
       // ファイルの設置状況の検証
       expect(getJarPath(outputPath).exists()).toBe(true);
@@ -366,9 +387,7 @@ if (import.meta.vitest) {
               });
             }
           }
-          await options.currentDir
-            .child(`spigot-${ver19.id}.jar`)
-            .writeText('new jar');
+          await writeBuiltJar(options, ver19.id, 'new jar');
         });
 
         const res = await readyOperator.completeReady4VersionFiles(
@@ -378,6 +397,43 @@ if (import.meta.vitest) {
         expect(isError(res)).toBe(false);
         // 今回ビルドしたJarが設置されているはず
         expect(await getJarPath(outputPath).readText()).toBe('new jar');
+      }
+    );
+
+    test(
+      '指定したバージョンと異なるパッチバージョンがビルドされてもJarを設置できる',
+      { timeout: 1000 * 60 },
+      async () => {
+        const outputPath = serverFolder.child(`${ver19.id}-patched`);
+        const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
+        const cachePath = readyOperator.cachePath;
+        await outputPath.remove();
+        await getJarPath(cachePath).remove();
+
+        // `--rev 1.19`に対して1.19.4がビルドされた場合を再現する
+        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+          await writeBuiltJar(options, '1.19.4', 'patched jar');
+        });
+
+        const res = await readyOperator.completeReady4VersionFiles(
+          outputPath,
+          execRuntime
+        );
+        expect(isError(res)).toBe(false);
+        expect(await getJarPath(outputPath).readText()).toBe('patched jar');
+
+        // ビルドしたJarがキャッシュされ，別のサーバーの準備では再ビルドしない
+        const otherOutputPath = serverFolder.child(`${ver19.id}-patched-2`);
+        await otherOutputPath.remove();
+        const res2 = await readyOperator.completeReady4VersionFiles(
+          otherOutputPath,
+          execRuntime
+        );
+        expect(isError(res2)).toBe(false);
+        expect(await getJarPath(otherOutputPath).readText()).toBe(
+          'patched jar'
+        );
+        expect(execRuntime).toHaveBeenCalledTimes(1);
       }
     );
   });
