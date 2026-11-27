@@ -1,7 +1,9 @@
 import { assertOk } from 'app/test/util/assert';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { WorldID } from 'app/src-electron/schema/world';
 import { LEVEL_NAME } from 'app/src-electron/source/const';
 import { Path } from 'app/src-electron/util/binary/path';
+import { genUUIDOf } from 'app/src-electron/util/random/uuid';
 
 const workPath = new Path(__dirname).child('work', 'base');
 
@@ -103,5 +105,24 @@ describe('追加コンテンツのワールドへの導入', () => {
 
     expect(saved.errors).toHaveLength(1);
     expect(await serverPath.child('mods', 'NotMod.txt').exists()).toBe(false);
+  });
+});
+
+describe('導入済みの追加コンテンツの読み込み', () => {
+  test('コンテンツのフォルダを作れない場合は，空の一覧とエラーを返す', async () => {
+    // ワールドのフォルダの位置に通常ファイルを置き，datapacks フォルダを作れなくする
+    await serverPath.child(LEVEL_NAME).writeText('not a directory');
+
+    const loaded = await datapackFiles.load(serverPath, genUUIDOf(WorldID));
+
+    expect(loaded.value).toEqual([]);
+    expect(loaded.errors).toHaveLength(1);
+    expect(loaded.errors[0]).toMatchObject({
+      key: 'data.path.creationFailed',
+      arg: {
+        type: 'directory',
+        path: serverPath.child(LEVEL_NAME, 'datapacks').path,
+      },
+    });
   });
 });

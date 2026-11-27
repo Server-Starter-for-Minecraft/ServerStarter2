@@ -63,6 +63,20 @@ export class Path {
   /** 環境変数 PATH などで複数のパスを区切る文字（Windows は `;`，それ以外は `:`） */
   static readonly delimiter = path.delimiter;
 
+  /**
+   * このパスが base のフォルダ自身またはその中を指すかを返す
+   *
+   * `..` を含むパスなど，解決すると base の外に出るパスを検出するために使う（ファイルの有無は確認しない）
+   *
+   * @param base 基準にするフォルダ
+   * @returns base の中（base 自身を含む）であれば true
+   */
+  isWithin(base: Path) {
+    const rel = path.relative(base.absolute()._path, this.absolute()._path);
+    // 別ドライブの場合は絶対パスが返り，外に出る場合は先頭が `..` になる
+    return !path.isAbsolute(rel) && rel.split(path.sep)[0] !== '..';
+  }
+
   /** このpathを起点にしたtargetの相対パスを返す */
   relativeto(target: Path) {
     return new Path(path.relative(this._path, target._path));
@@ -523,6 +537,25 @@ if (import.meta.vitest) {
       expect(new Path('foo/bar').parent().path).toBe(new Path('foo').path);
       expect(new Path('foo/bar').parent(2).path).toBe(new Path('').path);
     });
+
+    test('isWithin', () => {
+      const base = new Path('foo/bar');
+      expect(base.isWithin(base)).toBe(true);
+      expect(base.child('buz').isWithin(base)).toBe(true);
+      expect(base.child('..bar').isWithin(base)).toBe(true);
+      expect(base.child('buz', '..', '..', 'bar2').isWithin(base)).toBe(false);
+      expect(base.child('..', 'escape').isWithin(base)).toBe(false);
+      expect(new Path('foo').isWithin(base)).toBe(false);
+    });
+
+    // POSIX では `\` は区切り文字ではなくファイル名の一部になるため，Windows でのみ確認する
+    test.runIf(process.platform === 'win32')(
+      'isWithin（Windows の区切り文字）',
+      () => {
+        const base = new Path('foo/bar');
+        expect(base.child('..\\escape').isWithin(base)).toBe(false);
+      }
+    );
 
     test('creation', async () => {
       // ファイル操作のテスト

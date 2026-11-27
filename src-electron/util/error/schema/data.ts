@@ -34,6 +34,13 @@ export type DataErrors = {
       // zipの内部のパス
       innerPath: string;
     }>;
+    // zipの中の項目が展開先のフォルダの外を指している場合（Windows での `..\escape` など）
+    entryOutsideDestination: ErrorMessageContent<{
+      // zipのパス
+      path: string;
+      // zipの内部のパス
+      innerPath: string;
+    }>;
   };
 
   path: {
