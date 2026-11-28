@@ -220,6 +220,26 @@ describe('getLatestRelease', () => {
     });
   });
 
+  test('OS向けのアセットが見つからない場合は、原因を切り分けられるよう対象OSと確認したリリースをエラーに含める', async () => {
+    mockReleasesResponse([
+      release(155432110, 'v2.2.0', [
+        asset(166778803, 'ServerStarter-v2.2.0.pkg', null),
+      ]),
+      release(150000000, 'v2.1.5', [
+        asset(160000001, 'ServerStarter-v2.1.5.pkg', null),
+      ]),
+    ]);
+
+    const latest = await getLatestRelease('mac-os-arm64', undefined);
+
+    expect(isError(latest)).toBe(true);
+    // エラーの内部構造に依存しないよう、エラー全体を文字列化して確認する
+    const message = JSON.stringify(latest);
+    expect(message).toContain('mac-os-arm64');
+    expect(message).toContain('v2.2.0');
+    expect(message).toContain('v2.1.5');
+  });
+
   test('取得したリリース一覧が想定外の形式の場合はエラーを返す', async () => {
     mockReleasesResponse({ message: 'Not Found' });
 

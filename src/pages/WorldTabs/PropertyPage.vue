@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import type { QScrollArea } from 'quasar';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, keys } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
@@ -13,7 +14,7 @@ import { getLockedProperties } from 'src/components/World/Property/lockedPropert
 import {
   getPropertyAnnotation,
   isUnavailableInVersion,
-} from 'src/components/World/Property/propertyDefinitions';
+} from 'src/logic/property/propertyDefinitions';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -66,7 +67,7 @@ const initProperty = computed<ServerProperties>(() => {
 });
 
 // 入力領域のスクロールバーの制御
-const scrollAreaRef = ref();
+const scrollAreaRef = ref<QScrollArea | null>(null);
 
 // ワールドの設定（ポート開放不要化の利用など）によって編集できないプロパティ
 const lockedProperties = computed(() =>
@@ -90,7 +91,7 @@ function resetAll() {
       dialogTitle: $T('property.resetAll.title'),
       dialogDesc: $T('property.resetAll.desc'),
       okBtnTxt: $T('property.resetAll.okBtn'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     Object.keys(sysStore.systemSettings.world.properties).map((key) => {
       if (lockedProperties.value[key] !== undefined || isUnavailable(key)) {
@@ -108,7 +109,7 @@ function resetAll() {
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.setScrollPosition('vertical', 0);
+  scrollAreaRef.value?.setScrollPosition('vertical', 0);
 }
 </script>
 

@@ -2,7 +2,9 @@ import * as child_process from 'child_process';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { onQuit } from '../../lifecycle/lifecycle';
 import { errorMessage } from '../error/construct';
-import { fromRuntimeError } from '../error/error';
+import { fromRuntimeError, isError } from '../error/error';
+import { safeExec } from '../error/failable';
+import { decoratePromise } from '../promise/promiseDecorator';
 import { sleep } from '../promise/sleep';
 import { utilLoggers } from '../utilLogger';
 import { Path } from './path';
@@ -21,7 +23,7 @@ function promissifyProcess(
   args: string[],
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
-) {
+): ChildProcessPromise {
   const logger = loggers().promissifyProcess({
     command: `${processPath.quotedPath} ${args.join(' ')}`,
   });
@@ -59,9 +61,7 @@ function promissifyProcess(
     });
   };
 
-  const promise = new Promise(executor) as ChildProcessPromise;
-
-  promise.finished = () => isFinished;
+  const exited = new Promise(executor);
 
   const kill = async (
     signal?: number | NodeJS.Signals | undefined
@@ -69,25 +69,25 @@ function promissifyProcess(
     if (process.exitCode === null) {
       // killの前処理
       await Promise.any([beforeKill(promise), sleep(beforeKillTimeout)]);
-      try {
-        process.kill(signal);
-      } catch (e) {
-        logger.warn('failed to kill process');
-      }
+      const killed = safeExec(() => process.kill(signal));
+      if (isError(killed)) logger.warn('failed to kill process', killed);
     }
   };
 
   // アプリケーション終了時にプロセスをkill
-  const dispatch = onQuit(() => kill(), true);
+  const dispatch = onQuit(async () => kill(), true);
 
-  const write = (msg: string) =>
+  const write = async (msg: string) =>
     new Promise<void>((resolve) => {
       if (process.stdin) process.stdin.write(`${msg}\n`, () => resolve());
       else resolve();
     });
-  promise.kill = kill;
-  promise.write = write;
-
+  // 終了を待つ Promise に，プロセスを操作するメソッドを付け足す
+  const promise: ChildProcessPromise = decoratePromise(exited, {
+    finished: () => isFinished,
+    kill,
+    write,
+  });
   return promise;
 }
 
@@ -156,7 +156,7 @@ export function execProcess(
   process: Path,
   args: string[],
   cwd: Path | undefined = undefined
-) {
+): ChildProcessPromise {
   const child = child_process.spawn(process.path, args, {
     cwd: cwd?.path,
   });

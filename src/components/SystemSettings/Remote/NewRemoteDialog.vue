@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { checkError } from 'src/error/error';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';

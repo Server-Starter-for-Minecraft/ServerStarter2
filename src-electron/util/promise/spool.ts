@@ -4,7 +4,7 @@
  * 並列で処理されると問題が起こる場合に、あとから登録されたプロミスは前のプロミスがすべて終わるまで待機してから実行される
  */
 export class PromiseSpooler {
-  private spooling: (() => Promise<void>)[];
+  private spooling: (() => void)[];
 
   constructor() {
     this.spooling = [];
@@ -17,17 +17,33 @@ export class PromiseSpooler {
 
   async spool<T>(promise: () => Promise<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
+      // 処理が終わったら待機列から外し，次のlazeInvokeがあるなら呼び出す
+      const invokeNext = () => {
+        this.spooling.shift();
+        this.spooling[0]?.();
+      };
       // 待機列の先頭に来た時に呼ばれる
-      const lazeInvoke = async () => {
+      // （処理の結果・失敗は呼び出し元へ resolve / reject で伝えるため，戻り値の Promise は待たない。
+      //   処理は呼び出したその場で開始し，同期的に例外を投げた場合も reject で伝える）
+      const lazeInvoke = () => {
+        let started: Promise<T>;
         try {
-          resolve(await promise());
+          started = promise();
         } catch (e) {
           reject(e);
-        } finally {
-          this.spooling.shift();
-          // 次のlazeInvokeがあるなら呼び出す
-          this.spooling[0]?.();
+          invokeNext();
+          return;
         }
+        started.then(
+          (value) => {
+            resolve(value);
+            invokeNext();
+          },
+          (e: unknown) => {
+            reject(e);
+            invokeNext();
+          }
+        );
       };
 
       // 待機列の最後にlazeInvokeを追加
@@ -40,8 +56,6 @@ export class PromiseSpooler {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('Promise直列化のテスト', async () => {
     const { sleep } = await import('./sleep');
 

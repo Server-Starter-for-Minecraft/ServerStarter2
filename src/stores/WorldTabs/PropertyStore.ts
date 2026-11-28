@@ -10,12 +10,12 @@ import {
   getPropertyDescription,
   getPropertyGroups,
   isUnavailableInVersion,
-} from 'src/components/World/Property/propertyDefinitions';
+} from 'src/logic/property/propertyDefinitions';
 
 const disableProperties = ['level-name'];
 
 export const usePropertyStore = defineStore('propertyStore', {
-  state: () => {
+  state: (): { searchName: string; selectTab: string } => {
     return {
       searchName: '',
       /** 選択中のタブの識別子 */

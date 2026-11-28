@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { createNewName } from 'app/src-public/scripts/createNewName';
 import { isValid } from 'app/src-public/scripts/error';
-import { toEntries, values } from 'app/src-public/scripts/obj/obj';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { genUUID } from 'app/src-public/scripts/uuid';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import {
@@ -11,6 +11,7 @@ import {
   PlayerGroup,
 } from 'app/src-electron/schema/player';
 import { useMainStore } from '../MainStore';
+import { NO_GROUP_ID } from '../placeholders';
 import { useSystemStore } from '../SystemStore';
 
 // フォーカスされているプレイヤーのUUID一覧とUUIDからPlayerオブジェクトへのマッピング
@@ -18,10 +19,14 @@ import { useSystemStore } from '../SystemStore';
 const __playerFromId: Record<PlayerUUID, Player> = {};
 
 export const usePlayerStore = defineStore('playerStore', {
-  state: () => {
+  state: (): {
+    focusPlayerIds: Set<PlayerUUID>;
+    selectedGroupId: UUID;
+    openGroupEditor: boolean;
+  } => {
     return {
       focusPlayerIds: new Set<PlayerUUID>(),
-      selectedGroupId: '' as UUID,
+      selectedGroupId: NO_GROUP_ID,
       openGroupEditor: false,
     };
   },
@@ -62,7 +67,7 @@ export const usePlayerStore = defineStore('playerStore', {
 
       // グループメンバーのUUIDからPlayerオブジェクトを取得
       const groupMembers = await Promise.all(
-        groupObj.players.map((pId) => {
+        groupObj.players.map(async (pId) => {
           const player = __playerFromId[pId];
           if (player !== void 0) return Promise.resolve(player);
           return window.API.invokeGetPlayer(pId, 'uuid');

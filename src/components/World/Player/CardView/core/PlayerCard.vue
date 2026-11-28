@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeMount, Ref, ref } from 'vue';
 import { getCssVar } from 'quasar';
+import { checkError } from 'src/error/error';
 import { keys, toEntries } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
 import { sortValue, strSort } from 'app/src-public/scripts/obj/objSort';
@@ -10,7 +11,6 @@ import { assets } from 'src/assets/assets';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { FrontPlayerGroup } from 'src/stores/SystemStore/converters/playerGroup';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { checkError } from 'src/components/Error/Error';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import PlayerHeadAvatar from 'src/components/util/PlayerHeadAvatar.vue';
 import OnlineBadge from 'src/components/World/Player/utils/OnlineBadge.vue';

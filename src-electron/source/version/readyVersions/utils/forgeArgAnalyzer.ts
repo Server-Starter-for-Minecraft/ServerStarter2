@@ -36,9 +36,9 @@ export async function getNewForgeArgs(
   if (osPlatform == 'windows-x64') {
     // windows
     runPath = constructExecPath(serverCwdPath, version, '.bat');
-    if (runPath.exists()) {
+    if (await runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromScript(
+      return getProgramArgumentsFromScript(
         runPath,
         '.bat',
         oldVerJson.download.url,
@@ -48,9 +48,9 @@ export async function getNewForgeArgs(
   } else {
     // UNIX(macOS,linux)
     runPath = constructExecPath(serverCwdPath, version, '.sh');
-    if (runPath.exists()) {
+    if (await runPath.exists()) {
       // 1.17.1以降
-      return await getProgramArgumentsFromScript(
+      return getProgramArgumentsFromScript(
         runPath,
         '.sh',
         oldVerJson.download.url,
@@ -61,7 +61,7 @@ export async function getNewForgeArgs(
 
   // batやshといったファイルが存在しないときには`version.json`を更新する必要なし
   const jarpath = getJarPath(serverCwdPath);
-  if (jarpath.exists()) return oldVerJson;
+  if (await jarpath.exists()) return oldVerJson;
 
   return errorMessage.data.path.notFound({
     type: 'file',

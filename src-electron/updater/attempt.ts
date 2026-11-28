@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { Failable } from '../schema/error';
 import { mainPath } from '../source/const';
 import { Path } from '../util/binary/path';
@@ -58,9 +59,11 @@ export function shouldAutoInstall(
 export async function loadUpdateAttempt(
   path: Path = UPDATE_ATTEMPT_PATH
 ): Promise<UpdateAttempt | undefined> {
-  if (!path.exists()) return undefined;
+  if (!(await path.exists())) return undefined;
   const attempt = await path.readJson(UpdateAttempt);
-  return isError(attempt) ? undefined : attempt;
+  return isError(attempt)
+    ? ignoreError(attempt, '読み込めない実行記録は，記録が無いものとして扱う')
+    : attempt;
 }
 
 /**
@@ -75,5 +78,5 @@ export async function saveUpdateAttempt(
   path: Path = UPDATE_ATTEMPT_PATH
 ): Promise<Failable<void>> {
   // 保存先フォルダの作成などで発生する例外もエラーとして返し、呼び出し元で通知できるようにする
-  return safeExecAsync(() => path.writeJson(attempt));
+  return safeExecAsync(async () => path.writeJson(attempt));
 }

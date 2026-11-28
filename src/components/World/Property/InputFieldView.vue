@@ -13,7 +13,7 @@ import SsSelect from 'src/components/util/base/ssSelect.vue';
 import {
   convertPropertyValue,
   getPropertyAnnotation,
-} from './propertyDefinitions';
+} from 'src/logic/property/propertyDefinitions';
 
 const { t } = useI18n();
 

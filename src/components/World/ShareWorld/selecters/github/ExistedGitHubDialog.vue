@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { asBrand } from 'app/src-public/scripts/brand';
 import { isValid } from 'app/src-public/scripts/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
@@ -21,7 +22,7 @@ async function setRemote() {
   loading.value = true;
   const res = await setRemoteWorld(
     {
-      name: prop.rWorldName as RemoteWorldName,
+      name: asBrand(RemoteWorldName, prop.rWorldName),
       folder: {
         type: 'github',
         owner: prop.remoteData.owner,
@@ -31,7 +32,8 @@ async function setRemote() {
     true
   );
 
-  if (isValid(res)) {
+  // 失敗した場合は setRemoteWorld の中でエラーを表示するため，ダイアログを開いたままにする
+  if (res !== undefined && isValid(res.value)) {
     onDialogOK();
   }
 }

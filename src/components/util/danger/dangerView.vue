@@ -23,7 +23,7 @@ function openDialog() {
       dialogTitle: prop.dialogTitle,
       dialogDesc: prop.dialogDesc,
       okBtnTxt: prop.openDialogBtnText,
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     prop.onAction();
   });

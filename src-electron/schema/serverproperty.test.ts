@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   DefaultServerPropertiesAnnotation,
   isValidNumberProperty,
+  NumberServerPropertyAnnotation,
   ServerProperties,
 } from './serverproperty';
 
@@ -87,9 +88,9 @@ describe('サーバープロパティの許容値', () => {
   test.each(numberKeys)(
     '%s に小数を指定すると読み込んだ値を保持し，プロパティ画面では入力できない',
     (key) => {
-      const annotation = DefaultServerPropertiesAnnotation[key];
-      if (annotation?.type !== 'number')
-        throw new Error(`${key} is not number`);
+      const annotation = NumberServerPropertyAnnotation.parse(
+        DefaultServerPropertiesAnnotation[key]
+      );
       // 範囲外として弾かれないよう，範囲内に収まる小数を選ぶ
       const fractional =
         annotation.max !== undefined &&
@@ -103,10 +104,9 @@ describe('サーバープロパティの許容値', () => {
   );
 
   test('プロパティ画面で入力できる最大値はJavaのlong型に収まり，正確に保存できる', () => {
-    const annotation = DefaultServerPropertiesAnnotation['max-tick-time'];
-    if (annotation?.type !== 'number' || annotation.max === undefined) {
-      throw new Error('max-tick-time must be a number property with max');
-    }
+    const annotation = NumberServerPropertyAnnotation.required({
+      max: true,
+    }).parse(DefaultServerPropertiesAnnotation['max-tick-time']);
 
     // 保存時の文字列がJavaのlong型の最大値を超えない
     expect(BigInt(annotation.max.toString())).toBeLessThanOrEqual(
@@ -159,5 +159,15 @@ describe('サーバープロパティの型', () => {
 
   test.each(boolKeys)('%s はプロパティ画面でトグルとして編集できる', (key) => {
     expect(DefaultServerPropertiesAnnotation[key]?.type).toBe('boolean');
+  });
+});
+
+describe('サーバープロパティの画面に渡す情報', () => {
+  test('既定のサーバープロパティのすべての項目に，画面に渡す情報がある', () => {
+    // 既定値で埋めたサーバープロパティの項目
+    const keys = Object.keys(ServerProperties.parse({}));
+    expect(
+      keys.filter((key) => DefaultServerPropertiesAnnotation[key] === undefined)
+    ).toEqual([]);
   });
 });

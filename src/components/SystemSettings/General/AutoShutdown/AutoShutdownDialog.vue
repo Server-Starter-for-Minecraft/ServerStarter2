@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { sleep } from 'app/src-public/scripts/sleep';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import { shutdownSelecter } from './AutoShutdown';
@@ -22,10 +24,13 @@ const closeCounter = async () => {
 };
 
 // カウンターが終了したらダイアログを閉じる
-closeCounter().then(() => {
-  onDialogOK();
-  shutdownSelecter(executeShutdown.value);
-});
+runDetached(
+  closeCounter().then(() => {
+    onDialogOK();
+    shutdownSelecter(executeShutdown.value);
+  }),
+  showUnexpectedError
+);
 
 /**
  * ダイアログ付属の閉じるボタンが押された場合はシャットダウンフラグを折る

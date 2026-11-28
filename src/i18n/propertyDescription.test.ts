@@ -12,7 +12,7 @@ describe('サーバープロパティの説明文', () => {
 
   test.each(registeredKeys)('%s に日本語と英語の説明文がある', (key) => {
     // 'query.port' のようにドットを含むキーをパスとして解釈させないよう配列で指定する
-    const nonEmpty = expect.stringMatching(/\S/);
+    const nonEmpty: unknown = expect.stringMatching(/\S/);
     expect(jaProperty.description).toHaveProperty([key], nonEmpty);
     expect(enUSproperty.description).toHaveProperty([key], nonEmpty);
   });

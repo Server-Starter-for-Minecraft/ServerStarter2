@@ -1,12 +1,7 @@
 import { Failable } from 'app/src-electron/schema/error';
-import {
-  GithubRemoteFolder,
-  GithubRemoteSetting,
-  RemoteSetting,
-} from 'app/src-electron/schema/remote';
+import { GithubRemoteSetting } from 'app/src-electron/schema/remote';
 import { isError } from 'app/src-electron/util/error/error';
 import { getGithubBranches } from './githubApi';
-import { getGitPat } from './pat';
 
 /** リモートにアクセス可能かを確認する */
 export async function validate(

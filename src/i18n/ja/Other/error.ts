@@ -45,6 +45,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: 'ZIPファイル中のパスのデータがディレクトリになっています',
         desc: '{path}を確認してください',
       },
+      entryOutsideDestination: {
+        title: 'ZIPファイル中に展開先のフォルダの外を指す項目があります',
+        desc: '安全のため展開を中止しました．{path}の{innerPath}を確認してください',
+      },
     },
     path: {
       loadingFailed: {
@@ -261,6 +265,14 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
     },
     failGetGlobalIP: {
       title: 'グローバルIPの取得に失敗しました',
+    },
+    brokenSystemSettings: {
+      title: 'システム設定を読み込めなかったため，初期設定で起動しました',
+      desc: '読み込めなかった設定ファイルは {backupPath} に保存しました（7日後に削除されます）',
+    },
+    brokenSystemSettingsWithoutBackup: {
+      title: 'システム設定を読み込めなかったため，初期設定で起動しました',
+      desc: '読み込めなかった設定ファイルを保存できなかったため，このまま終了するまで設定の変更は保存されません',
     },
     update: {
       missingAppSource: {

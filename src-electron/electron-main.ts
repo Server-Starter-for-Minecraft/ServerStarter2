@@ -1,31 +1,38 @@
-/* eslint @typescript-eslint/no-explicit-any: 0 */
 import {
   registerQuasarRuntime,
   resolveElectronAssetsPath,
 } from '#q-app/electron/main';
 import { app, BrowserWindow, nativeTheme } from 'electron';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { setupIPC } from './ipc/setup';
 import { setServerStarterApp } from './lifecycle/exit';
 import { onQuit } from './lifecycle/lifecycle';
+import { rootLogger } from './logger/logger';
 import { refreshOuterResources } from './source/outerResource/registry';
 import { getSystemSettings, setSystemSettings } from './source/stores/system';
 import { update } from './updater/updater';
+import { Path } from './util/binary/path';
+import { isError } from './util/error/error';
+import { safeExecAsync } from './util/error/failable';
+import { osPlatform } from './util/os/os';
 import { getCurrentTimestamp } from './util/timestamp';
+
+const loggers = () => rootLogger.main;
 
 // 多重起動していたらすでに起動済みの場合即時終了
 if (!app.requestSingleInstanceLock()) app.quit();
 
-// needed in case process is undefined under Linux
-const platform = process.platform || os.platform();
-
-try {
-  if (platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
-    fs.unlinkSync(path.join(app.getPath('userData'), 'DevTools Extensions'));
+/** ダークモードの Windows で DevTools の拡張機能の設定を削除する */
+async function removeDevToolsExtensions() {
+  if (
+    osPlatform === 'windows-x64' &&
+    nativeTheme.shouldUseDarkColors === true
+  ) {
+    return new Path(app.getPath('userData'))
+      .child('DevTools Extensions')
+      .remove();
   }
-} catch (_) {}
+}
 
 let mainWindow: BrowserWindow | undefined;
 
@@ -54,7 +61,7 @@ async function createWindow() {
     webPreferences: {
       contextIsolation: true,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
-      preload: path.join(import.meta.dirname, 'electron-preload.cjs'),
+      preload: new Path(import.meta.dirname).child('electron-preload.cjs').path,
     },
   });
 
@@ -87,35 +94,53 @@ async function createWindow() {
   // フロントエンドとバックエンドの呼び出し処理をリンク
   setupIPC(() => mainWindow);
   // 外部リソースを配布元の最新の内容に更新する（画面の表示を待たせないよう完了を待たない）
-  void refreshOuterResources();
+  runDetached(refreshOuterResources(), (e) =>
+    loggers().refreshOuterResources().error(e)
+  );
   // SCPへの警告を無視（今回はソフトウェアのためXSS対策は実施しない）
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 }
 
-app.whenReady().then(() => {
-  registerQuasarRuntime();
-  createWindow();
-});
+runDetached(
+  (async () => {
+    await app.whenReady();
+    registerQuasarRuntime();
+    // DevTools の読み込みと競合しないよう，画面を作る前に済ませる（削除できなくても起動は続ける）
+    const removed = await removeDevToolsExtensions();
+    if (isError(removed)) loggers().removeDevToolsExtensions().warn(removed);
+    await createWindow();
+  })(),
+  (e) => loggers().whenReady().error(e)
+);
 
-app.on('window-all-closed', async () => {
-  await onQuit.invoke();
+/**
+ * 終了時の処理を実行してからアプリを終了する
+ *
+ * 終了時の処理が失敗してもアプリが終了できなくならないよう，失敗はログに残して終了する
+ */
+async function quitAfterCleanup() {
+  const result = await safeExecAsync(async () => onQuit.invoke());
+  if (isError(result)) loggers().quit().error(result);
   app.quit();
+}
+
+app.on('window-all-closed', () => {
+  runDetached(quitAfterCleanup(), (e) => loggers().quit().error(e));
 });
 
 // will-quitのタイミングで終了時処理を走らせる
 let finishedWillQuitEvent = false;
-app.on('will-quit', async (e) => {
+app.on('will-quit', (e) => {
   if (!finishedWillQuitEvent) {
     e.preventDefault();
-    await onQuit.invoke();
     finishedWillQuitEvent = true;
-    app.quit();
+    runDetached(quitAfterCleanup(), (e) => loggers().quit().error(e));
   }
 });
 
 app.on('activate', () => {
   if (mainWindow === undefined) {
-    createWindow();
+    runDetached(createWindow(), (e) => loggers().activate().error(e));
   }
 });
 

@@ -106,6 +106,18 @@ describe('OnlinePlayersTracker', () => {
     expect(tracker.onlinePlayers).toEqual(['Alex']);
   });
 
+  test('続けて届いた出力は，出力された順に反映する（後の出力の退出が先の出力の参加より前に反映されない）', () => {
+    const { tracker, notified } = setup();
+
+    tracker.push(
+      `${headers.vanilla}Alex joined the game\n${headers.vanilla}Steve joined the game\n`
+    );
+    tracker.push(`${headers.vanilla}Steve left the game\n`);
+
+    expect(notified.at(-1)).toEqual(['Alex']);
+    expect(tracker.onlinePlayers).toEqual(['Alex']);
+  });
+
   test('1回の出力に複数行が含まれていても全て反映する', () => {
     const { tracker } = setup();
 

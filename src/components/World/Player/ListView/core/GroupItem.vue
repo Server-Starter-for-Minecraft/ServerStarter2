@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { type Component, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
 import { values } from 'app/src-public/scripts/obj/obj';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { UUID } from 'app/src-electron/schema/brands';
 import { PlayerGroup } from 'app/src-electron/schema/player';
 import { assets } from 'src/assets/assets';
@@ -40,7 +42,7 @@ type MenuBtn = {
   icon: string;
   color?: string;
   nestedItem?: Component;
-  nestedProps?: Record<string, any>;
+  nestedProps?: Record<string, unknown>;
   onClick: () => void;
 };
 const menuBtns: MenuBtn[] = [
@@ -52,7 +54,7 @@ const menuBtns: MenuBtn[] = [
         component: GroupMemberDialog,
         componentProps: {
           players: prop.group.players,
-        } as GroupMembersProp,
+        } satisfies GroupMembersProp,
       }).onOk((p: GroupMemberReturns) => {
         // グループメンバーの更新
         playerStore.updateGroup(prop.groupId, (g) => {
@@ -105,7 +107,7 @@ const menuBtns: MenuBtn[] = [
             groupname: prop.group.name,
           }),
           okBtnTxt: $T('player.deleteGroup.okBtn'),
-        } as dangerDialogProp,
+        } satisfies dangerDialogProp,
       }).onOk(() => playerStore.removeGroup(prop.groupId));
     },
   },
@@ -119,7 +121,7 @@ function changeColor(colorCode: string) {
 }
 
 function selectGroupMembers() {
-  playerStore.selectGroup(prop.groupId);
+  runDetached(playerStore.selectGroup(prop.groupId), showUnexpectedError);
 }
 
 /**

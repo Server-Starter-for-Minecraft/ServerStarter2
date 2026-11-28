@@ -1,8 +1,3 @@
-type DymanicRecordOptions<K, V> = {
-  /** valueの初期値コンストラクタ */
-  init: () => V;
-};
-
 /**
  * 任意のキーにアクセスして常に必ず値を返すMap
  *
@@ -105,7 +100,6 @@ export class InfinitMap<K, V> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
   describe('InfinitMap', () => {
     test('key:primitive value:primitive', () => {
       const map = InfinitMap.primitiveKeyPrimitiveValue<string, string>(

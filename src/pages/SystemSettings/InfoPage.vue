@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { checkError } from 'src/error/error';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import SsA from 'src/components/util/base/ssA.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import CreaterItem from 'src/components/SystemSettings/Info/CreaterItem.vue';

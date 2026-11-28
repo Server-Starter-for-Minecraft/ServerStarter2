@@ -16,10 +16,10 @@ const loadedPlayerSettings = computed(() => {
   }
   return [];
 });
-const orderTypes = ['name', 'op'] as const;
-const playerOrder: Ref<(typeof orderTypes)[number]> = ref('name');
+type OrderType = 'name' | 'op';
+const playerOrder: Ref<OrderType> = ref('name');
 function playerSortFunc(
-  orderType: (typeof orderTypes)[number]
+  orderType: OrderType
 ): (a: PlayerSetting, b: PlayerSetting) => number {
   switch (orderType) {
     case 'name':

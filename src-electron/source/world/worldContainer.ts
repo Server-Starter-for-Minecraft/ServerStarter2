@@ -1,4 +1,3 @@
-import { isAbsolute } from 'path';
 import { WorldContainer } from 'src-electron/schema/brands';
 import { WorldContainerSetting } from 'src-electron/schema/system';
 import { Path } from 'app/src-electron/util/binary/path';
@@ -6,9 +5,8 @@ import { mainPath } from '../../source/const';
 
 // world.containerが相対パスの場合mainpathからの相対パスとして処理
 export function worldContainerToPath(worldContainer: WorldContainer): Path {
-  return isAbsolute(worldContainer)
-    ? new Path(worldContainer)
-    : mainPath.child(worldContainer);
+  const path = new Path(worldContainer);
+  return path.isAbsolute() ? path : mainPath.child(worldContainer);
 }
 
 /**

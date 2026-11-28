@@ -12,7 +12,8 @@ export type IconImage = {
 };
 
 export interface IconSelectProp {
-  img: ImageURI;
+  /** 現在のアイコン（アイコンの無いワールドでは undefined） */
+  img?: ImageURI;
 }
 
 export interface IconSelectReturn {

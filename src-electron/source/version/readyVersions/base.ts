@@ -4,7 +4,11 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { InfinitMap } from 'app/src-electron/util/helper/infinitMap';
 import { PromiseSpooler } from 'app/src-electron/util/promise/spool';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
-import { Runtime } from '../../../schema/runtime';
+import {
+  JavaComponent,
+  JavaMajorVersion,
+  Runtime,
+} from '../../../schema/runtime';
 import { UnknownVersion, Version } from '../../../schema/version';
 import { Path } from '../../../util/binary/path';
 import { getLog4jArg, saveLog4JPatch } from './utils/log4j';
@@ -144,7 +148,8 @@ export abstract class ReadyVersion<
     if (isError(copyFiles)) return copyFiles;
 
     // STEP3: ファイルをキャッシュから移動
-    await this.setFiles(copyFiles, targetPath);
+    const setRes = await this.setFiles(copyFiles, targetPath);
+    if (isError(setRes)) return setRes;
 
     // STEP4: 戻り値を生成
     return this.generateReadyVersionReturns(this.handler, targetPath);
@@ -164,7 +169,7 @@ export abstract class ReadyVersion<
     // （複数のワールドを同時に起動した際に，キャッシュの生成処理同士が作業ファイルを壊し合わないようにする）
     return cacheSpoolers
       .get(this.cachePath.absolute().path)
-      .spool(() =>
+      .spool(async () =>
         this.readyCacheExclusively(verJsonHandler, execRuntime, progress)
       );
   }
@@ -226,10 +231,14 @@ export abstract class ReadyVersion<
   /**
    * キャッシュをコピーする
    */
-  protected async setFiles(paths: Path[], targetPath: Path): Promise<void> {
-    await Promise.all(
-      paths.map((p) => p.copyTo(targetPath.child(p.basename())))
+  protected async setFiles(
+    paths: Path[],
+    targetPath: Path
+  ): Promise<Failable<void>> {
+    const results = await Promise.all(
+      paths.map(async (p) => p.copyTo(targetPath.child(p.basename())))
     );
+    return results.find(isError);
   }
 
   /**
@@ -250,6 +259,9 @@ export abstract class ReadyVersion<
 
   /**
    * 当該サーバーにおけるRuntimeオブジェクトを生成する
+   *
+   * @param verJsonHandler version.json
+   * @returns サーバーの起動に使うランタイム（version.json に指定が無い場合は jre-legacy）
    */
   protected async getRuntime(
     verJsonHandler: JsonSourceHandler<VersionJson>
@@ -257,16 +269,16 @@ export abstract class ReadyVersion<
     const verJson = await verJsonHandler.read();
     if (isError(verJson)) return verJson;
 
-    if (verJson.javaVersion?.component) {
-      return {
-        type: 'minecraft',
-        version: verJson.javaVersion?.component,
-      } as Runtime;
-    } else if (verJson.javaVersion?.majorVersion) {
-      return {
-        type: 'universal',
-        majorVersion: verJson.javaVersion.majorVersion,
-      } as Runtime;
+    // Minecraft が配布するランタイムの名前（component）を優先し，component が無い・未知の名前の場合は Java のバージョンで指定する
+    const component = JavaComponent.safeParse(verJson.javaVersion?.component);
+    if (component.success) {
+      return { type: 'minecraft', version: component.data };
+    }
+    const majorVersion = JavaMajorVersion.safeParse(
+      verJson.javaVersion?.majorVersion
+    );
+    if (majorVersion.success) {
+      return { type: 'universal', majorVersion: majorVersion.data };
     }
 
     // fall back
@@ -331,19 +343,22 @@ export abstract class RemoveVersion<
     paths.push(...cachedMatchFiles);
 
     // ファイル群を削除してキャッシュに撤退
-    await this.removeFiles(paths);
+    return this.removeFiles(paths);
   }
 
   /**
    * サーバーファイル群をキャッシュに撤退させる
    */
-  protected async removeFiles(paths: Path[]): Promise<void> {
-    // キャッシュに撤退
-    await Promise.all(
-      paths.map((p) => p.copyTo(this.cachePath.child(p.basename())))
+  protected async removeFiles(paths: Path[]): Promise<Failable<void>> {
+    // キャッシュに撤退（撤退できなかったファイルは失わないよう削除しない）
+    const copied = await Promise.all(
+      paths.map(async (p) => p.copyTo(this.cachePath.child(p.basename())))
     );
+    const copyError = copied.find(isError);
+    if (copyError !== undefined) return copyError;
     // 元ファイルを削除
-    await Promise.all(paths.map((p) => p.remove()));
+    const removed = await Promise.all(paths.map(async (p) => p.remove()));
+    return removed.find(isError);
   }
 }
 

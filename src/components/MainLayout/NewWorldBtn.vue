@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { getVersionId } from 'app/src-public/scripts/version';
 import { WorldEdited } from 'app/src-electron/schema/world';
 import { tError } from 'src/i18n/utils/tFunc';
@@ -8,7 +11,6 @@ import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { createNewWorld, updateBackWorld } from 'src/stores/WorldStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
-import { checkError } from '../Error/Error';
 import { moveScrollTop_Home } from '../World/HOME/scroll';
 import CheckDialog from './CustomMapImporter/checkDialog.vue';
 import CustomMapImporterView from './CustomMapImporter/CustomMapImporterView.vue';
@@ -70,7 +72,7 @@ function move2HomeTop() {
   if (router.currentRoute.value.path === '/') {
     moveScrollTop_Home();
   } else {
-    router.push('/');
+    runDetached(router.push('/'), showUnexpectedError);
   }
 }
 
@@ -110,7 +112,7 @@ async function duplicateWorld(world?: WorldEdited) {
           // ワールドの複製は新規ワールドとみなさない
           if (newWorldID) updateBackWorld(newWorldID);
         },
-      } as CustomMapImporterProp,
+      } satisfies CustomMapImporterProp,
     }).onOk(() => {
       move2HomeTop();
     });
@@ -136,7 +138,7 @@ async function introduceBackup() {
           component: RecoverDialog,
           componentProps: {
             backupData: b,
-          } as RecoverDialogProp,
+          } satisfies RecoverDialogProp,
         })
         .onOk(() => {
           move2HomeTop();

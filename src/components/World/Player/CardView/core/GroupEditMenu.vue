@@ -37,8 +37,8 @@ const isValidGroup = computed(
 function validateGroupName(gName: string) {
   // 自分以外のグループ名一覧を取得
   const groupNames = toEntries(sysStore.systemSettings.player.groups)
-    .filter(([gId, g]) => gId !== playerStore.selectedGroupId)
-    .map(([gId, g]) => g.name);
+    .filter(([gId]) => gId !== playerStore.selectedGroupId)
+    .map(([, g]) => g.name);
   isValidName.value =
     gName !== '' && !groupNames.some((name) => name === gName);
 
@@ -79,14 +79,16 @@ function removeGroup() {
         groupname: tmpGroupSettings.name,
       }),
       okBtnTxt: $T('player.deleteGroup.okBtn'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     playerStore.removeGroup(playerStore.selectedGroupId);
     closeMenu();
   });
 }
 
-onMounted(() => playerStore.selectGroup(playerStore.selectedGroupId, false));
+onMounted(async () =>
+  playerStore.selectGroup(playerStore.selectedGroupId, false)
+);
 </script>
 
 <template>

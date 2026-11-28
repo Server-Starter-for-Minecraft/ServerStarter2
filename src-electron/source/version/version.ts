@@ -42,6 +42,18 @@ import {
 } from './readyVersions/vanilla';
 
 /**
+ * バージョンの種類が，一覧を取得できる（unknown でない）種類か
+ *
+ * @param type バージョンの種類
+ * @returns unknown でなければ true
+ */
+function isKnownVersionType<T extends VersionType>(
+  type: T
+): type is Exclude<T, 'unknown'> {
+  return type !== 'unknown';
+}
+
+/**
  * バージョンを管理するクラス
  */
 export class VersionContainer {
@@ -68,10 +80,9 @@ export class VersionContainer {
     type: T,
     useCache: boolean
   ): Promise<Failable<AllVersion<T>>> {
-    if (type === 'unknown')
+    if (!isKnownVersionType(type))
       return fromRuntimeError(new Error('VERSION_IS_UNKNOWN'));
-    const loader = this.versionGetters[type as Exclude<T, 'unknown'>];
-    return getVersionlist(useCache, loader);
+    return getVersionlist(useCache, this.versionGetters[type]);
   }
 
   /**
@@ -142,7 +153,8 @@ export class VersionContainer {
       const newEula = await eulaAgreementAction(currentEula.url);
       if (isError(newEula)) return newEula;
       const newEulaValue = newEula;
-      await setEulaAgreement(eulaPath, newEulaValue, progress);
+      const saved = await setEulaAgreement(eulaPath, newEulaValue, progress);
+      if (isError(saved)) return saved;
       if (newEulaValue === false)
         return errorMessage.core.minecraftEULANotAccepted();
     }

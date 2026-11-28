@@ -1,6 +1,6 @@
 import { UUID } from '../schema/brands';
 import { toEntries } from '../util/obj/obj';
-import { genUUID } from '../util/random/uuid';
+import { genUUIDOf } from '../util/random/uuid';
 
 export type AppEventListener = (dispatch: () => void) => void | Promise<void>;
 
@@ -19,7 +19,7 @@ export const createAppEvent = (): AppEvent => {
   };
 
   const result = (listener: AppEventListener, once: boolean) => {
-    const id = UUID.parse(genUUID());
+    const id = genUUIDOf(UUID);
     const dispatch = dispatcher(id);
     listeners[id] = once
       ? async () => {
@@ -32,7 +32,9 @@ export const createAppEvent = (): AppEvent => {
 
   const invoke = async () => {
     await Promise.all(
-      toEntries(listeners).map(([id, listener]) => listener(dispatcher(id)))
+      toEntries(listeners).map(async ([id, listener]) =>
+        listener(dispatcher(id))
+      )
     );
   };
 

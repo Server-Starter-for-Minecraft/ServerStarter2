@@ -56,7 +56,7 @@ export async function asyncMap<T, U>(
   values: Readonly<T[]>,
   func: (value: T, index: number) => Promise<U>
 ): Promise<U[]> {
-  return await Promise.all(values.map(func));
+  return Promise.all(values.map(func));
 }
 
 // 非同期関数でforEachする

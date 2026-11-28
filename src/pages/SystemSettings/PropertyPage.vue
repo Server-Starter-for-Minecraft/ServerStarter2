@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import type { QScrollArea } from 'quasar';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { thumbStyle } from 'src/components/World/scrollBar';
@@ -11,13 +12,13 @@ const sysStore = useSystemStore();
 const propertyStore = usePropertyStore();
 
 // 入力領域のスクロールバーの制御
-const scrollAreaRef = ref();
+const scrollAreaRef = ref<QScrollArea | null>(null);
 
 /**
  * 画面を一番上に遷移
  */
 function scrollTop() {
-  scrollAreaRef.value.setScrollPosition('vertical', 0);
+  scrollAreaRef.value?.setScrollPosition('vertical', 0);
 }
 </script>
 

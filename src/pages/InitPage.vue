@@ -2,6 +2,8 @@
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { afterWindow, initWindow } from 'app/src/init';
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { runFirstLaunch } from 'src/components/App/firstLaunch';
 import {
@@ -18,25 +20,28 @@ const sysStore = useSystemStore();
 
 if (!sysStore.systemSettings.user.eula) {
   // 利用規約への同意とオーナープレイヤーの登録催促（スキップされても起動処理は続行する）
-  runFirstLaunch(sysStore.systemSettings.user, {
-    showWelcome: () =>
-      waitDialogClosed($q.dialog({ component: WelcomeDialog })),
-    showOwnerRegister: () =>
-      waitDialogClosed<ReturnOwnerDialog>(
-        $q.dialog({
-          component: OwnerDialog,
-          componentProps: {
-            persistent: true,
-          } as OwnerDialogProp,
-        })
-      ),
-  }).then(() => {
-    // 起動時処理
-    asyncProcess();
-  });
+  runDetached(
+    runFirstLaunch(sysStore.systemSettings.user, {
+      showWelcome: async () =>
+        waitDialogClosed($q.dialog({ component: WelcomeDialog })),
+      showOwnerRegister: async () =>
+        waitDialogClosed<ReturnOwnerDialog>(
+          $q.dialog({
+            component: OwnerDialog,
+            componentProps: {
+              persistent: true,
+            } satisfies OwnerDialogProp,
+          })
+        ),
+    }).then(async () => {
+      // 起動時処理
+      await asyncProcess();
+    }),
+    showUnexpectedError
+  );
 } else {
   // 起動時処理
-  asyncProcess();
+  runDetached(asyncProcess(), showUnexpectedError);
 }
 
 /**
@@ -44,7 +49,7 @@ if (!sysStore.systemSettings.user.eula) {
  */
 async function asyncProcess() {
   await initWindow();
-  afterWindow();
+  runDetached(afterWindow(), showUnexpectedError);
 
   await router.replace('/');
 }

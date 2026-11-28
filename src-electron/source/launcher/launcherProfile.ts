@@ -61,7 +61,7 @@ export async function loadLocalSaveContainers(
   const defaultLocalSaveContainer = launcherPath.child('saves');
 
   const profilesList = await Promise.all(
-    LAUNCHER_PROFILES_FILES.map((name) =>
+    LAUNCHER_PROFILES_FILES.map(async (name) =>
       launcherPath.child(name).readJson(LauncherProfiles)
     )
   );

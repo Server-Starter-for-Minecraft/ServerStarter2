@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { ignoreError } from 'src/error/error';
 import { isValid } from 'app/src-public/scripts/error';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
@@ -63,6 +64,11 @@ watch(
       if (isValid(results)) {
         // 除外プレイヤーをフィルタリングして格納
         loadedSearchedPlayers.value = filterRegisteredPlayer(results);
+      } else {
+        ignoreError(
+          results,
+          '検索履歴を取得できない場合は，完全一致するプレイヤーのみ表示する'
+        );
       }
       // 検索名称に完全一致するプレイヤーを追加（上記一覧に存在しない場合に追加）
       if (

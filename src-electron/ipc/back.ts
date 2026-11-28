@@ -1,8 +1,8 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
 import { BackListener } from 'src-electron/ipc/link';
-import { getVersions } from '../core/setup';
-import { readyWindow } from '../lifecycle/lifecycle';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
+import { getVersions } from '../source/containers';
 import {
   getAllLocalSaveData,
   getDetectedLocalSaveContainers,
@@ -17,7 +17,9 @@ import {
 } from '../source/remote/remote';
 import { getCacheContents } from '../source/stores/cache';
 import { getSystemSettings, setSystemSettings } from '../source/stores/system';
+import { getGlobalIP, openBrowser, openFolder } from '../source/system/os';
 import { getStaticResoure } from '../source/system/resource';
+import { readyWindow } from '../source/system/window';
 import { getWorldContents } from '../source/world/contents';
 import { pickDialog } from '../source/world/dialog';
 import { validateNewWorldName } from '../source/world/name';
@@ -37,16 +39,23 @@ import {
   runWorld,
   setWorld,
 } from '../source/world/world';
-import { getGlobalIP } from '../util/network/ip';
-import { openBrowser, openFolder } from '../util/os/shell';
+import { ipcLoggers } from './util';
 
 export const getBackListener = (
   windowGetter: () => BrowserWindow | undefined
 ): BackListener<API> => ({
   on: {
-    Command: runCommand,
-    OpenBrowser: openBrowser,
-    ReadyWindow: readyWindow,
+    // 送信（send）は結果を返さないため，非同期処理の失敗はここでログに残す
+    Command: (worldID, command) =>
+      runDetached(runCommand(worldID, command), (e) =>
+        ipcLoggers().on.Command().error(e)
+      ),
+    OpenBrowser: (url) =>
+      runDetached(openBrowser(url), (e) =>
+        ipcLoggers().on.OpenBrowser().error(e)
+      ),
+    ReadyWindow: () =>
+      runDetached(readyWindow(), (e) => ipcLoggers().on.ReadyWindow().error(e)),
   },
   handle: {
     Reboot: reboot,

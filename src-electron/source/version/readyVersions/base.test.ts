@@ -1,3 +1,4 @@
+import { assertOk } from 'app/test/util/assert';
 import { describe, expect, test } from 'vitest';
 import { Failable } from 'app/src-electron/schema/error';
 import { VanillaVersion } from 'app/src-electron/schema/version';
@@ -77,7 +78,7 @@ describe('ReadyVersion', async () => {
 
     // 複数のワールドを同時に起動した状況を再現する
     const results = await Promise.all(
-      serverPaths.map((serverPath) =>
+      serverPaths.map(async (serverPath) =>
         new SlowReadyVersion(
           version,
           cacheFolder,
@@ -89,10 +90,87 @@ describe('ReadyVersion', async () => {
     // どちらの準備も成功し，それぞれにJarが設置されるはず
     for (const res of results) expect(isError(res)).toBe(false);
     for (const serverPath of serverPaths) {
-      expect(getJarPath(serverPath).exists()).toBe(true);
+      expect(await getJarPath(serverPath).exists()).toBe(true);
     }
     // キャッシュの生成は重ならず，2回目は生成済みのキャッシュを利用するはず
     expect(record.maxRunning).toBe(1);
     expect(record.count).toBe(1);
+  });
+});
+
+/**
+ * version.json の Java の指定（javaVersion）だけを変えられる，テスト用の実装
+ */
+class JavaVersionReadyVersion extends ReadyVersion<VanillaVersion> {
+  constructor(
+    version: VanillaVersion,
+    cacheFolder: Path,
+    private javaVersion: VersionJson['javaVersion']
+  ) {
+    super(version, cacheFolder);
+  }
+
+  get serverID() {
+    return this._version.id;
+  }
+
+  protected async generateVersionJson(): Promise<Failable<VersionJson>> {
+    return {
+      download: { url: 'https://example.com/server.jar' },
+      arguments: ['-jar', { embed: 'JAR_PATH' }],
+      javaVersion: this.javaVersion,
+    };
+  }
+
+  protected async generateCachedJar(): Promise<Failable<void>> {
+    await getJarPath(this.cachePath).writeText('jar');
+  }
+}
+
+describe('サーバーの起動に使うランタイム', async () => {
+  const workPath = new Path(__dirname).child('work', 'base-runtime');
+  await workPath.emptyDir();
+
+  test.each([
+    {
+      id: 'runtime-1',
+      title:
+        'Minecraft が配布するランタイムの名前があれば，そのランタイムを使う',
+      javaVersion: { component: 'java-runtime-delta', majorVersion: 21 },
+      expected: { type: 'minecraft', version: 'java-runtime-delta' },
+    },
+    {
+      id: 'runtime-2',
+      title: '知らないランタイムの名前の場合は，Java のバージョンで指定する',
+      javaVersion: { component: 'java-runtime-unknown', majorVersion: 25 },
+      expected: { type: 'universal', majorVersion: 25 },
+    },
+    {
+      id: 'runtime-3',
+      title: 'ランタイムの名前が無い場合は，Java のバージョンで指定する',
+      javaVersion: { majorVersion: 17 },
+      expected: { type: 'universal', majorVersion: 17 },
+    },
+    {
+      id: 'runtime-4',
+      title: 'Java の指定が無い場合は，古いバージョン向けのランタイムを使う',
+      javaVersion: undefined,
+      expected: { type: 'minecraft', version: 'jre-legacy' },
+    },
+  ])('$title', async ({ id, javaVersion, expected }) => {
+    const version = VanillaVersion.parse({
+      type: 'vanilla',
+      id,
+      release: true,
+    });
+    const caseFolder = workPath.child(id);
+    const res = await new JavaVersionReadyVersion(
+      version,
+      caseFolder.child('cache'),
+      javaVersion
+    ).completeReady4VersionFiles(caseFolder.child('server'), async () => {});
+
+    assertOk(res);
+    expect(res.runtime).toEqual(expected);
   });
 });

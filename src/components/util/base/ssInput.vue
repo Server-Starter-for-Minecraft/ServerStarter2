@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import type { ValidationRule } from 'quasar';
+import type { QInput, ValidationRule } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 
 interface Prop {
   label?: string;
@@ -17,12 +19,13 @@ interface Prop {
 
 const prop = defineProps<Prop>();
 const model = defineModel<string | number>();
-const input = ref();
+const input = ref<QInput | null>(null);
 const isPwd = ref(prop.secret);
 
 // 読み込み時にバリデーションが実行されるようにする
 onMounted(() => {
-  input.value.validate();
+  // 非同期の検証規則がある場合は Promise を返すため，失敗を表示できるよう完了を待たずに実行する
+  runDetached(Promise.resolve(input.value?.validate()), showUnexpectedError);
 });
 
 function onClearClick() {

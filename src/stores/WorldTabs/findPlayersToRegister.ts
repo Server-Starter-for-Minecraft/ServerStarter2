@@ -1,3 +1,4 @@
+import { ignoreError } from 'src/error/error';
 import { isValid } from 'app/src-public/scripts/error';
 import { Failable } from 'app/src-electron/schema/error';
 import { Player, PlayerSetting } from 'app/src-electron/schema/player';
@@ -21,7 +22,12 @@ export async function findPlayersToRegister(
   fetchPlayer: (name: string) => Promise<Failable<Player>>
 ): Promise<PlayerSetting[]> {
   const registered = world.players;
-  if (!isValid(registered)) return [];
+  if (!isValid(registered)) {
+    return (
+      ignoreError(registered, 'プレイヤーの設定を読めない場合は登録しない') ??
+      []
+    );
+  }
   if (isValid(world.properties) && world.properties['online-mode'] === false) {
     return [];
   }

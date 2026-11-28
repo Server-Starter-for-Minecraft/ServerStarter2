@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { Version } from 'app/src-electron/schema/version';
 import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
@@ -69,7 +71,7 @@ async function startServer(
 
   // サーバーの起動を開始
   await router.push('/console');
-  runServer();
+  runDetached(runServer(), showUnexpectedError);
 }
 
 const clicked = ref(false);

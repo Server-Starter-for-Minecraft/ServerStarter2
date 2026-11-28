@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { AllSpigotVersion, VersionId } from '../../../schema/version';
 import { VersionListLoader } from './base';
 
@@ -44,7 +45,7 @@ export class SpigotVersionLoader extends VersionListLoader<'spigot'> {
     return ids
       .filter((id) => !REMOVE_VERSIONS.includes(id))
       .map((id) => ({
-        id: id as VersionId,
+        id: asBrand(VersionId, id),
       }));
   }
 }

@@ -1,3 +1,4 @@
+import { assertOk } from 'app/test/util/assert';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
@@ -14,6 +15,16 @@ const dummyFileRules: DummyFileRule[] = [
   { suffix: '.xml', fileName: 'sample.xml' },
   { suffix: '.jar', fileName: 'sample.jar' },
 ];
+
+/**
+ * バージョン一覧の最も古いバージョンの ID を返す
+ *
+ * fabric の一覧は `games` に Minecraft のバージョンを持つため，他のサーバーと取り出し方が異なる
+ */
+function oldestVersionId(list: { games: { id: string }[] } | { id: string }[]) {
+  const versions = 'games' in list ? list.games : list;
+  return versions[versions.length - 1]?.id;
+}
 
 describe('listupVersions', { tags: ['network'] }, async () => {
   // 各サーバー種別のバージョン一覧APIには実際にアクセスする(APIの仕様変更の検知を兼ねる)
@@ -34,43 +45,45 @@ describe('listupVersions', { tags: ['network'] }, async () => {
 
   type TestCase = {
     type: VersionType;
-    vcList: () => Promise<Failable<any>>;
+    vcList: () => Promise<
+      Failable<{ games: { id: string }[] } | { id: string }[]>
+    >;
     oldestVersion: string;
   };
   const testCases: TestCase[] = [
     {
       type: 'vanilla',
-      vcList: () => vc.listVersions('vanilla', useCache),
+      vcList: async () => vc.listVersions('vanilla', useCache),
       oldestVersion: '1.3',
     },
     {
       type: 'forge',
-      vcList: () => vc.listVersions('forge', useCache),
+      vcList: async () => vc.listVersions('forge', useCache),
       oldestVersion: '1.5.2',
     },
     {
       type: 'neoforge',
-      vcList: () => vc.listVersions('neoforge', useCache),
+      vcList: async () => vc.listVersions('neoforge', useCache),
       oldestVersion: '25w14craftmine',
     },
     {
       type: 'papermc',
-      vcList: () => vc.listVersions('papermc', useCache),
+      vcList: async () => vc.listVersions('papermc', useCache),
       oldestVersion: '1.7.10',
     },
     {
       type: 'mohistmc',
-      vcList: () => vc.listVersions('mohistmc', useCache),
+      vcList: async () => vc.listVersions('mohistmc', useCache),
       oldestVersion: '1.7.10',
     },
     {
       type: 'fabric',
-      vcList: () => vc.listVersions('fabric', useCache),
+      vcList: async () => vc.listVersions('fabric', useCache),
       oldestVersion: '18w43b',
     },
     {
       type: 'spigot',
-      vcList: () => vc.listVersions('spigot', useCache),
+      vcList: async () => vc.listVersions('spigot', useCache),
       oldestVersion: '1.8',
     },
   ];
@@ -79,23 +92,11 @@ describe('listupVersions', { tags: ['network'] }, async () => {
     'versionList ($type)',
     { timeout: 1000 * 60 },
     async (tCase) => {
-      const getCachedList = await tCase.vcList(); // 取得に成功したか
-      expect(isError(getCachedList)).toEqual(false);
-      if (isError(getCachedList)) return;
+      const cachedList = await tCase.vcList(); // 取得に成功したか
+      assertOk(cachedList);
 
       // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-      const cachedList = getCachedList;
-      if ('games' in cachedList) {
-        // fabricのみ特別対応
-        expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
-          tCase.oldestVersion
-        );
-      } else {
-        // その他のサーバー
-        expect(cachedList[cachedList.length - 1].id).toEqual(
-          tCase.oldestVersion
-        );
-      }
+      expect(oldestVersionId(cachedList)).toEqual(tCase.oldestVersion);
     }
   );
 });
@@ -142,7 +143,7 @@ describe(
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
-      expect(serverPath.child('eula.txt').exists()).toBe(false);
+      expect(await serverPath.child('eula.txt').exists()).toBe(false);
     });
 
     // 2回目 (eula=true)
@@ -163,7 +164,7 @@ describe(
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
-      expect(serverPath.child('eula.txt').exists()).toBe(false);
+      expect(await serverPath.child('eula.txt').exists()).toBe(false);
     });
 
     // 3回目 (eula=true)
@@ -184,7 +185,7 @@ describe(
 
       // 撤収
       await container.removeVersion(vanilla, serverPath);
-      expect(serverPath.child('eula.txt').exists()).toBe(false);
+      expect(await serverPath.child('eula.txt').exists()).toBe(false);
     });
 
     // バージョンの準備に失敗した場合
@@ -207,7 +208,7 @@ describe(
       expect(isError(readyResult)).toBe(true);
       // 起動できないサーバーのeulaの同意を求めないはず
       expect(eulaAgree).toHaveBeenCalledTimes(0);
-      expect(failServerPath.child('eula.txt').exists()).toBe(false);
+      expect(await failServerPath.child('eula.txt').exists()).toBe(false);
     });
   },
   1000 * 60

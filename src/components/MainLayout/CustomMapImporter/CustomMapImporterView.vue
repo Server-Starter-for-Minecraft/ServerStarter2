@@ -2,9 +2,11 @@
 import { onMounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { CustomMapData } from 'app/src-electron/schema/filedata';
 import { tError } from 'src/i18n/utils/tFunc';
-import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
@@ -60,8 +62,8 @@ function showCheckDialog(customMap: CustomMapData) {
       icon: customMap.icon,
       worldName: customMap.levelName,
       versionName: customMap.versionName,
-      importFunc: async () => await importCustomMap(customMap),
-    } as CustomMapImporterProp,
+      importFunc: async () => importCustomMap(customMap),
+    } satisfies CustomMapImporterProp,
   }).onOk(() => {
     onDialogOK();
   });
@@ -86,7 +88,7 @@ const importActions = [
  */
 function openLocalSaveSetting() {
   onDialogCancel();
-  router.push('/system/folder');
+  runDetached(router.push('/system/folder'), showUnexpectedError);
 }
 
 onMounted(async () => {

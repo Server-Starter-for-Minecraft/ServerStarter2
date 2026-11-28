@@ -3,8 +3,11 @@ import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError, setOpenDialogFunc } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
-import { $T, setI18nFunc } from './i18n/utils/tFunc';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
+import { $T, setI18nFunc, tError } from './i18n/utils/tFunc';
 import { useConsoleStore } from './stores/ConsoleStore';
 import {
   initSystemSettings,
@@ -21,7 +24,6 @@ import { useWorldRequestStore } from 'src/stores/WorldRequestStore';
 import { setColor } from './color';
 import { UpdateNotifyProp } from './components/App/UpdateNotify/iUpdateNotifyDialog';
 import { setShutdownHandler } from './components/SystemSettings/General/AutoShutdown/AutoShutdown';
-import { setOpenDialogFunc } from 'src/components/Error/Error';
 import UpdateNotifyDialog from './components/App/UpdateNotify/UpdateNotifyDialog.vue';
 import ErrorDialogView from './components/Error/ErrorDialogView.vue';
 
@@ -67,7 +69,10 @@ window.API.onAddConsole((_event, worldID, chunk, isError) => {
 window.API.onUpdateOnlinePlayers((_event, worldID, players) => {
   const joined = consoleStore.setOnlinePlayers(worldID, players);
   // 参加したプレイヤーが未登録の場合はプレイヤー一覧(ホワイトリスト)に登録する
-  registerJoinedPlayersToWorld(worldID, joined);
+  runDetached(
+    registerJoinedPlayersToWorld(worldID, joined),
+    showUnexpectedError
+  );
 });
 // 外部リソースが配布元の最新の内容に更新された際に，表示中の内容を差し替える
 window.API.onUpdateOuterResources((_event, resources) => {
@@ -80,7 +85,7 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
     componentProps: {
       os: os,
       newVer: newVer,
-    } as UpdateNotifyProp,
+    } satisfies UpdateNotifyProp,
   }).onOk(() => {
     window.API.sendOpenBrowser(
       'https://server-starter-for-minecraft.github.io'
@@ -90,10 +95,15 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
 
 // Eulaの同意処理
 // （同意を求める画面は、該当するワールドを表示している間だけ表示する）
-window.API.handleAgreeEula(
-  async (_: Electron.IpcRendererEvent, worldID, url) =>
-    await worldRequestStore.request(worldID, 'eula', { url })
+window.API.handleAgreeEula(async (_: Electron.IpcRendererEvent, worldID, url) =>
+  worldRequestStore.request(worldID, 'eula', { url })
 );
+// バックエンドで発生したエラー（API の戻り値以外で伝えられるもの）を表示
+// （info レベルのもの（追加コンテンツのキャッシュの失敗など）は動作に影響しないため表示しない）
+window.API.onError((_event, error) => {
+  if (error.level === 'info') return;
+  checkError(error, undefined, (e) => tError(e));
+});
 // Progressがバックエンドからやってきたときの処理
 window.API.onProgress((_event, worldID, progress) => {
   progressStore.setProgress(worldID, progress);
@@ -107,7 +117,7 @@ setOpenDialogFunc((args) => {
 });
 
 // Windowの起動時処理
-firstProcess();
+runDetached(firstProcess(), showUnexpectedError);
 setSubscribe();
 setShutdownHandler();
 
@@ -138,7 +148,7 @@ async function firstProcess() {
   await setUserSettings();
 
   // 起動時処理の開始
-  router.replace('/init');
+  runDetached(router.replace('/init'), showUnexpectedError);
 }
 
 /**

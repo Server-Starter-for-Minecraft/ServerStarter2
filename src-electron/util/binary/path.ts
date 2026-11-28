@@ -3,10 +3,9 @@ import fs from 'fs-extra';
 import * as path from 'path';
 import { z } from 'zod';
 import { errorMessage } from '../error/construct';
-import { isError } from '../error/error';
-import { Failable } from '../error/failable';
+import { fromRuntimeError, isError } from '../error/error';
+import { Failable, safeExecAsync } from '../error/failable';
 import { InfinitMap } from '../helper/infinitMap';
-import { asyncForEach } from '../obj/objmap';
 import { sleep } from '../promise/sleep';
 import { PromiseSpooler } from '../promise/spool';
 import type { BytesData } from './bytesData';
@@ -45,13 +44,37 @@ export class Path {
 
   parent(times = 1) {
     if (this._path) {
-      return new Path(path.join(this._path, ...new Array(times).fill('..')));
+      return new Path(
+        path.join(this._path, ...Array<string>(times).fill('..'))
+      );
     }
-    return new Path(path.join(...Array(times).fill('..')));
+    return new Path(path.join(...Array<string>(times).fill('..')));
   }
 
   absolute() {
     return new Path(path.resolve(this._path));
+  }
+
+  /** 絶対パスかを返す */
+  isAbsolute() {
+    return path.isAbsolute(this._path);
+  }
+
+  /** 環境変数 PATH などで複数のパスを区切る文字（Windows は `;`，それ以外は `:`） */
+  static readonly delimiter = path.delimiter;
+
+  /**
+   * このパスが base のフォルダ自身またはその中を指すかを返す
+   *
+   * `..` を含むパスなど，解決すると base の外に出るパスを検出するために使う（ファイルの有無は確認しない）
+   *
+   * @param base 基準にするフォルダ
+   * @returns base の中（base 自身を含む）であれば true
+   */
+  isWithin(base: Path) {
+    const rel = path.relative(base.absolute()._path, this.absolute()._path);
+    // 別ドライブの場合は絶対パスが返り，外に出る場合は先頭が `..` になる
+    return !path.isAbsolute(rel) && rel.split(path.sep)[0] !== '..';
   }
 
   /** このpathを起点にしたtargetの相対パスを返す */
@@ -94,18 +117,21 @@ export class Path {
     return path.extname(this._path);
   }
 
-  exists() {
-    return fs.existsSync(this._path);
+  /** ファイル・ディレクトリが存在するかを返す */
+  async exists(): Promise<boolean> {
+    return fs.pathExists(this._path);
   }
 
   stat = exclusive(this._stat);
   private async _stat(): Promise<Failable<fs.Stats>> {
-    return fs.stat(this.absolute().path).catch(async () => {
+    const stat = await safeExecAsync(async () => fs.stat(this.absolute().path));
+    if (isError(stat)) {
       return errorMessage.data.path.loadingFailed({
         type: 'file', // 存在しないパスはファイルとして扱う
         path: this.path,
       });
-    });
+    }
+    return stat;
   }
 
   isDirectory = exclusive(this._isDirectory);
@@ -127,17 +153,20 @@ export class Path {
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
-    return fs.rename(this._path, newpath.absolute().path).catch(async () => {
+    const renamed = await safeExecAsync(async () =>
+      fs.rename(this._path, newpath.absolute().path)
+    );
+    if (isError(renamed)) {
       return errorMessage.data.path.renameFailed({
         type: isDir ? 'directory' : 'file',
         path: this.path,
       });
-    });
+    }
   }
 
   mkdir = exclusive(this._mkdir);
   private async _mkdir(recursive = true) {
-    if (!this.exists()) await fs.mkdir(this._path, { recursive });
+    if (!(await this.exists())) await fs.mkdir(this._path, { recursive });
   }
 
   /** ディレクトリが無かったら作成する */
@@ -157,26 +186,36 @@ export class Path {
     await fs.emptyDir(this._path);
   }
 
-  /** @deprecated 同期ディレクトリ生成(非推奨) */
-  mkdirSync(recursive = false) {
-    if (!this.exists()) fs.mkdirSync(this._path, { recursive });
-  }
-
+  /**
+   * このパスに，target へのリンクを作る
+   *
+   * - target がファイルの場合はハードリンクを作る
+   * - target がフォルダの場合は，ハードリンクを作れないため，シンボリックリンクを作る
+   *   （Windows ではジャンクションとし，管理者の権限なしに作れるようにする）
+   *
+   * 既にこのパスにファイルがある場合（以前に作ったリンクなど）は，置き換える
+   *
+   * @param target リンク先（存在するファイル・フォルダ）
+   * @returns 失敗した場合（リンク先が存在しない場合を含む）はエラー
+   */
   mklink = exclusive(this._mklink);
   private async _mklink(target: Path): Promise<Failable<void>> {
     await this.parent().mkdir();
-    return new Promise<Failable<void>>((resolve) =>
-      fs.link(target._path, this._path, (e) => {
-        e
-          ? resolve(
-              errorMessage.data.path.loadingFailed({
-                type: 'directory',
-                path: this.path,
-              })
-            )
-          : resolve();
-      })
+    const removed = await this._remove();
+    if (isError(removed)) return removed;
+    const isDirectory = await target._isDirectory();
+    if (isError(isDirectory)) return isDirectory;
+    const linked = await safeExecAsync(async () =>
+      isDirectory
+        ? fs.symlink(target._path, this._path, 'junction')
+        : fs.link(target._path, this._path)
     );
+    if (isError(linked)) {
+      return errorMessage.data.path.loadingFailed({
+        type: isDirectory ? 'directory' : 'file',
+        path: this.path,
+      });
+    }
   }
 
   write = exclusive(this._write);
@@ -200,12 +239,6 @@ export class Path {
     return this._write(bytes, encoding);
   }
 
-  /** @deprecated 同期書き込み(非推奨) */
-  writeTextSync(content: string) {
-    this.parent().mkdirSync(true);
-    fs.writeFileSync(this._path, content);
-  }
-
   writeJson = exclusive(this._writeJson);
   private async _writeJson<T>(content: T, encoding?: BufferEncoding) {
     return this._writeText(JSON.stringify(content), encoding);
@@ -221,9 +254,10 @@ export class Path {
     encoding: BufferEncoding = 'utf8'
   ) {
     await this.parent().mkdir();
-    try {
-      await fs.appendFile(this._path, content, { encoding });
-    } catch {
+    const appended = await safeExecAsync(async () =>
+      fs.appendFile(this._path, content, { encoding })
+    );
+    if (isError(appended)) {
       return errorMessage.data.path.creationFailed({
         type: 'file',
         path: this.path,
@@ -238,7 +272,7 @@ export class Path {
 
   readJson = exclusive(this._readJson);
   private async _readJson<T>(
-    validator: z.ZodType<T, any>,
+    validator: z.ZodType<T>,
     encoding?: BufferEncoding
   ): Promise<Failable<T>> {
     const data = await this._read();
@@ -255,16 +289,11 @@ export class Path {
     return data.text(encoding);
   }
 
-  /** @deprecated 非推奨 */
-  readBufferSync(): Buffer {
-    return fs.readFileSync(this.path);
-  }
-
   async iter(): Promise<Failable<Path[]>> {
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
-    if (this.exists() && isDir)
+    if ((await this.exists()) && isDir)
       return (await fs.readdir(this._path)).map((p) => this.child(p));
     return [];
   }
@@ -274,19 +303,20 @@ export class Path {
    */
   remove = exclusive(this._remove);
   private async _remove(): Promise<Failable<void>> {
-    if (!this.exists()) return;
+    if (!(await this.exists())) return;
     const isDir = await this._isDirectory();
     if (isError(isDir)) return isDir;
 
-    try {
-      // 他プロセスによる一時的なファイルロック(EBUSY等)の場合は再試行する
-      await fs.rm(this._path, {
+    // 他プロセスによる一時的なファイルロック(EBUSY等)の場合は再試行する
+    const removed = await safeExecAsync(async () =>
+      fs.rm(this._path, {
         recursive: true,
         force: true,
         maxRetries: BUSY_RETRY_COUNT,
         retryDelay: BUSY_RETRY_DELAY_MS,
-      });
-    } catch {
+      })
+    );
+    if (isError(removed)) {
       return errorMessage.data.path.deletionFailed({
         type: isDir ? 'directory' : 'file',
         path: this.path,
@@ -296,12 +326,14 @@ export class Path {
 
   copyTo = exclusive(this._copyTo);
   private async _copyTo(target: Path) {
-    if (!this.exists()) return;
+    if (!(await this.exists())) return;
     await target.parent().mkdir(true);
-    await target.remove();
-    try {
-      await retryOnBusy(() => fs.copy(this.path, target.path));
-    } catch {
+    const removed = await target.remove();
+    if (isError(removed)) return removed;
+    const copied = await retryOnBusy(async () =>
+      fs.copy(this.path, target.path)
+    );
+    if (isError(copied)) {
       const isDir = await this._isDirectory();
       if (isError(isDir)) return isDir;
       return errorMessage.data.path.copyFailed({
@@ -316,13 +348,16 @@ export class Path {
     target: Path,
     options?: fs.MoveOptions
   ): Promise<Failable<void>> {
-    if (!this.exists()) return;
+    if (!(await this.exists())) return;
     await target.parent().mkdir(true);
     const isSuccessRemove = await target._remove();
     if (isError(isSuccessRemove)) return isSuccessRemove;
 
     // fs.moveだとうまくいかないことがあったので再帰的にファイルを移動
-    async function recursiveMove(path: Path, target: Path) {
+    async function recursiveMove(
+      path: Path,
+      target: Path
+    ): Promise<Failable<void>> {
       const isDir = await path._isDirectory();
       if (isError(isDir)) return isDir;
 
@@ -331,13 +366,19 @@ export class Path {
         const allPaths = await path.iter();
         if (isError(allPaths)) return allPaths;
 
-        await asyncForEach(allPaths, async (child) => {
-          await recursiveMove(child, target.child(child.basename()));
-        });
+        // 1つでも移動できなかった場合はエラーを返す
+        for (const child of allPaths) {
+          const moved = await recursiveMove(
+            child,
+            target.child(child.basename())
+          );
+          if (isError(moved)) return moved;
+        }
       } else {
-        try {
-          await fs.move(path.path, target.path, options);
-        } catch {
+        const moved = await safeExecAsync(async () =>
+          fs.move(path.path, target.path, options)
+        );
+        if (isError(moved)) {
           return errorMessage.data.path.moveFailed({
             type: 'file',
             path: path.path,
@@ -365,7 +406,7 @@ export class Path {
 
 /** 再帰的にファイルの権限を書き換える */
 async function changePermissionsRecursively(basePath: string, mode: number) {
-  if (fs.existsSync(basePath)) {
+  if (await fs.pathExists(basePath)) {
     await fs.chmod(basePath, mode);
     if ((await fs.lstat(basePath)).isDirectory()) {
       const files = await fs.readdir(basePath);
@@ -396,17 +437,26 @@ const BUSY_ERROR_CODES = new Set(['EBUSY', 'EPERM']);
  * サーバー終了直後などは、Javaプロセスやウイルス対策ソフトがファイルを掴んだままの場合があるため、
  * 少し待ってから再試行することで、ファイル操作の失敗を回避する
  *
+ * 再試行するかどうかを例外のエラーコードで判定するため，safeExecAsync を使わずに例外を直接扱う
+ * （lint の例外として eslint-rules/config.js に登録している）
+ *
  * @param operation 再試行するファイル操作
- * @returns ファイル操作の戻り値（再試行しても失敗した場合はその例外を投げる）
+ * @returns ファイル操作の戻り値（再試行しても失敗した場合はエラー）
  */
-async function retryOnBusy<T>(operation: () => Promise<T>): Promise<T> {
+async function retryOnBusy<T>(
+  operation: () => Promise<T>
+): Promise<Failable<T>> {
   for (let retried = 0; ; retried++) {
     try {
       return await operation();
     } catch (e) {
-      const code = (e as NodeJS.ErrnoException)?.code;
+      // Node.js のファイル操作の例外は，原因を表す文字列の code を持つ
+      const code =
+        e instanceof Error && 'code' in e && typeof e.code === 'string'
+          ? e.code
+          : undefined;
       const isBusy = code !== undefined && BUSY_ERROR_CODES.has(code);
-      if (!isBusy || retried >= BUSY_RETRY_COUNT) throw e;
+      if (!isBusy || retried >= BUSY_RETRY_COUNT) return fromRuntimeError(e);
       await sleep(BUSY_RETRY_DELAY_MS);
     }
   }
@@ -414,7 +464,7 @@ async function retryOnBusy<T>(operation: () => Promise<T>): Promise<T> {
 
 /** パスに関する処理を同期的に処理するために各命令をプールする */
 const spoolers = InfinitMap.primitiveKeyWeakValue(
-  (key: string) => new PromiseSpooler()
+  (_key: string) => new PromiseSpooler()
 );
 /**
  * 各関数の実行時に当該処理をプールする
@@ -422,18 +472,20 @@ const spoolers = InfinitMap.primitiveKeyWeakValue(
  * Pathクラスの中でプールが定義された関数を実行するときには`_Hoge()`という本体実装側を呼び出す
  * （関数A自体と関数Aの中で呼び出す処理で重複してプールすることがないようにする）
  */
-function exclusive<P extends any[], R>(
+function exclusive<P extends unknown[], R>(
   target: (this: Path, ...args: P) => Promise<R>
 ) {
-  return function (this: Path, ...args: P) {
+  return async function (this: Path, ...args: P) {
     const key = this.absolute().path;
-    return spoolers.get(key).spool(() => target.bind(this)(...args));
+    return spoolers.get(key).spool(async () => target.bind(this)(...args));
   };
 }
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('Path', async () => {
     const path = await import('path');
@@ -443,7 +495,7 @@ if (import.meta.vitest) {
       'work',
       path.basename(__filename, '.ts')
     );
-    workPath.mkdir();
+    await workPath.mkdir();
 
     test('path', () => {
       // パス操作のテスト
@@ -486,6 +538,25 @@ if (import.meta.vitest) {
       expect(new Path('foo/bar').parent(2).path).toBe(new Path('').path);
     });
 
+    test('isWithin', () => {
+      const base = new Path('foo/bar');
+      expect(base.isWithin(base)).toBe(true);
+      expect(base.child('buz').isWithin(base)).toBe(true);
+      expect(base.child('..bar').isWithin(base)).toBe(true);
+      expect(base.child('buz', '..', '..', 'bar2').isWithin(base)).toBe(false);
+      expect(base.child('..', 'escape').isWithin(base)).toBe(false);
+      expect(new Path('foo').isWithin(base)).toBe(false);
+    });
+
+    // POSIX では `\` は区切り文字ではなくファイル名の一部になるため，Windows でのみ確認する
+    test.runIf(process.platform === 'win32')(
+      'isWithin（Windows の区切り文字）',
+      () => {
+        const base = new Path('foo/bar');
+        expect(base.child('..\\escape').isWithin(base)).toBe(false);
+      }
+    );
+
     test('creation', async () => {
       // ファイル操作のテスト
       const testdir = workPath.child('creations');
@@ -496,15 +567,15 @@ if (import.meta.vitest) {
 
       // ディレクトリの生成/削除
       const a = testdir.child('a');
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
       await a.mkdir();
       // 存在するディレクトリを生成しても何も起こらない
       await a.mkdir();
-      expect(a.exists()).toBe(true);
+      expect(await a.exists()).toBe(true);
       await a.remove();
       // 存在しないディレクトリを削除しても何も起こらない
       await a.remove();
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
 
       // ファイルの生成/削除
       await a.mkdir();
@@ -512,36 +583,30 @@ if (import.meta.vitest) {
       await b.writeText('hello');
       expect(await b.readText()).toBe('hello');
       await b.remove();
-      expect(b.exists()).toBe(false);
+      expect(await b.exists()).toBe(false);
       await a.remove();
 
       // ディレクトリの再帰的な作成/削除
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
       await b.mkdir();
-      expect(b.exists()).toBe(true);
+      expect(await b.exists()).toBe(true);
       await a.remove();
-      expect(a.exists()).toBe(false);
+      expect(await a.exists()).toBe(false);
 
       // ensureDirはディレクトリが存在しない場合のみ作成する
       await a.ensureDir();
-      expect(a.exists()).toBe(true);
+      expect(await a.exists()).toBe(true);
 
       // emptyDirはディレクトリが空であることを保証する
       await a.child('sample.txt').writeText('hello');
       const aPaths1 = await a.iter();
-      expect(isError(aPaths1)).toBe(false);
-      if (!isError(aPaths1)) {
-        const fileCount1 = aPaths1.length;
-        expect(fileCount1).toBe(1);
-      }
+      assertOk(aPaths1);
+      expect(aPaths1.length).toBe(1);
       await a.emptyDir();
 
       const aPaths2 = await a.iter();
-      expect(isError(aPaths2)).toBe(false);
-      if (!isError(aPaths2)) {
-        const fileCount2 = aPaths2.length;
-        expect(fileCount2).toBe(0);
-      }
+      assertOk(aPaths2);
+      expect(aPaths2.length).toBe(0);
     });
 
     test('isDirectory', async () => {
@@ -581,15 +646,15 @@ if (import.meta.vitest) {
       expect(isError(renameSuccessResult)).toBe(false);
 
       // リネーム後のファイルが存在することを確認
-      expect(renameFile.exists()).toBe(false);
-      expect(testdir.child('renameFile2.txt').exists()).toBe(true);
+      expect(await renameFile.exists()).toBe(false);
+      expect(await testdir.child('renameFile2.txt').exists()).toBe(true);
 
       // リネーム（ディレクトリ）
       const renameDir = testdir.child('renameDir');
       await renameDir.mkdir();
       await renameDir.rename(testdir.child('renameDir2'));
-      expect(renameDir.exists()).toBe(false);
-      expect(testdir.child('renameDir2').exists()).toBe(true);
+      expect(await renameDir.exists()).toBe(false);
+      expect(await testdir.child('renameDir2').exists()).toBe(true);
     });
 
     test('file operations', async () => {
@@ -603,17 +668,17 @@ if (import.meta.vitest) {
       const copyTargetDir = testdir.child('copyTarget');
       const copyRes = await sourceDir.copyTo(copyTargetDir);
       expect(isError(copyRes)).toBe(false);
-      expect(sourceDir.exists()).toBe(true);
-      expect(copyTargetDir.child('a.txt').exists()).toBe(true);
-      expect(copyTargetDir.child('dir', 'b.txt').exists()).toBe(true);
+      expect(await sourceDir.exists()).toBe(true);
+      expect(await copyTargetDir.child('a.txt').exists()).toBe(true);
+      expect(await copyTargetDir.child('dir', 'b.txt').exists()).toBe(true);
 
       // check move
       const moveTargetDir = testdir.child('moveTarget');
       const moveRes = await sourceDir.moveTo(moveTargetDir);
       expect(isError(moveRes)).toBe(false);
-      expect(sourceDir.exists()).toBe(false);
-      expect(moveTargetDir.child('a.txt').exists()).toBe(true);
-      expect(moveTargetDir.child('dir', 'b.txt').exists()).toBe(true);
+      expect(await sourceDir.exists()).toBe(false);
+      expect(await moveTargetDir.child('a.txt').exists()).toBe(true);
+      expect(await moveTargetDir.child('dir', 'b.txt').exists()).toBe(true);
     });
 
     test('json files', async () => {
@@ -647,14 +712,11 @@ if (import.meta.vitest) {
       await file1.writeText('hello');
       await file2.writeText('world');
       const allPaths = await testdir.iter();
-      expect(isError(allPaths)).toBe(false);
-
-      if (!isError(allPaths)) {
-        const fileTxts = await Promise.all(
-          allPaths.map((file) => file.readText())
-        );
-        expect(fileTxts).toEqual(['hello', 'world']);
-      }
+      assertOk(allPaths);
+      const fileTxts = await Promise.all(
+        allPaths.map(async (file) => file.readText())
+      );
+      expect(fileTxts).toEqual(['hello', 'world']);
     });
 
     test('file path', async () => {

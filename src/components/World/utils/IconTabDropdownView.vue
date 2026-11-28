@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DropBtnView from './dropBtnView.vue';
 
@@ -25,7 +27,7 @@ const router = useRouter();
  */
 function btnClicked(btn: DropBtn) {
   model.value = btn.activeModelValue;
-  router.push(`/${prop.path}`);
+  runDetached(router.push(`/${prop.path}`), showUnexpectedError);
 }
 </script>
 

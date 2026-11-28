@@ -9,7 +9,7 @@ import { LockReason } from './lockedProperties';
 import {
   getPropertyAnnotation,
   getPropertyDescription,
-} from './propertyDefinitions';
+} from 'src/logic/property/propertyDefinitions';
 
 interface Prop {
   settingName: string;

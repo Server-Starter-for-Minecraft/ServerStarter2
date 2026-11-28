@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, Ref, ref, toRaw } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
+import { checkError } from 'src/error/error';
 import { getVersionId } from 'app/src-public/scripts/version';
 import { RemoteWorld } from 'app/src-electron/schema/remote';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import BaseDialogCard from 'src/components/util/baseDialog/baseDialogCard.vue';
 import WorldItem from 'src/components/util/WorldItem.vue';
@@ -35,7 +35,7 @@ function checkSetExistedRemote(selectedRemote: RemoteWorld) {
       rIcon: selectedRemote.avater_path,
       rVersionName: getVersionId(selectedRemote.version),
       rLastPlayed: selectedRemote.last_date,
-    } as GithubCheckDialogProp,
+    } satisfies GithubCheckDialogProp,
   }).onOk(() => {
     if (mainStore.world) {
       mainStore.world.version = selectedRemote.version;
@@ -58,7 +58,7 @@ function checkSetNewRemote() {
       rIcon: mainStore.world.avater_path,
       rVersionName: getVersionId(mainStore.world.version),
       rLastPlayed: mainStore.world.last_date,
-    } as GithubCheckDialogProp,
+    } satisfies GithubCheckDialogProp,
   }).onOk(onDialogOK);
 }
 

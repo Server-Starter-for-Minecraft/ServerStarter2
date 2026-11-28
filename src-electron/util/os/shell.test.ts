@@ -44,7 +44,7 @@ describe('openFolder', () => {
     const result = await openFolder(dir.path, true);
 
     expect(isValid(result)).toBe(true);
-    expect(dir.exists()).toBe(true);
+    expect(await dir.exists()).toBe(true);
     expect(openPath).toHaveBeenCalledWith(dir.path);
   });
 

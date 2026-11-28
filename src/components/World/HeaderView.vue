@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import SsTooltip from '../util/base/ssTooltip.vue';
@@ -17,12 +19,15 @@ const statusColor = {
 };
 
 function copyIP() {
-  navigator.clipboard.writeText(mainStore.worldIP).then(() => {
-    copied.value = true;
-    setTimeout(() => {
-      copied.value = false;
-    }, 10000);
-  });
+  runDetached(
+    navigator.clipboard.writeText(mainStore.worldIP).then(() => {
+      copied.value = true;
+      setTimeout(() => {
+        copied.value = false;
+      }, 10000);
+    }),
+    showUnexpectedError
+  );
 }
 </script>
 

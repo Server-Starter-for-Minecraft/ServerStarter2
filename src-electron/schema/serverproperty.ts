@@ -59,8 +59,8 @@ const coerced = <T extends z.ZodType>(type: ServerPropertyType, schema: T) =>
     schema
   );
 
-/** 読み込み用のスキーマのメタデータで，プロパティ画面で使う注釈を保持するキー */
-const ANNOTATION_META_KEY = 'serverPropertyAnnotation';
+/** 読み込み用のスキーマごとの，プロパティ画面で使う注釈 */
+const annotationOfSchema = new WeakMap<z.ZodType, ServerPropertyAnnotation>();
 
 /**
  * プロパティの読み込み用のスキーマに，プロパティ画面で使う注釈を付ける
@@ -71,7 +71,10 @@ const ANNOTATION_META_KEY = 'serverPropertyAnnotation';
 const withAnnotation = <T extends z.ZodType>(
   schema: T,
   annotation: ServerPropertyAnnotation
-) => schema.meta({ [ANNOTATION_META_KEY]: annotation });
+) => {
+  annotationOfSchema.set(schema, annotation);
+  return schema;
+};
 
 const boolSetter = (def: boolean) =>
   withAnnotation(coerced('boolean', z.boolean()).default(def).catch(def), {
@@ -217,8 +220,8 @@ const DefaultServerProperties = z
 function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
   const annotations: Record<string, ServerPropertyAnnotation> = {};
   for (const [key, schema] of toEntries(prop.shape)) {
-    const annotation = schema.meta()?.[ANNOTATION_META_KEY];
-    if (annotation) annotations[key] = annotation as ServerPropertyAnnotation;
+    const annotation = annotationOfSchema.get(schema);
+    if (annotation) annotations[key] = annotation;
   }
   return annotations;
 }

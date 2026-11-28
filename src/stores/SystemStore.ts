@@ -1,6 +1,8 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { showUnexpectedError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import {
   CacheFileData,
   DatapackData,
@@ -10,28 +12,45 @@ import {
 import { OuterResources } from 'app/src-electron/schema/outerResource';
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
-import {
-  AllVanillaVersion,
-  AllVersion,
-  VersionType,
-} from 'app/src-electron/schema/version';
+import { AllVersion, VersionType } from 'app/src-electron/schema/version';
 import { version } from '../../package.json';
+import { unloadedStaticResource, unloadedSystemSettings } from './placeholders';
 import { setBackSys, setFrontSys } from './SystemStore/converter';
 import { FrontPlayerGroup } from './SystemStore/converters/playerGroup';
 
+/**
+ * サーバーの種類ごとのバージョンの一覧（取得できた種類のみを持つ）
+ */
+export type VersionLists = { [K in VersionType]?: AllVersion<K> };
+
 export const useSystemStore = defineStore('systemStore', {
-  state: () => {
+  state: (): {
+    systemVersion: string;
+    publicIP: string;
+    serverVersions: VersionLists;
+    staticResouces: StaticResouce;
+    /**
+     * 外部リソース（起動時の読み込み前は空。配布元の最新の内容に更新されると差し替わる）
+     *
+     * 読み込み前の値を型の上でも表すため，各外部リソースは未定義になりうる
+     */
+    outerResources: Partial<OuterResources>;
+    cacheContents: {
+      datapacks: CacheFileData<DatapackData>[];
+      plugins: CacheFileData<PluginData>[];
+      mods: CacheFileData<ModData>[];
+    };
+  } => {
     return {
       systemVersion: version,
       publicIP: '取得できませんでした',
-      serverVersions: new Map<VersionType, AllVersion<VersionType>>(),
-      staticResouces: {} as StaticResouce,
-      /** 外部リソース（配布元の最新の内容に更新されると差し替わる） */
-      outerResources: {} as OuterResources,
+      serverVersions: {},
+      staticResouces: unloadedStaticResource(),
+      outerResources: {},
       cacheContents: {
-        datapacks: [] as CacheFileData<DatapackData>[],
-        plugins: [] as CacheFileData<PluginData>[],
-        mods: [] as CacheFileData<ModData>[],
+        datapacks: [],
+        plugins: [],
+        mods: [],
       },
     };
   },
@@ -46,9 +65,7 @@ export const useSystemStore = defineStore('systemStore', {
      * サーバープロパティの定義を，ワールドの Minecraft のバージョンに合わせて選ぶために使う
      */
     vanillaVersionOrder(state): string[] {
-      const vanilla = state.serverVersions.get('vanilla') as
-        AllVanillaVersion | undefined;
-      return vanilla?.map((ver) => ver.id) ?? [];
+      return state.serverVersions.vanilla?.map((ver) => ver.id) ?? [];
     },
   },
 });
@@ -57,10 +74,13 @@ export const useSystemStore = defineStore('systemStore', {
  * SystemSettings専用のStore
  */
 const useSystemSettingsStore = defineStore('systemSettingsStore', {
-  state: () => {
+  state: (): {
+    backSystemSettings: SystemSettings;
+    playerGroups: FrontPlayerGroup;
+  } => {
     return {
-      backSystemSettings: {} as SystemSettings,
-      playerGroups: {} as FrontPlayerGroup,
+      backSystemSettings: unloadedSystemSettings(),
+      playerGroups: {},
     };
   },
   getters: {
@@ -100,8 +120,11 @@ export function initSystemSettings(sysSettings: SystemSettings) {
 export function setSysSettingsSubscriber() {
   const sysSettingsStore = useSystemSettingsStore();
   sysSettingsStore.$subscribe((mutation, state) => {
-    window.API.invokeSetSystemSettings(
-      deepcopy(setBackSys(deepcopy(state.backSystemSettings)))
+    runDetached(
+      window.API.invokeSetSystemSettings(
+        deepcopy(setBackSys(deepcopy(state.backSystemSettings)))
+      ),
+      showUnexpectedError
     );
   });
 }

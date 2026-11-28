@@ -8,6 +8,7 @@ import {
   UniversalRuntime,
 } from 'app/src-electron/schema/runtime';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { BytesData } from '../../util/binary/bytesData';
 import { Path } from '../../util/binary/path';
 import { isError, isValid } from '../../util/error/error';
@@ -88,6 +89,10 @@ export class RuntimeContainer {
     // すでにインストール済み
     const current = await this.checkExists(metaPath, useJavaw);
     if (isValid(current)) return current;
+    ignoreError(
+      current,
+      'インストールされていない場合は，これからインストールする'
+    );
 
     // universalの場合はそれに対応するほかのランタイムをインストール
     const mcRuntimeManifest = await this.installerMap.minecraft.getCache();
@@ -138,9 +143,10 @@ export class RuntimeContainer {
     if (isError(refInstallResult)) return refInstallResult;
 
     // 参照しているメタファイルの内容をコピー
-    await this.metaPath(refRuntime, osPlatform).copyTo(
+    const copied = await this.metaPath(refRuntime, osPlatform).copyTo(
       this.metaPath(runtime, osPlatform)
     );
+    if (isError(copied)) return copied;
 
     return refInstallResult;
   }
@@ -153,21 +159,22 @@ export class RuntimeContainer {
     osPlatform: OsPlatform
   ): Promise<Failable<void>> {
     const metapath = this.metaPath(runtime, osPlatform);
-    if (!metapath.exists()) return;
+    if (!(await metapath.exists())) return;
 
     const _metaJson = await metapath.readJson(RuntimeMeta);
     if (isError(_metaJson)) return _metaJson;
     else metaJson = _metaJson;
 
-    await new Path(metaJson.base.path).remove();
-    await metapath.remove();
+    const removed = await new Path(metaJson.base.path).remove();
+    if (isError(removed)) return removed;
+    return metapath.remove();
   }
 
   private async checkExists(
     metapath: Path,
     useJavaw: boolean
   ): Promise<Failable<Path>> {
-    if (!metapath.exists()) {
+    if (!(await metapath.exists())) {
       return errorMessage.data.path.notFound({
         type: 'file',
         path: metapath.path,
@@ -197,7 +204,7 @@ export class RuntimeContainer {
     return binPath;
   }
 
-  private metaPath(runtime: Runtime, osPlatform: OsPlatform) {
+  private metaPath(runtime: Runtime, osPlatform: OsPlatform): Path {
     const segments: string[] = [];
     switch (osPlatform) {
       case 'windows-x64':
@@ -231,15 +238,11 @@ export class RuntimeContainer {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('runtime installer', { tags: ['network'] }, async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 

@@ -1,3 +1,4 @@
+import { promises } from 'fs';
 import fs from 'fs-extra';
 import {
   afterEach,
@@ -5,14 +6,14 @@ import {
   beforeEach,
   describe,
   expect,
+  type MockInstance,
   test,
   vi,
 } from 'vitest';
-import {
-  GroupProgressor,
-  TitleProgressor,
-} from 'app/src-electron/common/progress';
+import { GroupProgressor } from 'app/src-electron/common/progress';
+import { api, setBackAPI } from 'app/src-electron/core/api';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
+import { ProgressMessage } from 'app/src-electron/schema/progressMessage';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { SystemSettings } from 'app/src-electron/schema/system';
@@ -22,6 +23,7 @@ import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import type { RunRebootableServer } from '../server/server';
 import { serverPropertiesFile } from './files/properties';
 import { WorldHandler } from './handler';
 
@@ -53,7 +55,7 @@ vi.mock('../server/server', () => ({
       _settings: unknown,
       _progress: unknown,
       notification: ServerStartNotification
-    ) => {
+    ): RunRebootableServer => {
       let stop: FakeServer['stop'] = () => {};
       let crash: FakeServer['crash'] = () => {};
       const promise = new Promise<Failable<undefined>>((resolve, reject) => {
@@ -86,25 +88,25 @@ vi.mock('../server/setup/ngrok', () => ({
   closeNgrok: vi.fn(async () => {}),
 }));
 
+/** テストから切り替える自動シャットダウンの設定 */
+const autoShutDownSetting = vi.hoisted(() => ({ enabled: false }));
+
 vi.mock('../stores/system', () => ({
   getSystemSettings: vi.fn(async () => {
     const settings = SystemSettings.parse({ container: [] });
     settings.user.ngrokToken = NGROK_TOKEN;
+    settings.user.autoShutDown = autoShutDownSetting.enabled;
     return settings;
   }),
 }));
 
-// 起動準備の途中で例外が発生する状況を再現できるように，実装はそのままでモック化する
-vi.mock('./local', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./local')>();
-  return {
-    ...actual,
-    formatWorldDirectory: vi.fn(actual.formatWorldDirectory),
-  };
-});
+// テストの実行環境（PC）を実際にシャットダウンしないよう差し替える
+vi.mock('../../lifecycle/exit', () => ({
+  closeServerStarterAndShutDown: vi.fn(async () => {}),
+}));
 
 const { runNgrok, closeNgrok } = await import('../server/setup/ngrok');
-const { formatWorldDirectory } = await import('./local');
+const { closeServerStarterAndShutDown } = await import('../../lifecycle/exit');
 
 const workPath = new Path(__dirname).child('work', 'handler');
 const container = WorldContainer.parse(workPath.absolute().path);
@@ -112,6 +114,39 @@ let worldIdx = 0;
 
 /** ユーザーが設定したポート番号 */
 const USER_PORT = 25570;
+
+/**
+ * 指定した進捗の表示で例外を投げる進捗（フロントエンドへの進捗の通知の失敗などを再現する）
+ *
+ * `subtitle` は副題の表示を，`deleteTitle` は表題の表示の削除を，指定したメッセージのときに失敗させる
+ */
+class FailingProgressor extends GroupProgressor {
+  constructor(
+    private readonly failOn: {
+      subtitle?: ProgressMessage['key'];
+      deleteTitle?: ProgressMessage['key'];
+    }
+  ) {
+    super();
+  }
+
+  subtitle(subtitle: ProgressMessage) {
+    if (subtitle.key === this.failOn.subtitle) {
+      throw new Error('failed to send progress');
+    }
+    return super.subtitle(subtitle);
+  }
+
+  title(title: ProgressMessage) {
+    const titleProgressor = super.title(title);
+    if (title.key === this.failOn.deleteTitle) {
+      titleProgressor.delete = () => {
+        throw new Error('failed to send progress');
+      };
+    }
+    return titleProgressor;
+  }
+}
 
 /** テスト用のワールドを作成する */
 async function createWorld(useNgrok: boolean) {
@@ -318,40 +353,45 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
 
     const ngrokError = errorMessage.lib.ngrok.unknown({ message: 'failed' });
     vi.mocked(runNgrok).mockResolvedValueOnce(ngrokError);
-    // ユーザーが設定したポート番号の書き戻しだけが失敗する状況
-    const restoreError = errorMessage.system.subprocess({
-      processPath: 'restore',
-      args: [],
-      exitcode: 1,
-    });
-    const originalSave = serverPropertiesFile.save;
-    const saveSpy = vi
-      .spyOn(serverPropertiesFile, 'save')
-      .mockImplementation(async (path, props) =>
-        props['server-port'] === USER_PORT
-          ? restoreError
-          : originalSave(path, props)
+    // ユーザーが設定したポート番号の書き戻し（server.properties の書き込み）だけが失敗する状況
+    const originalWriteFile = promises.writeFile.bind(promises);
+    const writeSpy = vi
+      .spyOn(promises, 'writeFile')
+      .mockImplementation(async (file, data, options) =>
+        String(file).endsWith('server.properties') &&
+        data instanceof Uint8Array &&
+        new TextDecoder().decode(data).includes(`server-port=${USER_PORT}`)
+          ? Promise.reject(
+              Object.assign(new Error('EACCES'), { code: 'EACCES' })
+            )
+          : originalWriteFile(file, data, options)
       );
 
     try {
       const failed = await handler.run(new GroupProgressor());
       // 起動に失敗した原因（Ngrokのエラー）を返しつつ，書き戻しの失敗も伝える
       expect(failed.value).toEqual(ngrokError);
-      expect(failed.errors).toContainEqual(restoreError);
+      const writeErrors = failed.errors.filter(
+        (e) => e.key === 'data.path.creationFailed'
+      );
+      expect(writeErrors).toHaveLength(1);
+      expect(writeErrors[0]?.arg).toHaveProperty(
+        'path',
+        expect.stringContaining('server.properties')
+      );
     } finally {
-      saveSpy.mockRestore();
+      writeSpy.mockRestore();
     }
   });
 
   test('起動準備の途中で例外が発生した場合も，Ngrokを終了しポート番号を戻して再度起動できる', async () => {
     const { handler } = await createWorld(true);
     vi.mocked(closeNgrok).mockClear();
-    // Ngrokの起動後に行われる準備処理のいずれかで例外が発生した状況
-    vi.mocked(formatWorldDirectory).mockRejectedValueOnce(
-      new Error('unexpected error')
+    // Ngrokの起動後に行われる準備処理で例外が発生した状況
+    // （Ngrokの起動後のいずれかの処理であればよく，ここでは最初に行う設定の保存の進捗の表示で発生させる）
+    const failed = await handler.run(
+      new FailingProgressor({ subtitle: 'server.local.savingSettingFiles' })
     );
-
-    const failed = await handler.run(new GroupProgressor());
 
     expect(isError(failed.value)).toBe(true);
     expect(servers.length).toBe(0);
@@ -367,22 +407,14 @@ describe('WorldHandler サーバー起動時のポート番号', () => {
 
   test('起動準備中の進捗表示で例外が発生しても，サーバーが管理できない状態で起動したまま残らない', async () => {
     const { handler } = await createWorld(true);
-    // 起動直前のフロントエンドへの進捗の通知が失敗し続ける状況
-    const deleteSpy = vi
-      .spyOn(TitleProgressor.prototype, 'delete')
-      .mockImplementation(() => {
-        throw new Error('failed to send progress');
-      });
+    // 起動直前のフロントエンドへの進捗の通知（起動準備の表示の削除）が失敗する状況
+    const failed = await handler.run(
+      new FailingProgressor({ deleteTitle: 'server.run.before.title' })
+    );
 
-    try {
-      const failed = await handler.run(new GroupProgressor());
-
-      expect(isError(failed.value)).toBe(true);
-      expect(servers.length).toBe(0);
-      expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
-    } finally {
-      deleteSpy.mockRestore();
-    }
+    expect(isError(failed.value)).toBe(true);
+    expect(servers.length).toBe(0);
+    expect((await loadProperties(handler))['server-port']).toBe(USER_PORT);
 
     // 改めて起動できる
     const running = handler.run(new GroupProgressor());
@@ -432,6 +464,17 @@ describe('WorldHandler ワールドの複製', () => {
   });
 
   /** 指定したエラーコードのファイル操作エラーを生成する */
+  /** fs-extra の copy（Promise を返す形）の型。コールバック形式のオーバーロードを除いて扱う */
+  type PromiseCopy = (src: string, dest: string) => Promise<void>;
+
+  /** fs-extra の copy を差し替える（モックの実装に async 関数を渡せるよう，Promise を返す形の型で扱う） */
+  function spyOnCopy() {
+    const original = fs.copy.bind(fs);
+    const realCopy: PromiseCopy = async (src, dest) => original(src, dest);
+    const spy = vi.spyOn(fs, 'copy') as unknown as MockInstance<PromiseCopy>;
+    return { spy, realCopy };
+  }
+
   function fsError(code: string) {
     return Object.assign(new Error(code), { code });
   }
@@ -439,37 +482,34 @@ describe('WorldHandler ワールドの複製', () => {
   // ファイルロックなどのOSに起因する失敗を再現するため、ファイルコピーの実体であるfs-extraのcopyに失敗を注入する
   test('サーバー終了直後などでファイルが一時的にロックされていても複製できる', async () => {
     const { handler, world } = await createWorld(false);
-    const realCopy = fs.copy.bind(fs);
-    vi.spyOn(fs, 'copy')
-      .mockRejectedValueOnce(fsError('EBUSY'))
-      .mockImplementation(realCopy as typeof fs.copy);
+    const { spy, realCopy } = spyOnCopy();
+    spy.mockRejectedValueOnce(fsError('EBUSY')).mockImplementation(realCopy);
 
     const newName = WorldName.parse(`${world.name}_locked`);
     const result = await handler.duplicate(newName);
 
     expect(isError(result.value)).toBe(false);
     // 複製元のワールドデータがコピーされている
-    expect(workPath.child(newName, 'server.properties').exists()).toBe(true);
+    expect(await workPath.child(newName, 'server.properties').exists()).toBe(
+      true
+    );
   });
 
   test('複製に失敗した場合はエラーを返し、複製途中のワールドを残さない', async () => {
     const { handler, world } = await createWorld(false);
     // コピー先のフォルダを作成した直後に失敗する状況を再現
-    vi.spyOn(fs, 'copy').mockImplementation((async (
-      _src: string,
-      dest: string
-    ) => {
+    spyOnCopy().spy.mockImplementation(async (_src, dest) => {
       await fs.mkdir(dest);
       throw fsError('EACCES');
-    }) as unknown as typeof fs.copy);
+    });
 
     const newName = WorldName.parse(`${world.name}_failed`);
     const result = await handler.duplicate(newName);
 
     expect(isError(result.value)).toBe(true);
-    expect(workPath.child(newName).exists()).toBe(false);
+    expect(await workPath.child(newName).exists()).toBe(false);
     // 複製元のワールドはそのまま残る
-    expect(handler.getSavePath().exists()).toBe(true);
+    expect(await handler.getSavePath().exists()).toBe(true);
   });
 
   test('既存のワールドと同じ名前を指定した場合は複製せず、既存のワールドを変更しない', async () => {
@@ -482,9 +522,9 @@ describe('WorldHandler ワールドの複製', () => {
     const result = await handler.duplicate(existingWorld.name);
 
     expect(isError(result.value)).toBe(true);
-    expect(existing.getSavePath().child('server.properties').exists()).toBe(
-      true
-    );
+    expect(
+      await existing.getSavePath().child('server.properties').exists()
+    ).toBe(true);
     expect(isError(WorldHandler.get(existing.id))).toBe(false);
   });
 
@@ -492,13 +532,13 @@ describe('WorldHandler ワールドの複製', () => {
     const { handler: first } = await createWorld(false);
     const { handler: second } = await createWorld(false);
     // 先に始めた複製が遅れて失敗する状況を再現し、その後処理で他方の複製結果が消えないことを確認する
-    const realCopy = fs.copy.bind(fs);
-    vi.spyOn(fs, 'copy')
-      .mockImplementationOnce((async () => {
+    const { spy, realCopy } = spyOnCopy();
+    spy
+      .mockImplementationOnce(async () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
         throw fsError('EACCES');
-      }) as unknown as typeof fs.copy)
-      .mockImplementation(realCopy as typeof fs.copy);
+      })
+      .mockImplementation(realCopy);
 
     const newName = WorldName.parse(`world${worldIdx++}_concurrent`);
     const results = await Promise.all([
@@ -511,11 +551,11 @@ describe('WorldHandler ワールドの複製', () => {
     );
     expect(succeeded.length).toBeLessThanOrEqual(1);
     // 複製に失敗した場合は、複製先のデータを残さない
-    expect(workPath.child(newName).exists()).toBe(succeeded.length === 1);
+    expect(await workPath.child(newName).exists()).toBe(succeeded.length === 1);
     for (const world of succeeded) {
-      expect(workPath.child(world.name, 'server.properties').exists()).toBe(
-        true
-      );
+      expect(
+        await workPath.child(world.name, 'server.properties').exists()
+      ).toBe(true);
       expect(isError(WorldHandler.get(world.id))).toBe(false);
     }
   });
@@ -535,7 +575,7 @@ describe('WorldHandler ワールドの複製', () => {
       })
     );
 
-    const results = await Promise.all(sources.map((h) => h.duplicate()));
+    const results = await Promise.all(sources.map(async (h) => h.duplicate()));
 
     const names = results.map((r) => {
       if (isError(r.value)) throw new Error('failed to duplicate world');
@@ -543,7 +583,82 @@ describe('WorldHandler ワールドの複製', () => {
     });
     expect(new Set(names).size).toBe(2);
     for (const name of names) {
-      expect(workPath.child(name, 'server.properties').exists()).toBe(true);
+      expect(await workPath.child(name, 'server.properties').exists()).toBe(
+        true
+      );
     }
+  });
+});
+
+describe('WorldHandler サーバー終了後の自動シャットダウン', () => {
+  /** フロントエンドへのシャットダウンの問い合わせ（疑似） */
+  const checkShutdown = vi.fn<() => Promise<Failable<boolean>>>();
+
+  beforeAll(async () => {
+    await workPath.emptyDir();
+    setBackAPI({
+      send: {} as (typeof api)['send'],
+      invoke: {
+        AgreeEula: async () => true,
+        CheckShutdown: checkShutdown,
+      },
+    });
+  });
+  beforeEach(() => {
+    servers.length = 0;
+    autoShutDownSetting.enabled = true;
+    checkShutdown.mockReset();
+    vi.mocked(closeServerStarterAndShutDown).mockClear();
+  });
+  afterEach(() => {
+    servers.forEach((s) => s.stop());
+    autoShutDownSetting.enabled = false;
+  });
+
+  /** サーバーを起動して正常に終了させ，シャットダウンの問い合わせが済むまで待つ */
+  async function runAndStopServer() {
+    const { handler } = await createWorld(false);
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.stop();
+    const result = await running;
+    expect(isError(result.value)).toBe(false);
+    await vi.waitFor(() => expect(checkShutdown).toHaveBeenCalled(), {
+      timeout: 5000,
+    });
+    // 問い合わせの結果を受け取った後の処理が済むまで待つ
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  test('シャットダウンが選ばれた場合はシャットダウンする', async () => {
+    checkShutdown.mockResolvedValue(true);
+
+    await runAndStopServer();
+
+    await vi.waitFor(() =>
+      expect(closeServerStarterAndShutDown).toHaveBeenCalledTimes(1)
+    );
+  });
+
+  test('シャットダウンがキャンセルされた場合はシャットダウンしない', async () => {
+    checkShutdown.mockResolvedValue(false);
+
+    await runAndStopServer();
+
+    expect(closeServerStarterAndShutDown).not.toHaveBeenCalled();
+  });
+
+  test('問い合わせに失敗した場合は，確認が取れていないためシャットダウンしない', async () => {
+    checkShutdown.mockResolvedValue(
+      errorMessage.system.ipc({
+        channel: 'CheckShutdown',
+        type: 'invokeMainToWindow',
+        message: 'window not exists',
+      })
+    );
+
+    await runAndStopServer();
+
+    expect(closeServerStarterAndShutDown).not.toHaveBeenCalled();
   });
 });

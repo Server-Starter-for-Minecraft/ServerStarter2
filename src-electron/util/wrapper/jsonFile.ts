@@ -3,6 +3,7 @@ import { Path } from '../binary/path';
 import { CacheableAccessor } from '../cache';
 import { isError } from '../error/error';
 import { Failable } from '../error/failable';
+import { utilLoggers } from '../utilLogger';
 
 /**
  * JSON文字列を扱うクラス
@@ -19,7 +20,7 @@ export class JsonSourceHandler<T> {
    */
   static fromPath<T>(
     path: Path,
-    validator: z.ZodType<T, any>,
+    validator: z.ZodType<T>,
     options?: { encoding?: BufferEncoding }
   ) {
     const setter = async (value: T): Promise<Failable<void>> => {
@@ -34,7 +35,11 @@ export class JsonSourceHandler<T> {
       const defaultVal = validator.safeParse({});
       if (!defaultVal.success) return res;
 
-      await setter(defaultVal.data);
+      // 既定値を保存できなくても既定値で動作を続ける（保存の失敗はログに残す）
+      const written = await setter(defaultVal.data);
+      if (isError(written)) {
+        utilLoggers().JsonSourceHandler({ path: path.path }).warn(written);
+      }
       return defaultVal.data;
     };
 
@@ -45,19 +50,21 @@ export class JsonSourceHandler<T> {
   /**
    * JSONを読み込む
    */
-  read = (
+  read = async (
     options: { useCache: boolean } = { useCache: false }
   ): Promise<Failable<T>> => this.accessor.get(options);
 
   /**
    * JSONを書き込む
    */
-  write = (content: T): Promise<void> => this.accessor.set(content);
+  write = async (content: T): Promise<void> => this.accessor.set(content);
 }
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
   test('json handler', async () => {
     const { Path } = await import('../binary/path');
     const path = await import('path');
@@ -81,14 +88,12 @@ if (import.meta.vitest) {
     const jsonHandler = JsonSourceHandler.fromPath(jsonPath, A);
 
     const content = await jsonHandler.read();
-    expect(isError(content)).toBe(false);
-    if (isError(content)) return;
+    assertOk(content);
     expect(content).toEqual({ a: 1, b: 'hello' });
 
     await jsonHandler.write({ a: 2, b: 'world' });
     const readTxt = await jsonPath.readText();
-    expect(isError(readTxt)).toBe(false);
-    if (isError(readTxt)) return;
+    assertOk(readTxt);
     expect(readTxt).toBe('{"a":2,"b":"world"}');
   });
 }

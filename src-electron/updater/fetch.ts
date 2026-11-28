@@ -36,7 +36,11 @@ export async function getLatestRelease(
       };
   }
 
-  return errorMessage.system.assertion({ message: '' });
+  // 実行したOS名と取得したバージョン名をログに残す
+  const checkedTags = json.map((i) => i.tag_name).join(', ') || '(none)';
+  return errorMessage.system.assertion({
+    message: `No installer for '${osPLatform}' was found (checked releases: ${checkedTags})`,
+  });
 }
 
 /**
@@ -74,8 +78,19 @@ function findAsset(
   tagName: string,
   osPLatform: OsPlatform
 ) {
-  const name = `ServerStarter-${tagName}${ASSET_SUFFIX[osPLatform]}`;
+  const name = assetName(tagName, osPLatform);
   return assets.find((asset) => asset.name === name)?.url;
+}
+
+/**
+ * 指定したOS向けのインストーラーのアセット名を返す
+ *
+ * @param tagName リリースのタグ名（e.g. `v2.3.0`）
+ * @param osPLatform 対象のOS
+ * @returns アセット名（e.g. `ServerStarter-v2.3.0-silicon.pkg`）
+ */
+function assetName(tagName: string, osPLatform: OsPlatform) {
+  return `ServerStarter-${tagName}${ASSET_SUFFIX[osPLatform]}`;
 }
 
 export type GithubRelease = {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { showUnexpectedError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
@@ -25,7 +27,7 @@ const menuBtns: BtnType[] = [
     icon: 'restart_alt',
     label: $T('console.reboot.btn'),
     disable: () => !isRunning(),
-    click: reboot,
+    click: () => runDetached(reboot(), showUnexpectedError),
   },
   {
     icon: 'search',

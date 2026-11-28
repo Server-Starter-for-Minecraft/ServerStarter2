@@ -14,7 +14,7 @@ const emit = defineEmits<{
 }>();
 
 const sysStore = useSystemStore();
-const tooltipOffset = [0, 0] as [number, number];
+const tooltipOffset: [number, number] = [0, 0];
 </script>
 
 <template>

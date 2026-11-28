@@ -1,8 +1,12 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { ignoreError } from 'src/error/error';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError, ErrorFuncReturns } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import {
   World,
@@ -12,7 +16,6 @@ import {
 } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
-import { checkError, ErrorFuncReturns } from 'src/components/Error/Error';
 import { useConsoleStore } from './ConsoleStore';
 import { useMainStore } from './MainStore';
 import { useSystemStore } from './SystemStore';
@@ -29,10 +32,10 @@ export type WorldBackList = Record<WorldID, WorldEdited>;
  * Worldの変更を検知するためのStore
  */
 const useWorldStore = defineStore('worldStore', {
-  state: () => {
+  state: (): { worldListBack: WorldBackList; worldList: WorldList } => {
     return {
-      worldListBack: {} as WorldBackList,
-      worldList: {} as WorldList,
+      worldListBack: {},
+      worldList: {},
     };
   },
 });
@@ -87,16 +90,19 @@ export function setWorldSubscriber() {
   const worldStore = useWorldStore();
   const mainStore = useMainStore();
 
-  worldStore.$subscribe((mutation, state) => {
+  worldStore.$subscribe(() => {
     if (isSavingSuppressed) return;
 
     const world = mainStore.world;
     if (world) {
       // SetWorldの戻り値でWorldStoreに更新をかけると、
       // その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
-      window.API.invokeSetWorld(toRaw(world)).then((v) => {
-        checkError(v.value, undefined, (e) => tError(e));
-      });
+      runDetached(
+        window.API.invokeSetWorld(toRaw(world)).then((v) => {
+          checkError(v.value, undefined, (e) => tError(e));
+        }),
+        showUnexpectedError
+      );
     }
   });
 }
@@ -128,6 +134,11 @@ export async function createNewWorld(duplicateWorldID?: WorldID) {
               uuid: p.uuid,
               op: { level: 4, bypassesPlayerLimit: false },
             });
+          } else {
+            ignoreError(
+              world.players,
+              'プレイヤーの設定を読めない場合はオーナーを登録しない'
+            );
           }
         },
         (e) =>
@@ -232,7 +243,7 @@ export async function registerJoinedPlayersToWorld(
   const candidates = await findPlayersToRegister(
     item.world,
     joinedNames,
-    (name) => window.API.invokeGetPlayer(name, 'name')
+    async (name) => window.API.invokeGetPlayer(name, 'name')
   );
   if (candidates.length === 0) return;
 
@@ -244,7 +255,14 @@ export async function registerJoinedPlayersToWorld(
   let added: PlayerSetting[] = [];
   updateWithoutSaving((state) => {
     const latest = state.worldList[worldID];
-    if (latest?.type !== 'edited' || !isValid(latest.world.players)) return;
+    if (latest?.type !== 'edited') return;
+    if (!isValid(latest.world.players)) {
+      ignoreError(
+        latest.world.players,
+        'プレイヤーの一覧を読み込めていないワールドには，取得したプレイヤーを追加しない'
+      );
+      return;
+    }
 
     // プレイヤー情報の取得中にユーザーが同じプレイヤーを追加した場合に備え，最新の一覧と重複するプレイヤーを除外する
     const players = latest.world.players;
@@ -272,9 +290,10 @@ export function updateBackWorld(worldID?: WorldID) {
   } else {
     worldStore.worldListBack = deepcopy(
       fromEntries(
-        toEntries(worldStore.worldList)
-          .filter(([wid, w]) => w.type === 'edited')
-          .map(([wid, w]) => [wid, w.world as WorldEdited])
+        toEntries(worldStore.worldList).flatMap(
+          ([wid, w]): [WorldID, WorldEdited][] =>
+            w.type === 'edited' ? [[wid, w.world]] : []
+        )
       )
     );
   }

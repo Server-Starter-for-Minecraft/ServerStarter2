@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { checkError } from 'src/error/error';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { WorldContainerSetting } from 'app/src-electron/schema/system';
 import { omitPath, tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsI18nT from 'src/components/util/base/ssI18nT.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -20,8 +20,9 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 
 const sysStore = useSystemStore();
 const inputName = ref(prop.containerSettings?.name ?? '');
-const pickPath = ref(
-  prop.containerSettings?.container ?? ('' as WorldContainer)
+// フォルダを選んでいない間は空文字列とする
+const pickPath = ref<WorldContainer | ''>(
+  prop.containerSettings?.container ?? ''
 );
 
 async function pickFolder() {

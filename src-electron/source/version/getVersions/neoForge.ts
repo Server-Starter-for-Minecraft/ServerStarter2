@@ -5,6 +5,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
 import { toEntries } from 'app/src-electron/util/obj/obj';
 import { groupBy } from 'app/src-electron/util/object/groupBy';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { VersionListLoader } from './base';
 
 // NeoForgeのバージョン一覧を返すURLとその解析パーサー
@@ -75,13 +76,11 @@ export function getSpecificMCver(neoVer: string): VersionId {
     tmpVer = `1.${major}.${minor}`;
   }
 
-  return VersionId.parse(tmpVer);
+  return asBrand(VersionId, tmpVer);
 }
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('getSpecificMCver', () => {
     test.each([
       // 旧形式

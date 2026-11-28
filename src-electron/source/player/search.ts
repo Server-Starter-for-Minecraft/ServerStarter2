@@ -6,23 +6,30 @@ import {
 } from 'app/src-electron/source/player/minecraftApi';
 import { isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 
 export async function searchPlayerFromName(
   name: string
 ): Promise<Failable<Player>> {
   const res = await UsernameToUUID(name);
   if (isError(res)) return res;
-  return await searchPlayerFromUUID(res.uuid);
+  return searchPlayerFromUUID(res.uuid);
 }
 
-const steveB64 =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADOSURBVBhXY9RX4P3zj4GFkenn3z9//vxlYmJiZWH+/5+BCSgKBH/+/+PmYJMT4pIU4GZkYPz3/x8LULQ7O56dlY2Tg+/7108MzEzvXzzrWL+DcVVtGhc7+7efP5mZ2d9/ei8vLvbwwS2gaiagqHf1pBUHlDl+/wKKTt8injxtM5+IFOOcZDdxCRkWdoHN+/YBFYZ42Dx5dPvey7fMTroKXz+/m71xs6mMvAAb+8Idu2QkRH79ZmC5//zlv38gl+24eJaZFeSWL9///vz9CwC6elD7wuNtxAAAAABJRU5ErkJggg==' as ImageURI;
+const steveB64 = asBrand(
+  ImageURI,
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADOSURBVBhXY9RX4P3zj4GFkenn3z9//vxlYmJiZWH+/5+BCSgKBH/+/+PmYJMT4pIU4GZkYPz3/x8LULQ7O56dlY2Tg+/7108MzEzvXzzrWL+DcVVtGhc7+7efP5mZ2d9/ei8vLvbwwS2gaiagqHf1pBUHlDl+/wKKTt8injxtM5+IFOOcZDdxCRkWdoHN+/YBFYZ42Dx5dPvey7fMTroKXz+/m71xs6mMvAAb+8Idu2QkRH79ZmC5//zlv38gl+24eJaZFeSWL9///vz9CwC6elD7wuNtxAAAAABJRU5ErkJggg=='
+);
 
-const alexB64 =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIBAMAAAA2IaO4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAqUExUReWZR+WNP9yTPOvTs/LauuTLqfv7+yNiJPLdwu7Wtu/Zu/Lbve7Xue+7sXKhgB0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAwSURBVBjTY2BkFBBgEBBQYGRgZDJmZFBSdg1gCCtpT2WY5eF9hMHD94ozg0uLRwsAa8oIXIiubzgAAAAASUVORK5CYII=' as ImageURI;
+const alexB64 = asBrand(
+  ImageURI,
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIBAMAAAA2IaO4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAqUExUReWZR+WNP9yTPOvTs/LauuTLqfv7+yNiJPLdwu7Wtu/Zu/Lbve7Xue+7sXKhgB0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAwSURBVBjTY2BkFBBgEBBQYGRgZDJmZFBSdg1gCCtpT2WY5eF9hMHD94ozg0uLRwsAa8oIXIiubzgAAAAASUVORK5CYII='
+);
 
-const clearB64 =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAOSURBVChTYxgFQMDAAAABCAABwQSzUgAAAABJRU5ErkJggg==' as ImageURI;
+const clearB64 = asBrand(
+  ImageURI,
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAOSURBVChTYxgFQMDAAAABCAABwQSzUgAAAABJRU5ErkJggg=='
+);
 
 export async function searchPlayerFromUUID(
   uuid: PlayerUUID
@@ -44,7 +51,7 @@ export async function searchPlayerFromUUID(
       });
       const data = await crop.toBeyesData();
       if (isError(data)) return data;
-      return (await data.encodeURI('image/png')) as ImageURI;
+      return data.encodeURI('image/png');
     }
 
     const avatarPromise = crop(8);
@@ -71,19 +78,18 @@ export async function searchPlayerFromUUID(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-  test('searchPlayerFromName', { tags: ['network'] }, async () => {
-    const { isValid } = await import('app/src-electron/util/error/error');
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
+  test('searchPlayerFromName', { tags: ['network'] }, async () => {
     const res = await searchPlayerFromName('Notch');
 
-    expect(isValid(res)).toBe(true);
-    if (isValid(res)) {
-      expect(res).not.toBeNull();
-      expect(res.name).toBe('Notch');
-      expect(res.uuid).toBe('069a79f4-44e9-4726-a5be-fca90e38aaf5');
-      expect(res.avatar).not.toBeNull();
-      expect(res.avatar_overlay).not.toBeNull();
-    }
+    // 失敗した場合は，返ったエラーの内容が表示される
+    assertOk(res);
+    expect(res.name).toBe('Notch');
+    expect(res.uuid).toBe('069a79f4-44e9-4726-a5be-fca90e38aaf5');
+    expect(res.avatar).toMatch(/^data:image\/png;base64,/);
+    expect(res.avatar_overlay).toMatch(/^data:image\/png;base64,/);
   });
 }

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { iErrorDialogProps } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { sleep } from 'app/src-public/scripts/sleep';
-import { iErrorDialogProps } from './Error';
 
 defineProps<iErrorDialogProps>();
 defineEmits({ ...useDialogPluginComponent.emitsObject });
@@ -23,7 +25,7 @@ const closeCounter = async () => {
   }
 };
 // カウンターが終了したらダイアログを閉じる
-closeCounter().then(onDialogCancel);
+runDetached(closeCounter().then(onDialogCancel), showUnexpectedError);
 
 /**
  * ダイアログ付属の閉じるボタンが押された場合の処理

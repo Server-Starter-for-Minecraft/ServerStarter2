@@ -3,7 +3,11 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { debounce } from 'quasar';
 import imageCompression from 'browser-image-compression';
 import Cropper from 'cropperjs';
+import { showUnexpectedError, toErrorMessage } from 'src/error/error';
+import { asBrand } from 'app/src-public/scripts/brand';
+import { isError } from 'app/src-public/scripts/error';
 import { ImageURI } from 'app/src-electron/schema/brands';
+import { Failable } from 'app/src-electron/schema/error';
 import { IconImage } from './iIconSelect';
 
 const iconImg = defineModel<IconImage>({ required: true });
@@ -28,11 +32,21 @@ const CROPPER_TEMPLATE =
  */
 let generation = 0;
 
-function readAsDataURL(blob: Blob) {
-  return new Promise<ImageURI>((resolve, reject) => {
+async function readAsDataURL(blob: Blob) {
+  return new Promise<Failable<ImageURI>>((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as ImageURI);
-    reader.onerror = () => reject(reader.error);
+    // readAsDataURL の結果は Data URL の文字列になる
+    reader.onload = () =>
+      resolve(
+        typeof reader.result === 'string'
+          ? asBrand(ImageURI, reader.result)
+          : toErrorMessage(new Error('failed to read the image as a data URL'))
+      );
+    // 読み込みの失敗は例外にせず，エラーとして返す
+    reader.onerror = () =>
+      resolve(
+        toErrorMessage(reader.error ?? new Error('failed to read the image'))
+      );
     reader.readAsDataURL(blob);
   });
 }
@@ -64,15 +78,23 @@ async function updateImg() {
     if (!blob || !isLatest()) return;
 
     // Browser Image CompressionなどのJavaScriptモジュールを使用して圧縮する
-    const compressedBlob = await imageCompression(blob as File, {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 64,
-    });
+    // imageCompression は File を受け取るため，画像の Blob を File にして渡す
+    const compressedBlob = await imageCompression(
+      new File([blob], 'icon.png', { type: blob.type }),
+      {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 64,
+      }
+    );
     if (!isLatest()) return;
 
     // compressedBlobをbase64形式の文字列に変換する
     const data = await readAsDataURL(compressedBlob);
     if (!isLatest()) return;
+    if (isError(data)) {
+      showUnexpectedError(data);
+      return;
+    }
 
     // 画像のサイズとデータをセット
     iconImg.value.width = canvas.width;

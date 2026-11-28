@@ -2,6 +2,9 @@
 import { Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import {
@@ -13,7 +16,6 @@ import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { setColor } from 'src/color';
-import { checkError } from 'src/components/Error/Error';
 import {
   OwnerDialogProp,
   ReturnOwnerDialog,
@@ -48,7 +50,10 @@ const setOwnerPlayer = async (uuid?: PlayerUUID) => {
     );
   }
 };
-setOwnerPlayer(sysStore.systemSettings.user.owner);
+runDetached(
+  setOwnerPlayer(sysStore.systemSettings.user.owner),
+  showUnexpectedError
+);
 
 function changeTheme(colorTheme: ColorTheme) {
   // システム設定に登録
@@ -73,7 +78,7 @@ function showOwnerDialog() {
     component: OwnerDialog,
     componentProps: {
       ownerPlayer: ownerPlayer.value,
-    } as OwnerDialogProp,
+    } satisfies OwnerDialogProp,
   }).onOk((p: ReturnOwnerDialog) => {
     ownerPlayer.value = p.ownerPlayer;
     sysStore.systemSettings.user.owner = p.ownerPlayer?.uuid;

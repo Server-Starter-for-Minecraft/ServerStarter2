@@ -1,23 +1,55 @@
 name: Linter
 
-on: [pull_request]
+on:
+  pull_request:
+    # lint の例外を許可するラベル（lint-exception）の付け外しでも再判定する
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         # pushは行わないため，認証情報をチェックアウト先に残さない
+        # ベースブランチの lint の設定と比較するため，履歴をすべて取得する
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       - name: Install Deps
         run: bun install
+      # 違反の一括抑制（eslint-suppressions.json）は使わない（ESLint は置かれていると自動で読み込むため，置かれていないことを確認する）
+      # 例外は eslint-rules/config.js に理由とともに範囲を絞って登録する
+      - name: check no lint suppressions file
+        run: |
+          if [ -e eslint-suppressions.json ]; then
+            echo "eslint-suppressions.json は使いません。違反を修正するか，やむを得ない場合は eslint-rules/config.js の LINT_EXCEPTIONS に理由とともに登録してください"
+            exit 1
+          fi
+      # リポジトリ全体を検査し，変更していない行の違反も含めて 1 件でもあれば失敗にする
+      # （警告も失敗にする。ソースコード内の無効化コメントは無視されて警告になるため）
+      # （package.json の lint のスクリプトを変えて検査の範囲を狭められないよう，eslint を直接実行する）
       - name: eslint
+        run: bunx eslint . --max-warnings 0
+      # 指摘を PR の該当行へコメントする（失敗の判定は上のステップで行う）
+      - name: eslint (review comments)
+        if: always()
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          eslint_flags: 'src'
-          fail_level: any # 指摘が発生したらjobを失敗扱いにする（非推奨となった fail_on_error: true の置き換え）
+          eslint_flags: '.'
+          fail_level: none
+      # lint の設定（例外の追加にあたる変更）を変えた PR は，ラベル lint-exception でメンテナーが明示的に許可する
+      - name: check lint config changes
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'lint-exception') }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed=$(git diff --name-only "${BASE_SHA}...HEAD" -- eslint.config.js eslint-rules/ .github/workflows/linter.yml ':!*.test.js' ':!*.test.ts')
+          if [ -n "${changed}" ]; then
+            echo "lint の設定が変更されています。例外の追加が妥当かをメンテナーが確認し，ラベル lint-exception を付けてください:"
+            echo "${changed}"
+            exit 1
+          fi

@@ -19,7 +19,6 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { CacheableAccessor } from 'app/src-electron/util/cache';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
-import { groupBy } from 'app/src-electron/util/object/groupBy';
 import { runtimeLoggers, RuntimeMeta } from './base';
 
 type JavaExecName = {
@@ -58,19 +57,25 @@ export abstract class JavaRuntimeInstaller<
    *
    * このメソッドを呼び出すことで、RuntimeManifestのインスタンスを生成する
    */
-  static setRuntimeManifest(manifestPath: Path, manifestUrl: string) {
-    throw new Error('setRuntimeManifest() not implemented');
+  static setRuntimeManifest(
+    _manifestPath: Path,
+    _manifestUrl: string
+  ): unknown {
+    // 継承先で実装する（基底クラスのものを呼んだ場合は実装漏れであることを示す）
+    return errorMessage.system.assertion({
+      message: 'setRuntimeManifest() not implemented',
+    });
   }
 
   /**
    * キャッシュに指定したデータを取得する
    */
-  getCache(): Promise<Failable<RM>> {
+  async getCache(): Promise<Failable<RM>> {
     return this.accessor.get();
   }
 
   protected static getCacheableAccessor<RM extends RuntimeManifest>(
-    validator: z.ZodType<RM, any>,
+    validator: z.ZodType<RM>,
     manifestPath: Path,
     manifestUrl: string
   ) {
@@ -143,8 +148,9 @@ export abstract class JavaRuntimeInstaller<
     javaExecName: JavaExecName
   ): Failable<[[string, ManifestFile], [string, ManifestFile]]> {
     const java = Object.entries(manifestContent.files).find(
-      ([k, value]) => k.endsWith(javaExecName.java) && value.type === 'file'
-    ) as [string, ManifestFile];
+      (entry): entry is [string, ManifestFile] =>
+        entry[0].endsWith(javaExecName.java) && entry[1].type === 'file'
+    );
     if (java === undefined)
       return errorMessage.data.path.notFound({
         type: 'file',
@@ -152,8 +158,9 @@ export abstract class JavaRuntimeInstaller<
       });
 
     const javaw = Object.entries(manifestContent.files).find(
-      ([k, value]) => k.endsWith(javaExecName.javaw) && value.type === 'file'
-    ) as [string, ManifestFile];
+      (entry): entry is [string, ManifestFile] =>
+        entry[0].endsWith(javaExecName.javaw) && entry[1].type === 'file'
+    );
     if (javaw === undefined)
       return errorMessage.data.path.notFound({
         type: 'file',
@@ -242,17 +249,21 @@ async function _extractFilesFromManifest(
   await installPath.emptyDir();
 
   const entries = Object.entries(manifest.files);
-  const { directory, link, file } = groupBy(
-    entries.map(([k, v]) => ({
-      path: installPath.child(k),
-      entry: v,
-    })),
-    (x) => x.entry.type
-  ) as {
-    directory: { path: Path; entry: ManifestDirectory }[] | undefined;
-    link: { path: Path; entry: ManifestLink }[] | undefined;
-    file: { path: Path; entry: ManifestFile }[] | undefined;
-  };
+  // 種類（ディレクトリ・リンク・ファイル）ごとに分ける
+  const items = entries.map(([k, v]) => ({
+    path: installPath.child(k),
+    entry: v,
+  }));
+  const directory = items.filter(
+    (x): x is { path: Path; entry: ManifestDirectory } =>
+      x.entry.type === 'directory'
+  );
+  const link = items.filter(
+    (x): x is { path: Path; entry: ManifestLink } => x.entry.type === 'link'
+  );
+  const file = items.filter(
+    (x): x is { path: Path; entry: ManifestFile } => x.entry.type === 'file'
+  );
 
   // progress 対応
   let processed = 0;
@@ -264,7 +275,7 @@ async function _extractFilesFromManifest(
     },
   });
 
-  if (directory) {
+  if (directory.length > 0) {
     await Promise.all(
       directory.map(async ({ path }) => {
         subtitle?.setSubtitle({
@@ -277,7 +288,7 @@ async function _extractFilesFromManifest(
     );
   }
 
-  if (file) {
+  if (file.length > 0) {
     const res = await Promise.all(
       file.map(async ({ path, entry }) => {
         subtitle?.setSubtitle({
@@ -300,15 +311,17 @@ async function _extractFilesFromManifest(
     if (err) return err;
   }
 
-  if (link) {
+  if (link.length > 0) {
     const results = await Promise.all(
       link.map(async ({ path, entry }) => {
         subtitle?.setSubtitle({
           key: 'server.readyJava.file',
           args: { path: path.path },
         });
-        await path.mklink(path.child(entry.target));
+        // リンク先はリンクのあるフォルダからの相対パス（シンボリックリンクと同じ）
+        const linked = await path.mklink(path.parent().child(entry.target));
         numeric?.setValue(processed++);
+        return linked;
       })
     );
     const err = results.find(isError);
@@ -318,7 +331,9 @@ async function _extractFilesFromManifest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect, vi } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('runtime manifest base', async () => {
     const { Path } = await import('src-electron/util/binary/path');
@@ -329,7 +344,7 @@ if (import.meta.vitest) {
 
     // 実際にはUrlにアクセスせず、url文字列を結果として返す
     const urlCreateReadStreamSpy = vi.spyOn(BytesData, 'fromURL');
-    urlCreateReadStreamSpy.mockImplementation(function (url: string) {
+    urlCreateReadStreamSpy.mockImplementation(async function (url: string) {
       return BytesData.fromText(url);
     });
 
@@ -363,12 +378,32 @@ if (import.meta.vitest) {
         dirs: [{ path: 'foo' }, { path: 'buz' }],
       },
       {
+        // リンク先は，リンクのあるフォルダからの相対パスで指定される（Java のランタイムのライセンスのファイルなど）
         explain: 'link',
         manifest: {
-          'a.txt': file('https://a.com/'),
-          'foo.lnk': { type: 'link', target: '../a.txt' },
+          legal: directory,
+          'legal/java.base': directory,
+          'legal/java.base/LICENSE': file('https://a.com/'),
+          'legal/java.compiler': directory,
+          'legal/java.compiler/LICENSE': {
+            type: 'link',
+            target: '../java.base/LICENSE',
+          },
         },
-        links: [{ path: 'foo.lnk', target: 'hello' }],
+        links: [
+          { path: 'legal/java.compiler/LICENSE', value: 'https://a.com/' },
+        ],
+      },
+      {
+        // フォルダへのリンク（Linux の jre-legacy の man/ja など）
+        explain: 'directory link',
+        manifest: {
+          man: directory,
+          'man/ja_JP.UTF-8': directory,
+          'man/ja_JP.UTF-8/java.1': file('https://man.com/'),
+          'man/ja': { type: 'link', target: 'ja_JP.UTF-8' },
+        },
+        files: [{ path: 'man/ja/java.1', value: 'https://man.com/' }],
       },
     ];
 
@@ -389,10 +424,12 @@ if (import.meta.vitest) {
       for (const file of testCase.files ?? []) {
         expect(await dirPath.child(file.path).readText()).toBe(file.value);
       }
+      // リンクはリンク先と同じ内容を持つ（ハードリンクのため，リンクの数が 2 以上になる）
       for (const link of testCase.links ?? []) {
+        expect(await dirPath.child(link.path).readText()).toBe(link.value);
         const stat = await dirPath.child(link.path).stat();
-        if (isError(stat)) continue;
-        expect(stat.nlink).greaterThan(1); // symlinkではなく、ハードリンクなのでリンクの数が1以上かどうかで判断
+        assertOk(stat);
+        expect(stat.nlink).toBeGreaterThan(1);
       }
       for (const dir of testCase.dirs ?? []) {
         expect(await dirPath.child(dir.path).isDirectory()).toBe(true);
@@ -403,7 +440,7 @@ if (import.meta.vitest) {
       explain: string;
       manifest: ManifestContent['files'];
       files?: { path: string; value: string }[];
-      links?: { path: string; target: string }[];
+      links?: { path: string; value: string }[];
       dirs?: { path: string }[];
     };
   });

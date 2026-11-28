@@ -13,10 +13,7 @@ type ErrorMessageConstructor<T extends object> = {
 function getErrorMessageConstructor<T extends object>(
   key: string
 ): ErrorMessageConstructor<T> {
-  function apply(
-    arg?: object | any[] | ErrorLevel,
-    level: ErrorLevel = 'error'
-  ) {
+  function apply(arg?: object | ErrorLevel, level: ErrorLevel = 'error') {
     if (typeof arg === 'string') {
       return {
         type: arg,
@@ -34,7 +31,7 @@ function getErrorMessageConstructor<T extends object>(
 
   const obj = apply as unknown as ErrorMessageConstructor<T>;
 
-  const handler: ProxyHandler<any> = {
+  const handler: ProxyHandler<ErrorMessageConstructor<T>> = {
     get: (_: object, k: string) => {
       return getErrorMessageConstructor(key ? `${key}.${k}` : k);
     },

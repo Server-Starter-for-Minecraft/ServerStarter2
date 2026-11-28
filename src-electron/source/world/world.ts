@@ -5,12 +5,13 @@ import {
   WorldEdited,
   WorldID,
 } from 'src-electron/schema/world';
-import { versionContainer } from 'app/src-electron/core/setup';
 import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
+import { versionContainer } from 'app/src-electron/source/containers';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { WorldProgressor } from '../../common/progress';
@@ -18,6 +19,7 @@ import { NEW_WORLD_NAME } from '../../source/const';
 import { getSystemSettings } from '../../source/stores/system';
 import { Path } from '../../util/binary/path';
 import { asyncMap } from '../../util/obj/objmap';
+import { sourceLoggers } from '../sourceLogger';
 import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
@@ -34,11 +36,19 @@ export async function getWorldAbbrs(
   const subdir = await dir.iter();
   if (isError(subdir)) return withError([], [subdir]);
 
-  const results = await asyncMap(subdir, (x) =>
+  const results = await asyncMap(subdir, async (x) =>
     getWorldAbbr(x, worldContainer)
   );
   // ワールドが一つもない場合はディレクトリを削除(設定からは削除しない)
-  if (subdir.length === 0) dir.remove();
+  if (subdir.length === 0) {
+    const removed = await dir.remove();
+    if (isError(removed)) {
+      ignoreError(
+        removed,
+        '空のディレクトリを削除できなくても一覧の表示に影響しない'
+      );
+    }
+  }
 
   return withError(results.filter(isValid), results.filter(isError));
 }
@@ -57,22 +67,23 @@ async function getWorldAbbr(
     });
   const jsonpath = serverJsonFile.path(path);
 
-  if (!jsonpath.exists())
+  if (!(await jsonpath.exists()))
     return errorMessage.data.path.notFound({
       type: 'file',
       path: jsonpath.path,
     });
 
+  // 既存のフォルダの名前をワールド名として扱う（名前の形式の検証は新規作成・名前の変更の時に行い，
+  // 形式に合わない名前のフォルダも，これまでどおりワールドとして読み込む）
   const name = path.basename() as WorldName;
-  const container = worldContainer as WorldContainer;
 
   // WorldHandlerに登録
-  const id = WorldHandler.register(name, container);
+  const id = WorldHandler.register(name, worldContainer);
 
   const result: WorldAbbr = {
     id,
     name,
-    container,
+    container: worldContainer,
   };
 
   return result;
@@ -84,7 +95,7 @@ export async function getWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.load();
+  return handler.load();
 }
 
 /** WorldIDからワールドデータを更新 (リモートが存在する場合リモートから読み込んだ後にリモートを更新) */
@@ -93,7 +104,7 @@ export async function setWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(world.id, world.name, world.container);
   if (isError(handler)) return withError(handler);
-  return await handler.save(world);
+  return handler.save(world);
 }
 
 /**
@@ -108,8 +119,13 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
 
   const systemSettings = await getSystemSettings();
 
-  if (latestRelease === undefined)
-    throw new Error('Assertion: This error cannot occur');
+  if (latestRelease === undefined) {
+    return withError(
+      errorMessage.system.assertion({
+        message: 'no release version in the vanilla version list',
+      })
+    );
+  }
 
   // ワールドを配置するデフォルトのコンテナを指定
   const containerSetting = selectNewWorldContainer(systemSettings.container);
@@ -172,7 +188,7 @@ export async function createWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(world.id, world.name, world.container);
   if (isError(handler)) return withError(handler);
-  return await handler.create(world);
+  return handler.create(world);
 }
 
 /**
@@ -183,7 +199,7 @@ export async function deleteWorld(
 ): Promise<WithError<Failable<undefined>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.delete();
+  return handler.delete();
 }
 
 /**
@@ -195,7 +211,7 @@ export async function duplicateWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.duplicate(name);
+  return handler.duplicate(name);
 }
 
 /**
@@ -206,7 +222,7 @@ export async function backupWorld(
 ): Promise<WithError<Failable<BackupData>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.backup();
+  return handler.backup();
 }
 
 /**
@@ -218,7 +234,7 @@ export async function restoreWorld(
 ): Promise<WithError<Failable<World>>> {
   const handler = WorldHandler.get(worldID);
   if (isError(handler)) return withError(handler);
-  return await handler.restore(backup);
+  return handler.restore(backup);
 }
 
 /**
@@ -240,10 +256,17 @@ export async function runWorld(
 /**
  * コマンドを実行する
  */
-export function runCommand(worldID: WorldID, command: string): void {
+export async function runCommand(
+  worldID: WorldID,
+  command: string
+): Promise<void> {
   const handler = WorldHandler.get(worldID);
-  if (isError(handler)) return;
-  handler.runCommand(command);
+  if (isError(handler)) {
+    // 送信（send）の API は結果を返せないため，送信先のワールドが無い場合はログに残す
+    sourceLoggers().world.runCommand({ worldID }).warn(handler);
+    return;
+  }
+  await handler.runCommand(command);
 }
 
 /**
@@ -251,7 +274,10 @@ export function runCommand(worldID: WorldID, command: string): void {
  */
 export async function reboot(worldID: WorldID): Promise<void> {
   const handler = WorldHandler.get(worldID);
-  if (isError(handler)) return;
+  if (isError(handler)) {
+    sourceLoggers().world.reboot({ worldID }).warn(handler);
+    return;
+  }
   await handler.reboot();
 }
 

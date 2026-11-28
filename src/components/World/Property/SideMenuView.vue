@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
-import { getPropertyGroups } from 'src/components/World/Property/propertyDefinitions';
+import { getPropertyGroups } from 'src/logic/property/propertyDefinitions';
 import { thumbStyle } from '../scrollBar';
 
 interface Prop {

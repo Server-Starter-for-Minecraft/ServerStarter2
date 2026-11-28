@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { checkError } from 'src/error/error';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 
 const mainStore = useMainStore();
@@ -12,14 +12,10 @@ async function openFolder() {
     'server'
   );
 
-  checkError(
-    path,
-    async (p) => {
-      const res = await window.API.invokeOpenFolder(p, true);
-      checkError(res, undefined, (e) => tError(e));
-    },
-    (e) => tError(e)
-  );
+  const p = checkError(path, undefined, (e) => tError(e));
+  if (p === undefined) return;
+  const res = await window.API.invokeOpenFolder(p, true);
+  checkError(res, undefined, (e) => tError(e));
 }
 </script>
 

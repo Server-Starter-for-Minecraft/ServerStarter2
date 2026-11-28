@@ -10,9 +10,14 @@ process.env.ELECTRON_OVERRIDE_DIST_PATH ??= `${import.meta.dirname}/src-electron
 
 export default defineConfig({
   test: {
-    include: ['**/*.test.ts'],
+    // 独自 ESLint ルール(eslint-rules/)は eslint.config.js から直接読み込むため JS で記述しており，テストも JS とする
+    include: ['**/*.test.ts', 'eslint-rules/**/*.test.js'],
     includeSource: ['{src,src-electron,src-public,test}/**/*.ts'],
     globals: true,
+    // テストごとに差し替えたグローバル変数・環境変数を元に戻し，前のテストの差し替えが後のテストに影響しないようにする
+    // （restoreMocks はファイルの先頭で設定したモックまで戻してしまうため使わない）
+    unstubGlobals: true,
+    unstubEnvs: true,
     // VITEST_BLOCK_NETWORK=1 のとき，ローカル以外への通信を禁止する(詳細はファイル内のコメントを参照)
     setupFiles: ['test/setup/blockNetwork.ts'],
     // 外部サービス(Mojang・PaperMC・Forge等)に実際にアクセスするテストは`network`タグを付ける．
@@ -37,9 +42,9 @@ export default defineConfig({
       reporter: ['text', 'json-summary', 'json'],
       // If you want a coverage reports even if your tests are failing, include the reportOnFailure option
       reportOnFailure: true,
-      // target is only backend source files
+      // バックエンド・フロントエンド・共有の処理を対象とする
       // (Vitest 4以降は拡張子での絞り込みが無くなったため，テストが生成するjson等を含めないよう明示する)
-      include: ['src-electron/**/*.ts'],
+      include: ['src-electron/**/*.ts', 'src/**/*.ts', 'src-public/**/*.ts'],
       // removed no test files
       exclude: [
         'src-electron/*.ts',
@@ -63,6 +68,8 @@ export default defineConfig({
     alias: {
       'app/': `${import.meta.dirname}/`,
       'src-electron/': `${import.meta.dirname}/src-electron/`,
+      // フロントエンドの `src/` から始まる import（Quasar のエイリアス）をテストでも解決する
+      'src/': `${import.meta.dirname}/src/`,
     },
   },
 });

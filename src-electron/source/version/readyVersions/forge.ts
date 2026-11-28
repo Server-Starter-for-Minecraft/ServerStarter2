@@ -6,6 +6,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { ExecRuntime, ReadyVersion, RemoveVersion } from './base';
 import { getNewForgeArgs } from './utils/forgeArgAnalyzer';
 import {
@@ -116,7 +117,7 @@ export class ReadyForgeVersion extends ReadyVersion<ForgeVersion> {
 
     // 引数の更新を反映した`version.json`を書き出して終了
     p?.delete();
-    return await verJsonHandler.write(newVerJson);
+    return verJsonHandler.write(newVerJson);
   }
 
   get serverID(): string {
@@ -136,15 +137,15 @@ export class RemoveForgeVersion extends RemoveVersion<ForgeVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('forge version', { tags: ['network'] }, async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
@@ -152,7 +153,7 @@ if (import.meta.vitest) {
     const serverFolder = workPath.child('servers');
 
     const ver21: ForgeVersion = {
-      id: '1.13.2' as VersionId,
+      id: asBrand(VersionId, '1.13.2'),
       type: 'forge',
       forge_version: '25.0.223',
       download_url:
@@ -213,7 +214,7 @@ if (import.meta.vitest) {
       await readyOperator.cachePath.remove();
 
       // `installer.jar`の実行によって必要なファイルが生成された体を再現する
-      const execRuntime: ExecRuntime = vi.fn(async (options) => {
+      const execRuntime = vi.fn<ExecRuntime>(async (options) => {
         for (const { path, content } of genfiles) {
           const tgtJarPath = options.currentDir.child(path);
           await tgtJarPath.writeText(content);
@@ -225,35 +226,29 @@ if (import.meta.vitest) {
         outputPath,
         execRuntime
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: JVM_ARGS })).toEqual(args);
 
       // ファイルの設置状況の検証
-      genfiles.forEach(({ path }) => {
-        const targetPath = outputPath.child(path);
-        if (targetPath.extname() === '.jar') {
-          expect(outputPath.child('version.jar').exists()).toBe(true);
-        } else {
-          expect(outputPath.child(path).exists()).toBe(true);
-        }
-      });
+      // （生成された jar は起動用の名前（version.jar）で，それ以外は生成された場所に設置される）
+      const hasJar = genfiles.some(({ path }) => path.endsWith('.jar'));
+      const otherFiles = genfiles.filter(({ path }) => !path.endsWith('.jar'));
+      expect(await outputPath.child('version.jar').exists()).toBe(hasJar);
+      for (const { path } of otherFiles) {
+        expect(await outputPath.child(path).exists()).toBe(true);
+      }
 
       // 実行後にファイル削除
       const remover = new RemoveForgeVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
-      // 削除後の状態を確認
-      genfiles.forEach(({ path }) => {
-        const targetPath = outputPath.child(path);
-        if (targetPath.extname() === '.jar') {
-          expect(outputPath.child('version.jar').exists()).toBe(false);
-        } else {
-          expect(readyOperator.cachePath.child(path).exists()).toBe(true);
-        }
-      });
+      // 削除後の状態を確認（jar は削除され，それ以外はキャッシュに残る）
+      expect(await outputPath.child('version.jar').exists()).toBe(false);
+      for (const { path } of otherFiles) {
+        expect(await readyOperator.cachePath.child(path).exists()).toBe(true);
+      }
     });
   });
 }

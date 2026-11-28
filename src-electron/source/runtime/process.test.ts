@@ -1,5 +1,7 @@
+import { assertDefined } from 'app/test/util/assert';
 import path from 'path';
 import { beforeAll, describe, expect, test } from 'vitest';
+import { z } from 'zod';
 import { Path } from 'app/src-electron/util/binary/path';
 import { interactiveJavaProcess, javaProcessEnv } from './process';
 
@@ -91,7 +93,11 @@ describe('interactiveJavaProcess', () => {
     );
 
     expect(result).toBeUndefined();
-    const childEnv = JSON.parse(stdout);
+    // 子プロセスが出力した環境変数（path・javaHome）を検証して取り出す
+    const childEnv = z
+      .object({ path: z.string(), javaHome: z.string() })
+      .safeParse(JSON.parse(stdout)).data;
+    assertDefined(childEnv);
     expect(splitPath(childEnv.path)[0]).toBe(runtimePath.parent().path);
     expect(childEnv.javaHome).toBe(runtimePath.parent().parent().path);
   });

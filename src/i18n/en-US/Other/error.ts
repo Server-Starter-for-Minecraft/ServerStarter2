@@ -43,6 +43,11 @@ export const enUSError: MessageSchema['error'] = {
         title: 'The data in the path in the ZIP file is a directory',
         desc: 'Please check {path}',
       },
+      entryOutsideDestination: {
+        title:
+          'The ZIP file has an entry pointing outside the destination folder',
+        desc: 'Extraction was stopped for safety. Please check {innerPath} in {path}',
+      },
     },
     path: {
       loadingFailed: {
@@ -260,6 +265,16 @@ export const enUSError: MessageSchema['error'] = {
     },
     failGetGlobalIP: {
       title: 'Failed to get global IP address',
+    },
+    brokenSystemSettings: {
+      title:
+        'Started with the default settings because the system settings could not be loaded',
+      desc: 'The unreadable settings file was saved to {backupPath} (it will be deleted after 7 days)',
+    },
+    brokenSystemSettingsWithoutBackup: {
+      title:
+        'Started with the default settings because the system settings could not be loaded',
+      desc: 'The unreadable settings file could not be backed up, so changes to the settings will not be saved until the app is closed',
     },
     update: {
       missingAppSource: {

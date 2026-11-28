@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Prop {
-  options?: readonly any[];
+  options?: readonly unknown[];
   label?: string;
   disable?: boolean;
   dense?: boolean;
@@ -9,7 +9,7 @@ interface Prop {
   loading?: boolean;
 }
 
-const prop = defineProps<Prop>();
+defineProps<Prop>();
 const model = defineModel();
 </script>
 

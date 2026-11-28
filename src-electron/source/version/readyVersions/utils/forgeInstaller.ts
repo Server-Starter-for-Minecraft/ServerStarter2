@@ -5,6 +5,7 @@ import { ForgeVersion, NeoForgeVersion } from 'app/src-electron/schema/version';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { ExecRuntime, getJarPath } from '../base';
 import {
   constructExecPath,
@@ -25,7 +26,7 @@ export async function downloadInstaller(
   if (isError(downloadJar)) return downloadJar;
 
   // `installer.jar`を書き出し
-  return await installFilePath.write(downloadJar);
+  return installFilePath.write(downloadJar);
 }
 
 /**
@@ -129,7 +130,7 @@ export async function renameFilesFromInstaller(
   );
   if (isError(replaceRes)) return replaceRes;
 
-  return await generatedJar.rename(getJarPath(cachePath));
+  return generatedJar.rename(getJarPath(cachePath));
 }
 
 /**
@@ -149,10 +150,14 @@ async function getArgFilePaths(
   const argFiles: Path[] = [];
   for (const ext of RUN_SCRIPTS.values()) {
     const scriptPath = constructExecPath(cachePath, version, ext);
-    if (!scriptPath.exists()) continue;
+    if (!(await scriptPath.exists())) continue;
 
     const args = await readScriptArgs(scriptPath, ext);
-    if (isError(args)) continue;
+    if (isError(args)) {
+      // 読めないスクリプトの引数ファイルは対象外とする（必要なファイルが無い場合は起動時に検出される）
+      ignoreError(args, '読めない実行スクリプトの引数ファイルは対象外とする');
+      continue;
+    }
 
     argFiles.push(
       ...args
@@ -222,13 +227,16 @@ export async function hasMissingJarReference(
 
   for (const argFile of await getArgFilePaths(cachePath, version)) {
     const txt = await argFile.readText();
-    if (isError(txt)) continue;
+    if (isError(txt)) {
+      ignoreError(txt, '読めない引数ファイルは確認の対象外とする');
+      continue;
+    }
 
-    const missing = txt
-      .split(/\s+/)
-      .filter((token) => jarPattern.test(token))
-      .some((jarName) => !cachePath.child(jarName).exists());
-    if (missing) return true;
+    const jarNames = txt.split(/\s+/).filter((token) => jarPattern.test(token));
+    const existences = await Promise.all(
+      jarNames.map(async (jarName) => cachePath.child(jarName).exists())
+    );
+    if (existences.some((exists) => !exists)) return true;
   }
   return false;
 }

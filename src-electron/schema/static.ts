@@ -1,10 +1,4 @@
 import { z } from 'zod';
-import {
-  DATAPACK_CACHE_PATH,
-  logDir,
-  MOD_CACHE_PATH,
-  PLUGIN_CACHE_PATH,
-} from '../source/const';
 
 /**
  * プレイヤーグループの配色に用いるMinecraftの染料の16色（キーは染料・羊毛の画像の名前と一致する）
@@ -40,17 +34,27 @@ export type MinecraftColors = z.infer<typeof MinecraftColors>;
  */
 export const StaticResouce = z.object({
   minecraftColors: MinecraftColors,
-  paths: z
-    .object({
-      log: z.string().default(logDir.str()),
-      cache: z
-        .object({
-          datapack: z.string().default(DATAPACK_CACHE_PATH.str()),
-          plugin: z.string().default(PLUGIN_CACHE_PATH.str()),
-          mod: z.string().default(MOD_CACHE_PATH.str()),
-        })
-        .prefault({}),
-    })
-    .prefault({}),
+  /**
+   * アプリのファイルの保存先
+   *
+   * 保存先は Electron の実行環境から決まるため，スキーマ（フロントエンドと共有する）では既定値を持たず，
+   * バックエンド（source/system/resource.ts）で設定する
+   */
+  paths: z.object({
+    log: z.string(),
+    cache: z.object({
+      datapack: z.string(),
+      plugin: z.string(),
+      mod: z.string(),
+    }),
+  }),
 });
 export type StaticResouce = z.infer<typeof StaticResouce>;
+
+/**
+ * フロントエンドへ渡す定数のうち，保存先（paths）以外の部分
+ *
+ * スキーマの既定値から作るため，例外を投げることは無い
+ */
+export const STATIC_RESOURCE_WITHOUT_PATHS: Omit<StaticResouce, 'paths'> =
+  StaticResouce.omit({ paths: true }).parse({});

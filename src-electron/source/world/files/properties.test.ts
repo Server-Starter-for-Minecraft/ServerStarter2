@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ServerPropertyDefinitions } from 'app/src-electron/schema/outerResource/serverProperties';
+import { assertOk } from 'app/test/util/assert';
 import { parseServerProperties } from './properties';
 
 /** 外部リソースでのみ定義されたプロパティ（Minecraft の新しいバージョンで追加されたもの） */
@@ -18,27 +19,28 @@ const definitions: ServerPropertyDefinitions = {
   'max-players': { definitions: [{ type: 'number', default: 20 }] },
 };
 
+/** 読み込みに成功することを確認して，読み込んだプロパティを返す */
+const parseOk = (text: string) => {
+  const parsed = parseServerProperties(text, definitions);
+  assertOk(parsed);
+  return parsed;
+};
+
 describe('外部リソースの定義を使った server.properties の読み込み', () => {
   test('外部リソースでのみ定義されたプロパティを定義の型で読み込む', () => {
-    const parsed = parseServerProperties(
-      'new-flag=TRUE\nnew-limit=15',
-      definitions
-    );
+    const parsed = parseOk('new-flag=TRUE\nnew-limit=15');
     expect(parsed['new-flag']).toBe(true);
     expect(parsed['new-limit']).toBe(15);
   });
 
   test('定義の範囲外の値や変換できない値も，ユーザーの値をそのまま残す', () => {
-    const parsed = parseServerProperties(
-      'new-limit=999\nnew-flag=maybe',
-      definitions
-    );
+    const parsed = parseOk('new-limit=999\nnew-flag=maybe');
     expect(parsed['new-limit']).toBe(999);
     expect(parsed['new-flag']).toBe('maybe');
   });
 
   test('バージョンによって型が異なるプロパティは文字列のまま読み込む', () => {
-    const parsed = parseServerProperties('changing-type=3', definitions);
+    const parsed = parseOk('changing-type=3');
     expect(parsed['changing-type']).toBe('3');
   });
 
@@ -51,7 +53,7 @@ describe('外部リソースの定義を使った server.properties の読み込
     ['00.0', 0],
     ['0.5', 0.5],
   ])('10進数の表記 %s は数値 %d として読み込む', (value, expected) => {
-    const parsed = parseServerProperties(`new-limit=${value}`, definitions);
+    const parsed = parseOk(`new-limit=${value}`);
     expect(parsed['new-limit']).toBe(expected);
   });
 
@@ -65,30 +67,24 @@ describe('外部リソースの定義を使った server.properties の読み込
   ])(
     '数値として読むと値が変わる表記 %s はユーザーの表記のまま残す',
     (value) => {
-      const parsed = parseServerProperties(`new-limit=${value}`, definitions);
+      const parsed = parseOk(`new-limit=${value}`);
       expect(parsed['new-limit']).toBe(value);
     }
   );
 
   test('継承したキー（constructor など）があっても読み込める', () => {
-    const parsed = parseServerProperties(
-      ['constructor=1', 'toString=x'].join('\n'),
-      definitions
-    );
+    const parsed = parseOk(['constructor=1', 'toString=x'].join('\n'));
     expect(parsed['constructor']).toBe('1');
     expect(parsed['toString']).toBe('x');
   });
 
   test('定義のないプロパティは文字列のまま読み込む', () => {
-    const parsed = parseServerProperties('unknown-prop=true', definitions);
+    const parsed = parseOk('unknown-prop=true');
     expect(parsed['unknown-prop']).toBe('true');
   });
 
   test('アプリ内で定義されたプロパティの読み込みは変わらない', () => {
-    const parsed = parseServerProperties(
-      'max-players=abc\nwhite-list=true',
-      definitions
-    );
+    const parsed = parseOk('max-players=abc\nwhite-list=true');
     expect(parsed['max-players']).toBe(20);
     expect(parsed['white-list']).toBe(true);
   });

@@ -67,7 +67,7 @@ describe('installer.jarが書き出したファイルの整理', () => {
       expect(isError(res)).toBe(false);
 
       const launchArgs = await resolveLaunchArgs(workPath, version);
-      expect(findLaunchJar(workPath, launchArgs).exists()).toBe(true);
+      expect(await findLaunchJar(workPath, launchArgs).exists()).toBe(true);
     }
   );
 

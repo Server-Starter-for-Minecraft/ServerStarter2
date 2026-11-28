@@ -25,10 +25,10 @@ export type BannedIps = z.infer<typeof BannedIps>;
 const FILENAME = 'banned-ips.json';
 
 export const bannedIpsHandler: ServerSettingFile<BannedIps> = {
-  load(cwdPath) {
+  async load(cwdPath) {
     return cwdPath.child(FILENAME).readJson(BannedIps);
   },
-  save(cwdPath, value) {
+  async save(cwdPath, value) {
     return cwdPath.child(FILENAME).writeText(JSON.stringify(value));
   },
   path(cwdPath) {

@@ -2,12 +2,15 @@ import { RouteRecordRaw } from 'vue-router';
 import ConsolePage from 'src/pages/WorldTabs/ConsolePage.vue';
 
 // preLoadをすることでHOMEの表示中にコンポーネントの読み込みを並列する
-const preLoad = (module: any) => () => module;
+const preLoad =
+  <T>(module: T) =>
+  () =>
+    module;
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('src/layouts/MainLayout.vue'),
+    component: async () => import('src/layouts/MainLayout.vue'),
     children: [
       {
         path: '',
@@ -74,18 +77,18 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/init',
-    component: () => import('src/pages/InitPage.vue'),
+    component: async () => import('src/pages/InitPage.vue'),
   },
   {
     path: '/error',
-    component: () => import('src/pages/ErrorPage.vue'),
+    component: async () => import('src/pages/ErrorPage.vue'),
   },
 
   // Always leave this as last one,
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('src/pages/ErrorNotFound.vue'),
+    component: async () => import('src/pages/ErrorNotFound.vue'),
   },
 ];
 

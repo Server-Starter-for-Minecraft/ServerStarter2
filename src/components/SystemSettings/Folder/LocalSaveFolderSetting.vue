@@ -2,6 +2,7 @@
 import { computed, onMounted, Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
+import { checkError } from 'src/error/error';
 import {
   listLocalSaveFolders,
   LocalSaveFolder,
@@ -12,7 +13,6 @@ import {
 } from 'app/src-public/scripts/localSaveFolders';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
@@ -73,7 +73,7 @@ function removeFolder(folder: LocalSaveFolder) {
       dialogTitle: t('systemsetting.folder.unregistTitle', { name }),
       dialogDesc: t('systemsetting.folder.localSave.unregistDialog', { name }),
       okBtnTxt: t('systemsetting.folder.unregist'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() =>
     unregisterLocalSaveFolder(sysStore.systemSettings.localSave, folder)
   );

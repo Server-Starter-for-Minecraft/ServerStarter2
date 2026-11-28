@@ -9,8 +9,9 @@ import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { errorMessage } from '../error/construct';
 import { fromRuntimeError } from '../error/error';
-import { Failable } from '../error/failable';
+import { Failable, safeExec, safeExecAsync } from '../error/failable';
 import { utilLoggers } from '../utilLogger';
+import { asBrand } from '../zod/brand';
 import { Path } from './path';
 import { Png } from './png';
 
@@ -21,7 +22,7 @@ const loggers = () => utilLoggers().BytesData;
  * (ホストごとの同時接続数制限やシステムのプロキシ設定が適用される)
  * テスト環境などElectron外で実行される場合は標準のfetchを使用する
  */
-const fetchURL = (url: string, init?: RequestInit) =>
+const fetchURL = async (url: string, init?: RequestInit) =>
   electron.net?.fetch ? electron.net.fetch(url, init) : fetch(url, init);
 
 export type Hash = {
@@ -45,41 +46,44 @@ export class BytesData {
     const logger = loggers().fromURL({ url, hash });
     logger.trace('start');
 
-    try {
-      const res = await fetchURL(url, { headers });
-      if (res.status !== 200) {
-        logger.error({ status: res.status, statusText: res.statusText });
-        return errorMessage.data.url.fetch({
-          url: url,
-          status: res.status,
-          statusText: res.statusText,
-        });
-      }
-      const buffer = await res.arrayBuffer();
-      const result = new BytesData(Buffer.from(buffer));
-
-      if (hash === undefined) {
-        logger.trace('success');
-        return result;
-      }
-      const calcHash = await result.hash(hash.type);
-      if (hash.value === calcHash) {
-        logger.trace('success');
-        return result;
-      }
-
-      const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
-      logger.error(msg);
-      return errorMessage.data.hashNotMatch({
-        hashtype: hash.type,
-        type: 'url',
-        path: url,
-      });
-    } catch (e) {
-      const em = fromRuntimeError(e);
-      logger.error(em);
-      return em;
+    // 通信の失敗（例外）は Failable に変換する
+    const res = await safeExecAsync(async () => fetchURL(url, { headers }));
+    if (isError(res)) {
+      logger.error(res);
+      return res;
     }
+    if (res.status !== 200) {
+      logger.error({ status: res.status, statusText: res.statusText });
+      return errorMessage.data.url.fetch({
+        url: url,
+        status: res.status,
+        statusText: res.statusText,
+      });
+    }
+    const buffer = await safeExecAsync(async () => res.arrayBuffer());
+    if (isError(buffer)) {
+      logger.error(buffer);
+      return buffer;
+    }
+    const result = new BytesData(Buffer.from(buffer));
+
+    if (hash === undefined) {
+      logger.trace('success');
+      return result;
+    }
+    const calcHash = await result.hash(hash.type);
+    if (hash.value === calcHash) {
+      logger.trace('success');
+      return result;
+    }
+
+    const msg = `hash value missmatch expected: ${hash} calculated: ${calcHash}`;
+    logger.error(msg);
+    return errorMessage.data.hashNotMatch({
+      hashtype: hash.type,
+      type: 'url',
+      path: url,
+    });
   }
 
   static async fromPath(
@@ -93,38 +97,38 @@ export class BytesData {
     logger.trace('start');
 
     // ファイルが存在しない場合はエラー
-    if (!path.exists())
+    if (!(await path.exists()))
       return errorMessage.data.path.notFound({
         type: 'file',
         path: path.path,
       });
 
-    try {
-      const buffer = await promises.readFile(path.path);
-      const data = new BytesData(buffer);
-      if (hash === undefined) {
-        logger.trace('success');
-        return data;
-      }
-
-      const calcHash = await data.hash(hash.type);
-      if (hash.value === calcHash) {
-        logger.trace('success');
-        return data;
-      }
-      const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
-      logger.error(msg);
-      return errorMessage.data.hashNotMatch({
-        hashtype: hash.type,
-        type: 'file',
-        path: path.path,
-      });
-    } catch (e) {
-      const em = fromRuntimeError(e);
-      logger.error(em);
-      // TODO:黒魔術の解消
-      return fromRuntimeError(e);
+    // 読み込みの失敗（例外）は Failable に変換する
+    const buffer = await safeExecAsync(async () =>
+      promises.readFile(path.path)
+    );
+    if (isError(buffer)) {
+      logger.error(buffer);
+      return buffer;
     }
+    const data = new BytesData(buffer);
+    if (hash === undefined) {
+      logger.trace('success');
+      return data;
+    }
+
+    const calcHash = await data.hash(hash.type);
+    if (hash.value === calcHash) {
+      logger.trace('success');
+      return data;
+    }
+    const msg = `hash value unmatch expected: ${hash} calculated: ${calcHash}`;
+    logger.error(msg);
+    return errorMessage.data.hashNotMatch({
+      hashtype: hash.type,
+      type: 'file',
+      path: path.path,
+    });
   }
 
   /** utf-8の形式でByteDataに変換 */
@@ -160,17 +164,17 @@ export class BytesData {
     if (encoding) {
       settings.encoding = encoding;
     }
-    try {
-      await promises.writeFile(path, new Uint8Array(this.data), settings);
-      logger.trace('success');
-    } catch (e) {
-      const em = fromRuntimeError(e);
-      logger.error(em);
+    const written = await safeExecAsync(async () =>
+      promises.writeFile(path, new Uint8Array(this.data), settings)
+    );
+    if (isError(written)) {
+      logger.error(written);
       return errorMessage.data.path.creationFailed({
         type: 'file',
         path: path,
       });
     }
+    logger.trace('success');
   }
   /**
    * 非推奨
@@ -205,8 +209,11 @@ export class BytesData {
       return data;
     }
 
+    // 取得したデータをローカルに保存する（保存できなくても取得したデータは使えるため，失敗はログに残すのみとする）
     await path.parent().mkdir(true);
-    await data.write(path.path, executable);
+    const written = await data.write(path.path, executable);
+    if (isError(written))
+      loggers().fromPathOrUrl({ path: path.path }).warn(written);
     return data;
   }
 
@@ -221,10 +228,16 @@ export class BytesData {
     const remoteHash = compareHashOnFetch ? hash : undefined;
     const data = await BytesData.fromURL(url, remoteHash, headers);
     if (isValid(data)) {
+      // 取得したデータをローカルに保存する（保存できなくても取得したデータは使えるため，失敗はログに残すのみとする）
       await path.parent().mkdir(true);
-      await data.write(path.path, executable);
+      const written = await data.write(path.path, executable);
+      if (isError(written)) {
+        loggers().fromUrlOrPath({ path: path.path }).warn(written);
+      }
       return data;
     }
+    // 取得できなかった場合はローカルのデータを使う（取得の失敗はログに残す）
+    loggers().fromUrlOrPath({ url }).warn(data);
     const result = await BytesData.fromPath(path, hash);
     return result;
   }
@@ -268,7 +281,7 @@ export class BytesData {
   }
 
   async text(encoding = 'utf-8'): Promise<string> {
-    return await new Promise((resolve) => {
+    return new Promise((resolve) => {
       const text = new TextDecoder(encoding).decode(this.data);
       resolve(text);
     });
@@ -276,36 +289,33 @@ export class BytesData {
 
   /** Zod型定義によってパースしたJSONオブジェクトを返す */
   async json<T>(
-    validator: z.ZodType<T, any>,
+    validator: z.ZodType<T>,
     encoding = 'utf-8'
   ): Promise<Failable<T>> {
-    try {
-      return await new Promise((resolve) => {
-        const text = new TextDecoder(encoding).decode(this.data);
-        resolve(validator.parse(JSON.parse(text)));
-      });
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
+    const parsed = safeExec((): unknown =>
+      JSON.parse(new TextDecoder(encoding).decode(this.data))
+    );
+    if (isError(parsed)) return parsed;
+    const result = validator.safeParse(parsed);
+    if (!result.success) return fromRuntimeError(result.error);
+    return result.data;
   }
 
   async png(): Promise<Failable<Png>> {
-    try {
-      return new Png(sharp(this.data));
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
+    return safeExec(() => new Png(sharp(this.data)));
   }
 
-  /** バイト列をjava NBTに変換 */
-  async nbt<T extends object>(): Promise<Failable<T>> {
-    try {
+  /**
+   * バイト列をjava NBTに変換
+   *
+   * @returns NBT の内容（形式は検証していないため，使う側でスキーマで検証する）
+   */
+  async nbt(): Promise<Failable<unknown>> {
+    return safeExecAsync(async (): Promise<unknown> => {
       const nbt = prismarineNbt;
       const result = await nbt.parse(this.data, 'big');
       return nbt.simplify(result.parsed);
-    } catch (e) {
-      return fromRuntimeError(e);
-    }
+    });
   }
 
   /** data:{mimetype};base64,... の形式でエンコード
@@ -315,7 +325,7 @@ export class BytesData {
   async encodeURI(mimetype: string): Promise<ImageURI> {
     // Bufferからbase64に変換
     const base64uri = this.data.toString('base64');
-    return `data:${mimetype};base64,${base64uri}` as ImageURI;
+    return asBrand(ImageURI, `data:${mimetype};base64,${base64uri}`);
   }
 
   arrayBuffer() {
@@ -330,7 +340,9 @@ export class BytesData {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect, afterAll } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('BytesData', async () => {
     const { Path } = await import('./path');
@@ -367,30 +379,27 @@ if (import.meta.vitest) {
       '/text': { body: 'test' },
       '/server-error': { status: 500, body: 'error' },
     });
-    afterAll(() => server.close());
+    afterAll(async () => server.close());
     const url = server.url('/todos/1');
 
     test('from', async () => {
       // テキスト
       const text = 'test';
       const data = await BytesData.fromText(text);
-      expect(isError(data)).toBe(false);
-      if (isError(data)) return;
+      assertOk(data);
       await expect(data.text()).resolves.toBe(text);
 
       // Base64
       const base64 = 'dGVzdA==';
       const data2 = await BytesData.fromBase64(base64);
-      expect(isError(data2)).toBe(false);
-      if (isError(data2)) return;
+      assertOk(data2);
       await expect(data2.text()).resolves.toBe(text);
 
       // Base64(Png)
       const base64uri =
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsTAAALEwEAmpwYAAAARElEQVR4nGNI9rT5jw3vZRAG0wz4JFEUfNgwAYxBkiAaRQG6JAyDFcAkkCVjwv////XrF5iNUwEIgBWgG4uOwSbgUwAA9rumUIV0HXQAAAAASUVORK5CYII=';
       const data4 = await BytesData.fromBase64URI(base64uri);
-      expect(isError(data4)).toBe(false);
-      if (isError(data4)) return;
+      assertOk(data4);
       expect(isError(await data4.png())).toBe(false);
       expect(
         isError(await data4.write(workPath.child('sample.png').path))
@@ -399,8 +408,7 @@ if (import.meta.vitest) {
 
       // URL
       const data3 = await BytesData.fromURL(url);
-      expect(isError(data3)).toBe(false);
-      if (isError(data3)) return;
+      assertOk(data3);
       await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
 
       // ステータスコードが200以外の場合はエラー
@@ -416,14 +424,12 @@ if (import.meta.vitest) {
 
       // Pathがある場合はURLよりもPathが優先される
       const data = await BytesData.fromPathOrUrl(testPath, url);
-      expect(isError(data)).toBe(false);
-      if (isError(data)) return;
+      assertOk(data);
       await expect(data.text()).resolves.toBe('Hello World!');
 
       // Pathがない場合はPathよりもURLが優先され，PathにURLの内容が書き込まれる
       const data2 = await BytesData.fromPathOrUrl(invalidPath, url);
-      expect(isError(data2)).toBe(false);
-      if (isError(data2)) return;
+      assertOk(data2);
       await expect(data2.json(ReturnType)).resolves.toMatchObject(returnObj);
       await expect(invalidPath.readJson(ReturnType)).resolves.toMatchObject(
         returnObj
@@ -431,8 +437,7 @@ if (import.meta.vitest) {
 
       // URLから優先して情報を取得し，ない場合はPathから取得する
       const data3 = await BytesData.fromUrlOrPath(invalidPath2, url);
-      expect(isError(data3)).toBe(false);
-      if (isError(data3)) return;
+      assertOk(data3);
       await expect(data3.json(ReturnType)).resolves.toMatchObject(returnObj);
       await expect(invalidPath2.readJson(ReturnType)).resolves.toMatchObject(
         returnObj
@@ -440,8 +445,7 @@ if (import.meta.vitest) {
 
       // URLが無効な場合はPathから取得する
       const data4 = await BytesData.fromUrlOrPath(testPath, 'invalid.url.com');
-      expect(isError(data4)).toBe(false);
-      if (isError(data4)) return;
+      assertOk(data4);
       await expect(data4.text()).resolves.toBe('Hello World!');
     });
 
@@ -449,8 +453,7 @@ if (import.meta.vitest) {
       const text = 'test';
       const sha1 = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3';
       const data = await BytesData.fromText(text);
-      expect(isError(data)).toBe(false);
-      if (isError(data)) return;
+      assertOk(data);
       await expect(data.hash('sha256')).resolves.toBe(
         '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
       );

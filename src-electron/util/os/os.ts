@@ -1,6 +1,9 @@
 import { execSync } from 'child_process';
 import { app } from 'electron';
 import { OsPlatform } from '../../schema/os';
+import { isError, isValid } from '../error/error';
+import { safeExec } from '../error/failable';
+import { ignoreError } from '../error/ignore';
 
 function getOsPlatform(): OsPlatform {
   const platform = process.platform;
@@ -31,48 +34,52 @@ function getOsPlatform(): OsPlatform {
   }
 }
 
-function getLinuxType() {
+/** /etc/os-release の指定した項目の行を取得する */
+function readOsRelease(key: 'ID_LIKE' | 'ID') {
+  return safeExec(() =>
+    execSync(`cat /etc/os-release | grep "^${key}="`, { encoding: 'utf-8' })
+  );
+}
+
+function getLinuxType(): 'debian' | 'redhat' | undefined {
   // ID_LIKEをとってくる
-  try {
-    const idLikeCommand = 'cat /etc/os-release | grep "^ID_LIKE="';
-    const outstr = execSync(idLikeCommand, { encoding: 'utf-8' });
-    // Parse the output to determine the Linux type
-    if (outstr.includes('debian')) {
-      return 'debian';
-    } else if (outstr.includes('rhel')) {
+  const idLike = readOsRelease('ID_LIKE');
+  if (isValid(idLike)) {
+    if (idLike.includes('debian')) return 'debian';
+    if (idLike.includes('rhel')) return 'redhat';
+  } else {
+    ignoreError(
+      idLike,
+      'ID_LIKE が無い環境では，ID でディストリビューションを判定する'
+    );
+  }
+
+  // ID_LIKEがとれなかったらIDをとってくる
+  // OSごとに取ってるので追加する可能性あり
+  const outstr = readOsRelease('ID');
+  if (isError(outstr)) {
+    ignoreError(
+      outstr,
+      'ID も取得できない環境は，未対応のディストリビューションとして扱う'
+    );
+    return undefined;
+  }
+  const idMatch = outstr.match(/(?:^|\n)ID\s*=(.*)\s*/);
+  if (idMatch === null) return undefined;
+  const id = idMatch[1];
+
+  switch (id) {
+    case 'rhel': // Red Hat Enterprise Linux
+    case 'centos': // CentOS/CentOS Stream
+    case 'ol': // Oracle Linux
+    case 'amzn': // Amazon Linux
+    case 'almalinux': // Almalinux
+    case 'fedora': // fedora
       return 'redhat';
-    } else {
-      throw new Error('unknown linux distribution');
-    }
-  } catch {
-    // ID_LIKEがとれなかったらIDをとってくる
-    // OSごとに取ってるので追加する可能性あり
-
-    // Execute the command to check the distribution
-    const command = 'cat /etc/os-release | grep "^ID="';
-
-    try {
-      const outstr = execSync(command, { encoding: 'utf-8' });
-      const idMatch = outstr.match(/(?:^|\n)ID\s*=(.*)\s*/);
-      if (idMatch === null) return idMatch;
-      const id = idMatch[1];
-
-      switch (id) {
-        case 'rhel': // Red Hat Enterprise Linux
-        case 'centos': // CentOS/CentOS Stream
-        case 'ol': // Oracle Linux
-        case 'amzn': // Amazon Linux
-        case 'almalinux': // Almalinux
-        case 'fedora': // fedora
-          return 'redhat';
-        case 'ubuntu': // Ubuntu
-          return 'debian';
-        default:
-          return undefined;
-      }
-    } catch {
+    case 'ubuntu': // Ubuntu
+      return 'debian';
+    default:
       return undefined;
-    }
   }
 }
 

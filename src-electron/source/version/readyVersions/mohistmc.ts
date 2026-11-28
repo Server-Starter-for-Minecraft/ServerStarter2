@@ -6,6 +6,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
@@ -82,15 +83,15 @@ export class RemoveMohistMCVersion extends RemoveVersion<MohistmcVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('mohistmc version', async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
@@ -99,7 +100,7 @@ if (import.meta.vitest) {
 
     const ver20: MohistmcVersion = {
       type: 'mohistmc',
-      id: '1.20.1' as VersionId,
+      id: asBrand(VersionId, '1.20.1'),
       buildId: 157,
       buildName: '2c49e69c7d50fa5ba8210c8648cc8d0f9135fe22',
       jar: {
@@ -126,26 +127,25 @@ if (import.meta.vitest) {
 
       const res = await readyOperator.completeReady4VersionFiles(
         outputPath,
-        async (runtime) => {}
+        async (_runtime) => {}
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return res;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
 
       // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+      // expect((await outputPath.child('libraries').exists())).toBe(true);
 
       // 実行後にファイル削除
       const remover = new RemoveMohistMCVersion(ver20, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && (await getJarPath(cachePath).exists())).toBe(true);
     });
   });
 }

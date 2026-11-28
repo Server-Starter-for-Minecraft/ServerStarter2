@@ -1,13 +1,12 @@
-import {
-  Timestamp,
-  WorldContainer,
-  WorldName,
-} from 'app/src-electron/schema/brands';
+import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { Failable } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import {
+  getCurrentTimestamp,
+  toTimestamp,
+} from 'app/src-electron/util/timestamp';
 import {
   BACKUP_DIRECTORY_NAME,
   BACKUP_EXT,
@@ -15,7 +14,10 @@ import {
 } from '../../source/const';
 import { worldContainerToPath } from './worldContainer';
 
-export function getBackUpPath(container: WorldContainer, name: WorldName) {
+export async function getBackUpPath(
+  container: WorldContainer,
+  name: WorldName
+): Promise<Path> {
   const time = new Date(getCurrentTimestamp());
   const dateString = formatDate(time);
   const directory = worldContainerToPath(container).child(
@@ -25,7 +27,7 @@ export function getBackUpPath(container: WorldContainer, name: WorldName) {
   // {container}/#backups/{name}-YYYY-MM-DD-HH({i})
   let path = directory.child(`${name}-${dateString}.${BACKUP_EXT}`);
   let i = 1;
-  while (path.exists()) {
+  while (await path.exists()) {
     path = directory.child(`${name}-${dateString}(${i}).${BACKUP_EXT}`);
     i++;
   }
@@ -56,12 +58,7 @@ export async function parseBackUpPath(
   return {
     kind: 'backup',
     name: match[1],
-    time: deformatDate(
-      match[2],
-      match[3],
-      match[4],
-      match[5]
-    ).getTime() as Timestamp,
+    time: toTimestamp(deformatDate(match[2], match[3], match[4], match[5])),
     path: path.str(),
   };
 }

@@ -20,7 +20,7 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
     const filePath = cwdPath.child(WHILTELIST_FILE);
 
     // ファイルが存在しない場合空リストを返す
-    if (!filePath.exists()) return [];
+    if (!(await filePath.exists())) return [];
 
     const value = await filePath.readJson(Whitelist);
 
@@ -35,7 +35,7 @@ export const serverWhitelistFile: ServerSettingFile<Whitelist> = {
 
     return fixed.data;
   },
-  save(cwdPath, value) {
+  async save(cwdPath, value) {
     return cwdPath.child(WHILTELIST_FILE).writeText(JSON.stringify(value));
   },
   path(cwdPath) {

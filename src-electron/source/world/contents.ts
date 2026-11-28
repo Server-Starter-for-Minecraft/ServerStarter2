@@ -19,5 +19,5 @@ export async function getWorldContents(
 ): Promise<WithError<Failable<WorldAdditional>>> {
   const handler = WorldHandler.get(world);
   if (isError(handler)) return withError(handler);
-  return await handler.loadContents();
+  return handler.loadContents();
 }

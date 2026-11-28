@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { useQuasar } from 'quasar';
+import { checkError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { tError } from 'src/i18n/utils/tFunc';
@@ -8,7 +9,6 @@ import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { updateWorld } from 'src/stores/WorldStore';
-import { checkError } from 'src/components/Error/Error';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import SsSelectScope from 'src/components/util/base/ssSelectScope.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';

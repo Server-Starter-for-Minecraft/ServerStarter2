@@ -101,7 +101,7 @@ describe('Forgeのサーバーデータの準備', () => {
       mockExecRuntime()
     );
 
-    expect((await resolveServerLaunchJar(res)).exists()).toBe(true);
+    expect(await (await resolveServerLaunchJar(res)).exists()).toBe(true);
   });
 
   test.each([
@@ -133,7 +133,7 @@ describe('Forgeのサーバーデータの準備', () => {
       ).completeReady4VersionFiles(serverPath, second);
 
       expect(second).not.toHaveBeenCalled();
-      expect((await resolveServerLaunchJar(res)).exists()).toBe(true);
+      expect(await (await resolveServerLaunchJar(res)).exists()).toBe(true);
     }
   );
 });

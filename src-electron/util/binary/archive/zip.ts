@@ -9,7 +9,6 @@ export function zip<T extends unknown[][]>(
 }
 
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('zip', () => {
     const a = [1, 2, 3, 4, 5];
     const b = ['a', 'b', 'c', 'd'];

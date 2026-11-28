@@ -1,8 +1,11 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { recordValueFilter } from 'app/src-public/scripts/obj/objFillter';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { zen2han } from 'app/src-public/scripts/textUtils';
 import { WorldName } from 'app/src-electron/schema/brands';
 import { Version } from 'app/src-electron/schema/version';
@@ -13,20 +16,27 @@ import {
   WorldID,
 } from 'app/src-electron/schema/world';
 import { $T, tError } from 'src/i18n/utils/tFunc';
-import { checkError } from 'src/components/Error/Error';
+import { NO_WORLD_ID, NO_WORLD_NAME } from './placeholders';
 import { useSystemStore } from './SystemStore';
 import { filterWorldContainer, sortWorldList } from './worldListUtils';
 import { __getWorldList, __getWorldListBack, WorldList } from './WorldStore';
 
 export const useMainStore = defineStore('mainStore', {
-  state: () => {
+  state: (): {
+    selectedWorldID: WorldID;
+    inputWorldName: WorldName;
+    worldSearchText: string;
+    errorWorlds: Set<WorldID>;
+    selectedVersionType: Version['type'];
+    worldIPs: Record<WorldID, string>;
+  } => {
     return {
-      selectedWorldID: '' as WorldID,
-      inputWorldName: '' as WorldName,
+      selectedWorldID: NO_WORLD_ID,
+      inputWorldName: NO_WORLD_NAME,
       worldSearchText: '',
       errorWorlds: new Set<WorldID>(),
-      selectedVersionType: 'vanilla' as Version['type'],
-      worldIPs: {} as Record<WorldID, string>,
+      selectedVersionType: 'vanilla',
+      worldIPs: {},
     };
   },
   getters: {
@@ -62,9 +72,12 @@ export const useMainStore = defineStore('mainStore', {
 
               // App.vueのSubscriberは表示中のワールドに対する更新を行うため，
               // 非表示ワールドの更新は別途ここで作動させる
-              window.API.invokeSetWorld(toRaw(w.world)).then((v) => {
-                checkError(v.value, undefined, (e) => tError(e));
-              });
+              runDetached(
+                window.API.invokeSetWorld(toRaw(w.world)).then((v) => {
+                  checkError(v.value, undefined, (e) => tError(e));
+                }),
+                showUnexpectedError
+              );
             }
           });
         },
@@ -108,7 +121,7 @@ export const useMainStore = defineStore('mainStore', {
      * 表示するワールドの選択を解除して，何も表示しない
      */
     unsetWorld() {
-      this.selectedWorldID = '' as WorldID;
+      this.selectedWorldID = NO_WORLD_ID;
     },
     /**
      * NgrokからIPの割り当てがあった際にIPアドレスを更新する

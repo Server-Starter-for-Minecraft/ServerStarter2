@@ -96,7 +96,7 @@ function findNearestLowerVersion(
  * TODO: OuterResourceからの取得に差替える
  * TODO: MinecraftランタイムからCorrettoに差替える（フォールバックにする？）
  */
-export function getUniversalConfig(
+export async function getUniversalConfig(
   osPlatform: OsPlatform,
   mcRuntimeManifest: McRuntimeManifest,
   majorVersion: JavaMajorVersion | undefined
@@ -121,7 +121,7 @@ export function getUniversalConfig(
       logger.warn(`Unsupported Java component name: ${runtimeComponentName}`);
       return Promise.resolve({
         type: 'minecraft',
-        version: runtimeComponentName as JavaComponent,
+        version: runtimeComponentName,
       });
     }
   } else {
@@ -138,7 +138,9 @@ export function getUniversalConfig(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('getUniversalConfig', { tags: ['network'] }, async () => {
     const { BytesData } = await import('../../util/binary/bytesData');
@@ -157,8 +159,7 @@ if (import.meta.vitest) {
 
     test('getUniversalConfig', async () => {
       const mcRuntimeManifest = await loadManifest();
-      expect(isError(mcRuntimeManifest)).toBe(false);
-      if (isError(mcRuntimeManifest)) return;
+      assertOk(mcRuntimeManifest);
 
       // get Java17
       const runtime1 = await getUniversalConfig(
@@ -187,11 +188,10 @@ if (import.meta.vitest) {
     test('check runtime universal versions', async () => {
       const { fromEntries } = await import('../../util/obj/obj');
       const mcRuntimeManifest = await loadManifest();
-      expect(isError(mcRuntimeManifest)).toBe(false);
-      if (isError(mcRuntimeManifest)) return;
+      assertOk(mcRuntimeManifest);
 
       // 検証用データに整形
-      const cleanConfig = (obj: Record<string, any>) => {
+      const cleanConfig = (obj: (typeof mcRuntimeManifest)['linux']) => {
         const runtimeComponentName = Object.keys(obj).filter(
           (k) =>
             !EXCLUDE_COMPONENTS.some((c) => c === k) &&

@@ -14,8 +14,9 @@ import { Version } from 'app/src-electron/schema/version';
 import { World, WorldEdited, WorldID } from 'app/src-electron/schema/world';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { withError } from 'app/src-electron/util/error/witherror';
-import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
+import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import {
   LEVEL_NAME,
   PLUGIN_NETHER_LEVEL_NAME,
@@ -121,7 +122,12 @@ export async function loadLocalFiles(
   }
 
   // avater_pathが読み込めなかった場合は未設定にする
-  const avater_path = isValid(_avater_path) ? _avater_path : undefined;
+  const avater_path = isValid(_avater_path)
+    ? _avater_path
+    : ignoreError(
+        _avater_path,
+        'アイコンが無いワールドはアイコンなしで表示する'
+      );
 
   // worldオブジェクトを生成
   const world: World = {
@@ -174,7 +180,7 @@ export async function saveLocalFiles(
     // ファイル削除待機
     const removeRes = await asyncMap(
       [PLUGIN_NETHER_LEVEL_NAME, PLUGIN_THE_END_LEVEL_NAME],
-      (path) => savePath.child(path).remove()
+      async (path) => savePath.child(path).remove()
     );
     errors.push(...removeRes.filter(isError));
 
@@ -221,7 +227,7 @@ export async function saveLocalFiles(
     if (isError(pull)) errors.push(pull);
   }
 
-  const promisses: Promise<Failable<any>>[] = [
+  const promisses: Promise<Failable<unknown>>[] = [
     serverJsonFile.save(savePath, worldSettings),
     serverIconFile.save(savePath, world.avater_path),
   ];
@@ -236,7 +242,10 @@ export async function saveLocalFiles(
   }
 
   // world.playersが正常値の場合ファイル(ops.json,whitelist.json)に保存
-  if (isValid(world.players)) {
+  // （読み込みに失敗していた場合は，ファイルを上書きしないよう保存しない）
+  if (isError(world.players)) {
+    ignoreError(world.players, '読み込めなかったプレイヤーの設定は保存しない');
+  } else {
     const [ops, whitelist] = fromPlayers(world.players);
     promisses.push(
       serverOpsFile.save(savePath, ops),
@@ -245,7 +254,10 @@ export async function saveLocalFiles(
   }
 
   // world.propertiesが正常値の場合ファイル(server.properties)に保存
-  if (isValid(world.properties)) {
+  // （読み込みに失敗していた場合は，ファイルを上書きしないよう保存しない）
+  if (isError(world.properties)) {
+    ignoreError(world.properties, '読み込めなかったサーバーの設定は保存しない');
+  } else {
     promisses.push(serverPropertiesFile.save(savePath, world.properties));
   }
 
@@ -280,11 +292,13 @@ const PLUGIN_THE_END_DIM = `${LEVEL_NAME}_the_end/DIM1`;
 /** ワールドのディレクトリが vanilla | plugin のどちらかを推定する
  * world_nether/DIM-1, world_the_end/DIM-1 のどちらかが存在する場合は plugin
  * それ以外はvanilla */
-function estimateWorldDirectoryType(savePath: Path): WorldDirectoryTypes {
+async function estimateWorldDirectoryType(
+  savePath: Path
+): Promise<WorldDirectoryTypes> {
   const nether = savePath.child('world_nether/DIM-1');
-  if (nether.exists()) return 'plugin';
+  if (await nether.exists()) return 'plugin';
   const the_end = savePath.child('world_the_end/DIM1');
-  if (the_end.exists()) return 'plugin';
+  if (await the_end.exists()) return 'plugin';
   return 'vanilla';
 }
 
@@ -293,7 +307,7 @@ export async function formatWorldDirectory(
   savePath: Path,
   version: Version,
   progress?: GroupProgressor
-): Promise<WithError<undefined>> {
+): Promise<WithError<Failable<undefined>>> {
   const directoryTypeMap: Record<Version['type'], WorldDirectoryTypes> = {
     unknown: 'vanilla',
     vanilla: 'vanilla',
@@ -306,7 +320,7 @@ export async function formatWorldDirectory(
   };
   const next = directoryTypeMap[version.type];
 
-  const current = estimateWorldDirectoryType(savePath);
+  const current = await estimateWorldDirectoryType(savePath);
   if (current === next) return withError(undefined);
 
   const vanillaNether = savePath.child(VANILLA_NETHER_DIM);
@@ -322,7 +336,7 @@ export async function formatWorldDirectory(
           { from: vanillaNether, to: pluginNether },
           { from: vanillaEnd, to: pluginEnd },
         ],
-        ({ from, to }) => from.moveTo(to)
+        async ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined, moveV2P.filter(isError));
     case current === 'plugin' && next === 'vanilla':
@@ -331,12 +345,16 @@ export async function formatWorldDirectory(
           { from: pluginNether, to: vanillaNether },
           { from: pluginEnd, to: vanillaEnd },
         ],
-        ({ from, to }) => from.moveTo(to)
+        async ({ from, to }) => from.moveTo(to)
       );
       return withError(undefined, moveP2V.filter(isError));
     default:
-      throw new Error(
-        `not implemanted worldDirectoryType conversion: ${current} to ${next}`
+      // 新しいディレクトリ構造を追加した場合に，変換を実装し忘れていないかを示す
+      // （変換しないまま起動すると，ワールドの読み込み位置を誤り新しいワールドが生成されるため，失敗として返す）
+      return withError(
+        errorMessage.system.assertion({
+          message: `not implemanted worldDirectoryType conversion: ${current} to ${next}`,
+        })
       );
   }
 }

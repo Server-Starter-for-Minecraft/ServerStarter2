@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
-import { Runtime } from 'app/src-electron/schema/runtime';
 import { PapermcVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData, Hash } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
@@ -113,15 +112,15 @@ export class RemovePaperMCVersion extends RemoveVersion<PapermcVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('papermc version', { tags: ['network'] }, async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
@@ -160,26 +159,25 @@ if (import.meta.vitest) {
 
       const res = await readyOperator.completeReady4VersionFiles(
         outputPath,
-        async (runtime) => {}
+        async (_runtime) => {}
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
 
       // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+      // expect((await outputPath.child('libraries').exists())).toBe(true);
 
       // 実行後にファイル削除
       const remover = new RemovePaperMCVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && (await getJarPath(cachePath).exists())).toBe(true);
     });
   });
 }

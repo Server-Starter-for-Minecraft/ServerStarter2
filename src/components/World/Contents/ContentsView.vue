@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { checkError } from 'src/error/error';
 import {
   AllFileData,
   CacheFileData,
@@ -14,7 +15,6 @@ import { tError } from 'src/i18n/utils/tFunc';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
 import { useSystemStore } from 'src/stores/SystemStore';
-import { checkError } from 'src/components/Error/Error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import ViewStyleToggle from 'src/components/util/ViewStyleToggle.vue';
@@ -84,13 +84,18 @@ const typeLabelArg = computed(() => ({
   type: t(`additionalContents.${prop.contentType}`),
 }));
 
+/** 表示中のワールドに導入済みの追加コンテンツ（表示中の種類） */
+function worldContents(): AllFileData<T>[] | undefined {
+  return mainStore.world?.additional[`${prop.contentType}s`];
+}
+/** キャッシュされた追加コンテンツ（表示中の種類） */
+function cachedContents(): CacheFileData<T>[] {
+  return sysStore.cacheContents[`${prop.contentType}s`];
+}
+
 /** 検索ワードで絞り込んだ、表示中のワールドに導入済みの追加コンテンツ */
 const installedContents = computed(() =>
-  filterContents(
-    (mainStore.world?.additional[`${prop.contentType}s`] ??
-      []) as AllFileData<T>[],
-    searchText.value
-  )
+  filterContents(worldContents() ?? [], searchText.value)
 );
 /** 検索ワードで絞り込んだ、導入履歴のある未導入の追加コンテンツ */
 const newContents = computed(() =>
@@ -109,9 +114,7 @@ watch(() => mainStore.selectedWorldID, reloadContents);
  * キャッシュされたコンテンツのうち、導入済みのコンテンツを除外した一覧
  */
 function getNewContents(worldContents?: AllFileData<T>[]) {
-  return (
-    sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]
-  ).filter(
+  return cachedContents().filter(
     (c) => !worldContents?.some((wc) => fileDataKey(wc) === fileDataKey(c))
   );
 }
@@ -173,12 +176,11 @@ function addContent2World(content: NewFileData<T>) {
       };
     }
   }
-  (
-    mainStore.world?.additional[`${prop.contentType}s`] as AllFileData<T>[]
-  ).push(content);
-  (sysStore.cacheContents[`${prop.contentType}s`] as CacheFileData<T>[]).push(
-    NewFile2CacheFile()
-  );
+  // ワールドを表示していない場合は導入しない（キャッシュにも追加しない）
+  const contents = worldContents();
+  if (contents === undefined) return;
+  contents.push(content);
+  cachedContents().push(NewFile2CacheFile());
 }
 
 /**
@@ -190,14 +192,10 @@ async function openSavedFolder() {
     `${prop.contentType}s`
   );
 
-  checkError(
-    path,
-    async (p) => {
-      const res = await window.API.invokeOpenFolder(p, true);
-      checkError(res, undefined, (e) => tError(e));
-    },
-    (e) => tError(e)
-  );
+  const p = checkError(path, undefined, (e) => tError(e));
+  if (p === undefined) return;
+  const res = await window.API.invokeOpenFolder(p, true);
+  checkError(res, undefined, (e) => tError(e));
 }
 /**
  * キャッシュフォルダを開く

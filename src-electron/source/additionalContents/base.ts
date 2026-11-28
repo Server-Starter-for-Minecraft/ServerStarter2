@@ -1,3 +1,4 @@
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { api } from 'app/src-electron/core/api';
 import {
   ErrorMessage,
@@ -16,10 +17,12 @@ import { zip } from 'app/src-electron/util/binary/archive/zip';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { safeExecAsync } from 'app/src-electron/util/error/failable';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
+import { genUUIDOf } from 'app/src-electron/util/random/uuid';
 
-export class ServerAdditionalFiles<T extends Record<string, any>> {
+export class ServerAdditionalFiles<T extends Record<string, unknown>> {
   constructor(
     type: 'datapack' | 'plugin' | 'mod',
     cachePath: Path,
@@ -71,31 +74,29 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   }
 
   /** キャッシュにインストールする */
-  private installCache(
+  private async installCache(
     sourcePath: Path,
     source: NewFileData<T>
-  ): Failable<undefined> {
+  ): Promise<Failable<undefined>> {
     const basename = fileDataKey(source);
     const targetPath = this.cachePath.child(basename);
-    if (targetPath.exists())
+    if (await targetPath.exists())
       return errorMessage.data.path.alreadyExists({
         type: source.isFile ? 'file' : 'directory',
         path: targetPath.path,
       });
-    // 待機せずにキャッシュにインストール
-    this.installer(sourcePath, targetPath).then((x) => {
-      // 失敗した場合エラーをAPIで送信
-      if (isError(x))
-        api.send.Error(
-          errorMessage.core.failCacheAddiltionalData(
-            {
-              type: this.type,
-              path: sourcePath.path,
-            },
-            'info'
-          )
-        );
-    });
+    // 待機せずにキャッシュにインストールし，失敗した場合はエラーをAPIで送信
+    runDetached(this.installer(sourcePath, targetPath), () =>
+      api.send.Error(
+        errorMessage.core.failCacheAddiltionalData(
+          {
+            type: this.type,
+            path: sourcePath.path,
+          },
+          'info'
+        )
+      )
+    );
   }
 
   /** パスからNewFileData<T>を得る */
@@ -122,12 +123,12 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const basename = fileDataKey(source);
     const sourcePath = new Path(source.path);
     const targetPath = this.cachePath.child(basename);
-    if (targetPath.exists())
+    if (await targetPath.exists())
       return errorMessage.data.path.alreadyExists({
         type: source.isFile ? 'file' : 'directory',
         path: targetPath.path,
       });
-    return await this.installer(sourcePath, targetPath);
+    return this.installer(sourcePath, targetPath);
   }
 
   /**
@@ -137,7 +138,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
    * @returns 各パスがファイルの場合はtrue（判定に失敗した場合はファイルとみなす）
    */
   private async isFiles(paths: Path[]): Promise<boolean[]> {
-    return await asyncMap(paths, async (p) => {
+    return asyncMap(paths, async (p) => {
       const isDir = await p.isDirectory();
       return isError(isDir) || !isDir;
     });
@@ -165,12 +166,34 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     return withError(array, loaded.filter(isError));
   }
 
+  /**
+   * ワールドに導入済みの追加コンテンツの一覧を読み込む
+   *
+   * フォルダを開く操作に備えて，コンテンツのフォルダが無い場合は作成する
+   *
+   * @param cwdPath ワールド（サーバー）のフォルダ
+   * @param id 読み込んだコンテンツに付けるワールドの ID
+   * @returns 読み込めたコンテンツの一覧と，読み込めなかったコンテンツのエラー
+   */
   async load(
     cwdPath: Path,
     id: WorldID
   ): Promise<WithError<WorldFileData<T>[]>> {
     const dirPath = cwdPath.child(this.childPath);
-    if (!dirPath.exists()) await dirPath.mkdir();
+    if (!(await dirPath.exists())) {
+      // Path.mkdir は失敗時に例外を投げるため，Result 型へ変換する（os/shell.ts の openFolder と同じ扱い）
+      const made = await safeExecAsync(async () => dirPath.mkdir());
+      if (isError(made))
+        return withError(
+          [],
+          [
+            errorMessage.data.path.creationFailed({
+              type: 'directory',
+              path: dirPath.path,
+            }),
+          ]
+        );
+    }
     const paths = await dirPath.iter();
     if (isError(paths)) return withError([], [paths]);
 
@@ -207,7 +230,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       }
 
       // ソースが存在しない場合
-      if (!srcPath.exists()) {
+      if (!(await srcPath.exists())) {
         errors.push(
           errorMessage.data.path.notFound({
             type: source.isFile ? 'file' : 'directory',
@@ -222,22 +245,27 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       if (tgtPath.path === srcPath.path) return;
 
       // ソースが有効なデータかどうかを確認
-      const loaded = await this.load(srcPath, '' as WorldID);
-      if (isError(loaded.value)) return;
+      // （ソースはワールドのフォルダではなくコンテンツそのもののため，load ではなく loader で1件を読み込む）
+      const loaded = await this.loader(srcPath, true);
+      if (isError(loaded)) {
+        errors.push(loaded);
+        return;
+      }
 
       // インストール処理
       const result = await this.installer(srcPath, tgtPath);
 
       // 新規ファイルだった場合キャッシュにコピー
       if (source.type === 'new') {
-        this.installCache(srcPath, source);
+        const cached = await this.installCache(srcPath, source);
+        if (isError(cached)) errors.push(cached);
       }
 
       if (isError(result)) errors.push(result);
     });
 
-    // 現状のファイル一覧を取得
-    const loaded = await this.load(cwdPath, '' as WorldID);
+    // 現状のファイル一覧を取得（ファイル名のみを使うため，ワールドの ID は仮のものを渡す）
+    const loaded = await this.load(cwdPath, genUUIDOf(WorldID));
     errors.push(...loaded.errors);
 
     // 削除すべきファイル一覧
@@ -247,7 +275,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       .filter((file) => !keepKeys.has(fileDataKey(file)));
 
     // 非同期で削除
-    const deleteErrs = await asyncMap(deletFiles, (x) =>
+    const deleteErrs = await asyncMap(deletFiles, async (x) =>
       dirPath.child(fileDataKey(x)).remove()
     );
     errors.push(...deleteErrs.filter(isError));

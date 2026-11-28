@@ -1,33 +1,53 @@
-import { randomInt } from 'crypto';
 import dayjs, { type Dayjs } from 'dayjs';
-import { app } from 'electron';
+// Electron外(スクリプト・テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
+import * as electron from 'electron';
 import fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { onQuit } from '../lifecycle/lifecycle';
-import { logDir } from '../source/const';
+import { logDir } from '../lifecycle/paths';
 import { Path } from '../util/binary/path';
-import { isError } from '../util/error/error';
+import { isError, isValid } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
 import { isValidIP } from '../util/network/ip';
+import { randomInt } from '../util/random/random';
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS';
 const LATEST = 'latest';
 const EXTs = ['.log', '.truncate.log'];
-const TMP_LOG = `tmp_${randomInt(2 ** 31)}`;
+const TMP_LOG = `tmp_${randomInt(0, 2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
 
-fs.ensureDirSync(logDir.path);
+/**
+ * ログ（アーカイブ・アーカイブできずに残ったログ）を残す期間（日）
+ *
+ * ログ以外にも，診断のために一時的に残すファイル（読み込めなかった設定ファイルのバックアップ等）の保存期間として使う
+ */
+export const LOG_RETENTION_DAYS = 7;
+
 const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
 const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
 // LATASTの上書き前にアーカイブファイルを作成
 // Testの時には下記のコードは実行しない
-if (app && logPaths.every((path) => path.exists())) {
-  logPaths.forEach((path, idx) =>
-    fs.copyFileSync(path.path, beforeArchivePaths[idx].path)
-  );
-  archiveLog(...beforeArchivePaths);
+// （下の log4js の設定で latest.log が上書きされる前に退避する必要があるため，起動時に一度だけ同期 API を使う。
+//   画面の表示前であり操作を止めることはない。eslint-rules/config.js の BLOCKING_CALL_EXCEPTIONS で，
+//   モジュールの読み込み時の処理に限って no-blocking-call の例外としている。関数の中で使うと例外の範囲外になる）
+fs.ensureDirSync(logDir.path);
+if (electron.app) {
+  let existsLatestLogs = true;
+  for (const path of logPaths) {
+    existsLatestLogs &&= fs.existsSync(path.path);
+  }
+  if (existsLatestLogs) {
+    for (const [idx, path] of logPaths.entries()) {
+      fs.copyFileSync(path.path, beforeArchivePaths[idx].path);
+    }
+    runDetached(archiveLog(...beforeArchivePaths), (e) =>
+      rootLogger.logger.archive().error(e)
+    );
+  }
 }
 
 // #region log4jsの設定
@@ -35,7 +55,7 @@ if (app && logPaths.every((path) => path.exists())) {
 /**
  * 与えられたログオブジェクトを省略して，人間が見やすい文字列に出力する
  */
-function truncateValue(value: any, depth = 0): string {
+function truncateValue(value: unknown, depth = 0): string {
   const MAX_ARRAY_ITEMS = 1;
   const MAX_OBJECT_FIELDS = 3;
   const MAX_STRING_LENGTH = 50;
@@ -90,14 +110,9 @@ log4js.addLayout('fullLog', () => {
     const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
     const level = logEvent.level.levelStr;
     const category = logEvent.categoryName;
-    const param = logEvent.data[0];
-    const json = {
-      t: time,
-      lv: level,
-      on: category,
-      param,
-      msg: logEvent.data[1],
-    };
+    const param: unknown = logEvent.data[0];
+    const msg: unknown = logEvent.data[1];
+    const json = { t: time, lv: level, on: category, param, msg };
     return JSON.stringify(json);
   };
 });
@@ -106,8 +121,8 @@ log4js.addLayout('truncateLog', () => {
     const level = logEvent.level.levelStr.padEnd(5);
     const category = logEvent.categoryName;
     const time = dayjs(logEvent.startTime).format(TIME_FORMAT);
-    const param = logEvent.data[0];
-    const msg = logEvent.data[1];
+    const param: unknown = logEvent.data[0];
+    const msg: unknown = logEvent.data[1];
 
     let output = `[${level} ${time}] ${category}`;
     if (param !== undefined) {
@@ -153,19 +168,27 @@ onQuit(log4js.shutdown, true);
 /** パスにあるログをアーカイブする */
 async function archiveLog(...logPaths: Path[]) {
   // .latestを圧縮してアーカイブ
-  if (logPaths.length > 0 && logPaths.every((path) => path.exists())) {
+  const existences = await Promise.all(logPaths.map(async (p) => p.exists()));
+  if (logPaths.length > 0 && existences.every((exists) => exists)) {
     const lastUpdateTime = await logPaths[0].lastUpdateTime();
-    const [newlogName, archivePath] = getNextArchivePath(lastUpdateTime);
+    const [newlogName, archivePath] = await getNextArchivePath(lastUpdateTime);
     // アーカイブ時に利用する名前に変更
     const newPaths = await Promise.all(
       logPaths.map(async (path) => {
         const firstColonIndex = path.basename().indexOf('.');
         const newExt = path.basename().substring(firstColonIndex);
         const newLogPath = path.parent().child(`${newlogName}${newExt}`);
-        await path.rename(newLogPath);
-        return newLogPath;
+        const renamed = await path.rename(newLogPath);
+        // 名前を変更できなかったログはアーカイブせずに残す（保存期間を過ぎたら下の削除の処理で消す）
+        return isError(renamed) ? renamed : newLogPath;
       })
     );
+    const renameError = newPaths.find(isError);
+    if (renameError !== undefined) {
+      rootLogger.logger.archive().warn(renameError);
+      return;
+    }
+    const archivedPaths = newPaths.filter(isValid);
     // utils/gzを使うと，GzipクラスとPathクラスが循環参照となるため使用しない
     await c(
       {
@@ -173,32 +196,57 @@ async function archiveLog(...logPaths: Path[]) {
         file: archivePath.path,
         cwd: logPaths[0].parent().path,
       },
-      newPaths.map((path) => path.basename())
+      archivedPaths.map((path) => path.basename())
     );
-    await Promise.all(newPaths.map((path) => path.remove()));
+    await removeLogFiles(archivedPaths);
   }
 
-  // 一週間前のログファイルとTMPファイルを削除
-  const thresholdDate = dayjs().subtract(7, 'd');
+  // 保存期間を過ぎたログと，作りかけのアーカイブを削除
+  const thresholdDate = dayjs().subtract(LOG_RETENTION_DAYS, 'd');
   const paths = await logDir.iter();
-  if (isError(paths)) return;
+  if (isError(paths)) {
+    rootLogger.logger.archive().warn(paths);
+    return;
+  }
+  const expired: Path[] = [];
   for (const path of paths) {
-    if (!path.path.endsWith(ARCHIVE_EXT)) continue;
-    if (path.basename().startsWith('tmp')) {
-      await path.remove();
+    const name = path.basename();
+    // 記録中のログと，この起動でアーカイブするために退避したログは残す
+    if (name.startsWith(`${LATEST}.`) || name.startsWith(`${TMP_LOG}.`))
+      continue;
+    // 作りかけのアーカイブはすぐに削除する
+    if (name.endsWith(ARCHIVE_EXT) && name.startsWith('tmp')) {
+      expired.push(path);
       continue;
     }
+    // アーカイブと，名前の変更・圧縮に失敗して残ったログ（前回までの退避ファイルを含む）は保存期間で削除する
+    if (!name.endsWith(ARCHIVE_EXT) && !name.endsWith('.log')) continue;
     const updateDate = await path.lastUpdateTime();
-    if (updateDate.isBefore(thresholdDate)) await path.remove();
+    if (updateDate.isBefore(thresholdDate)) expired.push(path);
+  }
+  await removeLogFiles(expired);
+}
+
+/**
+ * ログのファイルを削除する
+ *
+ * 削除できなくても次回の起動時に再度削除を試みるため，失敗はログに残すのみとする
+ *
+ * @param paths 削除するファイル
+ */
+async function removeLogFiles(paths: Path[]) {
+  const results = await Promise.all(paths.map(async (path) => path.remove()));
+  for (const result of results.filter(isError)) {
+    rootLogger.logger.archive().warn(result);
   }
 }
 
-function getNextArchivePath(time: Dayjs): [string, Path] {
+async function getNextArchivePath(time: Dayjs): Promise<[string, Path]> {
   let i = 0;
   const prefix = time.format('YYYY-MM-DD-HH');
   while (true) {
     const path = logDir.child(`${prefix}-${i}${ARCHIVE_EXT}`);
-    if (!path.exists()) return [`${prefix}-${i}`, path];
+    if (!(await path.exists())) return [`${prefix}-${i}`, path];
     i += 1;
   }
 }
@@ -209,18 +257,18 @@ const CATEGORY = Symbol();
 
 class LoggerWrapper {
   private logger: log4js.Logger;
-  private arg: any;
-  constructor(logger: log4js.Logger, arg: any) {
+  private arg: unknown;
+  constructor(logger: log4js.Logger, arg: unknown) {
     this.logger = logger;
     this.arg = arg;
   }
 
   private log =
     (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal') =>
-    (...message: any[]) =>
+    (...message: unknown[]) =>
       this.logger[level](
         applyOmission(this.arg),
-        simplifyArgs(...applyOmission(message))
+        simplifyArgs(...message.map((m, i) => applyOmission(m, [i])))
       ); // 伏字処理を施してログを吐く
 
   trace = this.log('trace');
@@ -234,18 +282,29 @@ class LoggerWrapper {
 export interface LoggerHierarchy extends Record<string, LoggerHierarchy> {
   [CATEGORY]: string | undefined;
   /** ワールド名やサーバーid等,実行コンテクストを過不足なく提供するとよい */
-  (...args: any[]): LoggerWrapper;
+  (...args: unknown[]): LoggerWrapper;
+}
+
+/**
+ * カテゴリのロガーを作る
+ *
+ * 子のカテゴリのロガー（`logger.ipc` など）は Proxy（`handler`）で参照したときに作るため，
+ * 呼び出せる関数に子のロガーを持つ型（LoggerHierarchy）を付ける
+ *
+ * @param category カテゴリ（`.` 区切り。ルートは空文字列）
+ * @returns カテゴリのロガー
+ */
+function createLoggerHierarchy(category: string): LoggerHierarchy {
+  const logger = log4js.getLogger(category || undefined);
+  const loggerHierarchy = Object.assign(
+    (...args: unknown[]) => new LoggerWrapper(logger, simplifyArgs(...args)),
+    { [CATEGORY]: category }
+  ) as LoggerHierarchy;
+  return new Proxy<LoggerHierarchy>(loggerHierarchy, handler);
 }
 
 const loggerHierarchies = InfinitMap.primitiveKeyStrongValue(
-  (category: string) => {
-    const logger = log4js.getLogger(category || undefined);
-    const loggerHierarchy: LoggerHierarchy = ((...args: any[]) => {
-      return new LoggerWrapper(logger, simplifyArgs(...args));
-    }) as LoggerHierarchy;
-    loggerHierarchy[CATEGORY] = category;
-    return new Proxy<LoggerHierarchy>(loggerHierarchy, handler);
-  }
+  createLoggerHierarchy
 );
 
 /**
@@ -254,7 +313,7 @@ const loggerHierarchies = InfinitMap.primitiveKeyStrongValue(
  * - argsが1この場合 - args[0]
  * - argsが2この場合 - args
  */
-function simplifyArgs(...args: any[]): any {
+function simplifyArgs(...args: unknown[]): unknown {
   const params =
     args.length === 0 ? undefined : args.length === 1 ? args[0] : args;
   return params;
@@ -268,26 +327,36 @@ const omissions: Set<LogOmission> = new Set([
   (v, p) => (p[p.length - 1] === 'ngrokToken' ? ':NgrokToken:' : v),
 ]);
 
-/** オブジェクトに伏字を適用する */
-function applyOmission<T>(value: T, path: (string | number)[] = []): T {
+/**
+ * ログに出す値に伏字を適用する（値は変更せず，伏字を適用した複製を返す）
+ *
+ * @param value ログに出す値
+ * @param path ログに出す値の全体の中での位置（伏字のルールの判定に使う）
+ * @returns 伏字を適用した値
+ */
+function applyOmission(
+  value: unknown,
+  path: (string | number)[] = []
+): unknown {
   switch (typeof value) {
-    case 'string':
+    case 'string': {
       let val: string = value;
       for (const omission of omissions) {
         val = omission(val, path);
       }
-      return val as T;
+      return val;
+    }
     case 'object': {
-      if (value === null) return null as T;
+      if (value === null) return null;
       if (Array.isArray(value)) {
-        return value.map((v, i) => applyOmission(v, [...path, i])) as T;
+        return value.map((v: unknown, i) => applyOmission(v, [...path, i]));
       }
       return Object.fromEntries(
-        Object.entries(value).map(([k, v]) => [
+        Object.entries(value).map(([k, v]: [string, unknown]) => [
           k,
           applyOmission(v, [...path, k]),
         ])
-      ) as T;
+      );
     }
     default:
       return value;
@@ -316,7 +385,9 @@ export const rootLogger = loggerHierarchies.get('');
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('logger', async () => {
     const path = await import('path');
@@ -433,8 +504,7 @@ if (import.meta.vitest) {
 
       // アーカイブチェック
       const logPaths = await logDir.iter();
-      expect(isError(logPaths)).toBe(false);
-      if (isError(logPaths)) return;
+      assertOk(logPaths);
       for (const path of logPaths) {
         if (logPaths.some((p) => p.basename() === path.basename())) continue;
         await path.remove();
@@ -443,18 +513,53 @@ if (import.meta.vitest) {
 
       // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
       const logPaths2 = await logDir.iter();
-      expect(isError(logPaths2)).toBe(false);
-      if (isError(logPaths2)) return;
+      assertOk(logPaths2);
       expect(logPaths2.map((p) => p.basename())).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.tar.gz/),
         ])
       );
     });
+
+    test('保存期間を過ぎたログは，アーカイブできずに残ったものも含めて削除し，期間内のものと記録中のログは残す', async () => {
+      const { utimes } = await import('node:fs/promises');
+      const old = new Date(
+        Date.now() - (LOG_RETENTION_DAYS + 1) * 24 * 60 * 60 * 1000
+      );
+      /** 保存期間より前に更新したファイルを作る */
+      const createOld = async (name: string) => {
+        const file = logDir.child(name);
+        await file.writeText('old');
+        await utimes(file.path, old, old);
+        return file;
+      };
+      const expired = await Promise.all(
+        [
+          'tmp_1.log',
+          'tmp_1.truncate.log',
+          '2000-01-01-00-0.log',
+          '2000-01-01-00-1.log.tar.gz',
+        ].map(createOld)
+      );
+      const kept = [
+        // 記録中のログは古くても残す
+        await createOld(`${LATEST}.log`),
+        // 保存期間内のログ・アーカイブ
+        logDir.child('2999-01-01-00-0.log'),
+        logDir.child('2999-01-01-00-1.log.tar.gz'),
+      ];
+      await kept[1].writeText('new');
+      await kept[2].writeText('new');
+
+      await archiveLog();
+
+      for (const file of expired) expect(await file.exists()).toBe(false);
+      for (const file of kept) expect(await file.exists()).toBe(true);
+    });
   });
 
   describe('truncateLog', () => {
-    type Source = any[] | Record<string, any>;
+    type Source = unknown[] | Record<string, unknown>;
     const testCases: { sourceParam: Source; expectStr: string }[] = [
       // 通常の出力
       {

@@ -3,12 +3,18 @@ import { WorldID } from 'app/src-electron/schema/world';
 import { api } from '../core/api';
 import { WorldProgressor } from './progress';
 
-const sendProgress = vi.fn();
+/** フロントエンドへ送信されたプログレスの WorldID（送信の順） */
+const sentWorldIDs: WorldID[] = [];
 
 beforeEach(() => {
   vi.useFakeTimers();
-  sendProgress.mockClear();
-  api.send = { Progress: sendProgress } as unknown as typeof api.send;
+  sentWorldIDs.length = 0;
+  // フロントエンドへの送信（外部との境界）を，送信先の WorldID を記録する偽物にする
+  api.send = {
+    Progress: (id: WorldID) => {
+      sentWorldIDs.push(id);
+    },
+  } as unknown as typeof api.send;
 });
 
 afterEach(() => {
@@ -23,9 +29,8 @@ describe('WorldProgressor', () => {
     progressor.title({ key: 'server.readyJava.title' });
     vi.runAllTimers();
 
-    expect(sendProgress).toHaveBeenCalled();
-    for (const [sentID] of sendProgress.mock.calls) {
-      expect(sentID).toBe(worldID);
-    }
+    // 1 回以上送信され，すべての送信が対象のワールドの WorldID を持つ
+    expect(sentWorldIDs.length).toBeGreaterThan(0);
+    expect(new Set(sentWorldIDs)).toEqual(new Set([worldID]));
   });
 });

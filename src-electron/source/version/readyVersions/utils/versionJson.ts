@@ -111,29 +111,23 @@ export function javaEncodingToUtf8() {
 
 /**
  * versionJsonの`embed`を置換する処理
+ *
+ * @param args version.json の起動時の引数（埋め込む位置（embed）を含む）
+ * @param replaceValue 埋め込む位置ごとの，その位置に入れる引数の一覧
+ * @returns 埋め込む位置を置換した引数の一覧（元の引数の一覧は変更しない）
  */
 export function replaceEmbedArgs(
   args: VerJsonArg[],
   replaceValue: Record<EmbedType, string[]>
 ) {
-  const returnArgs = deepcopy(args);
-
-  (Object.keys(replaceValue) as EmbedType[]).forEach((embedType) => {
-    const replaceIdx = returnArgs.findIndex(
-      (arg) => typeof arg !== 'string' && arg['embed'] === embedType
-    );
-
-    if (replaceIdx !== -1) {
-      returnArgs.splice(replaceIdx, 1, ...replaceValue[embedType]);
-    }
-  });
-
-  return returnArgs as string[];
+  // 埋め込む位置（embed）を，その位置に入れる引数の一覧に置き換える
+  return args.flatMap((arg) =>
+    typeof arg === 'string' ? [arg] : replaceValue[arg.embed]
+  );
 }
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('versionJson_replaceEmbedArgs', () => {
     const baseVerJsonDummy: VersionJson = {
       download: {
@@ -156,8 +150,23 @@ if (import.meta.vitest) {
       LOG4J_ARG: ['log4J_ARG'],
     });
     // 戻り値はReplaceされている
-    expect(replacedArgs[0]).toBe('replaceTest');
+    expect(replacedArgs).toEqual([
+      'replaceTest',
+      'log4J_ARG',
+      '-Dlog4j2.formatMsgNoLookups=true',
+      '-jar',
+      'dummyPath',
+      '--nogui',
+    ]);
     // 元データは変更しない
     expect(baseVerJsonDummy.arguments[0]).toBeTypeOf('object');
+  });
+
+  test('同じ埋め込む位置が複数ある場合は，すべての位置を置換する', () => {
+    const replacedArgs = replaceEmbedArgs(
+      [{ embed: 'JAR_PATH' }, '--', { embed: 'JAR_PATH' }],
+      { JAR_PATH: ['a', 'b'], JVM_ARGUMENT: [], LOG4J_ARG: [] }
+    );
+    expect(replacedArgs).toEqual(['a', 'b', '--', 'a', 'b']);
   });
 }

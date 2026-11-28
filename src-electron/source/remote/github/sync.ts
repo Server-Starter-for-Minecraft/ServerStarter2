@@ -3,12 +3,9 @@ import { Remote } from 'src-electron/schema/remote';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { Path } from 'app/src-electron/util/binary/path';
-import {
-  fromRuntimeError,
-  isError,
-  isValid,
-} from 'app/src-electron/util/error/error';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import { safeExecAsync } from 'app/src-electron/util/error/failable';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { sleep } from 'app/src-electron/util/promise/sleep';
 import { gitTempPath } from '../../../source/const';
 import { getSystemSettings } from '../../../source/stores/system';
@@ -64,37 +61,39 @@ async function setupGit(local: Path, remote: Remote) {
     progress: invoke,
   });
 
-  try {
-    // ローカルリポジトリに指定のリモートが登録されているかをチェック
-    const remoteUrl = await git.remote(['get-url', DEFAULT_REMOTE_NAME]);
-    if (remoteUrl !== url) {
-      // 他のリモートURLが登録されていた場合URLを更新
-      await git.remote(['set-url', DEFAULT_REMOTE_NAME, url]);
-    }
-  } catch (e) {
-    // TODO: エラーの種類によって分岐すべき
-    // リモートが登録されていない場合新しく登録
-    // initは空打ちになる可能性あり
-    await git.init();
-    await git.remote(['add', DEFAULT_REMOTE_NAME, url]);
+  // ローカルリポジトリに指定のリモートが登録されているかをチェック
+  const remoteUrl = await safeExecAsync(async () =>
+    git.remote(['get-url', DEFAULT_REMOTE_NAME])
+  );
+  // TODO: エラーの種類によって分岐すべき
+  let registered: Failable<unknown> = undefined;
+  if (isError(remoteUrl)) {
+    // リモートが登録されていない場合新しく登録（initは空打ちになる可能性あり）
+    ignoreError(remoteUrl, 'リモートが未登録の場合は新しく登録する');
+    registered = await safeExecAsync(async () => {
+      await git.init();
+      await git.remote(['add', DEFAULT_REMOTE_NAME, url]);
+    });
+  } else if (remoteUrl !== url) {
+    // 他のリモートURLが登録されていた場合URLを更新
+    registered = await safeExecAsync(async () =>
+      git.remote(['set-url', DEFAULT_REMOTE_NAME, url])
+    );
   }
+  if (isError(registered)) return [registered, set] as const;
 
-  let i = 0;
-  while (i < 100) {
-    i++;
-    try {
-      await git.addConfig(
-        'user.name',
-        (await getSystemOwnerName()) ?? '<ANONYMOUS>',
-        undefined,
-        'local'
-      );
+  // 設定ファイルが他の処理に使われている場合などに備えて，設定できるまで再試行する
+  const ownerName = (await getSystemOwnerName()) ?? '<ANONYMOUS>';
+  let configured: Failable<void> = undefined;
+  for (let i = 0; i < 100; i++) {
+    configured = await safeExecAsync(async () => {
+      await git.addConfig('user.name', ownerName, undefined, 'local');
       await git.addConfig('user.email', '', undefined, 'local');
-      break;
-    } catch (e) {
-      await sleep(100);
-    }
+    });
+    if (isValid(configured)) break;
+    await sleep(100);
   }
+  if (isError(configured)) return [configured, set] as const;
 
   return [git, set] as const;
 }
@@ -120,17 +119,24 @@ export async function pullWorld(
       numeric.value = x.processed;
     });
   }
-  try {
+  const pulled = await safeExecAsync(async () => {
     await git.fetch(DEFAULT_REMOTE_NAME, remote.name);
     // リモートの内容をチェックアウト
     await git.checkout(`${DEFAULT_REMOTE_NAME}/${remote.name}`, ['-f']);
-  } catch (e: any) {
-    if (e.message === `fatal: couldn't find remote ref ${remote.name}\n`) {
-      // ブランチが存在しない場合何もせず終了
+  });
+  if (isError(pulled)) {
+    // ブランチが存在しない場合何もせず終了
+    const notFound =
+      pulled.key === 'system.runtime' &&
+      pulled.arg.message === `fatal: couldn't find remote ref ${remote.name}\n`;
+    if (notFound) {
+      ignoreError(
+        pulled,
+        'リモートにブランチが無い場合は，取得するものが無いため何もしない'
+      );
       return;
-    } else {
-      return fromRuntimeError(e);
     }
+    return pulled;
   }
 }
 
@@ -157,11 +163,20 @@ export async function pushWorld(
     const player = await getPlayerFromUUID(uuid);
     sub?.delete();
     if (isValid(player)) message = `${player.name}`;
-    else message = `<UNKNOWN_PLAYER>(${uuid})`;
+    else {
+      ignoreError(
+        player,
+        'プレイヤー名を取得できない場合は UUID をコミットメッセージにする'
+      );
+      message = `<UNKNOWN_PLAYER>(${uuid})`;
+    }
   } else message = '<ANONYMOUS>';
 
-  await git.add('-A');
-  await git.commit(message, undefined, { '--allow-empty': null });
+  const committed = await safeExecAsync(async () => {
+    await git.add('-A');
+    await git.commit(message, undefined, { '--allow-empty': null });
+  });
+  if (isError(committed)) return committed;
 
   // pushのプログレスを反映
   if (progress) {
@@ -176,9 +191,10 @@ export async function pushWorld(
       numeric.value = x.processed;
     });
   }
-  await safeExecAsync(() =>
+  const pushed = await safeExecAsync(async () =>
     git.push([DEFAULT_REMOTE_NAME, `HEAD:${remote.name}`, '-f'])
   );
+  if (isError(pushed)) return pushed;
 }
 
 export async function deleteWorld(
@@ -199,13 +215,19 @@ export async function deleteWorld(
     ],
   });
 
-  await git.init();
+  const initialized = await safeExecAsync(async () => git.init());
+  if (isError(initialized)) return initialized;
 
   // リモートのブランチを削除
-  const push = await safeExecAsync(() => git.push(url, `:${remote.name}`));
+  const push = await safeExecAsync(async () =>
+    git.push(url, `:${remote.name}`)
+  );
 
-  // 一時フォルダを削除（削除失敗がユーザーに影響しないため無視）
-  await gitTempPath.remove();
+  // 一時フォルダを削除
+  const removed = await gitTempPath.remove();
+  if (isError(removed)) {
+    ignoreError(removed, '一時フォルダの削除の失敗はユーザーに影響しない');
+  }
 
   // pushに失敗した場合
   if (isError(push)) return push;

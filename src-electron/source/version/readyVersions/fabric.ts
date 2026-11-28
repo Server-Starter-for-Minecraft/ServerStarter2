@@ -6,6 +6,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
@@ -79,15 +80,15 @@ export class RemoveFabricVersion extends RemoveVersion<FabricVersion> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('fabric version', { tags: ['network'] }, async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
@@ -95,7 +96,7 @@ if (import.meta.vitest) {
     const serverFolder = workPath.child('servers');
 
     const ver21: FabricVersion = {
-      id: '1.21' as VersionId,
+      id: asBrand(VersionId, '1.21'),
       type: 'fabric',
       release: true,
       loader: '0.15.11',
@@ -114,26 +115,25 @@ if (import.meta.vitest) {
 
       const res = await readyOperator.completeReady4VersionFiles(
         outputPath,
-        async (runtime) => {}
+        async (_runtime) => {}
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return;
+      assertOk(res);
 
       // 戻り値の検証
       expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
 
       // ファイルの設置状況の検証
-      expect(getJarPath(outputPath).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
-      // expect(outputPath.child('libraries').exists()).toBe(true);
+      // expect((await outputPath.child('libraries').exists())).toBe(true);
 
       // 実行後にファイル削除
       const remover = new RemoveFabricVersion(ver21, cacheFolder);
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(getJarPath(outputPath).exists()).toBe(false);
-      expect(cachePath && getJarPath(cachePath).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && (await getJarPath(cachePath).exists())).toBe(true);
     });
   });
 }

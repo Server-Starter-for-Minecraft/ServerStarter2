@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Failable } from 'app/src-electron/schema/error';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
+import { safeExec } from 'app/src-electron/util/error/failable';
 import {
   WorldSettings,
   worldSettingsSchema,
@@ -80,9 +81,9 @@ export class GithubBlob {
 
     switch (blobRes.encoding) {
       case 'utf-8':
-        return await BytesData.fromText(blobRes.content);
+        return BytesData.fromText(blobRes.content);
       case 'base64':
-        return await BytesData.fromBase64(blobRes.content);
+        return BytesData.fromBase64(blobRes.content);
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
           url: this.url,
@@ -101,7 +102,7 @@ export class GithubBlob {
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
         if (isError(b64data)) return b64data;
-        return await b64data.text();
+        return b64data.text();
       default:
         return errorMessage.data.githubAPI.unknownBlobEncoding({
           url: this.url,
@@ -117,7 +118,7 @@ export class GithubBlob {
     let data: Failable<unknown>;
     switch (blobRes.encoding) {
       case 'utf-8':
-        data = JSON.parse(blobRes.content);
+        data = safeExec((): unknown => JSON.parse(blobRes.content));
         break;
       case 'base64':
         const b64data = await BytesData.fromBase64(blobRes.content);
@@ -142,7 +143,7 @@ export class GithubBlob {
 }
 
 async function get<T>(
-  validator: z.ZodType<T, any>,
+  validator: z.ZodType<T>,
   url: string,
   pat: string
 ): Promise<Failable<T>> {

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { checkError } from 'src/error/error';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
-import { checkError } from 'src/components/Error/Error';
 import ClipImg from './ClipImg.vue';
 import IconBtn from './IconBtn.vue';
 import { IconImage, IconSelectProp, IconSelectReturn } from './iIconSelect';
@@ -15,7 +15,12 @@ defineEmits({ ...useDialogPluginComponent.emitsObject });
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 
-const iconImg: Ref<IconImage> = ref({ data: prop.img, width: 64, height: 64 });
+// アイコンの無いワールドは，アイコンを戻した場合と同じく未設定の画像から始める
+const iconImg: Ref<IconImage> = ref({
+  data: prop.img ?? assets.png.unset,
+  width: 64,
+  height: 64,
+});
 const isImgClipper = ref(false);
 const customImgReload = ref(false);
 const mainStore = useMainStore();

@@ -1,1 +1,13 @@
 language: "ja-JP"
+reviews:
+  path_instructions:
+    - path: "{eslint.config.js,eslint-rules/config.js}"
+      instructions: |
+        lint の例外（対象からの除外・範囲を絞った例外）を追加・変更する差分です。次を必ず確認し，疑問があれば指摘してください。
+        - その例外は本当に必要か。util の利用・Failable による戻り値・層構造に沿った配置など，正規の書き方で解決できないか
+        - 例外の範囲が必要最小限か（ルールを絞り，ファイル全体ではなく関数・モジュールの読み込み時（topLevel）・import するモジュールの単位で指定しているか）
+        - 例外の理由がコメントや PR の説明に書かれているか
+    - path: "eslint-rules/**"
+      instructions: |
+        独自 ESLint ルールの差分です。判定が関数名などの文字列ではなく型情報や宣言元で行われているか，
+        回避の手口（void・型アサーション・未使用の変数など）を invalid のテストケースで確認しているかを確認してください。

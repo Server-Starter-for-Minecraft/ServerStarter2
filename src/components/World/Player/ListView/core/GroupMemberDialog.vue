@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import { ignoreError } from 'src/error/error';
+import { showUnexpectedError } from 'src/error/error';
 import { isValid } from 'app/src-public/scripts/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import SsInput from 'src/components/util/base/ssInput.vue';
@@ -42,6 +45,8 @@ async function loadPlayer(uuid: PlayerUUID) {
   const player = await window.API.invokeGetPlayer(uuid, 'uuid');
   if (isValid(player)) {
     loadedPlayers.value.set(uuid, player);
+  } else {
+    ignoreError(player, '取得できないプレイヤーは一覧に表示しない');
   }
 }
 
@@ -94,13 +99,15 @@ function filterPlayer(pId?: PlayerUUID) {
 }
 
 // イベント類
-onMounted(() => prop.players.forEach(loadPlayer));
+onMounted(() =>
+  runDetached(Promise.all(prop.players.map(loadPlayer)), showUnexpectedError)
+);
 
 function onOkClick() {
   onDialogOK({
     addPlayers: new Set(addPlayers.value),
     delPlayers: new Set(delPlayers.value),
-  } as GroupMemberReturns);
+  } satisfies GroupMemberReturns);
 }
 </script>
 

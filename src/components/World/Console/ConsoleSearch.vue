@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, ComputedRef, nextTick, ref } from 'vue';
+import { ignoreError, safeExec } from 'src/error/error';
+import { showUnexpectedError } from 'src/error/error';
 import {
   ConsoleData,
   MatchedConsoleData,
   MatchResult,
 } from 'src/schema/console';
+import { isError } from 'app/src-public/scripts/error';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
+import type { ConsoleSearchExpose } from './consoleSearch';
 
 /** 検索結果として表示する最大件数 */
 const LIMIT_SEARCH_RESULTS = 10000;
@@ -64,11 +69,10 @@ const matchCountText = () => {
 function isMatchQuery(text: string): MatchResult[] {
   /** 動的に定義される正規表現において，不正な値を指定されたときにNULLを返す */
   const setDynamicRegex = (query: string) => {
-    try {
-      return new RegExp(query, 'gi');
-    } catch (e) {
-      return null;
-    }
+    const regex = safeExec(() => new RegExp(query, 'gi'));
+    return isError(regex)
+      ? (ignoreError(regex, '入力途中の不正な正規表現では検索しない') ?? null)
+      : regex;
   };
 
   const query = searchInput.value.trim();
@@ -166,9 +170,12 @@ function prevMatch() {
 
 // Emit event to scroll to the current match
 function navigateToCurrentFocusLine(lineIdx: number) {
-  nextTick(() => {
-    emit('scrollToMatch', lineIdx);
-  });
+  runDetached(
+    nextTick(() => {
+      emit('scrollToMatch', lineIdx);
+    }),
+    showUnexpectedError
+  );
 }
 
 // Close the search box
@@ -207,7 +214,14 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 // 公開メソッド
-defineExpose({ getMatchedLines, handleKeyDown, currentFocusLineIdx });
+// 公開する処理の型は consoleSearch.ts の ConsoleSearchExpose と一致させる（ref はインスタンス上で値に展開される）
+defineExpose({
+  getMatchedLines,
+  handleKeyDown,
+  currentFocusLineIdx,
+} satisfies Omit<ConsoleSearchExpose, 'currentFocusLineIdx'> & {
+  currentFocusLineIdx: ComputedRef<ConsoleSearchExpose['currentFocusLineIdx']>;
+});
 </script>
 
 <template>
