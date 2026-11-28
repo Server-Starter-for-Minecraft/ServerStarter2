@@ -1,18 +1,33 @@
 import { BrowserWindow } from 'electron';
 import { API } from 'src-electron/api/api';
+import { AnyFunc, IAPI } from 'src-electron/api/types';
 import { FrontCaller, FrontListener } from 'src-electron/ipc/link';
 import { ipcHandle, ipcInvoke, ipcOn, ipcSend } from 'src-electron/ipc/util';
 import { errorMessage } from '../util/error/construct';
 import { Failable } from '../util/error/failable';
 
-type ChanneledFunc<C, T extends (...args: any) => any> = { __channel__: C } & T;
+type ChanneledFunc<C, T extends AnyFunc<unknown>> = { __channel__: C } & T;
+
+/**
+ * 関数に，API の名前（チャンネル）を付ける
+ *
+ * @param channel チャンネル
+ * @param func 関数
+ * @returns チャンネルを付けた関数
+ */
+function withChannel<C extends string, F extends AnyFunc<unknown>>(
+  channel: C,
+  func: F
+): ChanneledFunc<C, F> {
+  return Object.assign(func, { __channel__: channel });
+}
 
 /** MainからMainWindowの処理を呼び出し非同期で待機する */
 export const invoke = <C extends string, T>(
   channel: C,
   window: () => BrowserWindow | undefined
 ) =>
-  (async (...args: any[]) => {
+  withChannel(channel, async (...args: unknown[]): Promise<Failable<T>> => {
     const win = window();
     if (win !== undefined) return ipcInvoke<C, T>(win, channel, ...args);
     else
@@ -21,17 +36,17 @@ export const invoke = <C extends string, T>(
         type: 'invokeMainToWindow',
         message: 'window not exists',
       });
-  }) as ChanneledFunc<C, (...args: any[]) => Promise<Failable<T>>>;
+  });
 
 /** MainからMainWindowの処理を同期で発火する */
 export const send = <C extends string>(
   channel: C,
   window: () => BrowserWindow | undefined
 ) =>
-  ((...args: any[]) => {
+  withChannel(channel, (...args: unknown[]) => {
     const win = window();
     if (win !== undefined) ipcSend(win, channel, ...args);
-  }) as ChanneledFunc<C, (...args: any[]) => void>;
+  });
 
 export function setFrontAPI(front: FrontCaller<API>) {
   Object.entries(front.invoke).forEach(([k, v]) => {
@@ -42,7 +57,7 @@ export function setFrontAPI(front: FrontCaller<API>) {
   });
 }
 
-type ChanneledFrontListener<L extends FrontListener<any>> = {
+type ChanneledFrontListener<L extends FrontListener<IAPI>> = {
   on: {
     [key in keyof L['on']]: ChanneledFunc<key, L['on'][key]>;
   };

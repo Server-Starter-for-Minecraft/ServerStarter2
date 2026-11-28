@@ -117,6 +117,18 @@ export const TYPE_ASSERTION_EXCEPTIONS = [
     functions: ['decoratePromise'],
     reason: 'Promise にメソッドを付け足した型を組み立てる',
   },
+  {
+    file: 'src-electron/api/boundary.ts',
+    functions: ['fromIPC'],
+    reason:
+      'IPC で受け取った値（型情報が失われる）と IPC へ処理を転送する関数を，API の型定義の型として扱う境界（送り手は同じアプリで API の型定義に従う）',
+  },
+  {
+    file: 'src-electron/core/api.ts',
+    topLevel: true,
+    reason:
+      'IPC の接続（setBackAPI）で中身を設定する API を，接続前は空のオブジェクトとして持つ（未接続の既定値を作ると API の一覧が重複する）',
+  },
 ];
 
 /** テストのファイル（テスト専用の補助ファイルを含む） */

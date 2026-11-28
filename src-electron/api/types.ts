@@ -1,12 +1,24 @@
+/**
+ * 任意の引数を受け取り，R を返す関数の型（API の関数の型の上限として使う）
+ *
+ * 引数を never にすると，どのような引数の関数も代入できる（`any` を使わずに任意の関数を表す）
+ */
+export type AnyFunc<R> = (...args: never[]) => R;
+
+/**
+ * IPC の API の定義の形（`api.ts` の `interface API` が従う）
+ *
+ * 各項目は，API の名前（チャンネル）と関数の型の対応である
+ */
 export interface IAPI {
   sendMainToWindow: {
-    [key in string]: (...args: any[]) => void;
+    [key in string]: AnyFunc<void>;
   };
   invokeMainToWindow: {
-    [key in string]: (...args: any[]) => Promise<any>;
+    [key in string]: AnyFunc<Promise<unknown>>;
   };
   sendWindowToMain: {
-    [key in string]: (...args: any[]) => void;
+    [key in string]: AnyFunc<void>;
   };
   /**
    * フロントエンドから呼び出して結果を待つ API
@@ -15,31 +27,30 @@ export interface IAPI {
    * この型の制約により型チェックで検出される（lint の独自ルールでは検査しない）
    */
   invokeWindowToMain: {
-    [key in string]: (...args: any[]) => Promise<any>;
+    [key in string]: AnyFunc<Promise<unknown>>;
   };
 }
 
-type Func<A extends any[], R> = (..._: A) => R;
 type Merge<T extends object> = { [K in keyof T]: T[K] };
 
-export type FrontSend<C extends string, F extends Func<any, void>> = F & {
+export type FrontSend<C extends string, F extends AnyFunc<void>> = F & {
   __channel__: C;
 };
 
 export type FrontInvoke<
   C extends string,
-  F extends Func<any, Promise<any>>,
+  F extends AnyFunc<Promise<unknown>>,
 > = F & {
   __channel__: C;
 };
 
-export type FrontOn<C extends string, F extends Func<any, void>> = ((
+export type FrontOn<C extends string, F extends AnyFunc<void>> = ((
   listener: (event: Electron.IpcRendererEvent, ...args: Parameters<F>) => void
 ) => void) & {
   __channel__: C;
 };
 
-export type FrontHandle<C extends string, F extends Func<any, void>> = ((
+export type FrontHandle<C extends string, F extends AnyFunc<void>> = ((
   listener: (
     event: Electron.IpcRendererEvent,
     ...args: Parameters<F>
@@ -72,24 +83,24 @@ export type IFrontAPI<T extends IAPI> = Merge<
   }
 >;
 
-export type BackSend<C extends string, F extends Func<any, void>> = F & {
+export type BackSend<C extends string, F extends AnyFunc<void>> = F & {
   __channel__: C;
 };
 
 export type BackInvoke<
   C extends string,
-  F extends Func<any, Promise<any>>,
+  F extends AnyFunc<Promise<unknown>>,
 > = F & {
   __channel__: C;
 };
 
-export type BackOn<C extends string, F extends Func<any, void>> = ((
+export type BackOn<C extends string, F extends AnyFunc<void>> = ((
   listener: (event: Electron.IpcMainEvent, ...args: Parameters<F>) => void
 ) => void) & {
   __channel__: C;
 };
 
-export type BackHandle<C extends string, F extends Func<any, void>> = ((
+export type BackHandle<C extends string, F extends AnyFunc<void>> = ((
   listener: (
     event: Electron.IpcMainInvokeEvent,
     ...args: Parameters<F>
