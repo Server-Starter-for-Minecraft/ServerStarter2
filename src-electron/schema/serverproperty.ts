@@ -60,8 +60,8 @@ const coerced = <T extends z.ZodType>(type: ServerPropertyType, schema: T) =>
     schema
   );
 
-/** 読み込み用のスキーマごとの，プロパティ画面で使う注釈 */
-const annotationOfSchema = new WeakMap<z.ZodType, ServerPropertyAnnotation>();
+/** 読み込み用のスキーマごとの，プロパティ画面で使う注釈（zod の型付きのレジストリ） */
+const annotationRegistry = z.registry<ServerPropertyAnnotation>();
 
 /**
  * プロパティの読み込み用のスキーマに，プロパティ画面で使う注釈を付ける
@@ -73,7 +73,9 @@ const withAnnotation = <T extends z.ZodType>(
   schema: T,
   annotation: ServerPropertyAnnotation
 ) => {
-  annotationOfSchema.set(schema, annotation);
+  // 型引数のままでは登録する注釈の型が決まらないため，スキーマの共通の型として登録する
+  const registered: z.ZodType = schema;
+  annotationRegistry.add(registered, annotation);
   return schema;
 };
 
@@ -221,7 +223,7 @@ const DefaultServerProperties = z
 function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
   const annotations: Record<string, ServerPropertyAnnotation> = {};
   for (const [key, schema] of toEntries(prop.shape)) {
-    const annotation = annotationOfSchema.get(schema);
+    const annotation = annotationRegistry.get(schema);
     if (annotation) annotations[key] = annotation;
   }
   return annotations;

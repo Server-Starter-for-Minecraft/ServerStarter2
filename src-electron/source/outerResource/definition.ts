@@ -33,8 +33,14 @@ export const IMAGE_MIME_TYPES: Readonly<Record<string, string>> = {
 export type ResolvedImageSource = {
   /** 画像の URL */
   url: URL;
-  /** 配布ファイルと同じ配布元の画像か（配布ファイルからの相対パスで参照した場合など） */
+  /** 配布ファイルと同じ配布元（オリジン）の画像か（配布ファイルからの相対パスで参照した場合など） */
   isSameOrigin: boolean;
+  /**
+   * 配布元（`baseUrl`）の中の画像の場合，配布元からのパス（パーセントエンコードした表記。例：`v1/icons/ofuse.png`）
+   *
+   * 配布元の外（同じオリジンの別のディレクトリや，別のオリジン）の画像の場合は `undefined`
+   */
+  pathInDistribution: string | undefined;
   /** 画像の拡張子（小文字。例：`.png`） */
   ext: string;
   /** 画像の MIME タイプ（拡張子から決める） */
@@ -48,14 +54,17 @@ export type ResolvedImageSource = {
  * 配布元と同じ場所の画像か https の URL で，拡張子が `IMAGE_MIME_TYPES` にある画像のみ受け付ける
  *
  * @param source 画像の参照先（data URI は呼び出し元で扱う）
- * @param fileUrl 配布ファイルの URL（相対パスの基準）
+ * @param baseUrl 配布元の URL（`https://…/serverstarter2`）
+ * @param filePath 配布ファイルの配布元からのパス（相対パスの基準。例：`v1/donation.json`）
  * @returns 解決した参照先（受け付けない参照先の場合はエラー）
  */
 export function resolveImageSource(
   source: string,
-  fileUrl: string
+  baseUrl: string,
+  filePath: string
 ): Failable<ResolvedImageSource> {
-  const base = safeExec(() => new URL(fileUrl));
+  const root = `${baseUrl.replace(/\/+$/, '')}/`;
+  const base = safeExec(() => new URL(filePath, root));
   if (isError(base)) return base;
   const url = safeExec(() => new URL(source, base));
   if (isError(url)) return url;
@@ -73,7 +82,10 @@ export function resolveImageSource(
       expectedExt: Object.keys(IMAGE_MIME_TYPES).join(', '),
     });
   }
-  return { url, isSameOrigin, ext, mimeType };
+  const pathInDistribution = url.href.startsWith(root)
+    ? url.href.slice(root.length)
+    : undefined;
+  return { url, isSameOrigin, pathInDistribution, ext, mimeType };
 }
 
 /** URL からデータを取得する関数（テストではローカルサーバーやモックに差し替える） */

@@ -54,12 +54,12 @@ export const donationDefinition: OuterResourceDefinition<
           const image = await ctx.loadImage(icon);
           // 起動直後（画像を取得する前）はキャッシュに無いこともあるため，アイコンなしで表示する
           // （取得の失敗は取得処理のログに残る）
-          if (isValid(image)) resolved.icon = image;
-          else
-            ignoreError(
-              image,
-              'アイコンを読み込めないサービスはアイコンなしで表示する'
-            );
+          resolved.icon = isValid(image)
+            ? image
+            : ignoreError(
+                image,
+                'アイコンを読み込めないサービスはアイコンなしで表示する'
+              );
         }
         return resolved;
       })

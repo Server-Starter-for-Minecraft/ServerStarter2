@@ -44,8 +44,7 @@ async function waitAll(
 
 /** JSON をファイルに書き出す（Prettier の書式に合わせて2スペースで字下げし，末尾に改行を付ける） */
 async function writeJson(path: Path, content: unknown) {
-  return path.writeText(`${JSON.stringify(content, null, 2)}
-`);
+  return path.writeText(`${JSON.stringify(content, null, 2)}\n`);
 }
 
 /** JSON Schema を指定したディレクトリに（配布元と同じ構成で）書き出す */
@@ -128,7 +127,7 @@ async function run(
       const exported = await exportInitialDistribution(target);
       return isError(exported)
         ? exported
-        : `exported initial distribution to ${target}`;
+        : `exported initial distribution to ${new Path(target).child('serverstarter2').path}`;
     }
     case 'pull': {
       const pulled = await pullBundledContents(

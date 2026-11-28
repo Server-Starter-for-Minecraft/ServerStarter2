@@ -158,7 +158,11 @@ export class OuterResource<W, R> {
         : errorMessage.value.base64URI({ value: source });
     }
 
-    const resolved = resolveImageSource(source, this.fileUrl);
+    const resolved = resolveImageSource(
+      source,
+      this.baseUrl,
+      distributionPath(this.def)
+    );
     if (isError(resolved)) return resolved;
     const { url, ext, mimeType } = resolved;
 

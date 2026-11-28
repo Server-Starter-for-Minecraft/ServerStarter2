@@ -46,18 +46,21 @@ export function createDistributionReader(source: string): DistributionReader {
     if (isError(decoded)) return decoded;
     const file = root.child(decoded);
     if (!file.isWithin(root)) {
-      return errorMessage.data.url.unsupported({ url: path });
+      return errorMessage.data.path.loadingFailed({
+        type: 'file',
+        path: file.path,
+      });
     }
     return file.read();
   };
 }
 
 /**
- * 配布ファイルからの相対パスを解決するための，配布元の仮の URL
+ * 画像の参照先を解決するための，配布元（`serverstarter2/`）の仮の URL
  *
- * 配布元がローカルのディレクトリの場合も URL と同じ規則で参照先を解決するために使う（`.invalid` は実在しないドメイン）
+ * 配布元がローカルのディレクトリの場合も，アプリと同じ規則で参照先を解決するために使う（`.invalid` は実在しないドメイン）
  */
-const DISTRIBUTION_BASE_URL = 'https://distribution.invalid';
+const DISTRIBUTION_BASE_URL = 'https://distribution.invalid/serverstarter2';
 
 /**
  * 配布ファイルが参照する画像を読み込み，data URI にする
@@ -78,16 +81,18 @@ async function embedImage(
       ? asBrand(ImageURI, source)
       : errorMessage.value.base64URI({ value: source });
   }
-  const resolved = resolveImageSource(
-    source,
-    `${DISTRIBUTION_BASE_URL}/${path}`
-  );
+  const resolved = resolveImageSource(source, DISTRIBUTION_BASE_URL, path);
   if (isError(resolved)) return resolved;
-  const { url, isSameOrigin, mimeType } = resolved;
-  const image = isSameOrigin
-    ? // 配布元の `serverstarter2/` からのパス（エンコードした表記のまま渡す）
-      await read(url.pathname.slice(1))
-    : await BytesData.fromURL(url.href);
+  const { url, isSameOrigin, pathInDistribution, mimeType } = resolved;
+  // 配布元の外を指す相対パス（`../` で遡るなど）は，仮の URL の外のため読み込めない
+  if (isSameOrigin && pathInDistribution === undefined) {
+    return errorMessage.data.url.unsupported({ url: source });
+  }
+  const image =
+    pathInDistribution !== undefined
+      ? // 配布元の `serverstarter2/` からのパス（エンコードした表記のまま渡す）
+        await read(pathInDistribution)
+      : await BytesData.fromURL(url.href);
   if (isError(image)) return image;
   return image.encodeURI(mimeType);
 }

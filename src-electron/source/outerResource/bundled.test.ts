@@ -29,12 +29,12 @@ describe('同梱の外部リソース', () => {
     }
   );
 
-  // 画像を参照する（同梱時に画像を取り込む）外部リソース
-  const withAssets = Object.values(outerResourceDefinitions).flatMap((def) =>
-    def.embedAssets === undefined
-      ? []
-      : [{ ...def, embedAssets: def.embedAssets.bind(def) }]
-  );
+  /** 画像を参照する（同梱時に画像を取り込む）外部リソースか */
+  const hasAssets = <D extends { embedAssets?: unknown }>(
+    def: D
+  ): def is D & Required<Pick<D, 'embedAssets'>> =>
+    def.embedAssets !== undefined;
+  const withAssets = Object.values(outerResourceDefinitions).filter(hasAssets);
 
   test.each(withAssets)(
     '$fileName はネットワークから取得する画像を参照しない',

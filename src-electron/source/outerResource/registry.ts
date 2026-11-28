@@ -25,6 +25,7 @@ const instances: OuterResourceInstances = {};
  * 名前ごとに型が異なるため，一覧をまとめて作らずに名前ごとに作って保持する
  *
  * @param key 外部リソースの名前
+ * @returns 外部リソースを読み込み・保持する処理（同じ名前には同じものを返す）
  */
 function outerResourceOf<K extends keyof OuterResources>(
   key: K
@@ -32,10 +33,11 @@ function outerResourceOf<K extends keyof OuterResources>(
   // 名前（K）に絞った型で扱うと，名前に対応する型のまま読み書きできる
   const cache: { [P in K]?: OuterResource<unknown, OuterResources[P]> } =
     instances;
-  const resource =
-    cache[key] ?? new OuterResource(outerResourceDefinitions[key], options);
-  cache[key] = resource;
-  return resource;
+  const cached = cache[key];
+  if (cached !== undefined) return cached;
+  const created = new OuterResource(outerResourceDefinitions[key], options);
+  cache[key] = created;
+  return created;
 }
 
 /**
