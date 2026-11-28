@@ -40,6 +40,11 @@ export const enUSError: MessageSchema['error'] = {
         title: 'The data in the path in the ZIP file is a directory',
         desc: 'Please check {path}',
       },
+      entryOutsideDestination: {
+        title:
+          'The ZIP file has an entry pointing outside the destination folder',
+        desc: 'Extraction was stopped for safety. Please check {innerPath} in {path}',
+      },
     },
     path: {
       loadingFailed: {

@@ -17,6 +17,7 @@ import { zip } from 'app/src-electron/util/binary/archive/zip';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { safeExecAsync } from 'app/src-electron/util/error/failable';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncForEach, asyncMap } from 'app/src-electron/util/obj/objmap';
 import { genUUIDOf } from 'app/src-electron/util/random/uuid';
@@ -165,12 +166,34 @@ export class ServerAdditionalFiles<T extends Record<string, unknown>> {
     return withError(array, loaded.filter(isError));
   }
 
+  /**
+   * ワールドに導入済みの追加コンテンツの一覧を読み込む
+   *
+   * フォルダを開く操作に備えて，コンテンツのフォルダが無い場合は作成する
+   *
+   * @param cwdPath ワールド（サーバー）のフォルダ
+   * @param id 読み込んだコンテンツに付けるワールドの ID
+   * @returns 読み込めたコンテンツの一覧と，読み込めなかったコンテンツのエラー
+   */
   async load(
     cwdPath: Path,
     id: WorldID
   ): Promise<WithError<WorldFileData<T>[]>> {
     const dirPath = cwdPath.child(this.childPath);
-    if (!(await dirPath.exists())) await dirPath.mkdir();
+    if (!(await dirPath.exists())) {
+      // Path.mkdir は失敗時に例外を投げるため，Result 型へ変換する（os/shell.ts の openFolder と同じ扱い）
+      const made = await safeExecAsync(async () => dirPath.mkdir());
+      if (isError(made))
+        return withError(
+          [],
+          [
+            errorMessage.data.path.creationFailed({
+              type: 'directory',
+              path: dirPath.path,
+            }),
+          ]
+        );
+    }
     const paths = await dirPath.iter();
     if (isError(paths)) return withError([], [paths]);
 
@@ -221,10 +244,11 @@ export class ServerAdditionalFiles<T extends Record<string, unknown>> {
       const tgtPath = dirPath.child(fileDataKey(source));
       if (tgtPath.path === srcPath.path) return;
 
-      // ソースが有効なデータかどうかを確認（読み込みの成否のみを使うため，ワールドの ID は仮のものを渡す）
-      const loaded = await this.load(srcPath, genUUIDOf(WorldID));
-      if (isError(loaded.value)) {
-        errors.push(loaded.value);
+      // ソースが有効なデータかどうかを確認
+      // （ソースはワールドのフォルダではなくコンテンツそのもののため，load ではなく loader で1件を読み込む）
+      const loaded = await this.loader(srcPath, true);
+      if (isError(loaded)) {
+        errors.push(loaded);
         return;
       }
 

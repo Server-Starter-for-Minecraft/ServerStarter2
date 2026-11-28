@@ -42,6 +42,10 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: 'ZIPファイル中のパスのデータがディレクトリになっています',
         desc: '{path}を確認してください',
       },
+      entryOutsideDestination: {
+        title: 'ZIPファイル中に展開先のフォルダの外を指す項目があります',
+        desc: '安全のため展開を中止しました．{path}の{innerPath}を確認してください',
+      },
     },
     path: {
       loadingFailed: {
