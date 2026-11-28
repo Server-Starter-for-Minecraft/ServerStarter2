@@ -6,6 +6,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { getNewForgeArgs } from './utils/forgeArgAnalyzer';
 import {
@@ -132,7 +133,7 @@ if (import.meta.vitest) {
 
     const ver20: NeoForgeVersion = {
       type: 'neoforge',
-      id: '1.20.2' as VersionId,
+      id: asBrand(VersionId, '1.20.2'),
       neoforge_version: '20.2.86',
     };
 
@@ -203,7 +204,7 @@ if (import.meta.vitest) {
         await readyOperator.cachePath.remove();
 
         // `installer.jar`の実行によって必要なファイルが生成された体を再現する
-        const execRuntime: ExecRuntime = vi.fn(async (options) => {
+        const execRuntime = vi.fn<ExecRuntime>(async (options) => {
           for (const { path, content } of genfiles) {
             await options.currentDir.child(path).writeText(content);
           }

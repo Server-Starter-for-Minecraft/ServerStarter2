@@ -4,6 +4,7 @@ import { VersionId } from 'app/src-electron/schema/version';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 
 const ver_17_18 = [
   '1.18.1-rc2',
@@ -615,15 +616,15 @@ if (import.meta.vitest) {
 
   test.each([
     {
-      ver: '1.21' as VersionId,
+      ver: asBrand(VersionId, '1.21'),
       val: 'other',
     },
     {
-      ver: '1.13.1' as VersionId,
+      ver: asBrand(VersionId, '1.13.1'),
       val: '12-16',
     },
     {
-      ver: '1.7' as VersionId,
+      ver: asBrand(VersionId, '1.7'),
       val: '7-11',
     },
   ])('processSwitcher', ({ ver, val }) => {

@@ -6,6 +6,7 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { deepcopy } from 'app/src-electron/util/deepcopy';
 import { isError } from 'app/src-electron/util/error/error';
 import { JsonSourceHandler } from 'app/src-electron/util/wrapper/jsonFile';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { ExecRuntime, getJarPath, ReadyVersion, RemoveVersion } from './base';
 import { VersionJson } from './utils/versionJson';
 import { getVanillaVersionJson } from './vanilla';
@@ -95,7 +96,7 @@ if (import.meta.vitest) {
     const serverFolder = workPath.child('servers');
 
     const ver21: FabricVersion = {
-      id: '1.21' as VersionId,
+      id: asBrand(VersionId, '1.21'),
       type: 'fabric',
       release: true,
       loader: '0.15.11',
