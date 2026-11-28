@@ -8,7 +8,7 @@ import {
   resetProperties,
 } from 'src/logic/property/propertyDefinitions';
 import { isValid } from 'app/src-public/scripts/error';
-import { fromEntries, keys } from 'app/src-public/scripts/obj/obj';
+import { fromEntries, getOwn, keys } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
@@ -101,7 +101,9 @@ function resetAll() {
         mainStore.world.properties,
         sysStore.systemSettings.world.properties,
         initProperty.value,
-        (key) => lockedProperties.value[key] !== undefined || isUnavailable(key)
+        (key) =>
+          getOwn(lockedProperties.value, key) !== undefined ||
+          isUnavailable(key)
       );
     }
   });

@@ -17,6 +17,23 @@ export const values = <K extends string | number | symbol, V>(
   object: Record<K, V>
 ): V[] => Object.values(object) as V[];
 
+/**
+ * オブジェクト自身が持つキーの値を返す
+ *
+ * `object[key]` と異なり，`constructor`・`toString` などの継承したキーの値（Object.prototype の関数など）は返さない。
+ * 外部のデータ（外部リソース・設定ファイルなど）由来の任意のキーで値を引く場合に使う
+ *
+ * @param object 値を引くオブジェクト
+ * @param key キー
+ * @returns 自身が持つキーの値（持たない場合は `undefined`）
+ */
+export function getOwn<V>(
+  object: Readonly<Partial<Record<string, V>>>,
+  key: string
+): V | undefined {
+  return Object.hasOwn(object, key) ? object[key] : undefined;
+}
+
 export function isExistKey<K extends string | number | symbol, V>(
   object: Record<K, V>,
   key: K

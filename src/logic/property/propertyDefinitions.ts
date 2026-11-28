@@ -1,5 +1,6 @@
 // Vitest は `src/` のエイリアスを持たないため，テストからも読み込めるよう `app/` 経由で参照する
 import { resolveLocalizedText } from 'app/src/i18n/utils/localizedText';
+import { getOwn } from 'app/src-public/scripts/obj/obj';
 import type {
   MinecraftVersionRange,
   ServerPropertiesResource,
@@ -38,10 +39,7 @@ function entryOf(
   resource: ServerPropertiesResource | undefined,
   key: string
 ): ServerPropertyEntryV1 | undefined {
-  const properties = resource?.properties;
-  return properties && Object.hasOwn(properties, key)
-    ? properties[key]
-    : undefined;
+  return getOwn(resource?.properties ?? {}, key);
 }
 
 /** バージョンの新しさを表す順位（0 が最新で，値が大きいほど古い。一覧に無い場合は `undefined`） */
@@ -276,9 +274,9 @@ export function getGroupProperties(
     );
   }
 
-  const builtIn = (
-    Object.hasOwn(propertyClasses, groupId) ? propertyClasses[groupId] : []
-  ).filter((key) => groupsOf(resource, key).includes(groupId));
+  const builtIn = (getOwn(propertyClasses, groupId) ?? []).filter((key) =>
+    groupsOf(resource, key).includes(groupId)
+  );
   const added = Object.keys(resource?.properties ?? {}).filter(
     (key) => !builtIn.includes(key) && groupsOf(resource, key).includes(groupId)
   );
@@ -370,12 +368,13 @@ export function resetProperties<T extends PropertyValues>(
     ...Object.keys(userDefaults),
     ...Object.keys(versionDefaults),
   ]);
+  // `constructor` などの継承したキーの値を規定値とみなさないよう，自身のキーの値だけを使う
   const reset = [...targets]
     .filter((key) => !isKept(key))
-    .map((key): [string, string | number | boolean] => [
-      key,
-      userDefaults[key] ?? versionDefaults[key],
-    ]);
+    .flatMap((key): [string, string | number | boolean][] => {
+      const value = getOwn(userDefaults, key) ?? getOwn(versionDefaults, key);
+      return value === undefined ? [] : [[key, value]];
+    });
   // `__proto__` などのキーでもプロトタイプを書き換えないよう，代入ではなく Object.fromEntries で作る
   return { ...current, ...Object.fromEntries(reset) };
 }

@@ -417,6 +417,22 @@ describe('プロパティの一括リセット', () => {
     ).toEqual({ 'server-port': 25570, 'unknown-prop': 'x', 'new-limit': 20 });
   });
 
+  test('継承したキーと同名のプロパティ（constructor など）も，定義の既定値に戻す', () => {
+    // 外部リソースでのみ定義され，標準プロパティにはないプロパティ
+    const versionDefaults = Object.fromEntries<string | number>([
+      ['constructor', 'default'],
+      ['toString', 1],
+    ]);
+    expect(
+      resetProperties(
+        { constructor: 'edited', toString: 2 },
+        { 'max-players': 10 },
+        versionDefaults,
+        never
+      )
+    ).toEqual({ 'max-players': 10, constructor: 'default', toString: 1 });
+  });
+
   test('`__proto__` などのキーがあっても，オブジェクトのプロトタイプを書き換えない', () => {
     // オブジェクトリテラルの `__proto__` はプロトタイプの指定になるため，自身のキーとして作る
     const userDefaults = Object.fromEntries([['__proto__', 1]]);

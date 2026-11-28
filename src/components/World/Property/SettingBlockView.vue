@@ -5,6 +5,7 @@ import {
   getPropertyAnnotation,
   getPropertyDescription,
 } from 'src/logic/property/propertyDefinitions';
+import { getOwn } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -28,7 +29,7 @@ const sysStore = useSystemStore();
 /** 規定値（ユーザーが設定した標準プロパティ，なければバージョンに合う定義の既定値） */
 const defaultProperty = computed(
   () =>
-    sysStore.systemSettings.world.properties[prop.settingName] ??
+    getOwn(sysStore.systemSettings.world.properties, prop.settingName) ??
     getPropertyAnnotation(
       sysStore.outerResources.serverProperties,
       prop.settingName,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { getOwn } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { LockedProperties } from './lockedProperties';
@@ -31,7 +32,7 @@ const shownProperties = computed(() =>
       <SettingBlockView
         v-model="model"
         :setting-name="key"
-        :locked-reason="lockedProperties?.[key]"
+        :locked-reason="getOwn(lockedProperties ?? {}, key)"
         :version-id="versionId"
       />
     </template>
