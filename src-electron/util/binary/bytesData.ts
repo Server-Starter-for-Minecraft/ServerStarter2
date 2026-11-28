@@ -1,12 +1,11 @@
 import { createHash } from 'crypto';
-// Electron外(テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
-import * as electron from 'electron';
 import { promises } from 'fs';
 import prismarineNbt from 'prismarine-nbt';
 import sharp from 'sharp';
 import { z } from 'zod';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { electron } from '../electron/runtime';
 import { errorMessage } from '../error/construct';
 import { fromRuntimeError } from '../error/error';
 import { Failable, safeExec, safeExecAsync } from '../error/failable';
@@ -23,7 +22,7 @@ const loggers = () => utilLoggers().BytesData;
  * テスト環境などElectron外で実行される場合は標準のfetchを使用する
  */
 const fetchURL = async (url: string, init?: RequestInit) =>
-  electron.net?.fetch ? electron.net.fetch(url, init) : fetch(url, init);
+  electron ? electron.net.fetch(url, init) : fetch(url, init);
 
 export type Hash = {
   type: 'sha1' | 'md5' | 'sha256';

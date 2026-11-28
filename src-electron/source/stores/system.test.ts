@@ -12,8 +12,6 @@ const BROKEN_CONTENT = vi.hoisted(() => 'broken content');
 // 設定ファイルの暗号化（Electron の safeStorage）は，テストの環境では使えないため差し替える
 // （暗号化は内容をそのまま書き，壊れた内容の復号は失敗させて，設定ファイルが壊れている状況を再現する）
 vi.mock('electron', () => ({
-  // Electron の外で実行していることを表す（保存先などはテスト用のものを使う）
-  app: undefined,
   safeStorage: {
     encryptString: (text: string) => Buffer.from(text),
     decryptString: (data: Buffer) => {

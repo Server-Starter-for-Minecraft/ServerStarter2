@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
-import { app } from 'electron';
 import { OsPlatform } from '../../schema/os';
+import { electron } from '../electron/runtime';
 import { isError, isValid } from '../error/error';
 import { safeExec } from '../error/failable';
 import { ignoreError } from '../error/ignore';
@@ -95,6 +95,6 @@ export const osPlatform = getOsPlatform();
 export function isRunningUnderRosetta(): boolean {
   return (
     process.platform === 'darwin' &&
-    (app?.runningUnderARM64Translation ?? false)
+    (electron?.app.runningUnderARM64Translation ?? false)
   );
 }

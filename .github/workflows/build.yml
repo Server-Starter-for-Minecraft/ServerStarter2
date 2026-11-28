@@ -53,14 +53,20 @@ jobs:
           echo "next-version=${next}" >> "$GITHUB_OUTPUT"
 
       # 外部リソースの同梱データの更新（scripts/outerResources）に使う
-      # 同梱データの更新に必要なパッケージのみを使うため，postinstall（Electron 側の依存関係の準備）は実行しない
+      # 同梱データの更新に必要なパッケージのみを使うため，postinstall（Electron 本体を含む依存関係の準備・quasar prepare）は実行せず，
+      # 必要な依存関係とエイリアスの設定のみを用意する
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
 
+      # スクリプトは src-electron の共通基盤（ファイル操作・ロガーなど）を使うため，src-electron の依存関係も入れる
+      # （Electron 本体は devDependencies のため入れない。スクリプトは Electron に依存しない
+      #   （共通基盤は src-electron/util/electron/runtime を通してのみ Electron を使う）ため，Electron がなくても動く）
       - name: Install dependencies
-        run: bun install --frozen-lockfile --ignore-scripts
+        run: |
+          bun install --frozen-lockfile --ignore-scripts
+          bun install --cwd src-electron --frozen-lockfile --ignore-scripts --production
 
       # スクリプトが使う `app/...` のエイリアスの設定（.quasar/tsconfig.json）を生成する
       # （postinstall を実行しないため，ここで生成する。生成先は Git の管理対象外のためコミットには含まれない）

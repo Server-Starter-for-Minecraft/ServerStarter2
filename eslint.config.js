@@ -11,6 +11,8 @@ import {
   BACKEND_FILES,
   BACKEND_LAYERS,
   BLOCKING_MODULES,
+  ELECTRON_BOUNDARY,
+  ELECTRON_FREE_FILES,
   ERROR_GUARDS,
   EXCEPTION_CONVERTERS,
   FAILABLE_HANDLERS,
@@ -48,6 +50,14 @@ const MODULE_RESTRICTION_IGNORES = [
  * no-restricted-syntax は後の設定で上書きされるため，ファイルによって制限を追加する場合もこの一覧を含める
  */
 const RESTRICTED_SYNTAX = [
+  // 名前空間の import（`import * as x`・`export * as x`）は，モジュールのどの機能に依存しているかが見えなくなる。
+  // また，読み込めない環境があるモジュール（Electron 外の `electron` など）を「存在すれば使う」形で取り込む
+  // 抜け道となり，不要な依存関係の読み込みで失敗する原因になるため禁止し，使う名前を明示して import する
+  {
+    selector: 'ImportNamespaceSpecifier, ExportAllDeclaration[exported]',
+    message:
+      '名前空間の import（`* as`）は使わず，使う名前を明示して import してください（Electron の API は src-electron/util/electron/runtime を使ってください）',
+  },
   // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
   {
     selector:
@@ -366,6 +376,28 @@ const baseConfig = tseslint.config(
         {
           name: 'fetch',
           message: 'util の BytesData.fromURL を使ってください',
+        },
+      ],
+    },
+  },
+  // Electron 外（スクリプト・テスト）でも読み込むファイルからは，`electron` を読み込まない
+  // （静的な import に加え，import()・require() による読み込みも検出する。例外は eslint-rules/config.js の ELECTRON_IMPORT_EXCEPTIONS に登録する）
+  // テストは対象外とする：テストは `vi.mock('electron', ...)` で Electron の API を差し替えるが，このルールは第 1 引数が
+  // `'electron'` の呼び出しをすべて報告するため，差し替えも違反になる。また，テストは Vitest が `electron` を解決できる環境
+  // （vitest.config.ts で実行ファイルのダウンロードを抑止している）で動き，リリースのビルドのスクリプトのように Electron なしでは動かさない
+  {
+    files: ELECTRON_FREE_FILES,
+    ignores: [ELECTRON_BOUNDARY, ...TEST_FILES],
+    rules: {
+      'serverstarter/no-restricted-module': [
+        'error',
+        {
+          modules: [
+            {
+              name: 'electron',
+              message: `Electron 外（スクリプト・テスト）でも読み込むファイルでは，${ELECTRON_BOUNDARY} を通して Electron の API を使ってください`,
+            },
+          ],
         },
       ],
     },

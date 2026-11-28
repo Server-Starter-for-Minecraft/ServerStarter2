@@ -1,9 +1,9 @@
-import * as net from 'net';
+import { createServer } from 'net';
 
 /** ポートが使用中か確認する */
 export async function portInUse(port: number): Promise<boolean> {
   const p = new Promise<boolean>((resolve) => {
-    const server = net.createServer((socket) => {
+    const server = createServer((socket) => {
       socket.write('Echo server\r\n');
       socket.pipe(socket);
     });

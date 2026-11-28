@@ -1,14 +1,14 @@
 // GZIP圧縮に関するutil
 import { promisify } from 'util';
-import * as zlib from 'zlib';
+import { gunzip as zlibGunzip, gzip as zlibGzip } from 'zlib';
 import { Failable } from '../../../schema/error';
 import { isError } from '../../error/error';
 import { safeExecAsync } from '../../error/failable';
 import { BytesData } from '../bytesData';
 import { Path } from '../path';
 
-const gzipAsync = promisify(zlib.gzip);
-const gunzipAsync = promisify(zlib.gunzip);
+const gzipAsync = promisify(zlibGzip);
+const gunzipAsync = promisify(zlibGunzip);
 
 export class gzip {
   // ファイルからgzipを生成

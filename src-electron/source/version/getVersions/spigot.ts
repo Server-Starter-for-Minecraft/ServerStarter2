@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+import { load } from 'cheerio';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
@@ -29,15 +29,13 @@ export class SpigotVersionLoader extends VersionListLoader<'spigot'> {
 
     const ids: string[] = [];
 
-    cheerio
-      .load(await pageBytes.text())('body > pre > a')
-      .each((_, elem) => {
-        const href = elem.attribs['href'];
-        const match = href.match(/^(\d+\.\d+(?:\.\d+)?)\.json$/);
-        if (match) {
-          ids.push(match[1]);
-        }
-      });
+    load(await pageBytes.text())('body > pre > a').each((_, elem) => {
+      const href = elem.attribs['href'];
+      const match = href.match(/^(\d+\.\d+(?:\.\d+)?)\.json$/);
+      if (match) {
+        ids.push(match[1]);
+      }
+    });
 
     // idsをバージョン順に並び替え
     await this.sortIds(ids);

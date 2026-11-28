@@ -1,9 +1,9 @@
 /**
  * TODO: 将来的には定数は関数の引数で受け取る設計に変更し，定数定義をここから呼び出す実装は削除する
  */
-import * as electron from 'electron';
 import { MemorySettings } from '../schema/memory';
 import { Locale } from '../schema/system';
+import { electron } from '../util/electron/runtime';
 import { DEFAULT_OUTER_RESOURCE_BASE_URL } from './outerResource/definition';
 
 // アプリが扱うファイルの保存先（共通基盤の層で定義している）
@@ -22,7 +22,7 @@ export const DEFAULT_MEMORY: MemorySettings = {
 // システムの言語設定がjaだった場合ja、それ以外の場合en-USに
 export const getDefaultLocale = (): Locale => {
   if (import.meta.env?.QUASAR_DEV) return 'ja';
-  return electron.app.getLocale() === 'ja' ? 'ja' : 'en-US';
+  return electron?.app.getLocale() === 'ja' ? 'ja' : 'en-US';
 };
 
 /**

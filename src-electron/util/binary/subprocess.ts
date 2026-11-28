@@ -1,4 +1,4 @@
-import * as child_process from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { onQuit } from '../../lifecycle/lifecycle';
 import { errorMessage } from '../error/construct';
@@ -18,7 +18,7 @@ export type ChildProcessPromise = Promise<Failable<undefined>> & {
 };
 
 function promissifyProcess(
-  process: child_process.ChildProcess,
+  process: ChildProcess,
   processPath: Path,
   args: string[],
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
@@ -116,7 +116,7 @@ export const interactiveProcess = (
   beforeKillTimeout = 1000,
   env: NodeJS.ProcessEnv | undefined = undefined
 ): ChildProcessPromise => {
-  const child = child_process.spawn(process.path, args, {
+  const child = spawn(process.path, args, {
     cwd: cwd?.path,
     env,
     stdio: ['pipe', onout ? 'pipe' : 'ignore', onerr ? 'pipe' : 'ignore'],
@@ -157,7 +157,7 @@ export function execProcess(
   args: string[],
   cwd: Path | undefined = undefined
 ): ChildProcessPromise {
-  const child = child_process.spawn(process.path, args, {
+  const child = spawn(process.path, args, {
     cwd: cwd?.path,
   });
   return promissifyProcess(child, process, args);
