@@ -2,6 +2,9 @@ import type { z } from 'zod';
 import type { ImageURI } from 'app/src-electron/schema/brands';
 import type { Failable } from 'app/src-electron/schema/error';
 import type { BytesData } from 'app/src-electron/util/binary/bytesData';
+import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError } from 'app/src-electron/util/error/error';
+import { safeExec } from 'app/src-electron/util/error/failable';
 
 /**
  * 外部リソースの定義に関する型と関数
@@ -25,6 +28,53 @@ export const IMAGE_MIME_TYPES: Readonly<Record<string, string>> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
 };
+
+/** 画像の参照先（data URI 以外）を解決した結果 */
+export type ResolvedImageSource = {
+  /** 画像の URL */
+  url: URL;
+  /** 配布ファイルと同じ配布元の画像か（配布ファイルからの相対パスで参照した場合など） */
+  isSameOrigin: boolean;
+  /** 画像の拡張子（小文字。例：`.png`） */
+  ext: string;
+  /** 画像の MIME タイプ（拡張子から決める） */
+  mimeType: string;
+};
+
+/**
+ * 画像の参照先（配布ファイルからの相対パス・https の URL）を解決する
+ *
+ * アプリの読み込みと同梱データの作成（`scripts/outerResources`）で同じ参照先を受け付けるために使う。
+ * 配布元と同じ場所の画像か https の URL で，拡張子が `IMAGE_MIME_TYPES` にある画像のみ受け付ける
+ *
+ * @param source 画像の参照先（data URI は呼び出し元で扱う）
+ * @param fileUrl 配布ファイルの URL（相対パスの基準）
+ * @returns 解決した参照先（受け付けない参照先の場合はエラー）
+ */
+export function resolveImageSource(
+  source: string,
+  fileUrl: string
+): Failable<ResolvedImageSource> {
+  const base = safeExec(() => new URL(fileUrl));
+  if (isError(base)) return base;
+  const url = safeExec(() => new URL(source, base));
+  if (isError(url)) return url;
+
+  const isSameOrigin = url.origin === base.origin;
+  if (!isSameOrigin && url.protocol !== 'https:') {
+    return errorMessage.data.url.unsupported({ url: url.href });
+  }
+
+  const ext = url.pathname.slice(url.pathname.lastIndexOf('.')).toLowerCase();
+  const mimeType = IMAGE_MIME_TYPES[ext];
+  if (mimeType === undefined) {
+    return errorMessage.data.path.invalidExt({
+      path: url.href,
+      expectedExt: Object.keys(IMAGE_MIME_TYPES).join(', '),
+    });
+  }
+  return { url, isSameOrigin, ext, mimeType };
+}
 
 /** URL からデータを取得する関数（テストではローカルサーバーやモックに差し替える） */
 export type OuterResourceFetcher = (
@@ -70,8 +120,8 @@ export interface OuterResourceDefinition<W, R> {
   fileName: string;
   /** 配布ファイルの厳格なスキーマ（JSON Schema の生成や配布ファイルの検証に使う） */
   schema: z.ZodType<W>;
-  /** 配布ファイルの読み込み用パーサー（不正な要素だけを除いて読み込む） */
-  parser: z.ZodType<W, any>;
+  /** 配布ファイルの読み込み用パーサー（不正な要素だけを除いて読み込む。入力は検証前の JSON） */
+  parser: z.ZodType<W>;
   /**
    * 同梱の内容（配布ファイルもキャッシュも読めない場合に使う）
    *

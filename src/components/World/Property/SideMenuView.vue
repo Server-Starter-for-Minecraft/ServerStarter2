@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { getPropertyGroups } from 'src/logic/property/propertyDefinitions';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
-import { getPropertyGroups } from 'src/logic/property/propertyDefinitions';
 import { thumbStyle } from '../scrollBar';
 
 interface Prop {

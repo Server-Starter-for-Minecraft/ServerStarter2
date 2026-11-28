@@ -1,19 +1,18 @@
-import { createHash } from 'crypto';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
-import { safeExec } from 'app/src-electron/util/error/failable';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { sourceLoggers } from '../sourceLogger';
 import {
   distributionPath,
   IMAGE_DATA_URI_REGEX,
-  IMAGE_MIME_TYPES,
   type OuterResourceContext,
   type OuterResourceDefinition,
   type OuterResourceFetcher,
+  resolveImageSource,
 } from './definition';
 
 const loggers = () => sourceLoggers().outerResource;
@@ -50,7 +49,7 @@ export class OuterResource<W, R> {
     this.def = def;
     this.baseUrl = options.baseUrl.replace(/\/+$/, '');
     this.cacheDir = options.cacheDir;
-    this.fetcher = options.fetcher ?? ((url) => BytesData.fromURL(url));
+    this.fetcher = options.fetcher ?? (async (url) => BytesData.fromURL(url));
   }
 
   /** 配布ファイルの URL */
@@ -114,7 +113,7 @@ export class OuterResource<W, R> {
   /** キャッシュ（なければ同梱の内容）を読み込む */
   private async loadLocal(): Promise<R> {
     let wire = this.def.bundled;
-    if (this.cacheFile.exists()) {
+    if (await this.cacheFile.exists()) {
       const cached = await this.cacheFile.readJson(this.def.parser);
       if (isValid(cached)) wire = cached;
       else loggers().loadLocal({ key: this.def.key }).warn(cached);
@@ -132,7 +131,7 @@ export class OuterResource<W, R> {
    */
   private context(allowNetwork: boolean): OuterResourceContext {
     return {
-      loadImage: (source) => this.loadImage(source, allowNetwork),
+      loadImage: async (source) => this.loadImage(source, allowNetwork),
       warn: (message, detail) =>
         loggers()
           .resolve({ key: this.def.key, ...detail })
@@ -153,38 +152,27 @@ export class OuterResource<W, R> {
     allowNetwork: boolean
   ): Promise<Failable<ImageURI>> {
     if (source.startsWith('data:')) {
+      // 形式を確認したうえでブランド型を付ける（BytesData#encodeURI で作る data URI と同じ扱い）
       return IMAGE_DATA_URI_REGEX.test(source)
-        ? (source as ImageURI)
+        ? asBrand(ImageURI, source)
         : errorMessage.value.base64URI({ value: source });
     }
 
-    const url = safeExec(() => new URL(source, this.fileUrl));
-    if (isError(url)) return url;
-    const fileUrl = safeExec(() => new URL(this.fileUrl));
-    if (isError(fileUrl)) return fileUrl;
-
-    // 配布元と同じ場所（相対パス）か https の URL のみ許可する
-    const isSameOrigin = url.origin === fileUrl.origin;
-    if (!isSameOrigin && url.protocol !== 'https:') {
-      return errorMessage.data.url.unsupported({ url: url.href });
-    }
-
-    const ext = url.pathname.slice(url.pathname.lastIndexOf('.')).toLowerCase();
-    const mimeType = IMAGE_MIME_TYPES[ext];
-    if (mimeType === undefined) {
-      return errorMessage.data.path.invalidExt({
-        path: url.href,
-        expectedExt: Object.keys(IMAGE_MIME_TYPES).join(', '),
-      });
-    }
+    const resolved = resolveImageSource(source, this.fileUrl);
+    if (isError(resolved)) return resolved;
+    const { url, ext, mimeType } = resolved;
 
     // 参照先ごとに異なるファイル名でキャッシュする
     // （配布元の URL を差し替えても同じ画像をキャッシュから読めるよう，解決前の参照先で区別する）
-    const hash = createHash('sha1').update(source).digest('hex');
+    const sourceData = await BytesData.fromText(source);
+    if (isError(sourceData)) return sourceData;
+    const hash = await sourceData.hash('sha1');
     const cachePath = this.cacheDir.child('assets', `${hash}${ext}`);
-    if (cachePath.exists()) {
+    if (await cachePath.exists()) {
       const cached = await cachePath.read();
       if (isValid(cached)) return cached.encodeURI(mimeType);
+      // 読み込めないキャッシュは，取得し直して上書きする
+      loggers().loadImage({ url: url.href }).warn(cached);
     }
 
     if (!allowNetwork) {

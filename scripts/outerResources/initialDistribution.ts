@@ -1,9 +1,9 @@
+import { enUSproperty } from 'app/src/i18n/en-US/Pages/World/property';
+import { jaProperty } from 'app/src/i18n/ja/Pages/World/property';
 import {
   builtInGroupKeys,
   propertyClasses,
 } from 'app/src/logic/property/classifications';
-import { enUSproperty } from 'app/src/i18n/en-US/Pages/World/property';
-import { jaProperty } from 'app/src/i18n/ja/Pages/World/property';
 import { DonationResourceV1 } from 'app/src-electron/schema/outerResource/donation';
 import { ServerPropertiesResourceV1 } from 'app/src-electron/schema/outerResource/serverProperties';
 import { DefaultServerPropertiesAnnotation } from 'app/src-electron/schema/serverproperty';

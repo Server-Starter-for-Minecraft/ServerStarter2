@@ -1,8 +1,10 @@
+import { assertOk } from 'app/test/util/assert';
 import { describe, expect, test } from 'vitest';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isValid } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { distributionPath } from './definition';
 import { outerResourceDefinitions } from './definitions';
 
@@ -17,23 +19,30 @@ describe('同梱の外部リソース', () => {
   test.each(Object.values(outerResourceDefinitions))(
     '$fileName がアプリのスキーマを厳格に満たす（不正な要素が1つもない）',
     async (def) => {
-      const text = await bundledDir.child(distributionPath(def)).readText();
-      expect(isValid(text)).toBe(true);
-      const parsed = def.schema.safeParse(JSON.parse(text as string));
-      expect(parsed.error?.issues).toBeUndefined();
+      // 厳格なスキーマで読み込めない場合はエラー（検証の内容）が表示される
+      const strict = await bundledDir
+        .child(distributionPath(def))
+        .readJson(def.schema);
+      assertOk(strict);
       // 不正な要素を除いて読み込んだ結果も，同梱データと同じ内容になる
-      expect(def.bundled).toEqual(parsed.data);
+      expect(def.bundled).toEqual(strict);
     }
   );
 
-  test.each(Object.values(outerResourceDefinitions))(
+  // 画像を参照する（同梱時に画像を取り込む）外部リソース
+  const withAssets = Object.values(outerResourceDefinitions).flatMap((def) =>
+    def.embedAssets === undefined
+      ? []
+      : [{ ...def, embedAssets: def.embedAssets.bind(def) }]
+  );
+
+  test.each(withAssets)(
     '$fileName はネットワークから取得する画像を参照しない',
     async (def) => {
-      if (def.embedAssets === undefined) return;
       // data URI 以外の画像を読み込もうとした場合は失敗させ，同梱データが画像を取り込み済みであることを確かめる
       const loadImage = async (source: string) =>
         source.startsWith('data:image/')
-          ? (source as ImageURI)
+          ? asBrand(ImageURI, source)
           : errorMessage.data.url.unsupported({ url: source });
       expect(isValid(await def.embedAssets(def.bundled, loadImage))).toBe(true);
     }

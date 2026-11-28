@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import {
+  getPropertyAnnotation,
+  getPropertyDescription,
+} from 'src/logic/property/propertyDefinitions';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import InputFieldView from './InputFieldView.vue';
 import { LockReason } from './lockedProperties';
-import {
-  getPropertyAnnotation,
-  getPropertyDescription,
-} from 'src/logic/property/propertyDefinitions';
 
 interface Prop {
   settingName: string;

@@ -1,6 +1,6 @@
+import { assertOk } from 'app/test/util/assert';
 import { describe, expect, test } from 'vitest';
 import { ServerPropertyDefinitions } from 'app/src-electron/schema/outerResource/serverProperties';
-import { assertOk } from 'app/test/util/assert';
 import { parseServerProperties } from './properties';
 
 /** 外部リソースでのみ定義されたプロパティ（Minecraft の新しいバージョンで追加されたもの） */

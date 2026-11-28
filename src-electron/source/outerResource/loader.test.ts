@@ -186,7 +186,7 @@ describe('OuterResource', () => {
           baseUrl: baseUrl(),
           cacheDir: newCacheDir(),
           // 応答の返らない配布元（取得を待つと読み込みが終わらない）
-          fetcher: () => new Promise(() => {}),
+          fetcher: async () => new Promise(() => {}),
         }
       );
       expect(await resource.get()).toEqual({

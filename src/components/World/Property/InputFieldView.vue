@@ -2,6 +2,10 @@
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  convertPropertyValue,
+  getPropertyAnnotation,
+} from 'src/logic/property/propertyDefinitions';
+import {
   isValidNumberProperty,
   NumberServerPropertyAnnotation,
   ServerProperties,
@@ -10,10 +14,6 @@ import {
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsInput from 'src/components/util/base/ssInput.vue';
 import SsSelect from 'src/components/util/base/ssSelect.vue';
-import {
-  convertPropertyValue,
-  getPropertyAnnotation,
-} from 'src/logic/property/propertyDefinitions';
 
 const { t } = useI18n();
 

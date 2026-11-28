@@ -1,9 +1,4 @@
 import { defineStore } from 'pinia';
-import { keys } from 'app/src-public/scripts/obj/obj';
-import { uniqueArray } from 'app/src-public/scripts/obj/objFillter';
-import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { $T, $TE } from 'src/i18n/utils/tFunc';
-import { useSystemStore } from 'src/stores/SystemStore';
 import {
   getCandidateProperties,
   getGroupProperties,
@@ -11,6 +6,11 @@ import {
   getPropertyGroups,
   isUnavailableInVersion,
 } from 'src/logic/property/propertyDefinitions';
+import { keys } from 'app/src-public/scripts/obj/obj';
+import { uniqueArray } from 'app/src-public/scripts/obj/objFillter';
+import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { $T, $TE } from 'src/i18n/utils/tFunc';
+import { useSystemStore } from 'src/stores/SystemStore';
 
 const disableProperties = ['level-name'];
 

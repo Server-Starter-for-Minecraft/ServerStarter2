@@ -5,6 +5,7 @@ import {
   DonationService,
 } from 'app/src-electron/schema/outerResource/donation';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import bundledJson from '../bundled/v1/donation.json';
 import type { OuterResourceDefinition } from '../definition';
 
@@ -51,7 +52,14 @@ export const donationDefinition: OuterResourceDefinition<
         const resolved: DonationService = { ...service };
         if (icon !== undefined) {
           const image = await ctx.loadImage(icon);
+          // 起動直後（画像を取得する前）はキャッシュに無いこともあるため，アイコンなしで表示する
+          // （取得の失敗は取得処理のログに残る）
           if (isValid(image)) resolved.icon = image;
+          else
+            ignoreError(
+              image,
+              'アイコンを読み込めないサービスはアイコンなしで表示する'
+            );
         }
         return resolved;
       })

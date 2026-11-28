@@ -19,8 +19,9 @@ const isDecimalNumber = (text: string) => {
   if (!match) return false;
   // 符号・整数部の先頭の0・小数部の末尾の0を除いた表記が，数値に変換して書き出した表記と一致すれば値は変わらない
   // （精度を超えると丸められて一致せず，指数表記になる大きさの値も一致しない）
-  const integer = match[1]!.replace(/^0+(?=\d)/, '');
-  const fraction = (match[2] ?? '').replace(/0+$/, '');
+  const [, integerPart = '', fractionPart = ''] = match;
+  const integer = integerPart.replace(/^0+(?=\d)/, '');
+  const fraction = fractionPart.replace(/0+$/, '');
   const normalized = fraction ? `${integer}.${fraction}` : integer;
   return String(Math.abs(Number(text))) === normalized;
 };

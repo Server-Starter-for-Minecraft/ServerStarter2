@@ -2,34 +2,30 @@
  * 配布元（OuterResources）の最新の内容から，アプリに同梱する外部リソースを作る
  *
  * リリース時のビルド（`.github/workflows/build.yml`）で実行し，同梱データを最新の内容に保つ。
- * スクリプトのため，失敗は例外として呼び出し元（コマンドの実行）まで伝え，処理を中断する
+ * 失敗は Failable として呼び出し元（コマンドの実行）まで返し，処理を中断する
  */
-import { readFile } from 'fs/promises';
-import { extname, isAbsolute, relative, resolve } from 'path';
-import type { ImageURI } from 'app/src-electron/schema/brands';
+import { ImageURI } from 'app/src-electron/schema/brands';
+import { Failable } from 'app/src-electron/schema/error';
 import {
   distributionPath,
   IMAGE_DATA_URI_REGEX,
-  IMAGE_MIME_TYPES,
   type OuterResourceDefinition,
+  resolveImageSource,
 } from 'app/src-electron/source/outerResource/definition';
+import { BytesData } from 'app/src-electron/util/binary/bytesData';
+import { Path } from 'app/src-electron/util/binary/path';
+import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
-import { safeExecAsync } from 'app/src-electron/util/error/failable';
+import { safeExec } from 'app/src-electron/util/error/failable';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 
 /**
  * 配布元から配布ファイルや画像を読み込む関数
  *
  * @param path 配布元の `serverstarter2/` からのパス（例：`v1/donation.json`）。URL と同じくパーセントエンコードした表記で渡す
- * @returns 内容（読み込めない場合は例外を投げる）
+ * @returns 内容（読み込めない場合はエラー）
  */
-export type DistributionReader = (path: string) => Promise<Buffer>;
-
-/** URL から取得する（取得できない場合は例外を投げる） */
-async function fetchBytes(url: string): Promise<Buffer> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`failed to fetch ${url} (${res.status})`);
-  return Buffer.from(await res.arrayBuffer());
-}
+export type DistributionReader = (path: string) => Promise<Failable<BytesData>>;
 
 /**
  * 配布元の読み込み方を作る
@@ -40,18 +36,60 @@ async function fetchBytes(url: string): Promise<Buffer> {
 export function createDistributionReader(source: string): DistributionReader {
   if (/^https?:\/\//.test(source)) {
     // エンコードした表記のまま URL に連結する（`%23` などを復号すると別の URL になるため）
-    return (path) => fetchBytes(`${source.replace(/\/+$/, '')}/${path}`);
+    const base = source.replace(/\/+$/, '');
+    return async (path) => BytesData.fromURL(`${base}/${path}`);
   }
-  const root = resolve(source);
-  return (path) => {
+  const root = new Path(source).absolute();
+  return async (path) => {
     // ローカルのファイルとして読むためにエンコードを戻し，配布元のディレクトリの外を指すパスは読まない
-    const file = resolve(root, decodeURIComponent(path));
-    const rel = relative(root, file);
-    if (rel.startsWith('..') || isAbsolute(rel)) {
-      return Promise.reject(new Error(`outside of the distribution: ${path}`));
+    const decoded = safeExec(() => decodeURIComponent(path));
+    if (isError(decoded)) return decoded;
+    const file = root.child(decoded);
+    if (!file.isWithin(root)) {
+      return errorMessage.data.url.unsupported({ url: path });
     }
-    return readFile(file);
+    return file.read();
   };
+}
+
+/**
+ * 配布ファイルからの相対パスを解決するための，配布元の仮の URL
+ *
+ * 配布元がローカルのディレクトリの場合も URL と同じ規則で参照先を解決するために使う（`.invalid` は実在しないドメイン）
+ */
+const DISTRIBUTION_BASE_URL = 'https://distribution.invalid';
+
+/**
+ * 配布ファイルが参照する画像を読み込み，data URI にする
+ *
+ * 参照先の規則はアプリの読み込み（`resolveImageSource`）と同じ
+ *
+ * @param source 画像の参照先
+ * @param path 配布ファイルの配布元でのパス（相対パスの基準）
+ * @param read 配布元の読み込み方
+ */
+async function embedImage(
+  source: string,
+  path: string,
+  read: DistributionReader
+): Promise<Failable<ImageURI>> {
+  if (source.startsWith('data:')) {
+    return IMAGE_DATA_URI_REGEX.test(source)
+      ? asBrand(ImageURI, source)
+      : errorMessage.value.base64URI({ value: source });
+  }
+  const resolved = resolveImageSource(
+    source,
+    `${DISTRIBUTION_BASE_URL}/${path}`
+  );
+  if (isError(resolved)) return resolved;
+  const { url, isSameOrigin, mimeType } = resolved;
+  const image = isSameOrigin
+    ? // 配布元の `serverstarter2/` からのパス（エンコードした表記のまま渡す）
+      await read(url.pathname.slice(1))
+    : await BytesData.fromURL(url.href);
+  if (isError(image)) return image;
+  return image.encodeURI(mimeType);
 }
 
 /**
@@ -62,47 +100,18 @@ export function createDistributionReader(source: string): DistributionReader {
  *
  * @param def 外部リソースの定義
  * @param read 配布元の読み込み方
- * @returns 同梱する内容
+ * @returns 同梱する内容（失敗した場合はエラー）
  */
 export async function buildBundledContent<W>(
   def: OuterResourceDefinition<W, unknown>,
   read: DistributionReader
-): Promise<W> {
+): Promise<Failable<W>> {
   const path = distributionPath(def);
-  const parsed = def.schema.safeParse(
-    JSON.parse((await read(path)).toString('utf-8'))
+  const data = await read(path);
+  if (isError(data)) return data;
+  const parsed = await data.json(def.schema);
+  if (isError(parsed) || def.embedAssets === undefined) return parsed;
+  return def.embedAssets(parsed, async (source) =>
+    embedImage(source, path, read)
   );
-  if (!parsed.success) {
-    throw new Error(
-      `${path} does not match the schema: ${JSON.stringify(parsed.error.issues)}`
-    );
-  }
-  if (def.embedAssets === undefined) return parsed.data;
-
-  const embedded = await def.embedAssets(parsed.data, (source) =>
-    safeExecAsync(async () => {
-      if (IMAGE_DATA_URI_REGEX.test(source)) return source as ImageURI;
-      // 画像の参照先は，配布ファイルからの相対パスか https の URL（アプリの読み込みと同じ）
-      const url = new URL(source, `https://base/${path}`);
-      const isRelative = url.host === 'base' && !/^[a-z]+:/i.test(source);
-      const mimeType = IMAGE_MIME_TYPES[extname(url.pathname).toLowerCase()];
-      if (
-        (!isRelative && url.protocol !== 'https:') ||
-        mimeType === undefined
-      ) {
-        throw new Error(`unsupported image: ${source}`);
-      }
-      const image = isRelative
-        ? // 配布元の `serverstarter2/` からのパス（エンコードした表記のまま渡す）
-          await read(url.pathname.slice(1))
-        : await fetchBytes(url.href);
-      return `data:${mimeType};base64,${image.toString('base64')}` as ImageURI;
-    })
-  );
-  if (isError(embedded)) {
-    throw new Error(
-      `failed to embed assets of ${path}: ${JSON.stringify(embedded)}`
-    );
-  }
-  return embedded;
 }

@@ -56,11 +56,11 @@ export const ImageSource = z.string().min(1).meta({
  * @param item 要素のスキーマ
  * @returns 不正な要素を除いた配列を返すパーサー
  */
-export function lenientArray<T extends z.ZodType>(item: T) {
+export function lenientArray<O>(item: z.ZodType<O>) {
   return z.array(z.unknown()).transform((values) =>
     values.flatMap((value) => {
       const parsed = item.safeParse(value);
-      return parsed.success ? [parsed.data as z.output<T>] : [];
+      return parsed.success ? [parsed.data] : [];
     })
   );
 }
@@ -71,15 +71,15 @@ export function lenientArray<T extends z.ZodType>(item: T) {
  * @param value 値のスキーマ
  * @returns 不正な値のキーを除いたレコードを返すパーサー
  */
-export function lenientRecord<T extends z.ZodType>(value: T) {
+export function lenientRecord<O>(value: z.ZodType<O>) {
   return z
     .record(z.string(), z.unknown())
-    .transform((record): Record<string, z.output<T>> =>
+    .transform((record): Record<string, O> =>
       // `__proto__` などのキーでもプロトタイプを書き換えないよう，代入ではなく Object.fromEntries で作る
       Object.fromEntries(
-        Object.entries(record).flatMap(([key, raw]) => {
+        Object.entries(record).flatMap(([key, raw]): [string, O][] => {
           const parsed = value.safeParse(raw);
-          return parsed.success ? [[key, parsed.data as z.output<T>]] : [];
+          return parsed.success ? [[key, parsed.data]] : [];
         })
       )
     );

@@ -89,8 +89,12 @@ export interface API extends IAPI {
     /** アップデートがある際の通知 */
     NotifySystemUpdate: (type: OsPlatform, systemVersion: string) => void;
 
-    /** 外部リソースを配布元の最新の内容に更新できた際に，すべての外部リソースを通知する */
-    UpdateOuterResources: (resources: OuterResources) => void;
+    /**
+     * 外部リソースを配布元の最新の内容に更新できた際に，すべての外部リソースを通知する
+     *
+     * すべての外部リソースを含むが，名前ごとに型が異なる一覧を型アサーションなしに作るため Partial とする
+     */
+    UpdateOuterResources: (resources: Partial<OuterResources>) => void;
   };
   invokeMainToWindow: {
     /** MinecraftEulaへの同意チェック */
@@ -133,8 +137,8 @@ export interface API extends IAPI {
     /** Backend側から静的なデータを取得する */
     GetStaticResouce: () => Promise<StaticResouce>;
 
-    /** 現在の外部リソース（キャッシュまたは同梱の内容）を取得する */
-    GetOuterResources: () => Promise<OuterResources>;
+    /** 現在の外部リソース（キャッシュまたは同梱の内容）を取得する（Partial とする理由は UpdateOuterResources と同じ） */
+    GetOuterResources: () => Promise<Partial<OuterResources>>;
 
     /** SystemSettingsを(再)取得 */
     GetSystemSettings: () => Promise<SystemSettings>;

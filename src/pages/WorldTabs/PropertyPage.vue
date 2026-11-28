@@ -55,7 +55,8 @@ function isUnavailable(key: string) {
 const initProperty = computed<ServerProperties>(() => {
   const resource = sysStore.outerResources.serverProperties;
   const order = sysStore.vanillaVersionOrder;
-  const activeKeys = keys(resource.properties).filter(
+  // 外部リソースの読み込み前は，既定値を持つプロパティが無い
+  const activeKeys = keys(resource?.properties ?? {}).filter(
     (key) => !isUnavailable(key)
   );
   return fromEntries(
