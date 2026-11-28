@@ -12,14 +12,6 @@ export const jaMainLayout = {
     servicesLabel: '応援の方法',
     openBtn: '応援する',
     openBtnAria: '{name}で応援する',
-    services: {
-      ofuse: {
-        desc: 'お好きな金額で，メッセージを添えて応援できます',
-      },
-      githubSponsors: {
-        desc: 'GitHubアカウントで，毎月または1回限りの応援ができます',
-      },
-    },
   },
   searchWorld: 'ワールドを検索',
   openList: 'ワールド一覧を開く',

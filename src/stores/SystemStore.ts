@@ -9,6 +9,7 @@ import {
   ModData,
   PluginData,
 } from 'app/src-electron/schema/filedata';
+import { OuterResources } from 'app/src-electron/schema/outerResource';
 import { StaticResouce } from 'app/src-electron/schema/static';
 import { SystemSettings } from 'app/src-electron/schema/system';
 import { AllVersion, VersionType } from 'app/src-electron/schema/version';
@@ -28,6 +29,12 @@ export const useSystemStore = defineStore('systemStore', {
     publicIP: string;
     serverVersions: VersionLists;
     staticResouces: StaticResouce;
+    /**
+     * 外部リソース（起動時の読み込み前は空。配布元の最新の内容に更新されると差し替わる）
+     *
+     * 読み込み前の値を型の上でも表すため，各外部リソースは未定義になりうる
+     */
+    outerResources: Partial<OuterResources>;
     cacheContents: {
       datapacks: CacheFileData<DatapackData>[];
       plugins: CacheFileData<PluginData>[];
@@ -39,6 +46,7 @@ export const useSystemStore = defineStore('systemStore', {
       publicIP: '取得できませんでした',
       serverVersions: {},
       staticResouces: unloadedStaticResource(),
+      outerResources: {},
       cacheContents: {
         datapacks: [],
         plugins: [],
@@ -50,6 +58,14 @@ export const useSystemStore = defineStore('systemStore', {
     systemSettings() {
       const sysSettingsStore = useSystemSettingsStore();
       return sysSettingsStore.systemSettings;
+    },
+    /**
+     * 新しい順に並べたバニラのバージョン ID の一覧
+     *
+     * サーバープロパティの定義を，ワールドの Minecraft のバージョンに合わせて選ぶために使う
+     */
+    vanillaVersionOrder(state): string[] {
+      return state.serverVersions.vanilla?.map((ver) => ver.id) ?? [];
     },
   },
 });

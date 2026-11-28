@@ -64,26 +64,18 @@ describe('サーバープロパティの許容値', () => {
     }
   );
 
-  test('範囲外の値は既定値に戻され，プロパティ画面でも入力できない', () => {
-    const props = ServerProperties.parse({
-      'max-tick-time': '-2',
-      'op-permission-level': '5',
-    });
-    expect(props['max-tick-time']).toBe(60000);
-    expect(props['op-permission-level']).toBe(4);
-    expect(isAcceptedInEditor('max-tick-time', -2)).toBe(false);
-    expect(isAcceptedInEditor('op-permission-level', 5)).toBe(false);
-  });
-
-  test.each<[key: string, value: number, def: number]>([
-    ['chat-spam-threshold-seconds', -1, 10],
-    ['text-filtering-version', 2, 0],
-    ['management-server-port', 2 ** 16, 0],
+  // 範囲は外部リソースで変わりうるため，読み込み時には値を書き換えず，プロパティ画面の入力チェックにのみ使う
+  test.each<[key: string, value: number]>([
+    ['max-tick-time', -2],
+    ['op-permission-level', 5],
+    ['chat-spam-threshold-seconds', -1],
+    ['text-filtering-version', 2],
+    ['management-server-port', 2 ** 16],
   ])(
-    '範囲外の %s=%d は既定値(%d)に戻され，プロパティ画面でも入力できない',
-    (key, value, def) => {
+    '範囲外の %s=%d は読み込んだ値を保持し，プロパティ画面では入力できない',
+    (key, value) => {
       const props = ServerProperties.parse({ [key]: value.toString() });
-      expect(props[key]).toBe(def);
+      expect(props[key]).toBe(value);
       expect(isAcceptedInEditor(key, value)).toBe(false);
     }
   );
@@ -94,7 +86,7 @@ describe('サーバープロパティの許容値', () => {
     .map(([key]) => key);
 
   test.each(numberKeys)(
-    '%s に小数を指定すると既定値に戻され，プロパティ画面でも入力できない',
+    '%s に小数を指定すると読み込んだ値を保持し，プロパティ画面では入力できない',
     (key) => {
       const annotation = NumberServerPropertyAnnotation.parse(
         DefaultServerPropertiesAnnotation[key]
@@ -106,7 +98,7 @@ describe('サーバープロパティの許容値', () => {
           ? annotation.default - 0.5
           : annotation.default + 0.5;
       const props = ServerProperties.parse({ [key]: fractional.toString() });
-      expect(props[key]).toBe(annotation.default);
+      expect(props[key]).toBe(fractional);
       expect(isAcceptedInEditor(key, fractional)).toBe(false);
     }
   );
@@ -126,6 +118,27 @@ describe('サーバープロパティの許容値', () => {
 });
 
 describe('サーバープロパティの型', () => {
+  test.each([
+    ['max-players', '007', 7],
+    ['max-players', '+5', 5],
+  ])(
+    '10進数の表記の %s=%s は数値 %d として読み込む',
+    (key, value, expected) => {
+      const props = ServerProperties.parse({ [key]: value });
+      expect(props[key]).toBe(expected);
+    }
+  );
+
+  test.each([
+    ['max-players', 'abc'],
+    ['max-players', '0x10'],
+    ['max-players', '1e3'],
+    ['white-list', 'maybe'],
+  ])('型に合わない %s=%s は既定値になる', (key, value) => {
+    const props = ServerProperties.parse({ [key]: value });
+    expect(props[key]).toBe(ServerProperties.parse({})[key]);
+  });
+
   const boolKeys = [
     'enable-code-of-conduct',
     'management-server-enabled',

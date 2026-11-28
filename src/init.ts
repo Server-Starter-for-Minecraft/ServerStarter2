@@ -22,6 +22,8 @@ export async function initWindow() {
 
   // static resourcesの読み込み
   sysStore.staticResouces = await window.API.invokeGetStaticResouce();
+  // 外部リソースの読み込み（配布元の最新の内容は，取得でき次第 App.vue で受け取って差し替える）
+  sysStore.outerResources = await window.API.invokeGetOuterResources();
 
   // TODO: awaitで実行するVersionの読み込みとWorldの読み込みを並列化
   // バージョンの読み込み

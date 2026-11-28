@@ -1,15 +1,56 @@
-import { ServerProperties } from 'app/src-electron/schema/serverproperty';
+import { ServerPropertyDefinitions } from 'app/src-electron/schema/outerResource/serverProperties';
+import {
+  coercePropertyValue,
+  DefaultServerPropertiesAnnotation,
+  ServerProperties,
+} from 'app/src-electron/schema/serverproperty';
 import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { properties } from 'app/src-electron/util/format/properties';
 import { objValueMap } from 'app/src-electron/util/obj/objmap';
+import { getLoadedOuterResource } from '../../outerResource/registry';
+import { getStablePropertyType } from '../../outerResource/resources/serverProperties';
 import { ServerSettingFile } from './base';
 
-/** server.propertiesの中身(string)をパースする */
-const parse = (text: string): Failable<ServerProperties> => {
-  const result = ServerProperties.safeParse(properties.parse(text));
-  return result.success ? result.data : fromRuntimeError(result.error);
+/**
+ * server.propertiesの中身(string)をパースする
+ *
+ * アプリ内で定義したプロパティはアプリ内の定義で読み込み，
+ * 外部リソースでのみ定義されたプロパティは外部リソースの定義の型に変換する
+ *
+ * @param text server.propertiesの中身
+ * @param definitions 外部リソースのサーバープロパティの定義（未指定の場合は外部リソースの型に変換しない）
+ * @returns 読み込んだプロパティ（スキーマの検証に失敗した場合はエラー）
+ */
+export const parseServerProperties = (
+  text: string,
+  definitions: ServerPropertyDefinitions = {}
+): Failable<ServerProperties> => {
+  const raw = properties.parse(text);
+  const result = ServerProperties.safeParse(raw);
+  if (!result.success) return fromRuntimeError(result.error);
+  const parsed = result.data;
+  for (const [key, value] of Object.entries(raw)) {
+    // アプリ内で定義したプロパティは読み込み済み（`Object.hasOwn` で `constructor` などの継承したキーを除く）
+    if (
+      Object.hasOwn(DefaultServerPropertiesAnnotation, key) ||
+      !Object.hasOwn(definitions, key)
+    ) {
+      continue;
+    }
+    // 変換できない値は文字列のまま残す（既定値への置き換えや範囲での丸めは行わず，ユーザーの値を失わない）
+    const type = getStablePropertyType(definitions[key]);
+    if (type !== undefined) parsed[key] = coercePropertyValue(value, type);
+  }
+  return parsed;
 };
+
+/** server.propertiesの中身(string)を，読み込み済みの外部リソースの定義も使ってパースする */
+const parse = (text: string): Failable<ServerProperties> =>
+  parseServerProperties(
+    text,
+    getLoadedOuterResource('serverProperties')?.properties
+  );
 
 const stringify = (record: ServerProperties) => {
   const converted = objValueMap(record, (value) => {
@@ -104,14 +145,9 @@ if (import.meta.vitest) {
     expect(numberValue).toBe(60000);
     expect(typeof numberValue).toBe('number');
 
-    // number checks test (if it doesn't use Zod, this test is ineffective)
-    const numberCheckTest = parseOk('function-permission-level=5'); // invalid setting
-    expect(Object.hasOwn(numberCheckTest, 'function-permission-level')).toBe(
-      true
-    );
-    const numberCheckValue = numberCheckTest['function-permission-level'];
-    expect(numberCheckValue).toBe(2); // overwrote default value
-    expect(typeof numberCheckValue).toBe('number');
+    // 範囲外の値も書き換えずに読み込む（範囲はプロパティ画面の入力チェックにのみ使う）
+    const numberCheckTest = parseOk('function-permission-level=5');
+    expect(numberCheckTest['function-permission-level']).toBe(5);
 
     // unsupported prop test
     const unsupportedTest = parseOk('unsupported-prop=test_value');

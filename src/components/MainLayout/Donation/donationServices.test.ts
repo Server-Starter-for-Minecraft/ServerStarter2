@@ -1,44 +1,38 @@
 import { describe, expect, test } from 'vitest';
-import { enUSMainLayout } from '../../../i18n/en-US/Pages/mainLayout';
-import { jaMainLayout } from '../../../i18n/ja/Pages/mainLayout';
-import { donationServices, getDonationPageUrl } from './donationServices';
+import type {
+  DonationResource,
+  DonationService,
+} from 'app/src-electron/schema/outerResource/donation';
+import { getVisibleDonationServices } from './donationServices';
 
-/**
- * 寄付ダイアログの寄付サービスが，正しく表示・遷移できる定義になっていることを確認する
- */
-describe('寄付サービス', () => {
-  test('サービスの識別子が重複していない', () => {
-    const ids = donationServices.map((s) => s.id);
-    expect(new Set(ids).size).toBe(ids.length);
+/** テスト用の寄付サービス */
+function service(id: string, visible: boolean): DonationService {
+  return {
+    id,
+    name: id,
+    url: `https://example.com/${id}`,
+    color: '#000000',
+    description: { ja: id },
+    visible,
+  };
+}
+
+describe('寄付ダイアログに表示する寄付サービス', () => {
+  test('受付中のサービスだけを外部リソースでの並び順で表示する', () => {
+    const resource: DonationResource = {
+      services: [
+        service('b', true),
+        service('hidden', false),
+        service('a', true),
+      ],
+    };
+    expect(getVisibleDonationServices(resource).map((s) => s.id)).toEqual([
+      'b',
+      'a',
+    ]);
   });
 
-  test('寄付ダイアログに表示されるサービスが1つ以上ある', () => {
-    expect(donationServices.some((s) => s.visible)).toBe(true);
+  test('外部リソースの読み込み前は何も表示しない', () => {
+    expect(getVisibleDonationServices(undefined)).toEqual([]);
   });
-
-  test.each(donationServices)(
-    '$id の寄付ページは公式ホームページの https の URL である',
-    (s) => {
-      const url = new URL(getDonationPageUrl(s));
-      expect(url.protocol).toBe('https:');
-      expect(url.hostname).toBe('server-starter-for-minecraft.github.io');
-    }
-  );
-
-  // ホームページ側は service の値からリダイレクト先を選ぶため，サービスの識別子がそのまま渡る必要がある
-  test.each(donationServices)('$id の寄付ページにサービスが渡される', (s) => {
-    const url = new URL(getDonationPageUrl(s));
-    expect(url.searchParams.getAll('service')).toEqual([s.id]);
-  });
-
-  test.each(donationServices)(
-    '$id にサービス名と日本語・英語の説明文がある',
-    ({ id, name }) => {
-      const nonEmpty: unknown = expect.stringMatching(/\S/);
-      expect(name).toEqual(nonEmpty);
-      for (const locale of [jaMainLayout, enUSMainLayout]) {
-        expect(locale.donation.services).toHaveProperty([id, 'desc'], nonEmpty);
-      }
-    }
-  );
 });

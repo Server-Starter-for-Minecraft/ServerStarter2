@@ -1,8 +1,4 @@
 import { z } from 'zod';
-import {
-  DefaultServerPropertiesAnnotation,
-  ServerPropertiesAnnotation,
-} from './serverproperty';
 
 /**
  * プレイヤーグループの配色に用いるMinecraftの染料の16色（キーは染料・羊毛の画像の名前と一致する）
@@ -31,10 +27,12 @@ export const MinecraftColors = z
   .prefault({});
 export type MinecraftColors = z.infer<typeof MinecraftColors>;
 
+/**
+ * フロントエンドへ渡す定数
+ *
+ * サーバープロパティの定義は外部リソース（`OuterResources.serverProperties`）から渡す
+ */
 export const StaticResouce = z.object({
-  properties: ServerPropertiesAnnotation.default(
-    DefaultServerPropertiesAnnotation
-  ),
   minecraftColors: MinecraftColors,
   /**
    * アプリのファイルの保存先

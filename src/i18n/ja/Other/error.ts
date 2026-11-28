@@ -32,6 +32,9 @@ export const jaError: ErrorTranslationTypes & ErrorDialogTitles = {
         title: 'リクエストが多すぎます',
         desc: '少し時間を置いてから再度実行してください',
       },
+      unsupported: {
+        title: '{url} からはデータを取得できません',
+      },
     },
     zip: {
       invalidZipFile: {

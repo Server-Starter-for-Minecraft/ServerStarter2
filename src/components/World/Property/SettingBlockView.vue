@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import {
+  getPropertyAnnotation,
+  getPropertyDescription,
+} from 'src/logic/property/propertyDefinitions';
+import { getOwn } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
 import { useSystemStore } from 'src/stores/SystemStore';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
@@ -10,25 +16,47 @@ interface Prop {
   settingName: string;
   /** 編集不可である理由（指定した場合は編集不可として表示する） */
   lockedReason?: LockReason;
+  /** ワールドの Minecraft のバージョン（ワールドに依らない設定では指定しない） */
+  versionId?: string;
 }
 const prop = defineProps<Prop>();
 const isLocked = computed(() => prop.lockedReason !== undefined);
 const propertiesModel = defineModel<ServerProperties>({ required: true });
 
+const { t, te, locale } = useI18n();
 const sysStore = useSystemStore();
 
-const staticDefaultProperty = sysStore.staticResouces.properties[
-  prop.settingName
-] ?? { type: 'string', default: '' };
-const defaultProperty =
-  sysStore.systemSettings.world.properties[prop.settingName] ??
-  staticDefaultProperty.default;
+/** 規定値（ユーザーが設定した標準プロパティ，なければバージョンに合う定義の既定値） */
+const defaultProperty = computed(
+  () =>
+    getOwn(sysStore.systemSettings.world.properties, prop.settingName) ??
+    getPropertyAnnotation(
+      sysStore.outerResources.serverProperties,
+      prop.settingName,
+      prop.versionId,
+      sysStore.vanillaVersionOrder
+    ).default
+);
+
+/** プロパティの説明文（外部リソースの説明文を優先し，なければアプリ内の説明文） */
+const description = computed(
+  () =>
+    getPropertyDescription(
+      sysStore.outerResources.serverProperties,
+      prop.settingName,
+      locale.value,
+      (key) => {
+        const i18nKey = `property.description['${key}']`;
+        return te(i18nKey) ? t(i18nKey) : undefined;
+      }
+    ) ?? t('property.description.notFound')
+);
 
 /**
  * 設定を規定値に戻す
  */
 function cancelSettings() {
-  propertiesModel.value[prop.settingName] = defaultProperty;
+  propertiesModel.value[prop.settingName] = defaultProperty.value;
 }
 </script>
 
@@ -37,11 +65,7 @@ function cancelSettings() {
     <q-item-section>
       <div class="text-h6">{{ settingName }}</div>
       <div class="text-caption" style="opacity: 0.5">
-        {{
-          $te(`property.description['${settingName}']`)
-            ? $t(`property.description['${settingName}']`)
-            : $t('property.description.notFound')
-        }}
+        {{ description }}
       </div>
       <div v-if="isLocked" class="text-caption text-negative">
         <q-icon name="lock" />
@@ -51,6 +75,7 @@ function cancelSettings() {
         v-model="propertiesModel"
         :property-name="settingName"
         :disable="isLocked"
+        :version-id="versionId"
       />
     </q-item-section>
 
@@ -62,7 +87,7 @@ function cancelSettings() {
     >
       <q-btn
         v-show="
-          propertiesModel[settingName]?.toString() !==
+          getOwn(propertiesModel, settingName)?.toString() !==
           defaultProperty.toString()
         "
         flat

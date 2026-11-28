@@ -3,86 +3,109 @@ import { toEntries } from '../util/obj/obj';
 
 const PORT_MAX = 2 ** 16 - 2;
 
-// z.coerce.boolean() を使うと，'false' を true に変換してしまうので，自前で実装する
+/** サーバープロパティの値の型 */
+export type ServerPropertyType = 'string' | 'boolean' | 'number';
+
+/**
+ * 数値として扱える表記か
+ *
+ * Minecraft と同じく10進数の表記（`007`・`+5`・`1.50` を含む）を数値として扱う。
+ * `0x10`・`1e3` など Minecraft が数値として読まない表記と，精度を超えて値が変わる表記
+ * （`9007199254740993`・`9007199254740993.0` など）は数値として扱わない
+ * （数値にすると保存時にユーザーの値が変わるため）
+ */
+const isDecimalNumber = (text: string) => {
+  const match = /^[+-]?(\d+)(?:\.(\d+))?$/.exec(text);
+  if (!match) return false;
+  // 符号・整数部の先頭の0・小数部の末尾の0を除いた表記が，数値に変換して書き出した表記と一致すれば値は変わらない
+  // （精度を超えると丸められて一致せず，指数表記になる大きさの値も一致しない）
+  const [, integerPart = '', fractionPart = ''] = match;
+  const integer = integerPart.replace(/^0+(?=\d)/, '');
+  const fraction = fractionPart.replace(/0+$/, '');
+  const normalized = fraction ? `${integer}.${fraction}` : integer;
+  return String(Math.abs(Number(text))) === normalized;
+};
+
+/**
+ * server.properties の値（文字列）を，プロパティの型に変換する
+ *
+ * 変換できない値は文字列のまま返す（呼び出し元で既定値にするか，そのまま残すかを決める）
+ *
+ * @param value server.properties の値
+ * @param type プロパティの型
+ * @returns 変換した値（変換できない場合は元の値）
+ */
+export function coercePropertyValue(
+  value: string,
+  type: ServerPropertyType
+): string | boolean | number {
+  const trimmed = value.trim();
+  switch (type) {
+    case 'boolean':
+      if (trimmed.toLowerCase() === 'true') return true;
+      if (trimmed.toLowerCase() === 'false') return false;
+      return value;
+    case 'number':
+      return isDecimalNumber(trimmed) ? Number(trimmed) : value;
+    default:
+      return value;
+  }
+}
+
+/** 文字列を型に変換してから検証するスキーマを作る（文字列以外はそのまま検証する） */
+const coerced = <T extends z.ZodType>(type: ServerPropertyType, schema: T) =>
+  z.preprocess(
+    (value) =>
+      typeof value === 'string' ? coercePropertyValue(value, type) : value,
+    schema
+  );
+
+/** 読み込み用のスキーマごとの，プロパティ画面で使う注釈（zod の型付きのレジストリ） */
+const annotationRegistry = z.registry<ServerPropertyAnnotation>();
+
+/**
+ * プロパティの読み込み用のスキーマに，プロパティ画面で使う注釈を付ける
+ *
+ * 読み込み時は型の変換のみを行い（型が合わない値は既定値にする），範囲や選択肢による値の書き換えは行わない。
+ * 範囲や選択肢は注釈としてプロパティ画面の入力チェックに使う（外部リソースで範囲を変えても値が失われないようにするため）
+ */
+const withAnnotation = <T extends z.ZodType>(
+  schema: T,
+  annotation: ServerPropertyAnnotation
+) => {
+  // 型引数のままでは登録する注釈の型が決まらないため，スキーマの共通の型として登録する
+  const registered: z.ZodType = schema;
+  annotationRegistry.add(registered, annotation);
+  return schema;
+};
+
 const boolSetter = (def: boolean) =>
-  z
-    .preprocess(
-      (txt) =>
-        typeof txt === 'string' ? txt.toLowerCase() === 'true' : undefined,
-      z.boolean()
-    )
-    .default(def)
-    .catch(def);
-const stringSetter = (def: string) => z.string().default(def).catch(def);
+  withAnnotation(coerced('boolean', z.boolean()).default(def).catch(def), {
+    type: 'boolean',
+    default: def,
+  });
+const stringSetter = (def: string) =>
+  withAnnotation(z.string().default(def).catch(def), {
+    type: 'string',
+    default: def,
+  });
 const enumSetter = <U extends string, T extends Readonly<[U, ...U[]]>>(
   values: T,
   def: T[number]
-) => z.enum(values).or(z.string()).default(def).catch(def);
-const numberSetter = (
-  def: number,
-  min?: number,
-  max?: number,
-  step?: number
-) => {
-  const checksPattern =
-    2 ** 0 * Number(min !== undefined) +
-    2 ** 1 * Number(max !== undefined) +
-    2 ** 2 * Number(step !== undefined);
-
-  switch (checksPattern) {
-    case 0:
-      return z.coerce.number().default(def).catch(def);
-    case 1:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .default(def)
-        .catch(def);
-    case 2:
-      return z.coerce
-        .number()
-        .max(max ?? Infinity)
-        .default(def)
-        .catch(def);
-    case 3:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .max(max ?? Infinity)
-        .default(def)
-        .catch(def);
-    case 4:
-      return z.coerce
-        .number()
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    case 5:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    case 6:
-      return z.coerce
-        .number()
-        .max(max ?? Infinity)
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    case 7:
-      return z.coerce
-        .number()
-        .min(min ?? -Infinity)
-        .max(max ?? Infinity)
-        .step(step ?? 1)
-        .default(def)
-        .catch(def);
-    default:
-      return z.coerce.number().default(def).catch(def);
-  }
-};
+) =>
+  withAnnotation(z.string().default(def).catch(def), {
+    type: 'string',
+    default: def,
+    enum: [...values],
+  });
+const numberSetter = (def: number, min?: number, max?: number, step?: number) =>
+  withAnnotation(coerced('number', z.number()).default(def).catch(def), {
+    type: 'number',
+    default: def,
+    ...(min !== undefined ? { min } : {}),
+    ...(max !== undefined ? { max } : {}),
+    ...(step !== undefined ? { step } : {}),
+  });
 
 /**
  * 標準登録のサーバープロパティ
@@ -195,66 +218,15 @@ const DefaultServerProperties = z
   .catchall(z.string().or(z.number()).or(z.boolean()));
 
 /**
- * DefaultServerPropertiesで設定した型情報をもとに，フロントエンドに渡すプロパティ情報を生成する
+ * DefaultServerPropertiesで設定した注釈をもとに，フロントエンドに渡すプロパティ情報を生成する
  */
 function extractPropertyAnnotation(prop: typeof DefaultServerProperties) {
-  const anotations: Record<string, ServerPropertyAnnotation> = {};
-
+  const annotations: Record<string, ServerPropertyAnnotation> = {};
   for (const [key, schema] of toEntries(prop.shape)) {
-    // catch > default > String | Number | Boolean の順でネストされた型情報を取得する
-    const defaultSchema = schema.unwrap();
-    const innerType = defaultSchema.unwrap();
-    const defaultValue = defaultSchema.def.defaultValue;
-
-    // 既定値の型は，各型の設定（boolSetter など）で型に合わせて指定している
-    if (innerType instanceof z.ZodPipe && typeof defaultValue === 'boolean') {
-      anotations[key] = {
-        type: 'boolean',
-        default: defaultValue,
-      };
-    } else if (
-      innerType instanceof z.ZodString &&
-      typeof defaultValue === 'string'
-    ) {
-      anotations[key] = {
-        type: 'string',
-        default: defaultValue,
-      };
-    } else if (
-      innerType instanceof z.ZodNumber &&
-      typeof defaultValue === 'number'
-    ) {
-      const tmpObj: NumberServerPropertyAnnotation = {
-        type: 'number',
-        default: defaultValue,
-      };
-      if (innerType.minValue !== null && innerType.minValue !== -Infinity) {
-        tmpObj.min = innerType.minValue;
-      }
-      if (innerType.maxValue !== null && innerType.maxValue !== Infinity) {
-        tmpObj.max = innerType.maxValue;
-      }
-      innerType.def.checks?.forEach((check) => {
-        const checkDef = check._zod.def;
-        if (checkDef.check === 'multiple_of' && 'value' in checkDef) {
-          tmpObj.step = Number(checkDef.value);
-        }
-      });
-      anotations[key] = tmpObj;
-    } else if (
-      innerType instanceof z.ZodUnion &&
-      typeof defaultValue === 'string'
-    ) {
-      const enumType = innerType.options[0];
-      anotations[key] = {
-        type: 'string',
-        default: defaultValue,
-        enum: enumType instanceof z.ZodEnum ? enumType.options : undefined,
-      };
-    }
+    const annotation = annotationRegistry.get(schema);
+    if (annotation) annotations[key] = annotation;
   }
-
-  return anotations;
+  return annotations;
 }
 
 export const DefaultServerPropertiesAnnotation = extractPropertyAnnotation(
@@ -331,12 +303,3 @@ export const ServerPropertyAnnotation = StringServerPropertyAnnotation.or(
   BooleanServerPropertyAnnotation
 ).or(NumberServerPropertyAnnotation);
 export type ServerPropertyAnnotation = z.infer<typeof ServerPropertyAnnotation>;
-
-/** サーバープロパティのアノテーション */
-export const ServerPropertiesAnnotation = z.record(
-  z.string(),
-  ServerPropertyAnnotation
-);
-export type ServerPropertiesAnnotation = z.infer<
-  typeof ServerPropertiesAnnotation
->;

@@ -74,6 +74,10 @@ window.API.onUpdateOnlinePlayers((_event, worldID, players) => {
     showUnexpectedError
   );
 });
+// 外部リソースが配布元の最新の内容に更新された際に，表示中の内容を差し替える
+window.API.onUpdateOuterResources((_event, resources) => {
+  sysStore.outerResources = resources;
+});
 // アップデートを実行するときに確認のダイアログを表示する
 window.API.onNotifySystemUpdate((_event, os, newVer) => {
   $q.dialog({

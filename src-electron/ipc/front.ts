@@ -78,6 +78,7 @@ export function getFrontAPIListener(
       UpdateOnlinePlayers: send('UpdateOnlinePlayers', window),
       Error: send('Error', window),
       NotifySystemUpdate: send('NotifySystemUpdate', window),
+      UpdateOuterResources: send('UpdateOuterResources', window),
     },
     handle: {
       AgreeEula: invoke('AgreeEula', window),

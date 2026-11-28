@@ -4,6 +4,7 @@
 import * as electron from 'electron';
 import { MemorySettings } from '../schema/memory';
 import { Locale } from '../schema/system';
+import { DEFAULT_OUTER_RESOURCE_BASE_URL } from './outerResource/definition';
 
 // アプリが扱うファイルの保存先（共通基盤の層で定義している）
 export * from '../lifecycle/paths';
@@ -23,6 +24,15 @@ export const getDefaultLocale = (): Locale => {
   if (import.meta.env?.QUASAR_DEV) return 'ja';
   return electron.app.getLocale() === 'ja' ? 'ja' : 'en-US';
 };
+
+/**
+ * 外部リソース（OuterResources リポジトリ）の配布元の URL
+ *
+ * 開発時は環境変数 `SS_OUTER_RESOURCE_BASE_URL` で差し替えられる（作業ブランチやローカルサーバーでの確認用）
+ */
+export const OUTER_RESOURCE_BASE_URL =
+  (import.meta.env?.QUASAR_DEV && process.env.SS_OUTER_RESOURCE_BASE_URL) ||
+  DEFAULT_OUTER_RESOURCE_BASE_URL;
 
 export const NEW_WORLD_NAME = 'NewWorld';
 

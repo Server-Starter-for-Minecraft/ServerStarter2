@@ -16,7 +16,8 @@
     "test:offline": "VITEST_BLOCK_NETWORK=1 vitest --run --tags-filter=!network",
     "test:network": "vitest --run --tags-filter=network",
     "dev": "bun scripts/quasar.ts dev -m electron",
-    "build": "quasar build -m electron"
+    "build": "quasar build -m electron",
+    "outer-resources": "bun scripts/outerResources/index.ts"
   },
   "dependencies": {
     "@quasar/extras": "^2.1.0",

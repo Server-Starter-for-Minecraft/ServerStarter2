@@ -19,6 +19,11 @@ export type DataErrors = {
     tooManyRequest: ErrorMessageContent<{
       url: string;
     }>;
+
+    // 取得元として許可していないURL(プロトコルや形式が対象外)を指定したときのエラー
+    unsupported: ErrorMessageContent<{
+      url: string;
+    }>;
   };
 
   zip: {

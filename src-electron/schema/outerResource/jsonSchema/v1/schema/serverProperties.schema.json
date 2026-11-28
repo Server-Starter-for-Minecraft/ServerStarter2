@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "言語ごとの文言（キーは ja / en-US）",
+            "minProperties": 1
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "properties": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "言語ごとの文言（キーは ja / en-US）",
+            "minProperties": 1
+          },
+          "definitions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "string"
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "enum": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "minecraftVersion": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "to": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "default"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "boolean"
+                    },
+                    "default": {
+                      "type": "boolean"
+                    },
+                    "minecraftVersion": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "to": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "default"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "number"
+                    },
+                    "default": {
+                      "type": "number"
+                    },
+                    "step": {
+                      "type": "number"
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "minecraftVersion": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "to": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "default"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "definitions"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "properties"
+  ],
+  "additionalProperties": false
+}
