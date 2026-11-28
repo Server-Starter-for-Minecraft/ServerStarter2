@@ -382,6 +382,9 @@ const baseConfig = tseslint.config(
   },
   // Electron 外（スクリプト・テスト）でも読み込むファイルからは，`electron` を読み込まない
   // （静的な import に加え，import()・require() による読み込みも検出する。例外は eslint-rules/config.js の ELECTRON_IMPORT_EXCEPTIONS に登録する）
+  // テストは対象外とする：テストは `vi.mock('electron', ...)` で Electron の API を差し替えるが，このルールは第 1 引数が
+  // `'electron'` の呼び出しをすべて報告するため，差し替えも違反になる。また，テストは Vitest が `electron` を解決できる環境
+  // （vitest.config.ts で実行ファイルのダウンロードを抑止している）で動き，リリースのビルドのスクリプトのように Electron なしでは動かさない
   {
     files: ELECTRON_FREE_FILES,
     ignores: [ELECTRON_BOUNDARY, ...TEST_FILES],

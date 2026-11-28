@@ -27,10 +27,20 @@ import { createRule } from '../utils/createRule.js';
 /**
  * モジュール名を表す式から，モジュール名の文字列を取り出す
  *
+ * 実行時の値を変えない型の注釈（`'x' as string`・`<string>'x'`・`'x' satisfies string`・`x!`）は取り除いて判定する
+ *
  * @param {Node | null | undefined} source モジュール名を表す式
  * @returns {string | undefined} モジュール名（文字列リテラル・式を含まないテンプレートリテラル以外は undefined）
  */
 function moduleNameOf(source) {
+  if (
+    source?.type === AST_NODE_TYPES.TSAsExpression ||
+    source?.type === AST_NODE_TYPES.TSTypeAssertion ||
+    source?.type === AST_NODE_TYPES.TSSatisfiesExpression ||
+    source?.type === AST_NODE_TYPES.TSNonNullExpression
+  ) {
+    return moduleNameOf(source.expression);
+  }
   if (source?.type === AST_NODE_TYPES.Literal) {
     return typeof source.value === 'string' ? source.value : undefined;
   }

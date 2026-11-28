@@ -26,6 +26,8 @@ ruleTester.run('no-restricted-module', rule, {
     // モジュール名が文字列で書かれていない呼び出し
     { code: 'const name = "x"; export const m = require(name);', options },
     { code: 'export const m = (s: string) => require(`${s}`);', options },
+    // 型の注釈で囲んでも，禁止していないモジュールは報告しない
+    { code: "export const m = require('zod' as string);", options },
   ],
   invalid: [
     { code: "import { app } from 'electron';", options, errors },
@@ -38,6 +40,18 @@ ruleTester.run('no-restricted-module', rule, {
     { code: "export const load = () => import('electron');", options, errors },
     { code: "export const m = require('electron');", options, errors },
     { code: 'export const m = require(`electron`);', options, errors },
+    // 実行時の値を変えない型の注釈で囲んでも，モジュール名で判定する
+    {
+      code: "export const m = require('electron' as string);",
+      options,
+      errors,
+    },
+    {
+      code: "export const load = () => import('electron' satisfies string);",
+      options,
+      errors,
+    },
+    { code: "export const m = require(<string>'electron');", options, errors },
     // 配下のモジュール（Electron の公式の入口）も同じモジュールとして扱う
     { code: "import { app } from 'electron/main';", options, errors },
     { code: "export const m = require('electron/main');", options, errors },
