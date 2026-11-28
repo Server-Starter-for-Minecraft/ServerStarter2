@@ -229,7 +229,7 @@ async function getServerJarFromBuildTools(
     key: 'server.readyVersion.spigot.moving',
   });
   const sourceJarPath = buildToolsPath.parent().child(builtJarName);
-  const targetJarPath = await getJarPath(serverCachePath);
+  const targetJarPath = getJarPath(serverCachePath);
   if (!(await sourceJarPath.exists())) {
     p?.delete();
     return errorMessage.core.version.failSpigotBuild.missingJar({
@@ -258,15 +258,15 @@ async function getServerJarFromBuildTools(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect, vi } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('spigot version', { tags: ['network'] }, async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
@@ -323,13 +323,10 @@ if (import.meta.vitest) {
         outputPath,
         execRuntime
       );
-      expect(isError(res)).toBe(false);
-      if (isError(res)) return;
+      assertOk(res);
 
       // 戻り値の検証
-      expect((await res.getCommand({ jvmArgs: ['replaceArg'] }))[0]).toBe(
-        'replaceArg'
-      );
+      expect(res.getCommand({ jvmArgs: ['replaceArg'] })[0]).toBe('replaceArg');
       expect(res.runtime).toMatchObject({
         type: 'universal',
         majorVersion: 18,
@@ -348,7 +345,7 @@ if (import.meta.vitest) {
       expect(buildArgs[buildArgs.indexOf('--rev') + 1]).toBe('1.19');
 
       // ファイルの設置状況の検証
-      expect(await (await getJarPath(outputPath)).exists()).toBe(true);
+      expect(await getJarPath(outputPath).exists()).toBe(true);
       // Jarを実行しないと生成されないため，今回はTestの対象外
       // expect((await outputPath.child('libraries').exists())).toBe(true);
 
@@ -357,10 +354,8 @@ if (import.meta.vitest) {
       await remover.completeRemoveVersion(outputPath);
 
       // 削除後の状態を確認
-      expect(await (await getJarPath(outputPath)).exists()).toBe(false);
-      expect(cachePath && (await (await getJarPath(cachePath)).exists())).toBe(
-        true
-      );
+      expect(await getJarPath(outputPath).exists()).toBe(false);
+      expect(cachePath && (await getJarPath(cachePath).exists())).toBe(true);
     });
 
     test(
@@ -371,7 +366,7 @@ if (import.meta.vitest) {
         const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
         const cachePath = readyOperator.cachePath;
         await outputPath.remove();
-        await (await getJarPath(cachePath)).remove();
+        await getJarPath(cachePath).remove();
 
         // 中断されたビルド等による残骸を再現する
         // （`generateCachedJar()`がBuildToolsを実行する作業フォルダと一致させること）
@@ -407,7 +402,7 @@ if (import.meta.vitest) {
         );
         expect(isError(res)).toBe(false);
         // 今回ビルドしたJarが設置されているはず
-        expect(await (await getJarPath(outputPath)).readText()).toBe('new jar');
+        expect(await getJarPath(outputPath).readText()).toBe('new jar');
       }
     );
 
@@ -419,7 +414,7 @@ if (import.meta.vitest) {
         const readyOperator = new ReadySpigotVersion(ver19, cacheFolder);
         const cachePath = readyOperator.cachePath;
         await outputPath.remove();
-        await (await getJarPath(cachePath)).remove();
+        await getJarPath(cachePath).remove();
 
         // `--rev 1.19`に対して1.19.4がビルドされた場合を再現する
         const execRuntime: ExecRuntime = vi.fn(async (options) => {
@@ -431,9 +426,7 @@ if (import.meta.vitest) {
           execRuntime
         );
         expect(isError(res)).toBe(false);
-        expect(await (await getJarPath(outputPath)).readText()).toBe(
-          'patched jar'
-        );
+        expect(await getJarPath(outputPath).readText()).toBe('patched jar');
 
         // ビルドしたJarがキャッシュされ，別のサーバーの準備では再ビルドしない
         const otherOutputPath = serverFolder.child(`${ver19.id}-patched-2`);
@@ -443,7 +436,7 @@ if (import.meta.vitest) {
           execRuntime
         );
         expect(isError(res2)).toBe(false);
-        expect(await (await getJarPath(otherOutputPath)).readText()).toBe(
+        expect(await getJarPath(otherOutputPath).readText()).toBe(
           'patched jar'
         );
         expect(execRuntime).toHaveBeenCalledTimes(1);

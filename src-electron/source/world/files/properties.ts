@@ -59,8 +59,6 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-
   /** パースに成功することを確認して，結果を返す */
   const parseOk = (text: string) => {
     const result = parse(text);

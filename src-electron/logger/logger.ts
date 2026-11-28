@@ -19,6 +19,13 @@ const EXTs = ['.log', '.truncate.log'];
 const TMP_LOG = `tmp_${randomInt(0, 2 ** 31)}`;
 const ARCHIVE_EXT = '.log.tar.gz';
 
+/**
+ * ログ（アーカイブ・アーカイブできずに残ったログ）を残す期間（日）
+ *
+ * ログ以外にも，診断のために一時的に残すファイル（読み込めなかった設定ファイルのバックアップ等）の保存期間として使う
+ */
+export const LOG_RETENTION_DAYS = 7;
+
 const logPaths = EXTs.map((ext) => logDir.child(`${LATEST}${ext}`));
 const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 
@@ -170,7 +177,7 @@ async function archiveLog(...logPaths: Path[]) {
         const newExt = path.basename().substring(firstColonIndex);
         const newLogPath = path.parent().child(`${newlogName}${newExt}`);
         const renamed = await path.rename(newLogPath);
-        // 名前を変更できなかったログはアーカイブしない（次回の起動時に再度アーカイブを試みる）
+        // 名前を変更できなかったログはアーカイブせずに残す（保存期間を過ぎたら下の削除の処理で消す）
         return isError(renamed) ? renamed : newLogPath;
       })
     );
@@ -192,8 +199,8 @@ async function archiveLog(...logPaths: Path[]) {
     await removeLogFiles(archivedPaths);
   }
 
-  // 一週間前のログファイルとTMPファイルを削除
-  const thresholdDate = dayjs().subtract(7, 'd');
+  // 保存期間を過ぎたログと，作りかけのアーカイブを削除
+  const thresholdDate = dayjs().subtract(LOG_RETENTION_DAYS, 'd');
   const paths = await logDir.iter();
   if (isError(paths)) {
     rootLogger.logger.archive().warn(paths);
@@ -201,11 +208,17 @@ async function archiveLog(...logPaths: Path[]) {
   }
   const expired: Path[] = [];
   for (const path of paths) {
-    if (!path.path.endsWith(ARCHIVE_EXT)) continue;
-    if (path.basename().startsWith('tmp')) {
+    const name = path.basename();
+    // 記録中のログと，この起動でアーカイブするために退避したログは残す
+    if (name.startsWith(`${LATEST}.`) || name.startsWith(`${TMP_LOG}.`))
+      continue;
+    // 作りかけのアーカイブはすぐに削除する
+    if (name.endsWith(ARCHIVE_EXT) && name.startsWith('tmp')) {
       expired.push(path);
       continue;
     }
+    // アーカイブと，名前の変更・圧縮に失敗して残ったログ（前回までの退避ファイルを含む）は保存期間で削除する
+    if (!name.endsWith(ARCHIVE_EXT) && !name.endsWith('.log')) continue;
     const updateDate = await path.lastUpdateTime();
     if (updateDate.isBefore(thresholdDate)) expired.push(path);
   }
@@ -349,7 +362,9 @@ export const rootLogger = loggerHierarchies.get('');
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('logger', async () => {
     const path = await import('path');
@@ -466,8 +481,7 @@ if (import.meta.vitest) {
 
       // アーカイブチェック
       const logPaths = await logDir.iter();
-      expect(isError(logPaths)).toBe(false);
-      if (isError(logPaths)) return;
+      assertOk(logPaths);
       for (const path of logPaths) {
         if (logPaths.some((p) => p.basename() === path.basename())) continue;
         await path.remove();
@@ -476,13 +490,48 @@ if (import.meta.vitest) {
 
       // アーカイブされて、YYYY-MM-DD-HH-0.log.gz ができているはず
       const logPaths2 = await logDir.iter();
-      expect(isError(logPaths2)).toBe(false);
-      if (isError(logPaths2)) return;
+      assertOk(logPaths2);
       expect(logPaths2.map((p) => p.basename())).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/\d{4}-\d{2}-\d{2}-\d{2}-0.log.tar.gz/),
         ])
       );
+    });
+
+    test('保存期間を過ぎたログは，アーカイブできずに残ったものも含めて削除し，期間内のものと記録中のログは残す', async () => {
+      const { utimes } = await import('node:fs/promises');
+      const old = new Date(
+        Date.now() - (LOG_RETENTION_DAYS + 1) * 24 * 60 * 60 * 1000
+      );
+      /** 保存期間より前に更新したファイルを作る */
+      const createOld = async (name: string) => {
+        const file = logDir.child(name);
+        await file.writeText('old');
+        await utimes(file.path, old, old);
+        return file;
+      };
+      const expired = await Promise.all(
+        [
+          'tmp_1.log',
+          'tmp_1.truncate.log',
+          '2000-01-01-00-0.log',
+          '2000-01-01-00-1.log.tar.gz',
+        ].map(createOld)
+      );
+      const kept = [
+        // 記録中のログは古くても残す
+        await createOld(`${LATEST}.log`),
+        // 保存期間内のログ・アーカイブ
+        logDir.child('2999-01-01-00-0.log'),
+        logDir.child('2999-01-01-00-1.log.tar.gz'),
+      ];
+      await kept[1].writeText('new');
+      await kept[2].writeText('new');
+
+      await archiveLog();
+
+      for (const file of expired) expect(await file.exists()).toBe(false);
+      for (const file of kept) expect(await file.exists()).toBe(true);
     });
   });
 

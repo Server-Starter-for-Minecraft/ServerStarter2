@@ -57,9 +57,10 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         break;
       case 'world':
         const { WorldHandler } = await import('../world/handler');
-        const handler = await WorldHandler.get(source.id);
+        const handler = WorldHandler.get(source.id);
         if (isError(handler)) return handler;
-        sourcePath = (await handler.getSavePath())
+        sourcePath = handler
+          .getSavePath()
           .child(this.childPath)
           .child(fileDataKey(source));
         break;

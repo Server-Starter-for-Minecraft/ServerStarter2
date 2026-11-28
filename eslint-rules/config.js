@@ -10,14 +10,100 @@
 /** バックエンド（Electron のメインプロセス）のファイル */
 export const BACKEND_FILES = ['src-electron/**/*.ts'];
 
-/** バックエンドの処理（ドメインの処理）のファイル */
-export const SOURCE_FILES = ['src-electron/source/**/*.ts'];
-
 /** ビルド・開発用のスクリプト */
 export const SCRIPT_FILES = ['scripts/**/*.ts'];
 
 /** フロントエンドのファイル */
 export const FRONTEND_FILES = ['src/**/*.ts', 'src/**/*.vue'];
+
+/** バックエンドとフロントエンドの両方から使う処理（`src-public/`） */
+export const SHARED_FILES = ['src-public/**/*.ts'];
+
+/**
+ * 型アサーション（`as`）を使ってよいファイル（`@typescript-eslint/consistent-type-assertions` の例外）
+ *
+ * 値を検証せずに型を付けることになるため，型を作る汎用処理（ジェネリクス・ブランド型の生成）に限る。
+ * 外部の入力（JSON・HTTP の応答・例外など）を扱う処理は，zod の safeParse や型ガードで検証すること。
+ * 追加する場合は，型アサーションが必要な理由を `reason` に必ず書く
+ *
+ * @type {{ file: string; reason: string }[]}
+ */
+export const TYPE_ASSERTION_ALLOWED_FILES = [
+  {
+    file: 'src-electron/util/zod/brand.ts',
+    reason: '形式に制約のない文字列にブランド型を付ける',
+  },
+  {
+    file: 'src-electron/util/random/uuid.ts',
+    reason: '生成した UUID にブランド型を付ける',
+  },
+  {
+    file: 'src-public/scripts/uuid.ts',
+    reason: '生成した UUID にブランド型を付ける',
+  },
+  {
+    file: 'src-electron/util/timestamp.ts',
+    reason: '現在時刻にブランド型（Timestamp）を付ける',
+  },
+  {
+    file: 'src-electron/util/error/construct.ts',
+    reason: 'エラーの種類の定義から ErrorMessage を組み立てる',
+  },
+  {
+    file: 'src-electron/util/error/error.ts',
+    reason: 'エラーの判定（isError）の実装',
+  },
+  {
+    file: 'src-public/scripts/error.ts',
+    reason: 'エラーの判定（isError）の実装',
+  },
+  {
+    file: 'src-electron/util/error/failable.ts',
+    reason: '関数の戻り値の型から Failable の型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/versioning/versionedSchema.ts',
+    reason:
+      '旧スキーマからの変換に失敗した結果を，最新のスキーマの結果の型に合わせる',
+  },
+  {
+    file: 'src-electron/util/deepcopy.ts',
+    reason: '任意の型の値を複製し，元の型として返す',
+  },
+  {
+    file: 'src-public/scripts/deepcopy.ts',
+    reason: '任意の型の値を複製し，元の型として返す',
+  },
+  {
+    file: 'src-electron/util/obj/obj.ts',
+    reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
+  },
+  {
+    file: 'src-public/scripts/obj/obj.ts',
+    reason: 'オブジェクトのキー・値の一覧を，元のオブジェクトの型で返す',
+  },
+  {
+    file: 'src-public/scripts/obj/objFlatten.ts',
+    reason: '入れ子のオブジェクトを平らにした型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/object/groupBy.ts',
+    reason: '空のオブジェクトから，キーごとに分けた結果の型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/helper/infinitMap.ts',
+    reason: '空のオブジェクトから，任意のキーで値を返す型を組み立てる',
+  },
+  {
+    file: 'src-electron/util/awaitOnce.ts',
+    reason:
+      '一度だけ取得した値を，取得前の型（undefined を含まない型）として返す',
+  },
+  {
+    file: 'src-electron/util/promise/promiseDecorator.ts',
+    reason: 'Promise にメソッドを付け足した型を組み立てる',
+  },
+];
 
 /** テストのファイル（テスト専用の補助ファイルを含む） */
 export const TEST_FILES = [
@@ -55,88 +141,34 @@ export const BLOCKING_MODULES = [
 ];
 
 /**
- * 構造上同期のままとする，バックエンドの処理（source/）の公開関数（`serverstarter/require-async-export` で使う）
+ * メインプロセスを止める同期 API を使ってよい関数（`serverstarter/no-blocking-call` の例外）
  *
- * 追加する場合は，非同期にできない理由を `reason` に必ず書く
+ * 画面の表示前に一度だけ実行する処理など，操作を止めないことが明らかな場合に限る。
+ * 追加する場合は，同期 API が必要な理由を `reason` に必ず書く
  *
- * @type {import('./rules/require-async-export.js').AllowedExport[]}
+ * @type {import('./utils/scope.js').AllowedFunctions[]}
  */
-export const ALLOWED_SYNC_EXPORTS = [
+export const BLOCKING_CALL_ALLOWED_FUNCTIONS = [
   {
-    file: 'src-electron/source/sourceLogger.ts',
-    name: 'sourceLoggers',
-    reason: 'ロガーのカテゴリの定義（ロガーは同期で呼び出す設計）',
-  },
-  {
-    file: 'src-electron/source/runtime/base.ts',
-    name: 'runtimeLoggers',
-    reason: 'ロガーのカテゴリの定義（ロガーは同期で呼び出す設計）',
-  },
-  {
-    file: 'src-electron/source/version/versionLogger.ts',
-    name: 'versionLogger',
-    reason: 'ロガーのカテゴリの定義（ロガーは同期で呼び出す設計）',
-  },
-  {
-    file: 'src-electron/source/world/dialog.ts',
-    name: 'pickDialog',
+    file: 'src-electron/util/os/os.ts',
+    functions: ['readOsRelease'],
     reason:
-      'IPC へ渡すダイアログの関数（非同期）を作るファクトリ（作成時には処理を行わない）',
+      '起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）',
   },
+];
+
+/**
+ * メインプロセスを止める同期 API を使ってよいファイル（`serverstarter/no-blocking-call` の例外）
+ *
+ * 関数の外（モジュールの読み込み時）で使う必要がある場合のみ，ファイル単位で許可する
+ *
+ * @type {{ file: string; reason: string }[]}
+ */
+export const BLOCKING_CALL_ALLOWED_FILES = [
   {
-    file: 'src-electron/source/runtime/process.ts',
-    name: 'javaProcessEnv',
+    file: 'src-electron/logger/logger.ts',
     reason:
-      '操作用のメソッドを付け足した Promise（ChildProcessPromise）を同期で返す関数の中で使う，環境変数の計算のみの関数',
-  },
-  {
-    file: 'src-electron/source/version/getVersions/base.ts',
-    name: 'getVersionCacheFilePath',
-    reason: 'コンストラクタの中で使う，パスの計算のみの関数',
-  },
-  {
-    file: 'src-electron/source/version/getVersions/neoForge.ts',
-    name: 'getSpecificMCver',
-    reason: '同期の groupBy のキーとして使う，文字列の解析のみの関数',
-  },
-  {
-    file: 'src-electron/source/stores/migrations/groupColor.ts',
-    name: 'migrateGroupColorToDye',
-    reason: 'util の VersionedSchema に渡す，同期で行う設定の変換処理',
-  },
-  {
-    file: 'src-electron/source/world/handler.ts',
-    name: 'register',
-    reason:
-      '名前の確認と登録を同期で（間に await を挟まずに）行い，並行する操作が同じ名前を確保しないようにするため',
-  },
-  {
-    file: 'src-electron/source/world/handler.ts',
-    name: 'isRegistered',
-    reason:
-      '名前の確認と登録を同期で（間に await を挟まずに）行い，並行する操作が同じ名前を確保しないようにするため',
-  },
-  {
-    file: 'src-electron/source/version/readyVersions/utils/versionJson.ts',
-    name: 'getVersionJsonObj',
-    reason: 'zod の transform（同期）の中で使う，値の生成のみの関数',
-  },
-  {
-    file: 'src-electron/source/version/readyVersions/utils/versionJson.ts',
-    name: 'javaEncodingToUtf8',
-    reason: 'getVersionJsonObj（同期）の中で使う，定数を返すのみの関数',
-  },
-  {
-    file: 'src-electron/source/runtime/manifest.ts',
-    name: 'setRuntimeManifest',
-    reason:
-      'コンストラクタの中で使うインスタンスのファクトリ（作成時には処理を行わない）',
-  },
-  {
-    file: 'src-electron/source/runtime/minecraft.ts',
-    name: 'setRuntimeManifest',
-    reason:
-      'コンストラクタの中で使うインスタンスのファクトリ（作成時には処理を行わない）',
+      '起動時に一度だけ，log4js が latest.log を上書きする前に，モジュールの読み込み時に同期で退避する必要がある（画面の表示前で操作を止めない）',
   },
 ];
 
@@ -144,12 +176,30 @@ export const ALLOWED_SYNC_EXPORTS = [
  * 例外を Failable へ変換する関数（`serverstarter/no-exception`・`no-unsafe-throwing-call` で使う）
  *
  * 例外を投げる・捕まえる処理は，原則としてこの一覧の関数の中だけで行う。
- * 外部ライブラリなどの例外は，ここにある `safeExec` / `safeExecAsync` に渡して Failable に変換する
+ * 外部ライブラリなどの例外は，ここにある `safeExec` / `safeExecAsync` に渡して Failable に変換する。
+ * 関数名だけで判定すると同名の自作の関数でも許可されてしまうため，宣言元のファイルでも判定する。
+ * `async: false` の関数（同期の try/catch）に非同期の関数を渡すと，reject は変換されないため報告する
+ *
+ * @type {import('./rules/no-unsafe-throwing-call.js').ExceptionConverter[]}
  */
 export const EXCEPTION_CONVERTERS = [
-  'safeExec',
-  'safeExecAsync',
-  'failabilify',
+  {
+    name: 'safeExec',
+    declarationFile:
+      /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    async: false,
+  },
+  {
+    name: 'safeExecAsync',
+    declarationFile:
+      /\/(src-electron\/util\/error\/failable|src\/error\/error)\.ts$/,
+    async: true,
+  },
+  {
+    name: 'failabilify',
+    declarationFile: /\/src-electron\/util\/error\/failable\.ts$/,
+    async: true,
+  },
 ];
 
 /**
@@ -161,9 +211,21 @@ export const EXCEPTION_CONVERTERS = [
  */
 export const EXCEPTION_ALLOWED_FUNCTIONS = [
   {
+    file: 'src-public/scripts/promise/runDetached.ts',
+    functions: ['runDetached'],
+    reason:
+      '完了を待たない Promise の失敗を onError に渡す最下層の関数（待たれない Promise は safeExecAsync で待てないため，Promise の失敗を直接受け取る）',
+  },
+  {
     file: 'src-electron/util/error/failable.ts',
     functions: ['safeExec', 'safeExecAsync', 'failabilify'],
     reason: '例外を Failable へ変換する最下層の関数',
+  },
+  {
+    file: 'src-electron/ipc/util.ts',
+    functions: ['ipcHandle'],
+    reason:
+      'API の戻り値の型が Failable でないものもあるため，予期しない例外はログに残したうえで reject としてフロントエンドへ伝える（API を Failable に揃える件は Issue で検討する）',
   },
   {
     file: 'src-electron/electron-preload.ts',
@@ -356,6 +418,22 @@ export const ALLOWED_EXTERNAL_PACKAGES = [
 ];
 
 /**
+ * util 以外で import を禁止するモジュールの指定に一致する正規表現の文字列を作る
+ *
+ * 相対パス・プロジェクト内のエイリアス（`app/`・`src-electron/`・`src/`）・許可したパッケージ以外に一致する。
+ * 許可したパッケージの `name/*` は，そのパッケージの配下のモジュールも許可する
+ *
+ * @param {string[]} allowed 許可するパッケージの一覧
+ * @returns {string} no-restricted-imports の patterns の regex に渡す正規表現
+ */
+export function restrictedPackagePattern(allowed) {
+  const packages = allowed.map((name) =>
+    name.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\/\*$/, '(/.*)?')
+  );
+  return String.raw`^(?!\.|app/|src-electron/|src/|(${packages.join('|')})$)`;
+}
+
+/**
  * 外部パッケージを直接扱ってよい，util 以外のファイル（外部パッケージのラッパー）
  *
  * いずれも外部パッケージの例外を Failable へ変換して提供している。util へ移動する候補
@@ -363,6 +441,11 @@ export const ALLOWED_EXTERNAL_PACKAGES = [
  * @type {{ file: string; reason: string }[]}
  */
 export const EXTERNAL_PACKAGE_WRAPPERS = [
+  {
+    file: 'src-electron/electron-main.ts',
+    reason:
+      'アプリのエントリーポイントとして Quasar の実行環境（#q-app）を読み込むため',
+  },
   {
     file: 'src-electron/logger/logger.ts',
     reason: 'ログの出力（log4js）とアーカイブ（tar）を行う基盤のため',
@@ -558,6 +641,33 @@ export const FRONTEND_LAYERS = [
 ];
 
 /**
+ * 層の単位では許可しているが，個別に禁止する import（層構造の補足）
+ *
+ * 共通基盤（base）は互いに依存するため 1 つの層としているが，その中にも守るべき方向がある。
+ * 層を分けられない依存の方向は，ここに追加する
+ *
+ * @type {{ target: string[]; from: string[]; reason: string }[]}
+ */
+export const RESTRICTED_LAYER_IMPORTS = [
+  {
+    target: ['src-electron/ipc/back.ts'],
+    from: [
+      'src-electron/util/**',
+      'src-electron/lifecycle/**',
+      'src-electron/logger/**',
+    ],
+    reason:
+      'IPC の API の処理は source の窓口（OS・画面の機能は source/system）を通して呼ぶ',
+  },
+  {
+    target: ['src-electron/schema/**', 'src-public/**'],
+    from: ['src-electron/lifecycle/**', 'src-electron/logger/**'],
+    reason:
+      'schema・src-public はフロントエンドからも読み込むため，Electron・log4js に依存するアプリのライフサイクル・ロガーを使わない',
+  },
+];
+
+/**
  * テストで差し替えてよい，外部との境界のモジュール（`serverstarter/no-internal-mock` で使う）
  *
  * ネットワーク・OS・Electron・外部のプロセスなど，テストの環境では実物を使えない・使うべきでない境界のみを登録する。
@@ -580,6 +690,11 @@ export const MOCKABLE_BOUNDARIES = [
     reason: 'アプリのデータの保存先（テストの作業フォルダに置き換える）',
   },
   {
+    file: 'src-electron/lifecycle/paths.ts',
+    reason:
+      'アプリのデータの保存先（source/const.ts の元の定義。util・ロガーはこちらを直接読むため，同じ理由で置き換える）',
+  },
+  {
     file: 'src-electron/source/stores/system.ts',
     reason:
       'Electron の safeStorage で暗号化する設定ファイル（テストの環境では使えない）',
@@ -587,6 +702,11 @@ export const MOCKABLE_BOUNDARIES = [
   {
     file: 'src-electron/core/api.ts',
     reason: 'フロントエンド（レンダラー）への IPC の送信',
+  },
+  {
+    file: 'src-electron/lifecycle/exit.ts',
+    reason:
+      'アプリの終了と PC のシャットダウン（テストの実行環境を終了させない）',
   },
   {
     file: 'src-electron/source/containers.ts',

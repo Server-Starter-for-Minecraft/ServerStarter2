@@ -123,7 +123,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
         });
         // バックアップフォルダを開く
         if (options.container) {
-          defaultPath = (await worldContainerToPath(options.container)).child(
+          defaultPath = worldContainerToPath(options.container).child(
             BACKUP_DIRECTORY_NAME
           );
           props.push('dontAddToRecent');

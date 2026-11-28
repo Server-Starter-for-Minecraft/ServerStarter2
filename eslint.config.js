@@ -8,9 +8,10 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import {
   ALLOWED_EXTERNAL_PACKAGES,
-  ALLOWED_SYNC_EXPORTS,
   BACKEND_FILES,
   BACKEND_LAYERS,
+  BLOCKING_CALL_ALLOWED_FILES,
+  BLOCKING_CALL_ALLOWED_FUNCTIONS,
   BLOCKING_MODULES,
   ERROR_GUARDS,
   EXCEPTION_ALLOWED_FUNCTIONS,
@@ -21,12 +22,77 @@ import {
   FRONTEND_LAYERS,
   MOCKABLE_BOUNDARIES,
   RESTRICTED_BUILTIN_MODULES,
+  RESTRICTED_LAYER_IMPORTS,
+  restrictedPackagePattern,
   SCRIPT_FILES,
-  SOURCE_FILES,
+  SHARED_FILES,
   TEST_FILES,
   THROWING_APIS,
+  TYPE_ASSERTION_ALLOWED_FILES,
 } from './eslint-rules/config.js';
 import pluginServerStarter from './eslint-rules/index.js';
+
+/**
+ * Node.js の組み込みモジュールを直接使ってよい（util の迂回の制限の対象外とする）ファイル
+ *
+ * 組み込みモジュールの静的な import と動的な import の制限で同じ対象外のファイルを使う
+ */
+const BUILTIN_BYPASS_IGNORES = [
+  'src-electron/util/**',
+  // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
+  ...TEST_FILES,
+  // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
+  'src-electron/logger/logger.ts',
+  // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
+  // （標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）
+  'scripts/electronNode.ts',
+];
+
+/**
+ * 外部パッケージを直接使ってよいファイル
+ *
+ * 外部パッケージのラッパー（理由は eslint-rules/config.js を参照）は，外部パッケージのみを直接扱う
+ * （組み込みモジュールの制限は外さない）
+ */
+const PACKAGE_BYPASS_IGNORES = [
+  ...BUILTIN_BYPASS_IGNORES,
+  ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
+];
+
+/**
+ * 構文の制限（no-restricted-syntax）の共通の設定
+ *
+ * no-restricted-syntax は後の設定で上書きされるため，ファイルによって制限を追加する場合もこの一覧を含める
+ */
+const RESTRICTED_SYNTAX = [
+  // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
+  {
+    selector:
+      "BinaryExpression[operator=/^[!=]==?$/][right.value='error'][left.property.name='type']",
+    message: 'エラーの判定は isError / isValid を使ってください',
+  },
+  // テストで内部の呼び出し順序・呼び出しの記録を検証すると，実装の内部構造に依存したテストになる
+  {
+    selector:
+      'CallExpression[callee.property.name=/^(toHaveBeenNthCalledWith|nthCalledWith)$/]',
+    message:
+      '内部の呼び出し順序を検証せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
+  },
+  {
+    selector:
+      "MemberExpression[object.property.name='mock'][property.name='calls']",
+    message:
+      'モックの呼び出しの記録を直接参照せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
+  },
+  // in-source テストでテストの関数を取り出すと，vitest のルール（skip・focus の残存など）が
+  // テストの関数と認識できず検査されないため，グローバルの describe / test / expect / vi を使う
+  {
+    selector:
+      "VariableDeclarator[init.object.type='MetaProperty'][init.property.name='vitest']",
+    message:
+      'import.meta.vitest からテストの関数を取り出さず，グローバルの describe / test / expect / vi を使ってください',
+  },
+];
 
 /**
  * 層の定義から，import を禁止する組（import-x/no-restricted-paths の zones）を作る
@@ -152,31 +218,18 @@ export default tseslint.config(
   // （テストはメインプロセスで動かないため対象外とする）
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
+    // 例外は eslint-rules/config.js に理由とともに登録する（関数単位を原則とし，やむを得ない場合のみファイル単位）
     ignores: [
       ...TEST_FILES,
-      // 例外：起動時に一度だけ，log4js が latest.log を上書きする前に同期で退避する必要がある（画面の表示前で操作を止めない）
-      'src-electron/logger/logger.ts',
-      // 例外：起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）
-      'src-electron/util/os/os.ts',
+      ...BLOCKING_CALL_ALLOWED_FILES.map(({ file }) => file),
     ],
     rules: {
       'serverstarter/no-blocking-call': [
         'error',
-        { blockingModules: BLOCKING_MODULES },
-      ],
-    },
-  },
-
-  // バックエンドの処理（source/）が公開する関数・メソッドは Promise を返す（非同期にする）
-  // （ログ・進捗・IPC・ライフサイクルなどの基盤や util は対象外とする。
-  //   それらでのブロッキングする I/O は no-blocking-call で，非同期処理の放置は no-floating-promises で検出する）
-  {
-    files: SOURCE_FILES,
-    ignores: [...TEST_FILES],
-    rules: {
-      'serverstarter/require-async-export': [
-        'error',
-        { allowed: ALLOWED_SYNC_EXPORTS },
+        {
+          blockingModules: BLOCKING_MODULES,
+          allowed: BLOCKING_CALL_ALLOWED_FUNCTIONS,
+        },
       ],
     },
   },
@@ -197,9 +250,9 @@ export default tseslint.config(
       ],
     },
   },
-  // any の値の扱い（.vue ファイルは，テンプレートの型情報を lint で正しく扱えず誤検出が多いため .ts のみとする）
+  // any の値の扱い（.vue はテンプレートの式を検査しないため，<script> の部分のみが対象になる）
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.vue'],
     rules: {
       '@typescript-eslint/no-unsafe-argument': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
@@ -209,27 +262,38 @@ export default tseslint.config(
     },
   },
 
-  // 型アサーションは，型を作る汎用処理（util・src-public のジェネリックな処理やブランド型の生成）と
-  // テストのデータの作成に限って使う
+  // 型アサーションは，型を作る汎用処理（ジェネリクス・ブランド型の生成。対象と理由は eslint-rules/config.js を参照）と
+  // テストのファイルに限って使う
   {
     files: [
-      'src-electron/util/**',
-      'src-public/**',
+      ...TYPE_ASSERTION_ALLOWED_FILES.map(({ file }) => file),
       ...TEST_FILES,
-      'eslint-rules/fixtures/**',
     ],
     rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
   },
 
   // ---- テスト（振る舞いを検証し，実装の内部構造に依存しないテストにする） ----
-  // （in-source テストも対象とするため，テストの関数の呼び出しを検査する vitest のルールは全体に適用する）
+  // （in-source テストも対象とするため，テストの関数の呼び出しを検査する vitest のルールは全体に適用する。
+  //   vitest のルールはグローバル・vitest から import したテストの関数のみを認識するため，
+  //   in-source テストでも import.meta.vitest から取り出さずにグローバルの関数を使う（no-restricted-syntax で検査））
   {
     files: ['**/*.ts'],
     plugins: { vitest: pluginVitest },
     rules: {
       'vitest/no-focused-tests': 'error',
       'vitest/no-disabled-tests': 'error',
-      'vitest/expect-expect': 'error',
+      // 成功の確認（assertOk・assertDefined）も検証として扱う
+      'vitest/expect-expect': [
+        'error',
+        {
+          assertFunctionNames: [
+            'expect',
+            'assert',
+            'assertOk',
+            'assertDefined',
+          ],
+        },
+      ],
       'vitest/no-conditional-expect': 'error',
       'vitest/no-conditional-in-test': 'error',
       'vitest/no-standalone-expect': 'error',
@@ -245,7 +309,12 @@ export default tseslint.config(
 
   // ---- エラーハンドリング（失敗は Failable / WithError で扱い，握りつぶさない） ----
   {
-    files: [...BACKEND_FILES, ...SCRIPT_FILES, ...FRONTEND_FILES],
+    files: [
+      ...BACKEND_FILES,
+      ...SCRIPT_FILES,
+      ...FRONTEND_FILES,
+      ...SHARED_FILES,
+    ],
     rules: {
       'serverstarter/no-exception': [
         'error',
@@ -264,6 +333,7 @@ export default tseslint.config(
         { handlers: FAILABLE_HANDLERS },
       ],
       'serverstarter/no-failable-cast': 'error',
+      'serverstarter/no-failable-condition': 'error',
       'serverstarter/no-silent-error': ['error', { guards: ERROR_GUARDS }],
       // 結果を変数に入れて使わない形で，失敗の確認を回避することも防ぐ
       // （位置で受け取る引数のみ `_` 始まりで未使用を許可する。変数は `_` 始まりでも未使用を許可しない）
@@ -302,6 +372,7 @@ export default tseslint.config(
       'serverstarter/no-ignored-failable': 'off',
       'serverstarter/no-silent-error': 'off',
       'serverstarter/no-failable-cast': 'off',
+      'serverstarter/no-failable-condition': 'off',
     },
   },
   // 例外：CLI の出力（ログではなく利用者への表示）は console を使う
@@ -313,18 +384,7 @@ export default tseslint.config(
   // util を使わずに OS の機能を直接扱うこと（迂回）を禁止する
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    ignores: [
-      'src-electron/util/**',
-      // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
-      ...TEST_FILES,
-      // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
-      'src-electron/logger/logger.ts',
-      // 例外：外部パッケージのラッパー（理由は eslint-rules/config.js を参照）
-      ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
-      // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
-      // （標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）
-      'scripts/electronNode.ts',
-    ],
+    ignores: BUILTIN_BYPASS_IGNORES,
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -334,9 +394,7 @@ export default tseslint.config(
           patterns: [
             {
               // 相対パス・プロジェクト内のエイリアス・許可したパッケージ以外に一致する
-              regex: `^(?!\.|app/|src-electron/|src/|(${ALLOWED_EXTERNAL_PACKAGES.map(
-                (name) => name.replace('/*', '(/.*)?')
-              ).join('|')})$)`,
+              regex: restrictedPackagePattern(ALLOWED_EXTERNAL_PACKAGES),
               allowTypeImports: true,
               message:
                 '外部パッケージは util の中で扱い，Failable を返す関数として提供してください（eslint-rules/config.js の ALLOWED_EXTERNAL_PACKAGES を参照）',
@@ -353,39 +411,51 @@ export default tseslint.config(
       ],
     },
   },
+  // 外部パッケージのラッパーは，外部パッケージの制限のみを外す（組み込みモジュールは util を通して扱う）
+  {
+    files: PACKAGE_BYPASS_IGNORES.filter(
+      (file) => !BUILTIN_BYPASS_IGNORES.includes(file)
+    ),
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        { paths: RESTRICTED_BUILTIN_MODULES },
+      ],
+    },
+  },
 
   // ---- 構文の制限（no-restricted-syntax は後の設定で上書きされるため，1 か所にまとめる） ----
   {
     files: ['**/*.ts', '**/*.vue'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        // エラーの判定は isError / isValid に統一する（`x.type === 'error'` の手書きを禁止する）
-        {
-          selector:
-            "BinaryExpression[operator=/^[!=]==?$/][right.value='error'][left.property.name='type']",
-          message: 'エラーの判定は isError / isValid を使ってください',
-        },
-        // テストで内部の呼び出し順序・呼び出しの記録を検証すると，実装の内部構造に依存したテストになる
-        {
-          selector:
-            'CallExpression[callee.property.name=/^(toHaveBeenNthCalledWith|nthCalledWith)$/]',
-          message:
-            '内部の呼び出し順序を検証せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
-        },
-        {
-          selector:
-            "MemberExpression[object.property.name='mock'][property.name='calls']",
-          message:
-            'モックの呼び出しの記録を直接参照せず，処理の結果（戻り値・作成されたファイルなど）を検証してください',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX],
     },
   },
   // テストの共通の準備（setupFiles）は，テストの関数の外で後処理の検証を行う
   {
     files: ['test/setup/**'],
     rules: { 'vitest/no-standalone-expect': 'off' },
+  },
+  // util 以外では，Node.js の組み込みモジュールの動的な import も禁止する（静的な import は no-restricted-imports で禁止している）
+  // （対象外のファイルは，組み込みモジュールの静的な import の制限と同じ BUILTIN_BYPASS_IGNORES を使う）
+  {
+    files: [...BACKEND_FILES, ...SCRIPT_FILES],
+    ignores: BUILTIN_BYPASS_IGNORES,
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...RESTRICTED_SYNTAX,
+        {
+          selector: `ImportExpression[source.value=/^(node:)?(${RESTRICTED_BUILTIN_MODULES.filter(
+            ({ name }) => !name.startsWith('node:')
+          )
+            .map(({ name }) => name.replace('/', '\\/'))
+            .join('|')})$/]`,
+          message:
+            'Node.js の組み込みモジュールは util を通して扱ってください（eslint-rules/config.js の RESTRICTED_BUILTIN_MODULES を参照）',
+        },
+      ],
+    },
   },
   // エラーの判定関数そのものの実装は，エラーの判定の制限の対象外とする
   {
@@ -457,10 +527,20 @@ export default tseslint.config(
           zones: [
             ...layerZones(BACKEND_LAYERS),
             ...layerZones(FRONTEND_LAYERS),
+            // 層の中で個別に禁止する依存（理由は eslint-rules/config.js を参照）
+            ...RESTRICTED_LAYER_IMPORTS.map(({ target, from, reason }) => ({
+              target: target.map((f) => `./${f}`),
+              from: from.map((f) => `./${f}`),
+              message: reason,
+            })),
             // フロントエンドからは，バックエンドの共有部分（schema・api の型）以外を import しない
+            // （src-electron 直下のファイル（electron-main など）も含める）
             {
               target: './src/**/*',
-              from: './src-electron/!(schema|api)/**/*',
+              from: [
+                './src-electron/!(schema|api)/**/*',
+                './src-electron/*.ts',
+              ],
               message:
                 'フロントエンドからは src-electron の schema・api（型）のみ import できます',
             },

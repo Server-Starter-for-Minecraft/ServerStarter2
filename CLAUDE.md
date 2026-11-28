@@ -47,6 +47,7 @@
    - テストだけでは防げない規約違反（エラーハンドリング・非同期処理・層構造など）は lint で機械的に検査している（独自ルールは `eslint-rules/`、設定値は `eslint-rules/config.js`）。
    - 新しい規約違反を見つけたら、テストを追加する前に、まず lint で検出できないかを検討する。
    - ソースコード内の `eslint-disable` などのコメントは無効化されている。例外は `eslint.config.js`（理由のコメント必須）と `eslint-suppressions.json` にのみ置ける。例外を追加・変更する場合は、正規の書き方で解決できないかを確認し、理由を PR に記載する（CI はラベル `lint-exception` がない限り失敗する）。
+   - `eslint-suppressions.json` に記録した既存の違反は減らす一方とする。違反を修正したら `bunx eslint . --prune-suppressions` で抑制ファイルから取り除く（取り除かないと、使われなくなった抑制として lint が失敗する）。
 5. **システムの設計思想・既存の規約から外れていないか**
    - 失敗系は Result 型（`Failable` / `WithError`）で扱い、例外（try/catch）は外部ライブラリや OS・Electron の API を呼ぶ最下層でのみ Result 型へ変換しているか（`safeExec` / `fromRuntimeError` など）。
    - 新しい API・関数の戻り値やエラー処理が、同種の既存 API と同じ形になっているか（例：IPC の API は `Failable` / `WithError` を返し、フロントエンドは `checkError` で受け取る）。

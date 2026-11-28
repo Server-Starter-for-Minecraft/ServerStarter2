@@ -14,7 +14,7 @@ export async function validateNewWorldName(
       value: worldName,
     });
 
-  const path = (await worldContainerToPath(worldContainer)).child(worldName);
+  const path = worldContainerToPath(worldContainer).child(worldName);
 
   if (await path.exists())
     return errorMessage.value.worldName.alreadyUsed({

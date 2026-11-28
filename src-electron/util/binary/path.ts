@@ -170,21 +170,36 @@ export class Path {
     await fs.emptyDir(this._path);
   }
 
+  /**
+   * このパスに，target へのリンクを作る
+   *
+   * - target がファイルの場合はハードリンクを作る
+   * - target がフォルダの場合は，ハードリンクを作れないため，シンボリックリンクを作る
+   *   （Windows ではジャンクションとし，管理者の権限なしに作れるようにする）
+   *
+   * 既にこのパスにファイルがある場合（以前に作ったリンクなど）は，置き換える
+   *
+   * @param target リンク先（存在するファイル・フォルダ）
+   * @returns 失敗した場合（リンク先が存在しない場合を含む）はエラー
+   */
   mklink = exclusive(this._mklink);
   private async _mklink(target: Path): Promise<Failable<void>> {
     await this.parent().mkdir();
-    return new Promise<Failable<void>>((resolve) =>
-      fs.link(target._path, this._path, (e) => {
-        e
-          ? resolve(
-              errorMessage.data.path.loadingFailed({
-                type: 'directory',
-                path: this.path,
-              })
-            )
-          : resolve();
-      })
+    const removed = await this._remove();
+    if (isError(removed)) return removed;
+    const isDirectory = await target._isDirectory();
+    if (isError(isDirectory)) return isDirectory;
+    const linked = await safeExecAsync(async () =>
+      isDirectory
+        ? fs.symlink(target._path, this._path, 'junction')
+        : fs.link(target._path, this._path)
     );
+    if (isError(linked)) {
+      return errorMessage.data.path.loadingFailed({
+        type: isDirectory ? 'directory' : 'file',
+        path: this.path,
+      });
+    }
   }
 
   write = exclusive(this._write);
@@ -419,7 +434,11 @@ async function retryOnBusy<T>(
     try {
       return await operation();
     } catch (e) {
-      const code = (e as NodeJS.ErrnoException)?.code;
+      // Node.js のファイル操作の例外は，原因を表す文字列の code を持つ
+      const code =
+        e instanceof Error && 'code' in e && typeof e.code === 'string'
+          ? e.code
+          : undefined;
       const isBusy = code !== undefined && BUSY_ERROR_CODES.has(code);
       if (!isBusy || retried >= BUSY_RETRY_COUNT) return fromRuntimeError(e);
       await sleep(BUSY_RETRY_DELAY_MS);
@@ -448,7 +467,9 @@ function exclusive<P extends any[], R>(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
+  // アサーション関数は型注釈のある名前でしか呼べないため，型を明示して取り出す
+  const assertions = await import('app/test/util/assert');
+  const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('Path', async () => {
     const path = await import('path');
@@ -544,19 +565,13 @@ if (import.meta.vitest) {
       // emptyDirはディレクトリが空であることを保証する
       await a.child('sample.txt').writeText('hello');
       const aPaths1 = await a.iter();
-      expect(isError(aPaths1)).toBe(false);
-      if (!isError(aPaths1)) {
-        const fileCount1 = aPaths1.length;
-        expect(fileCount1).toBe(1);
-      }
+      assertOk(aPaths1);
+      expect(aPaths1.length).toBe(1);
       await a.emptyDir();
 
       const aPaths2 = await a.iter();
-      expect(isError(aPaths2)).toBe(false);
-      if (!isError(aPaths2)) {
-        const fileCount2 = aPaths2.length;
-        expect(fileCount2).toBe(0);
-      }
+      assertOk(aPaths2);
+      expect(aPaths2.length).toBe(0);
     });
 
     test('isDirectory', async () => {
@@ -662,14 +677,11 @@ if (import.meta.vitest) {
       await file1.writeText('hello');
       await file2.writeText('world');
       const allPaths = await testdir.iter();
-      expect(isError(allPaths)).toBe(false);
-
-      if (!isError(allPaths)) {
-        const fileTxts = await Promise.all(
-          allPaths.map(async (file) => file.readText())
-        );
-        expect(fileTxts).toEqual(['hello', 'world']);
-      }
+      assertOk(allPaths);
+      const fileTxts = await Promise.all(
+        allPaths.map(async (file) => file.readText())
+      );
+      expect(fileTxts).toEqual(['hello', 'world']);
     });
 
     test('file path', async () => {

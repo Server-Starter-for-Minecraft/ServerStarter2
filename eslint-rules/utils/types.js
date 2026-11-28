@@ -34,6 +34,40 @@ export function isThenable(checker, type) {
 }
 
 /**
+ * Promise のように `then` メソッドを持つ値でありうるか（undefined・null を除いた union のいずれかが該当するか）
+ *
+ * `p?.catch()`（`Promise | undefined`）や，Promise と別の型の union に対する呼び出しも，Promise の処理として扱うために使う
+ *
+ * @param {ts.TypeChecker} checker 型チェッカー
+ * @param {ts.Type} type 判定する型
+ * @returns {boolean} Promise でありうれば true
+ */
+export function mayBeThenable(checker, type) {
+  return unionParts(checker.getNonNullableType(type)).some((part) =>
+    isThenable(checker, part)
+  );
+}
+
+/**
+ * 標準の Promise のコンストラクタ（`Promise`・`globalThis.Promise`・その別名）の型か
+ *
+ * @param {ts.Type} type 判定する型
+ * @returns {boolean} 標準の PromiseConstructor であれば true
+ */
+export function isPromiseConstructor(type) {
+  const symbol = type.getSymbol();
+  return (
+    symbol !== undefined &&
+    symbol.getName() === 'PromiseConstructor' &&
+    (symbol.declarations ?? []).some((decl) =>
+      /\/typescript\/lib\/lib\.[\w.]+\.d\.ts$/.test(
+        decl.getSourceFile().fileName
+      )
+    )
+  );
+}
+
+/**
  * 関数の型の呼び出しシグネチャがすべて Promise のような型を返すか
  *
  * @param {ts.TypeChecker} checker 型チェッカー
@@ -97,6 +131,15 @@ export function isErrorMessageType(checker, type) {
 export function containsError(checker, type, depth = 0) {
   if (depth > 4) return false;
   return unionParts(type).some((part) => {
+    // 型パラメータ（`R extends Failable<T>` など）は制約の型で判定する
+    if (part.flags & ts.TypeFlags.TypeParameter) {
+      const constraint = checker.getBaseConstraintOfType(part);
+      return (
+        constraint !== undefined &&
+        constraint !== part &&
+        containsError(checker, constraint, depth + 1)
+      );
+    }
     if (isErrorMessageType(checker, part)) return true;
     // WithError（errors: ErrorMessage[] を持つ）
     const errors = part.getProperty('errors');

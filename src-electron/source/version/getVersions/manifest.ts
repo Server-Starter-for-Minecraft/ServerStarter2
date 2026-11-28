@@ -75,15 +75,11 @@ export async function getVersionMainfest(
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect, describe } = import.meta.vitest;
-
   describe('runtime-manifest', { tags: ['network'] }, async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 

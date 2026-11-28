@@ -60,9 +60,7 @@ async function seedVersionJson(cachePath: Path, args?: string[]) {
     undefined,
     args
   );
-  await (
-    await getVersionJsonPath(cachePath)
-  ).writeText(JSON.stringify(verJson));
+  await getVersionJsonPath(cachePath).writeText(JSON.stringify(verJson));
 }
 
 /** 準備したサーバーを起動したときに`-jar`で指定されるjarのパスを求める */
@@ -70,7 +68,7 @@ async function resolveServerLaunchJar(
   ready: Awaited<ReturnType<ReadyForgeVersion['completeReady4VersionFiles']>>
 ) {
   if (isError(ready)) throw new Error('failed to ready version');
-  const args = await ready.getCommand({ jvmArgs: [] });
+  const args = ready.getCommand({ jvmArgs: [] });
   return findLaunchJar(serverPath, await expandArgFiles(serverPath, args));
 }
 

@@ -158,7 +158,7 @@ export async function saveLocalFiles(
   savePath: Path,
   world: WorldEdited
 ): Promise<WithError<Failable<World>>> {
-  let worldSettings = await constructWorldSettings(world);
+  let worldSettings = constructWorldSettings(world);
 
   const errors: ErrorMessage[] = [];
 
@@ -268,7 +268,7 @@ export async function saveLocalFiles(
   return constructResult();
 }
 
-export async function constructWorldSettings(world: World | WorldEdited) {
+export function constructWorldSettings(world: World | WorldEdited) {
   const worldSettings: WorldSettings = {
     memory: world.memory,
     javaArguments: world.javaArguments,
@@ -307,7 +307,7 @@ export async function formatWorldDirectory(
   savePath: Path,
   version: Version,
   progress?: GroupProgressor
-): Promise<WithError<undefined>> {
+): Promise<WithError<Failable<undefined>>> {
   const directoryTypeMap: Record<Version['type'], WorldDirectoryTypes> = {
     unknown: 'vanilla',
     vanilla: 'vanilla',
@@ -350,10 +350,11 @@ export async function formatWorldDirectory(
       return withError(undefined, moveP2V.filter(isError));
     default:
       // 新しいディレクトリ構造を追加した場合に，変換を実装し忘れていないかを示す
-      return withError(undefined, [
+      // （変換しないまま起動すると，ワールドの読み込み位置を誤り新しいワールドが生成されるため，失敗として返す）
+      return withError(
         errorMessage.system.assertion({
           message: `not implemanted worldDirectoryType conversion: ${current} to ${next}`,
-        }),
-      ]);
+        })
+      );
   }
 }

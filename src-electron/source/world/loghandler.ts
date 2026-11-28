@@ -66,8 +66,9 @@ export class WorldLogHandler {
 
   private async archiveExec(): Promise<Failable<void>> {
     // 出力ごとのログはlatest.logを表示するためのものであり、アーカイブしたログは表示しないため削除する
+    // （削除できなくても，latest.log を失わないようアーカイブは続ける）
     const removedOutputs = await this.LatestOutputsPath.remove();
-    if (isError(removedOutputs)) return removedOutputs;
+    if (isError(removedOutputs)) loggers().archive().warn(removedOutputs);
 
     const latestPath = this.LatestLogPath;
     if (!(await latestPath.exists())) return;

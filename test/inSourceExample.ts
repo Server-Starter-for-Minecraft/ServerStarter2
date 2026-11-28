@@ -12,7 +12,6 @@ export function double(num: number) {
 // これがテスト
 // 最初2行はおまじない
 if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
   test('double', () => {
     expect(double(2)).toBe(4);
   });

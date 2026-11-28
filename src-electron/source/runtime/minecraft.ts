@@ -26,7 +26,7 @@ export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
     );
   }
 
-  async getRuntimeVersion(runtime: MinecraftRuntime): Promise<string> {
+  getRuntimeVersion(runtime: MinecraftRuntime): string {
     return runtime.version;
   }
 
@@ -78,21 +78,20 @@ export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { describe, test, expect } = import.meta.vitest;
-
   describe('minecraft runtime', async () => {
     const { Path } = await import('src-electron/util/binary/path');
-    const path = await import('path');
 
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      new Path(__filename).stemname()
     );
     await workPath.emptyDir();
 
-    test.skip(
+    test(
       'minecraft',
+      // Mojang の配布サーバーから実際にランタイムをダウンロードする
+      { tags: ['network'], timeout: 1000 * 1000 },
       async () => {
         const minecraft = MinecraftRuntimeInstaller.setRuntimeManifest(
           workPath.child('all.json'),
@@ -107,9 +106,8 @@ if (import.meta.vitest) {
           },
           'windows-x64'
         );
-        expect(!isError(installResult)).toBe(true);
-      },
-      1000 * 1000
+        expect(isError(installResult)).toBe(false);
+      }
     );
   });
 }

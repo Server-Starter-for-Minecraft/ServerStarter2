@@ -62,7 +62,6 @@ export function parseCommandLine(commandLine: string): Failable<string[]> {
 
 /** In Source Testing */
 if (import.meta.vitest) {
-  const { test, expect, describe } = import.meta.vitest;
   describe('parseCommandLine', () => {
     test('空文字列は引数なしとして扱う', () => {
       expect(parseCommandLine('')).toEqual([]);

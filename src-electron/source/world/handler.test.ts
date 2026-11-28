@@ -13,6 +13,7 @@ import {
   GroupProgressor,
   TitleProgressor,
 } from 'app/src-electron/common/progress';
+import { api, setBackAPI } from 'app/src-electron/core/api';
 import { WorldContainer, WorldName } from 'app/src-electron/schema/brands';
 import { ServerStartNotification } from 'app/src-electron/schema/server';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
@@ -88,12 +89,21 @@ vi.mock('../server/setup/ngrok', () => ({
   closeNgrok: vi.fn(async () => {}),
 }));
 
+/** テストから切り替える自動シャットダウンの設定 */
+const autoShutDownSetting = vi.hoisted(() => ({ enabled: false }));
+
 vi.mock('../stores/system', () => ({
   getSystemSettings: vi.fn(async () => {
     const settings = SystemSettings.parse({ container: [] });
     settings.user.ngrokToken = NGROK_TOKEN;
+    settings.user.autoShutDown = autoShutDownSetting.enabled;
     return settings;
   }),
+}));
+
+// テストの実行環境（PC）を実際にシャットダウンしないよう差し替える
+vi.mock('../../lifecycle/exit', () => ({
+  closeServerStarterAndShutDown: vi.fn(async () => {}),
 }));
 
 // 起動準備の途中で例外が発生する状況を再現できるように，実装はそのままでモック化する
@@ -106,6 +116,7 @@ vi.mock('./local', async (importOriginal) => {
 });
 
 const { runNgrok, closeNgrok } = await import('../server/setup/ngrok');
+const { closeServerStarterAndShutDown } = await import('../../lifecycle/exit');
 const { formatWorldDirectory } = await import('./local');
 
 const workPath = new Path(__dirname).child('work', 'handler');
@@ -119,7 +130,7 @@ const USER_PORT = 25570;
 async function createWorld(useNgrok: boolean) {
   const name = WorldName.parse(`world${worldIdx++}`);
   const id = WorldHandler.register(name, container);
-  const handler = await WorldHandler.get(id);
+  const handler = WorldHandler.get(id);
   if (isError(handler)) throw new Error('failed to register world');
 
   const world: WorldEdited = {
@@ -161,7 +172,7 @@ async function waitServerLaunched(count: number) {
 
 /** ワールドのserver.propertiesを読み込む */
 async function loadProperties(handler: WorldHandler) {
-  const props = await serverPropertiesFile.load(await handler.getSavePath());
+  const props = await serverPropertiesFile.load(handler.getSavePath());
   if (isError(props)) throw new Error('failed to load server.properties');
   return props;
 }
@@ -479,7 +490,7 @@ describe('WorldHandler ワールドの複製', () => {
     expect(isError(result.value)).toBe(true);
     expect(await workPath.child(newName).exists()).toBe(false);
     // 複製元のワールドはそのまま残る
-    expect(await (await handler.getSavePath()).exists()).toBe(true);
+    expect(await handler.getSavePath().exists()).toBe(true);
   });
 
   test('既存のワールドと同じ名前を指定した場合は複製せず、既存のワールドを変更しない', async () => {
@@ -493,9 +504,9 @@ describe('WorldHandler ワールドの複製', () => {
 
     expect(isError(result.value)).toBe(true);
     expect(
-      await (await existing.getSavePath()).child('server.properties').exists()
+      await existing.getSavePath().child('server.properties').exists()
     ).toBe(true);
-    expect(isError(await WorldHandler.get(existing.id))).toBe(false);
+    expect(isError(WorldHandler.get(existing.id))).toBe(false);
   });
 
   test('異なるワールドから同じ名前へ同時に複製しても、複製に成功したワールドを削除しない', async () => {
@@ -526,7 +537,7 @@ describe('WorldHandler ワールドの複製', () => {
       expect(
         await workPath.child(world.name, 'server.properties').exists()
       ).toBe(true);
-      expect(isError(await WorldHandler.get(world.id))).toBe(false);
+      expect(isError(WorldHandler.get(world.id))).toBe(false);
     }
   });
 
@@ -557,5 +568,78 @@ describe('WorldHandler ワールドの複製', () => {
         true
       );
     }
+  });
+});
+
+describe('WorldHandler サーバー終了後の自動シャットダウン', () => {
+  /** フロントエンドへのシャットダウンの問い合わせ（疑似） */
+  const checkShutdown = vi.fn<() => Promise<Failable<boolean>>>();
+
+  beforeAll(async () => {
+    await workPath.emptyDir();
+    setBackAPI({
+      send: {} as (typeof api)['send'],
+      invoke: {
+        AgreeEula: async () => true,
+        CheckShutdown: checkShutdown,
+      },
+    });
+  });
+  beforeEach(() => {
+    servers.length = 0;
+    autoShutDownSetting.enabled = true;
+    checkShutdown.mockReset();
+    vi.mocked(closeServerStarterAndShutDown).mockClear();
+  });
+  afterEach(() => {
+    servers.forEach((s) => s.stop());
+    autoShutDownSetting.enabled = false;
+  });
+
+  /** サーバーを起動して正常に終了させ，シャットダウンの問い合わせが済むまで待つ */
+  async function runAndStopServer() {
+    const { handler } = await createWorld(false);
+    const running = handler.run(new GroupProgressor());
+    const server = await waitServerLaunched(1);
+    server.stop();
+    const result = await running;
+    expect(isError(result.value)).toBe(false);
+    await vi.waitFor(() => expect(checkShutdown).toHaveBeenCalled(), {
+      timeout: 5000,
+    });
+    // 問い合わせの結果を受け取った後の処理が済むまで待つ
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  test('シャットダウンが選ばれた場合はシャットダウンする', async () => {
+    checkShutdown.mockResolvedValue(true);
+
+    await runAndStopServer();
+
+    await vi.waitFor(() =>
+      expect(closeServerStarterAndShutDown).toHaveBeenCalledTimes(1)
+    );
+  });
+
+  test('シャットダウンがキャンセルされた場合はシャットダウンしない', async () => {
+    checkShutdown.mockResolvedValue(false);
+
+    await runAndStopServer();
+
+    expect(closeServerStarterAndShutDown).not.toHaveBeenCalled();
+  });
+
+  test('問い合わせに失敗した場合は，確認が取れていないためシャットダウンしない', async () => {
+    checkShutdown.mockResolvedValue(
+      errorMessage.system.ipc({
+        channel: 'CheckShutdown',
+        type: 'invokeMainToWindow',
+        message: 'window not exists',
+      })
+    );
+
+    await runAndStopServer();
+
+    expect(closeServerStarterAndShutDown).not.toHaveBeenCalled();
   });
 });
