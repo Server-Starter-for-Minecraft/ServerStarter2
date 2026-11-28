@@ -15,6 +15,11 @@ describe('ローカルの配布元の読み込み', () => {
   beforeAll(async () => {
     assertOk(await root.child('v1', 'icons', 'logo#dark.png').writeText('png'));
     assertOk(await workDir.child('secret.png').writeText('secret'));
+    // 配布元の外のフォルダを指すリンク（Windows でも権限なしで作れるジャンクション）
+    assertOk(await workDir.child('outside', 'secret.png').writeText('secret'));
+    assertOk(await root.child('v1', 'linked').mklink(workDir.child('outside')));
+    // 配布元の中のフォルダを指すリンク
+    assertOk(await root.child('v1', 'alias').mklink(root.child('v1', 'icons')));
   });
   afterAll(async () => {
     assertOk(await workDir.remove());
@@ -28,12 +33,19 @@ describe('ローカルの配布元の読み込み', () => {
     expect(await data.text()).toBe('png');
   });
 
-  test.each(['v1/..%2f..%2fsecret.png', '../secret.png'])(
-    '配布元の外を指すパス %s は読み込まない',
-    async (path) => {
-      expect(isError(await read(path))).toBe(true);
-    }
-  );
+  test('配布元の中を指すリンクのファイルは読み込む', async () => {
+    const data = await read('v1/alias/logo%23dark.png');
+    assertOk(data);
+    expect(await data.text()).toBe('png');
+  });
+
+  test.each([
+    'v1/..%2f..%2fsecret.png',
+    '../secret.png',
+    'v1/linked/secret.png',
+  ])('配布元の外を指すパス %s は読み込まない', async (path) => {
+    expect(isError(await read(path))).toBe(true);
+  });
 });
 
 /** テスト用の外部リソース（画像の一覧） */

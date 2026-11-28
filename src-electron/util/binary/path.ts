@@ -77,6 +77,24 @@ export class Path {
     return !path.isAbsolute(rel) && rel.split(path.sep)[0] !== '..';
   }
 
+  /**
+   * シンボリックリンク・ジャンクションをたどった実体のパスを返す
+   *
+   * リンクを経由してフォルダの外を指すパスを `isWithin` で検出するために，実体のパス同士で比べる場合に使う
+   *
+   * @returns 実体の絶対パス（存在しないパスの場合はエラー）
+   */
+  async realPath(): Promise<Failable<Path>> {
+    const real = await safeExecAsync(async () => fs.realpath(this._path));
+    if (isError(real)) {
+      return errorMessage.data.path.notFound({
+        type: 'file',
+        path: this.path,
+      });
+    }
+    return new Path(real);
+  }
+
   /** このpathを起点にしたtargetの相対パスを返す */
   relativeto(target: Path) {
     return new Path(path.relative(this._path, target._path));
@@ -219,8 +237,19 @@ export class Path {
   }
 
   write = exclusive(this._write);
-  private async _write(content: BytesData, encoding?: BufferEncoding) {
-    await this.parent().mkdir(true);
+  private async _write(
+    content: BytesData,
+    encoding?: BufferEncoding
+  ): Promise<Failable<void>> {
+    // 保存先のフォルダを作れない場合（同名のファイルがある・権限がないなど）も，例外ではなくエラーとして返す
+    const parent = this.parent();
+    const made = await safeExecAsync(async () => parent.mkdir(true));
+    if (isError(made)) {
+      return errorMessage.data.path.creationFailed({
+        type: 'directory',
+        path: parent.path,
+      });
+    }
     return content.write(this._path, undefined, encoding);
   }
 

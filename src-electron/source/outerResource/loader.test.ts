@@ -123,6 +123,26 @@ describe('OuterResource', () => {
     expect((await restarted.get()).names).toEqual(['first']);
   });
 
+  test('キャッシュの保存先を作れなくても，取得した内容と画像を使う', async () => {
+    routes['/base/v1/items.json'] = json({
+      items: [{ name: 'remote', image: 'icons/a.png' }],
+    });
+    routes['/base/v1/icons/a.png'] = { body: PNG, contentType: 'image/png' };
+    // 同名のファイルがあるため，キャッシュのフォルダを作れない
+    const blocker = newCacheDir();
+    expect(isValid(await blocker.writeText('not a directory'))).toBe(true);
+
+    const resource = new OuterResource(definition, {
+      baseUrl: baseUrl(),
+      cacheDir: blocker.child('cache'),
+    });
+    const refreshed = await resource.refresh();
+    expect(isValid(refreshed) && refreshed).toEqual({
+      names: ['remote'],
+      images: [`data:image/png;base64,${PNG.toString('base64')}`],
+    });
+  });
+
   test('キャッシュが壊れている場合は同梱の内容を使う', async () => {
     const cacheDir = newCacheDir();
     await cacheDir.child('v1', 'items.json').writeText('{ broken');

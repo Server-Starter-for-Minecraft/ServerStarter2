@@ -12,6 +12,7 @@ import {
   getPropertyGroups,
   isUnavailableInVersion,
   OTHER_GROUP_ID,
+  resetProperties,
   selectPropertyDefinition,
 } from './propertyDefinitions';
 
@@ -377,5 +378,49 @@ describe('プロパティの説明文', () => {
     expect(
       getPropertyDescription(resourceOf({}), 'other', 'ja', builtIn)
     ).toBeUndefined();
+  });
+});
+
+describe('プロパティの一括リセット', () => {
+  const never = () => false;
+
+  test('ユーザーが設定した標準プロパティの値に戻す', () => {
+    expect(
+      resetProperties(
+        { 'max-players': 5 },
+        { 'max-players': 10 },
+        { 'max-players': 20 },
+        never
+      )
+    ).toEqual({ 'max-players': 10 });
+  });
+
+  test('標準プロパティにないプロパティ（外部リソースでのみ定義）は，バージョンに合う定義の既定値に戻す', () => {
+    expect(
+      resetProperties(
+        { 'new-limit': 20 },
+        { 'max-players': 10 },
+        { 'max-players': 20, 'new-limit': 10 },
+        never
+      )
+    ).toEqual({ 'max-players': 10, 'new-limit': 10 });
+  });
+
+  test('変更しないプロパティと，規定値のないプロパティは現在の値のまま', () => {
+    expect(
+      resetProperties(
+        { 'server-port': 25570, 'unknown-prop': 'x', 'new-limit': 20 },
+        { 'server-port': 25565 },
+        { 'new-limit': 10 },
+        (key) => key === 'server-port' || key === 'new-limit'
+      )
+    ).toEqual({ 'server-port': 25570, 'unknown-prop': 'x', 'new-limit': 20 });
+  });
+
+  test('`__proto__` などのキーがあっても，オブジェクトのプロトタイプを書き換えない', () => {
+    // オブジェクトリテラルの `__proto__` はプロトタイプの指定になるため，自身のキーとして作る
+    const userDefaults = Object.fromEntries([['__proto__', 1]]);
+    const reset = resetProperties({}, userDefaults, {}, never);
+    expect(Object.getPrototypeOf(reset)).toBe(Object.prototype);
   });
 });

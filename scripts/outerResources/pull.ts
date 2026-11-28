@@ -45,12 +45,19 @@ export function createDistributionReader(source: string): DistributionReader {
     const decoded = safeExec(() => decodeURIComponent(path));
     if (isError(decoded)) return decoded;
     const file = root.child(decoded);
-    if (!file.isWithin(root)) {
-      return errorMessage.data.path.loadingFailed({
-        type: 'file',
-        path: file.path,
-      });
-    }
+    const outside = errorMessage.data.path.loadingFailed({
+      type: 'file',
+      path: file.path,
+    });
+    if (!file.isWithin(root)) return outside;
+    // シンボリックリンク・ジャンクションで配布元の外のファイル（秘密の情報など）を同梱しないよう，実体のパスでも確かめる
+    const [realRoot, realFile] = await Promise.all([
+      root.realPath(),
+      file.realPath(),
+    ]);
+    if (isError(realRoot)) return realRoot;
+    if (isError(realFile)) return realFile;
+    if (!realFile.isWithin(realRoot)) return outside;
     return file.read();
   };
 }

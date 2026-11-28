@@ -5,6 +5,7 @@ import type { QScrollArea } from 'quasar';
 import {
   getPropertyAnnotation,
   isUnavailableInVersion,
+  resetProperties,
 } from 'src/logic/property/propertyDefinitions';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, keys } from 'app/src-public/scripts/obj/obj';
@@ -94,15 +95,15 @@ function resetAll() {
       okBtnTxt: $T('property.resetAll.okBtn'),
     } satisfies dangerDialogProp,
   }).onOk(() => {
-    Object.keys(sysStore.systemSettings.world.properties).map((key) => {
-      if (lockedProperties.value[key] !== undefined || isUnavailable(key)) {
-        return;
-      }
-      if (mainStore.world && isValid(mainStore.world.properties)) {
-        mainStore.world.properties[key] =
-          sysStore.systemSettings.world.properties[key];
-      }
-    });
+    // プロパティを読み込めていないワールドは，画面にリセットのボタンを表示しない
+    if (mainStore.world && isValid(mainStore.world.properties)) {
+      mainStore.world.properties = resetProperties(
+        mainStore.world.properties,
+        sysStore.systemSettings.world.properties,
+        initProperty.value,
+        (key) => lockedProperties.value[key] !== undefined || isUnavailable(key)
+      );
+    }
   });
 }
 

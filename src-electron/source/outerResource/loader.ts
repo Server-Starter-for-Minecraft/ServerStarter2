@@ -28,6 +28,22 @@ export type OuterResourceOptions = {
 };
 
 /**
+ * 取得したデータをキャッシュに保存する
+ *
+ * 保存に失敗した場合は，途中まで書き込んだファイルが次回の読み込みで正しいキャッシュとして使われないよう削除する
+ *
+ * @param path キャッシュの保存先
+ * @param data 保存するデータ
+ * @returns 保存の結果（失敗した場合はエラー。途中まで書き込んだファイルを削除できなかった場合は，削除のエラー）
+ */
+async function saveCache(path: Path, data: BytesData): Promise<Failable<void>> {
+  const written = await path.write(data);
+  if (isValid(written)) return written;
+  const removed = await path.remove();
+  return isError(removed) ? removed : written;
+}
+
+/**
  * 外部リソースを読み込み，保持する
  *
  * - 起動直後は同梱の内容かキャッシュを使い（ネットワークを待たない），`refresh()` で配布元の最新の内容に更新する
@@ -102,7 +118,7 @@ export class OuterResource<W, R> {
     // 検証に合格した配布ファイルをそのまま保存する（不正な要素は読み込み時に除く）
     // （読み込み後の内容を保存すると，同じスキーマのバージョンでアプリを更新した際に，新しい項目が失われるため）
     // キャッシュに保存できなくても，取得した内容は使う
-    const writeRes = await this.cacheFile.write(data);
+    const writeRes = await saveCache(this.cacheFile, data);
     if (isError(writeRes)) logger.warn(writeRes);
 
     this.value = await this.def.resolve(wire, this.context(true));
@@ -187,7 +203,8 @@ export class OuterResource<W, R> {
     }
     const data = await this.fetcher(url.href);
     if (isError(data)) return data;
-    const writeRes = await cachePath.write(data);
+    // キャッシュに保存できなくても，取得した画像は使う
+    const writeRes = await saveCache(cachePath, data);
     if (isError(writeRes))
       loggers().loadImage({ url: url.href }).warn(writeRes);
     return data.encodeURI(mimeType);

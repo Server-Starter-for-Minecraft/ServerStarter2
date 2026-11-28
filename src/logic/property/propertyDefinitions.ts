@@ -344,3 +344,38 @@ export function getPropertyDescription(
   if (remote !== undefined) return resolveLocalizedText(remote, locale);
   return builtIn(key);
 }
+
+/** プロパティ名と値の組（server.properties の内容） */
+type PropertyValues = Readonly<Record<string, string | number | boolean>>;
+
+/**
+ * すべてのプロパティを規定値に戻した結果を返す（プロパティ画面の一括リセット）
+ *
+ * 規定値は個別のリセットと同じく，ユーザーが設定した標準プロパティを優先し，なければワールドのバージョンに合う定義の既定値とする。
+ * 標準プロパティにないプロパティ（外部リソースでのみ定義されたものなど）も，定義の既定値に戻す
+ *
+ * @param current 現在のプロパティ
+ * @param userDefaults ユーザーが設定した標準プロパティ
+ * @param versionDefaults ワールドのバージョンに合う定義の既定値（バージョンで存在しないプロパティは含めない）
+ * @param isKept 値を変更しないプロパティか（編集できないプロパティ・バージョンで存在しないプロパティなど）
+ * @returns 規定値に戻したプロパティ（変更しないプロパティと，規定値のないプロパティは現在の値のまま）
+ */
+export function resetProperties<T extends PropertyValues>(
+  current: T,
+  userDefaults: PropertyValues,
+  versionDefaults: PropertyValues,
+  isKept: (key: string) => boolean
+): T {
+  const targets = new Set([
+    ...Object.keys(userDefaults),
+    ...Object.keys(versionDefaults),
+  ]);
+  const reset = [...targets]
+    .filter((key) => !isKept(key))
+    .map((key): [string, string | number | boolean] => [
+      key,
+      userDefaults[key] ?? versionDefaults[key],
+    ]);
+  // `__proto__` などのキーでもプロトタイプを書き換えないよう，代入ではなく Object.fromEntries で作る
+  return { ...current, ...Object.fromEntries(reset) };
+}
