@@ -23,7 +23,7 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
     const filePath = cwdPath.child(OPS_FILE);
 
     // ファイルが存在しない場合空リストを返す
-    if (!filePath.exists()) return [];
+    if (!(await filePath.exists())) return [];
 
     const value = await filePath.readJson(Ops);
     if (isError(value)) return value;
@@ -37,7 +37,7 @@ export const serverOpsFile: ServerSettingFile<Ops> = {
 
     return fixed.data;
   },
-  save(cwdPath, value) {
+  async save(cwdPath, value) {
     return cwdPath.child(OPS_FILE).writeText(JSON.stringify(value));
   },
   path(cwdPath) {

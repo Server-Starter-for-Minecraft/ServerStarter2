@@ -61,7 +61,7 @@ export async function loadLocalSaveContainers(
   const defaultLocalSaveContainer = launcherPath.child('saves');
 
   const profilesList = await Promise.all(
-    LAUNCHER_PROFILES_FILES.map((name) =>
+    LAUNCHER_PROFILES_FILES.map(async (name) =>
       launcherPath.child(name).readJson(LauncherProfiles)
     )
   );
@@ -82,7 +82,7 @@ export async function loadLocalSaveContainers(
  * @param paths パスの一覧
  * @returns 重複を除いた絶対パスの一覧(最初に現れた順)
  */
-export function uniquePaths(paths: Path[]): Path[] {
+export async function uniquePaths(paths: Path[]): Promise<Path[]> {
   // Windowsではパスの大文字・小文字を区別しないため，比較時のみ小文字にそろえる
   const toKey = (str: string) =>
     osPlatform === 'windows-x64' ? str.toLowerCase() : str;

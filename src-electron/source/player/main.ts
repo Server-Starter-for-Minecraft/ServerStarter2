@@ -1,9 +1,11 @@
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
+import { sourceLoggers } from '../sourceLogger';
 import { EXPIRATION_SPAN, getPlayerCache, pushPlayerCache } from './cache';
 import { searchPlayerFromName, searchPlayerFromUUID } from './search';
 
@@ -19,16 +21,16 @@ export async function getPlayer(
           value: nameOrUuid,
         });
       }
-      return await getPlayerFromName(nameOrUuid);
+      return getPlayerFromName(nameOrUuid);
     case 'uuid':
       if (!isUUID(nameOrUuid)) {
         return errorMessage.value.playerUUID({
           value: nameOrUuid,
         });
       }
-      return await getPlayerFromUUID(nameOrUuid);
+      return getPlayerFromUUID(nameOrUuid);
     case 'auto':
-      if (isName(nameOrUuid)) return await getPlayerFromName(nameOrUuid);
+      if (isName(nameOrUuid)) return getPlayerFromName(nameOrUuid);
 
       // autoの場合のみ 0-0-0-0-0 のような短縮UUIDやハイフンのないUUIDを許可する
       const uuid = PlayerUUID.safeParse(nameOrUuid);
@@ -38,7 +40,7 @@ export async function getPlayer(
         });
       }
 
-      return await getPlayerFromUUID(uuid.data);
+      return getPlayerFromUUID(uuid.data);
   }
 }
 
@@ -84,11 +86,13 @@ export async function getPlayerFromName(
       getCurrentTimestamp() + EXPIRATION_SPAN >
       cacheValue.expire + RE_SERACH_SPAN
     )
-      serchAndPushName(name);
+      runDetached(serchAndPushName(name), (e) =>
+        sourceLoggers().player.research({ name }).warn(e)
+      );
 
     return cacheValue;
   }
-  return await serchAndPushName(name);
+  return serchAndPushName(name);
 }
 
 // 再検索までの時間(10日)
@@ -106,23 +110,25 @@ export async function getPlayerFromUUID(
       getCurrentTimestamp() + EXPIRATION_SPAN >
       cacheValue.expire + RE_SERACH_SPAN
     )
-      serchAndPushUUID(uuid);
+      runDetached(serchAndPushUUID(uuid), (e) =>
+        sourceLoggers().player.research({ uuid }).warn(e)
+      );
 
     return cacheValue;
   }
-  return await serchAndPushUUID(uuid);
+  return serchAndPushUUID(uuid);
 }
 
 // プレイヤーを検索してキャッシュを更新
 async function serchAndPushUUID(uuid: PlayerUUID) {
   const result = await searchPlayerFromUUID(uuid);
-  if (isValid(result)) pushPlayerCache(result);
+  if (isValid(result)) await pushPlayerCache(result);
   return result;
 }
 
 // プレイヤーを検索してキャッシュを更新
 async function serchAndPushName(name: string) {
   const result = await searchPlayerFromName(name);
-  if (isValid(result)) pushPlayerCache(result);
+  if (isValid(result)) await pushPlayerCache(result);
   return result;
 }

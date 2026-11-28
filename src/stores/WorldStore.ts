@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerSetting } from 'app/src-electron/schema/player';
 import {
   World,
@@ -12,6 +13,7 @@ import {
 } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import { checkError, ErrorFuncReturns } from 'src/components/Error/Error';
 import { useConsoleStore } from './ConsoleStore';
 import { useMainStore } from './MainStore';
@@ -94,9 +96,12 @@ export function setWorldSubscriber() {
     if (world) {
       // SetWorldの戻り値でWorldStoreに更新をかけると、
       // その保存処理が再帰的に発生するため、現在はundefinedとして、処理を行っていない
-      window.API.invokeSetWorld(toRaw(world)).then((v) => {
-        checkError(v.value, undefined, (e) => tError(e));
-      });
+      runDetached(
+        window.API.invokeSetWorld(toRaw(world)).then((v) => {
+          checkError(v.value, undefined, (e) => tError(e));
+        }),
+        showUnexpectedError
+      );
     }
   });
 }
@@ -232,7 +237,7 @@ export async function registerJoinedPlayersToWorld(
   const candidates = await findPlayersToRegister(
     item.world,
     joinedNames,
-    (name) => window.API.invokeGetPlayer(name, 'name')
+    async (name) => window.API.invokeGetPlayer(name, 'name')
   );
   if (candidates.length === 0) return;
 

@@ -26,7 +26,7 @@ export class MinecraftRuntimeInstaller extends JavaRuntimeInstaller<
     );
   }
 
-  getRuntimeVersion(runtime: MinecraftRuntime): string {
+  async getRuntimeVersion(runtime: MinecraftRuntime): Promise<string> {
     return runtime.version;
   }
 

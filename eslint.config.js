@@ -5,6 +5,14 @@ import pluginImportX from 'eslint-plugin-import-x';
 import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import {
+  ALLOWED_SYNC_EXPORTS,
+  BACKEND_FILES,
+  BLOCKING_MODULES,
+  SCRIPT_FILES,
+  SOURCE_FILES,
+  TEST_FILES,
+} from './eslint-rules/config.js';
 import pluginServerStarter from './eslint-rules/index.js';
 
 export default tseslint.config(
@@ -67,6 +75,74 @@ export default tseslint.config(
       '@typescript-eslint/switch-exhaustiveness-check': [
         'error',
         { considerDefaultExhaustiveForUnions: true },
+      ],
+
+      // ---- 非同期処理（失敗の見落としやフリーズを防ぐ） ----
+      // 待たれない Promise を禁止する（`void` で捨てることも，失敗を処理していないため禁止する）
+      // 完了を待たずに実行する場合は，失敗をログに出す `runDetached` を使う
+      '@typescript-eslint/no-floating-promises': [
+        'error',
+        {
+          ignoreVoid: false,
+          allowForKnownSafeCalls: [
+            {
+              from: 'file',
+              name: 'runDetached',
+              path: 'src-public/scripts/promise/runDetached.ts',
+            },
+          ],
+        },
+      ],
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      // 操作用のメソッドを付け足した Promise（`decoratePromise` などで作る）は，async にすると
+      // 新しい Promise に包まれてメソッドが失われるため，これらの型を返す関数は対象外とする
+      '@typescript-eslint/promise-function-async': [
+        'error',
+        {
+          allowedPromiseNames: [
+            'ChildProcessPromise',
+            'ServerProcess',
+            'RunServer',
+            'RunRebootableServer',
+          ],
+        },
+      ],
+      // try の中で await せずに Promise を返すと，失敗が catch で捕まらないため禁止する
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+      'no-async-promise-executor': 'error',
+    },
+  },
+
+  // メインプロセスを止める同期 API の呼び出しを禁止する
+  // （テストはメインプロセスで動かないため対象外とする）
+  {
+    files: [...BACKEND_FILES, ...SCRIPT_FILES],
+    ignores: [
+      ...TEST_FILES,
+      // 例外：起動時に一度だけ，log4js が latest.log を上書きする前に同期で退避する必要がある（画面の表示前で操作を止めない）
+      'src-electron/common/logger.ts',
+      // 例外：起動時に一度だけ，Linux のディストリビューションを判定して定数（osPlatform）を決める（画面の表示前で操作を止めない）
+      'src-electron/util/os/os.ts',
+    ],
+    rules: {
+      'serverstarter/no-blocking-call': [
+        'error',
+        { blockingModules: BLOCKING_MODULES },
+      ],
+    },
+  },
+
+  // バックエンドの処理（source/）が公開する関数・メソッドは Promise を返す（非同期にする）
+  // （ログ・進捗・IPC・ライフサイクルなどの基盤や util は対象外とする。
+  //   それらでのブロッキングする I/O は no-blocking-call で，非同期処理の放置は no-floating-promises で検出する）
+  {
+    files: SOURCE_FILES,
+    ignores: [...TEST_FILES],
+    rules: {
+      'serverstarter/require-async-export': [
+        'error',
+        { allowed: ALLOWED_SYNC_EXPORTS },
       ],
     },
   },

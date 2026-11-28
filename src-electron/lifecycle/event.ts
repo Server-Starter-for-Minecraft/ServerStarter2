@@ -32,7 +32,9 @@ export const createAppEvent = (): AppEvent => {
 
   const invoke = async () => {
     await Promise.all(
-      toEntries(listeners).map(([id, listener]) => listener(dispatcher(id)))
+      toEntries(listeners).map(async ([id, listener]) =>
+        listener(dispatcher(id))
+      )
     );
   };
 

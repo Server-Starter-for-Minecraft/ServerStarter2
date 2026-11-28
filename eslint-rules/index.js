@@ -1,4 +1,7 @@
 // @ts-check
+import noBlockingCall from './rules/no-blocking-call.js';
+import requireAsyncExport from './rules/require-async-export.js';
+
 /**
  * ServerStarter2 の独自 ESLint ルール（プラグイン `serverstarter`）
  *
@@ -7,7 +10,10 @@
  */
 
 /** @type {Record<string, import('@typescript-eslint/utils').TSESLint.RuleModule<string, unknown[]>>} */
-const rules = {};
+const rules = {
+  'no-blocking-call': noBlockingCall,
+  'require-async-export': requireAsyncExport,
+};
 
 export default {
   meta: { name: 'serverstarter' },

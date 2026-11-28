@@ -26,7 +26,7 @@ const cacheSpoolers = InfinitMap.primitiveKeyWeakValue(
 /**
  * サーバーJarファイルのパスを返す
  */
-export function getJarPath(cwdPath: Path) {
+export async function getJarPath(cwdPath: Path) {
   return cwdPath.child('version.jar');
 }
 
@@ -39,7 +39,7 @@ export type ExecRuntime = (options: {
 
 export type ReadyReturnInfo = {
   runtime: Runtime;
-  getCommand: (option: { jvmArgs: string[] }) => string[];
+  getCommand: (option: { jvmArgs: string[] }) => Promise<string[]>;
 };
 
 /**
@@ -119,7 +119,7 @@ export abstract class ReadyVersion<
     // STEP1: `version.json`の生成
     if (!this.handler) {
       // handlerを生成
-      this.handler = generateVersionJsonHandler(
+      this.handler = await generateVersionJsonHandler(
         this._cacheFolder,
         this._version.type,
         this.serverID
@@ -164,7 +164,7 @@ export abstract class ReadyVersion<
     // （複数のワールドを同時に起動した際に，キャッシュの生成処理同士が作業ファイルを壊し合わないようにする）
     return cacheSpoolers
       .get(this.cachePath.absolute().path)
-      .spool(() =>
+      .spool(async () =>
         this.readyCacheExclusively(verJsonHandler, execRuntime, progress)
       );
   }
@@ -180,7 +180,7 @@ export abstract class ReadyVersion<
     progress?: GroupProgressor
   ): Promise<Failable<Path[]>> {
     // Jarの生成
-    const cachedJarPath = getJarPath(this.cachePath);
+    const cachedJarPath = await getJarPath(this.cachePath);
     if (!(await this.isCacheReady())) {
       // Jarのダウンロードとファイルへの書き出し
       const generateJarRes = await this.generateCachedJar(
@@ -193,10 +193,8 @@ export abstract class ReadyVersion<
     const paths = [cachedJarPath];
 
     // Log4J対応
-    const log4JPatchPath = await saveLog4JPatch(
-      this._version.id,
-      this.cachePath,
-      progress
+    const log4JPatchPath = await (
+      await saveLog4JPatch(this._version.id, this.cachePath, progress)
     )();
     if (isError(log4JPatchPath)) return log4JPatchPath;
     if (log4JPatchPath !== null) paths.push(log4JPatchPath);
@@ -220,7 +218,7 @@ export abstract class ReadyVersion<
    * @returns 準備済みで`generateCachedJar()`を実行する必要がなければ`true`
    */
   protected async isCacheReady(): Promise<boolean> {
-    return getJarPath(this.cachePath).exists();
+    return (await getJarPath(this.cachePath)).exists();
   }
 
   /**
@@ -228,7 +226,7 @@ export abstract class ReadyVersion<
    */
   protected async setFiles(paths: Path[], targetPath: Path): Promise<void> {
     await Promise.all(
-      paths.map((p) => p.copyTo(targetPath.child(p.basename())))
+      paths.map(async (p) => p.copyTo(targetPath.child(p.basename())))
     );
   }
 
@@ -291,10 +289,10 @@ export abstract class ReadyVersion<
 
     return {
       runtime: runtime,
-      getCommand: (option: { jvmArgs: string[] }) => {
-        const log4jArg = getLog4jArg(this._version.id);
+      getCommand: async (option: { jvmArgs: string[] }) => {
+        const log4jArg = await getLog4jArg(this._version.id);
         return replaceEmbedArgs(verJson.arguments, {
-          JAR_PATH: [getJarPath(targetPath).path],
+          JAR_PATH: [(await getJarPath(targetPath)).path],
           JVM_ARGUMENT: option.jvmArgs,
           LOG4J_ARG: log4jArg ? [log4jArg] : [],
         });
@@ -314,10 +312,12 @@ export abstract class RemoveVersion<
    */
   async completeRemoveVersion(targetPath: Path) {
     // server.jarを登録
-    const paths = [getJarPath(targetPath)];
+    const paths = [await getJarPath(targetPath)];
 
     // Log4J対応（対象ファイル名取得のみのため，`saveLog4JPatch()`にprogressは設定しない）
-    const log4JPatchPath = await saveLog4JPatch(this._version.id, targetPath)();
+    const log4JPatchPath = await (
+      await saveLog4JPatch(this._version.id, targetPath)
+    )();
     if (isValid(log4JPatchPath) && log4JPatchPath !== null) {
       paths.push(log4JPatchPath);
     }
@@ -340,10 +340,10 @@ export abstract class RemoveVersion<
   protected async removeFiles(paths: Path[]): Promise<void> {
     // キャッシュに撤退
     await Promise.all(
-      paths.map((p) => p.copyTo(this.cachePath.child(p.basename())))
+      paths.map(async (p) => p.copyTo(this.cachePath.child(p.basename())))
     );
     // 元ファイルを削除
-    await Promise.all(paths.map((p) => p.remove()));
+    await Promise.all(paths.map(async (p) => p.remove()));
   }
 }
 

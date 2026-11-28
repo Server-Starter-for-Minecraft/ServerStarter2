@@ -17,7 +17,7 @@ import { WorldHandler } from './handler';
 export async function getWorldContents(
   world: WorldID
 ): Promise<WithError<Failable<WorldAdditional>>> {
-  const handler = WorldHandler.get(world);
+  const handler = await WorldHandler.get(world);
   if (isError(handler)) return withError(handler);
-  return await handler.loadContents();
+  return handler.loadContents();
 }

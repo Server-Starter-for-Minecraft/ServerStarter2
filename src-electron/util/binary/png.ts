@@ -18,6 +18,6 @@ export class Png {
   }
 
   async toBeyesData() {
-    return await BytesData.fromBuffer(await this.data.toBuffer());
+    return BytesData.fromBuffer(await this.data.toBuffer());
   }
 }

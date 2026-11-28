@@ -31,16 +31,16 @@ const PISTON_META_URL =
  * @param url `BytesData.fromURL`に渡されたURL
  * @returns 固定レスポンスがあるURLの場合はその内容，無い場合は`undefined`
  */
-export function fromMojangFixture(
+export async function fromMojangFixture(
   url: string
-): Promise<Failable<BytesData>> | undefined {
+): Promise<Failable<BytesData> | undefined> {
   if (url === VERSION_MANIFEST_URL) {
     return BytesData.fromPath(fixtureDir.child('version_manifest_v2.json'));
   }
   const [, sha1, fileName] = url.match(PISTON_META_URL) ?? [];
   if (sha1 === undefined || fileName === undefined) return undefined;
   const fixturePath = fixtureDir.child('piston-meta', fileName);
-  if (!fixturePath.exists()) return undefined;
+  if (!(await fixturePath.exists())) return undefined;
   return BytesData.fromPath(fixturePath, { type: 'sha1', value: sha1 });
 }
 
@@ -65,7 +65,7 @@ export function createFromURLMock(
   fallback?: (url: string) => Promise<Failable<BytesData>>
 ) {
   return async (url: string): Promise<Failable<BytesData>> => {
-    const fixture = fromMojangFixture(url);
+    const fixture = await fromMojangFixture(url);
     if (fixture) return fixture;
 
     const rule = rules.find((r) => url.endsWith(r.suffix));

@@ -24,7 +24,7 @@ export const versionContainer = new VersionContainer(versionsCachePath);
 /**
  * API呼び出し用
  */
-export const getVersions = <V extends VersionType>(
+export const getVersions = async <V extends VersionType>(
   type: V,
   useCache: boolean
 ): Promise<Failable<AllVersion<V>>> => {

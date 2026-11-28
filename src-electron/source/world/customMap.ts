@@ -84,7 +84,7 @@ export async function loadCustomMap(
 
     // level.dat の読み込み
     const datPath = path.child(LEVEL_DAT);
-    if (!datPath.exists()) {
+    if (!(await datPath.exists())) {
       // /level.dat がない場合エラー
       return invalidCustomMapError(path, true);
     }
@@ -107,7 +107,7 @@ export async function loadCustomMap(
     const datFile = await findLevelDatInZip(zip);
     if (isError(datFile)) return datFile;
 
-    dat = await datFile[1];
+    dat = datFile[1];
 
     // /icon.pngを読み込み
     const iconFile = await findIconPngInZip(zip);
@@ -235,7 +235,7 @@ async function importCustomMapDir(
     cacheLocalDatapacks(sourcePath),
   ]);
 
-  if (!sourcePath.child(SERVER_PROPERTIES_PATH).exists()) return;
+  if (!(await sourcePath.child(SERVER_PROPERTIES_PATH).exists())) return;
 
   // ワールドデータ内部にserver.propertiesが存在する場合
   const props = await serverPropertiesFile.load(sourcePath);
@@ -249,9 +249,9 @@ async function cacheLocalMods(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('mods').iter();
   if (isError(paths)) return;
 
-  const load = async (path: Path) => await modFiles.loadNew(path);
+  const load = async (path: Path) => modFiles.loadNew(path);
   const mods = (await asyncMap(paths, load)).filter(isValid);
-  await asyncMap(mods, async (data) => await modFiles.appendCache(data));
+  await asyncMap(mods, async (data) => modFiles.appendCache(data));
 }
 
 /** ローカルで使われていたであろうPlugin一覧をキャッシュにコピー */
@@ -259,9 +259,9 @@ async function cacheLocalPlugins(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.parent(2).child('plugins').iter();
   if (isError(paths)) return;
 
-  const load = async (path: Path) => await pluginFiles.loadNew(path);
+  const load = async (path: Path) => pluginFiles.loadNew(path);
   const plugins = (await asyncMap(paths, load)).filter(isValid);
-  await asyncMap(plugins, async (data) => await pluginFiles.appendCache(data));
+  await asyncMap(plugins, async (data) => pluginFiles.appendCache(data));
 }
 
 /** ローカルで使われていたであろうDatapack一覧をキャッシュにコピー */
@@ -269,7 +269,7 @@ async function cacheLocalDatapacks(sourcePath: Path): Promise<void> {
   const paths = await sourcePath.child('datapacks').iter();
   if (isError(paths)) return;
 
-  const load = async (path: Path) => await datapackFiles.loadNew(path);
+  const load = async (path: Path) => datapackFiles.loadNew(path);
   const datapacks = (await asyncMap(paths, load)).filter(isValid);
   await asyncMap(datapacks, async (data) => datapackFiles.appendCache(data));
 }
@@ -299,7 +299,7 @@ async function importCustomMapZip(
   let props: ServerProperties | undefined = undefined;
   const serverPropertiesPath = unzipPath.child(SERVER_PROPERTIES_PATH);
 
-  if (serverPropertiesPath.exists()) {
+  if (await serverPropertiesPath.exists()) {
     const newProps = await serverPropertiesFile.load(unzipPath);
     if (isValid(newProps)) props = newProps;
   }
@@ -310,9 +310,9 @@ async function importCustomMapZip(
   if (isError(moveWorld)) return moveWorld;
 
   // ワールド以外のデータ(readmeとか?)も可能であれば移動
-  if (unzipPath.exists()) {
+  if (await unzipPath.exists()) {
     const targetPath = worldPath.parent().child(zipPath.stemname());
-    if (!targetPath.exists()) {
+    if (!(await targetPath.exists())) {
       await unzipPath.moveTo(targetPath);
     }
   }

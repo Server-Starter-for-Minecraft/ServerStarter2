@@ -46,7 +46,9 @@ export function neoForgeVersion(
  */
 export async function writeFiles(cwd: Path, files: Record<string, string>) {
   await Promise.all(
-    Object.entries(files).map(([f, content]) => cwd.child(f).writeText(content))
+    Object.entries(files).map(async ([f, content]) =>
+      cwd.child(f).writeText(content)
+    )
   );
 }
 

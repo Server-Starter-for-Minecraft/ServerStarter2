@@ -67,8 +67,10 @@ describe('ワールドのデータパックの保存', () => {
 
     await datapackFiles.save(savePath, kept);
 
-    expect(datapacks.child('SamePack.zip').exists()).toBe(false);
-    expect(datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(true);
+    expect(await datapacks.child('SamePack.zip').exists()).toBe(false);
+    expect(await datapacks.child('SamePack', 'pack.mcmeta').exists()).toBe(
+      true
+    );
   });
 });
 
@@ -86,7 +88,7 @@ describe('pack.mcmetaの形式ごとのデータパックの読み込み', () =>
     const packPath = formatPath.child(name);
     await packPath.mkdir(true);
     await packPath.child('pack.mcmeta').writeText(text);
-    return await datapackFiles.loadNew(packPath);
+    return datapackFiles.loadNew(packPath);
   }
 
   /**
@@ -97,7 +99,7 @@ describe('pack.mcmetaの形式ごとのデータパックの読み込み', () =>
    * @returns 読み込み結果
    */
   async function loadWithMcmeta(name: string, meta: unknown) {
-    return await loadWithMcmetaText(name, JSON.stringify(meta));
+    return loadWithMcmetaText(name, JSON.stringify(meta));
   }
 
   test.each<[string, string, string]>([

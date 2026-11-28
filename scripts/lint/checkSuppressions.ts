@@ -21,7 +21,7 @@ import { EslintSuppressions, findIncreasedSuppressions } from './suppressions';
 async function readSuppressions(
   path: Path
 ): Promise<Failable<EslintSuppressions>> {
-  if (!path.exists()) return {};
+  if (!(await path.exists())) return {};
   return path.readJson(EslintSuppressions);
 }
 

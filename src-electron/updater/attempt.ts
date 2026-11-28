@@ -58,7 +58,7 @@ export function shouldAutoInstall(
 export async function loadUpdateAttempt(
   path: Path = UPDATE_ATTEMPT_PATH
 ): Promise<UpdateAttempt | undefined> {
-  if (!path.exists()) return undefined;
+  if (!(await path.exists())) return undefined;
   const attempt = await path.readJson(UpdateAttempt);
   return isError(attempt) ? undefined : attempt;
 }
@@ -75,5 +75,5 @@ export async function saveUpdateAttempt(
   path: Path = UPDATE_ATTEMPT_PATH
 ): Promise<Failable<void>> {
   // 保存先フォルダの作成などで発生する例外もエラーとして返し、呼び出し元で通知できるようにする
-  return safeExecAsync(() => path.writeJson(attempt));
+  return safeExecAsync(async () => path.writeJson(attempt));
 }

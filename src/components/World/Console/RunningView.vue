@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { QScrollArea } from 'quasar';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import ConsoleLineView from './ConsoleLineView.vue';
 import { consoleScrollMemory } from './consoleScroll';
 import ConsoleSearch from './ConsoleSearch.vue';
@@ -73,11 +75,16 @@ function scroll2End() {
  */
 function restoreScroll() {
   // 表示する内容が切り替わった後（描画後）に復元する
-  nextTick(() => {
-    const target = consoleScrollMemory.restoreTarget(mainStore.selectedWorldID);
-    if (target === 'bottom') scroll2End();
-    else scrollAreaRef.value?.setScrollPosition('vertical', target);
-  });
+  runDetached(
+    nextTick(() => {
+      const target = consoleScrollMemory.restoreTarget(
+        mainStore.selectedWorldID
+      );
+      if (target === 'bottom') scroll2End();
+      else scrollAreaRef.value?.setScrollPosition('vertical', target);
+    }),
+    showUnexpectedError
+  );
 }
 
 /**
@@ -112,7 +119,10 @@ watch(
   },
   () => {
     if (consoleScrollMemory.shouldFollowOutput(mainStore.selectedWorldID)) {
-      nextTick(() => scroll2End());
+      runDetached(
+        nextTick(() => scroll2End()),
+        showUnexpectedError
+      );
     }
   }
 );

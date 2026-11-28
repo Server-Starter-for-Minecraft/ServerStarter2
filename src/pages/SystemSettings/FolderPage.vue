@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { getWorlds } from 'src/init';
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { WorldContainer } from 'app/src-electron/schema/brands';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { registAbbrWorld } from 'src/stores/WorldStore';
+import { showUnexpectedError } from 'src/components/Error/Error';
 import { AddFolderDialogReturns } from 'src/components/SystemSettings/Folder/iAddFolder';
 import AddContentsCard from 'src/components/util/AddContentsCard.vue';
 import AddFolderDialog from 'src/components/SystemSettings/Folder/AddFolderDialog.vue';
@@ -25,14 +27,17 @@ function openFolderEditor() {
       container: payload.container,
     });
     // 追加したワールドフォルダをワールド一覧に追加
-    loadFolderWorlds(payload.container);
+    runDetached(loadFolderWorlds(payload.container), showUnexpectedError);
   });
 }
 
 async function loadFolderWorlds(container: WorldContainer) {
   const abbrs = await window.API.invokeGetWorldAbbrs(container);
   abbrs.value.forEach((abbr) => registAbbrWorld(abbr));
-  getWorlds(abbrs.value.map((abbr) => abbr.id));
+  runDetached(
+    getWorlds(abbrs.value.map((abbr) => abbr.id)),
+    showUnexpectedError
+  );
 }
 </script>
 

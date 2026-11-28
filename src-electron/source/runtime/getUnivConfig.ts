@@ -96,7 +96,7 @@ function findNearestLowerVersion(
  * TODO: OuterResourceからの取得に差替える
  * TODO: MinecraftランタイムからCorrettoに差替える（フォールバックにする？）
  */
-export function getUniversalConfig(
+export async function getUniversalConfig(
   osPlatform: OsPlatform,
   mcRuntimeManifest: McRuntimeManifest,
   majorVersion: JavaMajorVersion | undefined

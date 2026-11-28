@@ -26,8 +26,8 @@ function newerVerIdx<T>(ops: any[], ver_1: T, ver1: T, prop?: keyof T) {
 /**
  * 配列内のすべてのデータをHash化して，Hashの一覧を返す
  */
-export function getHashs<T>(ops: T[]) {
-  return Promise.all(ops.map((v) => getHashData(v)));
+export async function getHashs<T>(ops: T[]) {
+  return Promise.all(ops.map(async (v) => getHashData(v)));
 }
 
 export function openVerTypeWarningDialog<T extends Version['type']>(

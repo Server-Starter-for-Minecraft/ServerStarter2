@@ -40,7 +40,7 @@ export async function getAllLocalSaveData(): Promise<
 
   const settings = await getSystemSettings();
   // 非表示にした・登録を解除した保存先は読み込まない
-  const containers = uniquePaths(
+  const containers = await uniquePaths(
     listLocalSaveFolders(detected, settings.localSave)
       .filter((f) => f.visible)
       .map((f) => new Path(f.path))

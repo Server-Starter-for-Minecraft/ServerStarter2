@@ -190,14 +190,10 @@ async function openSavedFolder() {
     `${prop.contentType}s`
   );
 
-  checkError(
-    path,
-    async (p) => {
-      const res = await window.API.invokeOpenFolder(p, true);
-      checkError(res, undefined, (e) => tError(e));
-    },
-    (e) => tError(e)
-  );
+  const p = checkError(path, undefined, (e) => tError(e));
+  if (p === undefined) return;
+  const res = await window.API.invokeOpenFolder(p, true);
+  checkError(res, undefined, (e) => tError(e));
 }
 /**
  * キャッシュフォルダを開く

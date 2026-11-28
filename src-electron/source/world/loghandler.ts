@@ -58,12 +58,12 @@ export class WorldLogHandler {
     await this.LatestOutputsPath.remove();
 
     const latestPath = this.LatestLogPath;
-    if (!latestPath.exists()) return;
+    if (!(await latestPath.exists())) return;
     const gz = await gzip.fromFile(latestPath);
     if (isError(gz)) return;
 
     const date = await latestPath.lastUpdateTime();
-    await this.getArchivePath(date).write(gz);
+    await (await this.getArchivePath(date)).write(gz);
     await latestPath.remove();
   }
 
@@ -75,11 +75,12 @@ export class WorldLogHandler {
     return this.logsPath.child('latest.console.jsonl');
   }
 
-  private getArchivePath(date: Dayjs) {
+  private async getArchivePath(date: Dayjs): Promise<Path> {
     const base = date.format('YYYY-MM-DD');
     let i = 1;
     let path = this.logsPath.child(`${base}-${i}.log.gz`);
-    while (path.exists()) path = this.logsPath.child(`${base}-${++i}.log.gz`);
+    while (await path.exists())
+      path = this.logsPath.child(`${base}-${++i}.log.gz`);
     return path;
   }
 
@@ -90,7 +91,7 @@ export class WorldLogHandler {
    *
    * @param output サーバーのコンソールへの出力（ANSIエスケープシーケンスを含んだまま渡す）
    */
-  append(output: ConsoleOutput) {
+  async append(output: ConsoleOutput) {
     // 出力された順に書き込み、flash時に書き込みの完了を待てるよう保持する
     // （一時フォルダの確保などに失敗しても以降の出力は記録できるよう、失敗は無視する）
     this.writing = this.writing
@@ -112,11 +113,11 @@ export class WorldLogHandler {
     // 終了直前の出力も含めるため、書き込み中の出力を待つ
     await this.writing;
     const tmp = await this.tempPaths.get();
-    if (!tmp.text.exists()) return;
+    if (!(await tmp.text.exists())) return;
 
     const latest = this.LatestLogPath;
 
-    if (!latest.exists()) {
+    if (!(await latest.exists())) {
       await latest.remove();
     }
 
@@ -136,7 +137,7 @@ export class WorldLogHandler {
     const content = await this.LatestLogPath.readText();
     if (isError(content)) return content;
 
-    if (this.LatestOutputsPath.exists()) {
+    if (await this.LatestOutputsPath.exists()) {
       const outputs = await this.LatestOutputsPath.readText();
       if (!isError(outputs)) {
         const parsed = parseOutputs(outputs);

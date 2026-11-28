@@ -21,7 +21,7 @@ function promissifyProcess(
   args: string[],
   beforeKill: (child: ChildProcessPromise) => void | Promise<void> = () => {},
   beforeKillTimeout = 1000
-) {
+): ChildProcessPromise {
   const logger = loggers().promissifyProcess({
     command: `${processPath.quotedPath} ${args.join(' ')}`,
   });
@@ -78,9 +78,9 @@ function promissifyProcess(
   };
 
   // アプリケーション終了時にプロセスをkill
-  const dispatch = onQuit(() => kill(), true);
+  const dispatch = onQuit(async () => kill(), true);
 
-  const write = (msg: string) =>
+  const write = async (msg: string) =>
     new Promise<void>((resolve) => {
       if (process.stdin) process.stdin.write(`${msg}\n`, () => resolve());
       else resolve();
@@ -152,7 +152,7 @@ export const interactiveProcess = (
  * @param args 実行ファイルに渡す引数（1要素が1つの引数となる）
  * @param cwd 作業ディレクトリ
  */
-export function execProcess(
+export async function execProcess(
   process: Path,
   args: string[],
   cwd: Path | undefined = undefined

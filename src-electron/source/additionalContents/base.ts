@@ -1,3 +1,4 @@
+import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { api } from 'app/src-electron/core/api';
 import {
   ErrorMessage,
@@ -56,10 +57,9 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
         break;
       case 'world':
         const { WorldHandler } = await import('../world/handler');
-        const handler = WorldHandler.get(source.id);
+        const handler = await WorldHandler.get(source.id);
         if (isError(handler)) return handler;
-        sourcePath = handler
-          .getSavePath()
+        sourcePath = (await handler.getSavePath())
           .child(this.childPath)
           .child(fileDataKey(source));
         break;
@@ -71,31 +71,29 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
   }
 
   /** キャッシュにインストールする */
-  private installCache(
+  private async installCache(
     sourcePath: Path,
     source: NewFileData<T>
-  ): Failable<undefined> {
+  ): Promise<Failable<undefined>> {
     const basename = fileDataKey(source);
     const targetPath = this.cachePath.child(basename);
-    if (targetPath.exists())
+    if (await targetPath.exists())
       return errorMessage.data.path.alreadyExists({
         type: source.isFile ? 'file' : 'directory',
         path: targetPath.path,
       });
-    // 待機せずにキャッシュにインストール
-    this.installer(sourcePath, targetPath).then((x) => {
-      // 失敗した場合エラーをAPIで送信
-      if (isError(x))
-        api.send.Error(
-          errorMessage.core.failCacheAddiltionalData(
-            {
-              type: this.type,
-              path: sourcePath.path,
-            },
-            'info'
-          )
-        );
-    });
+    // 待機せずにキャッシュにインストールし，失敗した場合はエラーをAPIで送信
+    runDetached(this.installer(sourcePath, targetPath), () =>
+      api.send.Error(
+        errorMessage.core.failCacheAddiltionalData(
+          {
+            type: this.type,
+            path: sourcePath.path,
+          },
+          'info'
+        )
+      )
+    );
   }
 
   /** パスからNewFileData<T>を得る */
@@ -122,12 +120,12 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     const basename = fileDataKey(source);
     const sourcePath = new Path(source.path);
     const targetPath = this.cachePath.child(basename);
-    if (targetPath.exists())
+    if (await targetPath.exists())
       return errorMessage.data.path.alreadyExists({
         type: source.isFile ? 'file' : 'directory',
         path: targetPath.path,
       });
-    return await this.installer(sourcePath, targetPath);
+    return this.installer(sourcePath, targetPath);
   }
 
   /**
@@ -137,7 +135,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
    * @returns 各パスがファイルの場合はtrue（判定に失敗した場合はファイルとみなす）
    */
   private async isFiles(paths: Path[]): Promise<boolean[]> {
-    return await asyncMap(paths, async (p) => {
+    return asyncMap(paths, async (p) => {
       const isDir = await p.isDirectory();
       return isError(isDir) || !isDir;
     });
@@ -170,7 +168,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
     id: WorldID
   ): Promise<WithError<WorldFileData<T>[]>> {
     const dirPath = cwdPath.child(this.childPath);
-    if (!dirPath.exists()) await dirPath.mkdir();
+    if (!(await dirPath.exists())) await dirPath.mkdir();
     const paths = await dirPath.iter();
     if (isError(paths)) return withError([], [paths]);
 
@@ -207,7 +205,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       }
 
       // ソースが存在しない場合
-      if (!srcPath.exists()) {
+      if (!(await srcPath.exists())) {
         errors.push(
           errorMessage.data.path.notFound({
             type: source.isFile ? 'file' : 'directory',
@@ -230,7 +228,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
 
       // 新規ファイルだった場合キャッシュにコピー
       if (source.type === 'new') {
-        this.installCache(srcPath, source);
+        await this.installCache(srcPath, source);
       }
 
       if (isError(result)) errors.push(result);
@@ -247,7 +245,7 @@ export class ServerAdditionalFiles<T extends Record<string, any>> {
       .filter((file) => !keepKeys.has(fileDataKey(file)));
 
     // 非同期で削除
-    const deleteErrs = await asyncMap(deletFiles, (x) =>
+    const deleteErrs = await asyncMap(deletFiles, async (x) =>
       dirPath.child(fileDataKey(x)).remove()
     );
     errors.push(...deleteErrs.filter(isError));
