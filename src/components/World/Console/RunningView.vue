@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { QScrollArea } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { useConsoleStore } from 'src/stores/ConsoleStore';
 import { useMainStore } from 'src/stores/MainStore';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import ConsoleLineView from './ConsoleLineView.vue';
 import { consoleScrollMemory } from './consoleScroll';
 import ConsoleSearch from './ConsoleSearch.vue';

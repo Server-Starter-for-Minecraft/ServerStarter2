@@ -40,8 +40,11 @@ async function loader(
   };
 }
 
-async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
-  await sourcePath.copyTo(targetPath);
+async function installer(
+  sourcePath: Path,
+  targetPath: Path
+): Promise<Failable<void>> {
+  return sourcePath.copyTo(targetPath);
 }
 
 export const pluginFiles = new ServerAdditionalFiles<PluginData>(

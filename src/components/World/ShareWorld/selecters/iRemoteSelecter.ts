@@ -1,11 +1,11 @@
 import { toRaw } from 'vue';
+import { checkError } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { ImageURI } from 'app/src-electron/schema/brands';
 import { Remote, RemoteFolder } from 'app/src-electron/schema/remote';
 import { tError } from 'src/i18n/utils/tFunc';
 import { useMainStore } from 'src/stores/MainStore';
 import { updateWorld } from 'src/stores/WorldStore';
-import { checkError } from 'src/components/Error/Error';
 
 export interface GitHubSelecterProp {
   remoteData: RemoteFolder;

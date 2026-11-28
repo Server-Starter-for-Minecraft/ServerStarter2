@@ -106,11 +106,13 @@ export class ZipFile {
     const files = await this.handler.files;
     if (isError(files)) return files;
     const ents = toEntries(files);
-    await asyncMap(ents, async ([k, v]) => {
+    const results = await asyncMap(ents, async ([k, v]) => {
       const data = await v();
       if (isError(data)) return data;
       return path.child(k).write(data);
     });
+    // 1つでも展開できなかった場合はエラーを返す
+    return results.find(isError);
   }
 }
 

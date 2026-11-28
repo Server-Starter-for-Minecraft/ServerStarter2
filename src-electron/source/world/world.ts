@@ -11,6 +11,7 @@ import { Failable, WithError } from 'app/src-electron/schema/error';
 import { BackupData } from 'app/src-electron/schema/filedata';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { WorldProgressor } from '../../common/progress';
@@ -18,6 +19,7 @@ import { NEW_WORLD_NAME } from '../../source/const';
 import { getSystemSettings } from '../../source/stores/system';
 import { Path } from '../../util/binary/path';
 import { asyncMap } from '../../util/obj/objmap';
+import { sourceLoggers } from '../sourceLogger';
 import { serverJsonFile } from './files/json';
 import { WorldHandler } from './handler';
 import { WorldLogHandler } from './loghandler';
@@ -38,7 +40,15 @@ export async function getWorldAbbrs(
     getWorldAbbr(x, worldContainer)
   );
   // ワールドが一つもない場合はディレクトリを削除(設定からは削除しない)
-  if (subdir.length === 0) await dir.remove();
+  if (subdir.length === 0) {
+    const removed = await dir.remove();
+    if (isError(removed)) {
+      ignoreError(
+        removed,
+        '空のディレクトリを削除できなくても一覧の表示に影響しない'
+      );
+    }
+  }
 
   return withError(results.filter(isValid), results.filter(isError));
 }
@@ -108,8 +118,13 @@ export async function newWorld(): Promise<WithError<Failable<World>>> {
 
   const systemSettings = await getSystemSettings();
 
-  if (latestRelease === undefined)
-    throw new Error('Assertion: This error cannot occur');
+  if (latestRelease === undefined) {
+    return withError(
+      errorMessage.system.assertion({
+        message: 'no release version in the vanilla version list',
+      })
+    );
+  }
 
   // ワールドを配置するデフォルトのコンテナを指定
   const containerSetting = await selectNewWorldContainer(
@@ -247,7 +262,11 @@ export async function runCommand(
   command: string
 ): Promise<void> {
   const handler = await WorldHandler.get(worldID);
-  if (isError(handler)) return;
+  if (isError(handler)) {
+    // 送信（send）の API は結果を返せないため，送信先のワールドが無い場合はログに残す
+    sourceLoggers().world.runCommand({ worldID }).warn(handler);
+    return;
+  }
   await handler.runCommand(command);
 }
 
@@ -256,7 +275,10 @@ export async function runCommand(
  */
 export async function reboot(worldID: WorldID): Promise<void> {
   const handler = await WorldHandler.get(worldID);
-  if (isError(handler)) return;
+  if (isError(handler)) {
+    sourceLoggers().world.reboot({ worldID }).warn(handler);
+    return;
+  }
   await handler.reboot();
 }
 

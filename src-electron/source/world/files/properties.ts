@@ -1,12 +1,14 @@
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
-import { isError } from 'app/src-electron/util/error/error';
+import { fromRuntimeError, isError } from 'app/src-electron/util/error/error';
+import { Failable } from 'app/src-electron/util/error/failable';
 import { properties } from 'app/src-electron/util/format/properties';
 import { objValueMap } from 'app/src-electron/util/obj/objmap';
 import { ServerSettingFile } from './base';
 
 /** server.propertiesの中身(string)をパースする */
-const parse = (text: string) => {
-  return ServerProperties.parse(properties.parse(text));
+const parse = (text: string): Failable<ServerProperties> => {
+  const result = ServerProperties.safeParse(properties.parse(text));
+  return result.success ? result.data : fromRuntimeError(result.error);
 };
 
 const stringify = (record: ServerProperties) => {
@@ -59,42 +61,49 @@ export const serverPropertiesFile: ServerSettingFile<ServerProperties> = {
 if (import.meta.vitest) {
   const { test, expect } = import.meta.vitest;
 
+  /** パースに成功することを確認して，結果を返す */
+  const parseOk = (text: string) => {
+    const result = parse(text);
+    expect(isError(result)).toBe(false);
+    return result as ServerProperties;
+  };
+
   test('server_property_parse', () => {
     // bool test (true)
-    const boolTest_true = parse('allow-nether=true');
+    const boolTest_true = parseOk('allow-nether=true');
     expect(Object.hasOwn(boolTest_true, 'allow-nether')).toBe(true);
     const boolValue_true = boolTest_true['allow-nether'];
     expect(boolValue_true).toBe(true);
     expect(typeof boolValue_true).toBe('boolean');
     // bool test (false <-- check 'false' > false parse process)
-    const boolTest_false = parse('white-list=false');
+    const boolTest_false = parseOk('white-list=false');
     expect(Object.hasOwn(boolTest_false, 'white-list')).toBe(true);
     const boolValue_false = boolTest_false['white-list'];
     expect(boolValue_false).toBe(false);
     expect(typeof boolValue_false).toBe('boolean');
 
     // enum test
-    const enumTest = parse('gamemode=survival');
+    const enumTest = parseOk('gamemode=survival');
     expect(Object.hasOwn(enumTest, 'gamemode')).toBe(true);
     const enumValue = enumTest['gamemode'];
     expect(enumValue).toBe('survival');
     expect(typeof enumValue).toBe('string');
     // unsupported option in enum test
-    const enumUnsupportedTest = parse('gamemode=unsupported'); // unsupported setting
+    const enumUnsupportedTest = parseOk('gamemode=unsupported'); // unsupported setting
     expect(Object.hasOwn(enumUnsupportedTest, 'gamemode')).toBe(true);
     const enumUnsupportedValue = enumUnsupportedTest['gamemode'];
     expect(enumUnsupportedValue).toBe('unsupported');
     expect(typeof enumUnsupportedValue).toBe('string');
 
     // number test
-    const numberTest = parse('max-tick-time=60000');
+    const numberTest = parseOk('max-tick-time=60000');
     expect(Object.hasOwn(numberTest, 'max-tick-time')).toBe(true);
     const numberValue = numberTest['max-tick-time'];
     expect(numberValue).toBe(60000);
     expect(typeof numberValue).toBe('number');
 
     // number checks test (if it doesn't use Zod, this test is ineffective)
-    const numberCheckTest = parse('function-permission-level=5'); // invalid setting
+    const numberCheckTest = parseOk('function-permission-level=5'); // invalid setting
     expect(Object.hasOwn(numberCheckTest, 'function-permission-level')).toBe(
       true
     );
@@ -103,7 +112,7 @@ if (import.meta.vitest) {
     expect(typeof numberCheckValue).toBe('number');
 
     // unsupported prop test
-    const unsupportedTest = parse('unsupported-prop=test_value');
+    const unsupportedTest = parseOk('unsupported-prop=test_value');
     expect(Object.hasOwn(unsupportedTest, 'unsupported-prop')).toBe(true);
     const unsupportedValue = unsupportedTest['unsupported-prop'];
     expect(unsupportedValue).toBe('test_value');

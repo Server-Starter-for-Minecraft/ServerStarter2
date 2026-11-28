@@ -2,7 +2,7 @@ import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID } from 'app/src-electron/schema/brands';
 import { Player } from 'app/src-electron/schema/player';
 import { errorMessage } from 'app/src-electron/util/error/construct';
-import { isError, isValid } from 'app/src-electron/util/error/error';
+import { isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { sourceLoggers } from '../sourceLogger';

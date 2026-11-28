@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { showUnexpectedError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import BaseActionsCard from 'src/components/World/utils/BaseActionsCard.vue';

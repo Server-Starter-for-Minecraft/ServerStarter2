@@ -1,10 +1,5 @@
 import { ErrorMessageContent } from './base';
 
-type PathErrorContent = ErrorMessageContent<{
-  type: 'file' | 'directory';
-  path: string;
-}>;
-
 // 使用している外部ツールに関するエラー
 export type LibErrors = {
   ngrok: {

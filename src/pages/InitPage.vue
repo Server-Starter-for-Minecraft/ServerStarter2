@@ -2,10 +2,10 @@
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { afterWindow, initWindow } from 'app/src/init';
+import { showUnexpectedError } from 'src/error/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { runFirstLaunch } from 'src/components/App/firstLaunch';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import {
   OwnerDialogProp,
   ReturnOwnerDialog,

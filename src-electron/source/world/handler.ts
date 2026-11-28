@@ -1,5 +1,4 @@
 import { Listener } from '@ngrok/ngrok';
-import { randomInt } from 'crypto';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { api } from 'app/src-electron/core/api';
@@ -25,17 +24,19 @@ import {
 } from 'app/src-electron/util/binary/archive/tar';
 import { Path } from 'app/src-electron/util/binary/path';
 import { errorMessage } from 'app/src-electron/util/error/construct';
+import { isError, isValid } from 'app/src-electron/util/error/error';
 import {
-  fromRuntimeError,
-  isError,
-  isValid,
-} from 'app/src-electron/util/error/error';
-import { failabilify } from 'app/src-electron/util/error/failable';
+  failabilify,
+  safeExec,
+  safeExecAsync,
+} from 'app/src-electron/util/error/failable';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { portInUse } from 'app/src-electron/util/network/port';
 import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import { sleep } from 'app/src-electron/util/promise/sleep';
-import { genUUID } from 'app/src-electron/util/random/uuid';
+import { randomInt } from 'app/src-electron/util/random/random';
+import { genUUIDOf } from 'app/src-electron/util/random/uuid';
 import { allocateTempDir } from 'app/src-electron/util/tempPath';
 import { getCurrentTimestamp } from 'app/src-electron/util/timestamp';
 import { serverAllAdditionalFiles } from '../additionalContents/all';
@@ -56,6 +57,20 @@ import {
 import { validateNewWorldName } from './name';
 import { getOpDiff } from './players';
 import { worldContainerToPath } from './worldContainer';
+
+/**
+ * 一時フォルダを削除する
+ *
+ * 一時フォルダはアプリの終了時にも削除するため，ここで削除できなくても問題はない
+ *
+ * @param tempDir 削除する一時フォルダ
+ */
+async function removeTempDir(tempDir: Path) {
+  const removed = await tempDir.remove();
+  if (isError(removed)) {
+    ignoreError(removed, '一時フォルダはアプリの終了時にも削除する');
+  }
+}
 
 /** 複数の処理を並列で受け取って直列で処理 */
 class PromiseSpooler {
@@ -233,11 +248,6 @@ function withServerPorts(
   return { ...properties, ...replace };
 }
 
-/** 捕捉した例外をエラーメッセージに変換する */
-function toRuntimeError(e: unknown) {
-  return fromRuntimeError(e instanceof Error ? e : new Error(String(e)));
-}
-
 /** サーバー起動処理の準備が完了した時点の情報 */
 type ReadyRunContext = {
   /** 実行中のサーバー */
@@ -289,7 +299,7 @@ export class WorldHandler {
     if (registered !== undefined) {
       return registered.id;
     }
-    const id = WorldID.parse(genUUID());
+    const id = genUUIDOf(WorldID);
     WorldHandler.worldHandlerMap[id] = new WorldHandler(id, name, container);
     return id;
   }
@@ -583,7 +593,12 @@ export class WorldHandler {
       // op権限レベルが0になったプレイヤーに対してdeopを実行
       await asyncMap(diff[0], async (x) => this.runCommand(`deop ${x}`));
 
-      if (isValid(current.value.properties)) {
+      if (isError(current.value.properties)) {
+        ignoreError(
+          current.value.properties,
+          'server.properties を読み込めない場合は，op 権限のレベルを変更しない'
+        );
+      } else {
         const opPermissionLevel =
           current.value.properties['op-permission-level'];
 
@@ -591,14 +606,17 @@ export class WorldHandler {
           const diffs = diff[opPermissionLevel];
           // op権限レベルがop-permission-levelになったプレイヤーに対してopを実行
           await asyncMap(diffs, async (x) => this.runCommand(`op ${x}`));
-          ([1, 2, 3, 4] as const).forEach((i) => {
+          // op-permission-level 以外のレベルには，コマンドで変更できないため変更できなかったことを伝える
+          for (const i of [1, 2, 3, 4] as const) {
             if (i !== opPermissionLevel && diff[i].length > 0) {
-              errorMessage.core.world.failedChangingOp({
-                users: diff[i],
-                op: i,
-              });
+              result.errors.push(
+                errorMessage.core.world.failedChangingOp({
+                  users: diff[i],
+                  op: i,
+                })
+              );
             }
-          });
+          }
         }
       }
       if (!sameMember) await this.runCommand('whitelist reload');
@@ -934,23 +952,22 @@ export class WorldHandler {
 
     // 展開に失敗した場合
     if (isError(decompressResult)) {
-      // 一時フォルダを削除
-      await tempDir.remove();
+      await removeTempDir(tempDir);
       return withError(decompressResult);
     }
     const afterLocalJson = await serverJsonFile.load(tempDir);
     // Jsonの読み込みに失敗した場合
     if (isError(afterLocalJson)) {
-      // 一時フォルダを削除
-      await tempDir.remove();
+      await removeTempDir(tempDir);
       return withError(afterLocalJson);
     }
 
     // 一時フォルダの中身をこのパスに移動
-    await savePath.remove();
+    const removedSavePath = await savePath.remove();
+    if (isError(removedSavePath)) return withError(removedSavePath);
     const moveSavePath = await tempDir.moveTo(savePath);
     if (isError(moveSavePath)) return withError(moveSavePath);
-    await tempDir.remove();
+    await removeTempDir(tempDir);
 
     // remoteをrestore前のデータで上書き
     afterLocalJson.remote = remote;
@@ -1029,28 +1046,29 @@ export class WorldHandler {
   private async definePortNumber(
     beforeWorld: World,
     ngrokToken: string | undefined
-  ): Promise<Failable<number>> {
+  ): Promise<WithError<Failable<number>>> {
     if (isNgrokEnabled(beforeWorld, ngrokToken)) {
       // Ngrokを使用する場合 開いてるポートを適当に使う
-      const portnum = await this.getFreePort();
-      if (isError(portnum)) return portnum;
-      return portnum;
+      return withError(await this.getFreePort());
     } else {
       // Ngrokを使用しない場合 ポートが空いてるかチェック
       let port = 25565;
-      if (isValid(beforeWorld.properties)) {
+      if (isError(beforeWorld.properties)) {
+        ignoreError(
+          beforeWorld.properties,
+          'server.properties を読み込めない場合は既定のポート番号を使う'
+        );
+      } else {
         const serverPort = beforeWorld.properties['server-port'];
         if (typeof serverPort === 'number') port = serverPort;
       }
 
+      // ポートが使用中でも起動は試みる（使用中であることを伝える）
       const portIsUsed = !(await this.checkPortAvailability(port));
-
-      if (portIsUsed) {
-        errorMessage.core.world.serverPortIsUsed({
-          port,
-        });
-      }
-      return port;
+      const errors = portIsUsed
+        ? [errorMessage.core.world.serverPortIsUsed({ port })]
+        : [];
+      return withError(port, errors);
     }
   }
 
@@ -1071,12 +1089,7 @@ export class WorldHandler {
 
     // サーバーの終了を待機
     // (実行処理が例外で終了した場合も，終了後の処理を行って状態を元に戻す)
-    let serverResult: Failable<undefined>;
-    try {
-      serverResult = await context.runner;
-    } catch (e) {
-      serverResult = toRuntimeError(e);
-    }
+    const serverResult = await safeExecAsync(async () => context.runner);
 
     const after = await this.promiseSpooler.spool(async () =>
       this.afterRunExec(progress, context, serverResult)
@@ -1137,15 +1150,20 @@ export class WorldHandler {
     const savePath = await this.getSavePath();
 
     // ポート番号を取得
-    const port = await this.definePortNumber(
+    const definedPort = await this.definePortNumber(
       beforeWorld,
       sysSettings.user.ngrokToken
     );
+    errors.push(...definedPort.errors);
+    const port = definedPort.value;
     if (isError(port)) return withError(port, errors);
 
     // 実行時のサーバープロパティ(ポートだけ違う)
     const userProperties = isError(beforeWorld.properties)
-      ? sysSettings.world.properties
+      ? (ignoreError(
+          beforeWorld.properties,
+          'server.properties を読み込めない場合はシステム設定の既定値で起動する'
+        ) ?? sysSettings.world.properties)
       : beforeWorld.properties;
     const saveProperties = await serverPropertiesFile.save(
       savePath,
@@ -1173,19 +1191,22 @@ export class WorldHandler {
     this.port = port;
     this.userPorts = pickServerPorts(userProperties);
 
-    try {
-      // 使用中フラグを立てて保存
+    // 起動準備の途中で例外が発生した場合は，サーバー終了後と同様に
+    // ポート番号・Ngrok・使用中フラグを元に戻してからエラーを返す
+    const started = await safeExecAsync(async () => {
+      // 使用中フラグを立てて保存（保存・同期できなくても起動は続ける）
       settings.using = true;
       settings.last_user = sysSettings.user.owner;
       settings.last_date = getCurrentTimestamp();
       settings.last_id = sysSettings.user.id;
       const sub = progress.subtitle({ key: 'server.local.savingSettingFiles' });
-      await serverJsonFile.save(savePath, settings);
-      // if (isError(saveServerJson)) withError(saveServerJson, errors); // 無理なら諦める
+      const savedJson = await serverJsonFile.save(savePath, settings);
+      if (isError(savedJson)) errors.push(savedJson);
       sub.delete();
 
       // pushを実行 TODO: 失敗時の処理
-      await this.push(progress);
+      const pushed = await this.push(progress);
+      if (isError(pushed)) errors.push(pushed);
 
       // pluginとvanillaでファイル構造を切り替える
       const directoryFormatResult = await formatWorldDirectory(
@@ -1213,30 +1234,19 @@ export class WorldHandler {
         notification
       );
       this.runner = runner;
+      return { runner, ngrokListener, settings };
+    });
+    if (isValid(started)) return withError(started, errors);
 
-      return withError({ runner, ngrokListener, settings }, errors);
-    } catch (e) {
-      // 起動準備の途中で例外が発生した場合は，サーバー終了後と同様に
-      // ポート番号・Ngrok・使用中フラグを元に戻してからエラーを返す
-      const error = toRuntimeError(e);
-      try {
-        beforeTitle.delete();
-      } catch (titleError) {
-        errors.push(toRuntimeError(titleError));
-      }
-      try {
-        const after = await this.afterRunExec(
-          progress,
-          { ngrokListener, settings },
-          error
-        );
-        errors.push(...after.errors);
-      } catch (cleanupError) {
-        // 後処理（リモートへのpushなど）でも例外が発生した場合は，元のエラーを優先して返す
-        errors.push(toRuntimeError(cleanupError));
-      }
-      return withError(error, errors);
-    }
+    const deleted = safeExec(() => beforeTitle.delete());
+    if (isError(deleted)) errors.push(deleted);
+    // 後処理（リモートへのpushなど）でも例外が発生した場合は，元のエラーを優先して返す
+    const after = await safeExecAsync(async () =>
+      this.afterRunExec(progress, { ngrokListener, settings }, started)
+    );
+    if (isError(after)) errors.push(after);
+    else errors.push(...after.errors);
+    return withError(started, errors);
   }
 
   /**
@@ -1285,11 +1295,13 @@ export class WorldHandler {
     settings.last_date = getCurrentTimestamp();
     settings.using = false;
     const saveSub = progress.subtitle({ key: 'server.save.localSetting' });
-    await serverJsonFile.save(savePath, settings);
+    const savedJson = await serverJsonFile.save(savePath, settings);
+    if (isError(savedJson)) errors.push(savedJson);
     saveSub.delete();
 
     // pushを実行
-    await this.push(progress);
+    const pushed = await this.push(progress);
+    if (isError(pushed)) errors.push(pushed);
 
     // サーバーの実行が失敗していたらエラー
     if (isError(serverResult)) return withError(serverResult, errors);

@@ -1,5 +1,8 @@
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
+import { ignoreError } from 'src/error/error';
+import { showUnexpectedError } from 'src/error/error';
+import { checkError, ErrorFuncReturns } from 'src/error/error';
 import { deepcopy } from 'app/src-public/scripts/deepcopy';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { fromEntries, toEntries } from 'app/src-public/scripts/obj/obj';
@@ -13,8 +16,6 @@ import {
 } from 'app/src-electron/schema/world';
 import { assets } from 'src/assets/assets';
 import { tError } from 'src/i18n/utils/tFunc';
-import { showUnexpectedError } from 'src/components/Error/Error';
-import { checkError, ErrorFuncReturns } from 'src/components/Error/Error';
 import { useConsoleStore } from './ConsoleStore';
 import { useMainStore } from './MainStore';
 import { useSystemStore } from './SystemStore';
@@ -89,7 +90,7 @@ export function setWorldSubscriber() {
   const worldStore = useWorldStore();
   const mainStore = useMainStore();
 
-  worldStore.$subscribe((mutation, state) => {
+  worldStore.$subscribe(() => {
     if (isSavingSuppressed) return;
 
     const world = mainStore.world;
@@ -133,6 +134,11 @@ export async function createNewWorld(duplicateWorldID?: WorldID) {
               uuid: p.uuid,
               op: { level: 4, bypassesPlayerLimit: false },
             });
+          } else {
+            ignoreError(
+              world.players,
+              'プレイヤーの設定を読めない場合はオーナーを登録しない'
+            );
           }
         },
         (e) =>
@@ -278,7 +284,7 @@ export function updateBackWorld(worldID?: WorldID) {
     worldStore.worldListBack = deepcopy(
       fromEntries(
         toEntries(worldStore.worldList)
-          .filter(([wid, w]) => w.type === 'edited')
+          .filter(([, w]) => w.type === 'edited')
           .map(([wid, w]) => [wid, w.world as WorldEdited])
       )
     );

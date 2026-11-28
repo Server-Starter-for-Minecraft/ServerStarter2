@@ -11,8 +11,7 @@ import SsI18nT from '../util/base/ssI18nT.vue';
 import SsSelect from '../util/base/ssSelect.vue';
 
 defineEmits({ ...useDialogPluginComponent.emitsObject });
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
-  useDialogPluginComponent();
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 const t = useI18n();
 const sysStore = useSystemStore();

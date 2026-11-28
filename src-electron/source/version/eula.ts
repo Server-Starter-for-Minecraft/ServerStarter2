@@ -1,6 +1,7 @@
 import { GroupProgressor } from 'app/src-electron/common/progress';
 import { Failable } from 'app/src-electron/schema/error';
 import { isError } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { Path } from '../../util/binary/path';
 import { properties } from '../../util/format/properties';
 
@@ -43,11 +44,15 @@ export async function getEulaAgreement(
   const p = progress?.subtitle({ key: 'server.eula.loading' });
   const readRes = await eulaPath.readText();
 
-  let readTxt = '';
-  if (isError(readRes)) readTxt = 'eula=false';
-  else readTxt = readRes;
+  // eula.txt が無い・読めない場合は，同意していないものとして扱う
+  const readTxt = isError(readRes)
+    ? (ignoreError(
+        readRes,
+        'eula.txt が無い場合は同意していないものとして扱う'
+      ) ?? 'eula=false')
+    : readRes;
 
-  const { eula, url, comments } = parseEula(readTxt);
+  const { eula, url } = parseEula(readTxt);
   p?.delete();
   return { eula, url };
 }

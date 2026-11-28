@@ -1,4 +1,4 @@
-import dayjs, { type Dayjs } from 'dayjs';
+import { type Dayjs } from 'dayjs';
 import { ConsoleOutput } from 'app/src-electron/schema/console';
 import { Failable } from 'app/src-electron/schema/error';
 import { trimAnsi } from 'app/src-electron/util/ansi';
@@ -6,8 +6,13 @@ import { AwaitOnce } from 'app/src-electron/util/awaitOnce';
 import { gzip } from 'app/src-electron/util/binary/archive/gz';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { safeExec, safeExecAsync } from 'app/src-electron/util/error/failable';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { genUUID } from 'app/src-electron/util/random/uuid';
 import { allocateTempDir } from 'app/src-electron/util/tempPath';
+import { sourceLoggers } from '../sourceLogger';
+
+const loggers = () => sourceLoggers().world.log;
 
 // 起動中のログに関する処理
 const dirGetter = new AwaitOnce(allocateTempDir);
@@ -52,19 +57,27 @@ export class WorldLogHandler {
    * 現状のlatest.logをアーカイブ化する(存在する場合)
    *
    * Failの可能性があるが，latest.logのアーカイブ成否はユーザーの実行に問題にならないため通知しない
+   * （失敗はログに残す）
    */
   async archive() {
+    const archived = await this.archiveExec();
+    if (isError(archived)) loggers().archive().warn(archived);
+  }
+
+  private async archiveExec(): Promise<Failable<void>> {
     // 出力ごとのログはlatest.logを表示するためのものであり、アーカイブしたログは表示しないため削除する
-    await this.LatestOutputsPath.remove();
+    const removedOutputs = await this.LatestOutputsPath.remove();
+    if (isError(removedOutputs)) return removedOutputs;
 
     const latestPath = this.LatestLogPath;
     if (!(await latestPath.exists())) return;
     const gz = await gzip.fromFile(latestPath);
-    if (isError(gz)) return;
+    if (isError(gz)) return gz;
 
     const date = await latestPath.lastUpdateTime();
-    await (await this.getArchivePath(date)).write(gz);
-    await latestPath.remove();
+    const written = await (await this.getArchivePath(date)).write(gz);
+    if (isError(written)) return written;
+    return latestPath.remove();
   }
 
   private get LatestLogPath() {
@@ -93,16 +106,24 @@ export class WorldLogHandler {
    */
   async append(output: ConsoleOutput) {
     // 出力された順に書き込み、flash時に書き込みの完了を待てるよう保持する
-    // （一時フォルダの確保などに失敗しても以降の出力は記録できるよう、失敗は無視する）
-    this.writing = this.writing
-      .then(async () => {
+    // （一時フォルダの確保などに失敗しても以降の出力は記録できるよう，失敗しても待機列は止めない）
+    this.writing = this.writing.then(async () => {
+      const written = await safeExecAsync(async () => {
         const tmp = await this.tempPaths.get();
-        await Promise.all([
+        const results = await Promise.all([
           tmp.text.appendText(trimAnsi(output.text)),
           tmp.outputs.appendText(`${JSON.stringify(output)}\n`),
         ]);
-      })
-      .catch(() => undefined);
+        return results.find(isError);
+      });
+      if (isError(written)) {
+        // 出力のたびにログを残すとログが増えすぎるため，記録の失敗は詳細のログ（debug）に留める
+        ignoreError(
+          written,
+          'コンソールの出力の記録の失敗は，サーバーの実行に影響しない'
+        );
+      }
+    });
     return this.writing;
   }
 
@@ -115,14 +136,14 @@ export class WorldLogHandler {
     const tmp = await this.tempPaths.get();
     if (!(await tmp.text.exists())) return;
 
-    const latest = this.LatestLogPath;
-
-    if (!(await latest.exists())) {
-      await latest.remove();
+    // 移動先（latest.log）に既存のファイルがある場合は，moveTo が置き換える
+    const movedText = await tmp.text.moveTo(this.LatestLogPath);
+    if (isError(movedText)) {
+      loggers().flash().warn(movedText);
+      return;
     }
-
-    await tmp.text.moveTo(latest);
-    await tmp.outputs.moveTo(this.LatestOutputsPath);
+    const movedOutputs = await tmp.outputs.moveTo(this.LatestOutputsPath);
+    if (isError(movedOutputs)) loggers().flash().warn(movedOutputs);
   }
 
   /**
@@ -139,7 +160,12 @@ export class WorldLogHandler {
 
     if (await this.LatestOutputsPath.exists()) {
       const outputs = await this.LatestOutputsPath.readText();
-      if (!isError(outputs)) {
+      if (isError(outputs)) {
+        ignoreError(
+          outputs,
+          '出力ごとのログが読めない場合は latest.log の各行を表示する'
+        );
+      } else {
         const parsed = parseOutputs(outputs);
         // latest.logと同じ内容を記録したものである場合のみ利用する
         if (parsed.map((o) => trimAnsi(o.text)).join('') === content)
@@ -164,11 +190,11 @@ export class WorldLogHandler {
 function parseOutputs(content: string): ConsoleOutput[] {
   return content.split('\n').flatMap((line) => {
     if (line.trim() === '') return [];
-    try {
-      const parsed = ConsoleOutput.safeParse(JSON.parse(line));
-      return parsed.success ? [parsed.data] : [];
-    } catch {
-      return [];
+    const json = safeExec((): unknown => JSON.parse(line));
+    if (isError(json)) {
+      return ignoreError(json, '書き込みが途中で途切れた行は読み飛ばす') ?? [];
     }
+    const parsed = ConsoleOutput.safeParse(json);
+    return parsed.success ? [parsed.data] : [];
   });
 }

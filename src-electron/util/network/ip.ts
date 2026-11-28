@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { Failable } from '../../schema/error';
 import { BytesData } from '../binary/bytesData';
 import { errorMessage } from '../error/construct';
-import { isValid } from '../error/error';
+import { isError, isValid } from '../error/error';
+import { utilLoggers } from '../utilLogger';
 
 const IpinfoSchema = z.object({
   ip: z.string(),
@@ -18,31 +19,44 @@ const IpinfoSchema = z.object({
 });
 type IpinfoSchema = z.infer<typeof IpinfoSchema>;
 
+/**
+ * globalIPの取得先（先頭から順に試す）
+ *
+ * 取得先が使えない場合に備えて，複数の取得先を用意している
+ */
+const GLOBAL_IP_SOURCES: {
+  url: string;
+  parse: (data: BytesData) => Promise<Failable<string>>;
+}[] = [
+  // https://ipv4.icanhazip.com から取得
+  {
+    url: 'https://ipv4.icanhazip.com',
+    parse: async (data) => (await data.text()).trim(),
+  },
+  // https://ipinfo.io/json から取得
+  {
+    url: 'https://ipinfo.io/json',
+    parse: async (data) => {
+      const json = await data.json(IpinfoSchema);
+      return isError(json) ? json : json.ip;
+    },
+  },
+  // https://api.ipify.org から取得
+  {
+    url: 'https://api.ipify.org',
+    parse: async (data) => (await data.text()).trim(),
+  },
+];
+
 /** globalIPを取得 000.00.00.000 */
 export async function getGlobalIP(): Promise<Failable<string>> {
-  // https://ipv4.icanhazip.com から取得
-  const icanhazip = await BytesData.fromURL('https://ipv4.icanhazip.com');
-  if (isValid(icanhazip)) {
-    return (await icanhazip.text()).trim();
+  for (const { url, parse } of GLOBAL_IP_SOURCES) {
+    const data = await BytesData.fromURL(url);
+    const ip = isError(data) ? data : await parse(data);
+    if (isValid(ip)) return ip;
+    // 次の取得先で再試行する（すべて失敗した場合のみエラーを返すため，各取得先の失敗はログに残す）
+    utilLoggers().getGlobalIP({ url }).warn(ip);
   }
-
-  // フォールバック
-  // https://ipinfo.io/json から取得
-  const ipinfo = await BytesData.fromURL('https://ipinfo.io/json');
-  if (isValid(ipinfo)) {
-    const ipinfoJson = await ipinfo.json(IpinfoSchema);
-    if (isValid(ipinfoJson)) {
-      return ipinfoJson.ip;
-    }
-  }
-
-  // フォールバック
-  // https://api.ipify.org から取得
-  const ipify = await BytesData.fromURL('https://api.ipify.org');
-  if (isValid(ipify)) {
-    return (await ipify.text()).trim();
-  }
-
   return errorMessage.core.failGetGlobalIP();
 }
 

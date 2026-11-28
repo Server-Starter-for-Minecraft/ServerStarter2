@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { launchDetached, launchDetachedInShell } from './launch';
+import { launchDetached, launchDetachedInShell } from './detachedProcess';
 
 describe('launchDetached', () => {
   test('プロセスを起動できた場合は成功を返す', async () => {

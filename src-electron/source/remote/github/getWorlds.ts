@@ -10,6 +10,7 @@ import {
 } from 'app/src-electron/schema/remote';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError, isValid } from 'app/src-electron/util/error/error';
+import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { withError } from 'app/src-electron/util/error/witherror';
 import { asyncMap } from 'app/src-electron/util/obj/objmap';
 import { LEVEL_NAME } from '../../../source/const';
@@ -85,7 +86,9 @@ export async function getWorld(
     using: json.using,
     last_date: json.last_date,
     last_user: json.last_user,
-    avater_path: isValid(icon) ? icon : undefined,
+    avater_path: isValid(icon)
+      ? icon
+      : ignoreError(icon, 'アイコンが無いワールドはアイコンなしで表示する'),
     ngrok_setting: json.ngrok_setting,
   };
 }

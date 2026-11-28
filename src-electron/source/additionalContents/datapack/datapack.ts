@@ -83,8 +83,11 @@ async function loader(path: Path): Promise<Failable<DatapackData>> {
   };
 }
 
-async function installer(sourcePath: Path, targetPath: Path): Promise<void> {
-  await sourcePath.copyTo(targetPath);
+async function installer(
+  sourcePath: Path,
+  targetPath: Path
+): Promise<Failable<void>> {
+  return sourcePath.copyTo(targetPath);
 }
 
 export const datapackFiles = new ServerAdditionalFiles<DatapackData>(

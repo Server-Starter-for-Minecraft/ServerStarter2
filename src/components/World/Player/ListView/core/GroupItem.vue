@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Component, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { showUnexpectedError } from 'src/error/error';
 import { values } from 'app/src-public/scripts/obj/obj';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { UUID } from 'app/src-electron/schema/brands';
@@ -9,7 +10,6 @@ import { assets } from 'src/assets/assets';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useSystemStore } from 'src/stores/SystemStore';
 import { usePlayerStore } from 'src/stores/WorldTabs/PlayerStore';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 import DangerDialog from 'src/components/util/danger/DangerDialog.vue';

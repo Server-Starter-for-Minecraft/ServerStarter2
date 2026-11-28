@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue';
+import { ignoreError, safeExec } from 'src/error/error';
+import { showUnexpectedError } from 'src/error/error';
 import {
   ConsoleData,
   MatchedConsoleData,
   MatchResult,
 } from 'src/schema/console';
+import { isError } from 'app/src-public/scripts/error';
 import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { $T } from 'src/i18n/utils/tFunc';
 import { useConsoleOpeStore } from 'src/stores/WorldTabs/ConsoleOperationStore';
-import { showUnexpectedError } from 'src/components/Error/Error';
 import SsInput from 'src/components/util/base/ssInput.vue';
 
 /** 検索結果として表示する最大件数 */
@@ -66,11 +68,10 @@ const matchCountText = () => {
 function isMatchQuery(text: string): MatchResult[] {
   /** 動的に定義される正規表現において，不正な値を指定されたときにNULLを返す */
   const setDynamicRegex = (query: string) => {
-    try {
-      return new RegExp(query, 'gi');
-    } catch (e) {
-      return null;
-    }
+    const regex = safeExec(() => new RegExp(query, 'gi'));
+    return isError(regex)
+      ? (ignoreError(regex, '入力途中の不正な正規表現では検索しない') ?? null)
+      : regex;
   };
 
   const query = searchInput.value.trim();

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { createNewName } from 'app/src-public/scripts/createNewName';
 import { isValid } from 'app/src-public/scripts/error';
-import { toEntries, values } from 'app/src-public/scripts/obj/obj';
+import { values } from 'app/src-public/scripts/obj/obj';
 import { genUUID } from 'app/src-public/scripts/uuid';
 import { PlayerUUID, UUID } from 'app/src-electron/schema/brands';
 import {
