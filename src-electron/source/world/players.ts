@@ -14,12 +14,12 @@ export function getOpDiff(current: PlayerSetting[], next: PlayerSetting[]) {
   const currentMap = fromEntries<Record<PlayerUUID, OpLevel | 0>>(
     current.map((x) => [x.uuid, x.op?.level ?? 0])
   );
-  const opPlayers = {
-    0: [] as string[],
-    1: [] as string[],
-    2: [] as string[],
-    3: [] as string[],
-    4: [] as string[],
+  const opPlayers: Record<OpLevel | 0, string[]> = {
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+    4: [],
   };
   next.forEach((item) => {
     const cur = currentMap[item.uuid];

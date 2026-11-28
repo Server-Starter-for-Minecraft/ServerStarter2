@@ -3,6 +3,7 @@ import { WorldContainer } from 'app/src-electron/schema/brands';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
 import { Path } from 'app/src-electron/util/binary/path';
 import { isError } from 'app/src-electron/util/error/error';
+import { asBrand } from 'app/src-electron/util/zod/brand';
 import { DialogOptions } from '../../schema/dialog';
 import {
   BackupData,
@@ -166,7 +167,7 @@ export function pickDialog(windowGetter: () => BrowserWindow | undefined) {
       case 'image':
         return pickImage(path);
       case 'container':
-        return path.str() as WorldContainer;
+        return asBrand(WorldContainer, path.str());
       case 'backup':
         return parseBackUpPath(path);
     }

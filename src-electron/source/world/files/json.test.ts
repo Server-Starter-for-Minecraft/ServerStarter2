@@ -24,12 +24,12 @@ describe('server_settings.json', () => {
     await dir.mkdir(true);
 
     await serverJsonFile.save(dir, settings);
-    const raw = JSON.parse(
+    const raw: unknown = JSON.parse(
       (await serverJsonFile.path(dir).readText()) as string
     );
     const loaded = await serverJsonFile.load(dir);
 
-    expect(raw[SCHEMA_VERSION_KEY]).toEqual(expect.any(Number));
+    expect(raw).toHaveProperty(SCHEMA_VERSION_KEY, expect.any(Number));
     expect(isError(loaded)).toBe(false);
     expect(loaded).toEqual(settings);
   });

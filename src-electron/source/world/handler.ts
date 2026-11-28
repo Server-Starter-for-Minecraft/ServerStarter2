@@ -72,14 +72,29 @@ async function removeTempDir(tempDir: Path) {
   }
 }
 
-/** 複数の処理を並列で受け取って直列で処理 */
+/**
+ * 待機中の処理
+ *
+ * 処理ごとに結果の型が異なるため，結果は unknown として扱う（呼び出し元の型への対応は spool で行う）
+ */
+type SpoolItem = {
+  /** 処理 */
+  process: () => Promise<unknown>;
+  /** 処理の結果を呼び出し元へ返す */
+  resolve: (value: unknown) => void;
+  /** 処理のチャンネル（同じチャンネルの処理は連続せず上書きされる） */
+  channel: string | undefined;
+};
+
+/**
+ * 複数の処理を並列で受け取って直列で処理
+ *
+ * `util/promise/spool.ts` の PromiseSpooler に，同じチャンネルの処理を最新のものだけ実行する機能を加えたもの
+ * （ワールドの保存のように，連続した要求は最後の内容だけを反映すればよい処理に使う）
+ */
 class PromiseSpooler {
   /** 待機中の処理のQueue */
-  spoolingQueue: [
-    () => Promise<any>,
-    (value: any | PromiseLike<any>) => void,
-    undefined | string,
-  ][];
+  spoolingQueue: SpoolItem[];
   running: boolean;
 
   constructor() {
@@ -87,47 +102,37 @@ class PromiseSpooler {
     this.running = false;
   }
 
-  pushItem<T>(
-    spoolingQueue: [
-      () => Promise<any>,
-      (value: any) => void,
-      string | undefined,
-    ][],
-    process: () => Promise<T>,
-    resolve: (value: T | PromiseLike<T>) => void,
-    channel: string | undefined
-  ) {
-    if (channel !== undefined) {
-      const lastItem = spoolingQueue[spoolingQueue.length - 1];
-      if (lastItem !== undefined) {
-        const [, lastResolve, lastChannel] = lastItem;
-        if (lastChannel === channel) {
-          const newResolve = (value: T) => {
-            lastResolve(value);
-            resolve(value);
-          };
-          // チャンネルが同じ場合は処理を上書き
-          // resolveは統合
-          lastItem[0] = process;
-          lastItem[1] = newResolve;
-          return;
-        }
-      }
+  /**
+   * 処理を待機列に追加する
+   *
+   * 待機列の最後の処理と同じチャンネルの場合は，その処理を上書きし，両方の呼び出し元へ上書き後の処理の結果を返す
+   *
+   * @param item 追加する処理
+   */
+  private pushItem(item: SpoolItem) {
+    const lastItem = this.spoolingQueue.at(-1);
+    if (item.channel !== undefined && lastItem?.channel === item.channel) {
+      const lastResolve = lastItem.resolve;
+      lastItem.process = item.process;
+      lastItem.resolve = (value) => {
+        lastResolve(value);
+        item.resolve(value);
+      };
+      return;
     }
-    // それ以外の場合処理を追加
-    spoolingQueue.push([process, resolve, channel]);
+    this.spoolingQueue.push(item);
   }
 
   /** channelを指定すると同じchannelの処理は連続せず上書きされる */
   async spool<T>(spollingItem: () => Promise<T>, channel?: string) {
-    const pushItem = (
-      process: () => Promise<T>,
-      resolve: (value: T | PromiseLike<T>) => void,
-      channel: string | undefined
-    ) => this.pushItem(this.spoolingQueue, process, resolve, channel);
-
     const resultPromise = new Promise<T>((resolve) => {
-      pushItem(spollingItem, resolve, channel);
+      this.pushItem({
+        process: spollingItem,
+        // 結果はこの処理の結果（T）か，上書きした同じチャンネルの処理の結果である。
+        // 同じチャンネルの処理は同じ型の結果を返す前提とし，呼び出し元の型（T）として返す
+        resolve: (value) => resolve(value as T | PromiseLike<T>),
+        channel,
+      });
     });
     // 処理の失敗は各処理の呼び出し元へ返すため，ここでは実行の基盤の異常のみをログに残す
     runDetached(this.start(), (e) =>
@@ -142,7 +147,7 @@ class PromiseSpooler {
     while (true) {
       const item = this.spoolingQueue.shift();
       if (item === undefined) break;
-      const [process, resolve] = item;
+      const { process, resolve } = item;
       try {
         resolve(await process());
       } catch (e) {
@@ -1392,4 +1397,62 @@ export class WorldHandler {
   async reboot() {
     await this.runner?.reboot();
   }
+}
+
+/** In Source Testing */
+if (import.meta.vitest) {
+  describe('PromiseSpooler', () => {
+    /** 完了を外から指示できる処理（後続の処理を待機列に並べるために使う） */
+    function blocker() {
+      let release = () => {};
+      const done = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return { process: async () => done, release };
+    }
+
+    test('同じチャンネルの処理は最新のものだけ実行し，上書きされた処理の呼び出し元にも最新の結果を返す', async () => {
+      const spooler = new PromiseSpooler();
+      const ran: string[] = [];
+      const running = blocker();
+      const first = spooler.spool(running.process);
+
+      // 実行中の処理の後ろに，同じチャンネルの処理を 2 つと，チャンネルの無い処理を並べる
+      const a = spooler.spool(async () => {
+        ran.push('A');
+        return 'A';
+      }, 'X');
+      const b = spooler.spool(async () => {
+        ran.push('B');
+        return 'B';
+      }, 'X');
+      const c = spooler.spool(async () => {
+        ran.push('C');
+        return 'C';
+      });
+      running.release();
+      await first;
+
+      expect(await a).toBe('B');
+      expect(await b).toBe('B');
+      expect(await c).toBe('C');
+      expect(ran).toEqual(['B', 'C']);
+    });
+
+    test('上書きした処理が失敗した場合は，上書きされた処理の呼び出し元にも失敗を返し，後続の処理は続ける', async () => {
+      const spooler = new PromiseSpooler();
+      const running = blocker();
+      const first = spooler.spool(running.process);
+
+      const a = spooler.spool(async () => 'A', 'X');
+      const b = spooler.spool(async () => Promise.reject(new Error('B')), 'X');
+      const c = spooler.spool(async () => 'C');
+      running.release();
+      await first;
+
+      await expect(a).rejects.toThrow('B');
+      await expect(b).rejects.toThrow('B');
+      expect(await c).toBe('C');
+    });
+  });
 }

@@ -267,7 +267,7 @@ async function importCustomMapDir(
  * @param files 追加するコンテンツの種類
  * @param dir コンテンツが置かれているディレクトリ
  */
-async function cacheLocalContents<T extends Record<string, any>>(
+async function cacheLocalContents<T extends Record<string, unknown>>(
   files: ServerAdditionalFiles<T>,
   dir: Path
 ): Promise<void> {

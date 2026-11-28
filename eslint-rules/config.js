@@ -48,8 +48,8 @@ export const TYPE_ASSERTION_EXCEPTIONS = [
   },
   {
     file: 'src-electron/util/timestamp.ts',
-    functions: ['getCurrentTimestamp'],
-    reason: '現在時刻にブランド型（Timestamp）を付ける',
+    functions: ['toTimestamp'],
+    reason: '日時にブランド型（Timestamp）を付ける',
   },
   {
     file: 'src-electron/util/error/construct.ts',
@@ -116,6 +116,18 @@ export const TYPE_ASSERTION_EXCEPTIONS = [
     file: 'src-electron/util/promise/promiseDecorator.ts',
     functions: ['decoratePromise'],
     reason: 'Promise にメソッドを付け足した型を組み立てる',
+  },
+  {
+    file: 'src-electron/source/world/handler.ts',
+    functions: ['spool'],
+    reason:
+      'ワールドの操作を直列に実行する基盤で，処理ごとに異なる結果の型（unknown として持つ）を呼び出し元の型に戻す（同じチャンネルで上書きした処理は同じ型の結果を返す前提）',
+  },
+  {
+    file: 'src-electron/source/world/world.ts',
+    functions: ['getWorldAbbr'],
+    reason:
+      '既存のフォルダの名前をワールド名として扱う（形式に合わない名前のフォルダもワールドとして読み込むため，検証せずにブランド型を付ける）',
   },
   {
     file: 'src-electron/logger/logger.ts',
