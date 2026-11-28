@@ -289,7 +289,7 @@ export class BytesData {
 
   /** Zod型定義によってパースしたJSONオブジェクトを返す */
   async json<T>(
-    validator: z.ZodType<T, any>,
+    validator: z.ZodType<T>,
     encoding = 'utf-8'
   ): Promise<Failable<T>> {
     const parsed = safeExec((): unknown =>
@@ -305,9 +305,13 @@ export class BytesData {
     return safeExec(() => new Png(sharp(this.data)));
   }
 
-  /** バイト列をjava NBTに変換 */
-  async nbt<T extends object>(): Promise<Failable<T>> {
-    return safeExecAsync(async () => {
+  /**
+   * バイト列をjava NBTに変換
+   *
+   * @returns NBT の内容（形式は検証していないため，使う側でスキーマで検証する）
+   */
+  async nbt(): Promise<Failable<unknown>> {
+    return safeExecAsync(async (): Promise<unknown> => {
       const nbt = prismarineNbt;
       const result = await nbt.parse(this.data, 'big');
       return nbt.simplify(result.parsed);

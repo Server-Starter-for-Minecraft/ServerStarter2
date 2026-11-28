@@ -44,9 +44,11 @@ export class Path {
 
   parent(times = 1) {
     if (this._path) {
-      return new Path(path.join(this._path, ...new Array(times).fill('..')));
+      return new Path(
+        path.join(this._path, ...Array<string>(times).fill('..'))
+      );
     }
-    return new Path(path.join(...Array(times).fill('..')));
+    return new Path(path.join(...Array<string>(times).fill('..')));
   }
 
   absolute() {
@@ -256,7 +258,7 @@ export class Path {
 
   readJson = exclusive(this._readJson);
   private async _readJson<T>(
-    validator: z.ZodType<T, any>,
+    validator: z.ZodType<T>,
     encoding?: BufferEncoding
   ): Promise<Failable<T>> {
     const data = await this._read();
@@ -456,7 +458,7 @@ const spoolers = InfinitMap.primitiveKeyWeakValue(
  * Pathクラスの中でプールが定義された関数を実行するときには`_Hoge()`という本体実装側を呼び出す
  * （関数A自体と関数Aの中で呼び出す処理で重複してプールすることがないようにする）
  */
-function exclusive<P extends any[], R>(
+function exclusive<P extends unknown[], R>(
   target: (this: Path, ...args: P) => Promise<R>
 ) {
   return async function (this: Path, ...args: P) {

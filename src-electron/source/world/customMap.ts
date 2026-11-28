@@ -122,7 +122,7 @@ export async function loadCustomMap(
   }
 
   if (isError(dat)) return dat;
-  const rawDatContent = await dat.nbt<object>();
+  const rawDatContent = await dat.nbt();
   if (isError(rawDatContent)) return rawDatContent;
 
   // 必要な値が欠けているlevel.dat(古い形式など)は例外にせず，読み込めないワールドとして扱う

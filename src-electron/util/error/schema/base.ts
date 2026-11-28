@@ -2,11 +2,11 @@ export const errorMessageContentSyembol = Symbol();
 export type ErrorMessageContentSyembol = typeof errorMessageContentSyembol;
 
 export type ErrorMessageContent<
-  T extends object | any[] | undefined = undefined,
+  T extends object | unknown[] | undefined = undefined,
 > = () => T;
 
 export interface Errors {
-  [K: string]: Errors | ErrorMessageContent<any>;
+  [K: string]: Errors | ErrorMessageContent<object | unknown[] | undefined>;
 }
 
 type AddSuffix<T, P extends string> = T extends [infer U, infer V]
@@ -32,9 +32,9 @@ type TupleToObject<T> = T extends [infer K, infer V]
     : never
   : never;
 
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+type UnionToIntersection<U> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void
   ? I
   : never;
 

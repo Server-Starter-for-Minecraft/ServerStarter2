@@ -11,7 +11,7 @@ import { isValid } from './error/error';
 export class CacheableAccessor<T> {
   private getter: () => Promise<Failable<T>>;
   private setter: (value: T) => Promise<Failable<void>>;
-  private lock: undefined | Promise<any>;
+  private lock: undefined | Promise<unknown>;
   private value: Failable<T>;
 
   constructor(
@@ -35,8 +35,9 @@ export class CacheableAccessor<T> {
   ): Promise<Failable<T>> {
     await this.lock;
     if (options.useCache && isValid(this.value)) return this.value;
-    this.lock = this.getter();
-    this.value = await this.lock;
+    const getting = this.getter();
+    this.lock = getting;
+    this.value = await getting;
     return this.value;
   }
 

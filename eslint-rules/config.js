@@ -118,6 +118,12 @@ export const TYPE_ASSERTION_EXCEPTIONS = [
     reason: 'Promise にメソッドを付け足した型を組み立てる',
   },
   {
+    file: 'src-electron/logger/logger.ts',
+    functions: ['createLoggerHierarchy'],
+    reason:
+      '子のカテゴリのロガーは Proxy で参照したときに作るため，呼び出せる関数に子のロガーを持つ型を付ける',
+  },
+  {
     file: 'src-electron/api/boundary.ts',
     functions: ['fromIPC'],
     reason:

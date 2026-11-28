@@ -2,34 +2,35 @@ export const errorMessageContentSyembol = Symbol();
 export type ErrorMessageContentSyembol = typeof errorMessageContentSyembol;
 
 export type MessageContent<
-  T extends Record<string, any> | any[] | undefined = undefined,
+  T extends Record<string, unknown> | unknown[] | undefined = undefined,
 > = () => T;
 
-type WithIndex<T extends any[]> = T extends [...infer U, infer V]
+type WithIndex<T extends unknown[]> = T extends [...infer U, infer V]
   ? [...WithIndex<U>, [U['length'], V]]
   : [];
 
-type IndexedFunction<T extends [number, any][]> = {
+type IndexedFunction<T extends [number, unknown][]> = {
   [K in keyof T]: (x: T[K][0]) => T[K][1];
 }[number];
 
-type WithIndexedFunction<T extends any[]> = IndexedFunction<WithIndex<T>>;
+type WithIndexedFunction<T extends unknown[]> = IndexedFunction<WithIndex<T>>;
 
-type WithNamedFunction<T extends Record<string, any>> = {
+type WithNamedFunction<T extends Record<string, unknown>> = {
   [K in keyof T]: (x: K) => T[K];
 }[keyof T];
 
-export type MessageTranslationContent<T extends object | any[] | undefined> =
-  T extends undefined
-    ? () => string
-    : T extends any[]
-      ? (ctx: { list: UnionToIntersection<WithIndexedFunction<T>> }) => string
-      : T extends Record<string, any>
-        ? (ctx: { named: UnionToIntersection<WithNamedFunction<T>> }) => string
-        : never;
+export type MessageTranslationContent<
+  T extends object | unknown[] | undefined,
+> = T extends undefined
+  ? () => string
+  : T extends unknown[]
+    ? (ctx: { list: UnionToIntersection<WithIndexedFunction<T>> }) => string
+    : T extends Record<string, unknown>
+      ? (ctx: { named: UnionToIntersection<WithNamedFunction<T>> }) => string
+      : never;
 
 export interface HierarchicalMessage {
-  [K: string]: HierarchicalMessage | (() => object | any[] | undefined);
+  [K: string]: HierarchicalMessage | (() => object | unknown[] | undefined);
 }
 
 type AddSuffix<T, P extends string> = T extends [infer U, infer V]
@@ -49,9 +50,9 @@ type FlattenMessageKV<
       : never
   : never;
 
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+type UnionToIntersection<U> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void
   ? I
   : never;
 

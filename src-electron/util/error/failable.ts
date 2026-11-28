@@ -45,7 +45,7 @@ export async function safeExecAsync<T>(
  * エラーを投げる可能性のある関数をFailable化する
  * 基本的にsafeExec/safeExecAsyncで十分だと思う
  */
-export function failabilify<P extends any[], R>(
+export function failabilify<P extends unknown[], R>(
   func: (...args: P) => R
 ): (
   ...args: P
