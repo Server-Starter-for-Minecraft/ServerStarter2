@@ -30,17 +30,21 @@ export type OuterResourceOptions = {
 /**
  * 取得したデータをキャッシュに保存する
  *
- * 保存に失敗した場合は，途中まで書き込んだファイルが次回の読み込みで正しいキャッシュとして使われないよう削除する
+ * 一時ファイルに書き込んでから置き換えるため，保存に失敗しても途中まで書き込んだファイルがキャッシュとして使われず，
+ * 以前のキャッシュも残る
  *
  * @param path キャッシュの保存先
  * @param data 保存するデータ
- * @returns 保存の結果（失敗した場合はエラー。途中まで書き込んだファイルを削除できなかった場合は，削除のエラー）
+ * @returns 保存の結果（失敗した場合はエラー。一時ファイルを削除できなかった場合は，削除のエラー）
  */
 async function saveCache(path: Path, data: BytesData): Promise<Failable<void>> {
-  const written = await path.write(data);
-  if (isValid(written)) return written;
-  const removed = await path.remove();
-  return isError(removed) ? removed : written;
+  const temp = path.parent().child(`${path.basename()}.tmp`);
+  const written = await temp.write(data);
+  if (isError(written)) {
+    const removed = await temp.remove();
+    return isError(removed) ? removed : written;
+  }
+  return temp.rename(path);
 }
 
 /**

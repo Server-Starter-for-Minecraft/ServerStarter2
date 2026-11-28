@@ -82,7 +82,7 @@ export class Path {
    *
    * リンクを経由してフォルダの外を指すパスを `isWithin` で検出するために，実体のパス同士で比べる場合に使う
    *
-   * @returns 実体の絶対パス（存在しないパスの場合はエラー）
+   * @returns 実体の絶対パス（存在しないなど，実体のパスを解決できない場合は notFound のエラー）
    */
   async realPath(): Promise<Failable<Path>> {
     const real = await safeExecAsync(async () => fs.realpath(this._path));
@@ -242,8 +242,11 @@ export class Path {
     encoding?: BufferEncoding
   ): Promise<Failable<void>> {
     // 保存先のフォルダを作れない場合（同名のファイルがある・権限がないなど）も，例外ではなくエラーとして返す
+    // （mkdir は失敗時に例外を投げるため，fs の呼び出しを直接 Failable に変換する。既にある場合は何もしない）
     const parent = this.parent();
-    const made = await safeExecAsync(async () => parent.mkdir(true));
+    const made = await safeExecAsync(async () =>
+      fs.mkdir(parent._path, { recursive: true })
+    );
     if (isError(made)) {
       return errorMessage.data.path.creationFailed({
         type: 'directory',
