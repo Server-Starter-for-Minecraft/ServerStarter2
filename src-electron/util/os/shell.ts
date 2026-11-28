@@ -1,6 +1,6 @@
-import { shell } from 'electron';
 import { Failable } from '../../schema/error';
 import { Path } from '../binary/path';
+import { requireElectron } from '../electron/runtime';
 import { errorMessage } from '../error/construct';
 import { isError } from '../error/error';
 import { safeExecAsync } from '../error/failable';
@@ -11,7 +11,9 @@ import { safeExecAsync } from '../error/failable';
  * @param url 開く URL
  */
 export async function openBrowser(url: string): Promise<Failable<void>> {
-  return safeExecAsync(async () => shell.openExternal(url));
+  const electron = requireElectron('shell.openExternal');
+  if (isError(electron)) return electron;
+  return safeExecAsync(async () => electron.shell.openExternal(url));
 }
 
 /**
@@ -43,7 +45,11 @@ export async function openFolder(
     });
   }
 
-  const openResult = await safeExecAsync(async () => shell.openPath(path));
+  const electron = requireElectron('shell.openPath');
+  if (isError(electron)) return electron;
+  const openResult = await safeExecAsync(async () =>
+    electron.shell.openPath(path)
+  );
   if (isError(openResult)) return openResult;
   if (openResult !== '') {
     return errorMessage.data.path.shellError({

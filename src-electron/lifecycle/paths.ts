@@ -3,12 +3,12 @@
  *
  * util・ロガーなどの共通基盤からも参照するため，共通基盤の層（lifecycle）で定義する
  */
-// Electron外(スクリプト・テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
-import * as electron from 'electron';
 import { Path } from '../util/binary/path';
+import { electron } from '../util/electron/runtime';
 
+// Electron 外（スクリプト・テストなど）では，リポジトリ内の作業フォルダに保存する
 const userDataPath = (
-  import.meta.env.QUASAR_DEBUG || !electron.app
+  import.meta.env.QUASAR_DEBUG || electron === undefined
     ? new Path('userData')
     : new Path(electron.app.getPath('userData'))
 ).absolute();
@@ -16,9 +16,10 @@ const userDataPath = (
 export const mainPath = userDataPath;
 
 export const cachePath = mainPath.child('serverstarter/cache');
-export const logDir = !electron.app
-  ? new Path('src-electron/logger/work/log')
-  : mainPath.child('serverstarter/log');
+export const logDir =
+  electron === undefined
+    ? new Path('src-electron/logger/work/log')
+    : mainPath.child('serverstarter/log');
 export const tempPath = mainPath.child('serverstarter/temp');
 
 export const settingPath = mainPath.child('serverstarter/settings.ssconfig');

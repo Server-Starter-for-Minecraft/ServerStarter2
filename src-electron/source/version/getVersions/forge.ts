@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+import { load } from 'cheerio';
 import { Failable } from 'app/src-electron/schema/error';
 import { AllForgeVersion, VersionId } from 'app/src-electron/schema/version';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
@@ -21,7 +21,7 @@ export class ForgeVersionLoader extends VersionListLoader<'forge'> {
     const indexPage = await BytesData.fromURL(ForgeURL);
     if (isError(indexPage)) return indexPage;
 
-    const $ = cheerio.load(await indexPage.text());
+    const $ = load(await indexPage.text());
 
     const ids: VersionId[] = [];
 
@@ -73,7 +73,7 @@ export async function scrapeForgeVersions(
 
   const forge_versions: { version: string; url: string }[] = [];
 
-  const $ = cheerio.load(await page.text());
+  const $ = load(await page.text());
   $('.download-list > tbody > tr').each((_, elem) => {
     const downloadVersion = $('.download-version', elem);
 

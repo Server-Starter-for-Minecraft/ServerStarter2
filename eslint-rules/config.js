@@ -825,6 +825,46 @@ export const FRONTEND_LAYERS = [
 ];
 
 /**
+ * Electron の API を取得する境界のモジュール
+ *
+ * Electron 外でも読み込むファイル（ELECTRON_FREE_FILES）は，`electron` を直接 import せず，このモジュールを使う
+ */
+export const ELECTRON_BOUNDARY = 'src-electron/util/electron/runtime.ts';
+
+/**
+ * Electron 外（ビルド用のスクリプト・テスト）でも読み込むファイル（`electron` の直接の import を禁止する）
+ *
+ * `electron` パッケージは Electron 外では読み込めない（パッケージが入っていない・実行ファイルのダウンロードが始まる）ため，
+ * スクリプトやテストから読み込む共通基盤（base の層）とスクリプト，スクリプトが使う source の処理では，
+ * ELECTRON_BOUNDARY を通して Electron の API を使う。
+ * Electron 上でのみ動く処理（その他の source・ipc など）は `electron` を直接 import してよい。
+ * スクリプトから source の処理を新たに使う場合は，その範囲をここに追加する
+ */
+export const ELECTRON_FREE_FILES = [
+  ...(BACKEND_LAYERS.find(({ name }) => name === 'base')?.files ?? []),
+  ...SCRIPT_FILES,
+  // 外部リソースのスクリプト（scripts/outerResources）が，配布ファイルの定義・検証を使う
+  'src-electron/source/outerResource/**',
+];
+
+/**
+ * ELECTRON_FREE_FILES で `electron` を読み込んでよい範囲（`serverstarter/no-restricted-module` の例外）
+ *
+ * Electron の API を使わず，`electron` パッケージそのもの（実行ファイルのパスなど）が必要な処理に限る。
+ * 追加する場合は，ELECTRON_BOUNDARY を通して扱えない理由を `reason` に必ず書く
+ *
+ * @type {ScopedException[]}
+ */
+export const ELECTRON_IMPORT_EXCEPTIONS = [
+  {
+    file: 'scripts/electronNode.ts',
+    topLevel: true,
+    reason:
+      '開発用の CLI のランチャーは，Electron に同梱された Node.js で CLI を起動するため，`electron` パッケージから実行ファイルのパスを取得する（Electron の API は使わない）',
+  },
+];
+
+/**
  * 層の単位では許可しているが，個別に禁止する import（層構造の補足）
  *
  * 共通基盤（base）は互いに依存するため 1 つの層としているが，その中にも守るべき方向がある。
@@ -865,6 +905,11 @@ export const MOCKABLE_BOUNDARIES = [
     reason: 'ネットワーク・ファイルの読み込み',
   },
   { file: 'src-electron/util/os/os.ts', reason: '実行している OS の種類' },
+  {
+    file: ELECTRON_BOUNDARY,
+    reason:
+      'Electron の API（テストの環境は Electron のメインプロセスではないため使えない）',
+  },
   {
     file: 'src-electron/util/tempPath.ts',
     reason: '一時フォルダの場所（テストの作業フォルダに置き換える）',
@@ -967,5 +1012,9 @@ export const LINT_EXCEPTIONS = [
   {
     rules: ['@typescript-eslint/no-restricted-imports'],
     exceptions: MODULE_IMPORT_EXCEPTIONS,
+  },
+  {
+    rules: ['serverstarter/no-restricted-module'],
+    exceptions: ELECTRON_IMPORT_EXCEPTIONS,
   },
 ];

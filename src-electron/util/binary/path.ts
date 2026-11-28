@@ -1,6 +1,16 @@
 import dayjs, { type Dayjs } from 'dayjs';
 import fs from 'fs-extra';
-import * as path from 'path';
+import {
+  basename,
+  delimiter,
+  extname,
+  isAbsolute,
+  join,
+  normalize,
+  relative,
+  resolve,
+  sep,
+} from 'path';
 import { z } from 'zod';
 import { errorMessage } from '../error/construct';
 import { fromRuntimeError, isError } from '../error/error';
@@ -11,7 +21,7 @@ import { PromiseSpooler } from '../promise/spool';
 import type { BytesData } from './bytesData';
 
 function replaceSep(pathstr: string) {
-  return pathstr.replace(/[\\\/]+/, path.sep).replace(/[\\\/]+$/, '');
+  return pathstr.replace(/[\\\/]+/, sep).replace(/[\\\/]+$/, '');
 }
 
 const _bytesData = import('./bytesData');
@@ -25,7 +35,7 @@ export class Path {
     if (value === undefined) {
       this._path = '';
     } else if (typeof value === 'string') {
-      this._path = path.normalize(replaceSep(value));
+      this._path = normalize(replaceSep(value));
     } else {
       this._path = value._path;
     }
@@ -37,31 +47,29 @@ export class Path {
 
   child(...paths: string[]) {
     if (this._path !== '') {
-      return new Path(path.join(this._path, ...paths));
+      return new Path(join(this._path, ...paths));
     }
-    return new Path(path.join(...paths));
+    return new Path(join(...paths));
   }
 
   parent(times = 1) {
     if (this._path) {
-      return new Path(
-        path.join(this._path, ...Array<string>(times).fill('..'))
-      );
+      return new Path(join(this._path, ...Array<string>(times).fill('..')));
     }
-    return new Path(path.join(...Array<string>(times).fill('..')));
+    return new Path(join(...Array<string>(times).fill('..')));
   }
 
   absolute() {
-    return new Path(path.resolve(this._path));
+    return new Path(resolve(this._path));
   }
 
   /** 絶対パスかを返す */
   isAbsolute() {
-    return path.isAbsolute(this._path);
+    return isAbsolute(this._path);
   }
 
   /** 環境変数 PATH などで複数のパスを区切る文字（Windows は `;`，それ以外は `:`） */
-  static readonly delimiter = path.delimiter;
+  static readonly delimiter = delimiter;
 
   /**
    * このパスが base のフォルダ自身またはその中を指すかを返す
@@ -72,9 +80,9 @@ export class Path {
    * @returns base の中（base 自身を含む）であれば true
    */
   isWithin(base: Path) {
-    const rel = path.relative(base.absolute()._path, this.absolute()._path);
+    const rel = relative(base.absolute()._path, this.absolute()._path);
     // 別ドライブの場合は絶対パスが返り，外に出る場合は先頭が `..` になる
-    return !path.isAbsolute(rel) && rel.split(path.sep)[0] !== '..';
+    return !isAbsolute(rel) && rel.split(sep)[0] !== '..';
   }
 
   /**
@@ -97,7 +105,7 @@ export class Path {
 
   /** このpathを起点にしたtargetの相対パスを返す */
   relativeto(target: Path) {
-    return new Path(path.relative(this._path, target._path));
+    return new Path(relative(this._path, target._path));
   }
 
   /** パスを文字列化する */
@@ -122,17 +130,17 @@ export class Path {
 
   /** ディレクトリ階層を除いたファイル名を返す ".../../file.txt" -> "file.txt" */
   basename() {
-    return path.basename(this._path);
+    return basename(this._path);
   }
 
   /** ディレクトリ階層を除いたファイル名(拡張子なし)を返す ".../../file.txt" -> "file" */
   stemname() {
-    return path.basename(this._path, this.extname());
+    return basename(this._path, this.extname());
   }
 
   /** 拡張子を返す ".../../file.txt" -> ".txt" */
   extname() {
-    return path.extname(this._path);
+    return extname(this._path);
   }
 
   /** ファイル・ディレクトリが存在するかを返す */
@@ -443,7 +451,7 @@ async function changePermissionsRecursively(basePath: string, mode: number) {
     if ((await fs.lstat(basePath)).isDirectory()) {
       const files = await fs.readdir(basePath);
       for (const file of files) {
-        const filePath = path.join(basePath, file);
+        const filePath = join(basePath, file);
         await changePermissionsRecursively(filePath, mode);
       }
     }
@@ -520,12 +528,10 @@ if (import.meta.vitest) {
   const assertOk: typeof assertions.assertOk = assertions.assertOk;
 
   describe('Path', async () => {
-    const path = await import('path');
-
     // 一時使用フォルダを初期化
     const workPath = new Path(__dirname).child(
       'work',
-      path.basename(__filename, '.ts')
+      basename(__filename, '.ts')
     );
     await workPath.mkdir();
 

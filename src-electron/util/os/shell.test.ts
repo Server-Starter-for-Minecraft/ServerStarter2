@@ -6,7 +6,11 @@ import { openFolder } from './shell';
 const { openPath } = vi.hoisted(() => ({
   openPath: vi.fn<(path: string) => Promise<string>>(),
 }));
-vi.mock('electron', () => ({ app: undefined, shell: { openPath } }));
+// フォルダを開く処理（Electron の shell）だけを差し替え，他の処理（保存先の判定など）は Electron 外として動かす
+vi.mock('../electron/runtime', () => ({
+  electron: undefined,
+  requireElectron: () => ({ shell: { openPath } }),
+}));
 
 const workDir = new Path(__dirname).child('work', 'shell');
 

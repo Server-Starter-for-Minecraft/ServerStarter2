@@ -6,6 +6,7 @@ import noFailableCast from './rules/no-failable-cast.js';
 import noFailableCondition from './rules/no-failable-condition.js';
 import noIgnoredFailable from './rules/no-ignored-failable.js';
 import noInternalMock from './rules/no-internal-mock.js';
+import noRestrictedModule from './rules/no-restricted-module.js';
 import noSilentError from './rules/no-silent-error.js';
 import noUnsafeThrowingCall from './rules/no-unsafe-throwing-call.js';
 
@@ -37,6 +38,7 @@ const rules = {
   'no-failable-condition': noFailableCondition,
   'no-ignored-failable': noIgnoredFailable,
   'no-internal-mock': noInternalMock,
+  'no-restricted-module': noRestrictedModule,
   'no-silent-error': noSilentError,
   'no-unsafe-throwing-call': noUnsafeThrowingCall,
 };

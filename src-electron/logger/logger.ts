@@ -1,6 +1,4 @@
 import dayjs, { type Dayjs } from 'dayjs';
-// Electron外(スクリプト・テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
-import * as electron from 'electron';
 import fs from 'fs-extra';
 import log4js from 'log4js';
 import { c } from 'tar';
@@ -8,6 +6,7 @@ import { runDetached } from 'app/src-public/scripts/promise/runDetached';
 import { onQuit } from '../lifecycle/lifecycle';
 import { logDir } from '../lifecycle/paths';
 import { Path } from '../util/binary/path';
+import { electron } from '../util/electron/runtime';
 import { isError, isValid } from '../util/error/error';
 import { InfinitMap } from '../util/helper/infinitMap';
 import { isValidIP } from '../util/network/ip';
@@ -35,7 +34,7 @@ const beforeArchivePaths = EXTs.map((ext) => logDir.child(`${TMP_LOG}${ext}`));
 //   画面の表示前であり操作を止めることはない。eslint-rules/config.js の BLOCKING_CALL_EXCEPTIONS で，
 //   モジュールの読み込み時の処理に限って no-blocking-call の例外としている。関数の中で使うと例外の範囲外になる）
 fs.ensureDirSync(logDir.path);
-if (electron.app) {
+if (electron !== undefined) {
   let existsLatestLogs = true;
   for (const path of logPaths) {
     existsLatestLogs &&= fs.existsSync(path.path);

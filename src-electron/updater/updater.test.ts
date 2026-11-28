@@ -17,7 +17,6 @@ const osState = vi.hoisted(() => ({
   underRosetta: false,
 }));
 
-vi.mock('electron', () => ({ app: undefined }));
 vi.mock('../util/os/os', () => ({
   get osPlatform() {
     return osState.platform;
