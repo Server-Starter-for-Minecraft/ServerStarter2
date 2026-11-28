@@ -1,3 +1,4 @@
+import { assertOk } from 'app/test/util/assert';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Failable } from 'app/src-electron/schema/error';
 import { BytesData } from 'app/src-electron/util/binary/bytesData';
@@ -14,6 +15,16 @@ const dummyFileRules: DummyFileRule[] = [
   { suffix: '.xml', fileName: 'sample.xml' },
   { suffix: '.jar', fileName: 'sample.jar' },
 ];
+
+/**
+ * バージョン一覧の最も古いバージョンの ID を返す
+ *
+ * fabric の一覧は `games` に Minecraft のバージョンを持つため，他のサーバーと取り出し方が異なる
+ */
+function oldestVersionId(list: { games: { id: string }[] } | { id: string }[]) {
+  const versions = 'games' in list ? list.games : list;
+  return versions[versions.length - 1]?.id;
+}
 
 describe('listupVersions', { tags: ['network'] }, async () => {
   // 各サーバー種別のバージョン一覧APIには実際にアクセスする(APIの仕様変更の検知を兼ねる)
@@ -34,7 +45,9 @@ describe('listupVersions', { tags: ['network'] }, async () => {
 
   type TestCase = {
     type: VersionType;
-    vcList: () => Promise<Failable<any>>;
+    vcList: () => Promise<
+      Failable<{ games: { id: string }[] } | { id: string }[]>
+    >;
     oldestVersion: string;
   };
   const testCases: TestCase[] = [
@@ -79,23 +92,11 @@ describe('listupVersions', { tags: ['network'] }, async () => {
     'versionList ($type)',
     { timeout: 1000 * 60 },
     async (tCase) => {
-      const getCachedList = await tCase.vcList(); // 取得に成功したか
-      expect(isError(getCachedList)).toEqual(false);
-      if (isError(getCachedList)) return;
+      const cachedList = await tCase.vcList(); // 取得に成功したか
+      assertOk(cachedList);
 
       // 取得した内容が正しいか（バニラの最も古いバージョンは「1.3」）
-      const cachedList = getCachedList;
-      if ('games' in cachedList) {
-        // fabricのみ特別対応
-        expect(cachedList.games[cachedList.games.length - 1].id).toEqual(
-          tCase.oldestVersion
-        );
-      } else {
-        // その他のサーバー
-        expect(cachedList[cachedList.length - 1].id).toEqual(
-          tCase.oldestVersion
-        );
-      }
+      expect(oldestVersionId(cachedList)).toEqual(tCase.oldestVersion);
     }
   );
 });

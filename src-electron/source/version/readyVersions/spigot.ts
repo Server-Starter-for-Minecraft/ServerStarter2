@@ -311,7 +311,10 @@ if (import.meta.vitest) {
       await cachePath?.remove();
 
       // `BuildTools.jar`の実行によって必要なファイルが生成された体を再現する
+      // （BuildToolsに渡された引数は，ビルドするバージョンの検証のために記録する）
+      let buildArgs: string[] = [];
       const execRuntime: ExecRuntime = vi.fn(async (options) => {
+        buildArgs = options.args;
         await writeBuiltJar(options, ver19.id, `spigot-${ver19.id}.jar`);
       });
 
@@ -342,7 +345,6 @@ if (import.meta.vitest) {
           },
         })
       );
-      const buildArgs = vi.mocked(execRuntime).mock.calls[0][0].args;
       expect(buildArgs[buildArgs.indexOf('--rev') + 1]).toBe('1.19');
 
       // ファイルの設置状況の検証

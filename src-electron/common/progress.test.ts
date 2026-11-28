@@ -23,9 +23,11 @@ describe('WorldProgressor', () => {
     progressor.title({ key: 'server.readyJava.title' });
     vi.runAllTimers();
 
-    expect(sendProgress).toHaveBeenCalled();
-    for (const [sentID] of sendProgress.mock.calls) {
-      expect(sentID).toBe(worldID);
-    }
+    // 送信されたプログレスに，対象のワールド以外の WorldID が付与されていない
+    expect(sendProgress).toHaveBeenCalledWith(worldID, expect.anything());
+    expect(sendProgress).not.toHaveBeenCalledWith(
+      expect.not.stringMatching(/^test-world$/),
+      expect.anything()
+    );
   });
 });

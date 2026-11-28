@@ -2,7 +2,7 @@
 // https://jestjs.io/ja/docs/expect
 
 describe('example', () => {
-  test.skip('example test 01', () => {
+  test('example test 01', () => {
     // toBe 参照比較
     // toEqual 構造比較
 
@@ -27,7 +27,7 @@ describe('example', () => {
     expect(0.1 + 0.2).toBeCloseTo(0.3);
   });
 
-  test.skip('example test error', () => {
+  test('example test error', () => {
     class MyErr1 extends Error {}
     class MyErr2 extends Error {}
 
@@ -44,7 +44,7 @@ describe('example', () => {
     expect(() => err()).not.toThrow(MyErr2);
   });
 
-  test.skip('example test acync', async () => {
+  test('example test acync', async () => {
     async function asyncFunc() {
       return 1;
     }

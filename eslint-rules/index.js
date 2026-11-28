@@ -3,6 +3,7 @@ import noBlockingCall from './rules/no-blocking-call.js';
 import noException from './rules/no-exception.js';
 import noFailableCast from './rules/no-failable-cast.js';
 import noIgnoredFailable from './rules/no-ignored-failable.js';
+import noInternalMock from './rules/no-internal-mock.js';
 import noSilentError from './rules/no-silent-error.js';
 import noUnsafeThrowingCall from './rules/no-unsafe-throwing-call.js';
 import requireAsyncExport from './rules/require-async-export.js';
@@ -20,6 +21,7 @@ const rules = {
   'no-exception': noException,
   'no-failable-cast': noFailableCast,
   'no-ignored-failable': noIgnoredFailable,
+  'no-internal-mock': noInternalMock,
   'no-silent-error': noSilentError,
   'no-unsafe-throwing-call': noUnsafeThrowingCall,
   'require-async-export': requireAsyncExport,
