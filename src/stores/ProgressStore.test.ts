@@ -41,12 +41,13 @@ describe('ワールドごとのプログレス', () => {
     const store = useProgressStore();
     store.initProgress(world1, 'booting');
     store.initProgress(world2, 'shutdown');
+    const before: unknown = JSON.parse(
+      JSON.stringify(store.getProgress(world2))
+    );
 
     store.setProgress(world1, loadingProgress);
 
-    expect(store.getProgress(world2)).toEqual({
-      title: 'shutdown',
-      progress: {},
-    });
+    // 他のワールドのプログレスは，初期化したときのまま変わらない
+    expect(store.getProgress(world2)).toEqual(before);
   });
 });

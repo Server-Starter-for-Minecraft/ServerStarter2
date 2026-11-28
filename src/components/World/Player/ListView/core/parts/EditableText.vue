@@ -4,7 +4,7 @@ import SsTooltip from 'src/components/util/base/ssTooltip.vue';
 
 interface Prop {
   autoFocus: boolean;
-  validater: (text: any) => boolean | string;
+  validater: (text: string) => boolean | string;
 }
 const prop = defineProps<Prop>();
 

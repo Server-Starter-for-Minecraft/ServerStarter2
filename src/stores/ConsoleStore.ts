@@ -39,9 +39,9 @@ function resetOutputParser(worldID: WorldID) {
 }
 
 export const useConsoleStore = defineStore('consoleStore', {
-  state: () => {
+  state: (): { _world: WorldConsole } => {
     return {
-      _world: {} as WorldConsole,
+      _world: {},
     };
   },
   actions: {

@@ -34,7 +34,7 @@ describe('寄付サービス', () => {
   test.each(donationServices)(
     '$id にサービス名と日本語・英語の説明文がある',
     ({ id, name }) => {
-      const nonEmpty = expect.stringMatching(/\S/);
+      const nonEmpty: unknown = expect.stringMatching(/\S/);
       expect(name).toEqual(nonEmpty);
       for (const locale of [jaMainLayout, enUSMainLayout]) {
         expect(locale.donation.services).toHaveProperty([id, 'desc'], nonEmpty);

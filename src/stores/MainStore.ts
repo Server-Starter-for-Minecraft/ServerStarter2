@@ -16,19 +16,27 @@ import {
   WorldID,
 } from 'app/src-electron/schema/world';
 import { $T, tError } from 'src/i18n/utils/tFunc';
+import { NO_WORLD_ID, NO_WORLD_NAME } from './placeholders';
 import { useSystemStore } from './SystemStore';
 import { filterWorldContainer, sortWorldList } from './worldListUtils';
 import { __getWorldList, __getWorldListBack, WorldList } from './WorldStore';
 
 export const useMainStore = defineStore('mainStore', {
-  state: () => {
+  state: (): {
+    selectedWorldID: WorldID;
+    inputWorldName: WorldName;
+    worldSearchText: string;
+    errorWorlds: Set<WorldID>;
+    selectedVersionType: Version['type'];
+    worldIPs: Record<WorldID, string>;
+  } => {
     return {
-      selectedWorldID: '' as WorldID,
-      inputWorldName: '' as WorldName,
+      selectedWorldID: NO_WORLD_ID,
+      inputWorldName: NO_WORLD_NAME,
       worldSearchText: '',
       errorWorlds: new Set<WorldID>(),
-      selectedVersionType: 'vanilla' as Version['type'],
-      worldIPs: {} as Record<WorldID, string>,
+      selectedVersionType: 'vanilla',
+      worldIPs: {},
     };
   },
   getters: {
@@ -113,7 +121,7 @@ export const useMainStore = defineStore('mainStore', {
      * 表示するワールドの選択を解除して，何も表示しない
      */
     unsetWorld() {
-      this.selectedWorldID = '' as WorldID;
+      this.selectedWorldID = NO_WORLD_ID;
     },
     /**
      * NgrokからIPの割り当てがあった際にIPアドレスを更新する

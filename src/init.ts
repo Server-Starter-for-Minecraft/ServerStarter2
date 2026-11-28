@@ -5,7 +5,7 @@ import { versionTypes } from 'app/src-electron/schema/version';
 import { WorldID } from 'app/src-electron/schema/world';
 import { tError } from './i18n/utils/tFunc';
 import { useMainStore } from './stores/MainStore';
-import { useSystemStore } from './stores/SystemStore';
+import { useSystemStore, VersionLists } from './stores/SystemStore';
 import {
   createNewWorld,
   registAbbrWorld,
@@ -115,21 +115,22 @@ export async function getWorlds(wIds: WorldID[]) {
 async function getAllVersion(useCache: boolean) {
   const sysStore = useSystemStore();
 
-  const versions = await Promise.allSettled(
-    versionTypes.map(async (type) => {
-      return window.API.invokeGetVersions(type, useCache);
-    })
-  );
+  /** サーバーの種類ごとにバージョンの一覧を取得して保存する */
+  async function loadVersions<K extends (typeof versionTypes)[number]>(
+    type: K
+  ) {
+    checkError(
+      await window.API.invokeGetVersions(type, useCache),
+      (vers) => {
+        // 種類ごとに型が変わる一覧を，種類をキーとして保存する
+        // （TypeScript では種類の型引数で引いた型（VersionLists[K]）へ代入できないため，型を合わせる）
+        sysStore.serverVersions[type] = vers as VersionLists[K];
+      },
+      (e) => tError(e)
+    );
+  }
 
-  versions.map((ver, i) => {
-    if (ver.status == 'fulfilled') {
-      checkError(
-        ver.value,
-        (vers) => sysStore.serverVersions.set(versionTypes[i], vers),
-        (e) => tError(e)
-      );
-    }
-  });
+  await Promise.allSettled(versionTypes.map(loadVersions));
 }
 
 /**

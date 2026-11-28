@@ -2,11 +2,16 @@ import { defineStore } from 'pinia';
 import { useMainStore } from '../MainStore';
 
 export const useConsoleOpeStore = defineStore('consoleOperationStore', {
-  state: () => {
+  state: (): {
+    isSearchVisible: boolean;
+    showIdx: number;
+    inputCommands: string[];
+    command: string;
+  } => {
     return {
       isSearchVisible: false,
       showIdx: 0,
-      inputCommands: [] as string[],
+      inputCommands: [],
       command: '',
     };
   },

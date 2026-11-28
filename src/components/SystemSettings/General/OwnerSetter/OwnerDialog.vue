@@ -27,7 +27,7 @@ function ownerRegister(player: Player) {
 function registOwner() {
   onDialogOK({
     ownerPlayer: ownerCandidate.value,
-  } as ReturnOwnerDialog);
+  } satisfies ReturnOwnerDialog);
 }
 
 /** Ownerと検索結果が等しい場合はFalseを返す */

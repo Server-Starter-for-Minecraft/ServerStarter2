@@ -81,7 +81,7 @@ window.API.onNotifySystemUpdate((_event, os, newVer) => {
     componentProps: {
       os: os,
       newVer: newVer,
-    } as UpdateNotifyProp,
+    } satisfies UpdateNotifyProp,
   }).onOk(() => {
     window.API.sendOpenBrowser(
       'https://server-starter-for-minecraft.github.io'

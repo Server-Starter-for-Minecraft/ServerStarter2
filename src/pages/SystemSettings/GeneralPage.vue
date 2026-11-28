@@ -78,7 +78,7 @@ function showOwnerDialog() {
     component: OwnerDialog,
     componentProps: {
       ownerPlayer: ownerPlayer.value,
-    } as OwnerDialogProp,
+    } satisfies OwnerDialogProp,
   }).onOk((p: ReturnOwnerDialog) => {
     ownerPlayer.value = p.ownerPlayer;
     sysStore.systemSettings.user.owner = p.ownerPlayer?.uuid;

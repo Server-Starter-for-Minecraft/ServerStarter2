@@ -32,10 +32,10 @@ export type WorldBackList = Record<WorldID, WorldEdited>;
  * Worldの変更を検知するためのStore
  */
 const useWorldStore = defineStore('worldStore', {
-  state: () => {
+  state: (): { worldListBack: WorldBackList; worldList: WorldList } => {
     return {
-      worldListBack: {} as WorldBackList,
-      worldList: {} as WorldList,
+      worldListBack: {},
+      worldList: {},
     };
   },
 });
@@ -290,9 +290,10 @@ export function updateBackWorld(worldID?: WorldID) {
   } else {
     worldStore.worldListBack = deepcopy(
       fromEntries(
-        toEntries(worldStore.worldList)
-          .filter(([, w]) => w.type === 'edited')
-          .map(([wid, w]) => [wid, w.world as WorldEdited])
+        toEntries(worldStore.worldList).flatMap(
+          ([wid, w]): [WorldID, WorldEdited][] =>
+            w.type === 'edited' ? [[wid, w.world]] : []
+        )
       )
     );
   }

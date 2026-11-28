@@ -54,7 +54,7 @@ function resetAll() {
       dialogTitle: $T('property.resetAll.title'),
       dialogDesc: $T('property.resetAll.desc'),
       okBtnTxt: $T('property.resetAll.okBtn'),
-    } as dangerDialogProp,
+    } satisfies dangerDialogProp,
   }).onOk(() => {
     Object.keys(sysStore.systemSettings.world.properties).map((key) => {
       if (lockedProperties.value[key] !== undefined) return;

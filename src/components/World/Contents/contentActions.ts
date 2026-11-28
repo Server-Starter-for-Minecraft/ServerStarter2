@@ -43,9 +43,8 @@ export function useContentActions() {
   const consoleStore = useConsoleStore();
 
   /** 表示中のワールドに導入されている追加コンテンツの一覧 */
-  const installed = (type: ContentType) =>
-    mainStore.world?.additional[`${type}s`] as
-      AllFileData<Content>[] | undefined;
+  const installed = (type: ContentType): AllFileData<Content>[] | undefined =>
+    mainStore.world?.additional[`${type}s`];
 
   /**
    * 追加コンテンツを表示中のワールドに導入する
@@ -83,7 +82,7 @@ export function useContentActions() {
         dialogTitle: $T('additionalContents.deleteDialog.title', { type }),
         dialogDesc: $T('additionalContents.deleteDialog.desc', { type }),
         okBtnTxt: $T('additionalContents.deleteDialog.okbtn'),
-      } as dangerDialogProp,
+      } satisfies dangerDialogProp,
     }).onOk(() => __delete());
   }
 
@@ -113,22 +112,28 @@ export function useContentActions() {
           if (current?.id !== world.id) return;
 
           for (const key of keys(loaded)) {
+            // 種類ごとの一覧は，同じ種類のコンテンツの一覧のまま中身を置き換える
+            const currentContents: AllFileData<Content>[] =
+              current.additional[key];
+            const loadedContents: AllFileData<Content>[] = loaded[key];
             const merged = mergeReloadedContents<AllFileData<Content>>(
-              current.additional[key] as AllFileData<Content>[],
-              loaded[key] as AllFileData<Content>[]
+              currentContents,
+              loadedContents
             );
             if (!merged.changed) continue;
-            (current.additional[key] as AllFileData<Content>[]) =
-              merged.contents;
+            currentContents.splice(
+              0,
+              currentContents.length,
+              ...merged.contents
+            );
 
             // 停止中は「ワールド起動前のデータ」にも反映し、保存先にあるコンテンツを導入済みとして扱う
             // （起動履歴があり得るコンテンツの削除時に警告を表示するため）
             // なお、この変更でもワールドの保存が要求されるが、上記の変更による保存とまとめて処理される
             const back = mainStore.worldBack;
             if (back && consoleStore.status(world.id) === 'Stop') {
-              (back.additional[key] as AllFileData<Content>[]) = [
-                ...(loaded[key] as AllFileData<Content>[]),
-              ];
+              const backContents: AllFileData<Content>[] = back.additional[key];
+              backContents.splice(0, backContents.length, ...loadedContents);
             }
           }
         },

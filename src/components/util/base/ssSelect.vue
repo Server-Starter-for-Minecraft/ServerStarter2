@@ -4,7 +4,7 @@ import { $T } from 'src/i18n/utils/tFunc';
 import SsInput from './ssInput.vue';
 
 interface Prop {
-  options?: readonly any[];
+  options?: readonly unknown[];
   label?: string;
   disable?: boolean;
   dense?: boolean;
@@ -22,13 +22,25 @@ const model = defineModel<T>({ required: true });
 const definedOptionLabel = prop.optionLabel ?? 'label';
 const definedOptionValue = prop.optionValue ?? 'value';
 // 特殊なキーであるOtherを追加
-const OTHER_DATA = 'other' as T;
+const OTHER_DATA = 'other';
+
+/**
+ * 「その他」を表す文字列を，モデルの型として返す
+ *
+ * 「その他」の選択肢はモデルが文字列の場合にのみ表示するため，モデルの型として扱える
+ * （ジェネリクスの型を文字列に絞り込めないため，lint の例外として型アサーションを許可している）
+ *
+ * @returns 「その他」を表す値
+ */
+function otherAsModel(): T {
+  return OTHER_DATA as T;
+}
 
 /**
  * 与えられた要素が構造体でない場合，
  * `definedOptionLabel`と`definedOptionValue`をキーとして持つ構造体を返す
  */
-function convertStructure(modelVal: T) {
+function convertStructure(modelVal: unknown): object {
   if (typeof modelVal === 'object' && modelVal !== null) return modelVal;
   return {
     [definedOptionLabel]: modelVal,
@@ -36,16 +48,16 @@ function convertStructure(modelVal: T) {
   };
 }
 
-const getOptions = (ops?: readonly any[]) => {
+const getOptions = (ops?: readonly unknown[]) => {
   // 選択肢一覧を構造化し，「その他」の多言語表示に対応する
-  const editedOptions = (ops ?? []).map(convertStructure);
+  const editedOptions: object[] = (ops ?? []).map(convertStructure);
 
   // 選択肢一覧に「その他」を追加する
   // （本来はT型しか入れられないところに強引にOtherを入れるため，Modelが文字列型の時のみ対応する）
   // --> Modelの型制限が過剰な場合は適切な検証のもとに制限を緩和しても良い
   if (prop.enableOther && typeof model.value === 'string') {
     editedOptions.push({
-      [definedOptionLabel]: $T('general.other') as T,
+      [definedOptionLabel]: $T('general.other'),
       [definedOptionValue]: OTHER_DATA,
     });
   }
@@ -66,7 +78,7 @@ const computedModel = computed({
     if (!prop.enableOther || (prop.options?.length ?? 0) === 0) {
       return model.value;
     }
-    return checkInOptions() ? model.value : OTHER_DATA;
+    return checkInOptions() ? model.value : otherAsModel();
   },
   set: (newVal) => {
     model.value = newVal;

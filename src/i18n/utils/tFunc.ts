@@ -90,10 +90,7 @@ export function $T(
  */
 export function tProgress(progress: ProgressMessage) {
   if ('args' in progress) {
-    return $T(
-      `progress.${progress.key}`,
-      flattenObj(progress.args as Record<string, string | number | string[]>)
-    );
+    return $T(`progress.${progress.key}`, flattenObj(progress.args));
   } else {
     return $T(`progress.${progress.key}`);
   }
@@ -155,12 +152,7 @@ export function tError(
   const returnObj: ErrorFuncReturns = { title: '', desc: undefined };
   // Errorのタイトルは必ず表示するために、表示をオフにできない仕様
   if (error.arg) {
-    returnObj.title = $T(
-      useTitleKey,
-      omitPath(
-        flattenObj(error.arg as Record<string, string | number | string[]>)
-      )
-    );
+    returnObj.title = $T(useTitleKey, omitPath(flattenObj(error.arg)));
   } else {
     returnObj.title = $T(useTitleKey);
   }
@@ -169,12 +161,8 @@ export function tError(
   if (useDescKey !== '' && _te(useDescKey)) {
     const translatedDesc = $T(useDescKey, 'undefined');
     if (translatedDesc !== 'undefined') {
-      returnObj.desc = $T(
-        useDescKey,
-        omitPath(
-          flattenObj(error.arg as Record<string, string | number | string[]>)
-        )
-      );
+      // 引数の無いエラーでも説明文を表示できるよう，引数が無い場合は空の引数で翻訳する
+      returnObj.desc = $T(useDescKey, omitPath(flattenObj(error.arg ?? {})));
     }
   }
 

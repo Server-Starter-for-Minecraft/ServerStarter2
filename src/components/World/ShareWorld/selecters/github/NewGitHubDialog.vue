@@ -3,6 +3,7 @@ import { ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDialogPluginComponent } from 'quasar';
 import { ignoreError } from 'src/error/error';
+import { asBrand } from 'app/src-public/scripts/brand';
 import { isError, isValid } from 'app/src-public/scripts/error';
 import { RemoteWorldName } from 'app/src-electron/schema/brands';
 import SsI18nT from 'src/components/util/base/ssI18nT.vue';
@@ -45,7 +46,7 @@ async function setRemote() {
   loading.value = true;
   const res = await setRemoteWorld(
     {
-      name: inputName.value as RemoteWorldName,
+      name: asBrand(RemoteWorldName, inputName.value),
       folder: {
         type: 'github',
         owner: prop.remoteData.owner,

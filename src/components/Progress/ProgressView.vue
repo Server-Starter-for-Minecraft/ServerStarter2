@@ -20,7 +20,7 @@ function flatProgress(ps?: Progress[]) {
     });
   }
 
-  const returnObj = [] as Progress[];
+  const returnObj: Progress[] = [];
   appendProgress(ps);
 
   return returnObj;

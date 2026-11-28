@@ -10,10 +10,10 @@ interface WorldProgress {
 }
 
 export const useProgressStore = defineStore('progressStore', {
-  state: () => {
+  state: (): { shwoWorldID: WorldID | undefined; _world: WorldProgress } => {
     return {
-      shwoWorldID: undefined as undefined | WorldID,
-      _world: {} as WorldProgress,
+      shwoWorldID: undefined,
+      _world: {},
     };
   },
   actions: {
@@ -47,7 +47,7 @@ export const useProgressStore = defineStore('progressStore', {
     initProgress(worldID: WorldID, title: string) {
       this._world[worldID] = {
         title: title,
-        progress: {} as GroupProgress,
+        progress: { type: 'group', value: [] },
       };
     },
   },

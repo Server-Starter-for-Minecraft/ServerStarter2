@@ -42,7 +42,7 @@ type MenuBtn = {
   icon: string;
   color?: string;
   nestedItem?: Component;
-  nestedProps?: Record<string, any>;
+  nestedProps?: Record<string, unknown>;
   onClick: () => void;
 };
 const menuBtns: MenuBtn[] = [
@@ -54,7 +54,7 @@ const menuBtns: MenuBtn[] = [
         component: GroupMemberDialog,
         componentProps: {
           players: prop.group.players,
-        } as GroupMembersProp,
+        } satisfies GroupMembersProp,
       }).onOk((p: GroupMemberReturns) => {
         // グループメンバーの更新
         playerStore.updateGroup(prop.groupId, (g) => {
@@ -107,7 +107,7 @@ const menuBtns: MenuBtn[] = [
             groupname: prop.group.name,
           }),
           okBtnTxt: $T('player.deleteGroup.okBtn'),
-        } as dangerDialogProp,
+        } satisfies dangerDialogProp,
       }).onOk(() => playerStore.removeGroup(prop.groupId));
     },
   },

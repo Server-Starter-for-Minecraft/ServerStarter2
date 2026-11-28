@@ -13,9 +13,9 @@ import { useMainStore } from '../MainStore';
 type Contents = DatapackData | ModData | PluginData;
 
 export const useContentsStore = defineStore('contentsStore', {
-  state: () => {
+  state: (): { selectedTab: 'datapack' | 'plugin' | 'mod' } => {
     return {
-      selectedTab: 'datapack' as 'datapack' | 'plugin' | 'mod',
+      selectedTab: 'datapack',
     };
   },
   actions: {

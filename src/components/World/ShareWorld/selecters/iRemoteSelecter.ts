@@ -16,7 +16,8 @@ export interface GithubCheckDialogProp {
   rIcon?: ImageURI;
   rVersionName: string;
   rWorldName: string;
-  rLastPlayed: number;
+  /** 最後にプレイした日時（記録が無い場合は undefined） */
+  rLastPlayed?: number;
 }
 
 export async function setRemoteWorld(rWorld: Remote, isExist: boolean) {

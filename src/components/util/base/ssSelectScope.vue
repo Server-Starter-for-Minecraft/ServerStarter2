@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Prop {
-  options?: readonly any[];
+  options?: readonly unknown[];
   label?: string;
   disable?: boolean;
   dense?: boolean;

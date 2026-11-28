@@ -30,7 +30,7 @@ type PromptSetting<K extends WorldRequestKind> = {
 const PROMPTS: { [K in WorldRequestKind]: PromptSetting<K> } = {
   eula: {
     component: EulaDialog,
-    props: (payload) => ({ eulaURL: payload.url }) as EulaDialogProp,
+    props: (payload) => ({ eulaURL: payload.url }) satisfies EulaDialogProp,
     waitingKey: 'eulaDialog.waiting',
   },
 };
@@ -41,8 +41,14 @@ const PROMPTS: { [K in WorldRequestKind]: PromptSetting<K> } = {
  * @param request 回答待ちの要求
  * @returns 表示するコンポーネントと、それに渡すプロパティ
  */
-export function promptOf(request: PendingWorldRequest) {
-  const setting = PROMPTS[request.kind] as PromptSetting<WorldRequestKind>;
+export function promptOf<K extends WorldRequestKind>(
+  request: PendingWorldRequest & {
+    kind: K;
+    payload: WorldRequestTypes[K]['payload'];
+  }
+) {
+  // 種類（K）で設定を引くため，要求の内容の型と設定の型が対応する
+  const setting: PromptSetting<K> = PROMPTS[request.kind];
   return {
     component: setting.component,
     props: setting.props(request.payload),

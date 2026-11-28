@@ -8,10 +8,10 @@ import { $T, $TE } from 'src/i18n/utils/tFunc';
 const disableProperties = ['level-name'];
 
 export const usePropertyStore = defineStore('propertyStore', {
-  state: () => {
+  state: (): { searchName: string; selectTab: pGroupKey } => {
     return {
       searchName: '',
-      selectTab: 'base' as pGroupKey,
+      selectTab: 'base',
     };
   },
   actions: {

@@ -11,6 +11,7 @@ import {
   PlayerGroup,
 } from 'app/src-electron/schema/player';
 import { useMainStore } from '../MainStore';
+import { NO_GROUP_ID } from '../placeholders';
 import { useSystemStore } from '../SystemStore';
 
 // フォーカスされているプレイヤーのUUID一覧とUUIDからPlayerオブジェクトへのマッピング
@@ -18,10 +19,14 @@ import { useSystemStore } from '../SystemStore';
 const __playerFromId: Record<PlayerUUID, Player> = {};
 
 export const usePlayerStore = defineStore('playerStore', {
-  state: () => {
+  state: (): {
+    focusPlayerIds: Set<PlayerUUID>;
+    selectedGroupId: UUID;
+    openGroupEditor: boolean;
+  } => {
     return {
       focusPlayerIds: new Set<PlayerUUID>(),
-      selectedGroupId: '' as UUID,
+      selectedGroupId: NO_GROUP_ID,
       openGroupEditor: false,
     };
   },
