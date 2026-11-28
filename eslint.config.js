@@ -179,6 +179,46 @@ export default tseslint.config(
     },
   },
 
+  // ---- 型の安全性（型の抜け道でエラーや不正な値を見逃さない） ----
+  // （no-unnecessary-type-assertion は，Pinia の state の初期値など型の推論に必要なアサーションも
+  //   不要と判定して自動修正で消すため使わない）
+  {
+    files: ['**/*.ts', '**/*.vue'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      // 型アサーション（as）を禁止する。値を検証してから使う（zod の safeParse や型ガードを使う）
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
+    },
+  },
+  // any の値の扱い（.vue ファイルは，テンプレートの型情報を lint で正しく扱えず誤検出が多いため .ts のみとする）
+  {
+    files: ['**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+    },
+  },
+
+  // 型アサーションは，型を作る汎用処理（util・src-public のジェネリックな処理やブランド型の生成）と
+  // テストのデータの作成に限って使う
+  {
+    files: [
+      'src-electron/util/**',
+      'src-public/**',
+      ...TEST_FILES,
+      'eslint-rules/fixtures/**',
+    ],
+    rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
+  },
+
   // ---- エラーハンドリング（失敗は Failable / WithError で扱い，握りつぶさない） ----
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES, ...FRONTEND_FILES],
@@ -348,8 +388,6 @@ export default tseslint.config(
 
       // in plain CommonJS modules, you can't use `import foo = require('foo')` to pass this rule, so it has to be disabled
       '@typescript-eslint/no-require-imports': 'off',
-
-      '@typescript-eslint/no-explicit-any': 'off',
 
       // The core 'no-unused-vars' rules (in the eslint:recommended ruleset)
       // does not work with type definitions
