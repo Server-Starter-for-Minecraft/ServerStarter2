@@ -2,6 +2,10 @@
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import type { QScrollArea } from 'quasar';
+import {
+  getPropertyAnnotation,
+  isUnavailableInVersion,
+} from 'src/logic/property/propertyDefinitions';
 import { isValid } from 'app/src-public/scripts/error';
 import { fromEntries, keys } from 'app/src-public/scripts/obj/obj';
 import { ServerProperties } from 'app/src-electron/schema/serverproperty';
@@ -11,10 +15,6 @@ import { useSystemStore } from 'src/stores/SystemStore';
 import { usePropertyStore } from 'src/stores/WorldTabs/PropertyStore';
 import { dangerDialogProp } from 'src/components/util/danger/iDangerDialog';
 import { getLockedProperties } from 'src/components/World/Property/lockedProperties';
-import {
-  getPropertyAnnotation,
-  isUnavailableInVersion,
-} from 'src/logic/property/propertyDefinitions';
 import { thumbStyle } from 'src/components/World/scrollBar';
 import SsBtn from 'src/components/util/base/ssBtn.vue';
 import SsInput from 'src/components/util/base/ssInput.vue';
