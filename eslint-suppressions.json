@@ -110,11 +110,6 @@
       "count": 1
     }
   },
-  "src-electron/source/world/handler.test.ts": {
-    "serverstarter/no-internal-mock": {
-      "count": 3
-    }
-  },
   "src-public/scripts/obj/obj.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 4
