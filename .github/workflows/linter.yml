@@ -1,23 +1,54 @@
 name: Linter
 
-on: [pull_request]
+on:
+  pull_request:
+    # lint の例外を許可するラベル（lint-exception）の付け外しでも再判定する
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         # pushは行わないため，認証情報をチェックアウト先に残さない
+        # ベースブランチの抑制ファイル・lint の設定と比較するため，履歴をすべて取得する
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       - name: Install Deps
         run: bun install
+      # リポジトリ全体を検査し，変更していない行の違反も含めて 1 件でもあれば失敗にする
+      # （警告も失敗にする。ソースコード内の無効化コメントは無視されて警告になるため）
       - name: eslint
+        run: bun run lint --max-warnings 0
+      # 指摘を PR の該当行へコメントする（失敗の判定は上のステップで行う）
+      - name: eslint (review comments)
+        if: always()
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          eslint_flags: 'src'
-          fail_level: any # 指摘が発生したらjobを失敗扱いにする（非推奨となった fail_on_error: true の置き換え）
+          eslint_flags: '.'
+          fail_level: none
+      # lint の抑制（eslint-suppressions.json）がファイルとルールの組ごとに増えていないかを確認する
+      - name: check lint suppressions
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'lint-exception') }}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git show "origin/${BASE_REF}:eslint-suppressions.json" > "${RUNNER_TEMP}/base-suppressions.json" 2>/dev/null || rm -f "${RUNNER_TEMP}/base-suppressions.json"
+          bun scripts/lint/checkSuppressions.ts "${RUNNER_TEMP}/base-suppressions.json" eslint-suppressions.json
+      # lint の設定（例外の追加にあたる変更）を変えた PR は，ラベル lint-exception でメンテナーが明示的に許可する
+      - name: check lint config changes
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'lint-exception') }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed=$(git diff --name-only "${BASE_SHA}...HEAD" -- eslint.config.js eslint-rules/config.js)
+          if [ -n "${changed}" ]; then
+            echo "lint の設定が変更されています。例外の追加が妥当かをメンテナーが確認し，ラベル lint-exception を付けてください:"
+            echo "${changed}"
+            exit 1
+          fi

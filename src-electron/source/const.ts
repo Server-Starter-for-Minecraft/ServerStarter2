@@ -1,21 +1,22 @@
 /**
  * TODO: 将来的には定数は関数の引数で受け取る設計に変更し，定数定義をここから呼び出す実装は削除する
  */
-import { app } from 'electron';
+// Electron外(スクリプト・テスト環境など)ではnamed exportが存在しないため，名前空間でimportする
+import * as electron from 'electron';
 import { MemorySettings } from '../schema/memory';
 import { Locale } from '../schema/system';
 import { Path } from '../util/binary/path';
 
 const userDataPath = (
-  import.meta.env.QUASAR_DEBUG || !app
+  import.meta.env.QUASAR_DEBUG || !electron.app
     ? new Path('userData')
-    : new Path(app?.getPath('userData'))
+    : new Path(electron.app.getPath('userData'))
 ).absolute();
 
 export const mainPath = userDataPath;
 
 export const cachePath = mainPath.child('serverstarter/cache');
-export const logDir = !app
+export const logDir = !electron.app
   ? new Path('src-electron/common/work/log')
   : mainPath.child('serverstarter/log');
 export const tempPath = mainPath.child('serverstarter/temp');
@@ -49,7 +50,7 @@ export const DEFAULT_MEMORY: MemorySettings = {
 // システムの言語設定がjaだった場合ja、それ以外の場合en-USに
 export const getDefaultLocale = (): Locale => {
   if (import.meta.env?.QUASAR_DEV) return 'ja';
-  return app.getLocale() === 'ja' ? 'ja' : 'en-US';
+  return electron.app.getLocale() === 'ja' ? 'ja' : 'en-US';
 };
 
 export const NEW_WORLD_NAME = 'NewWorld';
