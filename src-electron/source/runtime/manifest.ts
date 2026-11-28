@@ -19,7 +19,6 @@ import { Path } from 'app/src-electron/util/binary/path';
 import { CacheableAccessor } from 'app/src-electron/util/cache';
 import { errorMessage } from 'app/src-electron/util/error/construct';
 import { isError } from 'app/src-electron/util/error/error';
-import { groupBy } from 'app/src-electron/util/object/groupBy';
 import { runtimeLoggers, RuntimeMeta } from './base';
 
 type JavaExecName = {
@@ -76,7 +75,7 @@ export abstract class JavaRuntimeInstaller<
   }
 
   protected static getCacheableAccessor<RM extends RuntimeManifest>(
-    validator: z.ZodType<RM, any>,
+    validator: z.ZodType<RM>,
     manifestPath: Path,
     manifestUrl: string
   ) {
@@ -149,8 +148,9 @@ export abstract class JavaRuntimeInstaller<
     javaExecName: JavaExecName
   ): Failable<[[string, ManifestFile], [string, ManifestFile]]> {
     const java = Object.entries(manifestContent.files).find(
-      ([k, value]) => k.endsWith(javaExecName.java) && value.type === 'file'
-    ) as [string, ManifestFile];
+      (entry): entry is [string, ManifestFile] =>
+        entry[0].endsWith(javaExecName.java) && entry[1].type === 'file'
+    );
     if (java === undefined)
       return errorMessage.data.path.notFound({
         type: 'file',
@@ -158,8 +158,9 @@ export abstract class JavaRuntimeInstaller<
       });
 
     const javaw = Object.entries(manifestContent.files).find(
-      ([k, value]) => k.endsWith(javaExecName.javaw) && value.type === 'file'
-    ) as [string, ManifestFile];
+      (entry): entry is [string, ManifestFile] =>
+        entry[0].endsWith(javaExecName.javaw) && entry[1].type === 'file'
+    );
     if (javaw === undefined)
       return errorMessage.data.path.notFound({
         type: 'file',
@@ -248,17 +249,21 @@ async function _extractFilesFromManifest(
   await installPath.emptyDir();
 
   const entries = Object.entries(manifest.files);
-  const { directory, link, file } = groupBy(
-    entries.map(([k, v]) => ({
-      path: installPath.child(k),
-      entry: v,
-    })),
-    (x) => x.entry.type
-  ) as {
-    directory: { path: Path; entry: ManifestDirectory }[] | undefined;
-    link: { path: Path; entry: ManifestLink }[] | undefined;
-    file: { path: Path; entry: ManifestFile }[] | undefined;
-  };
+  // 種類（ディレクトリ・リンク・ファイル）ごとに分ける
+  const items = entries.map(([k, v]) => ({
+    path: installPath.child(k),
+    entry: v,
+  }));
+  const directory = items.filter(
+    (x): x is { path: Path; entry: ManifestDirectory } =>
+      x.entry.type === 'directory'
+  );
+  const link = items.filter(
+    (x): x is { path: Path; entry: ManifestLink } => x.entry.type === 'link'
+  );
+  const file = items.filter(
+    (x): x is { path: Path; entry: ManifestFile } => x.entry.type === 'file'
+  );
 
   // progress 対応
   let processed = 0;
@@ -270,7 +275,7 @@ async function _extractFilesFromManifest(
     },
   });
 
-  if (directory) {
+  if (directory.length > 0) {
     await Promise.all(
       directory.map(async ({ path }) => {
         subtitle?.setSubtitle({
@@ -283,7 +288,7 @@ async function _extractFilesFromManifest(
     );
   }
 
-  if (file) {
+  if (file.length > 0) {
     const res = await Promise.all(
       file.map(async ({ path, entry }) => {
         subtitle?.setSubtitle({
@@ -306,7 +311,7 @@ async function _extractFilesFromManifest(
     if (err) return err;
   }
 
-  if (link) {
+  if (link.length > 0) {
     const results = await Promise.all(
       link.map(async ({ path, entry }) => {
         subtitle?.setSubtitle({

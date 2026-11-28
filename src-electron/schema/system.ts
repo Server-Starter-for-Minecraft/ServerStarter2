@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { genUUID } from '../util/random/uuid';
+import { genUUIDOf } from '../util/random/uuid';
+import { asBrand } from '../util/zod/brand';
 import { PlayerUUID, UUID, WorldContainer } from './brands';
 import { PlayerGroup } from './player';
 import { RemoteSetting } from './remote';
@@ -45,7 +46,7 @@ export const SystemUserSetting = z
     /** 実行者情報 */
     owner: PlayerUUID.optional(),
     /** 実行環境ID(特に変更の必要なし) */
-    id: UUID.default(genUUID() as UUID),
+    id: UUID.default(genUUIDOf(UUID)),
     /** 自動シャットダウン */
     autoShutDown: z.boolean().default(false),
     /** ワールドリストの幅 */
@@ -60,7 +61,7 @@ export type SystemUserSetting = z.infer<typeof SystemUserSetting>;
 
 export const WorldContainerSetting = z
   .object({
-    container: WorldContainer.default('servers' as WorldContainer),
+    container: WorldContainer.default(asBrand(WorldContainer, 'servers')),
     visible: z.boolean().default(true),
     name: z.string().default('default'),
   })

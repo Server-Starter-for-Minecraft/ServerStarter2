@@ -24,7 +24,8 @@ export async function runNgrok(
     return listener;
   } catch (e) {
     if (
-      (e as NgrokError)?.errorCode === 'ERR_NGROK_307' &&
+      isNgrokError(e) &&
+      e.errorCode === 'ERR_NGROK_307' &&
       remote_addr !== undefined
     ) {
       return errorMessage.lib.ngrok.unreservedAdress({
@@ -37,9 +38,15 @@ export async function runNgrok(
   }
 }
 
-type NgrokError = {
-  errorCode: 'ERR_NGROK_307';
-};
+/**
+ * Ngrok の例外が，エラーコード（`errorCode`）を持つかを判定する
+ *
+ * @param e 捕捉した例外
+ * @returns エラーコードを持てば true
+ */
+function isNgrokError(e: unknown): e is { errorCode: unknown } {
+  return typeof e === 'object' && e !== null && 'errorCode' in e;
+}
 
 /**
  * Ngrokを止める

@@ -121,7 +121,7 @@ export async function getUniversalConfig(
       logger.warn(`Unsupported Java component name: ${runtimeComponentName}`);
       return Promise.resolve({
         type: 'minecraft',
-        version: runtimeComponentName as JavaComponent,
+        version: runtimeComponentName,
       });
     }
   } else {
@@ -191,7 +191,7 @@ if (import.meta.vitest) {
       assertOk(mcRuntimeManifest);
 
       // 検証用データに整形
-      const cleanConfig = (obj: Record<string, any>) => {
+      const cleanConfig = (obj: (typeof mcRuntimeManifest)['linux']) => {
         const runtimeComponentName = Object.keys(obj).filter(
           (k) =>
             !EXCLUDE_COMPONENTS.some((c) => c === k) &&

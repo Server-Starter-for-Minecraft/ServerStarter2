@@ -46,7 +46,7 @@ describe('システム設定ファイルの変換', () => {
 
   test('変換後の設定ファイルを保存して読み込んでも、色は変わらない', () => {
     const settings = systemSettingsSchema.parse(settingsV1({ g: '#FFAA00' }));
-    const saved = JSON.parse(
+    const saved: unknown = JSON.parse(
       JSON.stringify(systemSettingsSchema.serialize(settings))
     );
 

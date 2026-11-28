@@ -37,7 +37,7 @@ export const serverAllAdditionalFiles = {
   ): Promise<WithError<void>> {
     const errors: ErrorMessage[] = [];
 
-    async function saveEach<T extends Record<string, any>>(
+    async function saveEach<T extends Record<string, unknown>>(
       files: ServerAdditionalFiles<T>,
       values: AllFileData<T>[] | ErrorMessage
     ): Promise<void> {
