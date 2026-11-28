@@ -1,11 +1,7 @@
 // @ts-check
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
 import { createRule } from '../utils/createRule.js';
-import {
-  isInAllowedFunction,
-  projectFilename,
-  reportOutsideInSourceTest,
-} from '../utils/scope.js';
+import { reportOutsideInSourceTest } from '../utils/scope.js';
 import { isPromiseConstructor, mayBeThenable } from '../utils/types.js';
 
 /**
@@ -24,7 +20,7 @@ import { isPromiseConstructor, mayBeThenable } from '../utils/types.js';
  * Promise かどうかは型で判定する（`p?.catch()`・`p['catch']()`・`globalThis.Promise.reject()`・
  * `const P = Promise; P.reject()`・`new Promise(executor)` の形も検出する）
  *
- * 変換を行う関数は，設定（`allowed`）にファイルと関数名を指定して許可する
+ * 変換を行う関数は，`eslint-rules/config.js` に例外として登録し，`utils/exceptions.js` の仕組みで許可する
  */
 
 export default createRule({
@@ -45,35 +41,13 @@ export default createRule({
       catch:
         'Promise の失敗を捕まえずに，util の safeExecAsync で Failable に変換してください',
     },
-    schema: [
-      {
-        type: 'object',
-        properties: { allowed: { type: 'array' } },
-        additionalProperties: false,
-      },
-    ],
+    schema: [],
   },
-  defaultOptions: [
-    /** @type {{ allowed: import('../utils/scope.js').AllowedFunctions[] }} */ ({
-      allowed: [],
-    }),
-  ],
-  create(context, [{ allowed }]) {
+  defaultOptions: [],
+  create(context) {
     const report = reportOutsideInSourceTest(context);
     const services = ESLintUtils.getParserServices(context, true);
     const checker = services.program?.getTypeChecker();
-    const file = projectFilename(context);
-
-    /**
-     * 許可された関数の外であれば報告する
-     *
-     * @param {import('@typescript-eslint/utils').TSESTree.Node} node 報告するノード
-     * @param {'throw' | 'tryCatch' | 'reject' | 'catch'} messageId メッセージ
-     */
-    function reportUnlessAllowed(node, messageId) {
-      if (isInAllowedFunction(node, file, allowed)) return;
-      report({ node, messageId });
-    }
 
     /**
      * Promise のように then を持つ値か（型情報が無い場合は判定しない）
@@ -146,18 +120,18 @@ export default createRule({
 
     return {
       ThrowStatement(node) {
-        reportUnlessAllowed(node, 'throw');
+        report({ node, messageId: 'throw' });
       },
       TryStatement(node) {
         // catch の無い try/finally は，例外を捕まえずに後始末を保証するだけのため対象外とする
         if (node.handler === null) return;
-        reportUnlessAllowed(node, 'tryCatch');
+        report({ node, messageId: 'tryCatch' });
       },
       CallExpression(node) {
         // 別名・分割代入を通した Promise.reject（`const { reject } = Promise; reject(1)`）
         if (node.callee.type === AST_NODE_TYPES.Identifier) {
           if (isPromiseRejectSignature(node))
-            reportUnlessAllowed(node, 'reject');
+            report({ node, messageId: 'reject' });
           return;
         }
         if (node.callee.type !== AST_NODE_TYPES.MemberExpression) return;
@@ -167,7 +141,7 @@ export default createRule({
 
         // Promise.reject(...)
         if (name === 'reject' && isPromiseClass(object)) {
-          reportUnlessAllowed(node, 'reject');
+          report({ node, messageId: 'reject' });
           return;
         }
         // Promise.reject.call(...)・.apply(...)
@@ -177,7 +151,7 @@ export default createRule({
           memberName(object) === 'reject' &&
           isPromiseClass(object.object)
         ) {
-          reportUnlessAllowed(node, 'reject');
+          report({ node, messageId: 'reject' });
           return;
         }
         // promise.catch(...) / promise.then(onFulfilled, onRejected)
@@ -186,7 +160,7 @@ export default createRule({
             (name === 'then' && node.arguments.length >= 2)) &&
           isPromiseLike(object)
         ) {
-          reportUnlessAllowed(node, 'catch');
+          report({ node, messageId: 'catch' });
         }
       },
       NewExpression(node) {
@@ -199,7 +173,7 @@ export default createRule({
           executor.type === AST_NODE_TYPES.FunctionExpression
         ) {
           if (executor.params.length >= 2) {
-            reportUnlessAllowed(executor.params[1], 'reject');
+            report({ node: executor.params[1], messageId: 'reject' });
           }
           return;
         }
@@ -209,7 +183,7 @@ export default createRule({
           .getTypeAtLocation(executor)
           .getCallSignatures();
         if (signatures.some((sig) => sig.getParameters().length >= 2)) {
-          reportUnlessAllowed(executor, 'reject');
+          report({ node: executor, messageId: 'reject' });
         }
       },
     };

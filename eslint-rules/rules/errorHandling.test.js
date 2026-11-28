@@ -25,13 +25,6 @@ declare const logger: { warn(value: unknown): void };
 
 ruleTester.run('no-exception', noException, {
   valid: [
-    // 許可した関数の中では例外を扱える
-    {
-      code: 'export function safeExec<T>(f: () => T) { try { return f(); } catch (e) { return e; } }',
-      options: [
-        { allowed: [{ file: 'file.ts', functions: ['safeExec'], reason: '' }] },
-      ],
-    },
     // catch の無い try/finally は後始末を保証するだけのため許可する
     'export function f(g: () => void) { try { g(); } finally { console.log(1); } }',
     // in-source テストの中は対象外
@@ -40,6 +33,11 @@ ruleTester.run('no-exception', noException, {
   invalid: [
     {
       code: 'export function f() { throw new Error(); }',
+      errors: [{ messageId: 'throw' }],
+    },
+    // in-source テストの else の側は本番で実行されるため対象
+    {
+      code: 'if (import.meta.vitest) { } else { throw new Error(); }',
       errors: [{ messageId: 'throw' }],
     },
     // private な関数・クラスの private メソッドでも例外は使えない
@@ -99,7 +97,7 @@ declare function safeExec<T>(f: () => T): T;
 declare function safeExecAsync<T>(f: () => Promise<T>): Promise<T>;
 `;
 const throwingOptions = [
-  { throwingApis: THROWING_APIS, converters: CONVERTERS, allowed: [] },
+  { throwingApis: THROWING_APIS, converters: CONVERTERS },
 ];
 
 ruleTester.run('no-unsafe-throwing-call', noUnsafeThrowingCall, {
@@ -162,7 +160,6 @@ ruleTester.run('no-unsafe-throwing-call', noUnsafeThrowingCall, {
           converters: [
             { name: 'safeExec', declarationFile: /other.ts$/, async: false },
           ],
-          allowed: [],
         },
       ],
       errors: [{ messageId: 'throwing' }],

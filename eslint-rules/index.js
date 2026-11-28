@@ -1,4 +1,5 @@
 // @ts-check
+import { builtinRules } from 'eslint/use-at-your-own-risk';
 import noBlockingCall from './rules/no-blocking-call.js';
 import noException from './rules/no-exception.js';
 import noFailableCast from './rules/no-failable-cast.js';
@@ -15,8 +16,21 @@ import noUnsafeThrowingCall from './rules/no-unsafe-throwing-call.js';
  * ルールの対象や例外などの設定値は `config.js` に集約し，`eslint.config.js` から参照する
  */
 
+/**
+ * 例外（`config.js` の範囲を絞った例外）を適用するために包む標準のルール
+ *
+ * 例外はプラグインのルールにのみ適用できるため，標準のルールをこのプラグインのルールとして提供する
+ * （`eslint.config.js` では標準のルールを使わず，こちらを使う）。
+ * 標準のルールの一覧は ESLint の安定版の API ではない（`use-at-your-own-risk`）が，
+ * 取得できなくなった場合はルールが見つからないエラーで lint が失敗するため，検査が黙って外れることはない
+ */
+const wrappedBuiltinRules = Object.fromEntries(
+  ['no-restricted-syntax'].map((name) => [name, builtinRules.get(name)])
+);
+
 /** @type {Record<string, import('@typescript-eslint/utils').TSESLint.RuleModule<string, unknown[]>>} */
 const rules = {
+  ...wrappedBuiltinRules,
   'no-blocking-call': noBlockingCall,
   'no-exception': noException,
   'no-failable-cast': noFailableCast,

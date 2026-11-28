@@ -5,7 +5,10 @@ export const isValid = <S>(value: ErrorMessage | S): value is S =>
   !isError(value);
 
 export const isError = <S>(value: ErrorMessage | S): value is ErrorMessage =>
-  Boolean(value) && (value as ErrorMessage).type === 'error';
+  typeof value === 'object' &&
+  value !== null &&
+  'type' in value &&
+  value.type === 'error';
 
 /**
  * 捕捉した例外を ErrorMessage に変換する（catch 節で実行することを想定）

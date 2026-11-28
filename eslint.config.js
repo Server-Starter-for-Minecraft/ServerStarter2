@@ -10,53 +10,36 @@ import {
   ALLOWED_EXTERNAL_PACKAGES,
   BACKEND_FILES,
   BACKEND_LAYERS,
-  BLOCKING_CALL_ALLOWED_FILES,
-  BLOCKING_CALL_ALLOWED_FUNCTIONS,
   BLOCKING_MODULES,
   ERROR_GUARDS,
-  EXCEPTION_ALLOWED_FUNCTIONS,
   EXCEPTION_CONVERTERS,
-  EXTERNAL_PACKAGE_WRAPPERS,
   FAILABLE_HANDLERS,
   FRONTEND_FILES,
   FRONTEND_LAYERS,
+  LINT_EXCEPTIONS,
   MOCKABLE_BOUNDARIES,
   RESTRICTED_BUILTIN_MODULES,
   RESTRICTED_LAYER_IMPORTS,
+  restrictedDynamicImportSelector,
   restrictedPackagePattern,
   SCRIPT_FILES,
   SHARED_FILES,
   TEST_FILES,
   THROWING_APIS,
-  TYPE_ASSERTION_ALLOWED_FILES,
 } from './eslint-rules/config.js';
 import pluginServerStarter from './eslint-rules/index.js';
+import { applyExceptions } from './eslint-rules/utils/exceptions.js';
 
 /**
- * Node.js の組み込みモジュールを直接使ってよい（util の迂回の制限の対象外とする）ファイル
+ * Node.js の組み込みモジュール・外部パッケージを直接使ってよい（util の迂回の制限の対象外とする）ファイル
  *
- * 組み込みモジュールの静的な import と動的な import の制限で同じ対象外のファイルを使う
+ * 組み込みモジュールの静的な import と動的な import の制限で同じ対象外のファイルを使う。
+ * 個別のファイルの例外は，ファイルごとに許可するモジュールを eslint-rules/config.js の MODULE_IMPORT_EXCEPTIONS に登録する
  */
-const BUILTIN_BYPASS_IGNORES = [
+const MODULE_RESTRICTION_IGNORES = [
   'src-electron/util/**',
   // テストは外部の境界（ファイル操作など）を用意・差し替えるために直接扱う
   ...TEST_FILES,
-  // 例外：ロガーは util より下の基盤で，起動時のログの退避に fs を直接使う（no-blocking-call の例外と同じ理由）
-  'src-electron/logger/logger.ts',
-  // 例外：ビルド用の CLI を Electron の Node.js で起動するランチャー
-  // （標準入出力をそのまま引き継ぐ必要があり，出力をログ用に受け取る util の subprocess は使えない）
-  'scripts/electronNode.ts',
-];
-
-/**
- * 外部パッケージを直接使ってよいファイル
- *
- * 外部パッケージのラッパー（理由は eslint-rules/config.js を参照）は，外部パッケージのみを直接扱う
- * （組み込みモジュールの制限は外さない）
- */
-const PACKAGE_BYPASS_IGNORES = [
-  ...BUILTIN_BYPASS_IGNORES,
-  ...EXTERNAL_PACKAGE_WRAPPERS.map(({ file }) => file),
 ];
 
 /**
@@ -115,7 +98,8 @@ function layerZones(layers) {
   });
 }
 
-export default tseslint.config(
+/** 例外を適用する前の lint の設定 */
+const baseConfig = tseslint.config(
   pluginQuasar.configs.recommended(),
 
   {
@@ -218,18 +202,12 @@ export default tseslint.config(
   // （テストはメインプロセスで動かないため対象外とする）
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    // 例外は eslint-rules/config.js に理由とともに登録する（関数単位を原則とし，やむを得ない場合のみファイル単位）
-    ignores: [
-      ...TEST_FILES,
-      ...BLOCKING_CALL_ALLOWED_FILES.map(({ file }) => file),
-    ],
+    // 例外は eslint-rules/config.js の BLOCKING_CALL_EXCEPTIONS に理由とともに登録する
+    ignores: TEST_FILES,
     rules: {
       'serverstarter/no-blocking-call': [
         'error',
-        {
-          blockingModules: BLOCKING_MODULES,
-          allowed: BLOCKING_CALL_ALLOWED_FUNCTIONS,
-        },
+        { blockingModules: BLOCKING_MODULES },
       ],
     },
   },
@@ -262,13 +240,10 @@ export default tseslint.config(
     },
   },
 
-  // 型アサーションは，型を作る汎用処理（ジェネリクス・ブランド型の生成。対象と理由は eslint-rules/config.js を参照）と
+  // 型アサーションは，型を作る汎用処理（ジェネリクス・ブランド型の生成。eslint-rules/config.js の TYPE_ASSERTION_EXCEPTIONS）と
   // テストのファイルに限って使う
   {
-    files: [
-      ...TYPE_ASSERTION_ALLOWED_FILES.map(({ file }) => file),
-      ...TEST_FILES,
-    ],
+    files: TEST_FILES,
     rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
   },
 
@@ -316,17 +291,11 @@ export default tseslint.config(
       ...SHARED_FILES,
     ],
     rules: {
-      'serverstarter/no-exception': [
-        'error',
-        { allowed: EXCEPTION_ALLOWED_FUNCTIONS },
-      ],
+      // 例外は eslint-rules/config.js に登録する（no-exception は EXCEPTION_ALLOWED_FUNCTIONS，no-unsafe-throwing-call は THROWING_CALL_EXCEPTIONS）
+      'serverstarter/no-exception': 'error',
       'serverstarter/no-unsafe-throwing-call': [
         'error',
-        {
-          throwingApis: THROWING_APIS,
-          converters: EXCEPTION_CONVERTERS,
-          allowed: EXCEPTION_ALLOWED_FUNCTIONS,
-        },
+        { throwingApis: THROWING_APIS, converters: EXCEPTION_CONVERTERS },
       ],
       'serverstarter/no-ignored-failable': [
         'error',
@@ -351,17 +320,6 @@ export default tseslint.config(
       'no-console': 'error',
     },
   },
-  // 例外：schema の層は，スキーマの既定値から定数を作るために parse を使う
-  // （入力が固定のため実行のたびに結果は変わらず，失敗した場合は起動時・テストで直ちに分かる）
-  {
-    files: ['src-electron/schema/**/*.ts'],
-    rules: { 'serverstarter/no-unsafe-throwing-call': 'off' },
-  },
-  // 例外：ビルド用の CLI のランチャーは，自身のファイルの位置から作る固定の URL のみを扱う（失敗しない）
-  {
-    files: ['scripts/electronNode.ts'],
-    rules: { 'serverstarter/no-unsafe-throwing-call': 'off' },
-  },
   // テストは本番のコード向けのエラーハンドリングのルールの対象外とする
   // （例外はテストの失敗として表に出る。in-source テストも各ルールの中で対象外としている）
   {
@@ -384,8 +342,9 @@ export default tseslint.config(
   // util を使わずに OS の機能を直接扱うこと（迂回）を禁止する
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    ignores: BUILTIN_BYPASS_IGNORES,
+    ignores: MODULE_RESTRICTION_IGNORES,
     rules: {
+      // 個別のファイルで許可するモジュールは eslint-rules/config.js の MODULE_IMPORT_EXCEPTIONS に登録する
       '@typescript-eslint/no-restricted-imports': [
         'error',
         {
@@ -411,24 +370,13 @@ export default tseslint.config(
       ],
     },
   },
-  // 外部パッケージのラッパーは，外部パッケージの制限のみを外す（組み込みモジュールは util を通して扱う）
-  {
-    files: PACKAGE_BYPASS_IGNORES.filter(
-      (file) => !BUILTIN_BYPASS_IGNORES.includes(file)
-    ),
-    rules: {
-      '@typescript-eslint/no-restricted-imports': [
-        'error',
-        { paths: RESTRICTED_BUILTIN_MODULES },
-      ],
-    },
-  },
-
   // ---- 構文の制限（no-restricted-syntax は後の設定で上書きされるため，1 か所にまとめる） ----
+  // （例外を関数単位で適用できるよう，標準の no-restricted-syntax を包んだ serverstarter/no-restricted-syntax を使う。
+  //   例外は eslint-rules/config.js の ERROR_GUARD_IMPLEMENTATIONS に登録する）
   {
     files: ['**/*.ts', '**/*.vue'],
     rules: {
-      'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX],
+      'serverstarter/no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX],
     },
   },
   // テストの共通の準備（setupFiles）は，テストの関数の外で後処理の検証を行う
@@ -437,30 +385,23 @@ export default tseslint.config(
     rules: { 'vitest/no-standalone-expect': 'off' },
   },
   // util 以外では，Node.js の組み込みモジュールの動的な import も禁止する（静的な import は no-restricted-imports で禁止している）
-  // （対象外のファイルは，組み込みモジュールの静的な import の制限と同じ BUILTIN_BYPASS_IGNORES を使う）
+  // （対象外のファイルは，組み込みモジュールの静的な import の制限と同じ MODULE_RESTRICTION_IGNORES を使う。
+  //   in-source テストは，テストのファイルと同じく外部の境界を用意するために直接扱えるよう対象外とする。
+  //   対象外とするのは `if (import.meta.vitest)` の条件を満たした側のみで，else の側は検査する）
   {
     files: [...BACKEND_FILES, ...SCRIPT_FILES],
-    ignores: BUILTIN_BYPASS_IGNORES,
+    ignores: MODULE_RESTRICTION_IGNORES,
     rules: {
-      'no-restricted-syntax': [
+      'serverstarter/no-restricted-syntax': [
         'error',
         ...RESTRICTED_SYNTAX,
         {
-          selector: `ImportExpression[source.value=/^(node:)?(${RESTRICTED_BUILTIN_MODULES.filter(
-            ({ name }) => !name.startsWith('node:')
-          )
-            .map(({ name }) => name.replace('/', '\\/'))
-            .join('|')})$/]`,
+          selector: restrictedDynamicImportSelector(RESTRICTED_BUILTIN_MODULES),
           message:
             'Node.js の組み込みモジュールは util を通して扱ってください（eslint-rules/config.js の RESTRICTED_BUILTIN_MODULES を参照）',
         },
       ],
     },
-  },
-  // エラーの判定関数そのものの実装は，エラーの判定の制限の対象外とする
-  {
-    files: ['src-electron/util/error/error.ts', 'src-public/scripts/error.ts'],
-    rules: { 'no-restricted-syntax': 'off' },
   },
 
   {
@@ -556,3 +497,19 @@ export default tseslint.config(
     },
   }
 );
+
+/**
+ * lint の設定を作る
+ *
+ * 例外（eslint-rules/config.js の LINT_EXCEPTIONS）は，ルールを包んで範囲を絞って適用する（eslint-rules/utils/exceptions.js）
+ *
+ * @param {object} [options] 設定
+ * @param {(use: import('./eslint-rules/utils/exceptions.js').ExceptionUse) => void} [options.onExceptionUsed]
+ *   例外によって違反を許可したときに呼ぶ関数（登録した例外が使われていることの検査に使う）
+ * @returns ESLint の設定の一覧
+ */
+export function createConfig({ onExceptionUsed } = {}) {
+  return applyExceptions(baseConfig, LINT_EXCEPTIONS, onExceptionUsed);
+}
+
+export default createConfig();
