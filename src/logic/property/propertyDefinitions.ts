@@ -368,7 +368,7 @@ export function resetProperties<T extends PropertyValues>(
     ...Object.keys(userDefaults),
     ...Object.keys(versionDefaults),
   ]);
-  // `constructor` などの継承したキーの値を規定値とみなさないよう，自身のキーの値だけを使う
+  // `constructor` などの継承したキーの値を規定値とみなさないよう，自身のキーの値だけを使う（値の無いキーは変更しない）
   const reset = [...targets]
     .filter((key) => !isKept(key))
     .flatMap((key): [string, string | number | boolean][] => {

@@ -1,3 +1,4 @@
+import { computed, reactive } from 'vue';
 import { describe, expect, test } from 'vitest';
 import { getOwn } from './obj';
 
@@ -16,6 +17,14 @@ describe('getOwn', () => {
       expect(getOwn<number>({ a: 1 }, key)).toBeUndefined();
     }
   );
+
+  test('Vue の reactive なオブジェクトで，後から追加したキーの値に追従する', () => {
+    const object = reactive<Record<string, number>>({});
+    const value = computed(() => getOwn(object, 'a'));
+    expect(value.value).toBeUndefined();
+    object.a = 1;
+    expect(value.value).toBe(1);
+  });
 
   test('継承したキーと同名のキーを自身が持つ場合は，その値を返す', () => {
     const object = Object.fromEntries([['constructor', 'own']]);

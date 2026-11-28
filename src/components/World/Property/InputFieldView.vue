@@ -5,6 +5,7 @@ import {
   convertPropertyValue,
   getPropertyAnnotation,
 } from 'src/logic/property/propertyDefinitions';
+import { getOwn } from 'app/src-public/scripts/obj/obj';
 import {
   isValidNumberProperty,
   NumberServerPropertyAnnotation,
@@ -28,8 +29,12 @@ interface Prop {
 const prop = defineProps<Prop>();
 const model = defineModel<ServerProperties>({ required: true });
 const propertyValue = computed({
-  get: () => model.value[prop.propertyName],
-  set: (newVal) => (model.value[prop.propertyName] = newVal),
+  // `constructor` などの継承したキーの値を，プロパティの値とみなさない
+  get: () => getOwn(model.value, prop.propertyName),
+  set: (newVal) => {
+    // 値の無い状態（undefined）は書き込まない（値が無い場合は既定値を入れる）
+    if (newVal !== undefined) model.value[prop.propertyName] = newVal;
+  },
 });
 
 /**

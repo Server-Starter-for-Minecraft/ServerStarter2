@@ -87,7 +87,7 @@ function cancelSettings() {
     >
       <q-btn
         v-show="
-          propertiesModel[settingName]?.toString() !==
+          getOwn(propertiesModel, settingName)?.toString() !==
           defaultProperty.toString()
         "
         flat

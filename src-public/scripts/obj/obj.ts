@@ -31,7 +31,10 @@ export function getOwn<V>(
   object: Readonly<Partial<Record<string, V>>>,
   key: string
 ): V | undefined {
-  return Object.hasOwn(object, key) ? object[key] : undefined;
+  // 先に値を読む（Vue の reactive なオブジェクトは値の読み込みで依存を記録し，Object.hasOwn では記録しないため，
+  // キーが無い場合も，後からキーが追加されたときに再計算されるようにする）
+  const value = object[key];
+  return Object.hasOwn(object, key) ? value : undefined;
 }
 
 export function isExistKey<K extends string | number | symbol, V>(
