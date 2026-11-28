@@ -2,7 +2,7 @@ import { onQuit } from 'app/src-electron/lifecycle/lifecycle';
 import { isError } from 'app/src-electron/util/error/error';
 import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { genUUID } from 'app/src-electron/util/random/uuid';
-import { tempPath } from '../source/const';
+import { tempPath } from '../lifecycle/paths';
 
 /** 一時的なディレクトリを確保 */
 export async function allocateTempDir() {

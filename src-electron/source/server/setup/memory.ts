@@ -1,4 +1,4 @@
-import { rootLogger } from 'app/src-electron/common/logger';
+import { rootLogger } from 'app/src-electron/logger/logger';
 import { MemorySettings } from 'app/src-electron/schema/memory';
 import { getSystemSettings } from '../../stores/system';
 

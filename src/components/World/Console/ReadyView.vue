@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ProgressPage from 'src/pages/ProgressPage.vue';
+import ProgressPanel from 'src/components/Progress/ProgressPanel.vue';
 </script>
 
 <template>
   <div class="vertical-scroll" style="flex: 1 1 0">
-    <progress-page />
+    <progress-panel />
   </div>
 </template>

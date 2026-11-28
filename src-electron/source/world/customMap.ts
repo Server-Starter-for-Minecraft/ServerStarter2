@@ -12,12 +12,12 @@ import { isError, isValid } from 'app/src-electron/util/error/error';
 import { Failable } from 'app/src-electron/util/error/failable';
 import { ignoreError } from 'app/src-electron/util/error/ignore';
 import { asyncMap } from 'app/src-electron/util/obj/objmap';
-import { versionContainer } from '../../core/setup';
 import { ServerAdditionalFiles } from '../additionalContents/base';
 import { datapackFiles } from '../additionalContents/datapack/datapack';
 import { modFiles } from '../additionalContents/mod/mod';
 import { pluginFiles } from '../additionalContents/plugin/plugin';
 import { LEVEL_NAME, unzipPath } from '../const';
+import { versionContainer } from '../containers';
 import { sourceLoggers } from '../sourceLogger';
 import { WorldSettings } from './files/json';
 import {

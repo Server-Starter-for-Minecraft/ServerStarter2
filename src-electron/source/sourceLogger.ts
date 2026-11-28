@@ -1,3 +1,3 @@
-import { rootLogger } from '../common/logger';
+import { rootLogger } from '../logger/logger';
 
 export const sourceLoggers = () => rootLogger.source;
