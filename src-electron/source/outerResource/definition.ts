@@ -63,7 +63,9 @@ export function resolveImageSource(
   baseUrl: string,
   filePath: string
 ): Failable<ResolvedImageSource> {
-  const root = `${baseUrl.replace(/\/+$/, '')}/`;
+  // 配布元の URL は URL として正規化してから比較する（ホスト名の大文字・既定のポートなどの表記の違いを吸収する）
+  const root = safeExec(() => new URL(`${baseUrl.replace(/\/+$/, '')}/`));
+  if (isError(root)) return root;
   const base = safeExec(() => new URL(filePath, root));
   if (isError(base)) return base;
   const url = safeExec(() => new URL(source, base));
@@ -82,9 +84,11 @@ export function resolveImageSource(
       expectedExt: Object.keys(IMAGE_MIME_TYPES).join(', '),
     });
   }
-  const pathInDistribution = url.href.startsWith(root)
-    ? url.href.slice(root.length)
-    : undefined;
+  // クエリやフラグメントはファイルのパスに含めない（ローカルの配布元から読む場合にも同じファイルを指すため）
+  const pathInDistribution =
+    isSameOrigin && url.pathname.startsWith(root.pathname)
+      ? url.pathname.slice(root.pathname.length)
+      : undefined;
   return { url, isSameOrigin, pathInDistribution, ext, mimeType };
 }
 

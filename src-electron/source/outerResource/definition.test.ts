@@ -15,10 +15,21 @@ describe('画像の参照先の解決', () => {
     ['./icons/a%23b.webp', 'v1/icons/a%23b.webp'],
     ['../shared/a.svg', 'shared/a.svg'],
     [`${BASE}/v1/icons/a.JPG`, 'v1/icons/a.JPG'],
+    ['icons/a.png?v=1#x', 'v1/icons/a.png'],
   ])('配布元の中の画像 %s は配布元からのパス %s で参照する', (source, path) => {
     const resolved = resolveImageSource(source, BASE, FILE);
     assertOk(resolved);
     expect(resolved.pathInDistribution).toBe(path);
+  });
+
+  test('配布元の URL の表記が正規化されていなくても，配布元の中の画像として扱う', () => {
+    const resolved = resolveImageSource(
+      'icons/a.png',
+      'https://EXAMPLE.com:443/repo/serverstarter2/',
+      FILE
+    );
+    assertOk(resolved);
+    expect(resolved.pathInDistribution).toBe('v1/icons/a.png');
   });
 
   test('配布元の外の https の画像は URL で参照する', () => {
